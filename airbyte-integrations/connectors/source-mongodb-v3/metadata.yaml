@@ -53,10 +53,10 @@ data:
         message:
           "This is a full rewrite of the MongoDB source on the Bulk CDK. Change data
           capture now reads the replica-set change stream with the native MongoDB
-          driver instead of Debezium, so its persisted CDC position is no longer
-          Debezium-compatible. Existing connections must be reset (a full re-sync)
-          when upgrading; initial-snapshot state and saved configurations are
-          unaffected. The Debezium-only settings 'initial_waiting_seconds' and
+          driver instead of Debezium. Existing connections upgrade in place: the
+          saved CDC position (the MongoDB resume token Debezium stored), the
+          initial-snapshot state and saved configurations are all read as-is, so no
+          reset is required. The Debezium-only settings 'initial_waiting_seconds' and
           'queue_size' are removed from the spec (saved configurations that still
           carry them are accepted and the values ignored)."
         upgradeDeadline: "2026-12-31"

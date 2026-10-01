@@ -97,7 +97,12 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
   the native driver `watch()` — **not Debezium**. Cold start captures a resume token before the
   snapshot; warm start drains available changes (insert/update/replace as upserts, delete with
   `_ab_cdc_deleted_at`) and checkpoints the new token in `MongoDbCdcState`. `update_capture_mode`
-  selects `UPDATE_LOOKUP` vs `REQUIRED` (post-image, MongoDB 6.0+). A saved token the server rejects
+  selects `UPDATE_LOOKUP` vs `REQUIRED` (post-image, MongoDB 6.0+). **Legacy v2 state is read
+  as-is:** `MongoDbCdcState.fromOpaqueStateValue` also understands v2's Debezium offset map
+  (`{"state": {<key>: "{\"sec\":..,\"ord\":..,\"resume_token\":\"<hex>\"}"}, "schema_enforced": ..}`)
+  and extracts `resume_token`, which is the server's own `_data` that Debezium stored verbatim — so
+  an upgraded connection resumes from where v2 left off with no reset or migration. v3 writes its
+  native shape going forward. A saved token the server rejects
   (oplog rolled past it — `ChangeStreamHistoryLost` — or unparseable) honours
   `invalid_cdc_cursor_position_behavior`: `Fail sync` raises the legacy "Saved offset is not valid…"
   config error; `Re-sync data` resets the CDC and snapshot state and re-snapshots. Note the server
@@ -146,11 +151,6 @@ a later optimization gated on a measured speed-up (SKILL.md Phase 1, "Concurrenc
 
 ### Remaining work
 
-- **Debezium-format CDC state:** the native `watch()` reader uses its own resume-token state, so
-  existing `source-mongodb-v2` CDC connections cannot resume from their persisted Debezium offset and
-  must be reset. This is captured as the `3.0.0` breaking change in `metadata.yaml`. Snapshot state
-  stays v2-compatible. Preserving CDC-offset parity would require the `extract-cdc` (Debezium) toolkit
-  instead of `watch()` — an owner decision.
 - **Wire-level socket test:** the protobuf encoding is unit-tested end to end via
   `NativeRecordPayload.toProtobuf`, and the STDIO path is exercised by every read test through
   `OutputMessageRouter`; a full Unix-socket sink test (bind sockets, decode `AirbyteMessageProtobuf`

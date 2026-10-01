@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mongodbv3
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoClients
 import com.mongodb.client.model.Filters
@@ -179,6 +180,84 @@ class MongoDbSourceReadTest {
             changes.first { it["_id"] == "660000000000000000000002" }["_ab_cdc_deleted_at"],
             "a delete must set _ab_cdc_deleted_at",
         )
+    }
+
+    @Test
+    fun testResumesFromLegacyV2DebeziumStateWithoutReset() {
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            val coll = client.getDatabase(TEST_DB).getCollection(LEGACY_CDC)
+            coll.drop()
+            coll.insertOne(Document("_id", ObjectId("670000000000000000000001")).append("v", 1))
+        }
+        // Sync 1 (cold start) captures a resume token in v3's native state shape.
+        val sync1: BufferingOutputConsumer = read(incrementalCatalog(setOf(LEGACY_CDC)))
+        Assertions.assertEquals(1, recordCountFor(sync1, LEGACY_CDC))
+        val nativeShared = sync1.states().mapNotNull { it.global?.sharedState }.last()
+        val tokenData: String = nativeShared["resumeToken"]["_data"].asText()
+
+        // Re-wrap that token exactly as source-mongodb-v2 persisted it (Debezium offset map), with
+        // v2's per-stream snapshot state, i.e. the state an upgraded connection would arrive with.
+        val legacyState: List<AirbyteStateMessage> =
+            listOf(
+                AirbyteStateMessage()
+                    .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                    .withGlobal(
+                        AirbyteGlobalState()
+                            .withSharedState(legacyV2SharedState(tokenData))
+                            .withStreamStates(
+                                listOf(
+                                    AirbyteStreamState()
+                                        .withStreamDescriptor(
+                                            StreamDescriptor()
+                                                .withName(LEGACY_CDC)
+                                                .withNamespace(TEST_DB),
+                                        )
+                                        .withStreamState(
+                                            MongoDbStreamStateValue.fromLastId(
+                                                    ObjectId("670000000000000000000001"),
+                                                    MongoDbSnapshotStatus.COMPLETE,
+                                                )
+                                                .toOpaqueStateValue(),
+                                        ),
+                                ),
+                            ),
+                    ),
+            )
+
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            client
+                .getDatabase(TEST_DB)
+                .getCollection(LEGACY_CDC)
+                .insertOne(Document("_id", ObjectId("670000000000000000000002")).append("v", 2))
+        }
+
+        // Sync 2 reads the legacy state: no re-snapshot, just the one change since the token.
+        val sync2: BufferingOutputConsumer =
+            read(incrementalCatalog(setOf(LEGACY_CDC)), legacyState)
+        val changes = recordDataFor(sync2, LEGACY_CDC)
+        Assertions.assertEquals(
+            1,
+            changes.size,
+            "expected only the post-token insert, got $changes"
+        )
+        Assertions.assertEquals("670000000000000000000002", changes.single()["_id"])
+        // ...and v3 writes its native shape going forward.
+        val shared2 = sync2.states().mapNotNull { it.global?.sharedState }.last()
+        Assertions.assertTrue(shared2.has("resumeToken"), "expected native state, got $shared2")
+        Assertions.assertFalse(shared2.has("state"))
+    }
+
+    /** v2's `shared_state`: `MongoDbDebeziumStateUtil.formatState` wrapped in `MongoDbCdcState`. */
+    private fun legacyV2SharedState(tokenData: String): JsonNode {
+        val key = """["source-mongodb-v2",{"server_id":"localhost"}]"""
+        val value = """{"sec":1727740800,"ord":1,"resume_token":"$tokenData"}"""
+        return Jsons.objectNode().apply {
+            set<JsonNode>(
+                "state",
+                Jsons.objectNode().put(key, value),
+            )
+            put("schema_enforced", true)
+        }
     }
 
     @Test
@@ -438,6 +517,7 @@ class MongoDbSourceReadTest {
         const val PEOPLE = "people"
         const val EMPTY = "empty_coll"
         const val CDC = "cdc_coll"
+        const val LEGACY_CDC = "legacy_cdc_coll"
         /**
          * A `_data` the server rejects (`FailedToParse`, not a hex string). Note that any
          * *well-formed* token is accepted and resumed from the oplog start, so a rejected token is
