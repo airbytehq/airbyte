@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["entry_key", "entry_type", "operation", "name"],
+  "properties": {
+    "entry_key": {"type": "string"},
+    "namespace_id": {"type": ["null", "string"]},
+    "namespace_name": {"type": ["null", "string"]},
+    "namespace_type": {"type": ["null", "string"]},
+    "entry_type": {"type": "string", "enum": ["file", "folder", "deleted"]},
+    "operation": {"type": "string", "enum": ["upsert", "delete"]},
+    "id": {"type": ["null", "string"]},
+    "name": {"type": "string"},
+    "path_lower": {"type": ["null", "string"]},
+    "path_display": {"type": ["null", "string"]},
+    "rev": {"type": ["null", "string"]},
+    "client_modified": {"type": ["null", "string"], "format": "date-time"},
+    "server_modified": {"type": ["null", "string"], "format": "date-time"},
+    "size": {"type": ["null", "integer"]},
+    "content_hash": {"type": ["null", "string"]},
+    "is_downloadable": {"type": ["null", "boolean"]},
+    "shared_folder_id": {"type": ["null", "string"]}
+  }
+}

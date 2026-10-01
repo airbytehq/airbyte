@@ -1,0 +1,292 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "files",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "namespace_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "namespace_name": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "namespace_type": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "name": {
+              "type": "string"
+            },
+            "path_lower": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "path_display": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "rev": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "client_modified": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "server_modified": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "size": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "content_hash": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "is_downloadable": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "has_explicit_shared_members": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "sharing_info": {
+              "type": [
+                "null",
+                "object"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "read_only": {
+                  "type": [
+                    "null",
+                    "boolean"
+                  ]
+                },
+                "parent_shared_folder_id": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "modified_by": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "file_lock_info": {
+              "type": [
+                "null",
+                "object"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "is_lockholder": {
+                  "type": [
+                    "null",
+                    "boolean"
+                  ]
+                },
+                "lockholder_name": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "lockholder_account_id": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "created": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "is_resumable": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": [],
+      "primary_key": [
+        [
+          "id"
+        ]
+      ]
+    },
+    {
+      "stream": {
+        "name": "folders",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "namespace_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "namespace_name": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "namespace_type": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "name": {
+              "type": "string"
+            },
+            "path_lower": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "path_display": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "shared_folder_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "sharing_info": {
+              "type": [
+                "null",
+                "object"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "read_only": {
+                  "type": [
+                    "null",
+                    "boolean"
+                  ]
+                },
+                "parent_shared_folder_id": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "shared_folder_id": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "traverse_only": {
+                  "type": [
+                    "null",
+                    "boolean"
+                  ]
+                },
+                "no_access": {
+                  "type": [
+                    "null",
+                    "boolean"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "is_resumable": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": [],
+      "primary_key": [
+        [
+          "id"
+        ]
+      ]
+    }
+  ]
+}

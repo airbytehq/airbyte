@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["link_key", "link_id", "url", "name", "target"],
+  "properties": {
+    "link_key": {"type": "string"},
+    "namespace_id": {"type": ["null", "string"]},
+    "namespace_name": {"type": ["null", "string"]},
+    "namespace_type": {"type": ["null", "string"]},
+    "link_id": {"type": "string"},
+    "url": {"type": "string"},
+    "target_id": {"type": ["null", "string"]},
+    "name": {"type": "string"},
+    "path_lower": {"type": ["null", "string"]},
+    "path_display": {"type": ["null", "string"]},
+    "link_type": {"type": "string", "enum": ["file", "folder", "other"]},
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "path_lower", "path_display"],
+      "properties": {
+        "id": {"type": ["null", "string"]},
+        "type": {"type": "string", "enum": ["file", "folder", "other"]},
+        "path_lower": {"type": ["null", "string"]},
+        "path_display": {"type": ["null", "string"]}
+      }
+    },
+    "visibility": {"type": ["null", "string"]},
+    "access_level": {"type": ["null", "string"]},
+    "expires": {"type": ["null", "string"], "format": "date-time"},
+    "settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requested_visibility",
+        "effective_visibility",
+        "link_access_level",
+        "allow_download"
+      ],
+      "properties": {
+        "requested_visibility": {"type": ["null", "string"]},
+        "effective_visibility": {"type": ["null", "string"]},
+        "link_access_level": {"type": ["null", "string"]},
+        "allow_download": {"type": ["null", "boolean"]}
+      }
+    },
+    "allow_download": {"type": ["null", "boolean"]},
+    "effective_audience": {"type": ["null", "string"]},
+    "requested_visibility": {"type": ["null", "string"]},
+    "client_modified": {"type": ["null", "string"], "format": "date-time"},
+    "server_modified": {"type": ["null", "string"], "format": "date-time"},
+    "rev": {"type": ["null", "string"]},
+    "size": {"type": ["null", "integer"]},
+    "team_member_info": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {"type": ["null", "string"]},
+        "member_id": {"type": ["null", "string"]},
+        "team_info": {
+          "type": ["null", "object"],
+          "additionalProperties": false,
+          "properties": {
+            "id": {"type": ["null", "string"]},
+            "name": {"type": ["null", "string"]}
+          }
+        }
+      }
+    },
+    "content_owner_team_info": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": ["null", "string"]},
+        "name": {"type": ["null", "string"]}
+      }
+    }
+  }
+}

@@ -1,0 +1,368 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/dropbox",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Dropbox Source Spec",
+    "type": "object",
+    "required": [
+      "credentials"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "credentials": {
+        "title": "Dropbox authentication",
+        "description": "Recommended: create refresh-token credentials with `python -m source_dropbox.oauth authorize --app-key <APP_KEY>`, then paste the generated JSON fields here.",
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "OAuth 2.0 refresh token (recommended)",
+            "required": [
+              "auth_type",
+              "app_key",
+              "refresh_token"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "oauth2_pkce",
+                "order": 0
+              },
+              "app_key": {
+                "title": "Dropbox App Key",
+                "description": "The App key shown in your Dropbox App Console. This identifies the app; it is not a client secret.",
+                "type": "string",
+                "examples": [
+                  "abc123def456"
+                ],
+                "order": 1
+              },
+              "refresh_token": {
+                "title": "Dropbox Refresh Token",
+                "description": "Long-lived token generated with the PKCE helper. It is used to obtain short-lived Dropbox access tokens automatically.",
+                "type": "string",
+                "airbyte_secret": true,
+                "examples": [
+                  "slr.example-refresh-token"
+                ],
+                "order": 2
+              }
+            }
+          },
+          {
+            "title": "Access token (development/manual testing only)",
+            "required": [
+              "auth_type",
+              "access_token"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "access_token",
+                "order": 0
+              },
+              "access_token": {
+                "title": "Dropbox Access Token",
+                "description": "A manually generated Dropbox access token. Use refresh-token authentication for production connections.",
+                "type": "string",
+                "airbyte_secret": true,
+                "examples": [
+                  "sl.example-access-token"
+                ],
+                "order": 1
+              }
+            }
+          }
+        ]
+      },
+      "path": {
+        "title": "Root Path",
+        "description": "Dropbox folder path to synchronize. Use an empty string to synchronize from the app root.",
+        "type": "string",
+        "default": "",
+        "examples": [
+          "",
+          "/Projects"
+        ]
+      },
+      "recursive": {
+        "title": "Include subfolders",
+        "description": "When enabled, synchronize the configured folder and all of its descendants.",
+        "type": "boolean",
+        "default": true
+      },
+      "include_deleted": {
+        "title": "Include Deleted Entries",
+        "description": "Include deletions in the incremental entries change stream. Snapshot streams always omit deleted Dropbox metadata.",
+        "type": "boolean",
+        "default": true
+      },
+      "team_context": {
+        "title": "Dropbox Business",
+        "description": "Optional Dropbox Business member/admin context. Leave as none for personal accounts and ordinary user-linked tokens.",
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Use current account",
+            "required": [
+              "mode"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "title": "Team context mode",
+                "type": "string",
+                "const": "none",
+                "default": "none"
+              },
+              "select_user": {
+                "title": "Legacy selected member",
+                "type": "null",
+                "airbyte_hidden": true,
+                "default": null
+              },
+              "select_admin": {
+                "title": "Legacy selected admin",
+                "type": "null",
+                "airbyte_hidden": true,
+                "default": null
+              }
+            }
+          },
+          {
+            "title": "Act as team member",
+            "required": [
+              "mode",
+              "select_user"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "title": "Team context mode",
+                "type": "string",
+                "const": "user"
+              },
+              "select_user": {
+                "title": "Select member",
+                "description": "Dropbox Business team member ID, for example dbmid:...",
+                "type": "string"
+              },
+              "select_admin": {
+                "title": "Legacy selected admin",
+                "type": "null",
+                "airbyte_hidden": true,
+                "default": null
+              }
+            }
+          },
+          {
+            "title": "Act as team admin",
+            "required": [
+              "mode",
+              "select_admin"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "title": "Team context mode",
+                "type": "string",
+                "const": "admin"
+              },
+              "select_admin": {
+                "title": "Select admin",
+                "description": "Dropbox Business admin member ID, for example dbmid:...",
+                "type": "string"
+              },
+              "select_user": {
+                "title": "Legacy selected member",
+                "type": "null",
+                "airbyte_hidden": true,
+                "default": null
+              }
+            }
+          }
+        ],
+        "default": {
+          "mode": "none"
+        }
+      },
+      "path_root": {
+        "title": "Dropbox Root",
+        "description": "Optional Dropbox Path Root. Use default behavior, member home, account/team root, or an explicit namespace ID.",
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Default Dropbox root",
+            "required": [
+              "mode"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "title": "Root mode",
+                "type": "string",
+                "const": "default",
+                "default": "default"
+              },
+              "namespace_id": {
+                "title": "Legacy namespace ID",
+                "type": "null",
+                "airbyte_hidden": true,
+                "default": null
+              }
+            }
+          },
+          {
+            "title": "Member home",
+            "required": [
+              "mode"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "title": "Root mode",
+                "type": "string",
+                "const": "home"
+              },
+              "namespace_id": {
+                "title": "Legacy namespace ID",
+                "type": "null",
+                "airbyte_hidden": true,
+                "default": null
+              }
+            }
+          },
+          {
+            "title": "Team/account root",
+            "required": [
+              "mode"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "title": "Root mode",
+                "type": "string",
+                "const": "root"
+              },
+              "namespace_id": {
+                "title": "Legacy namespace ID",
+                "type": "null",
+                "airbyte_hidden": true,
+                "default": null
+              }
+            }
+          },
+          {
+            "title": "Explicit namespace ID",
+            "required": [
+              "mode",
+              "namespace_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "title": "Root mode",
+                "type": "string",
+                "const": "namespace_id"
+              },
+              "namespace_id": {
+                "title": "Namespace ID",
+                "description": "Explicit Dropbox namespace/root ID.",
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "default": {
+          "mode": "default"
+        }
+      },
+      "namespace_selection": {
+        "title": "Namespace Selection",
+        "description": "Dropbox Business namespace traversal. Use current root for personal accounts and existing single-root behavior.",
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Use current namespace/root",
+            "required": [
+              "mode"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "title": "Namespace mode",
+                "type": "string",
+                "const": "current",
+                "default": "current"
+              },
+              "namespace_ids": {
+                "title": "Legacy namespace IDs",
+                "type": "array",
+                "maxItems": 0,
+                "airbyte_hidden": true,
+                "default": [],
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "title": "Selected namespaces",
+            "required": [
+              "mode",
+              "namespace_ids"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "title": "Namespace mode",
+                "type": "string",
+                "const": "selected"
+              },
+              "namespace_ids": {
+                "title": "Namespace IDs",
+                "description": "Dropbox namespace IDs to traverse.",
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "title": "All accessible namespaces",
+            "required": [
+              "mode"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "title": "Namespace mode",
+                "description": "Traverse all Dropbox Business namespaces accessible to the authenticated team context.",
+                "type": "string",
+                "const": "all_accessible"
+              },
+              "namespace_ids": {
+                "title": "Legacy namespace IDs",
+                "type": "array",
+                "maxItems": 0,
+                "airbyte_hidden": true,
+                "default": [],
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "default": {
+          "mode": "current"
+        }
+      }
+    }
+  }
+}
