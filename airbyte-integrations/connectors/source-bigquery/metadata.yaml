@@ -51,7 +51,8 @@ data:
           `BYTES`, `JSON`, `STRUCT` or `ARRAY` column must choose a new cursor. See the
           [migration guide](https://docs.airbyte.com/integrations/sources/bigquery-migrations).
           "
-        upgradeDeadline: "2026-12-31"
+        upgradeDeadline: "2026-12-01"
+        deadlineAction: "auto_upgrade"
   tags:
     - language:java
   externalDocumentationUrls:

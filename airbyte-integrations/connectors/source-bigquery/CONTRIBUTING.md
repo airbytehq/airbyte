@@ -288,7 +288,8 @@ docker network create bq-net
 docker run -d --name bq-emulator --network bq-net -p 9050:9050 -p 9060:9060 \
   ghcr.io/goccy/bigquery-emulator:0.8.1 --project=test-project
 # seed it (see the skill's parity/seed.sh), then:
-docker run --rm --network bq-net -e BIGQUERY_EMULATOR_HOST=http://bq-emulator:9050 \
+export BIGQUERY_EMULATOR_HOST=http://bq-emulator:9050 # ignore-https-check
+docker run --rm --network bq-net -e BIGQUERY_EMULATOR_HOST \
   -v $PWD/secrets:/secrets airbyte/source-bigquery:dev discover --config /secrets/config.json
 ```
 
