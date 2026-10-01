@@ -99,6 +99,7 @@ class BigQueryDatabaseHandler(
                     JobId.newBuilder()
                         .setProject(jobProjectId)
                         .setLocation(datasetLocation)
+                        .setJob(queryId.toString())
                         .build(),
                     QueryJobConfiguration.of(statement)
                 )
