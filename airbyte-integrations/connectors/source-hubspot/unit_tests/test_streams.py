@@ -1120,3 +1120,97 @@ def test_property_history_streams_lookback_window(
     assert (
         cursor._lookback_window == expected_timedelta
     ), f"{stream_name} with {lookback_minutes}min config: expected {expected_timedelta}, got {cursor._lookback_window}"
+
+
+PROPERTY_HISTORY_STREAMS = [
+    pytest.param("deals_property_history", "deals", "deals_property_history_properties", id="deals"),
+    pytest.param("contacts_property_history", "contacts", "contacts_property_history_properties", id="contacts"),
+    pytest.param("companies_property_history", "companies", "companies_property_history_properties", id="companies"),
+]
+
+
+def _mock_property_history_stream(requests_mock, entity, properties):
+    """Mock the properties endpoint and the CRM objects endpoint for a property history stream."""
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    requests_mock.get(
+        f"https://api.hubapi.com/properties/v2/{entity}/properties",
+        json=[{"name": name, "type": "string"} for name in properties],
+        status_code=200,
+    )
+    objects_mock = requests_mock.get(
+        f"https://api.hubapi.com/crm/v3/objects/{entity}",
+        json={
+            "results": [
+                {
+                    "id": "123",
+                    "propertiesWithHistory": {
+                        name: [{"value": "value", "timestamp": "2021-01-10T00:00:00.000Z", "sourceType": "CRM"}] for name in properties
+                    },
+                }
+            ]
+        },
+        status_code=200,
+    )
+    return objects_mock
+
+
+def _requested_properties_with_history(objects_mock):
+    """Return the flattened list of `propertiesWithHistory` values sent on requests to the objects endpoint."""
+    requested = []
+    for request in objects_mock.request_history:
+        for value in request.qs.get("propertieswithhistory", []):
+            requested.extend(value.split(","))
+    return requested
+
+
+@pytest.mark.parametrize("stream_name,entity,config_key", PROPERTY_HISTORY_STREAMS)
+def test_property_history_streams_filter_properties(requests_mock, config, stream_name, entity, config_key):
+    """When `<entity>_property_history_properties` is set, only the configured
+    properties are requested in `propertiesWithHistory`."""
+    config[config_key] = ["dealstage"]
+    objects_mock = _mock_property_history_stream(requests_mock, entity, ["dealstage", "amount", "hs_analytics_source"])
+
+    output = read_from_stream(config, stream_name, SyncMode.full_refresh)
+
+    assert objects_mock.call_count >= 1
+    assert _requested_properties_with_history(objects_mock) == ["dealstage"]
+    assert output.records
+
+
+@pytest.mark.parametrize("stream_name,entity,config_key", PROPERTY_HISTORY_STREAMS)
+def test_property_history_streams_all_properties_by_default(requests_mock, config, stream_name, entity, config_key):
+    """Without the config option, history is requested for every property."""
+    all_properties = ["dealstage", "amount", "hs_analytics_source"]
+    objects_mock = _mock_property_history_stream(requests_mock, entity, all_properties)
+
+    output = read_from_stream(config, stream_name, SyncMode.full_refresh)
+
+    assert objects_mock.call_count >= 1
+    assert sorted(_requested_properties_with_history(objects_mock)) == sorted(all_properties)
+    assert output.records
+
+
+@pytest.mark.parametrize("stream_name,entity,config_key", PROPERTY_HISTORY_STREAMS)
+def test_property_history_streams_empty_list_config(requests_mock, config, stream_name, entity, config_key):
+    """An empty list behaves like an unset config: all properties are requested."""
+    config[config_key] = []
+    all_properties = ["dealstage", "amount"]
+    objects_mock = _mock_property_history_stream(requests_mock, entity, all_properties)
+
+    read_from_stream(config, stream_name, SyncMode.full_refresh)
+
+    assert sorted(_requested_properties_with_history(objects_mock)) == sorted(all_properties)
+
+
+@pytest.mark.parametrize("stream_name,entity,config_key", PROPERTY_HISTORY_STREAMS)
+def test_property_history_streams_nonexistent_property(requests_mock, config, stream_name, entity, config_key):
+    """A configured property absent from the properties endpoint filters out
+    everything; the sync must not crash. The objects request is still sent,
+    with an empty `propertiesWithHistory` parameter."""
+    config[config_key] = ["nonexistent_property"]
+    objects_mock = _mock_property_history_stream(requests_mock, entity, ["dealstage", "amount"])
+
+    read_from_stream(config, stream_name, SyncMode.full_refresh)
+
+    assert objects_mock.call_count >= 1
+    assert _requested_properties_with_history(objects_mock) == [""]
