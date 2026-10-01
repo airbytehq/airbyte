@@ -203,7 +203,7 @@ The connector converts Airbyte data types to ClickHouse types as follows:
 The connector converts arrays, unions, and times to strings for compatibility. If you need to query arrays or unions as structured data, use ClickHouse's JSON functions to parse the string values.
 :::
 
-The table engine depends on the sync mode. Deduplicating streams use `ReplacingMergeTree`, sorted by the stream's primary key. All other streams use `MergeTree`, sorted by `_airbyte_raw_id`.
+The table engine depends on the sync mode. Deduplicating streams use `ReplacingMergeTree`, sorted by the stream's primary key. All other streams use `MergeTree`, sorted by `_airbyte_raw_id`. If you turn on **Enable Replication**, the connector uses the replicated variants of these engines, `ReplicatedReplacingMergeTree` and `ReplicatedMergeTree`.
 
 ## Schema evolution
 
