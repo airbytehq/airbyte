@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 

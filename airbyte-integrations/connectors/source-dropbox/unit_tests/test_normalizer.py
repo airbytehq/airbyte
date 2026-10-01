@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 from datetime import UTC, datetime
 
 from dropbox.files import DeletedMetadata, FileMetadata, FolderMetadata

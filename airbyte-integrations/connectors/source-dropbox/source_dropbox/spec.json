@@ -4,9 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Dropbox Source Spec",
     "type": "object",
-    "required": [
-      "credentials"
-    ],
+    "required": ["credentials"],
     "additionalProperties": false,
     "properties": {
       "credentials": {
@@ -16,11 +14,7 @@
         "oneOf": [
           {
             "title": "OAuth 2.0 refresh token (recommended)",
-            "required": [
-              "auth_type",
-              "app_key",
-              "refresh_token"
-            ],
+            "required": ["auth_type", "app_key", "refresh_token"],
             "additionalProperties": false,
             "properties": {
               "auth_type": {
@@ -32,9 +26,7 @@
                 "title": "Dropbox App Key",
                 "description": "The App key shown in your Dropbox App Console. This identifies the app; it is not a client secret.",
                 "type": "string",
-                "examples": [
-                  "abc123def456"
-                ],
+                "examples": ["abc123def456"],
                 "order": 1
               },
               "refresh_token": {
@@ -42,19 +34,14 @@
                 "description": "Long-lived token generated with the PKCE helper. It is used to obtain short-lived Dropbox access tokens automatically.",
                 "type": "string",
                 "airbyte_secret": true,
-                "examples": [
-                  "slr.example-refresh-token"
-                ],
+                "examples": ["slr.example-refresh-token"],
                 "order": 2
               }
             }
           },
           {
             "title": "Access token (development/manual testing only)",
-            "required": [
-              "auth_type",
-              "access_token"
-            ],
+            "required": ["auth_type", "access_token"],
             "additionalProperties": false,
             "properties": {
               "auth_type": {
@@ -67,9 +54,7 @@
                 "description": "A manually generated Dropbox access token. Use refresh-token authentication for production connections.",
                 "type": "string",
                 "airbyte_secret": true,
-                "examples": [
-                  "sl.example-access-token"
-                ],
+                "examples": ["sl.example-access-token"],
                 "order": 1
               }
             }
@@ -81,10 +66,7 @@
         "description": "Dropbox folder path to synchronize. Use an empty string to synchronize from the app root.",
         "type": "string",
         "default": "",
-        "examples": [
-          "",
-          "/Projects"
-        ]
+        "examples": ["", "/Projects"]
       },
       "recursive": {
         "title": "Include subfolders",
@@ -105,9 +87,7 @@
         "oneOf": [
           {
             "title": "Use current account",
-            "required": [
-              "mode"
-            ],
+            "required": ["mode"],
             "additionalProperties": false,
             "properties": {
               "mode": {
@@ -132,10 +112,7 @@
           },
           {
             "title": "Act as team member",
-            "required": [
-              "mode",
-              "select_user"
-            ],
+            "required": ["mode", "select_user"],
             "additionalProperties": false,
             "properties": {
               "mode": {
@@ -158,10 +135,7 @@
           },
           {
             "title": "Act as team admin",
-            "required": [
-              "mode",
-              "select_admin"
-            ],
+            "required": ["mode", "select_admin"],
             "additionalProperties": false,
             "properties": {
               "mode": {
@@ -194,9 +168,7 @@
         "oneOf": [
           {
             "title": "Default Dropbox root",
-            "required": [
-              "mode"
-            ],
+            "required": ["mode"],
             "additionalProperties": false,
             "properties": {
               "mode": {
@@ -215,9 +187,7 @@
           },
           {
             "title": "Member home",
-            "required": [
-              "mode"
-            ],
+            "required": ["mode"],
             "additionalProperties": false,
             "properties": {
               "mode": {
@@ -235,9 +205,7 @@
           },
           {
             "title": "Team/account root",
-            "required": [
-              "mode"
-            ],
+            "required": ["mode"],
             "additionalProperties": false,
             "properties": {
               "mode": {
@@ -255,10 +223,7 @@
           },
           {
             "title": "Explicit namespace ID",
-            "required": [
-              "mode",
-              "namespace_id"
-            ],
+            "required": ["mode", "namespace_id"],
             "additionalProperties": false,
             "properties": {
               "mode": {
@@ -285,9 +250,7 @@
         "oneOf": [
           {
             "title": "Use current namespace/root",
-            "required": [
-              "mode"
-            ],
+            "required": ["mode"],
             "additionalProperties": false,
             "properties": {
               "mode": {
@@ -310,10 +273,7 @@
           },
           {
             "title": "Selected namespaces",
-            "required": [
-              "mode",
-              "namespace_ids"
-            ],
+            "required": ["mode", "namespace_ids"],
             "additionalProperties": false,
             "properties": {
               "mode": {
@@ -335,9 +295,7 @@
           },
           {
             "title": "All accessible namespaces",
-            "required": [
-              "mode"
-            ],
+            "required": ["mode"],
             "additionalProperties": false,
             "properties": {
               "mode": {

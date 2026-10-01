@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Small, headless PKCE setup helper for the Dropbox source."""
 
 from __future__ import annotations

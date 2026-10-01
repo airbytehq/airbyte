@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 from __future__ import annotations
 
 from dropbox.exceptions import AuthError, BadInputError

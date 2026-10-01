@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 import json
 from datetime import UTC, datetime
 from pathlib import Path

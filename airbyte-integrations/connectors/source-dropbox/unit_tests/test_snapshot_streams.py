@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 import json
 from datetime import UTC, datetime
 from pathlib import Path
@@ -146,9 +148,9 @@ def test_discovered_cursor_fields_exist_in_stream_schemas() -> None:
     for stream in catalog.streams:
         field_path = stream.default_cursor_field
         if field_path:
-            assert _schema_has_field_path(stream.json_schema, field_path), (
-                f"{stream.name} advertises missing cursor field path {field_path}"
-            )
+            assert _schema_has_field_path(
+                stream.json_schema, field_path
+            ), f"{stream.name} advertises missing cursor field path {field_path}"
 
 
 def test_files_filters_metadata_pages_and_preserves_optional_metadata() -> None:

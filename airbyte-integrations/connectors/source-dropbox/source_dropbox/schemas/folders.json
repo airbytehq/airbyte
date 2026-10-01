@@ -4,23 +4,23 @@
   "additionalProperties": false,
   "required": ["id", "name"],
   "properties": {
-    "id": {"type": "string"},
-    "namespace_id": {"type": ["null", "string"]},
-    "namespace_name": {"type": ["null", "string"]},
-    "namespace_type": {"type": ["null", "string"]},
-    "name": {"type": "string"},
-    "path_lower": {"type": ["null", "string"]},
-    "path_display": {"type": ["null", "string"]},
-    "shared_folder_id": {"type": ["null", "string"]},
+    "id": { "type": "string" },
+    "namespace_id": { "type": ["null", "string"] },
+    "namespace_name": { "type": ["null", "string"] },
+    "namespace_type": { "type": ["null", "string"] },
+    "name": { "type": "string" },
+    "path_lower": { "type": ["null", "string"] },
+    "path_display": { "type": ["null", "string"] },
+    "shared_folder_id": { "type": ["null", "string"] },
     "sharing_info": {
       "type": ["null", "object"],
       "additionalProperties": false,
       "properties": {
-        "read_only": {"type": ["null", "boolean"]},
-        "parent_shared_folder_id": {"type": ["null", "string"]},
-        "shared_folder_id": {"type": ["null", "string"]},
-        "traverse_only": {"type": ["null", "boolean"]},
-        "no_access": {"type": ["null", "boolean"]}
+        "read_only": { "type": ["null", "boolean"] },
+        "parent_shared_folder_id": { "type": ["null", "string"] },
+        "shared_folder_id": { "type": ["null", "string"] },
+        "traverse_only": { "type": ["null", "boolean"] },
+        "no_access": { "type": ["null", "boolean"] }
       }
     }
   }
