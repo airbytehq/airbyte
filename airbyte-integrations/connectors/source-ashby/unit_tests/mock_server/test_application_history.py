@@ -6,7 +6,7 @@ Mock server tests for the `application_history` stream on `source-ashby`.
 `POST /application.listHistory` is called once per application from an
 `application.list` parent. In incremental mode the parent is read with its
 `updatedAt` state, so a later sync only requests history for applications
-whose `updatedAt` moved past the saved cursor.
+updated at most 1 day before the saved cursor.
 """
 
 import json
@@ -80,6 +80,21 @@ def _read(sync_mode: SyncMode, state: List[AirbyteStateMessage] = None) -> Entry
     return read(get_source(config=config, state=state), config=config, catalog=catalog, state=state or [])
 
 
+def _history_state(output: EntrypointOutput) -> Dict[str, Any]:
+    """The last emitted state without `lookback_window`, which is the sync's duration in seconds."""
+    state = dict(output.most_recent_state.stream_state.__dict__)
+    state.pop("lookback_window")
+    return state
+
+
+def _expected_history_state(updated_at: str) -> Dict[str, Any]:
+    return {
+        "use_global_cursor": True,
+        "state": {"application_updated_at": updated_at},
+        "parent_state": {"applications_for_history": {"updatedAt": updated_at}},
+    }
+
+
 class TestApplicationHistory(TestCase):
     def test_full_refresh_reads_history_for_every_application(self):
         with HttpMocker() as http_mocker:
@@ -121,6 +136,7 @@ class TestApplicationHistory(TestCase):
 
         assert first_sync.errors == []
         assert {r.record.data["id"] for r in first_sync.records} == {"h-1", "h-2"}
+        assert _history_state(first_sync) == _expected_history_state("2024-04-01T00:00:00.000000Z")
         saved_state = first_sync.state_messages[-1].state
 
         # app-1 is unchanged, app-2 moved to a new stage, app-3 is new. Any
@@ -156,3 +172,59 @@ class TestApplicationHistory(TestCase):
 
         assert second_sync.errors == []
         assert {r.record.data["id"] for r in second_sync.records} == {"h-2", "h-3", "h-4"}
+        assert _history_state(second_sync) == _expected_history_state("2024-05-02T00:00:00.000000Z")
+
+    def test_incremental_sync_requests_history_for_application_updated_during_previous_sync(self):
+        with HttpMocker() as http_mocker:
+            http_mocker.post(
+                _applications_request(),
+                _page(
+                    [
+                        _application_record("app-0", "2024-05-01T00:00:00.000Z"),
+                        _application_record("app-1", "2024-03-01T00:00:00.000Z"),
+                        _application_record("app-2", "2024-06-01T00:10:00.000Z"),
+                    ]
+                ),
+            )
+            http_mocker.post(_history_request("app-0"), _page([_history_record("h-0", "2024-05-01T00:00:00.000Z")]))
+            http_mocker.post(_history_request("app-1"), _page([_history_record("h-1", "2024-03-01T00:00:00.000Z")]))
+            http_mocker.post(_history_request("app-2"), _page([_history_record("h-2", "2024-06-01T00:10:00.000Z")]))
+
+            first_sync = _read(SyncMode.incremental)
+
+        assert first_sync.errors == []
+        saved_state = first_sync.state_messages[-1].state
+
+        # app-1 was hired at 00:05, after its page was read but before the sync saw
+        # app-2's 00:10, so its updatedAt is below the saved cursor. app-0 is more
+        # than 1 day older than the cursor, and any request for its history raises
+        # NoMockAddress.
+        with HttpMocker() as http_mocker:
+            http_mocker.post(
+                _applications_request(),
+                _page(
+                    [
+                        _application_record("app-0", "2024-05-01T00:00:00.000Z"),
+                        _application_record("app-1", "2024-06-01T00:05:00.000Z"),
+                        _application_record("app-2", "2024-06-01T00:10:00.000Z"),
+                    ]
+                ),
+            )
+            app1_history = _history_request("app-1")
+            http_mocker.post(
+                app1_history,
+                _page(
+                    [
+                        _history_record("h-1", "2024-03-01T00:00:00.000Z"),
+                        _history_record("h-1-hired", "2024-06-01T00:05:00.000Z"),
+                    ]
+                ),
+            )
+            http_mocker.post(_history_request("app-2"), _page([_history_record("h-2", "2024-06-01T00:10:00.000Z")]))
+
+            second_sync = _read(SyncMode.incremental, state=[saved_state])
+
+            http_mocker.assert_number_of_calls(app1_history, 1)
+
+        assert second_sync.errors == []
+        assert "h-1-hired" in {r.record.data["id"] for r in second_sync.records}

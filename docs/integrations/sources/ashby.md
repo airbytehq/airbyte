@@ -43,7 +43,7 @@ The `application_criteria_evaluations` stream requires the AI Application Review
 
 Starting in version 1.5.0, the `applications` and `application_history` streams support incremental sync on the application's `updatedAt` timestamp. Every other stream re-reads in full on each sync, subject to the start date where it applies. Many Ashby `.list` endpoints support incremental sync through a `syncToken`, but this connector doesn't use it.
 
-Ashby's `application.list` doesn't filter on `updatedAt`, so an incremental sync of `applications` still reads every application from Ashby and emits only those updated since the previous sync. The saving is in `application_history`, described below.
+Ashby's `application.list` doesn't filter on `updatedAt`, so an incremental sync of `applications` still reads every application from Ashby and emits only those updated since the previous sync. Each incremental sync also re-reads applications updated within 1 day before the latest `updatedAt` from the previous sync, because Ashby returns applications in creation order and an application updated during a sync could otherwise be missed. The saving is in `application_history`, described below. On existing connections, refresh the source schema to see the Incremental mode and the `application_updated_at` column on `application_history`.
 
 ## Supported streams
 
@@ -77,7 +77,7 @@ The parent application list uses the same `createdAfter` filter as the `applicat
 
 The connector requests history one application at a time, and `application.listHistory` accepts neither a date filter nor a `syncToken`. The connector caps this endpoint at 100 requests per minute, which puts a floor on how long a full sync can take: 10,000 applications need at least 100 minutes, and applications with more than 100 history records need additional requests to paginate.
 
-In incremental mode, the first sync requests history for every application. Later syncs request history only for applications whose `updatedAt` is at or after the latest `updatedAt` from the previous sync. Ashby updates `updatedAt` when an application moves to a new stage, so new stage entries are picked up. Each incremental sync still reads the full application list to find the changed applications. In full refresh mode, every sync re-reads the history of every selected application, so sync it on its own connection with an infrequent schedule.
+In incremental mode, the first sync requests history for every application. Later syncs request history only for applications updated no earlier than 1 day before the latest `updatedAt` from the previous sync, so applications updated during the previous sync aren't missed. In testing, Ashby updated `updatedAt` when an application moved to a new stage, so new stage entries are picked up. Ashby doesn't update `updatedAt` for every change, for example edits or deletions of history entries made through `application.updateHistory` and some application changes, so run a periodic Refresh if those matter. Each changed application re-emits its full history, so use Incremental | Append + Deduped, keyed on `id`, to keep one row per history event. Incremental | Append adds a copy of the history each time. Each incremental sync still reads the full application list to find the changed applications. In full refresh mode, every sync re-reads the history of every selected application, so sync it on its own connection with an infrequent schedule.
 
 If Ashby returns an `application_not_found` error for an application, which happens when the application is deleted or your API key can't access it, the connector skips that application's history, logs the Ashby request ID, and continues. It retries HTTP 429 and 5xx responses. Any other error fails the sync.
 
@@ -124,7 +124,7 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
-| 1.5.0 | 2026-09-30 | [87597](https://github.com/airbytehq/airbyte/pull/87597) | Add incremental sync to `applications` and `application_history`, so incremental syncs request history only for applications updated since the previous sync |
+| 1.5.0 | 2026-10-01 | [87597](https://github.com/airbytehq/airbyte/pull/87597) | Add incremental sync to `applications` and `application_history`, so incremental syncs request history only for applications updated since the previous sync, with a 1-day lookback |
 | 1.4.0 | 2026-09-30 | [87051](https://github.com/airbytehq/airbyte/pull/87051) | Fail syncs on Ashby `success: false` errors, sync `interview_stages` per interview plan, paginate `application_criteria_evaluations`, and include archived and deactivated records in lookup streams |
 | 1.3.4 | 2026-09-29 | [87080](https://github.com/airbytehq/airbyte/pull/87080) | Update dependencies |
 | 1.3.3 | 2026-09-22 | [86515](https://github.com/airbytehq/airbyte/pull/86515) | Update dependencies |

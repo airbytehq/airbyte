@@ -50,9 +50,12 @@ definitions:
         {{ info.get('message') or (first.get('message') if first is mapping else first) or 'no message provided' }}
         (request ID: {{ info.get('requestId') or 'unavailable' }}).
   application_updated_at_cursor:
-    # application.list ignores updatedAfter, so the cursor filters client-side.
-    # Ashby bumps application.updatedAt on every stage change, which is what
-    # lets application_history skip applications that have not changed.
+    # application.list has no updatedAt filter (updatedAfter is ignored) and is ordered by
+    # createdAt, so the record_filter on each application.list selector filters on updatedAt
+    # from the slice start. State is the latest updatedAt seen in a scan that can run for
+    # hours; the 1-day lookback re-reads applications updated mid-scan, for scans up to ~24
+    # hours (about 140,000 applications at 100 history requests per minute).
+    # is_client_side_incremental would ignore lookback_window on CDK 7.32.0.
     type: DatetimeBasedCursor
     cursor_field: updatedAt
     cursor_datetime_formats:
@@ -63,7 +66,7 @@ definitions:
       type: MinMaxDatetime
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    is_client_side_incremental: true
+    lookback_window: P1D
   error_handler:
     type: DefaultErrorHandler
     max_retries: 6
@@ -129,6 +132,9 @@ streams:
           type: DpathExtractor
           field_path:
             - results
+        record_filter:
+          type: RecordFilter
+          condition: "{{ not record.get('updatedAt') or str_to_datetime(record['updatedAt']) >= str_to_datetime(stream_interval['start_time']) }}"
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -2718,6 +2724,9 @@ streams:
                     type: DpathExtractor
                     field_path:
                       - results
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ not record.get('updatedAt') or str_to_datetime(record['updatedAt']) >= str_to_datetime(stream_interval['start_time']) }}"
                 paginator:
                   type: DefaultPaginator
                   page_token_option:
