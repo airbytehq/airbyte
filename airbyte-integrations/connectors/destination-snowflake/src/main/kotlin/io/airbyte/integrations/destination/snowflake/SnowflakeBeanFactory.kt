@@ -31,7 +31,6 @@ import java.sql.Connection
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.sql.DataSource
-import kotlin.Int
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 import net.snowflake.client.jdbc.SnowflakeDriver
@@ -203,16 +202,15 @@ class SnowflakeBeanFactory {
         // NOT speed mode
         return if (dataChannelMedium == DataChannelMedium.STDIO) {
             AggregatePublishingConfig(
-                maxRecordsPerAgg = 10_000_000_000_000L,
-                maxEstBytesPerAgg = 100_000_000L,
-                maxEstBytesAllAggregates = 100_000_000L,
+                maxRecordsPerAgg = 1_000_000L,
+                maxEstBytesPerAgg = 50_000_000L,
+                maxEstBytesAllAggregates = 50_000_000L,
             )
         } else {
             AggregatePublishingConfig(
-                maxRecordsPerAgg = 10_000_000_000_000L,
-                maxEstBytesPerAgg = 350_000_000L,
-                maxEstBytesAllAggregates = 350_000_000L * 5,
-                maxBufferedAggregates = 6,
+                maxRecordsPerAgg = 1_000_000L,
+                maxEstBytesPerAgg = 50_000_000L,
+                maxEstBytesAllAggregates = 50_000_000L,
             )
         }
     }
