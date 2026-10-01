@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-printify
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.30.0@sha256:a249dd191ff2b4e5a7c6fd3749395d4a2f5beee988165ebabfacb17199e5b378
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.32.0@sha256:0fd296fcebe643f973e64cb55dab3c7443d00496897ebd2b682b29332a660780
   connectorSubtype: api
   connectorType: source
   definitionId: 55c7d816-ff5e-48a1-9928-acaba4243aa9
-  dockerImageTag: 0.0.50
+  dockerImageTag: 0.0.51
   dockerRepository: airbyte/source-printify
   githubIssueLabel: source-printify
   icon: icon.svg
