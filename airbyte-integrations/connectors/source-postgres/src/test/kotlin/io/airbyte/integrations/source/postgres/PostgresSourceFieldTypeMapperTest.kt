@@ -381,12 +381,16 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
 
         // User-defined non-array type whose name starts with an underscore must not be
         // mistaken for an array type. The type lives in the public schema (on the search_path)
-        // so the driver reports its bare, unqualified name, e.g. "_load_type".
+        // so the driver reports its bare, unqualified name, e.g. "_status".
         add(
             testCase(
                 "public.\"$UNDERSCORE_ENUM\"",
                 LeafAirbyteSchemaType.STRING,
-                mapOf("null" to "null", "'FCL'" to "\"FCL\"", "'LCL'" to "\"LCL\""),
+                mapOf(
+                    "null" to "null",
+                    "'active'" to "\"active\"",
+                    "'inactive'" to "\"inactive\"",
+                ),
                 "UNDERSCORE PREFIXED ENUM"
             )
         )
@@ -394,7 +398,10 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             testCase(
                 "public.\"$UNDERSCORE_ENUM\"[]",
                 ArrayAirbyteSchemaType(LeafAirbyteSchemaType.STRING),
-                mapOf("array['FCL', 'LCL']::public.\"$UNDERSCORE_ENUM\"[]" to "[\"FCL\",\"LCL\"]"),
+                mapOf(
+                    "array['active', 'inactive']::public.\"$UNDERSCORE_ENUM\"[]" to
+                        "[\"active\",\"inactive\"]"
+                ),
                 "UNDERSCORE PREFIXED ENUM ARRAY"
             )
         )
@@ -443,13 +450,13 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 "'-Infinity'" to "null",
             )
         private val nulledNaN = mapOf("'NaN'" to "null")
-        private const val UNDERSCORE_ENUM = "_load_type"
+        private const val UNDERSCORE_ENUM = "_status"
     }
 
     override val setupDdl: List<String> =
         listOf(
                 "CREATE SCHEMA \"$schema\"",
-                "CREATE TYPE public.\"$UNDERSCORE_ENUM\" AS ENUM ('FCL', 'LCL')",
+                "CREATE TYPE public.\"$UNDERSCORE_ENUM\" AS ENUM ('active', 'inactive')",
             )
             .plus(
                 testCases.map {
