@@ -39,9 +39,14 @@ val hikariCpVersion = "7.0.2"
 val junitVersion = "5.13.4"
 val junitPlatformVersion = "1.13.4"
 val snowflakeJdbcThinVersion = "3.26.1"
+// Match the AWS SDK generation/version used by the pinned Snowflake JDBC thin driver.
+val snowflakeAwsSdkVersion = "1.12.655"
 
 dependencies {
     implementation("net.snowflake:snowflake-jdbc-thin:$snowflakeJdbcThinVersion")
+    // Include the default credential chain's reflective STS dependency.
+    // This version is below the documented IRSA minimum; IRSA is not supported (see WIF guide).
+    runtimeOnly("com.amazonaws:aws-java-sdk-sts:$snowflakeAwsSdkVersion")
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")
     implementation("com.google.guava:guava:32.1.1-jre")
     implementation("de.siegmar:fastcsv:4.0.0")
