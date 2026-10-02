@@ -40,6 +40,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.69 | 2026-10-02 | [87649](https://github.com/airbytehq/airbyte/pull/87649) | Document that the API key is a Miro OAuth access token |
 | 0.0.68 | 2026-09-29 | [87236](https://github.com/airbytehq/airbyte/pull/87236) | Update dependencies |
 | 0.0.67 | 2026-09-22 | [86693](https://github.com/airbytehq/airbyte/pull/86693) | Update dependencies |
 | 0.0.66 | 2026-09-15 | [86144](https://github.com/airbytehq/airbyte/pull/86144) | Update dependencies |
