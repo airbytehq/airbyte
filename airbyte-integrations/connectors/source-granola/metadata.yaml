@@ -53,9 +53,12 @@ data:
       1.0.0:
         message: >-
           The `notes` stream now syncs incrementally on `updated_at` instead of `created_at` so edited notes are replicated.
-          Existing connections must reset the `notes` stream after upgrading.
-          See the migration guide for details.
+          If you sync `notes` in Incremental Append mode, the first sync after upgrading appends a second copy of each note;
+          see the migration guide before clearing the stream, as clearing can permanently remove deleted notes.
+          Deduped and overwrite connections need no action.
+          Migration guide: https://docs.airbyte.com/integrations/sources/granola-migrations#upgrading-to-100
         upgradeDeadline: "2026-11-02"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["notes"]
