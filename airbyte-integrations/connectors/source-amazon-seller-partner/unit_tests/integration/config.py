@@ -44,6 +44,11 @@ class ConfigBuilder:
         self._config["replication_end_date"] = end_date.strftime(TIME_FORMAT)
         return self
 
+    def without_end_date(self) -> ConfigBuilder:
+        """Drop the default end date so the stream's own end_datetime expression decides the bound."""
+        self._config.pop("replication_end_date", None)
+        return self
+
     def with_asin_granularity(self, granularity: str) -> ConfigBuilder:
         self._config["sales_and_traffic_report_asin_granularity"] = granularity
         return self
