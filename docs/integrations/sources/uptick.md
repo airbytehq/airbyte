@@ -9,7 +9,7 @@ Extract data from Uptick, a field service management platform designed for the f
 
 ### OAuth 2.0 (recommended)
 
-On Airbyte Cloud, enter your **Base URL** (your Uptick instance URL in the form `https://<name>.onuptick.com`), choose **Authenticate with Uptick** under Authentication, click **Authenticate**, and approve the consent page that Uptick shows. For OAuth, the Base URL must be `https://<workspace>.onuptick.com`. The connector stores the resulting tokens in your connection's `credentials` block.
+On Airbyte Cloud, enter your **Base URL** (your Uptick instance URL in the form `https://<name>.onuptick.com`), choose **Authenticate with Uptick** under Authentication, click **Authenticate**, and approve the consent page that Uptick shows. For OAuth, the Base URL must be `https://<workspace>.onuptick.com`. The connector stores the resulting tokens in your connection's `credentials` block. The connector requests only Uptick's read-only `read` scope.
 
 On self-hosted Airbyte (OSS), first create an OAuth application in Uptick under **Control Panel > Uptick API > Create Application** with your Airbyte instance's redirect URI `https://<airbyte-host>/auth_flow`, using the authorization-code grant with PKCE (S256). Then enter your Base URL, choose **Authenticate with Uptick**, and complete the flow.
 
@@ -237,7 +237,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
-| 1.4.0 | 2026-09-28 | [87436](https://github.com/airbytehq/airbyte/pull/87436) | Add OAuth 2.0 authorization-code (PKCE) authentication; make `base_url` the single required field for both authentication methods; copy legacy credentials under `credentials` (legacy top-level fields kept) |
+| 1.4.0 | 2026-09-28 | [87436](https://github.com/airbytehq/airbyte/pull/87436) | Add OAuth 2.0 authorization-code (PKCE) authentication; make `base_url` the single required field for both authentication methods; copy legacy credentials under `credentials` (legacy top-level fields kept); OAuth requests read-only `read` scope |
 | 1.3.1 | 2026-09-29 | [87373](https://github.com/airbytehq/airbyte/pull/87373) | Update dependencies |
 | 1.3.0 | 2026-09-28 | [86356](https://github.com/airbytehq/airbyte/pull/86356) | Add configurable max_requests_per_minute budget (default 60/min), refresh expired tokens mid-sync, and normalize base_url. The default `max_requests_per_minute` (60) is conservative; large tenants (millions of records) may see slower syncs than 1.2.1 — raise the value if Uptick tolerates it |
 | 1.2.1 | 2026-09-22 | [86843](https://github.com/airbytehq/airbyte/pull/86843) | Update dependencies |
