@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## October 1, 2026
+
+Connectors
+
+- Your agents can now filter Twilio conferences by status, such as completed, in progress, or not yet started. Twilio now returns only in-progress conferences unless a status is specified, so this lets your agents keep finding past conference calls. This update is also available in the SDK.
+
 ## September 22, 2026
 
 Connectors
