@@ -101,12 +101,12 @@ This connector outputs the following streams:
 - [Group Milestones](https://docs.gitlab.com/api/group_milestones/)
 - [Groups](https://docs.gitlab.com/api/groups/)
 - [Issues](https://docs.gitlab.com/api/issues/) (Incremental)
-- [Jobs](https://docs.gitlab.com/api/jobs/) (child of Pipelines — one request per pipeline)
+- [Jobs](https://docs.gitlab.com/api/jobs/) (Incremental; child of Pipelines — re-requested only for pipelines updated since the last sync)
 - [Merge Request Commits](https://docs.gitlab.com/api/merge_requests/) (child of Merge Requests — one request per merge request)
 - [Merge Requests](https://docs.gitlab.com/api/merge_requests/) (Incremental)
 - [Pipelines](https://docs.gitlab.com/api/pipelines/) (Incremental; includes child pipelines, which GitLab only returns when queried with `source=parent_pipeline`)
 - [Pipeline Trigger Jobs](https://docs.gitlab.com/api/jobs/#list-pipeline-trigger-jobs) (bridge jobs that trigger downstream pipelines, child of Pipelines — one request per pipeline)
-- [Pipelines Extended](https://docs.gitlab.com/api/pipelines/) (detailed per-pipeline info, child of Pipelines)
+- [Pipelines Extended](https://docs.gitlab.com/api/pipelines/) (Incremental; child of Pipelines — re-requested only for pipelines updated since the last sync)
 - [Project Labels](https://docs.gitlab.com/api/labels/)
 - [Project Members](https://docs.gitlab.com/api/members/)
 - [Project Milestones](https://docs.gitlab.com/api/milestones/)
@@ -124,6 +124,8 @@ This connector uses GitLab API v4. It works with both GitLab.com and self-hosted
 ### Incremental sync window
 
 Incremental streams filter on `updated_at` and request data in 180-day windows, so a first sync of a long-lived project issues many requests. If you leave **Start date** blank, incremental streams start from 2014-01-01, which is effectively all history for most projects. Set a start date to cut the initial sync short.
+
+The first incremental sync of `pipelines_extended` and `jobs` is a full backfill from the configured start date. Later syncs only re-fetch child records for pipelines whose `updated_at` changed since the previous sync.
 
 ### Child pipelines on very large instances
 
@@ -173,6 +175,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.5.0 | 2026-10-02 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add incremental sync support to the `pipelines_extended` and `jobs` streams |
 | 4.4.42 | 2026-09-29 | [87138](https://github.com/airbytehq/airbyte/pull/87138) | Update dependencies |
 | 4.4.41 | 2026-09-24 | [86933](https://github.com/airbytehq/airbyte/pull/86933) | Include child pipelines in the `pipelines` stream (and therefore `pipelines_extended` and `jobs`) and add the `pipeline_trigger_jobs` stream |
 | 4.4.40 | 2026-09-22 | [86599](https://github.com/airbytehq/airbyte/pull/86599) | Update dependencies |
