@@ -259,19 +259,6 @@ const ConnectorMetadataCallout = ({
 }) => (
   <Callout className={styles.connectorMetadataCallout}>
     <dl className={styles.connectorMetadata}>
-      <MetadataStat label="Connector type (beta)">
-        <div className={styles.availability}>
-          <Chip className={styles.available}>
-            <EnabledIcon isEnabled /> Data replication
-          </Chip>
-          <Chip className={isAgent ? styles.available : styles.unavailable}>
-            <EnabledIcon isEnabled={isAgent} /> Agent
-          </Chip>
-          <a href="/platform/move-data/sources-destinations-connectors#connector-capabilities">
-            Learn more
-          </a>
-        </div>
-      </MetadataStat>
       <MetadataStat label="Availability">
         <div className={styles.availability}>
           <Chip className={isOss ? styles.available : styles.unavailable}>
@@ -300,6 +287,19 @@ const ConnectorMetadataCallout = ({
           <Chip className={isOss ? styles.available : styles.unavailable}>
             <EnabledIcon isEnabled={isOss} /> PyAirbyte
           </Chip>
+        </div>
+      </MetadataStat>
+      <MetadataStat label="Connector type (beta)">
+        <div className={styles.availability}>
+          <Chip className={styles.available}>
+            <EnabledIcon isEnabled /> Data replication
+          </Chip>
+          <Chip className={isAgent ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isAgent} /> Agent
+          </Chip>
+          <a href="/platform/move-data/sources-destinations-connectors#connector-capabilities">
+            (learn more)
+          </a>
         </div>
       </MetadataStat>
       <MetadataStat label="Support Level">

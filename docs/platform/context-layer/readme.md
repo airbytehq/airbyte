@@ -49,7 +49,7 @@ You don't need to name these tools. Ask your agent a question, like "What are th
 
 ### Sources
 
-Direct reads are available for sources that have an [agent connector](/ai-agents/connectors/). Agent connectors support the `list` and `get` actions on their entities. Direct reads don't support other actions that an agent connector documents.
+Direct reads are available for sources that are an [agent connector](/platform/move-data/sources-destinations-connectors#connector-capabilities). Agent connectors support the `list` and `get` actions on their entities. Direct reads don't support other actions that an agent connector documents.
 
 When a source doesn't support direct reads, the Context layer page in Airbyte shows that it isn't supported yet.
 
