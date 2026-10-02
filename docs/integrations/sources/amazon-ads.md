@@ -138,8 +138,8 @@ Each report stream is available in two variants:
 
 For more information on time units, see the Amazon Ads documentation on [timeUnit and supported columns](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#timeunit-and-supported-columns).
 
-:::warning
-Amazon may incorrectly detect duplicate report requests when syncing both summary and daily versions of the same report type simultaneously (for example, `sponsored_brands_v3_report_stream` and `sponsored_brands_v3_report_stream_daily`). If you encounter this issue, create a separate source with only the needed report streams and set the **Number of concurrent threads** to 2 to ensure sequential processing.
+:::note
+Amazon rejects a report request that is identical to one it is still generating, for example when a sync attempt is retried after an earlier attempt already requested the report. When Amazon names the report it is still generating, the connector waits for that report and syncs it instead of failing.
 :::
 
 ### Sponsored Brands report types
@@ -226,7 +226,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 9.2.6 | 2026-10-02 | [87646](https://github.com/airbytehq/airbyte/pull/87646) | Reuse the existing report instead of failing the sync when Amazon rejects a report request as a duplicate (HTTP 425) |
+| 9.2.6 | 2026-10-02 | [87646](https://github.com/airbytehq/airbyte/pull/87646) | Reuse the existing report instead of failing the sync when Amazon rejects a report request as a duplicate (HTTP 425), and report a duplicate that names no report as a transient error instead of a config error |
 | 9.2.5 | 2026-09-29 | [87079](https://github.com/airbytehq/airbyte/pull/87079) | Update dependencies |
 | 9.2.4 | 2026-09-24 | [86938](https://github.com/airbytehq/airbyte/pull/86938) | Retry 429 (honoring Retry-After) and 5xx responses on report creation and polling endpoints |
 | 9.2.3 | 2026-09-22 | [86539](https://github.com/airbytehq/airbyte/pull/86539) | Update dependencies |
