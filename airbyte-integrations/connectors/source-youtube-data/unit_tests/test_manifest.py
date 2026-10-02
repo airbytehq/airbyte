@@ -254,6 +254,131 @@ class TestVideoChildrenFromUploadsPlaylist(TestCase):
         assert [record.record.data["videoId"] for record in output.records] == ["video-1"]
 
     @HttpMocker()
+    def test_deleted_video_returns_no_video_record_without_failing_sync(self, http_mocker: HttpMocker):
+        http_mocker.post(
+            HttpRequest(url=_TOKEN_URL, body=_TOKEN_REQUEST_BODY),
+            HttpResponse(body=json.dumps({"access_token": "test-token", "expires_in": 3600})),
+        )
+        http_mocker.get(
+            HttpRequest(url=f"{_BASE}/channels", query_params="any query_parameters"),
+            HttpResponse(body=json.dumps({"items": [{"contentDetails": {"relatedPlaylists": {"uploads": "UU-test"}}}]})),
+        )
+        playlist_request = HttpRequest(url=f"{_BASE}/playlistItems", query_params="any query_parameters")
+        http_mocker.get(
+            playlist_request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "items": [
+                            {"snippet": {"resourceId": {"videoId": "video-ok"}}},
+                            {"snippet": {"resourceId": {"videoId": "video-deleted"}}},
+                        ]
+                    }
+                )
+            ),
+        )
+        video_ok_request = HttpRequest(
+            url=f"{_BASE}/videos",
+            query_params={"id": "video-ok", "part": "snippet,contentDetails,statistics,player,status"},
+        )
+        http_mocker.get(
+            video_ok_request,
+            HttpResponse(body=json.dumps({"items": [{"id": "video-ok", "snippet": {"title": "OK"}}]})),
+        )
+        video_deleted_request = HttpRequest(
+            url=f"{_BASE}/videos",
+            query_params={"id": "video-deleted", "part": "snippet,contentDetails,statistics,player,status"},
+        )
+        http_mocker.get(
+            video_deleted_request,
+            HttpResponse(body=json.dumps({"items": []})),
+        )
+
+        catalog = CatalogBuilder().with_stream("video", SyncMode.full_refresh).build()
+        output = read(get_source(_CONFIG), config=_CONFIG, catalog=catalog)
+
+        assert output.errors == [], output.get_formatted_error_message()
+        assert [record.record.data["videoId"] for record in output.records] == ["video-ok"]
+        http_mocker.assert_number_of_calls(playlist_request, 1)
+        http_mocker.assert_number_of_calls(video_ok_request, 1)
+        http_mocker.assert_number_of_calls(video_deleted_request, 1)
+
+    @HttpMocker()
+    def test_deleted_video_comments_are_ignored_without_dropping_valid_comments(self, http_mocker: HttpMocker):
+        http_mocker.post(
+            HttpRequest(url=_TOKEN_URL, body=_TOKEN_REQUEST_BODY),
+            HttpResponse(body=json.dumps({"access_token": "test-token", "expires_in": 3600})),
+        )
+        http_mocker.get(
+            HttpRequest(url=f"{_BASE}/channels", query_params="any query_parameters"),
+            HttpResponse(body=json.dumps({"items": [{"contentDetails": {"relatedPlaylists": {"uploads": "UU-test"}}}]})),
+        )
+        playlist_request = HttpRequest(url=f"{_BASE}/playlistItems", query_params="any query_parameters")
+        http_mocker.get(
+            playlist_request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "items": [
+                            {"snippet": {"resourceId": {"videoId": "video-ok"}}},
+                            {"snippet": {"resourceId": {"videoId": "video-deleted"}}},
+                        ]
+                    }
+                )
+            ),
+        )
+        comments_ok_request = HttpRequest(
+            url=f"{_BASE}/commentThreads",
+            query_params={"part": "snippet,replies", "videoId": "video-ok"},
+        )
+        http_mocker.get(
+            comments_ok_request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "items": [
+                            {
+                                "snippet": {
+                                    "videoId": "video-ok",
+                                    "topLevelComment": {"id": "comment-ok"},
+                                }
+                            }
+                        ]
+                    }
+                )
+            ),
+        )
+        comments_deleted_request = HttpRequest(
+            url=f"{_BASE}/commentThreads",
+            query_params={"part": "snippet,replies", "videoId": "video-deleted"},
+        )
+        http_mocker.get(
+            comments_deleted_request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "error": {
+                            "code": 404,
+                            "message": "Video not found",
+                            "errors": [{"reason": "videoNotFound"}],
+                        }
+                    }
+                ),
+                status_code=404,
+            ),
+        )
+
+        catalog = CatalogBuilder().with_stream("comments", SyncMode.full_refresh).build()
+        output = read(get_source(_CONFIG), config=_CONFIG, catalog=catalog)
+
+        assert output.errors == [], output.get_formatted_error_message()
+        assert [record.record.data["videoId"] for record in output.records] == ["video-ok"]
+        assert [record.record.data["id"] for record in output.records] == ["comment-ok"]
+        http_mocker.assert_number_of_calls(playlist_request, 1)
+        http_mocker.assert_number_of_calls(comments_ok_request, 1)
+        http_mocker.assert_number_of_calls(comments_deleted_request, 1)
+
+    @HttpMocker()
     def test_comments_child_receives_upload_playlist_video_id(self, http_mocker: HttpMocker):
         http_mocker.post(
             HttpRequest(url=_TOKEN_URL, body=_TOKEN_REQUEST_BODY),
