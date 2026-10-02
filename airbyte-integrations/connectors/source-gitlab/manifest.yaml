@@ -346,16 +346,6 @@ definitions:
           parent_key: "id"
           stream: "#/definitions/pipelines_stream"
           partition_field: "id"
-
-  pipelines_incremental_child_streams_retriever:
-    $ref: "#/definitions/pipelines_child_streams_retriever"
-    partition_router:
-      type: SubstreamPartitionRouter
-      parent_stream_configs:
-        - type: ParentStreamConfig
-          parent_key: "id"
-          stream: "#/definitions/pipelines_stream"
-          partition_field: "id"
           incremental_dependency: true
           extra_fields: [["updated_at"]]
 
@@ -387,6 +377,12 @@ definitions:
     $ref: "#/definitions/base_full_refresh_stream"
     retriever: "#/definitions/projects_child_streams_retriever"
 
+  cursor_datetime_formats:
+    - "%Y-%m-%dT%H:%M:%S.%f%z"
+    - "%Y-%m-%dT%H:%M:%S.%fZ"
+    - "%Y-%m-%dT%H:%M:%S%z"
+    - "%Y-%m-%dT%H:%M:%SZ"
+
   base_projects_incremental_child_stream:
     $ref: "#/definitions/base_projects_child_stream"
     incremental_sync:
@@ -394,11 +390,7 @@ definitions:
       cursor_field: "{{ parameters.get('cursor_field', 'updated_at') }}"
       start_datetime: "{{ config.get('start_date', '2014-01-01T00:00:00Z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%f%z"
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-        - "%Y-%m-%dT%H:%M:%S%z"
-        - "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats: "#/definitions/cursor_datetime_formats"
       cursor_granularity: "PT1S"
       step: "P180DT1S"
       start_time_option:
@@ -410,20 +402,18 @@ definitions:
         field_name: "{{ parameters.get('upper_bound_filter', 'updated_before') }}"
         inject_into: request_parameter
 
+  pipelines_child_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "updated_at"
+    start_datetime: "{{ config.get('start_date', '2014-01-01T00:00:00Z') }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_datetime_formats: "#/definitions/cursor_datetime_formats"
+    global_substream_cursor: true
+
   base_pipelines_incremental_child_stream:
     $ref: "#/definitions/base_projects_child_stream"
-    retriever: "#/definitions/pipelines_incremental_child_streams_retriever"
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: "updated_at"
-      start_datetime: "{{ config.get('start_date', '2014-01-01T00:00:00Z') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%f%z"
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-        - "%Y-%m-%dT%H:%M:%S%z"
-        - "%Y-%m-%dT%H:%M:%SZ"
-      global_substream_cursor: true
+    retriever: "#/definitions/pipelines_child_streams_retriever"
+    incremental_sync: "#/definitions/pipelines_child_incremental_sync"
 
   groups_list_stream:
     name: "groups_list"
@@ -801,7 +791,7 @@ definitions:
             path: ["commit_id"]
             value: "{{ (record.get('commit') or {}).get('id') }}"
     incremental_sync:
-      $ref: "#/definitions/base_pipelines_incremental_child_stream/incremental_sync"
+      $ref: "#/definitions/pipelines_child_incremental_sync"
       cursor_field: "pipeline_updated_at"
     $parameters:
       path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}/jobs"
@@ -812,11 +802,13 @@ definitions:
 
   pipeline_trigger_jobs_stream:
     name: "pipeline_trigger_jobs"
-    $ref: "#/definitions/base_projects_child_stream"
-    retriever: "#/definitions/pipelines_child_streams_retriever"
+    $ref: "#/definitions/base_pipelines_incremental_child_stream"
     transformations:
       - type: AddFields
         fields:
+          - type: AddedFieldDefinition
+            path: ["pipeline_updated_at"]
+            value: "{{ stream_slice.extra_fields['updated_at'] }}"
           - type: AddedFieldDefinition
             path: ["project_id"]
             value: "{{ stream_slice.parent_slice.id }}"
@@ -832,6 +824,9 @@ definitions:
           - type: AddedFieldDefinition
             path: ["commit_id"]
             value: "{{ (record.get('commit') or {}).get('id') }}"
+    incremental_sync:
+      $ref: "#/definitions/pipelines_child_incremental_sync"
+      cursor_field: "pipeline_updated_at"
     $parameters:
       path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}/bridges"
     schema_loader:
@@ -3496,6 +3491,12 @@ schemas:
         type:
         - 'null'
         - integer
+      pipeline_updated_at:
+        description: The `updated_at` of the parent pipeline; used as the incremental cursor for trigger jobs.
+        type:
+        - 'null'
+        - string
+        format: date-time
       downstream_pipeline:
         description: Details of the child (downstream) pipeline created by the trigger job.
         type:
