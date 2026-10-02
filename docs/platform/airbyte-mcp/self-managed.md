@@ -82,6 +82,5 @@ Keep your client secret out of the chat and out of version control. Your agent c
 - **Billing and usage tools don't work.** These features only exist in Airbyte Cloud.
 - **No context layer.** Direct reads and connector skills aren't available.
 - **No browser sign-in.** The local server signs in with your application's client ID and client secret, not with OAuth or single sign-on.
-- **Self-Managed Enterprise isn't tested.** Airbyte has only tested the Airbyte MCP with Airbyte Core.
 
 If you find other problems, [open an Airbyte MCP beta issue](https://github.com/airbytehq/PyAirbyte/issues/new?template=airbyte-mcp-beta.yml). Don't include secrets or credentials in these issues, as they're publicly viewable.
