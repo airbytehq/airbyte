@@ -21,9 +21,12 @@ export const ConnectorTypeBanner = ({
         ) : (
           <>
             <FontAwesomeIcon icon={faRightLeft} className={styles.icon} /> This
-            connector is optimized for data replication, not AI agents. For
-            agentic operations, see{" "}
-            <a href={counterpartUrl}>{connectorName}</a>.
+            connector is optimized for data replication. For agentic
+            operations, see <a href={counterpartUrl}>{connectorName}</a>. In
+            Airbyte Cloud, agents can also read this source directly, with
+            read-only <code>list</code> and <code>get</code> actions, through
+            the <a href="/platform/context-layer">Context layer</a> (private
+            beta).
           </>
         )}
       </span>

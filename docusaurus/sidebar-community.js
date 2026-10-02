@@ -48,9 +48,12 @@ const mcpServers = {
       label: "Agent MCP",
       href: "/ai-agents/interfaces/mcp/",
     },
+    {
+      type: "link",
+      label: "Airbyte MCP",
+      href: "/platform/airbyte-mcp",
+    },
     "mcp-servers/airbyte-knowledge-mcp",
-    "mcp-servers/replication-mcp",
-    "mcp-servers/replication-mcp-advanced",
   ],
 };
 
