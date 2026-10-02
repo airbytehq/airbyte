@@ -16,15 +16,15 @@ data:
   name: Pocket
   registryOverrides:
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   remoteRegistries:
     pypi:
       enabled: false
       packageName: airbyte-source-pocket
-  supportLevel: community
+  supportLevel: archived
   tags:
     - cdk:low-code
     - language:manifest-only
