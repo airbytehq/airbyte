@@ -2,7 +2,7 @@
 products: oss-community
 ---
 
-# Use the Airbyte MCP with self-managed Airbyte
+# Use the Airbyte MCP with Airbyte Core
 
 :::info Private beta
 The Airbyte MCP is in private beta. Features and tools may change.
