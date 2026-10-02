@@ -309,4 +309,3 @@ def test_forbidden_new_stream_is_config_error(stream_name, path, error_code, exp
     assert errors[0].failure_type == FailureType.config_error, f"expected config_error, got {errors[0].failure_type}"
     for expected in expected_messages:
         assert expected in errors[0].message, f"expected {expected!r} in {errors[0].message!r}"
-

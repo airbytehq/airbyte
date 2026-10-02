@@ -46,7 +46,6 @@ TRANSACTIONS_PATH = "/developer/v1/transactions"
 REIMBURSEMENTS_PATH = "/developer/v1/reimbursements"
 
 
-
 def _card(card_id: str) -> dict:
     return {"id": card_id, "display_name": "Card", "state": "ACTIVE", "is_physical": True}
 
