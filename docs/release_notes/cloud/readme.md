@@ -2,6 +2,16 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 2, 2026
+
+Connections
+
+- The **Streams status** graph on a connection's Status page now loads reliably for connections whose syncs were retried. Previously, a retried sync could cause the graph to fail to load.
+
+Platform
+
+- If your organization is on a Plus plan, the Plans page in Organization settings now selects your current credit tier by default and labels it as your current plan. Previously, the page could show a different tier, such as 100 credits instead of your 40-credit plan. You can still pick another tier to upgrade or downgrade.
+
 ## October 1, 2026
 
 Connections
