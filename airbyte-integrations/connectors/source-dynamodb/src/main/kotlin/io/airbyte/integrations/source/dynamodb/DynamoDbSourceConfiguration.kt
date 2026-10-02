@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.dynamodb
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.output.DataChannelMedium
@@ -92,6 +93,12 @@ constructor(
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String = STDIO.name,
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}")
     val socketPaths: List<String> = emptyList(),
+    /**
+     * The active CDK feature flags. [FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT]
+     * (`AIRBYTE_EDITION=CLOUD`) unlocks concurrent scans; the spec side of the same rule is
+     * [DynamoDbSourceSpecificationExtender].
+     */
+    val featureFlags: Set<FeatureFlag> = emptySet(),
 ) :
     SourceConfigurationFactory<
         DynamoDbSourceConfigurationSpecification, DynamoDbSourceConfiguration> {
@@ -199,17 +206,38 @@ constructor(
             )
         }
 
-        // Same rule as the JDBC Bulk sources: the configured value wins; otherwise one table at a
-        // time on STDIO, one per socket in speed mode.
-        val maxConcurrency: Int =
-            when (DataChannelMedium.valueOf(dataChannelMedium)) {
-                STDIO -> pojo.concurrency ?: 1
-                SOCKET -> pojo.concurrency ?: socketPaths.size.coerceAtLeast(1)
-            }
-        if (maxConcurrency <= 0) {
-            throw ConfigErrorException("'concurrency' must be positive, got $maxConcurrency.")
+        val maxDbConnections: Int? = pojo.maxDbConnections
+        if (maxDbConnections != null && maxDbConnections <= 0) {
+            throw ConfigErrorException(
+                "'max_db_connections' must be positive, got $maxDbConnections.",
+            )
         }
-        log.info { "Effective concurrency: $maxConcurrency" }
+        val cloud: Boolean = FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT in featureFlags
+        // On Airbyte Cloud the configured value wins; otherwise one scan at a time on STDIO and one
+        // per socket in speed mode, like the JDBC Bulk sources. Concurrent scans are not offered on
+        // other deployments: one Scan request at a time, across tables and segments, whatever the
+        // configuration says (the spec shows the property disabled there, see
+        // DynamoDbSourceSpecificationExtender).
+        val maxConcurrency: Int =
+            if (!cloud) {
+                DynamoDbSourceSpecificationExtender.SELF_MANAGED_MAX_DB_CONNECTIONS
+            } else {
+                when (DataChannelMedium.valueOf(dataChannelMedium)) {
+                    STDIO -> maxDbConnections ?: 1
+                    SOCKET -> maxDbConnections ?: socketPaths.size.coerceAtLeast(1)
+                }
+            }
+        if (!cloud && maxDbConnections != null && maxDbConnections != maxConcurrency) {
+            log.warn {
+                "'max_db_connections' ($maxDbConnections) is ignored: concurrent scans are only " +
+                    "available on Airbyte Cloud."
+            }
+        }
+        log.info {
+            "Effective concurrency: $maxConcurrency (max_db_connections: $maxDbConnections, " +
+                "data channel: $dataChannelMedium, sockets: ${socketPaths.size}, " +
+                "Airbyte Cloud: $cloud)"
+        }
 
         val (realHost: String, realPort: Int) = hostAndPort(endpoint, region)
 

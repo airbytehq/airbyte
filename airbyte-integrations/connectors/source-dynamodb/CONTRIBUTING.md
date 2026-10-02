@@ -71,10 +71,22 @@ scanned as one segment. A table that `DescribeTable` reports at 0 bytes (empty, 
 the last refresh: a 1 GB table seeded 40 minutes earlier still showed `TableSizeBytes: 0`) gets as
 many segments as the effective concurrency, which costs one empty `Scan` per segment when the
 table really is empty and keeps a freshly loaded large table parallel. Measured on a 1 GB table, 16 segments read 10x faster than one for the
-same consumed read capacity. Each segment is one CDK partition; the `concurrency` setting (default
-1 on STDIO, the socket count in speed mode) bounds how many segments and tables scan at once, so
-with the default a table's segments are read one after another, which is still correct, and
-tables are still read concurrently with each other.
+same consumed read capacity. Each segment is one CDK partition; the `max_db_connections` setting
+(default 1 on STDIO, the socket count in speed mode) bounds how many segments and tables scan at
+once, so with the default a table's segments are read one after another, which is still correct,
+and tables are still read concurrently with each other.
+
+**Parallel and concurrent scans are an Airbyte Cloud feature.** The connector runs there with
+`AIRBYTE_EDITION=CLOUD`, which the Bulk CDK exposes as `FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT`. On
+every other deployment `DynamoDbSourceConfigurationFactory` pins the concurrency to 1 whatever
+`max_db_connections` says (with a WARN when a value was configured) and
+`DynamoDbSharedState.effectiveMaxSegments` is 1, so every table is read with one sequential scan,
+one table at a time, as versions 0.3.x did; a scan resumed from a saved state keeps its saved
+segment count either way. `DynamoDbSourceSpecificationExtender` shows `max_db_connections`
+disabled (`readOnly`, default 1) in the self-managed spec, which is why the spec has two snapshots.
+The tests pass `FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT` to `CliRunner` where Cloud behaviour is
+expected; a local run of the `installDist` binary or the image needs `AIRBYTE_EDITION=CLOUD` in
+its environment to use several segments or scans.
 
 The partition reader issues `Scan` requests page by page (`ExclusiveStartKey` = the previous page's
 `LastEvaluatedKey`, with the partition's `Segment`), projecting exactly the attributes of the
@@ -102,7 +114,7 @@ terminal state go out in the round in which the last segment completes. If its s
 predates another segment's completion, the next round consists of one reader that emits nothing
 but the terminal state (`DynamoDbTerminalStateReader`). A segment count is fixed for the life of a
 table's scan (a `LastEvaluatedKey` is only valid for the `TotalSegments` that produced it) and is
-saved in the state, so a resumed scan keeps it whatever the current table size or `concurrency`.
+saved in the state, so a resumed scan keeps it whatever the current table size, `max_db_connections` or edition.
 
 The stream state (`stream_state`) is backward compatible with the legacy `DbStreamState`:
 
@@ -145,13 +157,13 @@ differs from the legacy one (decision of 2026-09-17: credentials must come from 
 | `reserved_attribute_names` | marked `airbyte_secret` | plain string |
 | Discovery sample | hard-coded 1000 items per table | `discover_sample_size` (default 1000, 1..100000), like MongoDB's `discover_sample_size` |
 | Checkpoints | none (one state at the end of an incremental stream) | `checkpoint_target_interval_seconds` (default 300) like the JDBC Bulk sources: a state after every round of scan pages, resumable full refresh |
-| Concurrency | tables read one after another | `concurrency` (optional, default 1, like the JDBC Bulk sources): maximum number of tables scanned at the same time |
+| Concurrency | tables read one after another | `max_db_connections` (optional, same name as source-bigquery/postgres/mysql): maximum number of concurrent `Scan` requests across segments and tables, Airbyte Cloud only (pinned to 1 and shown disabled elsewhere) |
 
 AWS has no username/password API authentication; access keys (long-lived or temporary) and role
 assumption are the only credential shapes that can travel inside a configuration.
 
 `src/test/resources/legacy-spec.json` is the `spec` output of the legacy `airbyte/source-dynamodb:0.3.11`
-image, kept for reference; `expected-spec.json` is this connector's own snapshot (the strict spec test
+image, kept for reference; `expected-spec-cloud.json` and `expected-spec-oss.json` are this connector's own snapshots per edition (the strict spec test
 writes the current spec to `build/actual-spec.json` to refresh it). CI's format check runs prettier
 3.0.3 on every JSON and YAML file; after refreshing a snapshot (or `parity-seed.json`,
 `expected-catalog.json`) reformat it, for example without a local node:
@@ -213,7 +225,7 @@ exact big numbers), identical records and states for incremental syncs on a bare
 timestamp and a 200,000-item string cursor, and the integer cursors legacy crashes on work. A state
 handoff on the 200,000-item table works both ways (zero new records), a full refresh resumed from
 a saved key after record 100,000 returns exactly the remaining 100,000 in order, and with
-`checkpoint_target_interval_seconds: 1` and `concurrency: 4` the three big tables emit 48 mid-scan
+`checkpoint_target_interval_seconds: 1` and `max_db_connections: 4` the three big tables emit 48 mid-scan
 states with every record exactly once (38 s, against 59 s one table at a time and 67 s for legacy).
 
 Against the original 4 tables of that account (6 items) both images return byte-identical records
@@ -254,8 +266,9 @@ primary key, and only the first ~1000 scanned items are sampled.
 `metadata.yaml` declares `connectorIPCOptions.dataChannel` with `JSONL` and `PROTOBUF` over `SOCKET`
 and `STDIO`. The partition reader routes records through the CDK's `OutputMessageRouter`, acquires
 one `RESOURCE_OUTPUT_SOCKET` per running partition and reports its partition id in every checkpoint,
-so states over the sockets carry `partition_id`. Without a configured `concurrency`, speed mode
-reads one table per socket (`concurrency` = number of socket paths); on STDIO the default is 1.
+so states over the sockets carry `partition_id`. On Airbyte Cloud, without a configured
+`max_db_connections`, speed mode reads one table per socket (`max_db_connections` = number of
+socket paths); on STDIO the default is 1. Elsewhere one table at a time on either medium.
 
 Fields are typed (`DynamoDbFieldType.airbyteSchemaTypeOf`, the CDK's own derivation of a type from
 a JSON schema): `S` STRING, `B` BINARY, `BOOL` BOOLEAN, an integral `N` INTEGER, any other `N` NUMBER,
@@ -306,6 +319,7 @@ docker run --rm -v "$PWD/secrets:/secrets:ro" -v ddb-sock:/sockets \
 Records then arrive on the sockets (with `partition_id`), states and stream statuses on the sockets
 and on stdout. Verified on 2026-09-24 against DynamoDB Local with JSONL: 505 records over two sockets
 (one table per socket at concurrency 2), 3 states, every stream `COMPLETE`, plain numbers on the wire.
+
 ## Scale validation on a 1 GB table (2026-09-24)
 
 Table `abv2_1gb` in the test account (`us-east-2`, on-demand): 1,000,000 deterministic items of
@@ -354,7 +368,7 @@ Table `abv2_10gb` in the same account (`us-east-2`, on-demand): 10,000,000 deter
 ~1 KB (10,000 partition keys x 1,000 sort keys, same attributes and cursors as `abv2_1gb`; seeded
 with `seed-aws-1gb.uv --table abv2_10gb --partitions 10000 --per-partition 1000`), 10.15 GB per
 `DescribeTable`, so the connector scans it in 128 segments. Same harness as above (`installDist`
-binary, `concurrency: 16`, `checkpoint_target_interval_seconds: 30`, stdout through a summarizer
+binary, `max_db_connections: 16`, `checkpoint_target_interval_seconds: 30`, stdout through a summarizer
 keeping `(pk, sk, sha1)` per record), from a laptop; with gzip responses the synthetic items
 (24x compressible) arrive at ~85,000 records/s, so the link is no longer the limit. Every full
 read below produced the same 10,000,000-record `(pk, sk, sha1)` multiset; no throttling occurred.

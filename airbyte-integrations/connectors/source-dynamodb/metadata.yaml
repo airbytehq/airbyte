@@ -36,8 +36,8 @@ data:
       1.0.0:
         message:
           "**The DynamoDB source has been rebuilt on Airbyte's Bulk CDK.** It reads large tables with
-          parallel scans, saves its position during full refresh and incremental syncs so that they
-          resume after an interruption, supports speed mode, reads large numbers exactly and accepts
+          parallel scans on Airbyte Cloud, saves its position during full refresh and incremental
+          syncs so that they resume after an interruption, supports speed mode, reads large numbers exactly and accepts
           integer cursors. Saved access key configurations and incremental sync state keep working.
 
           **What changed:** role based authentication (an empty access key, with credentials taken

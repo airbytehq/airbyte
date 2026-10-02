@@ -217,13 +217,15 @@ data class DynamoDbPartition(
                 DynamoDbTableScan.segmentCount(
                     sizeBytes,
                     sharedState.segmentTargetBytes,
-                    sharedState.maxSegments,
+                    sharedState.effectiveMaxSegments,
                     unknownSizeSegments = sharedState.configuration.maxConcurrency,
                 )
             log.info {
                 "Table '${stream.name}' is $sizeBytes bytes according to DescribeTable" +
                     (if (sizeBytes <= 0L) " (not refreshed yet, or empty)" else "") +
-                    "; scanning it in $count segment(s)."
+                    "; scanning it in $count segment(s)" +
+                    (if (sharedState.cloud) "."
+                    else " (parallel scans are only available on Airbyte Cloud).")
             }
             return count
         }

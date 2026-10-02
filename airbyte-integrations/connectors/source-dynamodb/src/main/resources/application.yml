@@ -17,9 +17,11 @@ airbyte:
         # DynamoDB from the partition-key hash, so no boundary is computed): one segment per this
         # many bytes of table size (`DescribeTable`, refreshed by AWS about every 6 hours), at most
         # `max-segments`. 64 MiB gave 16 segments and a 10x speed-up on a 1 GB table; the
-        # `concurrency` setting bounds how many segments (and tables) scan at once. Every segment
-        # adds one resume key to the stream state; the segment count of a table is fixed for the
-        # life of its scan and saved in the state.
+        # `max_db_connections` setting bounds how many segments (and tables) scan at once. Every
+        # segment adds one resume key to the stream state; the segment count of a table is fixed
+        # for the life of its scan and saved in the state. Both only apply on Airbyte Cloud
+        # (AIRBYTE_EDITION=CLOUD): elsewhere every table is one segment read by one scan at a
+        # time (DynamoDbSharedState.effectiveMaxSegments, DynamoDbSourceConfigurationFactory).
         segment-target-bytes: ${DYNAMODB_SEGMENT_TARGET_BYTES:67108864}
         max-segments: ${DYNAMODB_MAX_SEGMENTS:128}
     exception-classifiers:

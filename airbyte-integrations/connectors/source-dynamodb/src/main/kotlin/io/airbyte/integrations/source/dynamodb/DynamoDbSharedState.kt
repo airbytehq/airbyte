@@ -2,6 +2,7 @@
 package io.airbyte.integrations.source.dynamodb
 
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.Resource
 import io.airbyte.cdk.read.ResourceAcquirer
@@ -43,7 +44,21 @@ constructor(
     /** Upper bound on the segments of one table; every segment adds a key to the stream state. */
     @Value("\${$MAX_SEGMENTS_PROPERTY:$DEFAULT_MAX_SEGMENTS}")
     val maxSegments: Int = DEFAULT_MAX_SEGMENTS,
+    /**
+     * The active CDK feature flags; Airbyte Cloud runs the connector with `AIRBYTE_EDITION=CLOUD`.
+     */
+    val featureFlags: Set<FeatureFlag> = emptySet(),
 ) {
+    val cloud: Boolean = FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT in featureFlags
+
+    /**
+     * Parallel-scan segments are only offered on Airbyte Cloud, together with the concurrency that
+     * makes them worthwhile ([DynamoDbSourceSpecificationExtender]). Elsewhere every table is read
+     * with one sequential scan, as versions 0.3.x did, whatever [maxSegments] says; a scan resumed
+     * from a saved state keeps its saved segment count either way.
+     */
+    val effectiveMaxSegments: Int = if (cloud) maxSegments else 1
+
     private val clientDelegate: Lazy<DynamoDbClient> = lazy {
         DynamoDbClientFactory.create(configuration)
     }

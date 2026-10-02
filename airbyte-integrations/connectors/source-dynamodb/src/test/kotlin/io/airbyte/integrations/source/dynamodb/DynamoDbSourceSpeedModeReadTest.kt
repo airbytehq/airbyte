@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.output.DataChannelFormat
 import io.airbyte.cdk.output.sockets.FORMAT_PROPERTY
@@ -244,27 +245,73 @@ class DynamoDbSourceSpeedModeReadTest {
         Assertions.assertFalse(SpeedModeTestSupport.SCIENTIFIC_NOTATION.containsMatchIn(line), line)
     }
 
-    /** In speed mode, without a configured `concurrency`, one table is read per socket. */
+    /**
+     * On Airbyte Cloud, in speed mode without a configured `max_db_connections`, one table is read
+     * per socket; elsewhere one scan at a time on either medium, whatever the configuration says.
+     */
     @Test
-    fun testConcurrencyDefaultsToTheSocketCount() {
+    fun testMaxDbConnectionsDefaultsToTheSocketCountOnCloud() {
         val spec: DynamoDbSourceConfigurationSpecification = container.config()
+        val sockets: List<String> = listOf("/tmp/a.sock", "/tmp/b.sock")
         Assertions.assertEquals(
             2,
-            DynamoDbSourceConfigurationFactory("SOCKET", listOf("/tmp/a.sock", "/tmp/b.sock"))
-                .make(spec)
-                .maxConcurrency,
+            DynamoDbSourceConfigurationFactory("SOCKET", sockets, CLOUD).make(spec).maxConcurrency,
         )
-        Assertions.assertEquals(1, DynamoDbSourceConfigurationFactory().make(spec).maxConcurrency)
+        Assertions.assertEquals(
+            1,
+            DynamoDbSourceConfigurationFactory(featureFlags = CLOUD).make(spec).maxConcurrency,
+        )
         // A configured value wins on either medium.
         val three: DynamoDbSourceConfigurationSpecification =
-            container.config(extra = mapOf("concurrency" to 3))
+            container.config(extra = mapOf("max_db_connections" to 3))
         Assertions.assertEquals(
             3,
-            DynamoDbSourceConfigurationFactory("SOCKET", listOf("/tmp/a.sock"))
+            DynamoDbSourceConfigurationFactory("SOCKET", listOf("/tmp/a.sock"), CLOUD)
                 .make(three)
                 .maxConcurrency,
         )
-        Assertions.assertEquals(3, DynamoDbSourceConfigurationFactory().make(three).maxConcurrency)
+        Assertions.assertEquals(
+            3,
+            DynamoDbSourceConfigurationFactory(featureFlags = CLOUD).make(three).maxConcurrency,
+        )
+        // Self-managed: pinned to one, sockets or not.
+        Assertions.assertEquals(
+            1,
+            DynamoDbSourceConfigurationFactory("SOCKET", sockets).make(spec).maxConcurrency,
+        )
+        Assertions.assertEquals(
+            1,
+            DynamoDbSourceConfigurationFactory("SOCKET", sockets).make(three).maxConcurrency,
+        )
+    }
+
+    /**
+     * A self-managed deployment in speed mode scans one table at a time: the records still match
+     * the STDIO baseline and every stream completes, but a single reader runs, so only one of the
+     * two sockets needs to carry data.
+     */
+    @Test
+    fun testSelfManagedSpeedModeReadsOneTableAtATime() {
+        val run: SpeedModeRun =
+            readInSpeedMode(
+                DataChannelFormat.JSONL,
+                defaultCatalog(),
+                defaultState,
+                extraConfig = mapOf("max_db_connections" to 4),
+                cloud = false,
+            )
+        val messages: List<JsonNode> =
+            run.socketBytes.flatMap { SpeedModeTestSupport.parseJsonlMessages(it) }
+        val records: Map<String, List<JsonNode>> =
+            messages
+                .filter { it["type"].asText() == "RECORD" }
+                .map { it["record"] }
+                .groupBy({ it["stream"].asText() }) { it["data"] }
+        run.assertMatchesStdio(
+            records,
+            messages.filter { it["type"].asText() != "RECORD" },
+            everySocketUsed = false,
+        )
     }
 
     /** A saved `ExclusiveStartKey` is honoured over sockets as on STDIO. */
@@ -353,10 +400,14 @@ class DynamoDbSourceSpeedModeReadTest {
         configured: ConfiguredAirbyteCatalog,
         state: List<AirbyteStateMessage>?,
         extraConfig: Map<String, Any?> = emptyMap(),
+        /** Airbyte Cloud by default, where speed mode reads one table per socket. */
+        cloud: Boolean = true,
     ): SpeedModeRun {
+        val featureFlags: Array<FeatureFlag> =
+            if (cloud) arrayOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT) else emptyArray()
         val config: DynamoDbSourceConfigurationSpecification = container.config(extra = extraConfig)
         val stdio: BufferingOutputConsumer =
-            CliRunner.source("read", config, configured, state).run()
+            CliRunner.source("read", config, configured, state, *featureFlags).run()
 
         // Unix domain socket paths are limited to about 100 bytes; /tmp keeps them short.
         val socketDir: Path =
@@ -374,7 +425,7 @@ class DynamoDbSourceSpeedModeReadTest {
                 FORMAT_PROPERTY to format.name,
                 SOCKET_PATHS_PROPERTY to socketPaths.joinToString(",") { it.toString() },
             )
-        val cli: CliRunnable = CliRunner.source("read", config, configured, state)
+        val cli: CliRunnable = CliRunner.source("read", config, configured, state, *featureFlags)
         val failure = AtomicReference<Throwable?>()
         val connector =
             Thread(
@@ -513,6 +564,8 @@ class DynamoDbSourceSpeedModeReadTest {
         fun assertMatchesStdio(
             socketRecords: Map<String, List<JsonNode>>,
             socketProtocolMessages: List<JsonNode>,
+            /** With one reader at a time (self-managed), one socket may stay empty. */
+            everySocketUsed: Boolean = true,
         ) {
             val expected: Map<String, List<JsonNode>> =
                 stdio.records().groupBy({ it.stream }) {
@@ -619,9 +672,11 @@ class DynamoDbSourceSpeedModeReadTest {
                 speedModeStdout.traces().none { it.type == AirbyteTraceMessage.Type.ERROR },
                 "error traces\n${dump()}",
             )
-            // Two sockets, seven streams, concurrency 2 by default: both sockets carry data.
+            // Two sockets, seven streams, concurrency 2 by default on Cloud: both sockets carry
+            // data.
             Assertions.assertTrue(
-                socketBytes.all { it.isNotEmpty() },
+                if (everySocketUsed) socketBytes.all { it.isNotEmpty() }
+                else socketBytes.any { it.isNotEmpty() },
                 "bytes per socket: ${socketBytes.map { it.size }}",
             )
         }
@@ -699,6 +754,9 @@ class DynamoDbSourceSpeedModeReadTest {
 
     companion object {
         const val NUM_SOCKETS = 2
+
+        /** Airbyte Cloud, where `max_db_connections` and the socket-count default apply. */
+        val CLOUD: Set<FeatureFlag> = setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
         val TIMEOUT: Duration = Duration.ofMinutes(3)
 
         const val EXOTIC_NUMBERS = "exotic_numbers"

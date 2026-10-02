@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.dynamodb.DynamoDbLocalContainer.Companion.batchPutItems
@@ -512,7 +513,8 @@ class DynamoDbSourceReadTest {
             withSegments(8) {
                 read(
                     catalog(configured("many_items", SyncMode.FULL_REFRESH)),
-                    extraConfig = mapOf("concurrency" to 4),
+                    extraConfig = mapOf("max_db_connections" to 4),
+                    cloud = true,
                 )
             }
         segmented.assertNoErrors()
@@ -550,7 +552,8 @@ class DynamoDbSourceReadTest {
             withSegments(8) {
                 read(
                     catalog(configured("many_items", SyncMode.INCREMENTAL, cursor = "v")),
-                    extraConfig = mapOf("concurrency" to 3),
+                    extraConfig = mapOf("max_db_connections" to 3),
+                    cloud = true,
                 )
             }
         first.assertNoErrors()
@@ -584,7 +587,8 @@ class DynamoDbSourceReadTest {
                 read(
                     catalog(configured("many_items", SyncMode.INCREMENTAL, cursor = "v")),
                     state = listOf(streamState("many_items", states.last())),
-                    extraConfig = mapOf("concurrency" to 3),
+                    extraConfig = mapOf("max_db_connections" to 3),
+                    cloud = true,
                 )
             }
         next.assertNoErrors()
@@ -599,7 +603,10 @@ class DynamoDbSourceReadTest {
         // in different segments.
         val byTimestamp: ReadResult =
             withSegments(8) {
-                read(catalog(configured("events", SyncMode.INCREMENTAL, cursor = "ts")))
+                read(
+                    catalog(configured("events", SyncMode.INCREMENTAL, cursor = "ts")),
+                    cloud = true,
+                )
             }
         byTimestamp.assertNoErrors()
         Assertions.assertEquals(5, byTimestamp.records("events").size)
@@ -620,6 +627,7 @@ class DynamoDbSourceReadTest {
                                 """{"cursor_field":["d"],"cursor":"2024-01-02"}"""
                             )
                         ),
+                    cloud = true,
                 )
             }
         byDate.assertNoErrors()
@@ -633,6 +641,44 @@ class DynamoDbSourceReadTest {
             ),
             byDate.states("events").last(),
         )
+    }
+
+    /**
+     * Parallel scans are an Airbyte Cloud feature: a self-managed deployment reads the same table
+     * as one segment, one scan at a time, whatever the segment sizing and `max_db_connections` say,
+     * and comes out with the same records. With one item per page and a 1 second checkpoint
+     * interval the scan may be cut into rounds (machine dependent, see
+     * [testCheckpointsBetweenPages]); every intermediate state must then show a single segment. The
+     * planner's choice is asserted deterministically in
+     * [DynamoDbPartitionReaderTest.testSelfManagedPlansOneSegment] and the pinned concurrency in
+     * [DynamoDbSourceConfigurationFactoryTest].
+     */
+    @Test
+    fun testSelfManagedReadsOneSegmentWhateverTheConfiguration() {
+        val selfManaged: ReadResult =
+            withSegments(8) {
+                withScanPageLimit(1) {
+                    read(
+                        catalog(configured("many_items", SyncMode.FULL_REFRESH)),
+                        extraConfig =
+                            mapOf(
+                                "max_db_connections" to 4,
+                                "checkpoint_target_interval_seconds" to 1,
+                            ),
+                    )
+                }
+            }
+        selfManaged.assertNoErrors()
+        val ids: List<String> = selfManaged.records("many_items").map { it["id"].asText() }
+        Assertions.assertEquals(1200, ids.size)
+        Assertions.assertEquals(1200, ids.toSet().size)
+        Assertions.assertEquals(listOf("STARTED", "COMPLETE"), selfManaged.statuses("many_items"))
+        val states: List<JsonNode> = selfManaged.states("many_items")
+        for (state in states.dropLast(1)) {
+            Assertions.assertEquals(1, state["scan"]["total_segments"].asInt(), state.toString())
+            Assertions.assertEquals(1, state["scan"]["segments"].size(), state.toString())
+        }
+        Assertions.assertEquals(Jsons.readTree("""{"scan_complete":true}"""), states.last())
     }
 
     /** A saved segment count wins over the current sizing: the keys belong to it. */
@@ -653,7 +699,8 @@ class DynamoDbSourceReadTest {
                 read(
                     catalog(configured("many_items", SyncMode.FULL_REFRESH)),
                     state = listOf(streamState("many_items", state)),
-                    extraConfig = mapOf("concurrency" to 2),
+                    extraConfig = mapOf("max_db_connections" to 2),
+                    cloud = true,
                 )
             }
         resumed.assertNoErrors()
@@ -842,13 +889,27 @@ class DynamoDbSourceReadTest {
                     .withStreamState(json),
             )
 
+    /**
+     * Runs a READ as a self-managed deployment by default (one scan at a time, one segment per
+     * table); [cloud] runs it as Airbyte Cloud (`AIRBYTE_EDITION=CLOUD`), where
+     * `max_db_connections` and parallel-scan segments apply.
+     */
     private fun read(
         catalog: ConfiguredAirbyteCatalog,
         state: List<AirbyteStateMessage>? = null,
         extraConfig: Map<String, Any?> = emptyMap(),
+        cloud: Boolean = false,
     ): ReadResult {
+        val featureFlags: Array<FeatureFlag> =
+            if (cloud) arrayOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT) else emptyArray()
         val runnable: CliRunnable =
-            CliRunner.source("read", container.config(extra = extraConfig), catalog, state)
+            CliRunner.source(
+                "read",
+                container.config(extra = extraConfig),
+                catalog,
+                state,
+                *featureFlags,
+            )
         val failure: Throwable? =
             try {
                 runnable.run()

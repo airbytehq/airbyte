@@ -67,7 +67,7 @@ The role based authentication of versions 0.3.x, which took credentials from the
 | **Ignore missing read permissions tables**     | No       | When on, discovery skips a table whose `Scan` is denied instead of failing. Off by default.                                                                                                                 |
 | **Discovery sample size (Advanced)**           | No       | How many items discovery reads from each table to infer its attributes and their types. Defaults to 1000, the range is 1 to 100000. A larger sample finds rarer attributes and consumes more read capacity. |
 | **Checkpoint Target Time Interval (Advanced)** | No       | How often, in seconds, a stream saves its position. A table is scanned in rounds of about this duration and a state message follows every round. Defaults to 300, the minimum is 1.                         |
-| **Concurrency**                                | No       | How many scans the connector runs at the same time, across the segments of a table and across tables. Defaults to 1. See [Concurrency](#concurrency).                                                       |
+| **Max Concurrent Queries to Database**         | No       | Airbyte Cloud only. How many `Scan` requests run at the same time, across the segments of a large table and across tables. Leave empty to let Airbyte choose. Self-managed Airbyte shows the field disabled and scans one table at a time. See [Concurrency](#concurrency). |
 
 4. Click **Set up source**. The connection test lists the tables of the region. It fails with `Discovered zero tables.` when the identity can't see any table there.
 
@@ -95,30 +95,32 @@ Choose an attribute whose values only grow and that every new or updated item ca
 
 ### State and resuming
 
-The connector emits state while it reads, not only at the end of a sync. After every round of scan pages, about **Checkpoint Target Time Interval** long, the state records, for every segment of the table, the key of the last page read or that the segment is complete; for an incremental stream it also carries the highest cursor value seen so far in each segment. A retried attempt resumes every unfinished segment at its saved key, so at most one page per segment is read twice and no item is skipped. The number of segments is saved with the state and kept until the table is complete, whatever the **Concurrency** setting of the retry. A completed incremental stream saves its cursor value in the same shape versions 0.3.x used, and a completed full refresh saves a marker so that a retried attempt doesn't read the table again. Resetting the connection's data makes the next sync start from the beginning.
+The connector emits state while it reads, not only at the end of a sync. After every round of scan pages, about **Checkpoint Target Time Interval** long, the state records, for every segment of the table, the key of the last page read or that the segment is complete; for an incremental stream it also carries the highest cursor value seen so far in each segment. A retried attempt resumes every unfinished segment at its saved key, so at most one page per segment is read twice and no item is skipped. The number of segments is saved with the state and kept until the table is complete, whatever the **Max Concurrent Queries to Database** setting of the retry. A completed incremental stream saves its cursor value in the same shape versions 0.3.x used, and a completed full refresh saves a marker so that a retried attempt doesn't read the table again. Resetting the connection's data makes the next sync start from the beginning.
 
 The connector also reads the state saved by versions 0.3.x. A stream with such state resumes after its saved cursor value instead of reading the table from the start.
 
 ### Concurrency
 
-The connector reads a large table with a [parallel scan](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Scan.html), where DynamoDB divides the table into segments by hashing each item's partition key and the connector scans each segment on its own. The segments cost nothing to compute and consume the same read capacity as one sequential scan. The number of segments comes from the table size that `DescribeTable` reports, one segment per 64 MB, up to 128 segments per table, so a table under 64 MB is still read by a single scan. DynamoDB refreshes that size about every six hours, so a table loaded since the last refresh reports zero bytes; the connector then uses as many segments as **Concurrency**.
+Parallel scans and concurrent scans are an Airbyte Cloud feature. Self-managed Airbyte reads every table with one sequential scan and one table at a time, as versions 0.3.x did; the **Max Concurrent Queries to Database** field is shown disabled there and a value set through the API is ignored.
+
+On Airbyte Cloud the connector reads a large table with a [parallel scan](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Scan.html), where DynamoDB divides the table into segments by hashing each item's partition key and the connector scans each segment on its own. The segments cost nothing to compute and consume the same read capacity as one sequential scan. The number of segments comes from the table size that `DescribeTable` reports, one segment per 64 MB, up to 128 segments per table, so a table under 64 MB is still read by a single scan. DynamoDB refreshes that size about every six hours, so a table loaded since the last refresh reports zero bytes; the connector then uses as many segments as **Max Concurrent Queries to Database**.
 
 The connector asks DynamoDB to compress its responses (`Accept-Encoding: gzip`). A scan page is 1 MB of DynamoDB JSON, and moving it over one connection is most of a page's latency, so compression makes every scan faster at no extra read cost; how much depends on how compressible the items are.
 
-**Concurrency** sets how many scans run at the same time across all tables. With the default of 1 the segments of a table are read one after another and tables one after another, which is as fast as a single sequential scan. Raise it to read segments and tables in parallel; the speed-up is close to linear until the table's read capacity or the network is saturated. Each running scan holds one page of up to 1 MB in memory.
+**Max Concurrent Queries to Database** sets how many scans run at the same time across all tables. Left empty, Airbyte reads one table at a time on the standard data channel and one table per socket in speed mode. At 1 the segments of a table are read one after another and tables one after another, which is as fast as a single sequential scan. Raise it to read segments and tables in parallel; the speed-up is close to linear until the table's read capacity or the network is saturated. Each running scan holds one page of up to 1 MB in memory.
 
 Segments can be uneven. All items with the same partition key land in the same segment, so a table with few partition keys, or a few large item collections, has segments of different sizes; the larger ones just finish later.
 
 ### Read throughput
 
-Measured on 2026-09-24 against a 1 GB table in `us-east-2` (1,000,000 items of about 1 KB) from a laptop on a residential connection, where one 1 MB scan page takes about 0.4 s to arrive; inside AWS the absolute numbers are higher, the ratios are what matter. Every run read the same 1,000,000 records and consumed the same 124,274 read units (about $0.03 on-demand).
+Measured on 2026-09-24 against a 1 GB table in `us-east-2` (1,000,000 items of about 1 KB) from a laptop on a residential connection, where one 1 MB scan page takes about 0.4 s to arrive; inside AWS the absolute numbers are higher, the ratios are what matter. Every run read the same 1,000,000 records and consumed the same 124,274 read units (about $0.03 on-demand). Concurrent scans are an Airbyte Cloud feature; self-managed Airbyte reads at the rate of the first row.
 
-| Concurrency | Segments read in parallel | Wall time  | Throughput |
-| :---------- | :------------------------ | :--------- | :--------- |
-| 1           | 1                         | 7 min 47 s | 2.1 MB/s   |
-| 4           | 4                         | 1 min 57 s | 8.5 MB/s   |
-| 8           | 8                         | 1 min 12 s | 14 MB/s    |
-| 16          | 16                        | 45 s       | 23 MB/s    |
+| Concurrent scans | Segments read in parallel | Wall time  | Throughput |
+| :--------------- | :------------------------ | :--------- | :--------- |
+| 1                | 1                         | 7 min 47 s | 2.1 MB/s   |
+| 4                | 4                         | 1 min 57 s | 8.5 MB/s   |
+| 8                | 8                         | 1 min 12 s | 14 MB/s    |
+| 16               | 16                        | 45 s       | 23 MB/s    |
 
 A sync interrupted at concurrency 8 and resumed from its last state returned every one of the 1,000,000 keys exactly once, apart from the records read in the 10 seconds after the last checkpoint. Sixteen concurrent segments completed inside a 384 MB Java heap.
 
@@ -160,8 +162,8 @@ Version 1.0.0 loads the configuration and the state of versions 0.3.x, and its `
 - **Syncs resume.** Full refresh and incremental streams save their position after every round of scan pages and resume there; versions 0.3.x saved one state at the end of an incremental stream and nothing for a full refresh.
 - **Failures carry a message.** The connection test reports why it failed; versions 0.3.x reported a failure without a message. A configured table that no longer exists, or whose stream has no fields, fails only its own stream; the other streams of the sync are read.
 - **Empty tables aren't discovered**, and the connection test fails when the region has no tables. Versions 0.3.x listed an empty table as a stream without fields and couldn't read it.
-- **Large tables are read with parallel scans.** A table over 64 MB is split into scan segments that **Concurrency** reads in parallel; versions 0.3.x read every table with one sequential scan.
-- **Discovery sample size and Concurrency** are new settings; versions 0.3.x always sampled 1000 items and read one table at a time.
+- **Large tables are read with parallel scans on Airbyte Cloud.** A table over 64 MB is split into scan segments that **Max Concurrent Queries to Database** reads in parallel; self-managed Airbyte, like versions 0.3.x, reads every table with one sequential scan.
+- **Discovery sample size and Max Concurrent Queries to Database** are new settings; versions 0.3.x always sampled 1000 items and read one table at a time.
 
 ## Limitations and troubleshooting
 
@@ -170,7 +172,7 @@ Version 1.0.0 loads the configuration and the state of versions 0.3.x, and its `
 - **The schema comes from a sample.** Raise **Discovery sample size** and refresh the source schema when an attribute is missing from a stream or has the wrong type, and pin the type of an attribute that varies between items by storing one type only.
 - **Composite keys report only the partition key** as the primary key. Destinations that remove duplicates by primary key collapse the items that share a partition key value; use append modes for such tables.
 - **`The access key id or the session token is invalid`** or **`The secret access key is invalid`** mean the configured access key is wrong; **`The temporary credentials (session token) have expired`** means new temporary credentials are needed.
-- **`... is not authorized to perform: sts:AssumeRole ...`** names the identity and the role: the role's trust policy doesn't allow the access key's identity to assume it, or the external ID is wrong. **`... is not authorized to perform: dynamodb:... `** names a missing permission from the [IAM permissions](#iam-permissions) table.
+- **`... is not authorized to perform: sts:AssumeRole ...`** names the identity and the role: the role's trust policy doesn't allow the access key's identity to assume it, or the external ID is wrong. **`... is not authorized to perform: dynamodb:...`** names a missing permission from the [IAM permissions](#iam-permissions) table.
 - **`Could not reach the DynamoDB endpoint`** means the configured endpoint doesn't resolve or accept connections; check **DynamoDB Endpoint** and **AWS Region**.
 - **`A configured table does not exist (any more)`** appears when a table was deleted or renamed after the source schema was set up; refresh the source schema. **`The saved state of a stream does not match its table's key schema`** appears when a table was recreated with other key attributes, and **`... does not match its table's scan segments`** when a saved segment key no longer fits the table; reset the stream's data in both cases.
 - **Throttling errors** (`ProvisionedThroughputExceededException`, `ThrottlingException`) are transient. Airbyte retries the sync; raise the table's read capacity if they persist.
@@ -186,7 +188,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                                              |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------- |
-| 1.0.0 | 2026-09-25 | [86997](https://github.com/airbytehq/airbyte/pull/86997) | Rebuild on the Bulk CDK: parallel scan segments, resumable full refresh and incremental syncs, speed mode, exact numbers, integer cursors, temporary credentials and IAM role assumption. See the migration guide |
+| 1.0.0 | 2026-09-25 | [86997](https://github.com/airbytehq/airbyte/pull/86997) | Rebuild on the Bulk CDK: parallel scan segments on Airbyte Cloud, resumable full refresh and incremental syncs, speed mode, exact numbers, integer cursors, temporary credentials and IAM role assumption. See the migration guide |
 | 0.3.11 | 2025-07-10 | [62916](https://github.com/airbytehq/airbyte/pull/62916) | Add gradle docker plugins |
 | 0.3.10 | 2025-06-14 | [61601](https://github.com/airbytehq/airbyte/pull/61601) | fix(source-dynamodb): Replace ListNode with Iterator for lazyness #61600 |
 | 0.3.9 | 2025-02-12 | [53202](https://github.com/airbytehq/airbyte/pull/53202) | fixed IRSA by adding STS to classpath of connector. |

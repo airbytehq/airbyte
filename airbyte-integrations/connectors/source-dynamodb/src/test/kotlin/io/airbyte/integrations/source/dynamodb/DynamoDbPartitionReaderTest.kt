@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.dynamodb
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.output.BufferingOutputConsumer
@@ -122,6 +123,49 @@ class DynamoDbPartitionReaderTest {
         }
         Assertions.assertThrows(IllegalArgumentException::class.java) {
             DynamoDbTableScan.segmentCount(1, 1, 0)
+        }
+    }
+
+    /**
+     * Parallel-scan segments are an Airbyte Cloud feature: a self-managed deployment plans one
+     * segment for the same table and sizing, and the scan completes with the same records.
+     */
+    @Test
+    fun testSelfManagedPlansOneSegment() {
+        val cloud =
+            Driver(fullRefreshStream(), initialState = null, pageLimit = 50, maxSegments = 8)
+        try {
+            Assertions.assertEquals(8, cloud.round()!!.size)
+            Assertions.assertEquals(8, cloud.currentState()!!["scan"]["total_segments"].asInt())
+        } finally {
+            cloud.close()
+        }
+        val selfManaged =
+            Driver(
+                fullRefreshStream(),
+                initialState = null,
+                pageLimit = 50,
+                maxSegments = 8,
+                cloud = false,
+            )
+        try {
+            Assertions.assertEquals(1, selfManaged.round()!!.size)
+            Assertions.assertEquals(
+                1,
+                selfManaged.currentState()!!["scan"]["total_segments"].asInt(),
+            )
+            var rounds = 1
+            while (selfManaged.round() != null) {
+                rounds++
+            }
+            Assertions.assertTrue(rounds > 1, "rounds: $rounds")
+            Assertions.assertEquals(ITEMS, selfManaged.recordIds().toSet().size)
+            Assertions.assertEquals(
+                Jsons.readTree("""{"scan_complete":true}"""),
+                selfManaged.currentState(),
+            )
+        } finally {
+            selfManaged.close()
         }
     }
 
@@ -289,9 +333,13 @@ class DynamoDbPartitionReaderTest {
         initialState: OpaqueStateValue?,
         pageLimit: Int,
         maxSegments: Int,
+        /** Airbyte Cloud by default: parallel-scan segments are only offered there. */
+        cloud: Boolean = true,
     ) {
+        private val featureFlags: Set<FeatureFlag> =
+            if (cloud) setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT) else emptySet()
         private val configuration: DynamoDbSourceConfiguration =
-            DynamoDbSourceConfigurationFactory()
+            DynamoDbSourceConfigurationFactory(featureFlags = featureFlags)
                 .make(container.config())
                 .copy(checkpointTargetInterval = Duration.ZERO)
         private val concurrencyResource = ConcurrencyResource(configuration)
@@ -303,6 +351,7 @@ class DynamoDbPartitionReaderTest {
                 scanPageLimit = pageLimit,
                 segmentTargetBytes = 1,
                 maxSegments = maxSegments,
+                featureFlags = featureFlags,
             )
         private val output = BufferingOutputConsumer(Clock.systemUTC())
         private val stateManager = StateManager(initialStreamStates = mapOf(stream to initialState))

@@ -2,7 +2,7 @@
 
 ## Upgrading to 1.0.0
 
-Version 1.0.0 rebuilds the DynamoDB source on Airbyte's Bulk CDK. It reads large tables with [parallel scans](dynamodb.md#concurrency), saves its position during full refresh and incremental syncs so that a large table resumes after an interruption instead of starting over, supports speed mode, reads large numbers exactly, works with integer cursors and reads attributes whose names are reserved words without configuration. Saved configurations that use an access key load unchanged, and the incremental sync state written by versions 0.3.x is understood: a stream resumes after its saved cursor value instead of reading the table again.
+Version 1.0.0 rebuilds the DynamoDB source on Airbyte's Bulk CDK. It reads large tables with [parallel scans](dynamodb.md#concurrency) on Airbyte Cloud, saves its position during full refresh and incremental syncs so that a large table resumes after an interruption instead of starting over, supports speed mode, reads large numbers exactly, works with integer cursors and reads attributes whose names are reserved words without configuration. Saved configurations that use an access key load unchanged, and the incremental sync state written by versions 0.3.x is understood: a stream resumes after its saved cursor value instead of reading the table again.
 
 **This version removes role based authentication and changes the shape of the stream schemas, so it is a breaking change for the connections described below.**
 

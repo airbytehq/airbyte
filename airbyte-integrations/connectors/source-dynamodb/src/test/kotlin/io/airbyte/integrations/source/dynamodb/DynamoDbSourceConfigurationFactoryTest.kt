@@ -2,6 +2,7 @@
 package io.airbyte.integrations.source.dynamodb
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.util.Jsons
 import java.net.URI
 import org.junit.jupiter.api.Assertions
@@ -13,8 +14,12 @@ class DynamoDbSourceConfigurationFactoryTest {
     private fun parse(json: String): DynamoDbSourceConfigurationSpecification =
         Jsons.readValue(json, DynamoDbSourceConfigurationSpecification::class.java)
 
+    /** Airbyte Cloud, where every setting is honoured; the self-managed tests pass no flag. */
+    private val cloud: Set<FeatureFlag> = setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
+
     private fun make(json: String): DynamoDbSourceConfiguration =
-        DynamoDbSourceConfigurationFactory().makeWithoutExceptionHandling(parse(json))
+        DynamoDbSourceConfigurationFactory(featureFlags = cloud)
+            .makeWithoutExceptionHandling(parse(json))
 
     private fun assertConfigError(json: String, expectedMessagePart: String) {
         val e: ConfigErrorException =
@@ -23,7 +28,7 @@ class DynamoDbSourceConfigurationFactoryTest {
         // The user-facing message must survive the factory's exception handling.
         val wrapped: ConfigErrorException =
             Assertions.assertThrows(ConfigErrorException::class.java) {
-                DynamoDbSourceConfigurationFactory().make(parse(json))
+                DynamoDbSourceConfigurationFactory(featureFlags = cloud).make(parse(json))
             }
         Assertions.assertEquals(e.message, wrapped.message)
     }
@@ -113,25 +118,70 @@ class DynamoDbSourceConfigurationFactoryTest {
     }
 
     @Test
-    fun testConcurrency() {
+    fun testMaxDbConnectionsOnCloud() {
         val credentials =
             """{"auth_type": "User", "access_key_id": "k", "secret_access_key": "s"}"""
-        // Default: one table at a time on STDIO.
+        // Default: one scan at a time on STDIO.
         Assertions.assertEquals(
             1,
             make("""{"credentials": $credentials, "region": "us-east-1"}""").maxConcurrency,
         )
         Assertions.assertEquals(
             4,
-            make("""{"credentials": $credentials, "region": "us-east-1", "concurrency": 4}""")
+            make(
+                    """{"credentials": $credentials, "region": "us-east-1", "max_db_connections": 4}"""
+                )
                 .maxConcurrency,
         )
         for (value in listOf(0, -3)) {
             assertConfigError(
-                """{"credentials": $credentials, "region": "us-east-1", "concurrency": $value}""",
-                "'concurrency' must be positive",
+                """{"credentials": $credentials, "region": "us-east-1", "max_db_connections": $value}""",
+                "'max_db_connections' must be positive",
             )
         }
+    }
+
+    /**
+     * Concurrent scans are an Airbyte Cloud feature: without the flag the connector scans one table
+     * at a time on either data channel, whatever `max_db_connections` says, which is still
+     * validated.
+     */
+    @Test
+    fun testMaxDbConnectionsIsPinnedToOneOffCloud() {
+        val credentials =
+            """{"auth_type": "User", "access_key_id": "k", "secret_access_key": "s"}"""
+        val four: DynamoDbSourceConfigurationSpecification =
+            parse(
+                """{"credentials": $credentials, "region": "us-east-1", "max_db_connections": 4}"""
+            )
+        Assertions.assertEquals(
+            1,
+            DynamoDbSourceConfigurationFactory().makeWithoutExceptionHandling(four).maxConcurrency,
+        )
+        Assertions.assertEquals(
+            1,
+            DynamoDbSourceConfigurationFactory("SOCKET", listOf("/tmp/a.sock", "/tmp/b.sock"))
+                .makeWithoutExceptionHandling(four)
+                .maxConcurrency,
+        )
+        Assertions.assertEquals(
+            1,
+            DynamoDbSourceConfigurationFactory("SOCKET", listOf("/tmp/a.sock", "/tmp/b.sock"))
+                .makeWithoutExceptionHandling(
+                    parse("""{"credentials": $credentials, "region": "us-east-1"}""")
+                )
+                .maxConcurrency,
+        )
+        val e: ConfigErrorException =
+            Assertions.assertThrows(ConfigErrorException::class.java) {
+                DynamoDbSourceConfigurationFactory()
+                    .makeWithoutExceptionHandling(
+                        parse(
+                            """{"credentials": $credentials, "region": "us-east-1", "max_db_connections": 0}"""
+                        )
+                    )
+            }
+        Assertions.assertTrue(e.message!!.contains("'max_db_connections' must be positive"))
     }
 
     @Test

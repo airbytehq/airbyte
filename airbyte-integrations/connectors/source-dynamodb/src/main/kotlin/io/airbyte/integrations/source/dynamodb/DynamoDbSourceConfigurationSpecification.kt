@@ -111,13 +111,18 @@ class DynamoDbSourceConfigurationSpecification : ConfigurationSpecification() {
     )
     var checkpointTargetIntervalSeconds: Int? = null
 
-    @JsonProperty("concurrency")
-    @JsonSchemaTitle("Concurrency")
-    @JsonSchemaInject(json = """{"order":7}""")
+    /**
+     * Same name as in the other Bulk CDK sources (source-bigquery, source-postgres, source-mysql).
+     * Only honoured on Airbyte Cloud; elsewhere the connector scans one table at a time and
+     * [DynamoDbSourceSpecificationExtender] shows the property disabled.
+     */
+    @JsonProperty("max_db_connections")
+    @JsonSchemaTitle("Max Concurrent Queries to Database")
+    @JsonSchemaInject(json = """{"order":7,"minimum":1}""")
     @JsonPropertyDescription(
-        "Maximum number of tables scanned at the same time (concurrent Scan requests). Defaults to 1; every table draws on its own read capacity, so a higher value speeds up syncs of many tables.",
+        "Maximum number of concurrent Scan requests to DynamoDB, across the segments of a large table and across tables. Leave empty to let Airbyte optimize performance.",
     )
-    var concurrency: Int? = null
+    var maxDbConnections: Int? = null
 
     companion object {
         /** What the legacy connector always sampled. */
