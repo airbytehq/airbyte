@@ -73,10 +73,13 @@ Things worth knowing before touching either half:
 - Step 8 patterns worth knowing before touching those four streams:
   - `workflow_runs` cannot use `is_data_feed`: runs are listed by `created_at` while the cursor is
     `updated_at`, and a re-run of an old run appears deep in the list. Legacy stopped at the first
-    run created more than 32 days before the cursor; `components.WorkflowRunsPaginationStrategy`
-    does the same from the raw page, reading the slice start from the `X-Airbyte-Window-Start`
-    request header (the paginator only sees records that survived the client-side filter, and
-    GitHub ignores the header). Do not replace this with GitHub's `created` filter: it caps the
+    run created more than 32 days before the cursor; the `CursorPagination` `stop_condition` does
+    the same from the raw page (`response`, not `last_record`, which only holds what survived the
+    client-side filter), comparing it with `stream_interval['start_time']`. The paginator has had
+    the slice in its interpolation context since airbytehq/airbyte-python-cdk#1166; before that a
+    custom strategy read the slice start back from a request header. Keep every operand of the
+    condition a comparison: a bare `None` reads as true to `InterpolatedBoolean` and would stop
+    pagination on a malformed page. Do not replace this with GitHub's `created` filter: it caps the
     result set at 1,000 runs, so a busy repository would silently lose runs. `lookback_window`
     would not do either: it moves the request window but `ConcurrentCursor.should_be_synced` still
     compares against the un-shifted start.
@@ -295,7 +298,7 @@ The GitHub REST and GraphQL APIs support `since` parameter on many list endpoint
 | `issue_comment_reactions` | incremental | `created_at` | client-side | substream of `comments` |
 | `commits` | incremental | `created_at` | server-side `since` | slices per branch via `CommitsBranchPartitionRouter` |
 | `contributor_activity` | full refresh | — | — | retries 202 with a 90s constant backoff |
-| `workflow_runs` | incremental | `updated_at` | client-side, 32-day window | `WorkflowRunsPaginationStrategy` |
+| `workflow_runs` | incremental | `updated_at` | client-side, 32-day window | `CursorPagination` `stop_condition` on `stream_interval` |
 | `workflow_jobs` | incremental | `completed_at` | client-side, 32-day window | substream of `workflow_runs` |
 | `releases` | incremental | `created_at` | client-side | GraphQL |
 | `projects_v2` | incremental | `updated_at` | client-side | GraphQL |
@@ -322,4 +325,4 @@ The GitHub REST and GraphQL APIs support `since` parameter on many list endpoint
   `{"errors": [...]}` — on the status you care about; a fixture with an empty body passes whatever
   the order is.
 
-- **The six streams migrated in Step 9** (`releases`, `projects_v2`, `pull_request_stats`, `reviews`, `issue_reactions`, `pull_request_comment_reactions`) are the GraphQL streams. GraphQL exposes no `since` filter, so the cursor window is applied to the records the query returns. Five of them are client-side incremental; `pull_request_stats` alone reads `pullRequests(orderBy: {field: UPDATED_AT, direction: DESC})` with `is_data_feed: true` and stops at the first already-synced pull request. `reviews` reads the same connection `ASC` and is client-side incremental, because its traversal order is not its cursor order, so it has no early exit to take.
+- **The six streams migrated in Step 9** (`releases`, `projects_v2`, `pull_request_stats`, `reviews`, `issue_reactions`, `pull_request_comment_reactions`) are the GraphQL streams. GraphQL exposes no `since` filter, so the cursor window is applied to the records the query returns. Five of them are client-side incremental; `pull_request_stats` alone reads `pullRequests(orderBy: {field: UPDATED_AT, direction: DESC})` with `is_data_feed: true` and stops at the first already-synced pull request. `reviews` reads the same connection `ASC` and is client-side incremental, because its traversal order is not its cursor order, so it has no early exit to take. `reviews`, `issue_reactions` and `pull_request_comment_reactions` read every drilldown root with a CDK `CombinedExtractor` in `union` mode (one `DpathExtractor` per response shape, each with a `RecordExpander` that copies the one parent field the record needs with `parent_fields`). Both need an `airbyte-cdk` release containing airbyte-python-cdk#1162 and #1165.
