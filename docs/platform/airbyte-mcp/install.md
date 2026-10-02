@@ -232,8 +232,6 @@ Automated agents, scripts, and CI jobs can't complete a browser sign-in. Instead
    }
    ```
 
-   If your client only supports HTTP Basic authentication, use the client ID as the username and the client secret as the password instead.
-
 3. Optional: to choose a workspace or organization other than your default, add the `X-Airbyte-Workspace-Id` or `X-Airbyte-Organization-Id` header.
 
 Treat the client secret like a password. Keep it out of version control, and use your client's secret storage or environment variables if it supports them.
