@@ -51,7 +51,8 @@ data:
           each connection. See the
           [migration guide](https://docs.airbyte.com/integrations/sources/dynamodb-migrations).
           "
-        upgradeDeadline: "2026-12-31"
+        upgradeDeadline: "2026-12-01"
+        deadlineAction: "auto_upgrade"
   tags:
     - language:java
   externalDocumentationUrls:
