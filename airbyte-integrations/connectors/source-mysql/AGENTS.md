@@ -38,6 +38,12 @@ Use `src/test-performance/sql/create_mysql_benchmarks.sql` to create a benchmark
 
 The script creates the configured number of tables with names from `test_0` through `test_<table count minus 1>`.
 
+## Multi-database selection (`table_include_regex`)
+
+- The regex list is matched against `database.table`. It is resolved once per metadata session in `MySqlSourceMetadataQuerier.Factory.session()` (`resolveTableIncludeRegex`), which rewrites the config into the equivalent `namespaces` plus exact-name, LIKE-escaped `tableFilters`. This happens because `MySqlSourceConfiguration.namespaces` is empty in regex mode.
+- CDC offset key: the Debezium `name` and `topic.prefix` are the `database` field, or `airbyte_mysql` when it is unset. Changing this value orphans saved offsets, so `validate()` rejects state whose offset key doesn't match.
+- In regex mode, `database.include.list` is not set, so the schema history covers every database (`store.only.captured.databases.ddl=true`). Events are still restricted by the per-stream `table.include.list`. A saved history that lacks a database the regex now matches, for example after switching from single-database mode, is rejected on warm start.
+
 ## Reproducing bugs locally
 
 Use the generic

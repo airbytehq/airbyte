@@ -103,6 +103,22 @@ Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting t
 
 </FieldAnchor>
 
+<FieldAnchor field="table_include_regex">
+
+#### Syncing tables from several databases in one connection
+
+To read tables from more than one database with a single connection, and a single binlog reader, set **Table Include Regex** to one or more Java regular expressions. Each expression is matched against the full `database.table` name, and a table is included when any expression matches all of it. For example:
+
+- `erp\..*` includes every table in the `erp` database.
+- `sales_[0-9]+\.orders` includes the `orders` table of `sales_1`, `sales_2`, and so on.
+- `orders` matches nothing, because it doesn't match the `database.table` name as a whole.
+
+When **Table Include Regex** is set, **Database** is optional and is only used as the connection's default database. **Table Include Regex** can't be combined with **Table Filters**. The user needs `SELECT` on every matched database, which the `GRANT ... ON *.*` statement in Step 1 provides. System databases (`mysql`, `sys`, `information_schema`, `performance_schema`) are never matched.
+
+With CDC, the connector keeps the schema history of every database on the server, so new databases that match an expression can be added to the connection later without a reset. Two changes do need a reset of the connection: switching an existing CDC connection from **Database** alone to **Table Include Regex** when the expressions match other databases, and changing or clearing the **Database** field of an existing CDC connection. The sync fails with an explanation, or re-syncs if **Invalid CDC position behavior** is set to `Re-sync data`.
+
+</FieldAnchor>
+
 ## MySQL Replication Modes
 
 ### Change Data Capture \(CDC\)
@@ -230,6 +246,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                          |
 |:------------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.54.0      | 2026-10-02 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)       | Add Table Include Regex to sync tables from several databases in one connection with a single binlog reader.                                     |
 | 3.53.5      | 2026-09-09 | [77840](https://github.com/airbytehq/airbyte/pull/77840)   | Fix CDC binlog client authentication when SSL `verify_ca`/`verify_identity` is configured with client certificates.                              |
 | 3.53.4      | 2026-08-27 | [81413](https://github.com/airbytehq/airbyte/pull/81413)   | Retry CDC syncs that fail with an EOF error while reading the MySQL binlog instead of failing as a config error.                                 |
 | 3.53.3      | 2026-08-11 | [84207](https://github.com/airbytehq/airbyte/pull/84207)   | Promote to Bulk CDK 1.1.10: fix CDC meta-field decoration of full refresh streams with no source-defined primary key in speed mode.              |
