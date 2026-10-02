@@ -34,7 +34,7 @@ Syncs cards, transactions and reimbursements, plus Ramp&#39;s organisation, spen
 ## Limitations & troubleshooting
 
 - The transactions stream syncs every transaction state, including declined transactions. Declined transactions have `state: DECLINED`; filter them out of spend totals. To backfill declined transactions from before version 0.1.0, refresh the `transactions` stream.
-- The cards stream does not include terminated cards.
+- The cards stream does not include terminated cards, because Ramp's cards list leaves them out. The stream is full refresh only, so with the **Overwrite** or **Overwrite + Deduped** sync mode a card disappears from the destination on the first sync after it is terminated. Its transactions stay in the `transactions` stream, so use a left join from `transactions.card_id` to `cards`, or read the cardholder from `transactions.card_holder`. With **Append**, the destination keeps every earlier copy of the card, and the newest copy still shows the `state` it had before termination, such as `ACTIVE`.
 - The reimbursements stream syncs both directions: out-of-pocket reimbursements (BUSINESS_TO_USER) and repayments (USER_TO_BUSINESS).
 - Every stream added in version 0.2.0 needs its own read scope on your Ramp app: `users:read`, `departments:read`, `locations:read`, `entities:read`, `business:read` (business and business_balance), `funds:read`, `spend_programs:read`, `bills:read`, `vendors:read` (vendors, vendor_contacts and vendor_agreements), `receipts:read`, `merchants:read` and `purchase_orders:read`. A stream whose scope is missing fails with a message naming the scope; the cards, transactions and reimbursements streams are not affected.
 - The purchase_orders stream needs Ramp Plus. On other plans, deselect it.
