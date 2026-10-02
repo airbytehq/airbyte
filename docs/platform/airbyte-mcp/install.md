@@ -26,7 +26,7 @@ The first time your client connects, it opens the Airbyte Cloud sign-in page in 
 
 If your organization uses [single sign-on](/platform/access-management/sso), select **Sign in with SSO** and enter your **Company identifier**. This is the same identifier you enter after you select **Continue with SSO** on the Airbyte Cloud sign-in page. If you don't know it, ask your Airbyte organization admin.
 
-Your client keeps you signed in while you use the Airbyte MCP. If you don't use it for 14 days, sign in again.
+Your client keeps you signed in while you use the Airbyte MCP. If you don't use it for 14 days, you may need to sign in again.
 
 If you belong to more than one organization or workspace, the Airbyte MCP uses your default workspace. Ask your agent to list your workspaces or switch to a different one at any time.
 
