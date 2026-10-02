@@ -210,7 +210,7 @@ When your client first connects, it detects that the server requires OAuth. It m
 <details>
 <summary>Authenticate with an Airbyte application</summary>
 
-Automated agents, scripts, and CI jobs can't complete a browser sign-in. Instead, they can authenticate with an Airbyte application.
+Automated agents, scripts, and CI jobs can't complete a browser sign-in. Instead, they can authenticate with an Airbyte application. Use this method only if your agent or a script can request new access tokens on its own. If a person uses the agent, [add the Airbyte MCP to your client](#add-the-airbyte-mcp-to-your-client) and sign in with a browser instead.
 
 1. [Create an application and get an access token](/platform/using-airbyte/configuring-api-access). The application acts with the permissions of the user who created it, so consider using a service account.
 
@@ -231,7 +231,7 @@ Automated agents, scripts, and CI jobs can't complete a browser sign-in. Instead
 
 3. Optional: to choose a workspace or organization other than your default, add the `X-Airbyte-Workspace-Id` or `X-Airbyte-Organization-Id` header.
 
-Access tokens expire after 15 minutes. Your agent needs to request a new token before the current one expires.
+Access tokens expire after 15 minutes, so don't paste a token into your client's configuration by hand. Your agent or script needs to request a new token with the application's client ID and client secret before the current one expires.
 
 </details>
 

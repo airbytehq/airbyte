@@ -64,7 +64,7 @@ Agents query these destinations with read-only SQL. Only `SELECT` statements and
 
 ## Usage limits
 
-During the private beta, the context layer is free to use. Each organization can make up to 100,000 Airbyte MCP tool calls per month. Direct reads also count toward the API rate limits of the source you read from, and SQL queries use compute in your destination, which your destination provider may charge for.
+During the private beta, the context layer is free to use. Each organization can make up to 100,000 direct reads per month. Other Airbyte MCP tools don't count toward this limit. Direct reads also count toward the API rate limits of the source you read from, and SQL queries use compute in your destination, which your destination provider may charge for.
 
 ## Limitations
 

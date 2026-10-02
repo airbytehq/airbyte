@@ -10,11 +10,11 @@ The Airbyte MCP is in private beta. Features and tools may change. It's availabl
 
 The Airbyte MCP gives your agent a set of tools. Your agent chooses which tools to call based on your prompt, so you don't need to call them by name. This page lists each tool so you know what your agent can and can't do.
 
-Every tool acts with your Airbyte permissions. If your Airbyte [role](/platform/access-management/rbac) doesn't allow an action, the tool fails.
+Your agent acts on behalf of the Airbyte user who signed in to the Airbyte MCP. If you connect with an [Airbyte application](install.md#connect-without-a-browser), that's the user who created the application. Every tool acts with that user's Airbyte permissions. If their Airbyte [role](/platform/access-management/rbac) doesn't allow an action, the tool fails.
 
 ## Safety
 
-The Airbyte MCP protects resources you didn't create with your agent.
+Your agent can see and use every resource your Airbyte permissions allow. To prevent your agent from accidentally breaking existing pipelines, the Airbyte MCP limits which resources it can change.
 
 - **Destructive tools are limited to the current session.** Tools that delete, overwrite, or reconfigure resources only act on resources your agent created in the same session. They can't delete a connection someone else built.
 - **Your MCP client asks before acting.** Each tool tells your client whether it's read-only or destructive. Most clients ask you to approve tools that change things.
@@ -96,7 +96,7 @@ These tools read data directly from sources and destinations. They only work aft
 
 ### Connector skills
 
-Every connector's API is different. A connector skill is a short document that tells your agent which entities it can read, like `contacts` or `tickets`, and which parameters each action accepts. Before your agent reads data from a source, it calls `get_agent_skill_docs` to learn that connector's skill. This prevents your agent from guessing at parameter names.
+Every connector's API is different. A connector skill is a short document that tells your agent which entities it can read, like `contacts` or `tickets`, and which parameters each action accepts. Before your agent reads data from a source, it calls `get_agent_skill_docs` to learn that connector's skill. This prevents your agent from guessing at parameter names. To learn more, see [Connector skills for Airbyte agents](https://airbyte.com/blog/connector-skills-airbyte-agents).
 
 ### Direct read actions
 

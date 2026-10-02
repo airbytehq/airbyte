@@ -32,7 +32,9 @@ After you connect the Airbyte MCP, ask your agent to do things in plain language
 
 ## Usage limits
 
-During the private beta, each organization can make up to 100,000 Airbyte MCP tool calls per month at no cost. Direct reads also count toward the API rate limits of the source you read from, and can incur compute costs from your destination.
+During the private beta, each organization can make up to 100,000 direct reads per month at no cost. Other Airbyte MCP tools, like the ones that manage connections or read job logs, don't count toward this limit and are free to use.
+
+Direct reads also count toward the API rate limits of the source you read from, and can incur compute costs from your destination.
 
 ## Limitations
 
