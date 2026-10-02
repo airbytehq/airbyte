@@ -18,7 +18,7 @@ https://mcp.airbyte.com/mcp
 
 - An [Airbyte Cloud](https://cloud.airbyte.com) account in an organization enrolled in the private beta.
 - An MCP client that supports remote MCP servers with OAuth and the Streamable HTTP transport.
-- To read data directly from sources and destinations, an organization admin must [enable the Context layer](../context-layer/manage-access.md). However, you can use the Airbyte MCP to manage pipelines without it.
+- To read data directly from sources and destinations, an organization admin must [enable the context layer](../context-layer/manage-access.md). However, you can use the Airbyte MCP to manage pipelines without it.
 
 ## Sign in
 
@@ -238,4 +238,4 @@ Access tokens expire after 15 minutes. Your agent needs to request a new token b
 ## Next steps
 
 - See what your agent can do in [Airbyte MCP tools](tools.md).
-- Ask an organization admin to [enable the Context layer](../context-layer/manage-access.md) so your agent can read data directly from sources and destinations.
+- Ask an organization admin to [enable the context layer](../context-layer/manage-access.md) so your agent can read data directly from sources and destinations.

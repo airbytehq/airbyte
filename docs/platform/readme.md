@@ -33,7 +33,7 @@ Airbyte is suitable for a wide range of data integration use cases, including AI
 
 AI agents are only as useful as the context they can reach. Data replication gives agents that context. When you extract and load data from all your business systems into a warehouse or lake, you get a single place where data is complete, historical, and joined across sources. Agents can then answer questions that no single API can, without overloading your source systems or hitting their rate limits.
 
-Some questions need data that's fresher than the last sync. Airbyte Cloud's [Context layer](/platform/context-layer) lets agents also read live data directly from supported sources and destinations through the [Airbyte MCP](/platform/airbyte-mcp).
+Some questions need data that's fresher than the last sync. Airbyte Cloud's [context layer](/platform/context-layer) lets agents also read live data directly from supported sources and destinations through the [Airbyte MCP](/platform/airbyte-mcp).
 
 ## Plans
 

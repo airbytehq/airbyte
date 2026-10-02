@@ -14,7 +14,7 @@ With the Airbyte MCP, your agent can:
 
 - **Build and manage data pipelines**: deploy sources and destinations, create connections, select streams, and start syncs.
 - **Troubleshoot and maintain pipelines**: check sync status, read job logs, check connector configurations, and explain failures.
-- **Read data directly from sources and destinations**: when your organization enables the [Context layer](../context-layer/readme.md), your agent can read live data from supported sources and query supported destinations without waiting for a sync.
+- **Read data directly from sources and destinations**: when your organization enables the [context layer](../context-layer/readme.md), your agent can read live data from supported sources and query supported destinations without waiting for a sync.
 - **Learn how each connector works**: connector skills describe the entities, actions, and parameters each connector supports, so your agent knows how to request data correctly.
 - **Answer questions about Airbyte**: your agent can search Airbyte's documentation and the source code for the platform and connectors to answer questions about how Airbyte works.
 
@@ -27,8 +27,8 @@ After you connect the Airbyte MCP, ask your agent to do things in plain language
 - "List the connections in my Airbyte workspace and tell me which ones failed in the last day."
 - "Why did my last Salesforce sync fail? Read the logs and suggest a fix."
 - "Create a connection from my Postgres source to my BigQuery destination that syncs every 6 hours."
-- "Show me the 10 most recently updated HubSpot contacts." This requires agent access to be enabled in your organization's Context layer.
-- "In Snowflake, how many orders arrived last week?" This requires agent access to be enabled in your organization's Context layer.
+- "Show me the 10 most recently updated HubSpot contacts." This requires agent access to be enabled in your organization's context layer.
+- "In Snowflake, how many orders arrived last week?" This requires agent access to be enabled in your organization's context layer.
 
 ## Usage limits
 
@@ -38,7 +38,7 @@ During the private beta, each organization can make up to 100,000 Airbyte MCP to
 
 - The hosted Airbyte MCP server only works with Airbyte Cloud. You can [run the Airbyte MCP locally with self-managed Airbyte Core](self-managed.md), but there are known issues with local deployments.
 - Direct reads are read-only. Your agent can list and get records, but it can't create, update, or delete records in a source or destination through direct reads.
-- Direct reads only work with [supported connectors](../context-layer/readme.md#supported-connectors), and only after an organization admin [enables the Context layer](../context-layer/manage-access.md).
+- Direct reads only work with [supported connectors](../context-layer/readme.md#supported-connectors), and only after an organization admin [enables the context layer](../context-layer/manage-access.md).
 
 ## Feedback
 
@@ -92,6 +92,6 @@ A connector is the component Airbyte uses to talk to a third-party system. A con
 - **Data replication**: extract data from a source or load data into a destination. This powers connections and syncs.
 - **Agent access**: call the source or destination in real time and return only the records an agent asks for. This powers direct reads.
 
-When the Context layer is on, a single connector you configured in Airbyte can do both: sync data through a connection, and directly call the source or destination from your agent. Airbyte uses the same stored credentials for both actions. To learn more, see [Sources, destinations, and connectors](../move-data/sources-destinations-connectors.md).
+When the context layer is on, a single connector you configured in Airbyte can do both: sync data through a connection, and directly call the source or destination from your agent. Airbyte uses the same stored credentials for both actions. To learn more, see [Sources, destinations, and connectors](../move-data/sources-destinations-connectors.md).
 
 </details>

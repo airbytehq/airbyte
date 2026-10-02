@@ -36,7 +36,7 @@ A connector can have one or both of these capabilities:
 
 Each connector's page shows which capabilities it has under **Connector type**.
 
-In Airbyte Cloud, the [Context layer](/platform/context-layer) lets a single source or destination you set up use both capabilities. When it's on, a connector you set up for data replication can also answer read-only requests from AI agents through the [Airbyte MCP](/platform/airbyte-mcp), using the same stored credentials. These direct reads support the `list` and `get` actions. They don't affect your syncs.
+In Airbyte Cloud, the [context layer](/platform/context-layer) lets a single source or destination you set up use both capabilities. When it's on, a connector you set up for data replication can also answer read-only requests from AI agents through the [Airbyte MCP](/platform/airbyte-mcp), using the same stored credentials. These direct reads support the `list` and `get` actions. They don't affect your syncs.
 
 ## Add and manage sources and destinations
 

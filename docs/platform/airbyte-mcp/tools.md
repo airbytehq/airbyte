@@ -86,7 +86,7 @@ These tools display interactive views in clients that support [MCP Apps](https:/
 
 ## Direct reads
 
-These tools read data directly from sources and destinations. They only work after an organization admin [enables the Context layer](../context-layer/manage-access.md) and turns on agent access for the source or destination. They're read-only. They're only available in Airbyte Cloud.
+These tools read data directly from sources and destinations. They only work after an organization admin [enables the context layer](../context-layer/manage-access.md) and turns on agent access for the source or destination. They're read-only. They're only available in Airbyte Cloud.
 
 | Tool | Description |
 | :--- | :--- |
