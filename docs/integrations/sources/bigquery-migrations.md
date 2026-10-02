@@ -4,6 +4,10 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 1.0.0
 
+:::danger Risk of permanent data loss
+Like every database source, this connector reads the rows that BigQuery holds at sync time and has no start date. If a stream syncs in **Incremental | Append** or **Incremental | Append + Deduped** and BigQuery no longer holds some rows that were synced earlier, because they were deleted or removed by table or partition expiration, a **Refresh and remove records** or a **Clear** drops those rows from the destination for good. Use **Refresh and retain records** when you refresh such a stream, and snapshot the destination table first if you are unsure. See [Refreshes](/platform/operator-guides/refreshes).
+:::
+
 Version 1.0.0 rebuilds the BigQuery source on Airbyte's Bulk CDK. It changes the discovered schema of most streams and the format of some values, so it is a breaking change for every connection that uses the connector: **each connection must refresh its source schema before its first sync on 1.0.0.** Saved configurations and incremental cursor state carry over, except for sources that relied on the credentials of the environment (see [Other changes](#other-changes)).
 
 What else is new: on Airbyte Cloud the connector reads tables through the [BigQuery Storage Read API](https://cloud.google.com/bigquery/docs/reference/storage) in parallel read streams, full refresh syncs emit state while they run so that large tables resume after an interruption, nested `STRUCT` and `ARRAY` schemas and primary key constraints are discovered, speed mode is supported, and the value bugs listed under [Value changes](#value-changes) are fixed.
@@ -45,13 +49,9 @@ The catalog the connector discovers differs from versions 0.4.x in the following
 
 Every connection needs step 1. Steps 2 to 4 apply only in the cases they describe.
 
-:::caution
-Like every database source, this connector reads the rows that BigQuery holds at sync time and has no start date. If a stream syncs in **Incremental | Append** or **Incremental | Append + Deduped** and BigQuery no longer holds some rows that were synced earlier, because they were deleted or removed by table or partition expiration, a **Refresh and remove records** or a **Clear** drops those rows from the destination for good. Use **Refresh and retain records** when you refresh such a stream, and snapshot the destination table first if you are unsure. See [Refreshes](/platform/operator-guides/refreshes).
-:::
-
 1. Upgrade the connector, then refresh the source schema of each connection that uses it and save the connection without clearing data. Until a connection has refreshed its schema, every stream with a column whose type changed fails with an error that asks for the refresh.
-2. Run a sync. The destination applies the new column types during that sync, and Full Refresh | Overwrite streams need nothing beyond the schema refresh. If the sync fails because of the type change, refresh the failing streams with **Refresh and retain records**, which keeps the records already in the destination and reads the stream again from the start.
-3. If a connection uses a `BOOL`, `BYTES`, `JSON`, `STRUCT` or `ARRAY` column as its incremental cursor, choose a new cursor column. The saved cursor value belongs to the old column, so the stream is read again in full on its next sync. The same happens when a saved cursor value cannot be interpreted as the column's type.
+2. Run a sync. The destination applies the new column types during that sync, and Full Refresh | Overwrite streams need nothing beyond the schema refresh. If the sync fails because of the type change, refresh the failing streams with **Refresh and retain records**, which keeps the records already in the destination and reads the stream again from the start. In **Incremental | Append**, this leaves two copies of each row that BigQuery still holds, which you can tell apart by `_airbyte_generation_id`.
+3. If a connection uses a `BOOL`, `BYTES`, `JSON`, `STRUCT` or `ARRAY` column as its incremental cursor, choose a new cursor column. The saved cursor value belongs to the old column, so the stream is read again in full on its next sync. The same happens when a saved cursor value cannot be interpreted as the column's type. In **Incremental | Append**, the full read appends every row again, so the destination holds duplicates of the rows synced before the upgrade. **Incremental | Append + Deduped** merges them on the primary key.
 4. If a source is configured without a service account key, paste the JSON key of a service account into **Service Account Key JSON**. See [Service account](bigquery.md#service-account) for the roles it needs, including the one that enables the Storage Read API (Airbyte Cloud only).
 
 Incremental streams whose cursor column keeps its type continue from their saved cursor value.
