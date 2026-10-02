@@ -115,7 +115,10 @@ def test_401_after_refresh_fails_without_refreshing_again(requests_mock, get_sou
 @pytest.mark.parametrize(
     "status_code, error",
     [
+        # The CDK's defaults when a manifest sets no refresh_token_error values. The manifest keeps them.
         pytest.param(400, "invalid_grant", id="refresh_token_expired_or_replaced"),
+        pytest.param(400, "invalid_permissions", id="cdk_default_value_kept"),
+        # Added by the manifest.
         pytest.param(401, "invalid_client", id="bad_client_credentials"),
         pytest.param(400, "unauthorized_client", id="client_not_allowed_grant"),
     ],

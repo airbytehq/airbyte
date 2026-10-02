@@ -815,6 +815,7 @@ definitions:
       refresh_token_error_key: error
       refresh_token_error_values:
         - invalid_grant
+        - invalid_permissions
         - invalid_client
         - unauthorized_client
     error_handler:
