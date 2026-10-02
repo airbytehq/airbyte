@@ -80,6 +80,10 @@ definitions:
         action: RATE_LIMITED
       - http_codes: [500, 502, 503, 504]
         action: RETRY
+      # A 425 means Amazon rejected the request as a duplicate of an already-running report.
+      # Return the response to DuplicateReportCreationRequester, which reuses the named report.
+      - http_codes: [425]
+        action: IGNORE
       - predicate: "{{ 'KDP authors do not have access to Sponsored Brands functionality' in response.details }}"
         action: FAIL
         failure_type: config_error
@@ -96,11 +100,6 @@ definitions:
         action: FAIL
         failure_type: config_error
         error_message: "{{ response.details }}"
-      - type: HttpResponseFilter
-        http_codes: [ 425 ]
-        action: FAIL
-        failure_type: config_error
-        error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent threads to 2 for sequential processing."
 
   report_polling_error_handler:
     type: DefaultErrorHandler
@@ -4121,7 +4120,8 @@ definitions:
       field_path:
         - status
     creation_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.DuplicateReportCreationRequester
       path: /reporting/reports
       url_base: >-
         {%- set URL_MAPPING = {

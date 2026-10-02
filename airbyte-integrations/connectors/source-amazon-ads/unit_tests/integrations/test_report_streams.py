@@ -10,8 +10,8 @@ import pytest
 import requests_mock
 import yaml
 
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.models import Level as LogLevel
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -185,6 +185,75 @@ class TestDisplayReportStreams:
         creation_calls = [r for r in requests_mock.request_history if r.method == "POST" and r.url.endswith("/reporting/reports")]
         assert len(creation_calls) == 2
         assert len(output.records) == 1
+
+    @pytest.mark.parametrize(
+        "stream_name",
+        [
+            "sponsored_brands_v3_report_stream",
+            "sponsored_display_campaigns_report_stream_daily",
+        ],
+    )
+    def test_given_425_duplicate_on_report_creation_then_reuses_existing_report(
+        self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles, stream_name: str
+    ):
+        """Amazon can reject a report creation POST with HTTP 425 and a body naming the already-running
+        duplicate report. The creation requester must then GET that report and carry on as if the POST
+        had returned it, so the existing poll/download flow works unchanged."""
+        report_id = "ba240045-7bcc-4c6b-b710-adf13d14074d"
+        download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
+        requests_mock.post(
+            "https://advertising-api.amazon.com/reporting/reports",
+            json={"code": "425", "detail": f"The Request is a duplicate of : {report_id}"},
+            status_code=425,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+        requests_mock.get(
+            f"https://advertising-api.amazon.com/reporting/reports/{report_id}",
+            json={"reportId": report_id, "status": "COMPLETED", "url": download_url},
+            status_code=200,
+            request_headers={
+                "Authorization": "Bearer test-access-token",
+                "Amazon-Advertising-API-Scope": "1",
+            },
+        )
+        report_data = b'[{"date": "2023-01-01", "record": "data"}]' if stream_name.endswith("_daily") else b'[{"record": "data"}]'
+        requests_mock.get(download_url, content=gzip.compress(report_data), status_code=200)
+
+        output = self._read(config, stream_name)
+
+        assert output.errors == []
+        assert len(output.records) > 0
+        creation_calls = [r for r in requests_mock.request_history if r.method == "POST" and r.url.endswith("/reporting/reports")]
+        assert len(creation_calls) > 0
+        report_lookup_calls = [
+            r for r in requests_mock.request_history if r.method == "GET" and r.url.endswith(f"/reporting/reports/{report_id}")
+        ]
+        # At least two GETs: the substitute creation lookup plus the poll.
+        assert len(report_lookup_calls) >= 2
+        assert all(r.headers["Amazon-Advertising-API-Scope"] == "1" for r in report_lookup_calls)
+
+    def test_given_425_without_report_id_on_report_creation_then_fails_with_config_error(
+        self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
+    ):
+        """A 425 whose body carries no report ID cannot be recovered: it must surface as a config
+        error rather than being silently ignored or retried."""
+        requests_mock.post(
+            "https://advertising-api.amazon.com/reporting/reports",
+            json={"code": "425", "detail": "Too early"},
+            status_code=425,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+
+        catalog = CatalogBuilder().with_stream("sponsored_brands_v3_report_stream", SyncMode.incremental).build()
+        state = StateBuilder().build()
+        source = get_source(config, state)
+        output = read(source, config, catalog, state, expecting_exception=True)
+
+        config_errors = [message.trace.error for message in output.errors if message.trace.error.failure_type == FailureType.config_error]
+        assert config_errors, f"expected a config_error trace message, got: {output.errors}"
+        assert any("duplicate report requests" in error.message for error in config_errors)
+        report_lookup_calls = [r for r in requests_mock.request_history if r.method == "GET" and "/reporting/reports/" in r.url]
+        assert report_lookup_calls == []
 
     def test_given_429_then_200_on_report_polling_then_retries_and_returns_records(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
