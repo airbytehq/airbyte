@@ -163,6 +163,8 @@ definitions:
         requester:
           $ref: "#/definitions/linked/Requester"
           url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/vendors"
+          request_parameters:
+            include_subsidiary: "true"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -186,6 +188,8 @@ definitions:
               type:
                 - array
                 - "null"
+              items:
+                type: object
               description: The addresses of the vendor.
             billing_frequency:
               type:
@@ -196,6 +200,8 @@ definitions:
               type:
                 - array
                 - "null"
+              items:
+                type: string
               description: Unique identifiers of contacts associated with this vendor.
             country:
               type:
@@ -280,10 +286,17 @@ definitions:
               type:
                 - string
                 - "null"
+            status:
+              type:
+                - string
+                - "null"
+              description: Status of the vendor, such as ACTIVE; returned by Ramp but not in its OpenAPI spec.
             subsidiary:
               type:
                 - array
                 - "null"
+              items:
+                type: string
               description: ERP subsidiary identifiers associated with this vendor.
             tax_address:
               type:
@@ -891,19 +904,15 @@ streams:
       requester:
         $ref: "#/definitions/linked/Requester"
         url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/users"
-      # Ramp omits suspended users unless asked for by status, so every status is read as its own partition.
+        # The unfiltered call returns every status except USER_SUSPENDED, including the invite and onboarding
+        # statuses the `status` filter rejects; suspended users need their own call.
+        request_parameters: "{{ {} if stream_partition['status'] == 'ALL' else {'status': stream_partition['status']} }}"
       partition_router:
         type: ListPartitionRouter
         cursor_field: status
         values:
-          - USER_ACTIVE
-          - USER_INACTIVE
+          - ALL
           - USER_SUSPENDED
-          - USER_DRAFT
-        request_option:
-          type: RequestOption
-          field_name: status
-          inject_into: request_parameter
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -922,6 +931,8 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: object
             description: A list of custom fields of the user.
           department_id:
             type:
@@ -1082,6 +1093,8 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: object
             description: Information about the entity's active accounts
           connected_subsidiary:
             type:
@@ -1093,11 +1106,6 @@ streams:
               - string
               - "null"
             description: Currency used by this business entity.
-          custom_record_fields:
-            type:
-              - array
-              - "null"
-            description: Custom record field values associated with this entity.
           default_bill_pay_payment_account_id:
             type:
               - string
@@ -1120,11 +1128,15 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: string
             description: List of identifiers for locations associated with this entity.
           payment_accounts:
             type:
               - array
               - "null"
+            items:
+              type: object
             description: Bank accounts eligible for bill payment for this entity.
   - type: DeclarativeStream
     name: business
@@ -1271,6 +1283,11 @@ streams:
               - object
               - "null"
             description: Total balance including pending transactions in minor units with an explicit USD currency code.
+          card_balance_excluding_pending:
+            type:
+              - number
+              - "null"
+            description: Card balance excluding pending transactions; returned by Ramp but not in its OpenAPI spec.
           card_balance_excluding_pending_amount:
             type:
               - object
@@ -1406,6 +1423,8 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: object
             description: Cards linked to this fund.
           created_at:
             type:
@@ -1440,6 +1459,8 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: object
             description: Members who can spend from the fund.
           overrides_spend_program:
             type:
@@ -1570,6 +1591,8 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: object
             description: List of accounting field options selected to code the bill.
           amount:
             type:
@@ -1580,6 +1603,8 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: object
             description: Vendor Credits that have been applied to this Bill
           approval_status:
             type:
@@ -1644,6 +1669,8 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: object
             description: List of inventory line items related to the bill.
           invoice_number:
             type:
@@ -1654,6 +1681,8 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: string
             description: Pre-signed urls to download invoice files.
           is_payment_sync_ready:
             type:
@@ -1675,11 +1704,15 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: string
             description: List of unique identifiers for item receipts associated with this bill through matched purchase orders.
           line_items:
             type:
               - array
               - "null"
+            items:
+              type: object
             description: List of line items related to the bill.
           memo:
             type:
@@ -1708,11 +1741,20 @@ streams:
               - string
               - "null"
             description: Unique identifier of matched purchase order, if one exists.
+          purchase_order_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+            description: Unique identifiers of the purchase orders matched to this bill; returned by Ramp but not in its OpenAPI spec.
           related_bills:
             type:
               - array
               - "null"
-            description: Bills associated with this bill, labelled from this bill's side (e.g.
+            items:
+              type: object
+            description: Bills associated with this bill, labelled from this bill's side (e.g. the insurance bill for a rental). Only returned when bill associations are enabled for the business.
           remote_id:
             type:
               - string
@@ -1760,6 +1802,19 @@ streams:
       requester:
         $ref: "#/definitions/linked/Requester"
         url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/vendors/{{ stream_partition['vendor_id'] }}/contacts"
+        # A vendor deleted after the parent read returns 404; skip it instead of failing the stream.
+        # The 404 handler goes first: on FAIL the composite falls through and returns the shared handler's result.
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 5
+              response_filters:
+                - type: HttpResponseFilter
+                  http_codes:
+                    - 404
+                  action: IGNORE
+            - $ref: "#/definitions/linked/HttpRequester/error_handler"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -1776,6 +1831,7 @@ streams:
         additionalProperties: true
         required:
           - id
+          - vendor_id
         properties:
           email:
             type:
@@ -1801,9 +1857,7 @@ streams:
               - string
               - "null"
           vendor_id:
-            type:
-              - string
-              - "null"
+            type: string
             description: Unique identifier of the vendor this contact belongs to; added by the connector from the parent vendor.
     transformations:
       - type: AddFields
@@ -1852,6 +1906,8 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: object
           created_at:
             type:
               - string
@@ -1865,6 +1921,8 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: object
           days_remaining:
             type:
               - object
@@ -1886,6 +1944,8 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: object
           end_date:
             type:
               - string
@@ -1961,6 +2021,8 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: object
   - type: DeclarativeStream
     name: receipts
     $parameters:
@@ -1972,6 +2034,8 @@ streams:
       requester:
         $ref: "#/definitions/linked/Requester"
         url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/receipts"
+        request_parameters:
+          include_ocr_data: "true"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2097,6 +2161,8 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: object
             description: List of accounting field options selected to code the purchase order.
           amount:
             type:
@@ -2112,6 +2178,8 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: string
             description: List of unique identifiers for attached bills.
           billing_status:
             type:
@@ -2142,11 +2210,15 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: string
             description: List of unique identifiers for item receipts matched to the purchase order.
           line_items:
             type:
               - array
               - "null"
+            items:
+              type: object
             description: List of line items on the purchase order.
           memo:
             type:
@@ -2258,6 +2330,8 @@ streams:
             type:
               - array
               - "null"
+            items:
+              type: string
             description: List of unique identifiers for attached transactions.
           user_id:
             type:
@@ -2303,8 +2377,8 @@ spec:
       start_date:
         type: string
         description: >-
-          Only transactions and reimbursements changed on or after this date are synced on the first
-          sync. Use UTC, for example 2024-01-01T00:00:00Z.
+          Only transactions and reimbursements changed on or after this date, and receipts created on or
+          after it, are synced on the first sync. Use UTC, for example 2024-01-01T00:00:00Z.
         title: Start Date
         format: date-time
         default: "2019-01-01T00:00:00Z"

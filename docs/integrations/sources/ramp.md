@@ -7,7 +7,7 @@ Syncs cards, transactions and reimbursements, plus Ramp&#39;s organisation, spen
 |-------|------|-------------|---------------|
 | `client_id` | `string` | Ramp Client ID. Your Ramp API client ID, created in Ramp&#39;s developer settings. |  |
 | `client_secret` | `string` | Ramp Client Secret. Your Ramp API client secret. |  |
-| `start_date` | `string` | Start Date. Earliest updated_at to pull on the initial sync of the transactions and reimbursements streams. Format ISO 8601 with Z suffix (e.g. 2024-01-01T00:00:00Z). Ignored on subsequent incremental syncs. |  |
+| `start_date` | `string` | Start Date. Earliest updated_at to pull on the initial sync of the transactions and reimbursements streams, and earliest created_at for the receipts stream. Format ISO 8601 with Z suffix (e.g. 2024-01-01T00:00:00Z). Ignored on subsequent incremental syncs. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -38,7 +38,7 @@ Syncs cards, transactions and reimbursements, plus Ramp&#39;s organisation, spen
 - The reimbursements stream syncs both directions: out-of-pocket reimbursements (BUSINESS_TO_USER) and repayments (USER_TO_BUSINESS).
 - Every stream added in version 0.2.0 needs its own read scope on your Ramp app: `users:read`, `departments:read`, `locations:read`, `entities:read`, `business:read` (business and business_balance), `funds:read`, `spend_programs:read`, `bills:read`, `vendors:read` (vendors, vendor_contacts and vendor_agreements), `receipts:read`, `merchants:read` and `purchase_orders:read`. A stream whose scope is missing fails with a message naming the scope; the cards, transactions and reimbursements streams are not affected.
 - The purchase_orders stream needs Ramp Plus. On other plans, deselect it.
-- The users stream includes suspended and draft users, the funds stream includes terminated funds, the bills stream includes archived (deleted) bills, and the purchase_orders and vendor_agreements streams include archived records.
+- The users stream includes every user status, including invited, draft, inactive and suspended users. The vendors stream skips draft vendors and vendors still waiting for approval, as Ramp's API does by default. The funds stream includes terminated funds, the bills stream includes archived (deleted) bills, and the purchase_orders and vendor_agreements streams include archived records.
 - The business_balance stream has no primary key: each sync emits one snapshot of the current balances.
 
 ## IP allow list

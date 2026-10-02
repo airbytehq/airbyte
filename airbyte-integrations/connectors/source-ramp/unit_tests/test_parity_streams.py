@@ -47,7 +47,6 @@ def _token_scopes(request_history) -> list:
 
 # (stream, endpoint path, scope, partition field, partition values)
 LIST_STREAMS = [
-    ("users", "users", "users:read", "status", ["USER_ACTIVE", "USER_INACTIVE", "USER_SUSPENDED", "USER_DRAFT"]),
     ("departments", "departments", "departments:read", None, None),
     ("locations", "locations", "locations:read", None, None),
     ("entities", "entities", "entities:read", None, None),
@@ -116,6 +115,46 @@ def test_list_stream_reads_with_its_own_scope(stream_name, path, scope, partitio
         assert sorted({params[partition_field] for params in all_params}) == sorted(partition_values)
 
 
+def test_users_read_unfiltered_then_suspended():
+    """`users` makes one call without `status`, which returns every status except suspended, then one for suspended users.
+
+    The `status` filter rejects the invite and onboarding statuses with 422, so per-status partitions would miss them.
+    """
+    url = f"{BASE_URL}/users"
+    with requests_mock.Mocker() as mocker:
+        mocker.post(TOKEN_URL, json=TOKEN_RESPONSE)
+        mocker.get(
+            url,
+            [
+                {"json": _page([{"id": "u-1", "status": "INVITE_PENDING"}]), "status_code": 200},
+                {"json": _page([{"id": "u-2", "status": "USER_SUSPENDED"}]), "status_code": 200},
+            ],
+        )
+        output = read_stream("users")
+
+    assert not output.errors
+    assert sorted(record_ids(output)) == ["u-1", "u-2"]
+    statuses = [query_params(request).get("status") for request in requests_to(mocker.request_history, "/developer/v1/users")]
+    assert sorted(statuses, key=str) == sorted([None, "USER_SUSPENDED"], key=str)
+
+
+@pytest.mark.parametrize(
+    "stream_name, path, flag",
+    [
+        pytest.param("vendors", "vendors", "include_subsidiary", id="vendors_subsidiary"),
+        pytest.param("receipts", "receipts", "include_ocr_data", id="receipts_ocr"),
+    ],
+)
+def test_optional_fields_are_requested(stream_name, path, flag):
+    """Ramp only returns `subsidiary` and `ocr` when asked; the streams ask so those fields are populated."""
+    with requests_mock.Mocker() as mocker:
+        mocker.post(TOKEN_URL, json=TOKEN_RESPONSE)
+        mocker.get(f"{BASE_URL}/{path}", json=_page([{"id": "x-1", "created_at": "2024-07-01T00:00:00+00:00"}]))
+        read_stream(stream_name)
+
+    assert query_params(requests_to(mocker.request_history, f"/developer/v1/{path}")[0]).get(flag) == "true"
+
+
 def test_purchase_orders_include_archived():
     """`purchase_orders` asks for archived purchase orders so deletions replicate."""
     with requests_mock.Mocker() as mocker:
@@ -160,6 +199,36 @@ def test_vendor_contacts_are_read_per_vendor_and_carry_vendor_id():
     assert records == [("v-1", "c-1"), ("v-2", "c-1")]
     # The parent `vendors` read builds its own authenticator, so the substream logs in twice.
     assert _token_scopes(mocker.request_history) == [ALL_SCOPES, ALL_SCOPES]
+
+
+def test_vendor_contacts_skip_a_vendor_that_returns_404():
+    """A vendor deleted between the parent read and its contacts call returns 404; the stream skips it and keeps going."""
+    with requests_mock.Mocker() as mocker:
+        mocker.post(TOKEN_URL, json=TOKEN_RESPONSE)
+        mocker.get(f"{BASE_URL}/vendors", json=_page([{"id": "v-1"}, {"id": "v-2"}]))
+        mocker.get(
+            f"{BASE_URL}/vendors/v-1/contacts",
+            json={"error_v2": {"error_code": "DEVELOPER_7002", "message": "The requested Vendor (v-1) does not exist"}},
+            status_code=404,
+        )
+        mocker.get(f"{BASE_URL}/vendors/v-2/contacts", json=_page([{"id": "c-1", "email": "b@example.com"}]))
+        output = read_stream("vendor_contacts")
+
+    assert not output.errors
+    assert [(message.record.data["vendor_id"], message.record.data["id"]) for message in output.records] == [("v-2", "c-1")]
+
+
+def test_vendor_contacts_keep_the_scope_message_on_403():
+    """The 404 handler does not swallow other errors: a 403 still fails the stream with the scope message."""
+    with requests_mock.Mocker() as mocker:
+        mocker.post(TOKEN_URL, json=TOKEN_RESPONSE)
+        mocker.get(f"{BASE_URL}/vendors", json=_page([{"id": "v-1"}]))
+        mocker.get(f"{BASE_URL}/vendors/v-1/contacts", json={"error_v2": {"error_code": "DEVELOPER_7999"}}, status_code=403)
+        output = read_stream("vendor_contacts")
+
+    errors = [message.trace.error for message in output.errors]
+    assert errors and errors[0].failure_type == FailureType.config_error
+    assert "vendors:read scope" in errors[0].message
 
 
 def test_vendor_agreements_paginate_in_the_json_body():
@@ -240,3 +309,4 @@ def test_forbidden_new_stream_is_config_error(stream_name, path, error_code, exp
     assert errors[0].failure_type == FailureType.config_error, f"expected config_error, got {errors[0].failure_type}"
     for expected in expected_messages:
         assert expected in errors[0].message, f"expected {expected!r} in {errors[0].message!r}"
+
