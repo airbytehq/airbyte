@@ -75,7 +75,7 @@ Follow Google's [Create and delete service account keys](https://cloud.google.co
 | **Dataset ID**                         | No       | Restricts the source to one dataset. Leave it empty to discover every dataset of the project. Set it on projects with a large number of datasets, because discovery lists every table of every dataset it can see.                                                                                                                                                            |
 | **Service Account Key JSON**           | Yes      | The contents of the JSON key file.                                                                                                                                                                                                                                                                                                                                            |
 | **Job Execution Project ID**           | No       | Advanced. The project that runs, and is billed for, the query jobs. Use it to keep Airbyte's query quota and cost apart from the data project, or to read from a project where the service account only has data access. Defaults to **Project ID**.                                                                                                                          |
-| **Max Concurrent Queries to Database** | No       | Advanced, Airbyte Cloud only. How many tables the connector reads at the same time. Leave it empty to let Airbyte choose. On self-managed Airbyte the field can't be edited and is fixed at 1: tables are read one at a time.                                                                                                                                                 |
+| **Max Concurrent Queries to Database** | No       | Advanced, Airbyte Cloud only. How many queries and Storage Read API read streams the connector runs at the same time, across all tables. Leave it empty to run one at a time, or, in speed mode, one per data channel. On self-managed Airbyte the field can't be edited and is fixed at 1.                                                                                   |
 | **Use the BigQuery Storage Read API**  | No       | Advanced, Airbyte Cloud only, on by default. Reads tables through the Storage Read API and streams query results through it. Turn it off to read everything through the query API, which is much slower on large tables. On self-managed Airbyte the field can't be edited and stays off: every table is read through the query API. See [Read throughput](#read-throughput). |
 
 4. Click **Set up source**. The connection test lists the datasets and their tables and runs a trivial query. It fails with `Discovered zero tables` when the dataset, or the whole project, contains no tables.
@@ -166,7 +166,8 @@ Version 1.0.0 keeps the configuration properties and understands the incremental
 - **Discovery of a whole project is slow** when the project has thousands of datasets, because the tables are listed one dataset at a time. Set **Dataset ID**.
 - **`Access Denied`, `PERMISSION_DENIED` or `Not found` errors** point at a missing role on the data project or the job project. Check the roles listed under [Service account](#service-account), and remember that **Job Execution Project ID** needs the BigQuery Job User role too.
 - **A warning about the Storage Read API at the start of a sync** means the service account lacks a permission listed under [Permissions for high-speed reads](#permissions-for-high-speed-reads). The sync completes through the query path, but large tables take much longer.
-- **Read sessions expire after six hours.** A table whose sync is interrupted and resumed more than six hours later is read again from the start.
+- **Read sessions expire after six hours.** A full refresh that's interrupted and resumed more than six hours later reads the table again from the start. See [State and resuming](#state-and-resuming) for incremental first syncs.
+- **`invalid_grant` or `No valid credentials provided` errors** mean Google rejected the service account key: the key was deleted or disabled, or the JSON was pasted incompletely. Create a new key and paste the whole file.
 - **`GEOGRAPHY`, `INTERVAL` and `RANGE` cursors** haven't been validated. Use one of the [supported cursor types](#incremental-sync).
 
 ## IP allow list
@@ -183,24 +184,24 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 1.0.0 | 2026-09-23 | [86950](https://github.com/airbytehq/airbyte/pull/86950) | Rebuild on the Bulk CDK: Storage Read API reads with resumable read streams (Airbyte Cloud only), typed date, time and JSON columns, nested schemas, primary keys, cursor incremental reads and speed mode. See the migration guide |
 | 0.4.5 | 2026-01-21 | [72203](https://github.com/airbytehq/airbyte/pull/72203) | Increase integration test timeouts from 1 to 10 minutes |
 | 0.4.4 | 2025-07-10 | [62911](https://github.com/airbytehq/airbyte/pull/62911) | Convert to new gradle build flow |
-| 0.4.3 | 2024-12-18 | [49875](https://github.com/airbytehq/airbyte/pull/49875) | Use a base image: airbyte/java-connector-base:1.0.0 |
-| 0.4.2 | 2024-02-22 | [35503](https://github.com/airbytehq/airbyte/pull/35503) | Source BigQuery: replicating RECORD REPEATED fields |
-| 0.4.1 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
+| 0.4.3 | 2024-12-19 | [49875](https://github.com/airbytehq/airbyte/pull/49875) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 0.4.2 | 2024-02-23 | [35503](https://github.com/airbytehq/airbyte/pull/35503) | Source BigQuery: replicating RECORD REPEATED fields |
+| 0.4.1 | 2024-02-01 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
 | 0.4.0 | 2023-12-18 | [33484](https://github.com/airbytehq/airbyte/pull/33484) | Remove LEGACY state |
-| 0.3.0 | 2023-06-26 | [27737](https://github.com/airbytehq/airbyte/pull/27737) | License Update: Elv2 |
-| 0.2.3 | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/15535) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
+| 0.3.0 | 2023-06-29 | [27737](https://github.com/airbytehq/airbyte/pull/27737) | License Update: Elv2 |
+| 0.2.3 | 2022-10-14 | [15535](https://github.com/airbytehq/airbyte/pull/15535) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 0.2.2 | 2022-09-22 | [16902](https://github.com/airbytehq/airbyte/pull/16902) | Source BigQuery: added user agent header |
 | 0.2.1 | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage |
 | 0.2.0 | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields. |
-| 0.1.9 | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors |
-| 0.1.8 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
-| 0.1.7 | 2022-04-11 | [11484](https://github.com/airbytehq/airbyte/pull/11484) | BigQuery connector escape column names |
+| 0.1.9 | 2022-07-21 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors |
+| 0.1.8 | 2022-06-21 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
+| 0.1.7 | 2022-04-13 | [11484](https://github.com/airbytehq/airbyte/pull/11484) | BigQuery connector escape column names |
 | 0.1.6 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.1.5 | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
 | 0.1.4   | 2021-09-30 | [\#6524](https://github.com/airbytehq/airbyte/pull/6524) | Allow `dataset_id` null in spec                                                                                                           |
-| 0.1.3   | 2021-09-16 | [\#6051](https://github.com/airbytehq/airbyte/pull/6051) | Handle NPE `dataset_id` is not provided                                                                                                   |
-| 0.1.2   | 2021-09-16 | [\#6135](https://github.com/airbytehq/airbyte/pull/6135) | 🐛 BigQuery source: Fix nested structs                                                                                                    |
-| 0.1.1   | 2021-07-28 | [\#4981](https://github.com/airbytehq/airbyte/pull/4981) | 🐛 BigQuery source: Fix nested arrays                                                                                                     |
+| 0.1.3   | 2021-09-23 | [\#6051](https://github.com/airbytehq/airbyte/pull/6051) | Handle NPE `dataset_id` is not provided                                                                                                   |
+| 0.1.2   | 2021-09-17 | [\#6135](https://github.com/airbytehq/airbyte/pull/6135) | 🐛 BigQuery source: Fix nested structs                                                                                                    |
+| 0.1.1   | 2021-07-27 | [\#4981](https://github.com/airbytehq/airbyte/pull/4981) | 🐛 BigQuery source: Fix nested arrays                                                                                                     |
 | 0.1.0   | 2021-07-22 | [\#4457](https://github.com/airbytehq/airbyte/pull/4457) | 🎉 New Source: Big Query.                                                                                                                 |
 
 </details>
