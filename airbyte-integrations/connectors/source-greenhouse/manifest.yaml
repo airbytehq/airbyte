@@ -1961,6 +1961,16 @@ definitions:
           type: JsonDecoder
       incremental_sync:
         $ref: "#/definitions/updated_at_cursor"
+      transformations:
+        # Greenhouse returns `value` as a string, boolean, integer or array depending on the
+        # question's answer_type. Destinations need one column type, so non-string values are
+        # JSON-encoded. Strings are skipped: re-evaluating them would strip surrounding quotes.
+        - type: AddFields
+          condition: "{{ record['value'] is not none and record['value'] is not string }}"
+          fields:
+            - path: [value]
+              value: "{{ record['value'] | tojson }}"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -6106,14 +6116,10 @@ schemas:
         - string
         format: date-time
       value:
-        description: 'The answer in the same shape the scorecard write API accepts, keyed on the question''s `answer_type`: a string for `text`, a boolean for `yes_no`, the selected option id for `single_select`, and an array of selected option ids for `multi_select`. `null` when unanswered.'
+        description: 'The answer as text, whatever the question''s `answer_type`: the answer itself for `text`, `"true"` or `"false"` for `yes_no`, the selected option id for `single_select` (for example `"26384457003"`), and a JSON array of the selected option ids for `multi_select` (for example `"[26384455003, 26384458003]"`, or `"[]"` when left blank). `null` when a `text`, `yes_no` or `single_select` question is left blank. Greenhouse returns the non-text shapes as booleans, integers and arrays; the connector converts them to text so the column has one type. Use the question''s `answer_type`, or `boolean_value`, to tell them apart.'
         type:
         - 'null'
         - string
-        - boolean
-        - integer
-        - array
-        items: {}
   scorecard_question_options:
     type:
     - 'null'

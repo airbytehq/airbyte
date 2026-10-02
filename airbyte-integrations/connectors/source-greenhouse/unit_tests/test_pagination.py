@@ -1470,3 +1470,40 @@ def test_parity_streams_paginate_and_filter_on_the_first_page_only(requests_mock
     assert not output.errors
     assert [record.record.data["id"] for record in output.records] == [first_record["id"], second_record["id"]]
     assert len(requests) == 2
+
+
+def test_scorecard_question_answers_value_is_always_a_string(requests_mock, get_source, connector_path):
+    """Pin the `value` conversion for every answer_type.
+
+    Greenhouse returns `value` as a string, boolean, option id or array of option ids depending on the
+    question's answer_type. Destinations need one column type, so the stream JSON-encodes everything
+    that isn't already a string and leaves strings and nulls untouched.
+    """
+    url = PARITY_STREAM_ENDPOINTS["scorecard_question_answers"]
+    base = DOCUMENTED_V3_EXAMPLES["scorecard_question_answers"]
+    cases = [
+        ("Some text", "Some text"),
+        ("'quoted'", "'quoted'"),
+        (True, "true"),
+        (False, "false"),
+        (26384457003, "26384457003"),
+        ([26384455003, 26384458003], "[26384455003, 26384458003]"),
+        ([], "[]"),
+        (None, None),
+    ]
+    records = [{**base, "id": index + 1, "value": value} for index, (value, _) in enumerate(cases)]
+    _register_token(requests_mock)
+    requests_mock.get(url, json=records)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream("scorecard_question_answers", SyncMode.full_refresh).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
+
+    assert not output.errors
+    # The CDK drops null-valued keys from emitted records, so a blank text answer arrives without `value`.
+    assert [record.record.data.get("value") for record in output.records] == [expected for _, expected in cases]
+    with open(connector_path / "manifest.yaml") as manifest_file:
+        schema = yaml.safe_load(manifest_file)["schemas"]["scorecard_question_answers"]
+    for record in output.records:
+        validate(record.record.data, schema)
