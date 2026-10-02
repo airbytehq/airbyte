@@ -3,8 +3,9 @@ name: "Hydra: Auto-merge (AI-gated)"
 # Kicks off a Devin AI session using the `pr_scope_analysis` playbook
 # (airbytehq/ai-skills) to evaluate whether the PR is safe to auto-merge. The
 # playbook carries the analysis prompt and the structured output schema; this
-# workflow first rejects PRs without the Support Bot assignment or with
-# destination changes. Eligible PRs are analyzed and evaluated deterministically:
+# workflow first rejects PRs without the Support Bot assignment, with
+# destination changes, or that don't target master (e.g. stacked PRs).
+# Eligible PRs are analyzed and evaluated deterministically:
 #   pass = ALL(preconditions) AND ANY(allowed_scopes)
 #
 # Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
@@ -142,10 +143,11 @@ jobs:
             const supportBotAssigned = pull.assignees.some(
               (assignee) => assignee.login === 'airbyte-support-bot',
             );
+            const targetsMaster = pull.base.ref === 'master';
             const noDestinationChanges = !destinationChanges;
             const valid = !invalidPath;
             const autoMergeEligible =
-              supportBotAssigned && noDestinationChanges;
+              supportBotAssigned && noDestinationChanges && targetsMaster;
 
             if (invalidPath) {
               core.warning(`Non-connector file: ${invalidPath}`);
@@ -174,6 +176,13 @@ jobs:
               destinationChanges
                 ? 'Destination-related changes require human approval and merge.'
                 : 'No destination-related changes detected.',
+            );
+            core.setOutput('targets_master', String(targetsMaster));
+            core.setOutput(
+              'base_branch_reasoning',
+              targetsMaster
+                ? 'PR targets master.'
+                : 'PR targets ' + pull.base.ref + ', not master (e.g. a stacked PR). Merging it would also merge any unmerged PRs below it, which this evaluation does not cover; human approval and merge are required.',
             );
 
       - name: Early exit -- path validation failed
@@ -210,6 +219,7 @@ jobs:
             |------|-------|-----------|
             | ${{ steps.validate-paths.outputs.support_bot_assigned == 'true' && ':white_check_mark:' || ':x:' }} | Airbyte Support Bot Assigned | ${{ steps.validate-paths.outputs.support_bot_reasoning }} |
             | ${{ steps.validate-paths.outputs.no_destination_changes == 'true' && ':white_check_mark:' || ':x:' }} | No Destination Changes | ${{ steps.validate-paths.outputs.destination_reasoning }} |
+            | ${{ steps.validate-paths.outputs.targets_master == 'true' && ':white_check_mark:' || ':x:' }} | Targets Master | ${{ steps.validate-paths.outputs.base_branch_reasoning }} |
 
             > Scope analysis was skipped because deterministic auto-merge eligibility did not pass.
             >
@@ -422,6 +432,8 @@ jobs:
           SUPPORT_BOT_REASONING: ${{ steps.validate-paths.outputs.support_bot_reasoning }}
           NO_DESTINATION_CHANGES: ${{ steps.validate-paths.outputs.no_destination_changes }}
           DESTINATION_REASONING: ${{ steps.validate-paths.outputs.destination_reasoning }}
+          TARGETS_MASTER: ${{ steps.validate-paths.outputs.targets_master }}
+          BASE_BRANCH_REASONING: ${{ steps.validate-paths.outputs.base_branch_reasoning }}
           SESSION_URL: ${{ steps.devin.outputs.session-url }}
           DRY_RUN: ${{ inputs.dry-run }}
         run: |
@@ -453,6 +465,7 @@ jobs:
             done
             echo "| $(icon "$SUPPORT_BOT_ASSIGNED") | Airbyte Support Bot Assigned | ${SUPPORT_BOT_REASONING} |"
             echo "| $(icon "$NO_DESTINATION_CHANGES") | No Destination Changes | ${DESTINATION_REASONING} |"
+            echo "| $(icon "$TARGETS_MASTER") | Targets Master | ${BASE_BRANCH_REASONING} |"
             echo ""
             echo "### Change scope (at least one must pass)"
             echo ""
