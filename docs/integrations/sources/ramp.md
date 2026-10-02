@@ -18,8 +18,8 @@ Syncs cards, transactions, and reimbursements from Ramp&#39;s developer API.
 
 ## Limitations & troubleshooting
 
-- The transactions stream filters by `updated_at` on the client side: every sync re-reads the full transaction list from the API and emits only new or updated records.
-- Declined transactions are not included (Ramp API default).
+- The transactions stream syncs every transaction state, including declined transactions. Declined transactions have `state: DECLINED`; filter them out of spend totals. To backfill declined transactions from before version 0.1.0, refresh the `transactions` stream.
+- The cards stream does not include terminated cards.
 - The reimbursements stream syncs both directions: out-of-pocket reimbursements (BUSINESS_TO_USER) and repayments (USER_TO_BUSINESS).
 
 ## IP allow list
@@ -33,6 +33,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-09-30 | [86957](https://github.com/airbytehq/airbyte/pull/86957) | Map Ramp auth and scope errors to config errors, add a rate-limit budget, filter `transactions` server-side, sync declined transactions, declare missing fields, and make `start_date` optional |
+| 0.0.8 | 2026-09-29 | [87331](https://github.com/airbytehq/airbyte/pull/87331) | Update dependencies |
+| 0.0.7 | 2026-09-22 | [86778](https://github.com/airbytehq/airbyte/pull/86778) | Update dependencies |
 | 0.0.6 | 2026-09-15 | [86193](https://github.com/airbytehq/airbyte/pull/86193) | Update dependencies |
 | 0.0.5 | 2026-09-08 | [85624](https://github.com/airbytehq/airbyte/pull/85624) | Update dependencies |
 | 0.0.4 | 2026-08-18 | [84843](https://github.com/airbytehq/airbyte/pull/84843) | Add hidden configurable API base URL for sandbox testing |

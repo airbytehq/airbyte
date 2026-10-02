@@ -4,7 +4,7 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Harvest v3 stream behavior
 
-This connector uses Greenhouse Harvest v3 with a single OAuth Authorization Code authentication branch. The `OAuthAuthenticator` uses the `refresh_token` grant, HTTP Basic authentication, `expires_at` with `token_expiry_date_format`, and `refresh_token_updater` to persist each rotated refresh token. The `advanced_auth` predicate must remain `[credentials, auth_type]` with `predicate_value: Client`. The `credentials` `oneOf` shape is deliberately retained so a `ClientCredentials` branch can be added additively in a follow-up. Connections idle longer than the approximately 24-hour refresh-token lifetime require manual reauthentication. Cursor follow-up requests use the opaque URL from the `Link` header and must not repeat first-request-only parameters such as `per_page`, date filters, parent filters, or static filters. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade so `applications` backfills once on the new `updated_at` cursor.
+This connector uses Greenhouse Harvest v3 with a `SelectiveAuthenticator` that chooses between two OAuth branches using `[credentials, auth_type]`. The `Client` branch uses the Authorization Code `refresh_token` grant, HTTP Basic authentication, `expires_at` with `token_expiry_date_format`, and `refresh_token_updater` to persist each rotated refresh token. The `ClientCredentials` branch uses the `client_credentials` grant for customer-created custom integrations, has no rotating refresh token or `refresh_token_updater`, and may include the optional Site Admin `sub`. These grants are not interchangeable per Greenhouse application type: partner OAuth apps reject `client_credentials`, while custom integrations reject `authorization_code`. The `advanced_auth` predicate must remain `[credentials, auth_type]` with `predicate_value: Client`. Connections using the `Client` branch idle longer than the approximately 24-hour refresh-token lifetime require manual reauthentication. Cursor follow-up requests use the opaque URL from the `Link` header and must not repeat first-request-only parameters such as `per_page`, date filters, parent filters, or static filters. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade so `applications` backfills once on the new `updated_at` cursor.
 All streams use the v3 cursor paginator with a first-page `per_page` value of 500 (the v3 maximum; the server default is 100).
 
 v3 invariants a future edit must not break:
@@ -43,6 +43,10 @@ curl --request GET \
 
 That is, `updated_at=gte|{datetime}|lte|{datetime}`, with `|` separating operator and value, and it is the shape every cursor-field date filter here uses (`submitted_at` for `eeoc`). Do not rewrite it into repeated parameters, `updated_at[gte]`-style brackets, or a lower bound alone because the reference text does not mention it; build the request in the docs page first and match what it produces.
 
+`lte` is exclusive at an exact boundary value, while `gte` is inclusive. Measured on 2026-09-28 against 12 `job_notes` records: `gte|{oldest}|lte|{newest}` returns 11, omitting the record whose `updated_at` equals `{newest}` exactly, and raising the bound by a fraction of a second returns all 12. It is exclusivity rather than sub-second truncation of the bound - with three records inside one second, `lte` set to the latest of the three still returns the other two, which truncation would have dropped as well.
+
+This needs no compensation in the manifest and none is present. Because `gte` is inclusive, a record sitting exactly on a slice boundary is read by the next slice, and on the next sync by the state cursor's own lower bound. Do not widen `lte` to "fix" it: that would re-read the boundary record in both slices instead.
+
 | Stream | Relationship | Cursor field | Request filter | Status |
 |---|---|---|---|---|
 | applications | top-level | updated_at | updated_at | incremental |
@@ -79,3 +83,25 @@ That is, `updated_at=gte|{datetime}|lte|{datetime}`, with `|` separating operato
 | tags | top-level | updated_at | updated_at | incremental |
 | user_roles | top-level | updated_at | updated_at | incremental |
 | user_permissions | top-level | updated_at | updated_at | incremental |
+| application_stages | top-level | updated_at | updated_at | incremental |
+| applied_candidate_tags | top-level | updated_at | updated_at | incremental |
+| attachments | top-level | updated_at | updated_at | incremental |
+| candidate_attribute_types | top-level | updated_at | updated_at | incremental |
+| candidate_educations | top-level | updated_at | updated_at | incremental |
+| candidate_employments | top-level | updated_at | updated_at | incremental |
+| prospect_details | top-level | updated_at | updated_at | incremental |
+| referrers | top-level | updated_at | updated_at | incremental |
+| rejection_details | top-level | updated_at | updated_at | incremental |
+| interview_kits | top-level | updated_at | updated_at | incremental |
+| interviewer_tags | top-level | updated_at | updated_at | incremental |
+| interviewers | top-level | updated_at | updated_at | incremental |
+| job_interviews | top-level | updated_at | updated_at | incremental |
+| scorecard_candidate_attributes | top-level | updated_at | updated_at | incremental |
+| scorecard_questions | top-level | updated_at | updated_at | incremental |
+| approver_groups | top-level | updated_at | updated_at | incremental |
+| approvers | top-level | updated_at | updated_at | incremental |
+| job_hiring_managers | top-level | updated_at | updated_at | incremental |
+| job_notes | top-level | updated_at | updated_at | incremental |
+| job_owners | top-level | updated_at | updated_at | incremental |
+| prospect_pool_stages | top-level | updated_at | updated_at | incremental |
+| user_emails | top-level | updated_at | updated_at | incremental |
