@@ -197,7 +197,7 @@ Version 1.5.0 added these 5 streams, all incremental on `updated_at`. Together w
 
 `job_candidate_attributes`, `job_post_locations`, `scorecard_question_answer_options`, `scorecard_question_answers`, `scorecard_question_options`
 
-All 5 are disabled by default on new and existing connections, unless a connection is set to propagate all field and stream changes, in which case Airbyte enables them automatically. Each one needs its own Harvest v3 scope. If you authorized an OAuth source before 1.5.0, re-run the consent flow after the upgrade, before you enable any of these streams. If your connection propagates all field and stream changes, Airbyte enables the five streams as soon as 1.5.0 reaches it, and syncs fail with a `403` configuration error until you re-run the consent flow or disable the streams. To prevent this, set the connection to propagate field changes only before the upgrade. With Client Credentials, grant `harvest:job_candidate_attributes:list`, `harvest:job_post_locations:list`, `harvest:scorecard_question_answer_options:list`, `harvest:scorecard_question_answers:list`, and `harvest:scorecard_question_options:list` to the credential in Greenhouse. See [Scopes](#scopes).
+All 5 are disabled by default on new and existing connections. Each one needs its own Harvest v3 scope. If you authorized an OAuth source before 1.5.0, re-run the consent flow after the upgrade, before you enable any of these streams. If your connection propagates all field and stream changes, Airbyte enables the five streams as soon as 1.5.0 reaches it, and syncs fail with a `403` configuration error until you re-run the consent flow or disable the streams. To prevent this, set the connection to propagate field changes only before the upgrade. With Client Credentials, grant `harvest:job_candidate_attributes:list`, `harvest:job_post_locations:list`, `harvest:scorecard_question_answer_options:list`, `harvest:scorecard_question_answers:list`, and `harvest:scorecard_question_options:list` to the credential in Greenhouse. See [Scopes](#scopes).
 
 ### Streams added in 1.4.0
 
@@ -205,7 +205,7 @@ Version 1.4.0 added these 2 streams, both incremental on `updated_at`:
 
 `candidate_attribute_types`, `job_notes`
 
-Both are disabled by default on new and existing connections. Each one needs its own Harvest v3 scope. On an OAuth source you authorized before 1.4.0, re-run the consent flow before enabling either of them. With Client Credentials, grant `harvest:candidate_attribute_types:list` and `harvest:job_notes:list` to the credential in Greenhouse. See [Scopes](#scopes).
+Both are disabled by default on new and existing connections, unless the connection propagates all field and stream changes, in which case Airbyte enables them on upgrade. Each one needs its own Harvest v3 scope. On an OAuth source you authorized before 1.4.0, re-run the consent flow before enabling either of them. With Client Credentials, grant `harvest:candidate_attribute_types:list` and `harvest:job_notes:list` to the credential in Greenhouse. See [Scopes](#scopes).
 
 ### Streams added in 1.2.0
 
@@ -213,7 +213,7 @@ Version 1.2.0 added these 20 streams, all incremental on `updated_at`. They carr
 
 `application_stages`, `applied_candidate_tags`, `approver_groups`, `approvers`, `attachments`, `candidate_educations`, `candidate_employments`, `interview_kits`, `interviewer_tags`, `interviewers`, `job_hiring_managers`, `job_interviews`, `job_owners`, `prospect_details`, `prospect_pool_stages`, `referrers`, `rejection_details`, `scorecard_candidate_attributes`, `scorecard_questions`, `user_emails`
 
-All 20 are disabled by default on new and existing connections. Each one needs its own Harvest v3 scope. On an OAuth source you authorized before 1.2.0, re-run the consent flow before enabling any of them. With Client Credentials, grant the corresponding scopes to the credential in Greenhouse. See [Scopes](#scopes).
+All 20 are disabled by default on new and existing connections, unless the connection propagates all field and stream changes, in which case Airbyte enables them on upgrade. Each one needs its own Harvest v3 scope. On an OAuth source you authorized before 1.2.0, re-run the consent flow before enabling any of them. With Client Credentials, grant the corresponding scopes to the credential in Greenhouse. See [Scopes](#scopes).
 
 ### Streams that became incremental in 1.1.0
 
@@ -285,7 +285,7 @@ With Client Credentials the connector requests a new access token from Greenhous
 
 ### Sync fails with a `403` configuration error on a stream
 
-The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. This is expected when you enable one of the [streams added in 1.2.0](#streams-added-in-120), [streams added in 1.4.0](#streams-added-in-140), or [streams added in 1.5.0](#streams-added-in-150) on a source you authorized before that version. Compare the scopes in [Prerequisites](#prerequisites) with the ones you approved, then open the source settings, click **Authenticate**, and re-run the consent flow as a Site Admin. With Client Credentials, grant the missing scope to the credential in Greenhouse, and check that **Site Admin user ID** is blank or belongs to a Site Admin.
+The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. This is expected when one of the [streams added in 1.2.0](#streams-added-in-120), [streams added in 1.4.0](#streams-added-in-140), or [streams added in 1.5.0](#streams-added-in-150) is enabled on a source you authorized before that version, either because you enabled it or because the connection propagates all field and stream changes and Airbyte enabled it on upgrade. Compare the [scopes](#scopes) with the ones you approved, then open the source settings, click **Authenticate**, and re-run the consent flow as a Site Admin. With Client Credentials, grant the missing scope to the credential in Greenhouse, and check that **Site Admin user ID** is blank or belongs to a Site Admin.
 
 ### A stream returns fewer records after upgrading to 1.1.0
 
@@ -304,7 +304,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.5.0 | 2026-10-01 | [87442](https://github.com/airbytehq/airbyte/pull/87442) | Add the `scorecard_question_answers`, `scorecard_question_options`, `scorecard_question_answer_options`, `job_candidate_attributes`, and `job_post_locations` streams - see [Streams added in 1.5.0](#streams-added-in-150). The consent flow requests five new scopes; enabling any of them on a source authorized before 1.5.0 requires re-running the consent flow |
+| 1.5.0 | 2026-10-02 | [87442](https://github.com/airbytehq/airbyte/pull/87442) | Add the `scorecard_question_answers`, `scorecard_question_options`, `scorecard_question_answer_options`, `job_candidate_attributes`, and `job_post_locations` streams - see [Streams added in 1.5.0](#streams-added-in-150). The consent flow requests five new scopes; enabling any of them on a source authorized before 1.5.0 requires re-running the consent flow |
 | 1.4.0 | 2026-09-28 | [86478](https://github.com/airbytehq/airbyte/pull/86478) | Add the `candidate_attribute_types` and `job_notes` streams - see [Streams added in 1.4.0](#streams-added-in-140). The consent flow requests two new scopes; enabling either stream on a source authorized before 1.4.0 requires re-running the consent flow |
 | 1.3.0 | 2026-09-24 | [85178](https://github.com/airbytehq/airbyte/pull/85178) | Add client-credentials authentication for Greenhouse custom integrations and self-managed deployments. |
 | 1.2.0 | 2026-09-21 | [86477](https://github.com/airbytehq/airbyte/pull/86477) | Add 20 Harvest v3 detail streams - see [Streams added in 1.2.0](#streams-added-in-120). The consent flow requests 20 new scopes; existing connections keep syncing unchanged, but enabling a new stream on a source authorized before 1.2.0 requires re-running the consent flow |
