@@ -112,6 +112,35 @@ html.plugin-id-default nav.theme-doc-breadcrumbs {
   visibility: hidden;
 }
 
+.boolean-table-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  font-size: 0.9em;
+  line-height: 1.2;
+}
+
+.boolean-table-indicator__icon {
+  font-size: 0.85em;
+}
+
+.boolean-table-indicator--supported {
+  color: var(--color-green-800);
+}
+
+.boolean-table-indicator--unsupported {
+  color: var(--ifm-color-emphasis-600);
+}
+
+html[data-theme="dark"] .boolean-table-indicator--supported {
+  color: var(--color-green-600);
+}
+
+html[data-theme="dark"] .boolean-table-indicator--unsupported {
+  color: var(--ifm-color-emphasis-400);
+}
+
 .admonition-icon,
 .iconExternalLink_wgqa,
 .iconExternalLink_node_modules-\@docusaurus-theme-classic-lib-next-theme-IconExternalLink-styles-module {
