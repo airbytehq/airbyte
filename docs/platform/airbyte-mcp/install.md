@@ -2,13 +2,13 @@
 products: cloud
 ---
 
-# Connect Airbyte MCP to your agent
+# Connect the Airbyte MCP to your agent
 
 :::info Private beta
-Airbyte MCP is in private beta. Features and tools may change. It's available to Airbyte Cloud organizations enrolled in the beta. To use Airbyte MCP with self-managed Airbyte Core, see [Use Airbyte MCP with self-managed Airbyte](self-managed.md).
+The Airbyte MCP is in private beta. Features and tools may change. It's available to Airbyte Cloud organizations enrolled in the beta. To use the Airbyte MCP with self-managed Airbyte Core, see [Use the Airbyte MCP with self-managed Airbyte](self-managed.md).
 :::
 
-Airbyte MCP is a hosted, remote MCP server. You don't need to install anything. Give your MCP client this URL and sign in with your Airbyte Cloud account.
+The Airbyte MCP is a hosted, remote MCP server. You don't need to install anything. Give your MCP client this URL and sign in with your Airbyte Cloud account.
 
 ```text
 https://mcp.airbyte.com/mcp
@@ -18,7 +18,7 @@ https://mcp.airbyte.com/mcp
 
 - An [Airbyte Cloud](https://cloud.airbyte.com) account in an organization enrolled in the private beta.
 - An MCP client that supports remote MCP servers with OAuth and the Streamable HTTP transport.
-- To read data directly from sources and destinations, an organization admin must [enable the Context layer](../context-layer/manage-access.md). You can use Airbyte MCP to manage pipelines without it.
+- To read data directly from sources and destinations, an organization admin must [enable the Context layer](../context-layer/manage-access.md). However, you can use the Airbyte MCP to manage pipelines without it.
 
 ## Sign in
 
@@ -26,9 +26,9 @@ The first time your client connects, it opens the Airbyte Cloud sign-in page in 
 
 If your organization uses [single sign-on](/platform/access-management/sso), select **Sign in with SSO** and enter your **Company identifier**. This is the same identifier you enter after you select **Continue with SSO** on the Airbyte Cloud sign-in page. If you don't know it, ask your Airbyte organization admin.
 
-If you belong to more than one workspace, Airbyte MCP uses your default workspace. Ask your agent to list your workspaces or switch to a different one at any time.
+If you belong to more than one organization or workspace, the Airbyte MCP uses your default workspace. Ask your agent to list your workspaces or switch to a different one at any time.
 
-## Add Airbyte MCP to your client
+## Add the Airbyte MCP to your client
 
 Expand your client below for setup instructions.
 
@@ -56,7 +56,7 @@ ChatGPT connects to remote MCP servers as custom apps in developer mode. Develop
 <details>
 <summary>ChatGPT desktop</summary>
 
-The ChatGPT desktop app uses the apps you add to your ChatGPT account. Follow the **ChatGPT web** instructions to add Airbyte MCP in your browser, then start a new conversation in the desktop app and add the Airbyte app.
+The ChatGPT desktop app uses the apps you add to your ChatGPT account. Follow the **ChatGPT web** instructions to add the Airbyte MCP in your browser, then start a new conversation in the desktop app and add the Airbyte app.
 
 </details>
 
@@ -82,7 +82,7 @@ On Team and Enterprise plans, an owner must first add the custom connector in **
 <details>
 <summary>Claude Desktop</summary>
 
-Custom connectors you add on Claude web are also available in Claude Desktop. Follow the **Claude web** instructions in Claude Desktop or in your browser. Claude connects to Airbyte MCP from the cloud, so you don't need to edit a local configuration file.
+Custom connectors you add on Claude web are also available in Claude Desktop. Follow the **Claude web** instructions in Claude Desktop or in your browser. Claude connects to the Airbyte MCP from the cloud, so you don't need to edit a local configuration file.
 
 </details>
 
@@ -101,7 +101,7 @@ Custom connectors you add on Claude web are also available in Claude Desktop. Fo
 
 4. Sign in to Airbyte Cloud and grant access.
 
-5. Return to Claude Code and start using Airbyte MCP.
+5. Return to Claude Code and start using the Airbyte MCP.
 
 </details>
 
@@ -129,7 +129,7 @@ To install with a configuration file, add this to `.vscode/mcp.json` in your wor
 }
 ```
 
-VS Code detects that the server requires OAuth and opens your browser. Sign in to Airbyte Cloud and grant access. Airbyte MCP's tools are then available in Copilot Chat.
+VS Code detects that the server requires OAuth and opens your browser. Sign in to Airbyte Cloud and grant access. Tools from the Airbyte MCP are then available in Copilot Chat.
 
 </details>
 
@@ -157,7 +157,7 @@ To install with a configuration file, add this to `.vscode/mcp.json` in your wor
 }
 ```
 
-VS Code Insiders detects that the server requires OAuth and opens your browser. Sign in to Airbyte Cloud and grant access. Airbyte MCP's tools are then available in Copilot Chat.
+VS Code Insiders detects that the server requires OAuth and opens your browser. Sign in to Airbyte Cloud and grant access. Tools from the Airbyte MCP are then available in Copilot Chat.
 
 </details>
 
@@ -183,7 +183,7 @@ In **Cursor Settings** > **Tools and MCP**, find **airbyte** and click **Connect
 <details>
 <summary>Other clients</summary>
 
-Airbyte MCP works with any client that supports remote MCP servers with OAuth and the Streamable HTTP transport. Use this server URL:
+The Airbyte MCP works with any client that supports remote MCP servers with OAuth and the Streamable HTTP transport. Use this server URL:
 
 ```text
 https://mcp.airbyte.com/mcp
@@ -214,7 +214,7 @@ Automated agents, scripts, and CI jobs can't complete a browser sign-in. Instead
 
 1. [Create an application and get an access token](/platform/using-airbyte/configuring-api-access). The application acts with the permissions of the user who created it, so consider using a service account.
 
-2. Send the access token in the `Authorization` header of every request to Airbyte MCP.
+2. Send the access token in the `Authorization` header of every request to the Airbyte MCP.
 
    ```json
    {

@@ -6,7 +6,7 @@ Airbyte provides MCP (Model Context Protocol) servers for connecting AI assistan
 
 <Grid columns="1">
 
-<CardWithIcon title="Airbyte MCP" description="Connect AI agents like Claude, ChatGPT, and VS Code Copilot to Airbyte Cloud. Build, monitor, and troubleshoot data pipelines, and read data directly from sources and destinations through the Context layer. Private beta." ctaText="Set up Airbyte MCP" ctaLink="/platform/airbyte-mcp" icon="fa-plug" />
+<CardWithIcon title="Airbyte MCP" description="Connect AI agents like Claude, ChatGPT, and VS Code Copilot to Airbyte Cloud. Build, monitor, and troubleshoot data pipelines, and read data directly from sources and destinations through the Context layer." ctaText="Set up Airbyte MCP" ctaLink="/platform/airbyte-mcp" icon="fa-robot" />
 
 </Grid>
 

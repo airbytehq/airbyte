@@ -45,13 +45,13 @@ const mcpServers = {
   items: [
     {
       type: "link",
-      label: "Agent MCP",
-      href: "/ai-agents/interfaces/mcp/",
+      label: "Airbyte MCP",
+      href: "/platform/airbyte-mcp",
     },
     {
       type: "link",
-      label: "Airbyte MCP",
-      href: "/platform/airbyte-mcp",
+      label: "Agent MCP",
+      href: "/ai-agents/interfaces/mcp/",
     },
     "mcp-servers/airbyte-knowledge-mcp",
   ],

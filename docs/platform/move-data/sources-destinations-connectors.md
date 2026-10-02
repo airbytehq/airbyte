@@ -22,21 +22,21 @@ Connectors have [different support levels](/integrations/connector-support-level
 
 ### Connectors are open source
 
-Airbyte provides over 600 connectors, almost all of which are open source. You can contribute to connectors to make them better or keep them up-to-date as third-parties make changes, or fork it to make it more suitable to your particular needs. 
+Airbyte provides over 600 connectors, almost all of which are open source. You can contribute to connectors to make them better or keep them up-to-date as third-parties make changes, or fork it to make it more suitable to your particular needs.
 
 If you don't see the connector you need, you can build one from scratch. Airbyte provides a no-code and low-code [Connector Builder](../connector-development/connector-builder-ui/overview). For advanced use cases, you can use Connector Development Kits (CDKs), which are more traditional software development tools.
 
-### Data replication connectors and agent connectors
+### Connector capabilities
 
-Airbyte has two kinds of connectors, built for different jobs.
+A connector can have one or both of these capabilities:
 
-- **Data replication connectors** move data. They extract data from a source and load it into a destination during a sync. Most of Airbyte's connectors, and everything in the [connector catalog](/integrations/), are data replication connectors.
+- **Data replication** moves data. The connector extracts data from a source and loads it into a destination during a sync. Everything in the [connector catalog](/integrations/) supports data replication.
 
-- **[Agent connectors](/ai-agents/connectors/)** answer questions. They call a third-party API in real time and return only the records an AI agent asks for.
+- **Agent access** answers questions. The connector calls a third-party system in real time and returns only the records an AI agent asks for. Some connectors, like HubSpot or Zendesk, support [agent access](/ai-agents/connectors/) as well as data replication.
 
-Some third-party systems, like HubSpot or Zendesk, have both kinds of connector. Their data replication connector page links to the agent connector, and the reverse.
+Each connector's page shows which capabilities it has under **Connector type**.
 
-In Airbyte Cloud, the [Context layer](/platform/context-layer) brings the two together. When it's on, a source you set up for data replication can also answer read-only requests from AI agents through [Airbyte MCP](/platform/airbyte-mcp), using the same stored credentials. These direct reads support the `list` and `get` actions of the matching agent connector. They don't affect your syncs.
+In Airbyte Cloud, the [Context layer](/platform/context-layer) lets a single source or destination you set up use both capabilities. When it's on, a connector you set up for data replication can also answer read-only requests from AI agents through the [Airbyte MCP](/platform/airbyte-mcp), using the same stored credentials. These direct reads support the `list` and `get` actions. They don't affect your syncs.
 
 ## Add and manage sources and destinations
 

@@ -255,9 +255,23 @@ const ConnectorMetadataCallout = ({
   defaultDataWorkers,
   lastUpdated,
   definitionId,
+  isAgent,
 }) => (
   <Callout className={styles.connectorMetadataCallout}>
     <dl className={styles.connectorMetadata}>
+      <MetadataStat label="Connector type (beta)">
+        <div className={styles.availability}>
+          <Chip className={styles.available}>
+            <EnabledIcon isEnabled /> Data replication
+          </Chip>
+          <Chip className={isAgent ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isAgent} /> Agent
+          </Chip>
+          <a href="/platform/move-data/sources-destinations-connectors#connector-capabilities">
+            Learn more
+          </a>
+        </div>
+      </MetadataStat>
       <MetadataStat label="Availability">
         <div className={styles.availability}>
           <Chip className={isOss ? styles.available : styles.unavailable}>
@@ -396,12 +410,14 @@ export const HeaderDecoration = ({
   defaultDataWorkers,
   lastUpdated,
   definitionId,
+  isAgent: isAgentString,
   "enterprise-connector": enterpriseConnector,
 }) => {
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
   const isEnterprise = boolStringToBool(isEnterpriseString);
   const isLatestCDK = boolStringToBool(isLatestCDKString);
+  const isAgent = boolStringToBool(isAgentString) === true;
   const isArchived = supportLevel?.toUpperCase() === "ARCHIVED";
 
   return (
@@ -432,6 +448,7 @@ export const HeaderDecoration = ({
         defaultDataWorkers={defaultDataWorkers}
         lastUpdated={lastUpdated}
         definitionId={definitionId}
+        isAgent={isAgent}
       />
     </>
   );
