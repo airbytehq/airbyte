@@ -24,6 +24,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.66 | 2026-10-02 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Send a custom User-Agent (Scryfall rejects default HTTP-library agents with 400) |
 | 0.0.65 | 2026-09-29 | [87339](https://github.com/airbytehq/airbyte/pull/87339) | Update dependencies |
 | 0.0.64 | 2026-09-22 | [86781](https://github.com/airbytehq/airbyte/pull/86781) | Update dependencies |
 | 0.0.63 | 2026-09-15 | [86218](https://github.com/airbytehq/airbyte/pull/86218) | Update dependencies |
