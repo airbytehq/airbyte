@@ -67,9 +67,15 @@ definitions:
       # updated_before — so the cursor sends a single slice with no end bound;
       # stepping without an upper bound would request overlapping windows.
       # "%Y-%m-%d" stays in cursor_datetime_formats so date-only state still parses.
+      # updated_after is exclusive, and a whole-second value excludes that entire
+      # second (updated_after=...:30Z skips a note updated at ...:30.462Z). State is
+      # stored at second precision, so the one-second lookback re-requests the
+      # cursor's own second; without it, a note updated in that second that wasn't
+      # visible on the previous read would be skipped until it is edited again.
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
+        lookback_window: PT1S
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%fZ"

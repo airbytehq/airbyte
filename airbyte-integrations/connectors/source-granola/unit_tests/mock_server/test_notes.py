@@ -67,7 +67,7 @@ class TestNotesIncrementalUpdatedAtCursor(TestCase):
     @HttpMocker()
     def test_note_edited_after_first_sync_is_emitted_again_on_next_sync(self, http_mocker: HttpMocker):
         """A note created before the stored cursor but edited after it is replicated again."""
-        request = _notes_request("2025-12-20T00:00:00Z")
+        request = _notes_request("2025-12-19T23:59:59Z")
         edited_note = {
             "id": "note-edited",
             "created_at": "2025-10-20T10:00:00Z",
@@ -82,9 +82,38 @@ class TestNotesIncrementalUpdatedAtCursor(TestCase):
         assert {message.record.data["id"] for message in output.records} == {"note-edited"}
 
     @HttpMocker()
+    def test_next_sync_requests_one_second_before_cursor_to_catch_same_second_updates(self, http_mocker: HttpMocker):
+        """`updated_after` is exclusive and a whole-second value excludes that entire
+        second, so the request starts one second before the stored cursor. A note
+        updated in the cursor's own second that the previous sync didn't see is emitted."""
+        request = _notes_request("2026-01-05T08:59:59Z")
+        already_synced = {"id": "note-synced", "created_at": "2026-01-05T08:00:00Z", "updated_at": "2026-01-05T09:00:00.200Z"}
+        same_second = {"id": "note-same-second", "created_at": "2026-01-05T08:30:00Z", "updated_at": "2026-01-05T09:00:00.700Z"}
+        http_mocker.get(request, _notes_response([already_synced, same_second]))
+
+        output = _read_notes(StateBuilder().with_stream_state(_STREAM_NAME, {"updated_at": "2026-01-05T09:00:00Z"}).build())
+
+        assert output.errors == []
+        http_mocker.assert_number_of_calls(request, 1)
+        assert {message.record.data["id"] for message in output.records} == {"note-synced", "note-same-second"}
+        assert output.most_recent_state.stream_state.__dict__["updated_at"] == "2026-01-05T09:00:00Z"
+
+    @HttpMocker()
+    def test_lookback_does_not_move_the_cursor_backwards_when_nothing_changed(self, http_mocker: HttpMocker):
+        """A sync that returns no notes keeps the stored cursor instead of the lookback bound."""
+        request = _notes_request("2026-01-05T08:59:59Z")
+        http_mocker.get(request, _notes_response([]))
+
+        output = _read_notes(StateBuilder().with_stream_state(_STREAM_NAME, {"updated_at": "2026-01-05T09:00:00Z"}).build())
+
+        assert output.errors == []
+        http_mocker.assert_number_of_calls(request, 1)
+        assert output.most_recent_state.stream_state.__dict__["updated_at"] == "2026-01-05T09:00:00Z"
+
+    @HttpMocker()
     def test_date_only_state_from_earlier_versions_resumes(self, http_mocker: HttpMocker):
-        """Date-only cursor state still parses and resumes from midnight that day."""
-        request = _notes_request("2025-12-20T00:00:00Z")
+        """Date-only cursor state still parses and resumes from midnight that day, less the one-second lookback."""
+        request = _notes_request("2025-12-19T23:59:59Z")
         http_mocker.get(request, _notes_response([]))
 
         output = _read_notes(StateBuilder().with_stream_state(_STREAM_NAME, {"updated_at": "2025-12-20"}).build())
