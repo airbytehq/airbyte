@@ -42,7 +42,8 @@ Airbyte offers a few options for how it should detect and propagate schema chang
 | Stop future syncs         | Connections will be automatically paused as soon as any schema changes are detected             |
 
 ### Automatic propagation of detected schema changes
-If your connection setting is set to `Propagate field changes only` or `Propagate all field and stream changes`, schema changes except for breaking changes are automatically applied to the ensuing sync and the data in the destination will automatically shift as schema changes are applied. 
+
+If your connection setting is set to `Propagate field changes only` or `Propagate all field and stream changes`, schema changes except for breaking changes are automatically applied to the ensuing sync and the data in the destination will automatically shift as schema changes are applied.
 
 When `Propagate field changes only` is selected, only field changes will be propagated, with one exception: if a stream is removed from the source, it is also removed from the connection.
 
