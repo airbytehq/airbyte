@@ -160,6 +160,17 @@ open class PostgresSourceJdbcPartitionFactory(
             return coldStart(streamState, filenode)
         }
 
+        // The platform clears a stream's state (e.g. schema-change backfill) by omitting
+        // stream_state,
+        // which the CDK surfaces as {}. Outside CDC the connector never emits {}, so treat it as a
+        // cold
+        // start. In CDC (global) mode the CDK serializes completed streams as {}, so it still means
+        // done.
+        if (!config.global && opaqueStateValue.isObject && opaqueStateValue.isEmpty) {
+            log.info { "Stream ${stream.id} has empty state; treating it as a cold start." }
+            return coldStart(streamState, filenode)
+        }
+
         val sv: PostgresSourceJdbcStreamStateValue by lazy { streamState.stateValue!! }
 
         when (config.incrementalConfiguration) {
