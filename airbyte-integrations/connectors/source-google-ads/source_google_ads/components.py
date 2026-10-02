@@ -322,7 +322,9 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
         self._cursor_field = cursor_field
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return stream_state and "state" not in stream_state
+        if not stream_state:
+            return False
+        return not any(key in stream_state for key in ("state", "states", "use_global_cursor"))
 
     def _read_parent_stream(self) -> Iterable[Record]:
         for partition in self._parent_stream.generate_partitions():

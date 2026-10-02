@@ -963,6 +963,53 @@ DOCUMENTED_V3_EXAMPLES = {
         "type": "NOTE",
         "application_id": None,
     },
+    "scorecard_question_answers": {
+        "id": 1,
+        "scorecard_id": 1,
+        "scorecard_question_id": 1,
+        "answer": "This is my answer",
+        "answer_with_tags": None,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "boolean_value": None,
+        "value": "This is my answer",
+    },
+    "scorecard_question_options": {
+        "id": 1,
+        "scorecard_question_id": 1,
+        "name": "Option",
+        "active": True,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "sort_order": 5,
+    },
+    "scorecard_question_answer_options": {
+        "id": 1,
+        "scorecard_question_option_id": 1,
+        "scorecard_question_answer_id": 1,
+        "created_at": "2024-01-01T12:30:30.000Z",
+        "updated_at": "2024-01-01T12:30:30.000Z",
+    },
+    "job_candidate_attributes": {
+        "id": 1,
+        "name": "JavaScript",
+        "active": True,
+        "candidate_attribute_type_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z",
+        "updated_at": "2024-01-01T00:00:00.000Z",
+        "sort_order": 2,
+        "job_id": 1,
+    },
+    "job_post_locations": {
+        "id": 1,
+        "plain_text_location": "New York, NY",
+        "office_id": None,
+        "created_at": "1998-12-15T12:30:30.000Z",
+        "updated_at": "1998-12-15T12:30:30.000Z",
+        "job_post_id": 1,
+        "custom_location_id": None,
+        "type": "free_text",
+    },
 }
 
 
@@ -1377,6 +1424,11 @@ PARITY_STREAM_ENDPOINTS = {
     "prospect_details": "https://harvest.greenhouse.io/v3/prospect_details",
     "referrers": "https://harvest.greenhouse.io/v3/referrers",
     "rejection_details": "https://harvest.greenhouse.io/v3/rejection_details",
+    "scorecard_question_answers": "https://harvest.greenhouse.io/v3/scorecard_question_answers",
+    "scorecard_question_options": "https://harvest.greenhouse.io/v3/scorecard_question_options",
+    "scorecard_question_answer_options": "https://harvest.greenhouse.io/v3/scorecard_question_answer_options",
+    "job_post_locations": "https://harvest.greenhouse.io/v3/job_post_locations",
+    "job_candidate_attributes": "https://harvest.greenhouse.io/v3/job_candidate_attributes",
 }
 
 
@@ -1418,3 +1470,40 @@ def test_parity_streams_paginate_and_filter_on_the_first_page_only(requests_mock
     assert not output.errors
     assert [record.record.data["id"] for record in output.records] == [first_record["id"], second_record["id"]]
     assert len(requests) == 2
+
+
+def test_scorecard_question_answers_value_is_always_a_string(requests_mock, get_source, connector_path):
+    """Pin the `value` conversion for every answer_type.
+
+    Greenhouse returns `value` as a string, boolean, option id or array of option ids depending on the
+    question's answer_type. Destinations need one column type, so the stream JSON-encodes everything
+    that isn't already a string and leaves strings and nulls untouched.
+    """
+    url = PARITY_STREAM_ENDPOINTS["scorecard_question_answers"]
+    base = DOCUMENTED_V3_EXAMPLES["scorecard_question_answers"]
+    cases = [
+        ("Some text", "Some text"),
+        ("'quoted'", "'quoted'"),
+        (True, "true"),
+        (False, "false"),
+        (26384457003, "26384457003"),
+        ([26384455003, 26384458003], "[26384455003, 26384458003]"),
+        ([], "[]"),
+        (None, None),
+    ]
+    records = [{**base, "id": index + 1, "value": value} for index, (value, _) in enumerate(cases)]
+    _register_token(requests_mock)
+    requests_mock.get(url, json=records)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream("scorecard_question_answers", SyncMode.full_refresh).build()
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG, catalog=catalog)
+
+    assert not output.errors
+    # The CDK drops null-valued keys from emitted records, so a blank text answer arrives without `value`.
+    assert [record.record.data.get("value") for record in output.records] == [expected for _, expected in cases]
+    with open(connector_path / "manifest.yaml") as manifest_file:
+        schema = yaml.safe_load(manifest_file)["schemas"]["scorecard_question_answers"]
+    for record in output.records:
+        validate(record.record.data, schema)

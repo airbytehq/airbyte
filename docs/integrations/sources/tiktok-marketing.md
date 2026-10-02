@@ -180,6 +180,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.0 | 2026-09-14 | [85820](https://github.com/airbytehq/airbyte/pull/85820) | Add Website, App and Shop conversion metrics to the daily report streams |
+| 5.1.19 | 2026-09-29 | [87372](https://github.com/airbytehq/airbyte/pull/87372) | Update dependencies |
 | 5.1.18 | 2026-09-22 | [86854](https://github.com/airbytehq/airbyte/pull/86854) | Update dependencies |
 | 5.1.17 | 2026-09-21 | [79183](https://github.com/airbytehq/airbyte/pull/79183) | Classify TikTok API error code 40001 (PERMISSION_ERROR) as config_error instead of system_error |
 | 5.1.16 | 2026-09-15 | [86277](https://github.com/airbytehq/airbyte/pull/86277) | Update dependencies |

@@ -152,7 +152,34 @@ reportPeriod, distributorView, sellingProgram reportOption to be specified" unti
 block ends in `{{ opts if opts else None }}` so an unconfigured connection sends no `reportOptions` key at all and
 its request body is byte-identical to previous versions.
 
-## 9. FATAL reports must surface Amazon's reason
+## 9. Vendor retail analytics streams must hold back four days
+
+Amazon publishes the vendor retail analytics reports "72 hours after the close of the period" for the
+`DAY` reportPeriod
+(https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports).
+Requesting a day it has not published yet makes the report `FATAL` with "The report data for the requested
+date range is not yet available". That is a partial failure per slice, not a skip, so before 6.0.4 every
+sync failed on its newest day and a long-running connection hit the platform's 20-partial-failure limit while
+most of its data had loaded.
+
+The three vendor analytics cursors (Vendor Sales, Vendor Traffic, Net Pure Product Margin) therefore end at
+`now_utc() - duration('P4D')`. Four, not three: a slice for day D closes at D 23:59:59 and is published 72
+hours after *that*, so a three-day holdback is only safe for a sync that starts at midnight UTC. The cursor's
+end bound is exclusive, so the newest day actually requested is four to five days back depending on the time
+of day.
+
+An explicitly configured `replication_end_date` is used as-is with no holdback, matching the pre-migration
+Python connector where `availability_sla_days` only ever moved the "now" bound. `GET_VENDOR_INVENTORY_REPORT`
+has no cursor today; if it gains one it needs the same holdback, since Amazon publishes it on the same
+schedule. Do not apply the holdback to `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` (published five minutes after
+each hour closes) or to the seller `GET_SALES_AND_TRAFFIC_REPORT` streams, which Amazon publishes on a
+different schedule.
+
+A known limitation: the day-aligned window assumes `reportPeriod: DAY`. A connection that configures `WEEK`
+or `MONTH` gets a one-day window that contradicts the configured period, since Amazon expects Sunday- or
+month-aligned bounds for those. This is not handled.
+
+## 10. FATAL reports must surface Amazon's reason
 
 When `getReport` returns `processingStatus: FATAL`, Amazon accepted `createReport` but could not produce the
 report, and the reason lives in a separate document referenced by `reportDocumentId`. The CDK never fetches it:
