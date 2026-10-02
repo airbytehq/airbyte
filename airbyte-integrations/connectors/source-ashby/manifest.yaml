@@ -49,6 +49,24 @@ definitions:
         ({{ info.get('code') or (first.get('code') if first is mapping else first) or 'unknown' }}):
         {{ info.get('message') or (first.get('message') if first is mapping else first) or 'no message provided' }}
         (request ID: {{ info.get('requestId') or 'unavailable' }}).
+  application_updated_at_cursor:
+    # application.list has no updatedAt filter (updatedAfter is ignored) and is ordered by
+    # createdAt, so the record_filter on each application.list selector filters on updatedAt
+    # from the slice start. State is the latest updatedAt seen in a scan that can run for
+    # hours; the 1-day lookback re-reads applications updated mid-scan, for scans up to ~24
+    # hours (about 140,000 applications at 100 history requests per minute).
+    # is_client_side_incremental would ignore lookback_window on CDK 7.32.0.
+    type: DatetimeBasedCursor
+    cursor_field: updatedAt
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+      - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    lookback_window: P1D
   error_handler:
     type: DefaultErrorHandler
     max_retries: 6
@@ -185,6 +203,9 @@ streams:
           type: DpathExtractor
           field_path:
             - results
+        record_filter:
+          type: RecordFilter
+          condition: "{{ not record.get('updatedAt') or str_to_datetime(record['updatedAt']) >= str_to_datetime(stream_interval['start_time']) }}"
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -199,6 +220,8 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+    incremental_sync:
+      $ref: "#/definitions/application_updated_at_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2724,6 +2747,9 @@ streams:
                     type: DpathExtractor
                     field_path:
                       - results
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ not record.get('updatedAt') or str_to_datetime(record['updatedAt']) >= str_to_datetime(stream_interval['start_time']) }}"
                 paginator:
                   type: DefaultPaginator
                   page_token_option:
@@ -2739,6 +2765,8 @@ streams:
                     page_size: 100
                     cursor_value: "{{ response.nextCursor }}"
                     stop_condition: "{{ not response.moreDataAvailable }}"
+              incremental_sync:
+                $ref: "#/definitions/application_updated_at_cursor"
               schema_loader:
                 type: InlineSchemaLoader
                 schema:
@@ -2748,11 +2776,16 @@ streams:
                   properties:
                     id:
                       type: string
+                    updatedAt:
+                      type: string
+                      format: date-time
             parent_key: id
             partition_field: application_id
+            incremental_dependency: true
             extra_fields:
               - - status
               - - createdAt
+              - - updatedAt
     transformations:
       - type: AddFields
         fields:
@@ -2768,6 +2801,14 @@ streams:
             path:
               - application_created_at
             value: "{{ stream_slice.extra_fields['createdAt'] }}"
+          - type: AddedFieldDefinition
+            path:
+              - application_updated_at
+            value: "{{ stream_slice.extra_fields['updatedAt'] }}"
+    incremental_sync:
+      $ref: "#/definitions/application_updated_at_cursor"
+      cursor_field: application_updated_at
+      global_substream_cursor: true
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2787,6 +2828,11 @@ streams:
               - "null"
               - string
           application_created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          application_updated_at:
             type:
               - "null"
               - string
