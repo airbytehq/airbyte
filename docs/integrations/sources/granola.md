@@ -72,7 +72,7 @@ The Granola source connector supports the following streams:
 
 The `notes` stream retrieves meeting notes from your Granola workspace using the [`GET /v1/notes`](https://docs.granola.ai/api-reference/list-notes) endpoint. Each record includes the note ID, title, object type, owner name and email, and creation and last-update timestamps. The API may return additional fields beyond those listed here, and the connector captures them automatically.
 
-For incremental syncs, the connector uses `updated_at` as the cursor field and requests all notes updated since the stored cursor in a single `updated_after` query parameter — the API exposes no upper-bound filter, so the request is one unbounded window rather than stepped slices. A note edited after a sync is emitted again on the next incremental sync. Each record includes `created_at` and `updated_at` timestamps.
+For incremental syncs, the connector uses `updated_at` as the cursor field and requests all notes updated since the stored cursor in a single `updated_after` query parameter — the API exposes no upper-bound filter, so the request is one unbounded window rather than stepped slices. The request starts one second before the stored cursor so notes updated in that same second aren't missed. A note edited after a sync is emitted again on the next incremental sync. In **Incremental | Append** mode, each edit adds a new row for the note, and the most recently updated note is repeated on each sync. Each record includes `created_at` and `updated_at` timestamps.
 
 The API only returns notes that have a generated AI summary and transcript. Notes that are still being processed or were never summarized are excluded.
 

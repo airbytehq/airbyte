@@ -38,10 +38,10 @@ The Granola API has no way to return deleted notes on the stream that lists them
 The Granola API connector has 3 streams: `notes` (incremental with `updated_at` cursor), `detailed_notes` and `note_transcripts` (children of notes via `SubstreamPartitionRouter`). No FR parent streams remain.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
-|---|---|---|---|---|---|---|
-| notes | medium | top-level parent | updated_at | updated_at | incremental |  |
-| detailed_notes | medium | child | none | none | deferred_child |  |
-| note_transcripts | medium | child | none | none | deferred_child |  |
+| --- | --- | --- | --- | --- | --- | --- |
+| notes | medium | top-level parent | updated_at | updated_at | incremental | |
+| detailed_notes | medium | child | none | none | deferred_child | |
+| note_transcripts | medium | child | none | none | deferred_child | |
 
 ### Cursor is `updated_at` with a single slice
 
@@ -51,7 +51,7 @@ The single slice means the `notes` read does not checkpoint mid-stream: a failur
 
 ### Keep the start bound second-granular
 
-The cursor sends `updated_after` as a second-granular date-time (`datetime_format: "%Y-%m-%dT%H:%M:%SZ"`). The Granola API has a history of treating date-only bounds as excluding the named day (`created_before=<date>` used to drop that whole day), so do not truncate the bound to a date. `cursor_datetime_formats` keeps `"%Y-%m-%d"` so date-only cursor state written by earlier versions still parses; removing it would break resumption for existing connections.
+The cursor sends `updated_after` as a second-granular date-time (`datetime_format: "%Y-%m-%dT%H:%M:%SZ"`). The Granola API has a history of treating date-only bounds as excluding the named day (`created_before=<date>` used to drop that whole day), so do not truncate the bound to a date. `updated_after` is exclusive, and a whole-second value excludes that entire second (probed 2026-10-02: `updated_after=…:30Z` did not return a note updated at `…:30.462Z`, while `…:30.000Z` did). State is stored at second precision, so `lookback_window: PT1S` re-requests the stored cursor's second; removing it skips notes updated in that second that weren't visible on the previous read. `cursor_datetime_formats` keeps `"%Y-%m-%d"` so date-only cursor state written by earlier versions still parses; removing it would break resumption for existing connections.
 
 ### Future incremental stream candidates
 
