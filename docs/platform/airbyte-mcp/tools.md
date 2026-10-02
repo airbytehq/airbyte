@@ -12,6 +12,8 @@ The Airbyte MCP gives your agent a set of tools. Your agent chooses which tools 
 
 Your agent acts on behalf of the Airbyte user who signed in to the Airbyte MCP. If you connect with an [Airbyte application](install.md#connect-without-a-browser), that's the user who created the application. Every tool acts with that user's Airbyte permissions. If their Airbyte [role](/platform/access-management/rbac) doesn't allow an action, the tool fails.
 
+Direct reads work differently. When your agent [reads directly from a source or destination](#direct-reads), the third-party system sees a request from the credentials stored in that connector in that workspace, not from you. Your Airbyte permissions still control which connectors your agent can use, but the stored credentials control which records it can read.
+
 ## Safety
 
 Your agent can see and use every resource your Airbyte permissions allow. To prevent your agent from accidentally breaking existing pipelines, the Airbyte MCP limits which resources it can change.
