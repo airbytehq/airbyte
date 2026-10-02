@@ -1,11 +1,11 @@
 ---
-products: cloud
+products: cloud, oss-community
 ---
 
 # Airbyte MCP tools
 
 :::info Private beta
-Airbyte MCP is in private beta. Features and tools may change. It's available to Airbyte Cloud organizations enrolled in the beta. Self-managed versions of Airbyte aren't supported during the beta.
+Airbyte MCP is in private beta. Features and tools may change. It's available to Airbyte Cloud organizations enrolled in the beta. You can also [run Airbyte MCP with self-managed Airbyte Core](self-managed.md), with known limitations.
 :::
 
 Airbyte MCP gives your agent a set of tools. Your agent chooses which tools to call based on your prompt, so you don't need to call them by name. This page lists each tool so you know what your agent can and can't do.
@@ -26,7 +26,7 @@ Airbyte MCP protects resources you didn't create with your agent.
 | `get_default_cloud_context` | Get your default organization and workspace. |
 | `list_cloud_organizations` | List the organizations you can access. |
 | `describe_cloud_organization` | Get details about an organization. |
-| `get_cloud_organization_billing_status` | Get billing and account status for an organization. Requires an organization reader or admin role. |
+| `get_cloud_organization_billing_status` | Get billing and account status for an organization. Requires an organization reader or admin role. Airbyte Cloud only. |
 | `list_cloud_workspaces` | List the workspaces you can access. |
 | `describe_cloud_workspace` | Get details about a workspace, like its name, URL, and organization. |
 | `set_default_cloud_workspace` | Change your default workspace. This changes your default workspace in the Airbyte web app, too. |
@@ -86,7 +86,7 @@ These tools display interactive views in clients that support [MCP Apps](https:/
 
 ## Direct reads
 
-These tools read data directly from sources and destinations. They only work after an organization admin [enables the Context layer](../context-layer/manage-access.md) and turns on agent access for the source or destination. They're read-only.
+These tools read data directly from sources and destinations. They only work after an organization admin [enables the Context layer](../context-layer/manage-access.md) and turns on agent access for the source or destination. They're read-only. They're only available in Airbyte Cloud.
 
 | Tool | Description |
 | :--- | :--- |

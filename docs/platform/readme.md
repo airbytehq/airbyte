@@ -81,7 +81,7 @@ These are great choices for developers who want to automate the way you work wit
 
 ### Airbyte MCP
 
-If you work with an AI agent like Claude, ChatGPT, or VS Code Copilot, [Airbyte MCP](/platform/airbyte-mcp) lets your agent build, monitor, and troubleshoot your Airbyte Cloud pipelines for you. Describe what you want in plain language, and your agent does the work with your Airbyte permissions. Airbyte MCP is in private beta and is only available for Airbyte Cloud.
+If you work with an AI agent like Claude, ChatGPT, or VS Code Copilot, [Airbyte MCP](/platform/airbyte-mcp) lets your agent build, monitor, and troubleshoot your Airbyte Cloud pipelines for you. Describe what you want in plain language, and your agent does the work with your Airbyte permissions. Airbyte MCP is in private beta. It's built for Airbyte Cloud, and also works with self-managed Airbyte Core, with [known limitations](/platform/airbyte-mcp/self-managed#known-limitations).
 
 ### Terraform
 

@@ -1,11 +1,11 @@
 ---
-products: cloud
+products: cloud, oss-community
 ---
 
 # Airbyte MCP
 
 :::info Private beta
-Airbyte MCP is in private beta. Features and tools may change. It's available to Airbyte Cloud organizations enrolled in the beta. Self-managed versions of Airbyte aren't supported during the beta.
+Airbyte MCP is in private beta. Features and tools may change. It's available to Airbyte Cloud organizations enrolled in the beta. You can also [run Airbyte MCP with self-managed Airbyte Core](self-managed.md), with known limitations.
 :::
 
 Airbyte MCP is a [Model Context Protocol](https://modelcontextprotocol.io/) server that connects AI agents, like Claude, ChatGPT, and VS Code Copilot, to your Airbyte Cloud organization. Your agent works with Airbyte on your behalf, using the same permissions you have in Airbyte.
@@ -43,7 +43,7 @@ During the private beta, each organization can make up to 100,000 Airbyte MCP to
 
 ## Limitations
 
-- Airbyte MCP is only available for Airbyte Cloud.
+- The hosted Airbyte MCP server only works with Airbyte Cloud. You can [run Airbyte MCP locally with self-managed Airbyte Core](self-managed.md), but some features don't work correctly yet.
 - Direct reads are read-only. Your agent can list and get records, but it can't create, update, or delete records in a source or destination through direct reads.
 - Direct reads only work with [supported connectors](../context-layer/readme.md#supported-connectors), and only after an organization admin [enables the Context layer](../context-layer/manage-access.md).
 

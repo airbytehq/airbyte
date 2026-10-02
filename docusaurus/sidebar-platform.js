@@ -468,7 +468,11 @@ module.exports = {
             type: "doc",
             id: "airbyte-mcp/readme",
           },
-          items: ["airbyte-mcp/install", "airbyte-mcp/tools"],
+          items: [
+            "airbyte-mcp/install",
+            "airbyte-mcp/tools",
+            "airbyte-mcp/self-managed",
+          ],
         },
         {
           type: "category",

@@ -5,7 +5,7 @@ products: cloud
 # Connect Airbyte MCP to your agent
 
 :::info Private beta
-Airbyte MCP is in private beta. Features and tools may change. It's available to Airbyte Cloud organizations enrolled in the beta. Self-managed versions of Airbyte aren't supported during the beta.
+Airbyte MCP is in private beta. Features and tools may change. It's available to Airbyte Cloud organizations enrolled in the beta. To use Airbyte MCP with self-managed Airbyte Core, see [Use Airbyte MCP with self-managed Airbyte](self-managed.md).
 :::
 
 Airbyte MCP is a hosted, remote MCP server. You don't need to install anything. Give your MCP client this URL and sign in with your Airbyte Cloud account.
