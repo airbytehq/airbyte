@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.gcs.GcsBlob
 import io.airbyte.cdk.load.file.gcs.GcsClient
+import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -51,6 +52,8 @@ interface BigqueryS3Copy : AutoCloseable {
 
     fun context(stream: DestinationStream): BigqueryCopyContext?
 
+    fun startStandardInsertBatch(context: BigqueryCopyContext): StandardInsertArchiveBatch
+
     suspend fun copyCompletedGcsObject(
         storageClient: GcsClient,
         remoteObject: GcsBlob,
@@ -70,6 +73,10 @@ object DisabledBigqueryS3Copy : BigqueryS3Copy {
 
     override fun context(stream: DestinationStream): BigqueryCopyContext? = null
 
+    override fun startStandardInsertBatch(
+        context: BigqueryCopyContext
+    ): StandardInsertArchiveBatch = error("Cannot start a batch when Fusion S3 copying is disabled")
+
     override suspend fun copyCompletedGcsObject(
         storageClient: GcsClient,
         remoteObject: GcsBlob,
@@ -80,7 +87,7 @@ object DisabledBigqueryS3Copy : BigqueryS3Copy {
     override fun close() = Unit
 }
 
-/** One process owns one run and four transfer slots, including socket partitions. */
+/** One process owns one run. GCS file transfers and streaming S3 parts have bounded concurrency. */
 @SuppressFBWarnings(
     value = ["NP_NONNULL_PARAM_VIOLATION"],
     justification = "Kotlin coroutine resume stubs pass null placeholders for saved arguments",
@@ -137,11 +144,6 @@ class EnabledBigqueryS3Copy(
 
     override fun validate(catalog: DestinationCatalog) {
         checkHealthy()
-        if (bigqueryConfiguration.loadingMethod !is GcsStagingConfiguration) {
-            throw SystemErrorException(
-                "Fusion S3 copying requires BigQuery GCS staging; batched standard inserts are not supported"
-            )
-        }
         val duplicates =
             catalog.streams
                 .groupingBy { it.unmappedNamespace to it.unmappedName }
@@ -226,7 +228,8 @@ class EnabledBigqueryS3Copy(
         }
     }
 
-    override suspend fun metadataReady(): Boolean = ready.await()
+    override suspend fun metadataReady(): Boolean =
+        ready.await() && !closed.get() && !poisoned.get()
 
     override fun context(stream: DestinationStream): BigqueryCopyContext {
         checkHealthy()
@@ -236,6 +239,110 @@ class EnabledBigqueryS3Copy(
             )
     }
 
+    override fun startStandardInsertBatch(
+        context: BigqueryCopyContext
+    ): StandardInsertArchiveBatch {
+        checkHealthy()
+        check(bigqueryConfiguration.loadingMethod is BatchedStandardInsertConfiguration) {
+            "NDJSON archive batches require BigQuery batched standard inserts"
+        }
+        check(contexts?.values?.contains(context) == true) { "Unknown Fusion run context" }
+        val batchId = UUID.randomUUID()
+        val key = "${context.runPath}/batches/$batchId.jsonl"
+        // S3 multipart metadata is fixed at initiation; final input/loaded counts are logged
+        // after both writes succeed rather than guessed or added through a second object copy.
+        val transfer =
+            uploader.startStreaming(
+                key,
+                "application/x-ndjson",
+                // The record count is unknown at initiation, so its placeholder is dropped.
+                FusionMetadata(config, runId, context.epochSeconds)
+                    .batch(
+                        context.streamKey,
+                        context.generationId,
+                        context.syncId,
+                        context.schemaId,
+                        0,
+                        batchId,
+                    )
+                    .minus("record-count"),
+                spoolDirectory,
+            )
+        return object : StandardInsertArchiveBatch {
+            private var inputRecords = 0L
+            private var bytes = 0L
+            private val started = System.nanoTime()
+            private val failed = AtomicBoolean()
+            private var completed = false
+
+            private fun fail(t: Throwable): Throwable {
+                if (failed.compareAndSet(false, true)) {
+                    failures.incrementAndGet()
+                    poisoned.set(true)
+                    log.error(t) {
+                        "Fusion S3 archive failed: run=$runId batch=$batchId key=$key; batch cannot complete"
+                    }
+                }
+                return archiveFailure("Fusion S3 archive failed for run=$runId batch=$batchId", t)
+            }
+
+            override fun append(bytes: ByteArray) {
+                try {
+                    checkHealthy()
+                    transfer.append(bytes)
+                    inputRecords++
+                    this.bytes += bytes.size
+                    if (inputRecords == 1L) {
+                        log.info {
+                            "Fusion S3 streaming archive started: run=$runId batch=$batchId key=$key"
+                        }
+                    }
+                } catch (t: Throwable) {
+                    throw fail(t)
+                }
+            }
+
+            override fun seal() {
+                try {
+                    checkHealthy()
+                    transfer.seal()
+                } catch (t: Throwable) {
+                    throw fail(t)
+                }
+            }
+
+            override suspend fun complete(loadedRecordCount: Long) {
+                if (completed) return
+                try {
+                    checkHealthy()
+                    check(loadedRecordCount == inputRecords) {
+                        "BigQuery loaded $loadedRecordCount records but Fusion received $inputRecords"
+                    }
+                    withTimeout(operationTimeoutMillis) { transfer.finish() }
+                    checkHealthy()
+                    completed = true
+                    if (inputRecords > 0) {
+                        copiedObjects.incrementAndGet()
+                        copiedBytes.addAndGet(bytes)
+                        log.info {
+                            "Fusion S3 archive complete: run=$runId batch=$batchId key=$key bytes=$bytes input_records=$inputRecords loaded_records=$loadedRecordCount duration_ms=${(System.nanoTime() - started) / 1_000_000}"
+                        }
+                    }
+                } catch (t: Throwable) {
+                    throw fail(t)
+                }
+            }
+
+            override fun close() {
+                try {
+                    transfer.close()
+                } catch (t: Throwable) {
+                    throw fail(t)
+                }
+            }
+        }
+    }
+
     override suspend fun copyCompletedGcsObject(
         storageClient: GcsClient,
         remoteObject: GcsBlob,
@@ -243,6 +350,9 @@ class EnabledBigqueryS3Copy(
         loadedRecordCount: Long,
     ) {
         checkHealthy()
+        check(bigqueryConfiguration.loadingMethod is GcsStagingConfiguration) {
+            "GCS object copying requires BigQuery GCS staging"
+        }
         check(contexts?.values?.contains(context) == true) { "Unknown Fusion run context" }
         val batchId = UUID.randomUUID()
         val key = "${context.runPath}/batches/$batchId.csv.gz"
@@ -359,18 +469,23 @@ class EnabledBigqueryS3Copy(
     override fun close() {
         if (closed.compareAndSet(false, true)) {
             ready.complete(false)
-            try {
-                spooler.close()
-            } finally {
+            var failure: Throwable? = null
+            fun closeResource(close: () -> Unit) {
                 try {
-                    synchronized(resources) { uploaderInstance }?.close()
-                } finally {
-                    runCatching { Runtime.getRuntime().removeShutdownHook(shutdownHook) }
-                    log.info {
-                        "Fusion S3 archive totals: run=$runId objects=${copiedObjects.get()} bytes=${copiedBytes.get()} failures=${failures.get()} retained_spool_bytes=${retainedBytes.get()}"
-                    }
+                    close()
+                } catch (error: Throwable) {
+                    val first = failure
+                    if (first == null) failure = error
+                    else if (first !== error) first.addSuppressed(error)
                 }
             }
+            closeResource { spooler.close() }
+            closeResource { synchronized(resources) { uploaderInstance }?.close() }
+            runCatching { Runtime.getRuntime().removeShutdownHook(shutdownHook) }
+            log.info {
+                "Fusion S3 archive totals: run=$runId objects=${copiedObjects.get()} bytes=${copiedBytes.get()} failures=${failures.get()} retained_spool_bytes=${retainedBytes.get()}"
+            }
+            failure?.let { throw it }
         }
     }
 }

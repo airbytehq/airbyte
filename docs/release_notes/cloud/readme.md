@@ -2,6 +2,16 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 1, 2026
+
+Connections
+
+- If a connection is set to "Propagate field changes only" and a table is deleted at the source, Airbyte now removes that table from the connection on the next sync and records the removal in the connection timeline. Previously, the connection kept trying to sync the deleted table until you refreshed the schema.
+
+Platform
+
+- When you upgrade from the Standard plan to a Plus plan, the confirmation now accurately explains that you're charged immediately for Plus and any unbilled Standard usage, and that your billing cycle restarts that day. Previously, it said your first month would be prorated.
+
 ## September 30, 2026
 
 Platform
