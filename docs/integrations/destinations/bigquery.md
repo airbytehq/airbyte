@@ -114,7 +114,7 @@ datasets under **Project ID**. The service account needs the
 role on the job project, in addition to its existing roles on the dataset project.
 :::
 
-12. For **Legacy raw tables**, leave the option disabled unless you depend on the raw table format
+12. For **Legacy raw tables**, leave the option turned off unless you depend on the raw table format
     that older versions of this connector wrote. See
     [Legacy raw tables schema](#legacy-raw-tables-schema).
 13. For **Airbyte Internal Table Dataset Name**, optionally set the dataset that holds Airbyte's
@@ -167,7 +167,7 @@ partitioning column, which reduces query cost. Airbyte doesn't enable BigQuery's
 
 ### Legacy raw tables schema
 
-If you enable the **Legacy raw tables** option, the connector will write tables in this format.
+If you enable the **Legacy raw tables** option, the connector writes tables in this format.
 
 Airbyte outputs each stream into its own raw table in `airbyte_internal` dataset by default (you can
 override this via the `Airbyte Internal Table Dataset Name` option). Contents in the raw table are
