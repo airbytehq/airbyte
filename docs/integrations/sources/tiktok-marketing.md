@@ -180,7 +180,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.3.0 | 2026-10-02 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Split a daily report date range in half and retry when TikTok rejects it as too large (error 40067), instead of failing and asking to lower the `Daily Reports Date Step` |
+| 5.3.0 | 2026-10-02 | [87641](https://github.com/airbytehq/airbyte/pull/87641) | Split a daily report date range in half and retry when TikTok rejects it as too large (error 40067), instead of failing and asking to lower the `Daily Reports Date Step` |
 | 5.2.0 | 2026-09-14 | [85820](https://github.com/airbytehq/airbyte/pull/85820) | Add Website, App and Shop conversion metrics to the daily report streams |
 | 5.1.19 | 2026-09-29 | [87372](https://github.com/airbytehq/airbyte/pull/87372) | Update dependencies |
 | 5.1.18 | 2026-09-22 | [86854](https://github.com/airbytehq/airbyte/pull/86854) | Update dependencies |
