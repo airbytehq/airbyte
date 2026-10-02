@@ -899,15 +899,15 @@ spec:
         title: Access Token
         description: >-
           The access token that Outreach returns when the connector refreshes
-          your OAuth credentials. Leave empty; the connector fills it in.
+          your OAuth credentials. Leave this field out; the connector fills it in.
         airbyte_secret: true
         order: 5
       token_expiry_date:
         type: string
         title: Token Expiry Date
         description: >-
-          The date and time when the current access token expires. Leave empty;
-          the connector fills it in.
+          The date and time when the current access token expires. Leave this
+          field out; the connector fills it in.
         format: date-time
         order: 6
     additionalProperties: true

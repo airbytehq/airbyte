@@ -28,7 +28,7 @@ Some output streams are available from this source. A list of these streams can 
 
 Getting oauth credentials require contacting Outreach to request an account. Check out [here](https://www.outreach.io/lp/watch-demo#request-demo).
 Once you have an API application, you can follow the steps [here](https://api.outreach.io/api/v2/docs#authentication) to obtain a refresh token.
-Leave the Access Token and Token Expiry Date fields empty. The connector fills them in and saves each new refresh token that Outreach returns.
+Don't set the Access Token and Token Expiry Date fields, and don't send them as empty strings. The connector fills them in and saves each new refresh token that Outreach returns.
 
 ## Streams
 
