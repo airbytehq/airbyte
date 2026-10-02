@@ -22,12 +22,7 @@ import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import org.bson.BsonDocument
 import org.bson.Document
@@ -59,13 +54,8 @@ class MongoDbSourceMetadataQuerier(
     private val readModeCatalog: ConfiguredAirbyteCatalog? = null,
 ) : MetadataQuerier {
 
-    /** Collections are sampled concurrently. */
-    private val executorDelegate: Lazy<ExecutorService> = lazy {
-        Executors.newFixedThreadPool(DISCOVER_PARALLELISM)
-    }
-    private val executor: ExecutorService by executorDelegate
-    private val fieldsByStream = ConcurrentHashMap<StreamIdentifier, Future<List<EmittedField>>>()
-    private val prefetchedNamespaces: MutableSet<String> = ConcurrentHashMap.newKeySet()
+    private val fieldsByStream = ConcurrentHashMap<StreamIdentifier, List<EmittedField>>()
+    private val sampledNamespaces: MutableSet<String> = ConcurrentHashMap.newKeySet()
 
     /** Configured databases in which the credentials can read no collection (see [streamNames]). */
     private val databasesWithoutPermission: MutableList<String> = mutableListOf()
@@ -122,9 +112,8 @@ class MongoDbSourceMetadataQuerier(
 
     /**
      * Fields of the collection, discovered by sampling its documents; empty for an empty
-     * collection, which DISCOVER then omits. The first call for a namespace schedules the sampling
-     * of all its collections so that DISCOVER, which calls this once per stream, runs them
-     * concurrently.
+     * collection, which DISCOVER then omits. DISCOVER calls this once per stream, so the first call
+     * for a namespace samples all of its collections in parallel and caches the results.
      */
     override fun fields(streamID: StreamIdentifier): List<EmittedField> {
         if (skipFieldDiscovery) {
@@ -134,16 +123,12 @@ class MongoDbSourceMetadataQuerier(
             return fieldsFromConfiguredCatalog(streamID, it)
         }
         val namespace: String = streamID.namespace ?: return emptyList()
-        if (prefetchedNamespaces.add(namespace)) {
-            for (otherStreamID in streamNames(namespace)) {
-                scheduleFieldDiscovery(otherStreamID)
+        if (sampledNamespaces.add(namespace)) {
+            streamNames(namespace).parallelStream().forEach {
+                fieldsByStream[it] = discoverFields(it)
             }
         }
-        return try {
-            scheduleFieldDiscovery(streamID).get()
-        } catch (e: ExecutionException) {
-            throw e.cause ?: e
-        }
+        return fieldsByStream.computeIfAbsent(streamID, ::discoverFields)
     }
 
     /**
@@ -169,11 +154,6 @@ class MongoDbSourceMetadataQuerier(
             .map { (name, schema) -> EmittedField(name, MongoDbFieldType.fromJsonSchema(schema)) }
             .toList()
     }
-
-    private fun scheduleFieldDiscovery(streamID: StreamIdentifier): Future<List<EmittedField>> =
-        fieldsByStream.computeIfAbsent(streamID) {
-            executor.submit(Callable { discoverFields(it) })
-        }
 
     /** Samples the collection and maps its fields to [MongoDbFieldType]s, sorted by name. */
     internal fun discoverFields(streamID: StreamIdentifier): List<EmittedField> {
@@ -298,23 +278,27 @@ class MongoDbSourceMetadataQuerier(
         listOf(listOf(ID_FIELD))
 
     /**
-     * A sharded cluster reached through `mongos` reports `SHARDED` yet supports change streams, so
-     * a non-replica-set cluster type only warns; a standalone `mongod` fails later, when the change
-     * stream is opened.
+     * Change streams need an oplog: a standalone `mongod` has none, so it can never sync and fails
+     * here with a clear message. A sharded cluster reached through `mongos` (`SHARDED`) and a
+     * load-balanced deployment (`LOAD_BALANCED`, e.g. Atlas Serverless) do support change streams
+     * and pass; any other non-replica-set type is reported but not rejected.
      */
     override fun extraChecks() {
-        val clusterType: ClusterType = client.clusterDescription.type
-        if (clusterType != ClusterType.REPLICA_SET) {
-            log.warn {
-                "MongoDB instance is not a replica set cluster (cluster type: $clusterType)."
-            }
+        when (val clusterType: ClusterType = client.clusterDescription.type) {
+            ClusterType.REPLICA_SET,
+            ClusterType.SHARDED,
+            ClusterType.LOAD_BALANCED -> Unit
+            ClusterType.STANDALONE ->
+                throw ConfigErrorException(
+                    "Target MongoDB instance is a standalone server, which has no oplog and does " +
+                        "not support change streams. Please connect to a replica set or a sharded " +
+                        "cluster.",
+                )
+            else -> log.warn { "Unexpected MongoDB cluster type $clusterType; proceeding." }
         }
     }
 
     override fun close() {
-        if (executorDelegate.isInitialized()) {
-            executor.shutdownNow()
-        }
         client.close()
     }
 
@@ -350,8 +334,6 @@ class MongoDbSourceMetadataQuerier(
 
         /** Collection name prefixes which are never exposed as streams. */
         val IGNORED_COLLECTION_PREFIXES: Set<String> = setOf("system.", "replset.", "oplog.")
-
-        val DISCOVER_PARALLELISM: Int = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
 
         fun isSupportedCollection(collectionName: String): Boolean =
             IGNORED_COLLECTION_PREFIXES.none { collectionName.startsWith(it) }

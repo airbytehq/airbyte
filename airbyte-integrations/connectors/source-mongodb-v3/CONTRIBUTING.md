@@ -14,11 +14,10 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 21 2>/dev/null || echo /opt/homebre
 ./gradlew :airbyte-integrations:connectors:source-mongodb-v3:assemble      # builds airbyte/source-mongodb-v3:dev
 ```
 
-Unit tests start `mongo:7.0` containers through Testcontainers as a single-node replica set;
-change streams do not work against a standalone `mongod`. Like v2 since 2.1.0, `check` only
-**warns** when the cluster type is not `REPLICA_SET`, because a sharded cluster reached through
-`mongos` reports `SHARDED` yet supports change streams; a standalone instance therefore passes
-`check` and fails when the change stream is opened.
+Unit tests start `mongo:7.0` containers through Testcontainers as a single-node replica set.
+`check` accepts `REPLICA_SET`, `SHARDED` (a cluster reached through `mongos`) and `LOAD_BALANCED`
+(e.g. Atlas Serverless), all of which support change streams, and **fails** a `STANDALONE`
+`mongod`, which has no oplog and could never sync.
 
 ## Running the connector locally
 

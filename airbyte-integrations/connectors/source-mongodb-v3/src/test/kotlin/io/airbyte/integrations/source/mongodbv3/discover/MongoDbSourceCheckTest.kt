@@ -46,14 +46,13 @@ class MongoDbSourceCheckTest {
         )
     }
 
-    /**
-     * Since v2 2.1.0 a non-replica-set cluster type only warns: sharded clusters reached through
-     * `mongos` report `SHARDED`, yet support change streams. (A standalone `mongod` therefore
-     * passes `check` too and fails later, when the change stream is opened.)
-     */
+    /** A standalone `mongod` has no oplog, so change streams can never work: fail at `check`. */
     @Test
-    fun testCheckWarnsButSucceedsAgainstNonReplicaSetCluster() {
-        SyncsTestFixture.testCheck(config(standaloneConnectionString(), listOf(DATABASE)))
+    fun testCheckFailsAgainstStandaloneInstance() {
+        SyncsTestFixture.testCheck(
+            config(standaloneConnectionString(), listOf(DATABASE)),
+            expectedFailure = "standalone server, which has no oplog",
+        )
     }
 
     @Test
