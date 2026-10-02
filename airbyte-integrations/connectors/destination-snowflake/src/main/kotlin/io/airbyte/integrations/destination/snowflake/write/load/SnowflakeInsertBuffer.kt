@@ -25,6 +25,7 @@ import java.nio.file.Path
 import java.util.zip.GZIPOutputStream
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.pathString
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
@@ -90,26 +91,26 @@ class SnowflakeInsertBuffer(
                     "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}..."
                 }
                 coroutineScope {
-                    val snowflake =
-                        async(kotlinx.coroutines.Dispatchers.IO) {
-                            snowflakeClient.putInStage(tableName, filePath.pathString)
-                            logger.info {
-                                "Copying staging data into ${tableName.toPrettyString(quote = QUOTE)}..."
-                            }
-                            snowflakeClient.copyFromStage(
-                                tableName,
-                                filePath.fileName.toString(),
-                                columnManager.getTableColumnNames(columnSchema)
-                            )
+                    val archive =
+                        async(Dispatchers.IO) {
+                            copyContext?.let { s3Copy.upload(filePath, it, recordCount) }
                         }
-                    val archive = async {
-                        copyContext?.let { s3Copy.upload(filePath, it, recordCount) }
-                    }
                     var failure: Throwable? = null
+                    // Runs on the caller's dispatcher so its parallelism bounds concurrent JDBC
+                    // connection use.
                     try {
-                        snowflake.await()
+                        snowflakeClient.putInStage(tableName, filePath.pathString)
+                        logger.info {
+                            "Copying staging data into ${tableName.toPrettyString(quote = QUOTE)}..."
+                        }
+                        snowflakeClient.copyFromStage(
+                            tableName,
+                            filePath.fileName.toString(),
+                            columnManager.getTableColumnNames(columnSchema)
+                        )
                     } catch (t: Throwable) {
                         failure = t
+                        archive.cancel()
                     }
                     try {
                         archive.await()
