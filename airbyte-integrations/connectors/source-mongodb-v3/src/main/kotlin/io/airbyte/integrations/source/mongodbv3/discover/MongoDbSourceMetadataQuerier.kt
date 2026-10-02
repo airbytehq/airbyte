@@ -36,38 +36,30 @@ import org.bson.conversions.Bson
 private val log = KotlinLogging.logger {}
 
 /**
- * MongoDB implementation of [MetadataQuerier].
- *
- * Namespaces are the configured databases and streams are the collections (views included) the
- * credentials are authorized to read. Fields are discovered by sampling documents, the same way the
- * legacy `source-mongodb-v2` connector did.
+ * MongoDB implementation of [MetadataQuerier]: namespaces are the configured databases, streams are
+ * the collections (views included) the credentials may read, and fields come from sampling
+ * documents.
  */
 class MongoDbSourceMetadataQuerier(
     val configuration: MongoDbSourceConfiguration,
     val client: MongoClient,
     /**
-     * When true, [fields] returns an empty list without sampling. CHECK only calls [fields] to
-     * probe that a stream is queryable; the legacy connector never sampled documents during
-     * `check`, and sampling up to `discover_sample_size` documents there would be slow.
+     * When true, [fields] returns an empty list without sampling: CHECK only calls it to probe that
+     * a stream is queryable, and sampling `discover_sample_size` documents there would be slow.
      */
     private val skipFieldDiscovery: Boolean = false,
     /**
      * When set (READ only), [fields] is served from this configured catalog instead of by sampling.
-     *
-     * This is required, not an optimization. At READ start the CDK's
-     * `StateManagerFactory.toStream()` derives each stream's expected field types from the
-     * configured catalog's `json_schema`, then calls [fields] and, for **every** catalog property,
-     * drops the whole stream — `FieldNotFound` if [fields] lacks it, `FieldTypeMismatch` if the
-     * type differs. With `global = true` a dropped stream aborts the entire READ. MongoDB's schema
-     * is inferred from a random sample, so a fresh sample can legitimately miss a rare field or
-     * type a mixed-type field differently; serving the catalog back is the only way the validation
-     * is guaranteed to pass (and it avoids re-sampling every collection on every sync). The legacy
-     * connector never re-derived fields at read time.
+     * Required, not an optimization: at READ start `StateManagerFactory.toStream()` compares the
+     * catalog's `json_schema` against [fields] and drops the whole stream on any missing or
+     * differently-typed property (aborting the READ, since `global = true`). A fresh random sample
+     * can legitimately miss a rare field or re-type a mixed-type one, so only the catalog itself is
+     * guaranteed to pass.
      */
     private val readModeCatalog: ConfiguredAirbyteCatalog? = null,
 ) : MetadataQuerier {
 
-    /** Collections are sampled concurrently, like the legacy connector's `parallelStream()`. */
+    /** Collections are sampled concurrently. */
     private val executorDelegate: Lazy<ExecutorService> = lazy {
         Executors.newFixedThreadPool(DISCOVER_PARALLELISM)
     }
@@ -82,11 +74,10 @@ class MongoDbSourceMetadataQuerier(
 
     /**
      * The collections of [streamNamespace], sorted. During `check`, once the **last** configured
-     * database has also turned out empty, this throws the legacy connector's message naming the
-     * databases the user cannot read — before the CDK falls back to its generic "Discovered zero
-     * tables." (`CheckOperation` visits the namespaces in order and stops at the first readable
-     * stream, so reaching the last one with nothing found means none had any.) `discover` and
-     * `read` keep their own semantics: an empty catalog, and `StreamNotFound` respectively.
+     * database has also turned out empty, this names the unreadable databases instead of letting
+     * the CDK report a generic "Discovered zero tables." (`CheckOperation` stops at the first
+     * readable stream, so reaching the last database with nothing found means none had any.)
+     * `discover` and `read` are unaffected: an empty catalog, and `StreamNotFound` respectively.
      */
     override fun streamNames(streamNamespace: String?): List<StreamIdentifier> {
         if (streamNamespace == null) {
@@ -113,11 +104,7 @@ class MongoDbSourceMetadataQuerier(
         }
     }
 
-    /**
-     * Names of the collections in [databaseName] which the current credentials may read. Same
-     * `listCollections` invocation as the legacy connector (the legacy connector never applied its
-     * `type: collection` filter, so views are included here too).
-     */
+    /** Names of the collections (views included) in [databaseName] the credentials may read. */
     fun authorizedCollections(databaseName: String): Set<String> {
         val command =
             Document("listCollections", 1)
@@ -135,10 +122,9 @@ class MongoDbSourceMetadataQuerier(
 
     /**
      * Fields of the collection, discovered by sampling its documents; empty for an empty
-     * collection, which DISCOVER then omits from the catalog (as the legacy connector did).
-     *
-     * The first call for a namespace schedules the sampling of all its collections so that
-     * DISCOVER, which calls this method once per stream, runs them concurrently.
+     * collection, which DISCOVER then omits. The first call for a namespace schedules the sampling
+     * of all its collections so that DISCOVER, which calls this once per stream, runs them
+     * concurrently.
      */
     override fun fields(streamID: StreamIdentifier): List<EmittedField> {
         if (skipFieldDiscovery) {
@@ -213,7 +199,7 @@ class MongoDbSourceMetadataQuerier(
 
     /**
      * Discovers the top-level field names and BSON types present in a random sample of
-     * `discover_sample_size` documents, with the legacy aggregation:
+     * `discover_sample_size` documents:
      * ```
      * [ {$sample: {size: N}},
      *   {$project: {fields: {$arrayToObject: {$map: {input: {$objectToArray: "$$ROOT"}, as: "each",
@@ -221,9 +207,8 @@ class MongoDbSourceMetadataQuerier(
      *   {$unwind: "$fields"},
      *   {$group: {_id: "$fields"}} ]
      * ```
-     * Each result is one distinct document shape (field name -> BSON type name). When a field
-     * appears with several types, the first shape returned by the server wins, as in the legacy
-     * connector (which collected `MongoField`s, equal by name only, in a `HashSet`).
+     * Each result is one distinct document shape (field name -> BSON type name); when a field
+     * appears with several types, the first shape returned by the server wins.
      */
     private fun sampleFieldTypes(
         collection: MongoCollection<Document>
@@ -283,8 +268,8 @@ class MongoDbSourceMetadataQuerier(
     }
 
     /**
-     * Runs [pipeline] with the configured `discover_timeout_seconds` budget. Like the legacy
-     * connector, errors (timeouts included) are logged and whatever was collected is kept.
+     * Runs [pipeline] within the `discover_timeout_seconds` budget; errors (timeouts included) are
+     * logged and whatever was collected is kept.
      */
     private fun sample(
         collection: MongoCollection<Document>,
@@ -313,10 +298,9 @@ class MongoDbSourceMetadataQuerier(
         listOf(listOf(ID_FIELD))
 
     /**
-     * Change streams need an oplog, which a replica set provides and a **sharded cluster** reached
-     * through `mongos` (cluster type `SHARDED`) provides too. So, like v2 since 2.1.0, a
-     * non-replica-set cluster type is a warning rather than a failure; a standalone `mongod` still
-     * fails, at read time, when the change stream is opened.
+     * A sharded cluster reached through `mongos` reports `SHARDED` yet supports change streams, so
+     * a non-replica-set cluster type only warns; a standalone `mongod` fails later, when the change
+     * stream is opened.
      */
     override fun extraChecks() {
         val clusterType: ClusterType = client.clusterDescription.type

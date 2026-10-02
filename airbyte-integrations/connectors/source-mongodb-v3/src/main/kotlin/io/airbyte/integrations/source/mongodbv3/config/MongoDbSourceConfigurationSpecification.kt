@@ -13,14 +13,8 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import jakarta.inject.Singleton
 
 /**
- * The object which is mapped to the MongoDB source configuration JSON.
- *
- * Property names, titles, descriptions, defaults and ordering mirror the legacy `source-mongodb-v2`
- * `spec.json` so that saved configurations keep deserializing. Two legacy properties are dropped
- * because they only tuned the Debezium engine the native change-stream reader replaced:
- * `initial_waiting_seconds` and `queue_size`. Saved configurations that still carry them are
- * accepted (unknown properties are ignored). Use [MongoDbSourceConfiguration] instead wherever
- * possible.
+ * The object which is mapped to the MongoDB source configuration JSON. Unknown properties are
+ * ignored. Use [MongoDbSourceConfiguration] instead wherever possible.
  */
 @JsonSchemaTitle("MongoDb Source Spec")
 @JsonSchemaInject(

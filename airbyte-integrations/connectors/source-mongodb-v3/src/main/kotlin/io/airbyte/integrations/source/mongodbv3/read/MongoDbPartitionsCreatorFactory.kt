@@ -28,23 +28,12 @@ import java.util.concurrent.atomic.AtomicBoolean
 private val log = KotlinLogging.logger {}
 
 /**
- * Plans a READ into partitions.
- * - `Stream` feeds: one snapshot partition per collection, unless the collection's persisted state
- * says its snapshot is already `COMPLETE` (an incremental stream that has moved to the change
- * stream), it finished in this READ, or it yielded to CDC (WASS) — in which case no partitions.
- * - The `Global` feed: one [MongoDbCdcPartitionReader] that reads the replica-set change stream.
- *
- * The CDK re-asks the factory after every round, so completion is tracked in memory for this READ
- * (see `MongoDbSharedState.completedSnapshots`); relying on the state alone would re-read a
- * full-refresh stream forever, since its terminal status is not `COMPLETE`.
- *
- * Before planning anything it runs the legacy connector's two consistency guards, turning what
- * would otherwise be silent shape corruption or a confusing failure into an actionable config
- * error:
- * - the `schema_enforced` mode must agree between the configuration, the configured catalog and the
- * saved CDC state ([validateSchemaMode]);
- * - a stream's configured sync mode must agree with its saved snapshot status (
- * [validateSyncModeAgainstState]).
+ * Plans a READ into partitions: one snapshot partition per `Stream` feed — none if its snapshot is
+ * already `COMPLETE`, finished in this READ, or yielded to CDC (WASS) — and one
+ * [MongoDbCdcPartitionReader] for the `Global` feed. Completion is tracked in memory
+ * (`MongoDbSharedState.completedSnapshots`) because the CDK re-asks after every round and a
+ * full-refresh stream's terminal status is not `COMPLETE`. Two guards run first and raise config
+ * errors: [validateSchemaMode] and [validateSyncModeAgainstState].
  */
 @Singleton
 class MongoDbPartitionsCreatorFactory(

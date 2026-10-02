@@ -15,16 +15,12 @@ import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 
 /**
- * Builds the [AirbyteStream] of a MongoDB collection, exactly like the legacy connector's
- * `MongoCatalogHelper`:
- * - `FULL_REFRESH` and `INCREMENTAL` (change stream CDC) are supported by every collection;
- * - the cursor is source-defined (`_ab_cdc_cursor`) and the primary key is always `_id`;
- * - every stream is resumable and carries the `_ab_cdc_*` meta fields;
- * - the JSON schema is `{"type":"object","properties":{...}}` with the legacy per-type schemas.
- *
- * The JSON schema is built here rather than with [AirbyteStreamFactory.createAirbyteStream] because
- * the legacy schemas (`{"type":"array"}` without `items`, `{"type":"object"}`) have no exact
- * [io.airbyte.cdk.data.AirbyteSchemaType] equivalent.
+ * Builds the [AirbyteStream] of a collection: `FULL_REFRESH` and `INCREMENTAL` (change stream), a
+ * source-defined `_ab_cdc_cursor` cursor, `_id` as primary key, resumable, with the `_ab_cdc_*`
+ * meta fields. The JSON schema is built here rather than with
+ * [AirbyteStreamFactory.createAirbyteStream] because the per-type schemas (`{"type":"array"}`
+ * without `items`, plain `{"type":"object"}`) have no exact [io.airbyte.cdk.data.AirbyteSchemaType]
+ * equivalent.
  */
 @Singleton
 @Primary

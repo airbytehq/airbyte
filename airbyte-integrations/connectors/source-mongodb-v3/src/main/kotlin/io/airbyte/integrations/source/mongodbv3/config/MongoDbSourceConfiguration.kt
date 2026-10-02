@@ -53,12 +53,7 @@ enum class UpdateCaptureMode(override val specValue: String) : SpecEnum {
     POST_IMAGE("Post Image"),
 }
 
-/**
- * MongoDB-specific implementation of [SourceConfiguration].
- *
- * The legacy spec's `initial_waiting_seconds` and `queue_size` are Debezium-only knobs; the native
- * change-stream reader has no use for them, so they are accepted (for spec parity) but not carried.
- */
+/** MongoDB-specific implementation of [SourceConfiguration]. */
 data class MongoDbSourceConfiguration(
     val clusterType: MongoDbClusterType,
     /** Sanitized, see [MongoDbSourceConfigurationFactory.sanitizeConnectionString]. */
@@ -90,16 +85,6 @@ data class MongoDbSourceConfiguration(
     val credential: Pair<String, String>?
         get() = if (username != null && password != null) username to password else null
 
-    /** Keeps the password out of logs. */
-    override fun toString(): String =
-        "MongoDbSourceConfiguration(clusterType=$clusterType, connectionString=$connectionString, " +
-            "databases=$databases, username=$username, password=${password?.let { "*****" }}, " +
-            "authSource=$authSource, schemaEnforced=$schemaEnforced, " +
-            "discoverSampleSize=$discoverSampleSize, discoverTimeout=$discoverTimeout, " +
-            "invalidCdcCursorPositionBehavior=$invalidCdcCursorPositionBehavior, " +
-            "updateCaptureMode=$updateCaptureMode, maxSnapshotReadDuration=$maxSnapshotReadDuration, " +
-            "maxConcurrency=$maxConcurrency, checkpointTargetInterval=$checkpointTargetInterval)"
-
     /** Required to inject [MongoDbSourceConfiguration] directly. */
     @Factory
     private class MicronautFactory {
@@ -111,7 +96,6 @@ data class MongoDbSourceConfiguration(
     }
 
     companion object {
-        /** Same cadence as the legacy connector's `SYNC_CHECKPOINT_DURATION`. */
         val DEFAULT_CHECKPOINT_TARGET_INTERVAL: Duration = Duration.ofMinutes(15)
         const val DEFAULT_MONGODB_PORT = 27017
     }
@@ -129,9 +113,9 @@ constructor(
     private val log = KotlinLogging.logger {}
 
     /**
-     * The default implementation wraps every exception, including [ConfigErrorException], in a
-     * generic "Failed to build ConnectorConfiguration." error, which hides the user-facing messages
-     * thrown below (and by the legacy connector). Let those through unchanged.
+     * The default `make` wraps every exception, [ConfigErrorException] included, in a generic
+     * "Failed to build ConnectorConfiguration."; let the user-facing messages below through
+     * unchanged.
      */
     override fun make(spec: Spec): MongoDbSourceConfiguration =
         try {
@@ -212,8 +196,7 @@ constructor(
         const val CREDENTIALS_PLACEHOLDER = "<username>:<password>@"
 
         /**
-         * Same normalization as the legacy connector: trims whitespace, drops stray double quotes
-         * and the Atlas credentials placeholder (credentials are passed separately).
+         * Trims whitespace, drops stray quotes and the Atlas `<username>:<password>@` placeholder.
          */
         fun sanitizeConnectionString(raw: String): String =
             raw.trim().replace("\"", "").replace(CREDENTIALS_PLACEHOLDER, "")

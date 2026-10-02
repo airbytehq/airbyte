@@ -41,15 +41,13 @@ import org.bson.conversions.Bson
 private val log = KotlinLogging.logger {}
 
 /**
- * Reads the MongoDB replica-set change stream for the `Global` feed with the native driver
- * `watch()` (no Debezium).
- * - **Cold start** (no prior state): opens the change stream, captures the current resume token,
- * and emits no records. Because the `Global` feed runs before the snapshot `Stream` feeds, this
- * token predates the snapshots, so the next sync replays any changes that happened during the
- * snapshot.
- * - **Warm start**: resumes from the saved token and drains all currently-available changes
- * (`tryNext()` until it returns null), emitting insert/update/replace as upserts and delete as a
- * record with `_ab_cdc_deleted_at` set, then checkpoints the new resume token.
+ * Reads the change stream for the `Global` feed with the driver's `watch()`.
+ * - **Cold start** (no prior state): captures the current resume token and emits nothing. The
+ * `Global` feed runs before the snapshot `Stream` feeds, so the token predates the snapshot and the
+ * next sync replays any changes made during it.
+ * - **Warm start**: resumes from the saved token, drains the available changes (`tryNext()` until
+ * null) — insert/update/replace as upserts, delete with `_ab_cdc_deleted_at` — and checkpoints the
+ * new token.
  */
 class MongoDbCdcPartitionReader(
     sharedState: MongoDbSharedState,

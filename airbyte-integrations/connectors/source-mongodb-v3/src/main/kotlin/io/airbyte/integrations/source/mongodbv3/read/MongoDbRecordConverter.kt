@@ -24,18 +24,13 @@ import org.bson.types.ObjectId
 import org.bson.types.Symbol
 
 /**
- * Converts a BSON [Document] into a [NativeRecordPayload] (`fieldName -> encoder`) that the CDK's
- * record consumer serializes to JSONL or protobuf.
+ * Converts a BSON [Document] into a [NativeRecordPayload] (`fieldName -> encoder`) that the CDK
+ * serializes to JSONL or protobuf: `ObjectId` as hex, `Date` with milliseconds, `Binary` as Base64,
+ * regex as `(options)pattern`, `CodeWithScope` as an object, `MinKey`/`MaxKey` omitted.
  *
- * The per-type conversions reproduce the legacy `source-mongodb-v2` record shape (see
- * `databases/mongodb/README.md`, Stage 4): `ObjectId` as hex, `Date` always with milliseconds,
- * `Binary` as Base64, `BsonRegularExpression` as `(options)pattern`, `CodeWithScope` as an object,
- * `MinKey`/`MaxKey` omitted, etc.
- *
- * When [schemaFieldTypes] is provided (the READ path), the payload carries **every** schema field —
- * `null` for those absent from the document — each wrapped in the codec matching its declared type,
- * so protobuf output over the socket channel encodes each value to the right type. When it is empty
- * (unit tests) only the document's own fields are emitted, wrapped in a passthrough codec.
+ * With [schemaFieldTypes] (the READ path) the payload carries **every** schema field — `null` when
+ * absent — in the codec of its declared type, so protobuf encodes each value correctly. Without it
+ * (unit tests) only the document's own fields are emitted, in a passthrough codec.
  */
 class MongoDbRecordConverter(
     private val schemaEnforced: Boolean,
@@ -83,7 +78,7 @@ class MongoDbRecordConverter(
                     val base: String? = transformSourceField(name)
                     if (base != null) {
                         // `<field>_aibyte_transform`: the stringified value of `<field>`, which
-                        // itself is nulled (v2's transformToStringIfMarked removed it).
+                        // itself is nulled.
                         val value: JsonNode? =
                             if (document.containsKey(base)) toJsonNode(document[base]) else null
                         payload[name] =
@@ -106,12 +101,10 @@ class MongoDbRecordConverter(
     }
 
     /**
-     * MongoDB types are dynamic, so a value's shape may not match the field's discovered type.
-     * Destinations coerce primitives themselves, but a structural mismatch — a non-array value in a
-     * field the catalog declares as `array` — would become `null` downstream. Like v2, wrap any
-     * value **present** in the document (a BSON `null` included, giving `[null]`) in a one-element
-     * array; a field absent from the document stays `null`. Other mismatches are left to the
-     * destination (and, on the protobuf channel, to the per-type codec).
+     * Destinations coerce primitive type mismatches themselves, but a non-array value in a field
+     * declared `array` would become `null` downstream, so any value **present** in the document (a
+     * BSON `null` included, giving `[null]`) is wrapped in a one-element array; an absent field
+     * stays `null`.
      */
     private fun coerceToSchema(
         node: JsonNode?,
@@ -126,15 +119,14 @@ class MongoDbRecordConverter(
 
     /**
      * The field a `<field>_aibyte_transform` catalog property derives from, or null if [name] is
-     * not such a property. v2's escape hatch for destinations that cannot take a field's native
-     * type: a user adds the suffixed property (type `string`) to the catalog and the connector
-     * emits the field's value JSON-stringified under it. Discovery never emits these; they are
-     * user-added.
+     * not one. An escape hatch for destinations that cannot take a field's native type: the user
+     * adds the suffixed `string` property to the catalog and receives the field's value
+     * JSON-stringified.
      */
     private fun transformSourceField(name: String): String? =
         name.removeSuffix(TRANSFORM_SUFFIX).takeIf { it != name && it.isNotEmpty() }
 
-    /** v2: `asText()` for a text value, compact JSON for anything else. */
+    /** `asText()` for a text value, compact JSON for anything else. */
     private fun stringify(node: JsonNode): JsonNode =
         Jsons.textNode(if (node.isTextual) node.asText() else node.toString())
 
@@ -146,9 +138,7 @@ class MongoDbRecordConverter(
         return node
     }
 
-    /**
-     * Returns the JSON encoding of a BSON value, or `null` for values the legacy connector drops.
-     */
+    /** The JSON encoding of a BSON value, or `null` for values that are dropped. */
     private fun toJsonNode(value: Any?): JsonNode? =
         when (value) {
             null -> Jsons.nullNode()
@@ -165,7 +155,7 @@ class MongoDbRecordConverter(
             is org.bson.BsonTimestamp -> Jsons.textNode(formatBsonTimestamp(value))
             is Binary -> Jsons.textNode(Base64.getEncoder().encodeToString(value.data))
             is ByteArray -> Jsons.textNode(Base64.getEncoder().encodeToString(value))
-            // `(options)pattern`, or just the pattern when there are no options, as in v2.
+            // `(options)pattern`, or just the pattern when there are no options.
             is BsonRegularExpression ->
                 Jsons.textNode(
                     if (value.options.isNullOrBlank()) value.pattern
@@ -188,9 +178,7 @@ class MongoDbRecordConverter(
             else -> Jsons.textNode(value.toString())
         }
 
-    /**
-     * `Instant.toString()` drops trailing zero milliseconds; the legacy connector always kept them.
-     */
+    /** `Instant.toString()` drops trailing zero milliseconds; keep them. */
     private fun formatDate(date: java.util.Date): String {
         val instant: Instant = date.toInstant()
         val millis: Int = (instant.toEpochMilli() % 1000L).toInt()
@@ -199,14 +187,13 @@ class MongoDbRecordConverter(
     }
 
     /**
-     * Reproduces the legacy connector's quirk of formatting a `BsonTimestamp`'s raw 64-bit value as
-     * if it were epoch milliseconds. This is a known bug kept for record parity.
+     * Formats the raw 64-bit `BsonTimestamp` value as if it were epoch millis (kept for parity).
      */
     private fun formatBsonTimestamp(timestamp: org.bson.BsonTimestamp): String =
         Instant.ofEpochMilli(timestamp.value).toString()
 
     companion object {
-        /** v2's catalog marker for "emit this field JSON-stringified" (sic: `aibyte`). */
+        /** Catalog marker for "emit this field JSON-stringified" (sic: `aibyte`). */
         const val TRANSFORM_SUFFIX = "_aibyte_transform"
     }
 }

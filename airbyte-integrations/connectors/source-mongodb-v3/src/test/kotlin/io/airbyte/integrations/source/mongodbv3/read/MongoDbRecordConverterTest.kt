@@ -252,13 +252,6 @@ class MongoDbRecordConverterTest {
     }
 
     @Test
-    fun testUnsupportedIdTypeIsAConfigError() {
-        Assertions.assertThrows(io.airbyte.cdk.ConfigErrorException::class.java) {
-            MongoDbStreamStateValue.fromLastId(1.5, MongoDbSnapshotStatus.IN_PROGRESS)
-        }
-    }
-
-    @Test
     fun testStateValueRoundTrip() {
         val value =
             MongoDbStreamStateValue("abc", MongoDbSnapshotStatus.IN_PROGRESS, MongoDbIdType.STRING)

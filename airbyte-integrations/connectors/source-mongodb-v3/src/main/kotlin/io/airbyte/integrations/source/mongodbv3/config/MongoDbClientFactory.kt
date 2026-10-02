@@ -11,10 +11,7 @@ import com.mongodb.client.MongoClients
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
-/**
- * Builds a [MongoClient] from a [MongoDbSourceConfiguration], the same way the legacy connector
- * did.
- */
+/** Builds a [MongoClient] from a [MongoDbSourceConfiguration]. */
 object MongoDbClientFactory {
     const val DRIVER_NAME = "Airbyte"
 
@@ -25,14 +22,13 @@ object MongoDbClientFactory {
         if (connectionString.readPreference == null) {
             settings.readPreference(ReadPreference.secondaryPreferred())
         }
-        // Atlas always requires TLS; the legacy connector forced `mongodb.ssl.enabled=true` on its
-        // CDC path. Self-managed clusters keep whatever the connection string says (`tls=true`).
+        // Atlas always requires TLS; self-managed clusters honour the connection string
+        // (`tls=true`).
         if (configuration.clusterType == MongoDbClusterType.ATLAS_REPLICA_SET) {
             settings.applyToSslSettings { it.enabled(true) }
         }
         configuration.credential?.let { (username: String, password: String) ->
-            // The legacy connector URL-encodes the username before handing it to the driver;
-            // kept as-is for parity.
+            // The username is URL-encoded before it is handed to the driver.
             settings.credential(
                 MongoCredential.createCredential(
                     URLEncoder.encode(username, StandardCharsets.UTF_8),

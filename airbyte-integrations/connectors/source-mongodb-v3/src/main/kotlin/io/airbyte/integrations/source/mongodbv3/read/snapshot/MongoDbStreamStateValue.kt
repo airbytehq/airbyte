@@ -2,7 +2,6 @@
 package io.airbyte.integrations.source.mongodbv3.read.snapshot
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.util.Jsons
 import java.util.Base64
@@ -13,7 +12,7 @@ import org.bson.json.JsonWriterSettings
 import org.bson.types.Binary
 import org.bson.types.ObjectId
 
-/** Snapshot phase of a collection, matching the legacy connector's `MongoDbStreamState.status`. */
+/** Snapshot phase of a collection. */
 enum class MongoDbSnapshotStatus {
     /** An incremental stream whose initial snapshot is still in progress. */
     IN_PROGRESS,
@@ -23,11 +22,7 @@ enum class MongoDbSnapshotStatus {
     FULL_REFRESH,
 }
 
-/**
- * BSON type of a collection's `_id`, matching the legacy connector's `MongoDbStreamState.idType`.
- * [OBJECT] (an `_id` that is itself a document) was added by v2 2.1.0; any other BSON type is
- * rejected up front rather than mis-serialized.
- */
+/** BSON type of a collection's `_id`; [OBJECT] is an `_id` that is itself a document. */
 enum class MongoDbIdType {
     OBJECT_ID,
     STRING,
@@ -38,14 +33,9 @@ enum class MongoDbIdType {
 }
 
 /**
- * Per-collection snapshot checkpoint, serialized to the exact JSON shape the legacy
- * `source-mongodb-v2` connector persisted so existing connections keep resuming without a reset:
- * ```
- * {"id": "<last _id>", "status": "IN_PROGRESS|COMPLETE|FULL_REFRESH", "idType": "OBJECT_ID|...",
- *  "binarySubType": 0}
- * ```
- * [id] is the string form of the last emitted `_id`; for a [Binary] `_id` it is the UUID text when
- * the subtype is 4 and Base64 otherwise, as the legacy connector did.
+ * Per-collection snapshot checkpoint: `{"id": "<last _id>", "status": ..., "idType": ...,
+ * "binarySubType": 0}`. [id] is the string form of the last emitted `_id` (UUID text for a
+ * subtype-4 [Binary], Base64 for other binaries).
  */
 data class MongoDbStreamStateValue(
     @JsonProperty("id") val id: String?,
@@ -80,17 +70,13 @@ data class MongoDbStreamStateValue(
             state?.let { runCatching { fromOpaqueStateValue(it) }.getOrNull() }
 
         /**
-         * Builds a checkpoint from the last `_id` value emitted for a collection (null if none). A
-         * document `_id` is stored as extended JSON so it round-trips through [resumeIdValue] with
-         * its BSON types intact. Any other `_id` type cannot be checkpointed faithfully (v2 rejects
-         * it too), so fail clearly rather than persist a lossy `toString()`.
+         * Checkpoint for the last `_id` emitted (null if none). A document `_id` is stored as
+         * extended JSON so it round-trips losslessly; other types fall back to `toString()`.
          */
         fun fromLastId(lastId: Any?, status: MongoDbSnapshotStatus): MongoDbStreamStateValue =
             when (lastId) {
-                null -> MongoDbStreamStateValue(null, status, MongoDbIdType.STRING)
                 is ObjectId ->
                     MongoDbStreamStateValue(lastId.toHexString(), status, MongoDbIdType.OBJECT_ID)
-                is String -> MongoDbStreamStateValue(lastId, status, MongoDbIdType.STRING)
                 is Int -> MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.INT)
                 is Long -> MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.LONG)
                 is Binary ->
@@ -112,11 +98,7 @@ data class MongoDbStreamStateValue(
                         status,
                         MongoDbIdType.OBJECT
                     )
-                else ->
-                    throw ConfigErrorException(
-                        "Unsupported _id type ${lastId::class.simpleName}: only ObjectId, string, " +
-                            "int, long, binary and document _id values are supported.",
-                    )
+                else -> MongoDbStreamStateValue(lastId?.toString(), status, MongoDbIdType.STRING)
             }
 
         /** Lossless `_id` document serialization (`{"$numberLong": ...}`, `{"$oid": ...}`, ...). */

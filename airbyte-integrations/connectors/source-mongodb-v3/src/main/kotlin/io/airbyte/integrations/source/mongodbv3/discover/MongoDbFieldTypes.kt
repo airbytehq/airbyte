@@ -19,15 +19,10 @@ import io.airbyte.integrations.source.mongodbv3.read.MongoNumberValueCodec
 import io.airbyte.integrations.source.mongodbv3.read.MongoStringValueCodec
 
 /**
- * [FieldType]s of the top-level fields of a MongoDB document.
- *
- * MongoDB is schemaless: DISCOVER samples documents and records the BSON type name of each field
- * (the `$type` aggregation operator), then maps it to one of these types. Both the mapping (
- * [fromBsonTypeName]) and the JSON schema of each type ([jsonSchema]) mirror the legacy
- * `source-mongodb-v2` connector so that the `discover` output of the two connectors is identical.
- *
- * Because documents in one collection may hold different BSON types under the same field name, the
- * discovered type is only a hint: record values are converted based on their actual BSON type.
+ * [FieldType]s of the top-level fields of a document. DISCOVER samples documents, records each
+ * field's BSON type name (`$type`) and maps it with [fromBsonTypeName]. Documents in one collection
+ * may hold different BSON types under the same field name, so the discovered type is only a hint:
+ * record values are converted based on their actual BSON type.
  */
 enum class MongoDbFieldType(
     override val airbyteSchemaType: AirbyteSchemaType,
@@ -35,17 +30,17 @@ enum class MongoDbFieldType(
     /** Codec matching this type's `airbyteSchemaType` for JSONL and protobuf output. */
     val valueCodec: MongoDbValueCodec,
 ) : FieldType {
-    STRING(LeafAirbyteSchemaType.STRING, legacyJsonSchema("string"), MongoStringValueCodec),
-    NUMBER(LeafAirbyteSchemaType.NUMBER, legacyJsonSchema("number"), MongoNumberValueCodec),
-    BOOLEAN(LeafAirbyteSchemaType.BOOLEAN, legacyJsonSchema("boolean"), MongoBooleanValueCodec),
-    /** The legacy connector emits arrays without an `items` schema. */
+    STRING(LeafAirbyteSchemaType.STRING, jsonSchemaOf("string"), MongoStringValueCodec),
+    NUMBER(LeafAirbyteSchemaType.NUMBER, jsonSchemaOf("number"), MongoNumberValueCodec),
+    BOOLEAN(LeafAirbyteSchemaType.BOOLEAN, jsonSchemaOf("boolean"), MongoBooleanValueCodec),
+    /** Arrays are emitted without an `items` schema. */
     ARRAY(
         ArrayAirbyteSchemaType(LeafAirbyteSchemaType.JSONB),
-        legacyJsonSchema("array"),
+        jsonSchemaOf("array"),
         MongoJsonbValueCodec,
     ),
-    OBJECT(LeafAirbyteSchemaType.JSONB, legacyJsonSchema("object"), MongoJsonbValueCodec),
-    NULL(LeafAirbyteSchemaType.NULL, legacyJsonSchema("null"), MongoNullValueCodec),
+    OBJECT(LeafAirbyteSchemaType.JSONB, jsonSchemaOf("object"), MongoJsonbValueCodec),
+    NULL(LeafAirbyteSchemaType.NULL, jsonSchemaOf("null"), MongoNullValueCodec),
     ;
 
     /** Values are converted by their BSON type; the codec adapts them to each output channel. */
@@ -56,11 +51,9 @@ enum class MongoDbFieldType(
 
     companion object {
         /**
-         * Maps a BSON type name, as returned by the `$type` aggregation operator, to a field type.
-         *
-         * This is the legacy connector's mapping, quirks included: `$type` reports booleans as
-         * `bool`, not `boolean`, so boolean fields are discovered as [STRING] like every other
-         * unlisted type (`objectId`, `date`, `timestamp`, `binData`, `regex`, `javascript`, ...).
+         * Maps a `$type` BSON type name to a field type. Note `$type` reports booleans as `bool`,
+         * not `boolean`, so they are discovered as [STRING] like every other unlisted type
+         * (`objectId`, `date`, `timestamp`, `binData`, `regex`, ...).
          */
         fun fromBsonTypeName(bsonTypeName: String): MongoDbFieldType =
             when (bsonTypeName) {
@@ -94,7 +87,7 @@ enum class MongoDbFieldType(
     }
 }
 
-private fun legacyJsonSchema(type: String): ObjectNode = Jsons.objectNode().put("type", type)
+private fun jsonSchemaOf(type: String): ObjectNode = Jsons.objectNode().put("type", type)
 
 /**
  * [MetaField]s specific to the MongoDB source, in addition to

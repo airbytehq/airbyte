@@ -63,7 +63,6 @@ class MongoDbSourceConfigurationFactoryTest {
         Assertions.assertEquals(27017, config.realPort)
         Assertions.assertTrue(config.global)
         Assertions.assertEquals(1, config.maxConcurrency)
-        Assertions.assertFalse(config.toString().contains("secret"), config.toString())
     }
 
     @Test

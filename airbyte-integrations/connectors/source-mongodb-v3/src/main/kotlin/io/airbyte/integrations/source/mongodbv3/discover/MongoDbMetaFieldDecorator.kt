@@ -20,11 +20,8 @@ import java.time.OffsetDateTime
 import java.util.concurrent.atomic.AtomicLong
 
 /**
- * Adds the `_ab_cdc_*` meta fields to every stream schema and to every record, like the legacy
- * connector's `MongoDbCdcConnectorMetadataInjector`.
- *
- * MongoDB incremental syncs are CDC-only, so every stream carries these fields regardless of the
- * configured sync mode.
+ * Adds the `_ab_cdc_*` meta fields to every stream schema and record. Incremental syncs are
+ * CDC-only, so every stream carries them regardless of its configured sync mode.
  */
 @Singleton
 class MongoDbMetaFieldDecorator : MetaFieldDecorator {
@@ -39,8 +36,8 @@ class MongoDbMetaFieldDecorator : MetaFieldDecorator {
         )
 
     /**
-     * Legacy cursor scheme for records read outside of the change stream: `emittedAt` epoch seconds
-     * times 10^8 plus a counter starting at 1, shared by all streams of the sync.
+     * Cursor for records read outside the change stream: `emittedAt` epoch seconds times 10^8 plus
+     * a counter starting at 1, shared by all streams of the sync.
      */
     private val cursorBase = AtomicLong(0L)
     private val cursorCounter = AtomicLong(1L)
@@ -75,9 +72,6 @@ class MongoDbMetaFieldDecorator : MetaFieldDecorator {
             FieldValueEncoder(nextCursor(timestamp), LongCodec)
     }
 
-    /**
-     * Same format as the legacy connector: `Instant.toString()`, e.g. `2026-09-08T12:34:56.789Z`.
-     */
     private fun updatedAt(timestamp: OffsetDateTime): String = timestamp.toInstant().toString()
 
     private fun nextCursor(timestamp: OffsetDateTime): Long {
