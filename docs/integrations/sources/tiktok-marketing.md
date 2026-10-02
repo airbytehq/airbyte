@@ -55,7 +55,7 @@ To access the Sandbox environment:
 7. Choose a **Start date**. Any data before this date is not replicated.
 8. Optionally, set an **End date** to limit how far forward the connector replicates data. If not set, the connector syncs data up to the current date.
 9. Optionally, adjust the **Attribution window** (default: 3 days, range: 0–364 days). This controls how far back the connector looks to update metrics for incremental report streams. A higher value helps capture delayed attribution data.
-10. Optionally, adjust the **Daily Reports Date Step** (default: 30 days, range: 1–30). This controls how many days of data each daily report API request covers. Use the default of 30 for most accounts. If syncs fail with TikTok API error 40067 ("query too large"), reduce this value to 7 or 1. Smaller values make more API requests but avoid query size limits for accounts with many ads.
+10. Optionally, adjust the **Daily Reports Date Step** (default: 30 days, range: 1–30). This controls how many days of data each daily report API request covers. Use the default of 30 for most accounts. If TikTok rejects a request as too large (error 40067), the connector automatically splits that date range in half and retries, down to one day, so you no longer need to lower this value for that. Smaller values make more API requests from the start, which can help accounts with many ads.
 11. Optionally, enable **Include deleted data** to sync deleted ads, ad groups, and campaigns in report streams.
 12. Click **Set up source**.
 <!-- /env:cloud -->
@@ -71,7 +71,7 @@ To access the Sandbox environment:
 5. Choose a **Start date**. Any data before this date is not replicated.
 6. Optionally, set an **End date** to limit how far forward the connector replicates data. If not set, the connector syncs data up to the current date.
 7. Optionally, adjust the **Attribution window** (default: 3 days, range: 0–364 days). This controls how far back the connector looks to update metrics for incremental report streams. A higher value helps capture delayed attribution data.
-8. Optionally, adjust the **Daily Reports Date Step** (default: 30 days, range: 1–30). This controls how many days of data each daily report API request covers. Use the default of 30 for most accounts. If syncs fail with TikTok API error 40067 ("query too large"), reduce this value to 7 or 1. Smaller values make more API requests but avoid query size limits for accounts with many ads.
+8. Optionally, adjust the **Daily Reports Date Step** (default: 30 days, range: 1–30). This controls how many days of data each daily report API request covers. Use the default of 30 for most accounts. If TikTok rejects a request as too large (error 40067), the connector automatically splits that date range in half and retries, down to one day, so you no longer need to lower this value for that. Smaller values make more API requests from the start, which can help accounts with many ads.
 9. Optionally, enable **Include deleted data** to sync deleted ads, ad groups, and campaigns in report streams.
 10. Click `Set up source`.
 <!-- /env:oss -->
@@ -163,7 +163,7 @@ If a resource is inaccessible or no longer exists (error 40002), the connector s
 
 If TikTok returns a permission error (error 40001), the connector fails the sync with a configuration error rather than retrying. This means the access token can't call an endpoint that a selected stream needs. Check that the developer application's permissions include the data you're syncing, re-authorize the connector, and run the sync again. The `PixelEventsStatistics` stream is the exception: if an advertiser has no permission to read a pixel, the connector skips that advertiser and continues.
 
-For daily report streams, if the TikTok API returns error 40067 ("query too large"), the connector surfaces a configuration error directing you to reduce the **Daily Reports Date Step** setting. This typically affects accounts with many ads or ad groups. Reduce the value to 7 or 1 and retry the sync.
+For daily report streams, if the TikTok API returns error 40067 ("query too large") for an advertiser, the connector splits that advertiser's date range in half and retries each half, repeating down to a single day if needed. Other advertisers are not affected, and you don't need to change the **Daily Reports Date Step** setting. This typically affects accounts with many ads or ad groups. If TikTok rejects even a single day as too large, the sync fails with a transient error and is retried automatically.
 
 ## Upgrading
 
@@ -180,6 +180,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.3.0 | 2026-10-02 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Split a daily report date range in half and retry when TikTok rejects it as too large (error 40067), instead of failing and asking to lower the `Daily Reports Date Step` |
 | 5.2.0 | 2026-09-14 | [85820](https://github.com/airbytehq/airbyte/pull/85820) | Add Website, App and Shop conversion metrics to the daily report streams |
 | 5.1.19 | 2026-09-29 | [87372](https://github.com/airbytehq/airbyte/pull/87372) | Update dependencies |
 | 5.1.18 | 2026-09-22 | [86854](https://github.com/airbytehq/airbyte/pull/86854) | Update dependencies |

@@ -8,7 +8,7 @@ description = "Unit tests for source-tiktok-marketing"
 authors = ["Airbyte <contact@airbyte.io>"]
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
-airbyte-cdk = "^7.4.1"
+airbyte-cdk = "7.32.0.post6.dev36925038601"  # TEMP dev pin: CDK #1192 prerelease, replace with ^7.33.0 before review
 pytest = "^8"
 freezegun = "^1.4.0"
 pytest-mock = "^3.6.1"

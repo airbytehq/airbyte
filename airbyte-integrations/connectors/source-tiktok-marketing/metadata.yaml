@@ -7,11 +7,11 @@ data:
       - sandbox-ads.tiktok.com
       - business-api.tiktok.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.32.0@sha256:0fd296fcebe643f973e64cb55dab3c7443d00496897ebd2b682b29332a660780
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.32.0.post6.dev36925038601@sha256:7c4ae20966dd989c1c05cb972c9fd8d7d0943c15ff80cc50cf1769d024b53a85 # TEMP: CDK #1192 prerelease, replace with 7.33.0 before review
   connectorSubtype: api
   connectorType: source
   definitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
-  dockerImageTag: 5.2.0
+  dockerImageTag: 5.3.0
   dockerRepository: airbyte/source-tiktok-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
   externalDocumentationUrls:
