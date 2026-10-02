@@ -198,9 +198,7 @@ class TestVideosFromUploadsPlaylist(TestCase):
             HttpResponse(
                 body=json.dumps(
                     {
-                        "items": [
-                            {"snippet": {"resourceId": {"kind": "youtube#video", "videoId": "video-1"}}}
-                        ],
+                        "items": [{"snippet": {"resourceId": {"kind": "youtube#video", "videoId": "video-1"}}}],
                         "nextPageToken": "page-2",
                     }
                 )
@@ -217,29 +215,13 @@ class TestVideosFromUploadsPlaylist(TestCase):
         )
         http_mocker.get(
             second_playlist_request,
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "items": [
-                            {"snippet": {"resourceId": {"kind": "youtube#video", "videoId": "video-2"}}}
-                        ]
-                    }
-                )
-            ),
+            HttpResponse(body=json.dumps({"items": [{"snippet": {"resourceId": {"kind": "youtube#video", "videoId": "video-2"}}}]})),
         )
-        catalog = (
-            CatalogBuilder()
-            .with_stream("videos", SyncMode.full_refresh)
-            .build()
-        )
+        catalog = CatalogBuilder().with_stream("videos", SyncMode.full_refresh).build()
         output = read(get_source(_CONFIG), config=_CONFIG, catalog=catalog)
 
         assert output.errors == [], output.get_formatted_error_message()
-        video_ids = {
-            record.record.data["videoId"]
-            for record in output.records
-            if record.record.stream == "videos"
-        }
+        video_ids = {record.record.data["videoId"] for record in output.records if record.record.stream == "videos"}
         assert video_ids == {"video-1", "video-2"}
         http_mocker.assert_number_of_calls(first_playlist_request, 1)
         http_mocker.assert_number_of_calls(second_playlist_request, 1)
@@ -258,11 +240,7 @@ class TestVideoChildrenFromUploadsPlaylist(TestCase):
         )
         http_mocker.get(
             HttpRequest(url=f"{_BASE}/playlistItems", query_params="any query_parameters"),
-            HttpResponse(
-                body=json.dumps(
-                    {"items": [{"snippet": {"resourceId": {"videoId": "video-1"}}}]}
-                )
-            ),
+            HttpResponse(body=json.dumps({"items": [{"snippet": {"resourceId": {"videoId": "video-1"}}}]})),
         )
         http_mocker.get(
             HttpRequest(url=f"{_BASE}/videos", query_params="any query_parameters"),
@@ -287,19 +265,11 @@ class TestVideoChildrenFromUploadsPlaylist(TestCase):
         )
         http_mocker.get(
             HttpRequest(url=f"{_BASE}/playlistItems", query_params="any query_parameters"),
-            HttpResponse(
-                body=json.dumps(
-                    {"items": [{"snippet": {"resourceId": {"videoId": "video-1"}}}]}
-                )
-            ),
+            HttpResponse(body=json.dumps({"items": [{"snippet": {"resourceId": {"videoId": "video-1"}}}]})),
         )
         http_mocker.get(
             HttpRequest(url=f"{_BASE}/commentThreads", query_params="any query_parameters"),
-            HttpResponse(
-                body=json.dumps(
-                    {"items": [{"snippet": {"topLevelComment": {"id": "comment-1"}, "videoId": "video-1"}}]}
-                )
-            ),
+            HttpResponse(body=json.dumps({"items": [{"snippet": {"topLevelComment": {"id": "comment-1"}, "videoId": "video-1"}}]})),
         )
 
         catalog = CatalogBuilder().with_stream("comments", SyncMode.full_refresh).build()
