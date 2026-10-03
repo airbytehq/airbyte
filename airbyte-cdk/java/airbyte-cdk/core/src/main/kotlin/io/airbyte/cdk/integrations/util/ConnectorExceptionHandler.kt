@@ -96,7 +96,55 @@ open class ConnectorExceptionHandler {
      * Initializes the error dictionary for the connector. This method shall include all the errors
      * that are shared by all connectors.
      */
-    open fun initializeErrorDictionary() {}
+    open fun initializeErrorDictionary() {
+        addCommonNetworkErrors()
+    }
+
+    private fun addCommonNetworkErrors() {
+        add(
+            ConnectorErrorProfile(
+                errorClass = "java.net.ConnectException",
+                regexMatchingPattern = "(?i).*Connection refused.*",
+                failureType = FailureType.CONFIG,
+                externalMessage =
+                    "Connection to the configured host refused. Verify the host and port in the connection settings.",
+                sampleInternalMessage = "java.net.ConnectException: Connection refused",
+            ),
+        )
+        add(
+            ConnectorErrorProfile(
+                errorClass = "java.net.UnknownHostException",
+                regexMatchingPattern =
+                    "(?i).*UnknownHostException.*|.*Name or service not known.*|.*nodename nor servname provided.*",
+                failureType = FailureType.CONFIG,
+                externalMessage =
+                    "Configured host name could not be resolved. Verify the host value in the connection settings.",
+                sampleInternalMessage =
+                    "java.net.UnknownHostException: badhost.example.com: Name or service not known",
+            ),
+        )
+        add(
+            ConnectorErrorProfile(
+                errorClass = "java.sql.SQLTransientConnectionException",
+                regexMatchingPattern =
+                    "(?i).*Connection is not available, request timed out after.*",
+                failureType = FailureType.TRANSIENT,
+                externalMessage = "Connection pool timed out.",
+                sampleInternalMessage =
+                    "java.sql.SQLTransientConnectionException: HikariPool-1 - Connection is not available, request timed out after 10001ms",
+            ),
+        )
+        add(
+            ConnectorErrorProfile(
+                errorClass = "java.net.SocketTimeoutException",
+                regexMatchingPattern =
+                    "(?i).*Connect timed out.*|.*Read timed out.*|.*SocketTimeoutException.*",
+                failureType = FailureType.TRANSIENT,
+                externalMessage = "Network connection timed out.",
+                sampleInternalMessage = "java.net.SocketTimeoutException: Connect timed out",
+            ),
+        )
+    }
 
     /**
      * Translates an internal exception message to an external user-friendly message. This is the
