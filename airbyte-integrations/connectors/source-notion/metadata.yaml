@@ -20,6 +20,15 @@ data:
     - title: Changelog
       url: https://developers.notion.com/page/changelog
       type: api_release_history
+    - title: API versioning and version support policy
+      url: https://developers.notion.com/reference/versioning
+      type: api_deprecations
+    - title: Upgrade guide for API version 2026-03-11
+      url: https://developers.notion.com/guides/get-started/upgrade-guide-2026-03-11
+      type: api_deprecations
+    - title: Authentication
+      url: https://developers.notion.com/reference/authentication
+      type: authentication_guide
   githubIssueLabel: source-notion
   icon: notion.svg
   license: ELv2
