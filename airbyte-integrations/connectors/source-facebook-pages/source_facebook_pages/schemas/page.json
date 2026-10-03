@@ -95,9 +95,6 @@
     "culinary_team": {
       "type": ["string", "null"]
     },
-    "current_location": {
-      "type": ["string", "null"]
-    },
     "delivery_and_pickup_option_info": {
       "type": ["array", "null"],
       "items": {
@@ -156,9 +153,6 @@
       "type": ["string", "null"]
     },
     "general_manager": {
-      "type": ["string", "null"]
-    },
-    "genre": {
       "type": ["string", "null"]
     },
     "global_brand_page_name": {
@@ -282,9 +276,6 @@
     "name_with_location_descriptor": {
       "type": ["string", "null"]
     },
-    "network": {
-      "type": ["string", "null"]
-    },
     "new_like_count": {
       "type": ["integer", "null"]
     },
@@ -299,9 +290,6 @@
     },
     "parent_page": {
       "$ref": "page.json"
-    },
-    "parking": {
-      "$ref": "pageparking.json"
     },
     "payment_options": {
       "$ref": "pagepaymentoptions.json"
@@ -389,9 +377,6 @@
     },
     "starring": {
       "type": ["string", "null"]
-    },
-    "start_info": {
-      "$ref": "pagestartinfo.json"
     },
     "store_code": {
       "type": ["string", "null"]

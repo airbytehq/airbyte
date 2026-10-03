@@ -124,7 +124,6 @@ definitions:
       - country_page_likes
       - cover
       - culinary_team
-      - current_location
       - delivery_and_pickup_option_info
       - description
       - description_html
@@ -142,7 +141,6 @@ definitions:
       - founded
       - general_info
       - general_manager
-      - genre
       - global_brand_page_name
       - global_brand_root_id
       - has_added_app
@@ -178,12 +176,10 @@ definitions:
       - mpg
       - name
       - name_with_location_descriptor
-      - network
       - new_like_count
       - offer_eligible
       - overall_star_rating
       - page_token
-      - parking
       - payment_options
       - personal_info
       - personal_interests
@@ -210,7 +206,6 @@ definitions:
       - season
       - single_line_address
       - starring
-      - start_info
       - store_code
       - store_location_descriptor
       - store_number
