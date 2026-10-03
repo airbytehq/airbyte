@@ -64,6 +64,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------|
+| 0.2.3 | 2026-09-01 | [84986](https://github.com/airbytehq/airbyte/pull/84986) | Upgrade to Bulk CDK 1.1.10. |
 | 0.2.2 | 2026-07-10 | [81656](https://github.com/airbytehq/airbyte/pull/81656) | chore(source-datagen): dummy version bump for progressive rollout (autopilot) testing |
 | 0.2.1 | 2026-06-09 | [79330](https://github.com/airbytehq/airbyte/pull/79330) | Progressive rollout e2e test |
 | 0.2.0 | 2026-04-28 | [75542](https://github.com/airbytehq/airbyte/pull/75542) | Add wide schema flavor with configurable column count; fix null safety in partition reader; cache codec references; bump CDK to 1.1.6 |
