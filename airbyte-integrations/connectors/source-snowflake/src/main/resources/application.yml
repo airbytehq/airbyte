@@ -43,12 +43,12 @@ airbyte:
             output: Connection to database closed unexpectedly (TCP socket was closed). This is often a temporary network issue.
 
           - pattern: (?i)JWT token is invalid
-            input-example: "JWT token is invalid."
-            error: transient
+            input-example: "JWT token is invalid. [a1b2c3d4-0000-0000-0000-000000000000]"
+            error: config
             group: Authentication Error
-            output: The session token has expired. This is a temporary issue and the connection will be re-established automatically.
+            output: Snowflake rejected the key pair (JWT) authentication. Verify that the private key in the connection configuration matches the public key registered on the Snowflake user, and that the username and account are correct.
             reference-links:
-              - https://docs.snowflake.com/en/user-guide/jdbc-configure
+              - https://docs.snowflake.com/en/user-guide/key-pair-auth-troubleshooting
 
       jdbc:
         # The following rules are for the JdbcExceptionClassifier and are based on
