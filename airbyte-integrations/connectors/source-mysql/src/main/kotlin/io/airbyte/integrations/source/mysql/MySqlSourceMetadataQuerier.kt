@@ -5,6 +5,7 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.SourceConfiguration
+import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetadataQuerier
@@ -228,10 +229,18 @@ class MySqlSourceMetadataQuerier(
         /** The [SourceConfiguration] is deliberately not injected in order to support tests. */
         override fun session(config: MySqlSourceConfiguration): MetadataQuerier {
             val jdbcConnectionFactory = JdbcConnectionFactory(config)
+            val effectiveConfig: MySqlSourceConfiguration =
+                if (config.tableIncludeRegex.isEmpty()) {
+                    config
+                } else {
+                    jdbcConnectionFactory.get().use { conn ->
+                        resolveTableIncludeRegex(config, listAllTables(conn))
+                    }
+                }
             val base =
                 JdbcMetadataQuerier(
                     constants,
-                    config,
+                    effectiveConfig,
                     selectQueryGenerator,
                     fieldTypeMapper,
                     checkQueries,
@@ -241,3 +250,68 @@ class MySqlSourceMetadataQuerier(
         }
     }
 }
+
+private val SYSTEM_DATABASES = setOf("information_schema", "mysql", "performance_schema", "sys")
+
+private val ALL_TABLES_QUERY =
+    "SELECT table_schema, table_name FROM information_schema.tables " +
+        "WHERE table_schema NOT IN (${SYSTEM_DATABASES.joinToString { "'$it'" }})"
+
+/** Lists every (database, table) pair visible to the user, excluding system databases. */
+internal fun listAllTables(conn: Connection): List<Pair<String, String>> =
+    conn.createStatement().use { stmt: Statement ->
+        stmt.executeQuery(ALL_TABLES_QUERY).use { rs: ResultSet ->
+            buildList {
+                while (rs.next()) {
+                    add(rs.getString("table_schema") to rs.getString("table_name"))
+                }
+            }
+        }
+    }
+
+/**
+ * Rewrites a configuration with a table include regex into the equivalent [namespaces] and
+ * exact-name [TableFilter]s, so that [JdbcMetadataQuerier] only queries metadata for matching
+ * tables. Databases whose tables all match are left unfiltered.
+ */
+internal fun resolveTableIncludeRegex(
+    config: MySqlSourceConfiguration,
+    allTables: List<Pair<String, String>>,
+): MySqlSourceConfiguration {
+    val tablesByDatabase: Map<String, List<String>> =
+        allTables
+            .filter { (db, _) -> db.lowercase() !in SYSTEM_DATABASES }
+            .groupBy({ it.first }, { it.second })
+    val matchedByDatabase: Map<String, List<String>> =
+        tablesByDatabase
+            .mapValues { (db, tables) ->
+                tables.filter { table ->
+                    config.tableIncludeRegex.any { it.matcher("$db.$table").matches() }
+                }
+            }
+            .filterValues { it.isNotEmpty() }
+    if (matchedByDatabase.isEmpty()) {
+        throw ConfigErrorException(
+            "Table Include Regex ${config.tableIncludeRegex.map { it.pattern() }} " +
+                "matched no tables visible to user."
+        )
+    }
+    val tableFilters: List<TableFilter> =
+        matchedByDatabase
+            .filter { (db, matched) -> matched.size < tablesByDatabase[db]!!.size }
+            .map { (db, matched) ->
+                TableFilter().apply {
+                    schemaName = db
+                    patterns = matched.map(::escapeLikePattern)
+                }
+            }
+    log.info {
+        "Table Include Regex matched ${matchedByDatabase.values.sumOf { it.size }} table(s) " +
+            "in database(s) ${matchedByDatabase.keys.sorted()}."
+    }
+    return config.copy(namespaces = matchedByDatabase.keys, tableFilters = tableFilters)
+}
+
+/** Escapes a literal name for use as a JDBC metadata (SQL LIKE) pattern. */
+internal fun escapeLikePattern(name: String): String =
+    name.replace("\\", "\\\\").replace("_", "\\_").replace("%", "\\%")

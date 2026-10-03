@@ -71,9 +71,24 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonProperty("database")
     @JsonSchemaTitle("Database")
-    @JsonPropertyDescription("The database name.")
+    @JsonPropertyDescription(
+        "The database name. Optional when \"Table Include Regex\" is set, in which case " +
+            "it is only used as the connection's default database."
+    )
     @JsonSchemaInject(json = """{"order":6,"always_show":true}""")
-    lateinit var database: String
+    var database: String? = null
+
+    @JsonProperty("table_include_regex")
+    @JsonSchemaTitle("Table Include Regex")
+    @JsonPropertyDescription(
+        "Optional list of Java regular expressions matched against fully-qualified " +
+            "\"database.table\" names, to sync tables from several databases in one " +
+            "connection. A table is included when any expression matches its full name. " +
+            "For example: \"erp\\..*\" or \"sales_[0-9]+\\.orders\". " +
+            "Cannot be combined with \"Table Filters\"."
+    )
+    @JsonSchemaInject(json = """{"order":7,"uniqueItems":true}""")
+    var tableIncludeRegex: List<String>? = null
 
     @JsonProperty("table_filters")
     @JsonSchemaTitle("Table Filters")

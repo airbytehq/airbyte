@@ -27,7 +27,7 @@
       },
       "database": {
         "always_show": true,
-        "description": "The database name.",
+        "description": "The database name. Optional when \"Table Include Regex\" is set, in which case it is only used as the connection's default database.",
         "order": 6,
         "title": "Database",
         "type": "string"
@@ -251,6 +251,16 @@
         "title": "Encryption",
         "type": "object"
       },
+      "table_include_regex": {
+        "description": "Optional list of Java regular expressions matched against fully-qualified \"database.table\" names, to sync tables from several databases in one connection. A table is included when any expression matches its full name. For example: \"erp\\..*\" or \"sales_[0-9]+\\.orders\". Cannot be combined with \"Table Filters\".",
+        "items": {
+          "type": "string"
+        },
+        "order": 7,
+        "title": "Table Include Regex",
+        "type": "array",
+        "uniqueItems": true
+      },
       "table_filters": {
         "type": "array",
         "items": {
@@ -417,7 +427,7 @@
         "type": "string"
       }
     },
-    "required": ["host", "port", "database", "username", "replication_method"],
+    "required": ["host", "port", "username", "replication_method"],
     "title": "MySQL Source Spec",
     "type": "object"
   },

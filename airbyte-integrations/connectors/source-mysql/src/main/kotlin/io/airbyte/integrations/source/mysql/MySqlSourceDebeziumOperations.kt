@@ -256,8 +256,37 @@ class MySqlSourceDebeziumOperations(
                 )
             }
         }
+        val savedName: String? = debeziumState.offset.wrapped.keys.first()[0]?.asText()
+        if (savedName != debeziumName) {
+            return invalidSchemaHistory(
+                "Saved offset belongs to Debezium connector '$savedName' but the current " +
+                    "configuration uses '$debeziumName'; the \"Database\" field was changed"
+            )
+        }
+        if (capturesAllDatabases && debeziumState.schemaHistory != null) {
+            val missing: Set<String> =
+                matchedDatabases() - historyDatabases(debeziumState.schemaHistory)
+            if (missing.isNotEmpty()) {
+                return invalidSchemaHistory(
+                    "Saved schema history does not cover database(s) $missing matched by " +
+                        "Table Include Regex"
+                )
+            }
+        }
         return ValidDebeziumWarmStartState(debeziumState.offset, debeziumState.schemaHistory)
     }
+
+    private fun matchedDatabases(): Set<String> =
+        jdbcConnectionFactory.get().use { conn: Connection ->
+            resolveTableIncludeRegex(configuration, listAllTables(conn)).namespaces
+        }
+
+    private fun invalidSchemaHistory(reason: String): InvalidDebeziumWarmStartState =
+        when (cdcIncrementalConfiguration.invalidCdcCursorPositionBehavior) {
+            InvalidCdcCursorPositionBehavior.FAIL_SYNC ->
+                AbortDebeziumWarmStartState("$reason, please reset the connection.")
+            InvalidCdcCursorPositionBehavior.RESET_SYNC -> ResetDebeziumWarmStartState("$reason.")
+        }
 
     private fun abortCdcSync(reason: String): InvalidDebeziumWarmStartState =
         when (cdcIncrementalConfiguration.invalidCdcCursorPositionBehavior) {
@@ -306,11 +335,11 @@ class MySqlSourceDebeziumOperations(
     override fun generateColdStartOffset(): DebeziumOffset {
         val (mySqlSourceCdcPosition: MySqlSourceCdcPosition, gtidSet: String?) =
             queryPositionAndGtids()
-        val topicPrefixName: String = DebeziumPropertiesBuilder.sanitizeTopicPrefix(databaseName)
+        val topicPrefixName: String = DebeziumPropertiesBuilder.sanitizeTopicPrefix(debeziumName)
         val timestamp: Instant = Instant.now()
         val key: ArrayNode =
             Jsons.arrayNode().apply {
-                add(databaseName)
+                add(debeziumName)
                 add(Jsons.objectNode().apply { put("server", topicPrefixName) })
             }
         val value: ObjectNode =
@@ -450,7 +479,18 @@ class MySqlSourceDebeziumOperations(
         return Jsons.objectNode().apply { set<JsonNode>(STATE, stateNode) }
     }
 
-    val databaseName: String = configuration.namespaces.first()
+    /**
+     * Debezium connector name, which also keys the saved offset. Must stay stable across syncs: it
+     * is the "Database" field when set, so pre-existing connections keep their state.
+     */
+    val debeziumName: String = configuration.defaultDatabase ?: DEFAULT_DEBEZIUM_NAME
+
+    /**
+     * With a table include regex, Debezium captures the schema history of every database so that
+     * databases added to the connection later are already known on warm start. Change events are
+     * still restricted to the configured streams via `table.include.list`.
+     */
+    private val capturesAllDatabases: Boolean = configuration.tableIncludeRegex.isNotEmpty()
     val serverID: Int = random.nextInt(MIN_SERVER_ID..MAX_SERVER_ID)
 
     val commonProperties: Map<String, String> by lazy {
@@ -459,7 +499,7 @@ class MySqlSourceDebeziumOperations(
             DebeziumPropertiesBuilder()
                 .withDefault()
                 .withConnector(MySqlConnector::class.java)
-                .withDebeziumName(databaseName)
+                .withDebeziumName(debeziumName)
                 .withHeartbeats(configuration.debeziumHeartbeatInterval) // TEMP
                 // This to make sure that binary data represented as a base64-encoded String.
                 // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-binary-handling-mode
@@ -488,9 +528,13 @@ class MySqlSourceDebeziumOperations(
                 .with(configuration.debeziumSslProperties)
                 .withDatabase("hostname", tunnelSession.address.hostName)
                 .withDatabase("port", tunnelSession.address.port.toString())
-                .withDatabase("dbname", databaseName)
                 .withDatabase("server.id", serverID.toString())
-                .withDatabase("include.list", databaseName)
+                .apply {
+                    configuration.defaultDatabase?.let { withDatabase("dbname", it) }
+                    if (!capturesAllDatabases) {
+                        withDatabase("include.list", configuration.defaultDatabase!!)
+                    }
+                }
                 .withOffset()
                 .withSchemaHistory()
                 .run {
@@ -517,6 +561,9 @@ class MySqlSourceDebeziumOperations(
         // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-property-database-server-id
         const val MIN_SERVER_ID = 5400
         const val MAX_SERVER_ID = 6400
+
+        /** Debezium name used when no "Database" is configured. */
+        const val DEFAULT_DEBEZIUM_NAME = "airbyte_mysql"
 
         const val MAX_UNCOMPRESSED_LENGTH = 1024 * 1024
         const val STATE = "state"
@@ -571,6 +618,13 @@ class MySqlSourceDebeziumOperations(
                     .map { HistoryRecord(DocumentReader.defaultReader().read(it)) }
             return UnvalidatedDeserializedState(offset, DebeziumSchemaHistory(schemaHistoryList))
         }
+
+        /** Databases that have DDL recorded in the given schema history. */
+        internal fun historyDatabases(schemaHistory: DebeziumSchemaHistory): Set<String> =
+            schemaHistory.wrapped
+                .mapNotNull { it.document().getString(HistoryRecord.Fields.DATABASE_NAME) }
+                .filter { it.isNotEmpty() }
+                .toSet()
 
         data class UnvalidatedDeserializedState(
             val offset: DebeziumOffset,
