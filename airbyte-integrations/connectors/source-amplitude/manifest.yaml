@@ -589,6 +589,12 @@ streams:
         field_path: []
     paginator:
       type: NoPagination
+    request_window_splitting:
+      type: RequestWindowSplitting
+      failure_message: Amplitude rejected the Events export even after splitting
+        it into smaller time windows (the Export API allows at most 4GB per request).
+        Lower 'request_time_range', or for very large volumes use Amplitude's Amazon
+        S3 export https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export
     requester:
       type: HttpRequester
       url_base: "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency
@@ -601,13 +607,10 @@ streams:
       error_handler:
         type: DefaultErrorHandler
         response_filters:
+        # Export API documents 400/504 only as data-volume errors, with no error body to match on.
         - http_codes:
           - 400
-          action: FAIL
-          failure_type: config_error
-          error_message: The file size of the exported data is too large. Shorten
-            the time ranges and try again. The limit size is 4GB. Provide a shorter
-            'request_time_range' interval.
+          action: SPLIT_REQUEST_WINDOW
           type: HttpResponseFilter
         - http_codes:
           - 403
@@ -623,12 +626,7 @@ streams:
           type: HttpResponseFilter
         - http_codes:
           - 504
-          action: FAIL
-          failure_type: config_error
-          error_message: "The amount of data is large and may be causing a timeout.
-            For large amounts of data, the Amazon S3 destination is recommended. Refer
-            to Amplitude documentation for information on setting up the S3 destination:
-            https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
+          action: SPLIT_REQUEST_WINDOW
           type: HttpResponseFilter
       path: /2/export
     decoder:

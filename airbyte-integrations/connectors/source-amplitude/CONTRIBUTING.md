@@ -8,20 +8,12 @@ For Active Users specifically, the `series` field is a 2D matrix (one row per me
 
 **Why this matters:** What looks like a single API response actually requires matrix transposition and array zipping to produce usable records. Adding a new analytics stream that uses this response format requires a custom extractor rather than a standard DpathExtractor.
 
-## 2. Hard Export Size Limit with Timeout Fallback
+## 2. Oversized Events Exports Are Split Automatically
 
-Amplitude's API enforces a 4GB export size limit, returning HTTP 400 when exceeded. Additionally, large data volumes can trigger HTTP 504 timeouts. Amplitude's own documentation recommends using their Amazon S3 destination for large exports instead of the REST API. The connector surfaces these as config errors with guidance to shorten the `request_time_range` interval.
+Amplitude's Export API rejects an Events export with HTTP 400 when it exceeds 4GB and with HTTP 504 when too much data makes it time out. The `events` stream splits the rejected time window in half and retries each half, down to a one-hour window, using the CDK's `SPLIT_REQUEST_WINDOW` action. The export fails before any records are read, so this never duplicates records. Only the `events` stream does this; a 400 from the Dashboard REST API streams means something else.
 
-**Why this matters:** Syncs that work fine for small date ranges can suddenly fail when the date range grows large enough to exceed 4GB or trigger a timeout, with no way to resume from where it left off within that range.
+**Why this matters:** Syncs whose time range grows past the export limit now recover on their own instead of failing until a user shortens `request_time_range`. See `AGENTS.md` for the exact limits and failure behavior.
 
 ## Incremental Stream Considerations
 
-The Amplitude API supports incremental data export via the Export API with date-based windowing. The connector uses Python custom components referenced from the manifest via `custom_components_mapping`. All streams are defined in Python code. The connector already supports incremental sync for its primary data export streams (events, active_users, average_sessions, annotations, cohorts).
-
-**Connector type:** Python custom components (hybrid manifest + Python)
-
-**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review. The connector's primary high-volume streams appear to already support incremental sync.
-
-### Future incremental stream candidates
-
-- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+The connector is manifest-only: every stream is declared in `manifest.yaml`, and `components.py` holds only custom extractors and a datetime transformation. Incremental streams (`events`, `average_session_length`, `active_users`) use `DatetimeBasedCursor`.
