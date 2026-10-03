@@ -19,15 +19,15 @@ data:
   name: Delighted
   registryOverrides:
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: beta
   remoteRegistries:
     pypi:
       enabled: false
       packageName: airbyte-source-delighted
-  supportLevel: community
+  supportLevel: archived
   tags:
     - cdk:low-code
     - language:manifest-only
