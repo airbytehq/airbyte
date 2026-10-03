@@ -349,6 +349,21 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
             stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: "updated_at[gte]"
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -464,6 +479,17 @@ spec:
         title: API Key
         airbyte_secret: true
         order: 0
+      start_date:
+        type: string
+        title: Start Date
+        description: >-
+          UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Data with an
+          updated_at value equal to or later than this will be replicated. If
+          not set, all data will be replicated.
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+          - "2020-01-01T00:00:00Z"
+        order: 1
     additionalProperties: true
 
 metadata:
