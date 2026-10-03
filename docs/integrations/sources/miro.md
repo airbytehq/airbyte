@@ -2,11 +2,22 @@
 
 Airbyte connector for Miro can be used to extract data related to board content, user activities, and collaboration metrics, enabling integration with data warehouses and further analysis of team interactions and productivity.
 
+## Prerequisites
+
+The connector authenticates with a Miro OAuth access token. Miro's app Client ID and Client secret don't work as the API key.
+
+1. In Miro, open **Profile settings** > **Your apps** and create an app.
+2. Under **Permissions**, enable the `boards:read` scope.
+3. Click **Install app and get OAuth token**, choose the team whose boards you want to sync, and click **Allow**.
+4. Copy the access token and paste it into the **API Key** field.
+
+The connector only reads boards that the token's user has access to in the team you installed the app to.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
+| `api_key` | `string` | API Key. A Miro OAuth access token. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -29,6 +40,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.69 | 2026-10-02 | [87649](https://github.com/airbytehq/airbyte/pull/87649) | Document that the API key is a Miro OAuth access token |
 | 0.0.68 | 2026-09-29 | [87236](https://github.com/airbytehq/airbyte/pull/87236) | Update dependencies |
 | 0.0.67 | 2026-09-22 | [86693](https://github.com/airbytehq/airbyte/pull/86693) | Update dependencies |
 | 0.0.66 | 2026-09-15 | [86144](https://github.com/airbytehq/airbyte/pull/86144) | Update dependencies |
