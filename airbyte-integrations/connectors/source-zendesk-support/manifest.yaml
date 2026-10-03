@@ -969,13 +969,34 @@ definitions:
             - type: ExponentialBackoffStrategy
               factor: 10
           response_filters:
+            # A 504 here means the export endpoint could not assemble this page in time, so retrying the
+            # identical request asks it to do the same work again. REDUCE_PAGE_SIZE re-issues the page with a
+            # smaller `per_page` instead, which is the only thing that changes what the endpoint has to do.
             - http_codes: [504]
-              action: RETRY
-              error_message: "Gateway timeout waiting for response from stream `{{ parameters.get('name') }}`. Retrying with exponential backoff..."
+              action: REDUCE_PAGE_SIZE
+              failure_type: transient_error
+              error_message: "Gateway timeout waiting for response from stream `{{ parameters.get('name') }}`. Retrying the same page with a smaller page size..."
             - http_codes: [403, 404]
               action: FAIL
               failure_type: config_error
               error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issue with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
+      page_size_reduction:
+        type: PageSizeReduction
+        reduction_factor: 2
+        minimum_page_size: 1
+        max_attempts: 7
+        # The reduction path does not consult `backoff_strategies` or `Retry-After`, and a 504 from this
+        # endpoint also means it is briefly overloaded, so the wait between attempts is set here instead of
+        # being left at the half-second default.
+        backoff_seconds: 10
+        retries_at_minimum_page_size: 3
+        reset_policy: NEVER
+        # The next page is a URL Zendesk builds, and it carries the `per_page` it echoed back, so the reduced
+        # size has to replace that parameter rather than be sent next to it. Safe here because the URL
+        # addresses records by `start_time`, a timestamp: re-requesting it with a smaller page size returns
+        # the same records from the same place.
+        rewrite_page_size_in_page_token_url: true
+        failure_message: "Lower `Page Size (ticket_comments)` in the connector configuration, or set a more recent start date so that each page covers a shorter period."
       record_selector:
         type: RecordSelector
         extractor:
@@ -1698,7 +1719,9 @@ spec:
           - 500
         description: >-
           The number of records per page for the ticket_comments stream API requests.
-          Lower values may help prevent timeouts on large datasets. The maximum value is 1000.
+          The connector already halves this value and re-requests the page whenever Zendesk times a page out,
+          so lowering it here is only worth it when the sync spends most of its time on those retries.
+          The maximum value is 1000.
         order: 4
       ticket_search_lookback_days:
         type: integer
