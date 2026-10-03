@@ -70,8 +70,8 @@ definitions:
           field_name: to
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ today_utc() }}"
-          datetime_format: "%Y-%m-%d"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
@@ -323,8 +323,8 @@ definitions:
           field_name: to
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ today_utc() }}"
-          datetime_format: "%Y-%m-%d"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
@@ -441,8 +441,8 @@ definitions:
           field_name: to
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ today_utc() }}"
-          datetime_format: "%Y-%m-%d"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
@@ -640,8 +640,8 @@ definitions:
           field_name: to
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ today_utc() }}"
-          datetime_format: "%Y-%m-%d"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
@@ -833,8 +833,8 @@ definitions:
           field_name: to
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ today_utc() }}"
-          datetime_format: "%Y-%m-%d"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
@@ -968,8 +968,8 @@ definitions:
           field_name: to
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ today_utc() }}"
-          datetime_format: "%Y-%m-%d"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
@@ -1095,8 +1095,8 @@ definitions:
           field_name: to
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ today_utc() }}"
-          datetime_format: "%Y-%m-%d"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
@@ -1248,8 +1248,8 @@ definitions:
           field_name: to
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ today_utc() }}"
-          datetime_format: "%Y-%m-%d"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
