@@ -1,8 +1,5 @@
 name: "Airbyte CodeQL config"
 
-queries:
-  - uses: security-and-quality
-
 # Compiled languages are scoped by their build steps. These filters primarily
 # reduce interpreted-language indexing of tests and local build outputs.
 paths-ignore:
