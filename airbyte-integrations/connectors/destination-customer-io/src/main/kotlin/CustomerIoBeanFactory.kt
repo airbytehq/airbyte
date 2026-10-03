@@ -20,6 +20,7 @@ import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.spec.SpecificationFactory
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.IdentifierType
 import io.micronaut.context.annotation.Factory as MicronautFactory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -97,5 +98,12 @@ class CustomerIoBeanFactory {
         catalog: DestinationCatalog,
         dlqPipelineFactory: DlqPipelineFactory,
         httpClient: HttpClient,
-    ): LoadPipeline = dlqPipelineFactory.createPipeline(CustomerIoLoader(httpClient, catalog))
+        factory: DeclarativeDestinationFactory,
+    ): LoadPipeline {
+        val identifierType =
+            IdentifierType.fromConfigValue(factory.config?.get("identifierType")?.asText())
+        return dlqPipelineFactory.createPipeline(
+            CustomerIoLoader(httpClient, catalog, identifierType)
+        )
+    }
 }
