@@ -64,7 +64,16 @@ data:
     - title: Cart.com API documentation
       url: https://developers.cart.com/
       type: api_reference
+    - title: Cart.com Online Store API overview
+      url: https://developers.cart.com/docs/rest-api/ZG9jOjM2MjI2-the-online-store-api
+      type: api_reference
     - title: Cart.com authentication
-      url: https://developers.cart.com/docs/rest-api/authentication
+      url: https://developers.cart.com/docs/rest-api/ZG9jOjU4NjM4-cart-com-online-store-api-authentication
       type: authentication_guide
+    - title: Cart.com API scopes
+      url: https://developers.cart.com/docs/rest-api/3e66e3e0c67ec-scopes
+      type: authentication_guide
+    - title: Cart.com API resource list
+      url: https://developers.cart.com/docs/rest-api/d6d68790cda18-resource-list
+      type: api_reference
 metadataSpecVersion: "1.0"
