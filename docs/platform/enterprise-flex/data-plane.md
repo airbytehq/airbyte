@@ -56,7 +56,7 @@ For a production-ready deployment of self-managed data planes, you require the f
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Kubernetes Cluster       | Amazon EKS cluster running on EC2 instances in [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html). |
 | External Secrets Manager | [Amazon Secrets Manager](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets, using a dedicated Airbyte role using a [policy with all required permissions](/platform/operating-airbyte/external-secrets#step-1-configure-cloud-provider-permissions). |
-| Object Storage (Optional)| Amazon S3 bucket with a directory for log storage.                                                                         |
+| Object Storage (Optional)| Amazon S3 bucket for storing job logs in your own infrastructure. Not needed if you [view job logs in Airbyte](log-collection#airbyte-ui) instead. |
 
 </TabItem>
 <TabItem value="Azure" label="Azure" default>
@@ -65,7 +65,7 @@ For a production-ready deployment of self-managed data planes, you require the f
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Kubernetes Cluster       | Azure Kubernetes Service cluster running in [2 or more availability zones](https://learn.microsoft.com/en-us/azure/aks/reliability-zone-resiliency-recommendations). |
 | External Secrets Manager | [Azure Key Vault](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets, using a dedicated Airbyte role using a [policy with all required permissions](/platform/operating-airbyte/external-secrets#step-1-configure-cloud-provider-permissions). |
-| Object Storage (Optional)| Azure Blob Storage with a directory for log storage.                                                                         |
+| Object Storage (Optional)| Azure Blob Storage for storing job logs in your own infrastructure. Not needed if you [view job logs in Airbyte](log-collection#airbyte-ui) instead. |
 
 </TabItem>
 </Tabs>
@@ -301,6 +301,12 @@ secretsManager:
 
 Add the following overrides to a new `values.yaml` file.
 
+Before you fill in the `storage` section, decide where you want your job logs to go. See [Choose where your logs go](log-collection#choose-where-your-logs-go).
+
+- To keep job logs in your own infrastructure, set `storage` to a bucket you own. The data plane writes each job's logs there.
+- To view job logs in Airbyte's UI, you don't need `storage`. Instead, ask Airbyte support to enable Airbyte-hosted logs for your organization after you deploy.
+- If you omit `storage` and don't enable Airbyte-hosted logs, the data plane discards job logs after each job. Logs are only available on the pods' stdout while they run.
+
 ```yaml title="values.yaml"
 airbyteUrl: https://cloud.airbyte.com # Base URL for the control plane so Airbyte knows where to authenticate
 
@@ -317,7 +323,8 @@ dataPlane:
 
 
 # S3 bucket secrets/config
-# Only set this section if you are using a self-managed bucket, otherwise it can be omitted.
+# Set this section to keep job logs in your own bucket. Omit it if Airbyte
+# hosts your job logs, or if you only collect logs from container stdout.
 storage:
   secretName: airbyte-config-secrets
   type: "s3"
