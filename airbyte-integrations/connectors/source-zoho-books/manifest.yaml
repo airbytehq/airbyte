@@ -1,4 +1,4 @@
-version: 5.14.0
+version: 5.15.0
 
 type: DeclarativeSource
 
@@ -15,6 +15,12 @@ check:
     - users
 
 definitions:
+  add_organization_id:
+    type: AddFields
+    fields:
+      - path:
+          - organization_id
+        value: "{{ config['organization_id'] if config.get('organization_id') else None }}"
   streams:
     users:
       type: DeclarativeStream
@@ -48,6 +54,8 @@ definitions:
             page_size: 200
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        - $ref: "#/definitions/add_organization_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -84,6 +92,8 @@ definitions:
             start_from_page: 1
             page_size: 200
             inject_on_first_request: true
+      transformations:
+        - $ref: "#/definitions/add_organization_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -120,6 +130,8 @@ definitions:
             page_size: 200
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        - $ref: "#/definitions/add_organization_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -156,6 +168,8 @@ definitions:
             page_size: 200
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        - $ref: "#/definitions/add_organization_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -210,6 +224,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - $ref: "#/definitions/add_organization_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -260,6 +276,8 @@ definitions:
           type: RequestOption
           field_name: last_modified_time
           inject_into: request_parameter
+      transformations:
+        - $ref: "#/definitions/add_organization_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -296,6 +314,8 @@ definitions:
             page_size: 200
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        - $ref: "#/definitions/add_organization_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -354,6 +374,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - $ref: "#/definitions/add_organization_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -412,6 +434,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - $ref: "#/definitions/add_organization_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -470,6 +494,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - $ref: "#/definitions/add_organization_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -528,6 +554,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - $ref: "#/definitions/add_organization_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -586,6 +614,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - $ref: "#/definitions/add_organization_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -644,6 +674,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - $ref: "#/definitions/add_organization_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -702,6 +734,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - $ref: "#/definitions/add_organization_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -738,6 +772,8 @@ definitions:
             page_size: 200
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        - $ref: "#/definitions/add_organization_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -794,6 +830,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - $ref: "#/definitions/add_organization_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -801,6 +839,8 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://www.zohoapis.{{ config['region'] }}/books/v3
+    request_parameters:
+      organization_id: "{{ config['organization_id'] if config.get('organization_id') else None }}"
     authenticator:
       type: OAuthAuthenticator
       client_id: "{{ config[\"client_id\"] }}"
@@ -883,6 +923,15 @@ spec:
         title: Start date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      organization_id:
+        type: string
+        description: >-
+          The Organization ID for your Zoho Books account. Required when the
+          user belongs to multiple organizations.
+        name: organization_id
+        order: 5
+        title: Organization ID
+        airbyte_secret: false
     additionalProperties: true
 
 metadata:
@@ -1083,6 +1132,10 @@ schemas:
         type:
           - string
           - "null"
+      organization_id:
+        type:
+          - string
+          - "null"
     required:
       - user_id
   banking:
@@ -1196,6 +1249,10 @@ schemas:
       uncategorized_transactions:
         type:
           - number
+          - "null"
+      organization_id:
+        type:
+          - string
           - "null"
     required:
       - account_id
@@ -1716,6 +1773,10 @@ schemas:
         type:
           - string
           - "null"
+      organization_id:
+        type:
+          - string
+          - "null"
     required:
       - contact_id
   bills:
@@ -1839,6 +1900,10 @@ schemas:
         type:
           - string
           - "null"
+      organization_id:
+        type:
+          - string
+          - "null"
     required:
       - bill_id
       - last_modified_time
@@ -1956,6 +2021,10 @@ schemas:
           - string
           - "null"
       zcrm_potential_name:
+        type:
+          - string
+          - "null"
+      organization_id:
         type:
           - string
           - "null"
@@ -2090,6 +2159,10 @@ schemas:
           - string
           - "null"
       zcrm_product_id:
+        type:
+          - string
+          - "null"
+      organization_id:
         type:
           - string
           - "null"
@@ -2402,6 +2475,10 @@ schemas:
         type:
           - string
           - "null"
+      organization_id:
+        type:
+          - string
+          - "null"
     required:
       - invoice_id
       - date
@@ -2550,6 +2627,10 @@ schemas:
         type:
           - string
           - "null"
+      organization_id:
+        type:
+          - string
+          - "null"
     required:
       - expense_id
       - date
@@ -2681,6 +2762,10 @@ schemas:
       total:
         type:
           - number
+          - "null"
+      organization_id:
+        type:
+          - string
           - "null"
     required:
       - creditnote_id
@@ -2818,6 +2903,10 @@ schemas:
         type:
           - number
           - "null"
+      organization_id:
+        type:
+          - string
+          - "null"
     required:
       - payment_id
       - date
@@ -2935,6 +3024,10 @@ schemas:
           - string
           - "null"
       vendor_name:
+        type:
+          - string
+          - "null"
+      organization_id:
         type:
           - string
           - "null"
@@ -3098,6 +3191,10 @@ schemas:
         type:
           - string
           - "null"
+      organization_id:
+        type:
+          - string
+          - "null"
     required:
       - salesorder_id
       - date
@@ -3153,6 +3250,10 @@ schemas:
       total:
         type:
           - number
+          - "null"
+      organization_id:
+        type:
+          - string
           - "null"
     required:
       - journal_id
@@ -3221,6 +3322,10 @@ schemas:
           - string
           - "null"
       tax_type:
+        type:
+          - string
+          - "null"
+      organization_id:
         type:
           - string
           - "null"
@@ -3362,6 +3467,10 @@ schemas:
           - string
           - "null"
       transaction_type:
+        type:
+          - string
+          - "null"
+      organization_id:
         type:
           - string
           - "null"
