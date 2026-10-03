@@ -88,7 +88,9 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
+    db = new ClickHouseContainer("clickhouse/clickhouse-server:26.8")
+        .withEnv("CLICKHOUSE_USER", "default")
+        .withEnv("CLICKHOUSE_PASSWORD", "test")
         .waitingFor(Wait.forHttp("/ping").forPort(8123)
             .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
     db.start();
@@ -97,8 +99,8 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
         .put(JdbcUtils.HOST_KEY, db.getHost())
         .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, SCHEMA_NAME)
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.USERNAME_KEY, "default")
+        .put(JdbcUtils.PASSWORD_KEY, "test")
         .put(JdbcUtils.SSL_KEY, false)
         .build());
 

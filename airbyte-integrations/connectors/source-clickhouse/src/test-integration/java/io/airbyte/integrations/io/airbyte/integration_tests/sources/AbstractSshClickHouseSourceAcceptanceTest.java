@@ -106,7 +106,9 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
   }
 
   private void initAndStartJdbcContainer() {
-    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
+    db = new ClickHouseContainer("clickhouse/clickhouse-server:26.8")
+        .withUsername("default")
+        .withPassword("test")
         .withNetwork(network)
         .waitingFor(Wait.forHttp("/ping").forPort(8123)
             .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));

@@ -27,6 +27,8 @@ import org.testcontainers.containers.wait.strategy.Wait;
 public class ClickHouseJdbcStressTest extends JdbcStressTest {
 
   private static final String SCHEMA_NAME = "default";
+  private static final String TEST_USER = "default";
+  private static final String TEST_PASSWORD = "test";
   private ClickHouseContainer db;
   private JsonNode config;
 
@@ -38,7 +40,9 @@ public class ClickHouseJdbcStressTest extends JdbcStressTest {
   @Override
   @BeforeEach
   public void setup() throws Exception {
-    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
+    db = new ClickHouseContainer("clickhouse/clickhouse-server:26.8")
+        .withEnv("CLICKHOUSE_USER", TEST_USER)
+        .withEnv("CLICKHOUSE_PASSWORD", TEST_PASSWORD)
         .waitingFor(Wait.forHttp("/ping").forPort(8123)
             .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
     db.start();
@@ -47,8 +51,8 @@ public class ClickHouseJdbcStressTest extends JdbcStressTest {
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
         .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
         .put(JdbcUtils.DATABASE_KEY, SCHEMA_NAME)
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.USERNAME_KEY, TEST_USER)
+        .put(JdbcUtils.PASSWORD_KEY, TEST_PASSWORD)
         .put(JdbcUtils.SSL_KEY, false)
         .build());
 
