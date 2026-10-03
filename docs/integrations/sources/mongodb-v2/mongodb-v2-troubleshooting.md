@@ -84,10 +84,11 @@ This risk can also apply to Lookup when the full document and change event metad
 
 ### Supported MongoDB Clusters
 
-- Only supports [replica set](https://www.mongodb.com/docs/manual/replication/) cluster type.
-- TLS/SSL is required by this connector. TLS/SSL is enabled by default for MongoDB Atlas clusters. To enable TSL/SSL connection for a self-hosted MongoDB instance, please refer to [MongoDb Documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/).
+- Supports [replica set](https://www.mongodb.com/docs/manual/replication/) and, starting in version `2.1.0`, [sharded cluster](https://www.mongodb.com/docs/manual/sharding/) deployments. For a sharded cluster, use a connection string that points to the cluster's [`mongos`](https://www.mongodb.com/docs/manual/core/sharded-cluster-query-router/) router.
+- TLS/SSL is required by this connector. TLS/SSL is enabled by default for MongoDB Atlas clusters. To enable a TLS/SSL connection for a self-hosted MongoDB instance, please refer to [MongoDb Documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/).
 - Views, capped collections and clustered collections are not supported.
 - Empty collections are excluded from schema discovery.
+- The `_id` field must use one of these BSON types: `objectId`, `string`, `int`, `long`, `binData`, or `object` (an embedded document, supported starting in version `2.1.0`). Syncs fail with a configuration error for collections whose `_id` uses any other type, such as `double` or `bool`.
 - Collections with different data types for the values in the `_id` field among the documents in a collection are not supported. All `_id` values within the collection must be the same data type.
 - Atlas DB cluster are only supported in a dedicated M10 tier and above. Lower tiers may fail during connection setup.
 
