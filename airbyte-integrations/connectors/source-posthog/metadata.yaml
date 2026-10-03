@@ -67,4 +67,10 @@ data:
     - title: PostHog Status
       url: https://status.posthog.com/
       type: status_page
+    - title: PostHog Events API deprecation notice
+      url: https://posthog.com/docs/api/events
+      type: api_deprecations
+    - title: PostHog server source code (API implementation)
+      url: https://github.com/PostHog/posthog
+      type: code_repository
 metadataSpecVersion: "1.0"
