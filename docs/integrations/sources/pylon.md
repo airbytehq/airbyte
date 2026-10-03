@@ -92,6 +92,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 0.0.25 | 2026-09-30 | [87522](https://github.com/airbytehq/airbyte/pull/87522) | Add parent IDs to child stream records: `issue_id` on `issue_messages`, `knowledge_base_id` on `knowledge_base_articles` |
 | 0.0.24 | 2026-09-29 | [87314](https://github.com/airbytehq/airbyte/pull/87314) | Update dependencies |
 | 0.0.23 | 2026-09-22 | [86771](https://github.com/airbytehq/airbyte/pull/86771) | Update dependencies |
 | 0.0.22 | 2026-09-15 | [86190](https://github.com/airbytehq/airbyte/pull/86190) | Update dependencies |
