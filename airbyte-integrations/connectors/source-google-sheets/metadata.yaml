@@ -17,9 +17,21 @@ data:
     - title: Google Workspace developer release notes
       url: https://developers.google.com/workspace/release-notes
       type: api_release_history
-    - title: Release notes
-      url: https://developers.google.com/sheets/docs/release-notes
+    - title: Google Sheets API release notes
+      url: https://developers.google.com/workspace/sheets/release-notes
       type: api_release_history
+    - title: Google Sheets API reference
+      url: https://developers.google.com/workspace/sheets/api/reference/rest
+      type: api_reference
+    - title: Using OAuth 2.0 to access Google APIs
+      url: https://developers.google.com/identity/protocols/oauth2
+      type: authentication_guide
+    - title: OAuth 2.0 scopes for Google APIs
+      url: https://developers.google.com/identity/protocols/oauth2/scopes
+      type: permissions_scopes
+    - title: Google Sheets API usage limits
+      url: https://developers.google.com/workspace/sheets/api/limits
+      type: rate_limits
   githubIssueLabel: source-google-sheets
   icon: google-sheets.svg
   license: Elv2
