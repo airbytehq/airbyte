@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
@@ -26,6 +27,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.Statement
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -92,6 +94,54 @@ class MySqlSourceCdcIntegrationTest {
     }
 
     @Test
+    fun testWarmStartWithGtidsFromUnseenServerUuid() {
+        // After a failover, a replica promotion or a Blue/Green cutover, the server may have
+        // GTIDs from a server UUID which is neither in the saved state nor in gtid_purged.
+        MySqlContainerFactory.exclusive(
+                imageName = "mysql:9.2.0",
+                MySqlContainerFactory.WithNetwork,
+            )
+            .use { targetContainer ->
+                val targetConfig: MySqlSourceConfigurationSpecification =
+                    MySqlContainerFactory.config(targetContainer).apply {
+                        setIncrementalValue(Cdc())
+                    }
+                val targetConnectionFactory =
+                    JdbcConnectionFactory(MySqlSourceConfigurationFactory().make(targetConfig))
+                provisionTestContainer(targetContainer, targetConnectionFactory)
+                targetContainer.execAsRoot(
+                    "FLUSH BINARY LOGS; PURGE BINARY LOGS BEFORE NOW() + INTERVAL 1 DAY;"
+                )
+                val purgedGtids: String =
+                    targetConnectionFactory.get().use { connection: Connection ->
+                        connection.createStatement().use { stmt: Statement ->
+                            stmt.executeQuery("SELECT @@global.gtid_purged").use { rs ->
+                                rs.next()
+                                rs.getString(1)
+                            }
+                        }
+                    }
+                assertTrue(purgedGtids.isNotBlank())
+
+                val state1: AirbyteStateMessage =
+                    CliRunner.source("read", targetConfig, configuredCatalog).run().states().last()
+
+                targetContainer.execAsRoot(
+                    "SET GTID_NEXT = '$UNSEEN_SERVER_UUID:1';" +
+                        "INSERT INTO test.tbl (k, v) VALUES (3, 'baz');" +
+                        "SET GTID_NEXT = 'AUTOMATIC';"
+                )
+
+                val run2: BufferingOutputConsumer =
+                    CliRunner.source("read", targetConfig, configuredCatalog, listOf(state1)).run()
+                val errorTraces: List<AirbyteTraceMessage> =
+                    run2.traces().filter { it.type == AirbyteTraceMessage.Type.ERROR }
+                assertTrue(errorTraces.isEmpty(), "Unexpected error traces: $errorTraces")
+                assertEquals(listOf(3), run2.records().map { it.data["k"].asInt() })
+            }
+    }
+
+    @Test
     fun testFullRefresh() {
         val fullRefreshCatalog =
             configuredCatalog.apply { streams.forEach { it.syncMode = SyncMode.FULL_REFRESH } }
@@ -107,6 +157,8 @@ class MySqlSourceCdcIntegrationTest {
     companion object {
         val log = KotlinLogging.logger {}
         lateinit var dbContainer: MySQLContainer<*>
+
+        const val UNSEEN_SERVER_UUID = "3e11fa47-71ca-11e1-9e33-c80aa9429562"
 
         fun config(): MySqlSourceConfigurationSpecification =
             MySqlContainerFactory.config(dbContainer).apply { setIncrementalValue(Cdc()) }
