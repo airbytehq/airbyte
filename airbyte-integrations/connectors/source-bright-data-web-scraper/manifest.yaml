@@ -1,0 +1,687 @@
+version: 7.4.2
+
+type: DeclarativeSource
+
+description: >-
+  # Bright Data Web Scraper Connector Setup Guide
+
+
+  This guide will help you set up and configure the Bright Data Web Scraper
+  connector for Airbyte.
+
+
+
+  ## Prerequisites
+
+
+  Before setting up the connector, ensure you have:
+
+
+  1. **Bright Data Account**
+     - An active Bright Data account
+     - API key (Bearer token)
+     - Dataset ID for the web scraper
+
+
+  2. **URLs to Scrape**
+     - List of URLs you want to scrape
+     - URLs should be publicly accessible or within your Bright Data dataset scope
+
+  ## Step 1: Obtain Bright Data Credentials
+
+
+  ### Get Your API Key
+
+
+  1. Log in to your [Bright Data dashboard](https://brightdata.com/)
+
+  2. Navigate to **Settings** → **Users and API Keys**
+
+  3. Generate a new API key or copy your existing Bearer token
+
+  4. Store this securely - you'll need it for connector configuration
+
+
+  ### Get Your Dataset ID
+
+
+  1. In Bright Data dashboard, go to your **Datasets** section
+
+  2. Select the dataset you want to use for web scraping
+
+  3. Copy the Dataset ID (format: `gd_xxxxxxxxxxxxx`)
+
+  4. Example: `gd_l1vikfnt1wgvvqz95w`
+
+
+  ## Step 2: Configure the Connector
+
+
+  ### Required Configuration Fields
+
+
+  The connector requires the following mandatory fields:
+
+
+  | Field | Type | Description | Example |
+
+  |-------|------|-------------|---------|
+
+  | **API Key** | string (secret) | Your Bright Data Bearer token |
+  `your_api_key_here` |
+
+  | **Dataset ID** | string | Bright Data dataset identifier |
+  `gd_l1vikfnt1wgvvqz95w` |
+
+  | **URLs** | array[string] | List of URLs to scrape |
+  `["https://example.com/page1", "https://example.com/page2"]` |
+
+
+  ### Optional Configuration Fields
+
+
+  | Field | Type | Description | Default |
+
+  |-------|------|-------------|---------|
+
+  | **Format** | enum | Data delivery format | `json` |
+
+  | **Custom Output Fields** | string | Pipe-separated field filter | - |
+
+  | **Collection Type** | enum | Set to "discover_new" for discovery phase | - |
+
+  | **Discover By** | enum | Discovery method (keyword, best_sellers_url, etc.)
+  | - |
+
+  | **Include Errors** | boolean | Include error reports in results | `false` |
+
+  | **Limit Per Input** | number | Max results per URL input | - |
+
+  | **Limit Multiple Results** | number | Total max results | - |
+
+  | **Notify** | boolean | Enable completion notifications | `false` |
+
+  | **Webhook Endpoint** | string | URL for webhook notifications | - |
+
+  | **Webhook Auth Header** | string (secret) | Authorization header for webhook
+  | - |
+
+  | **Uncompressed Webhook** | boolean | Send uncompressed webhook data |
+  `false` |
+
+check:
+  type: CheckStream
+  stream_names:
+    - Bright Data Web Scraper
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_key'] }}"
+      request_headers:
+        Content-Type: application/json
+      request_parameters:
+        format: json
+
+streams:
+  - type: DeclarativeStream
+    name: Bright Data Web Scraper
+    retriever:
+      type: AsyncRetriever
+      decoder:
+        type: JsonDecoder
+      status_mapping:
+        type: AsyncJobStatusMap
+        failed:
+          - failed
+        running:
+          - running
+        timeout: []
+        completed:
+          - ready
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      download_decoder:
+        type: JsonDecoder
+      partition_router:
+        type: ListPartitionRouter
+        values: "{{ config['urls'] }}"
+        cursor_field: url
+      status_extractor:
+        type: DpathExtractor
+        field_path:
+          - status
+      polling_requester:
+        type: HttpRequester
+        url: >-
+          https://api.brightdata.com/datasets/v3/progress/{{
+          creation_response['snapshot_id'] }}
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_headers:
+          Content-Type: application/json
+      creation_requester:
+        type: HttpRequester
+        url: >-
+          https://api.brightdata.com/datasets/v3/trigger?dataset_id={{
+          config['dataset_id'] }}{% if config['dataset_id'] ==
+          'gd_lyy3tktm25m4avu764' %}&discover_by=profile_url&type=discover_new{%
+          endif %}{% if config.get('custom_output_fields')
+          %}&custom_output_fields={{ config['custom_output_fields'] }}{% endif
+          %}{% if config.get('include_errors') %}&include_errors={{
+          config['include_errors'] }}{% endif %}{% if
+          config.get('limit_per_input') %}&limit_per_input={{
+          config['limit_per_input'] }}{% endif %}{% if
+          config.get('limit_multiple_results') %}&limit_multiple_results={{
+          config['limit_multiple_results'] }}{% endif %}{% if
+          config.get('notify') %}&notify={{ config['notify'] }}{% endif %}{% if
+          config.get('endpoint') %}&endpoint={{ config['endpoint'] }}{% endif
+          %}{% if config.get('format') %}&format={{ config['format'] }}{% endif
+          %}{% if config.get('auth_header') %}&auth_header={{
+          config['auth_header'] }}{% endif %}{% if
+          config.get('uncompressed_webhook') %}&uncompressed_webhook={{
+          config['uncompressed_webhook'] }}{% endif %}
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            url: "{{ stream_slice['url'] }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+        request_headers:
+          Content-Type: application/json
+      download_requester:
+        type: HttpRequester
+        url: >-
+          https://api.brightdata.com/datasets/v3/snapshot/{{
+          creation_response['snapshot_id'] }}
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_headers:
+          Content-Type: application/json
+        request_parameters:
+          format: json
+    primary_key:
+      - id
+      - url
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          url:
+            type: string
+          id:
+            type: string
+          user_id:
+            type:
+              - string
+              - "null"
+          use_url:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          headline:
+            type:
+              - string
+              - "null"
+          post_text:
+            type:
+              - string
+              - "null"
+          date_posted:
+            type:
+              - string
+              - "null"
+          hashtags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          embedded_links:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          images:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          videos:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          num_likes:
+            type:
+              - number
+              - "null"
+          num_comments:
+            type:
+              - number
+              - "null"
+          more_relevant_posts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                post_url:
+                  type:
+                    - string
+                    - "null"
+                post_id:
+                  type:
+                    - string
+                    - "null"
+                user_id:
+                  type:
+                    - string
+                    - "null"
+                use_url:
+                  type:
+                    - string
+                    - "null"
+                post_text:
+                  type:
+                    - string
+                    - "null"
+                date_posted:
+                  type:
+                    - string
+                    - "null"
+                num_likes:
+                  type:
+                    - number
+                    - "null"
+                num_comments:
+                  type:
+                    - number
+                    - "null"
+                images:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                hashtags:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                embedded_links:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          top_visible_comments:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                use_url:
+                  type:
+                    - string
+                    - "null"
+                user_id:
+                  type:
+                    - string
+                    - "null"
+                user_name:
+                  type:
+                    - string
+                    - "null"
+                comment_date:
+                  type:
+                    - string
+                    - "null"
+                comment:
+                  type:
+                    - string
+                    - "null"
+                num_reactions:
+                  type:
+                    - number
+                    - "null"
+          user_followers:
+            type:
+              - number
+              - "null"
+          user_posts:
+            type:
+              - number
+              - "null"
+          user_articles:
+            type:
+              - number
+              - "null"
+          post_type:
+            type:
+              - string
+              - "null"
+          account_type:
+            type:
+              - string
+              - "null"
+          post_text_html:
+            type:
+              - string
+              - "null"
+          repost:
+            type:
+              - object
+              - "null"
+            properties:
+              repost_hangtags:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              repost_attachments:
+                type:
+                  - array
+                  - "null"
+              tagged_users:
+                type:
+                  - array
+                  - "null"
+              tagged_companies:
+                type:
+                  - array
+                  - "null"
+              repost_url:
+                type:
+                  - string
+                  - "null"
+              repost_user_name:
+                type:
+                  - string
+                  - "null"
+              repost_text:
+                type:
+                  - string
+                  - "null"
+              repost_date:
+                type:
+                  - string
+                  - "null"
+              repost_id:
+                type:
+                  - string
+                  - "null"
+              repost_user_title:
+                type:
+                  - string
+                  - "null"
+          tagged_companies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                link:
+                  type:
+                    - string
+                    - "null"
+          tagged_people:
+            type:
+              - array
+              - "null"
+          author_profile_pic:
+            type:
+              - string
+              - "null"
+          num_connections:
+            type:
+              - number
+              - "null"
+          video_duration:
+            type:
+              - number
+              - "null"
+          external_link_data:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                post_external_image:
+                  type:
+                    - string
+                    - "null"
+                post_external_url:
+                  type:
+                    - string
+                    - "null"
+                post_external_title:
+                  type:
+                    - string
+                    - "null"
+          video_thumbnail:
+            type:
+              - string
+              - "null"
+          original_post_text:
+            type:
+              - string
+              - "null"
+          timestamp:
+            type:
+              - string
+              - "null"
+          input:
+            type:
+              - object
+              - "null"
+            properties:
+              num_connections:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+        required:
+          - id
+          - url
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - url
+            value: "{{ stream_slice['url'] }}"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - dataset_id
+      - urls
+    properties:
+      urls:
+        type: array
+        description: List of URLs to scrape
+        items:
+          type: string
+        order: 2
+        title: URLs
+        example:
+          - https://www.linkedin.com/in/example1
+          - https://www.linkedin.com/in/example2
+      format:
+        type: string
+        description: Data delivery format
+        enum:
+          - json
+          - ndjson
+          - jsonl
+          - csv
+        order: 3
+        title: Format
+        default: json
+      notify:
+        type: boolean
+        description: Send notifications upon completion
+        order: 10
+        title: Notify
+        default: false
+      api_key:
+        type: string
+        description: Your Bright Data API Key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      endpoint:
+        type: string
+        description: Webhook URL for data collection notifications
+        order: 11
+        title: Webhook Endpoint
+        example: https://example.com/webhook
+      dataset_id:
+        type: string
+        description: Dataset ID for which data collection is triggered
+        order: 1
+        title: Dataset ID
+        example: gd_l1vikfnt1wgvvqz95w
+      auth_header:
+        type: string
+        description: Authorization header for webhook delivery
+        order: 12
+        title: Webhook Auth Header
+        airbyte_secret: true
+      include_errors:
+        type: boolean
+        description: Include errors report with the results
+        order: 7
+        title: Include Errors
+        default: false
+      limit_per_input:
+        type: number
+        description: Limit the number of results per input
+        order: 8
+        title: Limit Per Input
+        example: 10
+        minimum: 1
+      custom_output_fields:
+        type: string
+        description: Filter response data to include only specified fields (pipe-separated)
+        order: 4
+        title: Custom Output Fields
+        example: url|about.updated_on
+      uncompressed_webhook:
+        type: boolean
+        description: Send webhook data uncompressed
+        order: 13
+        title: Uncompressed Webhook
+        default: false
+      limit_multiple_results:
+        type: number
+        description: Limit the total number of results
+        order: 9
+        title: Limit Multiple Results
+        example: 100
+        minimum: 1
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    web scraper 2:
+      streamHash: 5412f3970979231b459fe2f3d998c9fd8b91a5ac
+    Bright Data Web Scraper:
+      isStale: false
+      hasRecords: true
+      streamHash: 6716bbddd23339431da1462e9881563be4de38a2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Brightdata snapshot results:
+      isStale: false
+      hasRecords: true
+      streamHash: f7c380358ec1cd26d3e6f1a68a867fcaa597ba30
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    web scraper 2: true
+    Bright Data Web Scraper: true
+    Brightdata snapshot results: true
+  applied_migrations:
+    - migration: HttpRequesterUrlBaseToUrl
+      to_version: "*"
+      migrated_at: "2025-11-24T22:55:14.886298+00:00"
+      from_version: 0.61.2
+    - migration: HttpRequesterPathToUrl
+      to_version: "*"
+      migrated_at: "2025-11-24T22:55:14.886574+00:00"
+      from_version: 0.61.2
+    - migration: HttpRequesterRequestBodyJsonDataToRequestBody
+      to_version: "*"
+      migrated_at: "2025-11-24T22:55:14.886754+00:00"
+      from_version: 0.61.2
