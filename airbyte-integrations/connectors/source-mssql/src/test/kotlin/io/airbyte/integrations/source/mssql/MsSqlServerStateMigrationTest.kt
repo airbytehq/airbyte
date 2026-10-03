@@ -25,7 +25,7 @@ class MsSqlServerStateMigrationTest {
         }
         """.trimIndent()
 
-        val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(newState))
+        val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(newState))!!
 
         assertEquals("2024-01-01T00:00:00", parsed.cursor?.asText())
         assertEquals("cursor_based", parsed.stateType)
@@ -56,7 +56,7 @@ class MsSqlServerStateMigrationTest {
         """.trimIndent()
 
         val parsed =
-            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyOrderedColumnState))
+            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyOrderedColumnState))!!
 
         // Should be converted to primary_key state
         assertEquals("primary_key", parsed.stateType)
@@ -89,7 +89,7 @@ class MsSqlServerStateMigrationTest {
         }
         """.trimIndent()
 
-        val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyCursorState))
+        val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyCursorState))!!
 
         assertEquals("cursor_based", parsed.stateType)
         // Stream name and namespace are not tracked in the state value
@@ -111,7 +111,7 @@ class MsSqlServerStateMigrationTest {
         """.trimIndent()
 
         val parsed =
-            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithoutStateType))
+            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithoutStateType))!!
 
         assertEquals("primary_key", parsed.stateType)
         assertEquals("id", parsed.pkName)
@@ -132,7 +132,7 @@ class MsSqlServerStateMigrationTest {
         """.trimIndent()
 
         val parsed =
-            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithoutStateType))
+            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithoutStateType))!!
 
         assertEquals("cursor_based", parsed.stateType)
         // Stream name is not tracked in the state value
@@ -152,10 +152,15 @@ class MsSqlServerStateMigrationTest {
 
         val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(unknownState))
 
-        // Should return default state
-        assertEquals("cursor_based", parsed.stateType)
-        assertNull(parsed.cursor)
-        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed.version)
+        // Unknown formats have no recognizable resume point: null signals a cold start
+        assertNull(parsed)
+    }
+
+    @Test
+    fun `should return null for empty object state`() {
+        // An empty {} state (e.g. produced when the platform clears a stream's state)
+        // has no recognizable resume point.
+        assertNull(MsSqlServerStateMigration.parseStateValue(Jsons.objectNode()))
     }
 
     @Test
@@ -171,7 +176,7 @@ class MsSqlServerStateMigrationTest {
         """.trimIndent()
 
         val parsed =
-            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyOrderedColumnState))
+            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyOrderedColumnState))!!
 
         assertEquals("primary_key", parsed.stateType)
         assertEquals("id", parsed.pkName)
@@ -193,7 +198,8 @@ class MsSqlServerStateMigrationTest {
         }
         """.trimIndent()
 
-        val parsed = MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithNulls))
+        val parsed =
+            MsSqlServerStateMigration.parseStateValue(Jsons.readTree(legacyStateWithNulls))!!
 
         assertEquals("cursor_based", parsed.stateType)
         // Stream name is not tracked in the state value
@@ -221,7 +227,7 @@ class MsSqlServerStateMigrationTest {
         val parsed =
             MsSqlServerStateMigration.parseStateValue(
                 Jsons.readTree(legacyOrderedColumnStateWithNullIncremental)
-            )
+            )!!
 
         // Should successfully migrate without NPE
         assertEquals("primary_key", parsed.stateType)
