@@ -16,25 +16,42 @@ Vendor evidence, re-verified 2026-08-12:
 
 Revisit this if Granola publishes an OAuth application model for the public API.
 
+## HTTP error handling
+
+`base_error_handler` maps shared HTTP failures, and every stream's error handler lists the same shared filters by `$ref` plus its stream-specific one. A local `response_filters` list next to `$ref` replaces the referenced list wholesale (`evaluated_ref | evaluated_dict`), so putting the shared filters only on `base_error_handler` would silently drop them from `detailed_notes` and `note_transcripts`, which each define their own list.
+
+- `401` and `403` → `FAIL` with `failure_type: config_error`, with separate messages: `401` means Granola rejected the key, `403` means the key lacks access.
+- `429` → `RATE_LIMITED`; backoff honors `Retry-After` up to 60 seconds, then exponential backoff with factor 5, `max_retries: 5`.
+- `500`/`502`/`503`/`504` → `RETRY`, failing as `transient_error` once retries run out. The CDK applies an `HttpResponseFilter`'s `failure_type` only when the action is `FAIL`. For `RETRY` it uses its default mapping (`HttpResponseFilter.matches` in `airbyte_cdk/sources/declarative/requesters/error_handlers/http_response_filter.py`), which covers only these four codes. Any other 5xx, such as `501` or `507`, still retries but fails as `system_error`, and adding it to the filter would not change that.
+- `413` on `detailed_notes` and `404` on `note_transcripts` → `IGNORE` (see Oversized Transcripts).
+
+## Deletions
+
+The Granola API has no way to return deleted notes on the stream that lists them. `GET /v1/notes` has no parameter for deleted or trashed notes, note records carry no deletion field, and no webhook event fires on deletion (checked against the [OpenAPI spec](https://docs.granola.ai/api-reference/openapi.json) on 2026-09-25). Deletions only appear as `document.hard_deleted` events on the Enterprise-only `GET /v1/audit` endpoint, which needs a separate Audit API key that a workspace admin creates. The connector doesn't read `/v1/audit`: deletions belong on the stream that returns the records, not on a separate stream. If Granola adds an option to include deleted notes in `GET /v1/notes`, set it on the `notes` request.
+
 ## Oversized Transcripts
 
 `GET /v1/notes/{note_id}?include=transcript` answers `413` with `code: TRANSCRIPT_TOO_LARGE` when a transcript exceeds the size Granola returns inline. `detailed_notes` maps 413 to `IGNORE` so the note is skipped instead of retried and failed. The CDK emits the filter's `error_message` at INFO, not WARN (`HttpClient._handle_error_resolution` in `airbyte_cdk/sources/streams/http/http_client.py`), so the skip is invisible to log filters set above INFO, and the whole note record is dropped from `detailed_notes` — not just its transcript. The `note_transcripts` stream replicates those transcripts from the paged `GET /v1/notes/{note_id}/transcript` endpoint (`page_size` max 100, `cursor`/`hasMore` pagination), and maps that endpoint's documented 404 to `IGNORE` so a note deleted or unshared mid-sync does not fail the stream. `note_transcripts` emits one record per transcript segment with the parent `note_id` added by an `AddFields` transformation, and has no primary key because segments carry no stable identifier.
 
 ## Incremental Stream Considerations
 
-The Granola API connector has 3 streams: `notes` (incremental with `created_at` cursor), `detailed_notes` and `note_transcripts` (children of notes via `SubstreamPartitionRouter`). No FR parent streams remain.
+The Granola API connector has 3 streams: `notes` (incremental with `updated_at` cursor), `detailed_notes` and `note_transcripts` (children of notes via `SubstreamPartitionRouter`). No FR parent streams remain.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
-|---|---|---|---|---|---|---|
-| notes | medium | top-level parent | created_at | created_at | incremental |  |
-| detailed_notes | medium | child | none | none | deferred_child |  |
-| note_transcripts | medium | child | none | none | deferred_child |  |
+| --- | --- | --- | --- | --- | --- | --- |
+| notes | medium | top-level parent | updated_at | updated_at | incremental | |
+| detailed_notes | medium | child | none | none | deferred_child | |
+| note_transcripts | medium | child | none | none | deferred_child | |
 
-### Slice bounds must stay second-granular
+### Cursor is `updated_at` with a single slice
 
-`GET /v1/notes` treats `created_before=<date>` as excluding that entire day — `created_after=2025-11-10&created_before=2025-11-10` returns zero records even when notes exist on that day. Day-truncated slice bounds (`datetime_format: "%Y-%m-%d"` with `cursor_granularity: P1D`) therefore silently dropped every note created on a slice boundary date, and `detailed_notes` lost the same notes because it partitions from `notes`. The cursor now uses `datetime_format: "%Y-%m-%dT%H:%M:%SZ"` with `cursor_granularity: PT1S`, which the vendor [OpenAPI spec](https://docs.granola.ai/api-reference/openapi.json) supports (`created_after`/`created_before` are `anyOf` date or date-time). Do not revert the bounds to date-only granularity.
+`GET /v1/notes` exposes `updated_after` but no `updated_before`, so the cursor sends one unbounded slice — there is no `step` or `end_time_option`, because stepped windows without an upper bound would return overlapping data. A note edited after a sync is re-emitted on the next incremental sync. `detailed_notes` and `note_transcripts` have no `incremental_dependency`, so their parent `notes` read is a full re-read from `start_date` on every sync; they already picked up edited notes before 1.0.0.
 
-`cursor_datetime_formats` keeps `"%Y-%m-%d"` so date-only cursor state written by versions up to 0.2.13 still parses; removing it would break resumption for existing connections.
+The single slice means the `notes` read does not checkpoint mid-stream: a failure restarts from the stored cursor, or from `start_date` on the first sync after upgrading from pre-1.0.0 state. This was accepted because a full read of a production workspace took about 30s over 10 pages, and the child streams, which dominate sync time, have never checkpointed mid-stream.
+
+### Keep the start bound second-granular
+
+The cursor sends `updated_after` as a second-granular date-time (`datetime_format: "%Y-%m-%dT%H:%M:%SZ"`). The Granola API has a history of treating date-only bounds as excluding the named day (`created_before=<date>` used to drop that whole day), so do not truncate the bound to a date. `updated_after` is exclusive, and a whole-second value excludes that entire second (probed 2026-10-02: `updated_after=…:30Z` did not return a note updated at `…:30.462Z`, while `…:30.000Z` did). State is stored at second precision, so `lookback_window: PT1S` re-requests the stored cursor's second; removing it skips notes updated in that second that weren't visible on the previous read. `cursor_datetime_formats` keeps `"%Y-%m-%d"` so date-only cursor state written by earlier versions still parses; removing it would break resumption for existing connections.
 
 ### Future incremental stream candidates
 
