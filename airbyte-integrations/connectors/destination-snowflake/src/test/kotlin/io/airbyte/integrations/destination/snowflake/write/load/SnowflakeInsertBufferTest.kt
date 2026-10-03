@@ -22,9 +22,16 @@ import io.mockk.every
 import io.mockk.mockk
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.GZIPInputStream
 import kotlin.io.path.exists
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -262,6 +269,111 @@ internal class SnowflakeInsertBufferTest {
             )
             file.delete()
         }
+    }
+
+    @Test
+    fun `Snowflake PUT and COPY run on the caller's dispatcher thread`() {
+        val tableName = TableName(namespace = "test", name = "table")
+        val column = "columnName"
+        columnSchema =
+            ColumnSchema(
+                inputToFinalColumnNames = mapOf(column to column.uppercase()),
+                finalSchema = mapOf(column.uppercase() to ColumnType("NUMBER", true)),
+                inputSchema = mapOf(column to FieldType(StringType, nullable = true))
+            )
+        val putThreadName = AtomicReference<String>()
+        val copyThreadName = AtomicReference<String>()
+        val snowflakeAirbyteClient =
+            mockk<SnowflakeAirbyteClient>(relaxed = true) {
+                every { putInStage(any(), any()) } answers
+                    {
+                        putThreadName.set(Thread.currentThread().name)
+                    }
+                every { copyFromStage(any(), any(), any()) } answers
+                    {
+                        copyThreadName.set(Thread.currentThread().name)
+                    }
+            }
+        val buffer =
+            SnowflakeInsertBuffer(
+                tableName = tableName,
+                snowflakeClient = snowflakeAirbyteClient,
+                snowflakeConfiguration = snowflakeConfiguration,
+                columnSchema = columnSchema,
+                columnManager = columnManager,
+                snowflakeRecordFormatter = snowflakeRecordFormatter,
+            )
+        val callerDispatcher =
+            Executors.newSingleThreadExecutor { Thread(it, "caller-flush") }.asCoroutineDispatcher()
+        try {
+            runBlocking(callerDispatcher) {
+                buffer.accumulate(createRecord(column))
+                buffer.flush()
+            }
+        } finally {
+            callerDispatcher.close()
+        }
+        // Coroutine debug mode may suffix the thread name with " @coroutine#N".
+        assertTrue(putThreadName.get().startsWith("caller-flush"))
+        assertTrue(copyThreadName.get().startsWith("caller-flush"))
+    }
+
+    @Test
+    fun `concurrent flushes never exceed the caller dispatcher parallelism`() {
+        val column = "columnName"
+        columnSchema =
+            ColumnSchema(
+                inputToFinalColumnNames = mapOf(column to column.uppercase()),
+                finalSchema = mapOf(column.uppercase() to ColumnType("NUMBER", true)),
+                inputSchema = mapOf(column to FieldType(StringType, nullable = true))
+            )
+        val inFlight = AtomicInteger(0)
+        val maxInFlight = AtomicInteger(0)
+        val snowflakeAirbyteClient =
+            mockk<SnowflakeAirbyteClient>(relaxed = true) {
+                every { putInStage(any(), any()) } answers
+                    {
+                        inFlight.incrementAndGet()
+                        maxInFlight.updateAndGet { max -> maxOf(max, inFlight.get()) }
+                        Thread.sleep(50)
+                        inFlight.decrementAndGet()
+                    }
+                every { copyFromStage(any(), any(), any()) } answers
+                    {
+                        inFlight.incrementAndGet()
+                        maxInFlight.updateAndGet { max -> maxOf(max, inFlight.get()) }
+                        Thread.sleep(50)
+                        inFlight.decrementAndGet()
+                    }
+            }
+        val buffers =
+            (1..20).map { i ->
+                SnowflakeInsertBuffer(
+                    tableName = TableName(namespace = "test", name = "table_$i"),
+                    snowflakeClient = snowflakeAirbyteClient,
+                    snowflakeConfiguration = snowflakeConfiguration,
+                    columnSchema = columnSchema,
+                    columnManager = columnManager,
+                    snowflakeRecordFormatter = snowflakeRecordFormatter,
+                )
+            }
+        val callerDispatcher = Executors.newFixedThreadPool(2).asCoroutineDispatcher()
+        try {
+            runBlocking {
+                withTimeout(30_000) {
+                    buffers.forEach { it.accumulate(createRecord(column)) }
+                    coroutineScope { buffers.map { launch(callerDispatcher) { it.flush() } } }
+                }
+            }
+        } finally {
+            callerDispatcher.close()
+        }
+        assertTrue(
+            maxInFlight.get() <= 2,
+            "Expected at most 2 concurrent JDBC calls, saw ${maxInFlight.get()}"
+        )
+        coVerify(exactly = 20) { snowflakeAirbyteClient.putInStage(any(), any()) }
+        coVerify(exactly = 20) { snowflakeAirbyteClient.copyFromStage(any(), any(), any()) }
     }
 
     private fun createRecord(column: String): Map<String, AirbyteValue> {
