@@ -21,6 +21,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -61,6 +62,7 @@ class BigQueryDatabaseHandlerTest {
         val capturedJobInfo = jobInfoSlot.captured
         assertEquals("my-job-project", capturedJobInfo.jobId.project)
         assertEquals("us-east1", capturedJobInfo.jobId.location)
+        assertTrue(capturedJobInfo.jobId.job?.isNotBlank() == true)
     }
 
     @Test

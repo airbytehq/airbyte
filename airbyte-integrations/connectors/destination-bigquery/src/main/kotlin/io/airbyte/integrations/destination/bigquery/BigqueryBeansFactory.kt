@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery
 
-import com.google.api.gax.retrying.RetrySettings
+import com.google.auth.Credentials
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryOptions
@@ -52,6 +52,17 @@ import java.io.OutputStream
 import java.nio.charset.StandardCharsets
 
 private val logger = KotlinLogging.logger {}
+
+internal fun bigqueryOptionsBuilder(
+    projectId: String,
+    credentials: Credentials,
+): BigQueryOptions.Builder =
+    BigQueryOptions.newBuilder()
+        .setProjectId(projectId)
+        .setCredentials(credentials)
+        .setHeaderProvider(BigQueryUtils.headerProvider)
+        .setRetrySettings(BigQueryRetryPolicy.retrySettings)
+        .setResultRetryAlgorithm(BigQueryRetryPolicy.resultRetryAlgorithm)
 
 @Factory
 class BigqueryBeansFactory {
@@ -205,26 +216,7 @@ class BigqueryBeansFactory {
                     ByteArrayInputStream(config.credentialsJson.toByteArray(StandardCharsets.UTF_8))
                 )
             }
-        return BigQueryOptions.newBuilder()
-            .setProjectId(config.projectId)
-            .setCredentials(credentials)
-            .setHeaderProvider(BigQueryUtils.headerProvider)
-            .setRetrySettings(
-                RetrySettings.newBuilder()
-                    // Most of the values are default. We need to override them all if we want to
-                    // set a different value for `setMaxAttempts`..............
-                    .setInitialRetryDelayDuration(java.time.Duration.ofMillis(1000L))
-                    .setMaxRetryDelayDuration(java.time.Duration.ofMillis(32_000L))
-                    .setTotalTimeoutDuration(java.time.Duration.ofMillis(60_000L))
-                    .setInitialRpcTimeoutDuration(java.time.Duration.ofMillis(50_000L))
-                    .setRpcTimeoutMultiplier(1.0)
-                    .setMaxRpcTimeoutDuration(java.time.Duration.ofMillis(50_000L))
-                    .setMaxAttempts(15)
-                    .setRetryDelayMultiplier(1.5)
-                    .build()
-            )
-            .build()
-            .service
+        return bigqueryOptionsBuilder(config.projectId, credentials).build().service
     }
 
     @Singleton
@@ -233,6 +225,12 @@ class BigqueryBeansFactory {
         if (config.jobProjectId == config.projectId) {
             bigquery
         } else {
-            bigquery.options.toBuilder().setProjectId(config.jobProjectId).build().service
+            bigquery.options
+                .toBuilder()
+                .setProjectId(config.jobProjectId)
+                .setRetrySettings(BigQueryRetryPolicy.retrySettings)
+                .setResultRetryAlgorithm(BigQueryRetryPolicy.resultRetryAlgorithm)
+                .build()
+                .service
         }
 }
