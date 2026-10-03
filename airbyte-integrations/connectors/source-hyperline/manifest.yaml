@@ -1,0 +1,1482 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: >-
+  Sync subscription and billing data from Hyperline into your data warehouse.
+
+  This source connector syncs customers, quotes, subscriptions, products,
+  invoices, companies, coupons and price configurations.
+
+  Configuration requires your Hyperline API key and a start date from which to
+  sync data.
+
+check:
+  type: CheckStream
+  stream_names:
+    - products
+
+definitions:
+  streams:
+    quotes:
+      type: DeclarativeStream
+      name: quotes
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: take
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skip
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/quotes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/quotes"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P1M
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime(\"%Y-%m-%dT%H:%M:%SZ\") }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_at__lte
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_at__gt
+          inject_into: request_parameter
+        cursor_granularity: PT1S
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+    coupons:
+      type: DeclarativeStream
+      name: coupons
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: take
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skip
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/coupons
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/coupons"
+    invoices:
+      type: DeclarativeStream
+      name: invoices
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: take
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skip
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/invoices
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoices"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P1M
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime(\"%Y-%m-%dT%H:%M:%SZ\") }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_at__lte
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_at__gte
+          inject_into: request_parameter
+        cursor_granularity: PT1S
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+    products:
+      type: DeclarativeStream
+      name: products
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: take
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skip
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    companies:
+      type: DeclarativeStream
+      name: companies
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: take
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skip
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/companies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: take
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skip
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/customers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P1M
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime(\"%Y-%m-%dT%H:%M:%SZ\") }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_at__lte
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_at__gt
+          inject_into: request_parameter
+        cursor_granularity: PT1S
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+    subscriptions:
+      type: DeclarativeStream
+      name: subscriptions
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: take
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skip
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/subscriptions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscriptions"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P1M
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime(\"%Y-%m-%dT%H:%M:%SZ\") }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_at__lte
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_at__gt
+          inject_into: request_parameter
+        cursor_granularity: PT1S
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+    price_configurations:
+      type: DeclarativeStream
+      name: price_configurations
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: take
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: skip
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/price-configurations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/price_configurations"
+  base_requester:
+    type: HttpRequester
+    url_base: https://sandbox.api.hyperline.co/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/coupons"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/invoices"
+  - $ref: "#/definitions/streams/price_configurations"
+  - $ref: "#/definitions/streams/quotes"
+  - $ref: "#/definitions/streams/subscriptions"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        description: "The earliest date to sync records from. Format: YYYY-MM-DDTHH:MM:SSZ"
+        order: 1
+        title: Start Date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2024-01-01T00:00:00Z"
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    quotes:
+      hasRecords: true
+      streamHash: da240e6da4542fd45bea53613b1a8023aaaa86a3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    coupons:
+      hasRecords: true
+      streamHash: 9c4320e3c35d602ad5c8ab6604e2b80f7f70714e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    invoices:
+      hasRecords: true
+      streamHash: 6d6ef116ab620d5ed9bd7d56f8b813e535693e63
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    products:
+      hasRecords: true
+      streamHash: 684f4fbdfbcee35f9ec2b97b184c64b9e280c0e1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    companies:
+      hasRecords: true
+      streamHash: 3f126f6eb0f93c64c32130a4d85e9daab9bfd1d2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customers:
+      hasRecords: true
+      streamHash: db15f9493f12800ee2d38fc56f21a26b422db9a6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    subscriptions:
+      hasRecords: true
+      streamHash: c8114ca6e0d792d5cc071e4815d6ed6e65fec79e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    price_configurations:
+      hasRecords: true
+      streamHash: f7c5560fb183a9ab3c42f832fd2ee507aaa90c7b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    quotes: true
+    coupons: true
+    invoices: true
+    products: true
+    companies: true
+    customers: true
+    subscriptions: true
+    price_configurations: true
+
+schemas:
+  quotes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      terms:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - number
+          - "null"
+      number:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      expires_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      approved_at:
+        type:
+          - string
+          - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      owner_email:
+        type:
+          - string
+          - "null"
+      display_taxes:
+        type:
+          - boolean
+          - "null"
+      require_tax_id:
+        type:
+          - boolean
+          - "null"
+      subscription_id:
+        type:
+          - string
+          - "null"
+      display_phase_value:
+        type:
+          - boolean
+          - "null"
+      display_price_tiers:
+        type:
+          - string
+          - "null"
+      display_quote_value:
+        type:
+          - boolean
+          - "null"
+      invoicing_entity_id:
+        type:
+          - string
+          - "null"
+      child_subscription_ids:
+        type:
+          - array
+          - "null"
+      collect_payment_details:
+        type:
+          - boolean
+          - "null"
+      collect_custom_property_ids:
+        type:
+          - array
+          - "null"
+      display_documents_in_preview:
+        type:
+          - boolean
+          - "null"
+      display_first_invoice_amount:
+        type:
+          - boolean
+          - "null"
+      display_subscription_on_update:
+        type:
+          - boolean
+          - "null"
+      post_signature_activation_enabled:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  coupons:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      product_ids:
+        type:
+          - array
+          - "null"
+      expiration_date:
+        type:
+          - string
+          - "null"
+      discount_percent:
+        type:
+          - number
+          - "null"
+      redemption_limit:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      due_at:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - string
+          - "null"
+      seller:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - object
+              - "null"
+            properties:
+              country:
+                type:
+                  - string
+                  - "null"
+      source:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      coupons:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            line_item_ids:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            discount_amount:
+              type:
+                - number
+                - "null"
+            discount_percent:
+              type:
+                - number
+                - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          tax_id:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - object
+              - "null"
+            properties:
+              zip:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              line1:
+                type:
+                  - string
+                  - "null"
+              line2:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+          vat_number:
+            type:
+              - string
+              - "null"
+      tax_rate:
+        type:
+          - number
+          - "null"
+      reference:
+        type:
+          - string
+          - "null"
+      amount_due:
+        type:
+          - number
+          - "null"
+      emitted_at:
+        type:
+          - string
+          - "null"
+      line_items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            amount:
+              type:
+                - number
+                - "null"
+            tax_rate:
+              type:
+                - number
+                - "null"
+            entry_type:
+              type:
+                - string
+                - "null"
+            product_id:
+              type:
+                - string
+                - "null"
+            tax_amount:
+              type:
+                - number
+                - "null"
+            unit_amount:
+              type:
+                - number
+                - "null"
+            units_count:
+              type:
+                - number
+                - "null"
+            product_type:
+              type:
+                - string
+                - "null"
+            revenue_type:
+              type:
+                - string
+                - "null"
+            period_ends_at:
+              type:
+                - string
+                - "null"
+            discount_amount:
+              type:
+                - number
+                - "null"
+            discount_percent:
+              type:
+                - number
+                - "null"
+            period_starts_at:
+              type:
+                - string
+                - "null"
+            display_unit_amount:
+              type:
+                - boolean
+                - "null"
+            amount_excluding_tax:
+              type:
+                - number
+                - "null"
+            original_line_item_id:
+              type:
+                - string
+                - "null"
+            display_service_period:
+              type:
+                - boolean
+                - "null"
+            revenue_interval_count:
+              type:
+                - number
+                - "null"
+            revenue_interval_period:
+              type:
+                - string
+                - "null"
+      settled_at:
+        type:
+          - string
+          - "null"
+      tax_amount:
+        type:
+          - number
+          - "null"
+      tax_scheme:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      amount_paid:
+        type:
+          - number
+          - "null"
+      amount_fixed:
+        type:
+          - number
+          - "null"
+      converted_at:
+        type:
+          - string
+          - "null"
+      total_amount:
+        type:
+          - number
+          - "null"
+      transactions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            amount:
+              type:
+                - number
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            currency:
+              type:
+                - string
+                - "null"
+            process_at:
+              type:
+                - string
+                - "null"
+            customer_id:
+              type:
+                - string
+                - "null"
+            integrations:
+              type:
+                - array
+                - "null"
+            payment_method_type:
+              type:
+                - string
+                - "null"
+      period_ends_at:
+        type:
+          - string
+          - "null"
+      purchase_order:
+        type:
+          - string
+          - "null"
+      conversion_rate:
+        type:
+          - number
+          - "null"
+      discount_amount:
+        type:
+          - number
+          - "null"
+      subscription_id:
+        type:
+          - string
+          - "null"
+      converted_amount:
+        type:
+          - number
+          - "null"
+      period_starts_at:
+        type:
+          - string
+          - "null"
+      original_invoice_id:
+        type:
+          - string
+          - "null"
+      amount_excluding_tax:
+        type:
+          - number
+          - "null"
+      original_invoice_number:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      accounting:
+        type:
+          - object
+          - "null"
+      custom_properties:
+        type:
+          - object
+          - "null"
+        properties:
+          family:
+            type:
+              - string
+              - "null"
+          features:
+            type:
+              - string
+              - "null"
+          sku_name:
+            type:
+              - string
+              - "null"
+          item_type:
+            type:
+              - string
+              - "null"
+          sku_format:
+            type:
+              - string
+              - "null"
+          product_family:
+            type:
+              - string
+              - "null"
+          catalog_version:
+            type:
+              - string
+              - "null"
+          factorial_item_id:
+            type:
+              - string
+              - "null"
+      is_available_on_demand:
+        type:
+          - boolean
+          - "null"
+      is_available_on_subscription:
+        type:
+          - boolean
+          - "null"
+      description_display_interval_dates:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      address:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+    additionalProperties: true
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      tax_ids:
+        type:
+          - array
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      segment_ids:
+        type:
+          - array
+          - "null"
+      integrations:
+        type:
+          - array
+          - "null"
+      billing_email:
+        type:
+          - string
+          - "null"
+      subscriptions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            checkout_session_id:
+              type:
+                - string
+                - "null"
+            current_period_ends_at:
+              type:
+                - string
+                - "null"
+            current_period_started_at:
+              type:
+                - string
+                - "null"
+      invoice_emails:
+        type:
+          - array
+          - "null"
+      billing_address:
+        type:
+          - object
+          - "null"
+        properties:
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          line1:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+      vat_number_valid:
+        type:
+          - boolean
+          - "null"
+      custom_properties:
+        type:
+          - object
+          - "null"
+      invoicing_entity_id:
+        type:
+          - string
+          - "null"
+      is_government_affiliated:
+        type:
+          - boolean
+          - "null"
+      available_payment_methods:
+        type:
+          - array
+          - "null"
+      invoice_reminders_enabled:
+        type:
+          - boolean
+          - "null"
+      current_payment_method_type:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  subscriptions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      starts_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      properties:
+        type:
+          - object
+          - "null"
+      updated_at:
+        type: string
+      customer_id:
+        type:
+          - string
+          - "null"
+      template_id:
+        type:
+          - string
+          - "null"
+      estimated_arr:
+        type:
+          - number
+          - "null"
+      contract_value:
+        type:
+          - number
+          - "null"
+      purchase_order:
+        type:
+          - string
+          - "null"
+      next_payment_at:
+        type:
+          - string
+          - "null"
+      current_phase_id:
+        type:
+          - string
+          - "null"
+      custom_properties:
+        type:
+          - object
+          - "null"
+        properties: {}
+      generate_document:
+        type:
+          - boolean
+          - "null"
+      initial_billing_at:
+        type:
+          - string
+          - "null"
+      activation_strategy:
+        type:
+          - string
+          - "null"
+      add_tax_to_document:
+        type:
+          - boolean
+          - "null"
+      checkout_session_id:
+        type:
+          - string
+          - "null"
+      next_payment_amount:
+        type:
+          - number
+          - "null"
+      renew_automatically:
+        type:
+          - boolean
+          - "null"
+      current_period_ends_at:
+        type:
+          - string
+          - "null"
+      generate_draft_invoices:
+        type:
+          - boolean
+          - "null"
+      display_shipping_details:
+        type:
+          - boolean
+          - "null"
+      current_period_started_at:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  price_configurations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      prices:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            to:
+              type:
+                - number
+                - "null"
+            from:
+              type:
+                - number
+                - "null"
+            amount:
+              type:
+                - number
+                - "null"
+            unit_count:
+              type:
+                - number
+                - "null"
+            on_tier_incomplete:
+              type:
+                - string
+                - "null"
+      status:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      product_id:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      billing_interval:
+        type:
+          - object
+          - "null"
+        properties:
+          count:
+            type:
+              - number
+              - "null"
+          period:
+            type:
+              - string
+              - "null"
+      commitment_interval:
+        type:
+          - object
+          - "null"
+        properties:
+          period:
+            type:
+              - string
+              - "null"
+    additionalProperties: true
