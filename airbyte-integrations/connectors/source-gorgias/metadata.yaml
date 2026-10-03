@@ -41,5 +41,8 @@ data:
       url: https://developers.gorgias.com/reference/authentication
       type: authentication_guide
     - title: Gorgias rate limits
-      url: https://developers.gorgias.com/reference/rate-limiting
+      url: https://developers.gorgias.com/reference/limitations
       type: rate_limits
+    - title: Gorgias developer changelog
+      url: https://developers.gorgias.com/changelog
+      type: api_release_history
