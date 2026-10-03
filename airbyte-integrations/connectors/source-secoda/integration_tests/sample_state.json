@@ -1,5 +1,11 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "value"
+  "tables": {
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  "collections": {
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  "terms": {
+    "updated_at": "2024-01-01T00:00:00Z"
   }
 }
