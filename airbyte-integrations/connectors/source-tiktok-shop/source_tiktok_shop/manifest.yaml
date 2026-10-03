@@ -1,0 +1,720 @@
+version: 4.5.4
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - active_shops
+
+definitions:
+  streams:
+    active_shops:
+      type: DeclarativeStream
+      name: active_shops
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /seller/202309/shops
+          http_method: GET
+          request_parameters:
+            sign: sign #--FIX w/ custom auth
+            app_key: '{{ config["app_key"] }}'
+            timestamp: "{{ timestamp(now_utc()) }}"
+          request_headers:
+            content-type: application/json
+            x-tts-access-token: token-from-oauth #--FIX w/ custom auth
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - shops
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/active_shops"
+    brands:
+      type: DeclarativeStream
+      name: brands
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /product/202309/brands
+          http_method: GET
+          request_parameters:
+            sign: sign #--FIX w/ custom auth
+            app_key: '{{ config["app_key"] }}'
+            timestamp: "{{ timestamp(now_utc()) }}"
+            shop_cipher: shop_cipher #--FIX
+          request_headers:
+            content-type: application/json
+            x-tts-access-token: token-from-oauth #--FIX w/ custom auth
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - brands
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_token
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response.get("data", {}).get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("data", {}).get("next_page_token", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/brands"
+    categories:
+      type: DeclarativeStream
+      name: categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /product/202309/categories
+          http_method: GET
+          request_parameters:
+            sign: sign #--FIX w/ custom auth
+            app_key: '{{ config["app_key"] }}'
+            timestamp: "{{ timestamp(now_utc()) }}"
+            shop_cipher: shop_cipher #--FIX
+            locale: '{{ config["locale_code"] }}'
+          request_headers:
+            content-type: application/json
+            x-tts-access-token: token-from-oauth #--FIX w/ custom auth
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - categories
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+    category_rules:
+      type: DeclarativeStream
+      name: category_rules
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /product/202309/categories/{{ stream_partition['category_id']
+            }}/rules
+          http_method: GET
+          request_parameters:
+            sign: sign #--FIX w/ custom auth
+            app_key: '{{ config["app_key"] }}'
+            timestamp: "{{ timestamp(now_utc()) }}"
+            shop_cipher: shop_cipher #--FIX
+          request_headers:
+            content-type: application/json
+            x-tts-access-token: token-from-oauth #--FIX w/ custom auth
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: category_id
+              stream:
+                $ref: "#/definitions/streams/categories"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/category_rules"
+    attributes:
+      type: DeclarativeStream
+      name: attributes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /product/202309/categories/{{ stream_partition['category_id']
+            }}/attributes
+          http_method: GET
+          request_parameters:
+            sign: sign #--FIX w/ custom auth
+            app_key: '{{ config["app_key"] }}'
+            timestamp: "{{ timestamp(now_utc()) }}"
+            shop_cipher: shop_cipher #--FIX
+            locale: '{{ config["locale_code"] }}'
+          request_headers:
+            content-type: application/json
+            x-tts-access-token: token-from-oauth #--FIX w/ custom auth
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - attributes
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: category_id
+              stream:
+                $ref: "#/definitions/streams/categories"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/attributes"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /product/202309/products/{{ stream_partition['product_id'] }}
+          http_method: GET
+          request_parameters:
+            sign: sign #--FIX w/ custom auth
+            app_key: '{{ config["app_key"] }}'
+            timestamp: "{{ timestamp(now_utc()) }}"
+            shop_cipher: shop_cipher #--FIX
+            return_under_review_version: "true"
+          request_headers:
+            content-type: application/json
+            x-tts-access-token: token-from-oauth #--FIX w/ custom auth
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: product_id
+              stream:
+                $ref: "#/definitions/streams/search_products"
+              incremental_dependency: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    search_products:
+      type: DeclarativeStream
+      name: search_products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /product/202312/products/search
+          http_method: POST
+          request_parameters:
+            sign: sign #--FIX w/ custom auth
+            app_key: '{{ config["app_key"] }}'
+            timestamp: "{{ timestamp(now_utc()) }}"
+            shop_cipher: shop_cipher #--FIX
+          request_headers:
+            content-type: application/json
+            x-tts-access-token: token-from-oauth #--FIX w/ custom auth
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - products
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_token
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response.get("data", {}).get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("data", {}).get("next_page_token", {}) }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: update_time_ge
+          inject_into: body_json
+        end_time_option:
+          type: RequestOption
+          field_name: update_time_le
+          inject_into: body_json
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/search_products"
+    listing_schemas:
+      type: DeclarativeStream
+      name: listing_schemas
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /product/202407/listing_schemas
+          http_method: GET
+          request_parameters:
+            sign: sign #--FIX w/ custom auth
+            app_key: '{{ config["app_key"] }}'
+            timestamp: "{{ timestamp(now_utc()) }}"
+            category_ids: "[{{ stream_partition['category_id'] }}]"
+            locale: '{{ config["locale_code"] }}'
+          request_headers:
+            content-type: application/json
+            x-tts-access-token: token-from-oauth #--FIX w/ custom auth
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - listing_schemas
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: category_id
+              stream:
+                $ref: "#/definitions/streams/categories"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/listing_schemas"
+    order_detail:
+      type: DeclarativeStream
+      name: order_detail
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /order/202309/orders
+          http_method: GET
+          request_parameters:
+            sign: sign #--FIX w/ custom auth
+            app_key: '{{ config["app_key"] }}'
+            timestamp: "{{ timestamp(now_utc()) }}"
+            shop_cipher: shop_cipher #--FIX
+            ids: "[{{ stream_partition['order_id'] }}]"
+          request_headers:
+            content-type: application/json
+            x-tts-access-token: token-from-oauth #--FIX w/ custom auth
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - orders
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: order_id
+              stream:
+                $ref: "#/definitions/streams/order_list"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/order_detail"
+    order_list:
+      type: DeclarativeStream
+      name: order_list
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /order/202309/orders/search
+          http_method: POST
+          request_parameters:
+            sign: sign #--FIX w/ custom auth
+            app_key: '{{ config["app_key"] }}'
+            timestamp: "{{ timestamp(now_utc()) }}"
+            shop_cipher: shop_cipher #--FIX
+          request_headers:
+            content-type: application/json
+            x-tts-access-token: token-from-oauth #--FIX w/ custom auth
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - orders
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_token
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response.get("data", {}).get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("data", {}).get("next_page_token", {}) }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: update_time_ge
+          inject_into: body_json
+        end_time_option:
+          type: RequestOption
+          field_name: update_time_lt
+          inject_into: body_json
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/order_list"
+    package_detail:
+      type: DeclarativeStream
+      name: package_detail
+      primary_key:
+        - package_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /fulfillment/202309/packages/{{ stream_partition['package_id'] }}
+          http_method: GET
+          request_parameters:
+            sign: sign #--FIX w/ custom auth
+            app_key: '{{ config["app_key"] }}'
+            timestamp: "{{ timestamp(now_utc()) }}"
+            shop_cipher: shop_cipher #--FIX
+          request_headers:
+            content-type: application/json
+            x-tts-access-token: token-from-oauth #--FIX w/ custom auth
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: package_id
+              stream:
+                $ref: "#/definitions/streams/search_package"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/package_detail"
+    search_package:
+      type: DeclarativeStream
+      name: search_package
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /fulfillment/202309/packages/search
+          http_method: POST
+          request_parameters:
+            sign: sign #--FIX w/ custom auth
+            app_key: '{{ config["app_key"] }}'
+            timestamp: "{{ timestamp(now_utc()) }}"
+            shop_cipher: shop_cipher #--FIX
+          request_headers:
+            content-type: application/json
+            x-tts-access-token: token-from-oauth #--FIX w/ custom auth
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - packages
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_token
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response.get("data", {}).get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("data", {}).get("next_page_token", {}) }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: update_time_ge
+          inject_into: body_json
+        end_time_option:
+          type: RequestOption
+          field_name: update_time_lt
+          inject_into: body_json
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/search_package"
+  base_requester:
+    type: HttpRequester
+    url_base: https://open-api.tiktokglobalshop.com
+    authenticator:
+      type: CustomAuthenticator
+      class_name: source_tiktok_shop.components.SignedAuthenticator
+
+streams:
+  - $ref: "#/definitions/streams/active_shops"
+  - $ref: "#/definitions/streams/brands"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/category_rules"
+  - $ref: "#/definitions/streams/attributes"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/listing_schemas"
+  - $ref: "#/definitions/streams/order_detail"
+  - $ref: "#/definitions/streams/package_detail"
+  - $ref: "#/definitions/streams/search_products"
+  - $ref: "#/definitions/streams/order_list"
+  - $ref: "#/definitions/streams/search_package"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - app_key
+      - start_date
+      - end_date
+    properties:
+      app_key:
+        type: string
+        description: >-
+          The unique key assigned to your app. Refer to
+          https://partner.tiktokshop.com/docv2/page/64f1994264ed2e0295f3d631 to
+          find out where to get your app_key.
+        order: 0
+        title: App Key
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      end_date:
+        type: string
+        order: 2
+        title: End date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      locale_code:
+        type: string
+        description: >-
+          TikTok Shop supports retrieval of text data in a variety of languages
+          through codes in the IETF BCP 47 standard. See here for more info -
+          https://partner.tiktokshop.com/docv2/page/66ad2479fb80bb02faecbf84
+        title: Locale code
+        enum:
+          - en-GB
+          - en-PH
+          - en-SG
+          - en-US
+          - id-ID
+          - ms-MY
+          - th-TH
+          - vi-VN
+          - zh-CN
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    active_shops: true
+    brands: true
+    categories: true
+    category_rules: true
+    attributes: true
+    products: true
+    search_products: true
+    listing_schemas: true
+    order_detail: true
+    order_list: true
+    package_detail: true
+    search_package: true
+  testedStreams:
+    active_shops:
+      streamHash: null
+    brands:
+      streamHash: null
+    categories:
+      streamHash: null
+    category_rules:
+      streamHash: null
+    attributes:
+      streamHash: null
+    products:
+      streamHash: null
+    search_products:
+      streamHash: null
+    listing_schemas:
+      streamHash: null
+    order_detail:
+      streamHash: null
+    order_list:
+      streamHash: null
+    package_detail:
+      streamHash: null
+    search_package:
+      streamHash: null
+  assist: {}
+
+schemas:
+  active_shops:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  brands:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  categories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  category_rules:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  attributes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  products:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  search_products:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  listing_schemas:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  order_detail:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  order_list:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  package_detail:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  search_package:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
