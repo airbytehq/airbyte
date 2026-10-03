@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "item_id": { "type": ["null", "string"] },
+    "caption": { "type": ["null", "string"] },
+    "create_time": { "type": ["null", "string"] },
+    "video_duration": { "type": ["null", "number"] },
+    "thumbnail_url": { "type": ["null", "string"] },
+    "embed_url": { "type": ["null", "string"] },
+    "share_url": { "type": ["null", "string"] },
+    "media_type": { "type": ["null", "string"] },
+    "video_views": { "type": ["null", "integer"] },
+    "likes": { "type": ["null", "integer"] },
+    "comments": { "type": ["null", "integer"] },
+    "shares": { "type": ["null", "integer"] },
+    "favorites": { "type": ["null", "integer"] },
+    "reach": { "type": ["null", "integer"] },
+    "total_time_watched": { "type": ["null", "integer"] },
+    "average_time_watched": { "type": ["null", "number"] },
+    "full_video_watched_rate": { "type": ["null", "number"] },
+    "new_followers": { "type": ["null", "integer"] },
+    "profile_views": { "type": ["null", "integer"] },
+    "website_clicks": { "type": ["null", "integer"] },
+    "app_download_clicks": { "type": ["null", "integer"] },
+    "phone_number_clicks": { "type": ["null", "integer"] },
+    "lead_submissions": { "type": ["null", "integer"] },
+    "email_clicks": { "type": ["null", "integer"] },
+    "address_clicks": { "type": ["null", "integer"] },
+    "engagement_likes": { "type": ["null", "integer"] },
+    "video_view_retention": {
+      "type": ["null", "array"],
+      "items": { "type": "object" }
+    },
+    "impression_sources": {
+      "type": ["null", "array"],
+      "items": { "type": "object" }
+    },
+    "audience_countries": {
+      "type": ["null", "array"],
+      "items": { "type": "object" }
+    },
+    "audience_genders": {
+      "type": ["null", "array"],
+      "items": { "type": "object" }
+    },
+    "audience_cities": {
+      "type": ["null", "array"],
+      "items": { "type": "object" }
+    },
+    "audience_types": {
+      "type": ["null", "array"],
+      "items": { "type": "object" }
+    }
+  }
+}
