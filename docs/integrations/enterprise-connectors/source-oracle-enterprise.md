@@ -33,7 +33,7 @@ From the point of view of the Oracle database instance, the Enterprise Oracle so
 
 ### Requirements
 
-1. Oracle DB version 23ai, 21c or 19c.
+1. Oracle Database 12c or later.
 2. Dedicated read-only Airbyte user with access to all tables needed for replication.
 
 #### 1. Make sure your database is accessible from the machine running Airbyte
@@ -109,9 +109,14 @@ GRANT EXECUTE_CATALOG_ROLE TO airbyte;
 GRANT SELECT ANY TRANSACTION TO airbyte;
 GRANT LOGMINING TO airbyte;
 GRANT CREATE TABLE TO airbyte;
+GRANT UNLIMITED TABLESPACE TO airbyte;
 GRANT LOCK ANY TABLE TO airbyte;
 GRANT CREATE SEQUENCE TO airbyte;
 ```
+
+Debezium creates a `LOG_MINING_FLUSH` table for LogMiner. The CDC user needs either the
+`UNLIMITED TABLESPACE` privilege shown above or a sufficient quota on its default tablespace.
+Without a tablespace quota, CDC fails with `ORA-01950`.
 
 If the database instance is a multitenant CDB instance, then these grant statements need to be supplemented with the `CONTAINER=ALL` clause.
 Furthermore, an extra privilege is required:
