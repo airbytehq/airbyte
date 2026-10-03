@@ -23,7 +23,13 @@ Depending on the sync mode you’ve selected, you’ll be able to choose between
 | Full Refresh \| Append         | Not available                     | Not available                     | Available |
 | Incremental \| Append          | Not available                     | Available                         | Available |
 
-For supported destinations, and depending on the sync mode you have selected, there are two types of refreshes - "retaining history" and "removing history". Both kinds of Refresh Syncs can be triggered from the UI and via the Airbyte API at either the stream or connection levels (although both might not be available depending on your sync mode).
+For supported destinations, and depending on the sync mode you have selected, there are two types of refreshes - "retaining history" and "removing history". Both kinds of Refresh Syncs can be triggered from the UI at either the stream or connection levels (although both might not be available depending on your sync mode).
+
+:::note
+
+The public `POST /v1/jobs` API currently supports starting `sync` and `reset` jobs, but not `refresh` jobs. Use the UI for refreshes unless you are using an API surface that explicitly documents refresh support.
+
+:::
 
 ![Are you sure you want to refresh data](/.gitbook/assets/refreshes/are-you-sure-refresh.png)
 
