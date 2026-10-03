@@ -56,8 +56,14 @@ airbyte:
         rules:
           # --- Configuration Errors ---
 
+          - code: 390100
+            # Incorrect username or password was specified (observed from snowflake-jdbc 4.x).
+            error: config
+            group: Connection Error
+            output: Invalid credentials. Please check your username and password.
+
           - code: 260004
-            # Incorrect username or password was specified.
+            # Incorrect username or password was specified (legacy code).
             error: config
             group: Connection Error
             output: Invalid credentials. Please check your username and password.

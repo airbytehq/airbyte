@@ -8,7 +8,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
-  dockerImageTag: 2.0.1
+  dockerImageTag: 2.0.2
   dockerRepository: airbyte/source-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
   githubIssueLabel: source-snowflake
@@ -57,7 +57,9 @@ data:
   tags:
     - language:java
   connectorTestSuitesOptions:
-    - suite: acceptanceTests
+    - suite: unitTests
+    - suite: integrationTests
+      # Consumed by src/test-integration (live tests against a real account); see CONTRIBUTING.md.
       testSecrets:
         - name: SECRET_SOURCE-SNOWFLAKE_KEY_PAIR__CREDS
           fileName: config_key_pair.json

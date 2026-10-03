@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.snowflake
 
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LocalDateTimeCodec
+import io.airbyte.cdk.data.LocalTimeCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.jdbc.JdbcAccessor
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
@@ -15,6 +16,7 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -81,15 +83,72 @@ object SnowflakeOffsetDateTimeFieldType :
         }
     )
 
+/**
+ * Snowflake TIME columns.
+ *
+ * The Snowflake JDBC driver rejects `getObject(int, LocalTime::class.java)` ("Type passed to
+ * 'getObject(int columnIndex,Class<T> type)' is unsupported"), which made the CDK default
+ * [io.airbyte.cdk.jdbc.LocalTimeFieldType] emit NULL for every TIME value. `getTime()` keeps only
+ * milliseconds, so the value is read through `getTimestamp()`, which carries the full nanosecond
+ * precision on the 1970-01-01 date.
+ *
+ * Nanoseconds are rounded up to microsecond precision like the timestamp types (see
+ * [roundUpToMicros]); a value that would round past midnight is capped at 23:59:59.999999.
+ */
+object SnowflakeLocalTimeAccessor : JdbcAccessor<LocalTime> {
+    override fun get(
+        rs: ResultSet,
+        colIdx: Int,
+    ): LocalTime? {
+        val timestamp = rs.getTimestamp(colIdx)?.takeUnless { rs.wasNull() } ?: return null
+        return roundUpToMicros(timestamp.toLocalDateTime().toLocalTime())
+    }
+
+    override fun set(
+        stmt: PreparedStatement,
+        paramIdx: Int,
+        value: LocalTime,
+    ) {
+        // Bind as text: Snowflake casts a string bound against a TIME column implicitly, while
+        // java.sql.Time would drop the fractional seconds.
+        stmt.setString(paramIdx, value.format(LocalTimeCodec.formatter))
+    }
+}
+
+/** Custom field type for Snowflake TIME, rounded to microseconds. */
+object SnowflakeLocalTimeFieldType :
+    SymmetricJdbcFieldType<LocalTime>(
+        LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
+        SnowflakeLocalTimeAccessor,
+        LocalTimeCodec,
+    )
+
 // Snowflake timestamps can have up to 9 decimal places (nanoseconds), but the Airbyte
 // protocol only supports 6 (microseconds). Round up, never down. This value is also used as a
 // cursor bound for incremental syncs, and reducing it can make it compare as less than a row with
 // higher value that we should include in the WHERE clause of the subsequent sync.
 private fun roundUpToMicros(localDateTime: LocalDateTime): LocalDateTime {
     val remainderNanos = localDateTime.nano % 1000
-    return if (remainderNanos == 0) {
-        localDateTime
-    } else {
-        localDateTime.plusNanos((1000 - remainderNanos).toLong())
+    return when {
+        remainderNanos == 0 -> localDateTime
+        // 9999-12-31 23:59:59.999999999 is a common "end of time" sentinel; rounding it up would
+        // produce year 10000, which destinations reject ("time zone displacement out of range").
+        localDateTime > MAX_MICROS_DATE_TIME -> MAX_MICROS_DATE_TIME
+        else -> localDateTime.plusNanos((1000 - remainderNanos).toLong())
+    }
+}
+
+private val MAX_MICROS_DATE_TIME: LocalDateTime =
+    LocalDateTime.of(9999, 12, 31, 23, 59, 59, 999_999_000)
+
+private val MAX_MICROS_TIME: LocalTime = LocalTime.of(23, 59, 59, 999_999_000)
+
+/** Same rounding as for timestamps, without wrapping past midnight. */
+private fun roundUpToMicros(localTime: LocalTime): LocalTime {
+    val remainderNanos = localTime.nano % 1000
+    return when {
+        remainderNanos == 0 -> localTime
+        localTime > MAX_MICROS_TIME -> MAX_MICROS_TIME
+        else -> localTime.plusNanos((1000 - remainderNanos).toLong())
     }
 }

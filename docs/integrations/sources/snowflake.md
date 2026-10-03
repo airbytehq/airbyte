@@ -248,6 +248,16 @@ SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
 
 To read more, please check the official [Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#).
 
+### Troubleshooting
+
+- **`check` or discovery is very slow, or lists tables from other schemas.** The Snowflake JDBC driver
+  treats `_` and `%` in the **Schema** option as `LIKE` wildcards and then scans the whole database
+  (`SCHEMA_A` also matches `SCHEMAXA`). Until the connector escapes the name itself, add
+  `ENABLE_WILDCARDS_IN_SHOW_METADATA_COMMANDS=false` to **JDBC URL Params**.
+- **Incremental sync on a `TIMESTAMP_NTZ` cursor misses rows.** Snowflake sessions default to the
+  `America/Los_Angeles` time zone, which shifts the cursor bound. Add `TIMEZONE=UTC` to
+  **JDBC URL Params** as a workaround.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -259,7 +269,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                                                                        | Subject                                                                                                                                                                       |
 |:--------|:-----------|:--------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.0.1   | 2026-09-23 | [85081](https://github.com/airbytehq/airbyte/pull/85081) & [86369](https://github.com/airbytehq/airbyte/pull/86369) | Discover no longer fails entirely when a single view or object is invalid or inaccessible; the offending stream is skipped (h/t @jrbarkin).                                   |
+| 2.0.2   | 2026-09-29 | [87471](https://github.com/airbytehq/airbyte/pull/87471)                                                                                                | TIME columns are no longer emitted as NULL; `9999-12-31 23:59:59.999999999` no longer rounds into year 10000; check fails fast on a wrong warehouse, database or schema; ~2 s less connection latency per query (driver platform detection off); private key written to a temp file.                          |
+| 2.0.1   | 2026-09-23 | [85081](https://github.com/airbytehq/airbyte/pull/85081) & [86936](https://github.com/airbytehq/airbyte/pull/86936) | Discover no longer fails entirely when a single view or object is invalid or inaccessible; the offending stream is skipped (h/t @jrbarkin).                                   |
 | 2.0.0   | 2026-09-03 | [85331](https://github.com/airbytehq/airbyte/pull/85331)                                                            | Deprecate username/password authentication; key pair authentication or a programmatic access token is now recommended. Username/password will be removed in a future release. |
 | 1.1.2   | 2026-08-21 | [84927](https://github.com/airbytehq/airbyte/pull/84927)                                                            | Bump Bulk CDK extract version from 1.0.1 to 1.1.10                                                                                                                            |
 | 1.1.1   | 2026-07-21 | [82705](https://github.com/airbytehq/airbyte/pull/82705)                                                            | Fix incremental sync silently dropping rows at the cursor's upper bound by rounding timestamp precision up instead of down                                                    |
