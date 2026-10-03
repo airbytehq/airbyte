@@ -20,6 +20,13 @@ definitions:
         grant_type: refresh_token
         client_secret: "{{ config['client_secret'] }}"
         refresh_token: "{{ config['refresh_token'] }}"
+        refresh_token_error_status_codes:
+          - 400
+          - 401
+        refresh_token_error_key: message
+        refresh_token_error_values:
+          - Bad Request
+          - Unauthorized
         refresh_token_updater:
           refresh_token_config_path:
             - refresh_token
@@ -47,9 +54,63 @@ definitions:
               - 502
               - 503
               - 504
+          - $ref: "#/definitions/linked/BadAdAccount400Filter"
+          - $ref: "#/definitions/linked/Forbidden403Filter"
+          - $ref: "#/definitions/linked/NotFound404Filter"
+          - $ref: "#/definitions/linked/Generic400Filter"
         backoff_strategies:
           - type: ExponentialBackoffStrategy
             factor: 5
+    BadAdAccount400Filter:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      predicate: >-
+        {{ response is mapping and response.get('error') is mapping and
+        ('ad_account' in ((response.get('error', {}).get('message') or
+        response.get('error', {}).get('explanation') or '') | lower) or
+        'ad account' in ((response.get('error', {}).get('message') or
+        response.get('error', {}).get('explanation') or '') | lower)) }}
+      error_message: >-
+        Reddit rejected the ad account ID '{{ config['ad_account_id'] }}':
+        {{ ((response.get('error', {}).get('message') or
+        response.get('error', {}).get('explanation')) if response is mapping and
+        response.get('error') is mapping else none) }}. Check the Ad Account ID
+        in the source settings; it is shown in Reddit Ads Manager (for example
+        a2_abc123).
+    Forbidden403Filter:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      http_codes:
+        - 403
+      error_message: >-
+        Reddit denied access to ad account '{{ config['ad_account_id'] }}'
+        (HTTP 403: insufficient authentication scopes). Re-authorize the
+        refresh token with the adsread scope, using a Reddit user who has access
+        to this ad account.
+    NotFound404Filter:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      http_codes:
+        - 404
+      error_message: >-
+        Reddit could not find ad account '{{ config['ad_account_id'] }}' (HTTP
+        404). Check the Ad Account ID in the source settings; it is shown in
+        Reddit Ads Manager (for example a2_abc123).
+    Generic400Filter:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: system_error
+      http_codes:
+        - 400
+      error_message: >-
+        Reddit rejected the request as invalid (HTTP 400):
+        {{ ((response.get('error', {}).get('message') or
+        response.get('error', {}).get('explanation')) if response is mapping and
+        response.get('error') is mapping else none) or 'no error message
+        returned' }}.
     SimpleRetriever:
       paginator:
         type: DefaultPaginator
@@ -407,6 +468,10 @@ streams:
               backoff_strategy:
                 type: ConstantBackoffStrategy
                 backoff_time_in_seconds: 60
+            - $ref: "#/definitions/linked/BadAdAccount400Filter"
+            - $ref: "#/definitions/linked/Forbidden403Filter"
+            - $ref: "#/definitions/linked/NotFound404Filter"
+            - $ref: "#/definitions/linked/Generic400Filter"
           backoff_strategies:
             - type: ExponentialBackoffStrategy
               factor: 5
@@ -653,6 +718,34 @@ streams:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
 
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    # Reddit's published ads-campaign-management-read (400/60s) and ads-reporting (60/60s) limits.
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 400
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_base: https://ads-api.reddit.com
+          url_path_pattern: ^/api/v3/ad_accounts/[^/]+/(ads|campaigns)$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 60
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_base: https://ads-api.reddit.com
+          url_path_pattern: ^/api/v3/ad_accounts/[^/]+/reports$
+  status_codes_for_ratelimit_hit:
+    - 429
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config['num_workers'] if (config.get('num_workers') is integer and config['num_workers'] is not boolean and config['num_workers'] >= 1) else 3 }}"
+  max_concurrency: 10
+
 spec:
   type: Spec
   documentation_url: https://ads-api.reddit.com/docs/v3/
@@ -680,13 +773,23 @@ spec:
           clamped for campaign_report, because Reddit only serves report data
           for the last 24 months.
         order: 5
-        title: start_time
+        title: Start Date
         format: date-time
         pattern: >-
           ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:?[0-9]{2})$
         examples:
           - "2024-05-11T00:00:00Z"
         pattern_descriptor: YYYY-MM-DDTHH:mm:ssZ
+      num_workers:
+        type: integer
+        order: 6
+        title: Number of Concurrent Workers
+        description: >-
+          Higher values speed up syncs but increase the chance of Reddit rate
+          limiting.
+        default: 3
+        minimum: 1
+        maximum: 10
       user_agent:
         type: string
         description: >-
@@ -699,7 +802,10 @@ spec:
       ad_account_id:
         type: string
         order: 2
-        title: ad_account_id
+        title: Ad Account ID
+        description: >-
+          The Reddit Ads account ID to sync, shown in Reddit Ads Manager, for
+          example a2_abc123.
         airbyte_secret: true
       client_secret:
         type: string
