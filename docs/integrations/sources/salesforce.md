@@ -261,7 +261,7 @@ If you still encounter `INVALID_SESSION_ID` errors, verify that the connector is
 
 Streams that cannot use the Bulk API, for example objects containing compound fields such as addresses, are read through the REST `queryAll` endpoint and paginated with `nextRecordsUrl`. A query locator belongs to the session that created it, so once that session is invalidated the locator cannot be resumed under a new one and `nextRecordsUrl` keeps returning `INVALID_SESSION_ID` however many times the token is refreshed.
 
-This matters with Refresh Token Rotation enabled, because each token exchange ends the previous session, so every proactive refresh invalidates any locator that is open at that moment. Prior to version 2.9.2 the stream exhausted its retries and failed the sync, so a REST stream whose read outlived the 30 minute refresh interval could not complete. Without RTR the previous session survives a token refresh, which is why this went unnoticed for a long time.
+This matters with Refresh Token Rotation enabled, because each token exchange ends the previous session, so every proactive refresh invalidates any locator that is open at that moment. Prior to version 2.9.3 the stream exhausted its retries and failed the sync, so a REST stream whose read outlived the 30 minute refresh interval could not complete. Without RTR the previous session survives a token refresh, which is why this went unnoticed for a long time.
 
 Two things were wrong before version 2.9.3. REST streams authenticated with a token captured when the stream was built, so they could neither trigger nor observe a refresh, and a locator whose session had been invalidated was retried rather than restarted.
 
