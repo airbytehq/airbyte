@@ -5,15 +5,41 @@
 package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.ClockFactory
+import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.discover.EmittedField
+import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.discover.MetaFieldDecorator
+import io.airbyte.cdk.jdbc.IntFieldType
+import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.output.CatalogValidationFailureHandler
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.ResetStream
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
+import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
+import io.airbyte.cdk.read.StateManager
+import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.postgres.config.CdcIncrementalConfiguration
+import io.airbyte.integrations.source.postgres.config.IncrementalConfiguration
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
+import io.airbyte.integrations.source.postgres.config.UserDefinedCursorIncrementalConfiguration
+import io.airbyte.integrations.source.postgres.config.XminIncrementalConfiguration
 import io.airbyte.integrations.source.postgres.ctid.Ctid
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator
+import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
+import java.time.OffsetDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -321,4 +347,190 @@ class PostgresSourceJdbcPartitionFactoryTest {
         assertEquals(Ctid(18, 1), bounds[3].first)
         assertNull(bounds[3].second)
     }
+
+    @Test
+    fun `empty xmin incremental state should cold start outside global mode`() {
+        val stream = stream(ConfiguredSyncMode.INCREMENTAL)
+        val (partitionFactory, _) =
+            partitionFactory(
+                global = false,
+                incrementalConfiguration = XminIncrementalConfiguration
+            )
+
+        val partition = partitionFactory.create(streamFeedBootstrap(stream, Jsons.objectNode()))
+
+        assertTrue(partition is PostgresSourceJdbcUnsplittableSnapshotWithXminPartition)
+    }
+
+    @Test
+    fun `empty xmin full refresh state should cold start outside global mode`() {
+        val stream = stream(ConfiguredSyncMode.FULL_REFRESH)
+        val (partitionFactory, _) =
+            partitionFactory(
+                global = false,
+                incrementalConfiguration = XminIncrementalConfiguration
+            )
+
+        val partition = partitionFactory.create(streamFeedBootstrap(stream, Jsons.objectNode()))
+
+        assertTrue(partition is PostgresSourceJdbcUnsplittableSnapshotPartition)
+    }
+
+    @Test
+    fun `empty cursor incremental state should cold start without resetting stream`() {
+        val stream = stream(ConfiguredSyncMode.INCREMENTAL)
+        val (partitionFactory, handler) =
+            partitionFactory(
+                global = false,
+                incrementalConfiguration = UserDefinedCursorIncrementalConfiguration
+            )
+
+        val partition = partitionFactory.create(streamFeedBootstrap(stream, Jsons.objectNode()))
+
+        assertTrue(partition is PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition)
+        verify(exactly = 0) { handler.accept(any<ResetStream>()) }
+    }
+
+    @Test
+    fun `empty cursor full refresh state should cold start outside global mode`() {
+        val stream = stream(ConfiguredSyncMode.FULL_REFRESH)
+        val (partitionFactory, _) =
+            partitionFactory(
+                global = false,
+                incrementalConfiguration = UserDefinedCursorIncrementalConfiguration
+            )
+
+        val partition = partitionFactory.create(streamFeedBootstrap(stream, Jsons.objectNode()))
+
+        assertTrue(partition is PostgresSourceJdbcUnsplittableSnapshotPartition)
+    }
+
+    @Test
+    fun `JSON-null incremental states should remain complete`() {
+        val stream = stream(ConfiguredSyncMode.INCREMENTAL)
+        val (xminFactory, _) =
+            partitionFactory(
+                global = false,
+                incrementalConfiguration = XminIncrementalConfiguration
+            )
+        val (cursorFactory, _) =
+            partitionFactory(
+                global = false,
+                incrementalConfiguration = UserDefinedCursorIncrementalConfiguration
+            )
+
+        assertNull(xminFactory.create(streamFeedBootstrap(stream, Jsons.nullNode())))
+        assertNull(cursorFactory.create(streamFeedBootstrap(stream, Jsons.nullNode())))
+    }
+
+    @Test
+    fun `xmin incremental state should resume from its checkpoint`() {
+        val stream = stream(ConfiguredSyncMode.INCREMENTAL)
+        val (partitionFactory, _) =
+            partitionFactory(
+                global = false,
+                incrementalConfiguration = XminIncrementalConfiguration
+            )
+        val state =
+            PostgresSourceJdbcStreamStateValue.xminIncrementalCheckpoint(Jsons.numberNode(123))
+
+        val partition = partitionFactory.create(streamFeedBootstrap(stream, state))
+
+        assertTrue(partition is PostgresSourceJdbcXminIncrementalPartition)
+        assertEquals(
+            123,
+            (partition as PostgresSourceJdbcXminIncrementalPartition).xminLowerBound?.asInt()
+        )
+    }
+
+    @Test
+    fun `completed xmin full refresh snapshot should remain complete`() {
+        val stream = stream(ConfiguredSyncMode.FULL_REFRESH)
+        val (partitionFactory, _) =
+            partitionFactory(
+                global = false,
+                incrementalConfiguration = XminIncrementalConfiguration
+            )
+
+        assertNull(
+            partitionFactory.create(
+                streamFeedBootstrap(stream, PostgresSourceJdbcStreamStateValue.snapshotCompleted)
+            )
+        )
+    }
+
+    @Test
+    fun `empty CDC stream state should remain complete`() {
+        val stream = stream(ConfiguredSyncMode.INCREMENTAL)
+        val (partitionFactory, _) =
+            partitionFactory(
+                global = true,
+                incrementalConfiguration = mockk<CdcIncrementalConfiguration>(relaxed = true)
+            )
+
+        assertNull(partitionFactory.create(streamFeedBootstrap(stream, Jsons.objectNode())))
+    }
+
+    private fun partitionFactory(
+        global: Boolean,
+        incrementalConfiguration: IncrementalConfiguration,
+    ): Pair<PostgresSourceJdbcPartitionFactory, CatalogValidationFailureHandler> {
+        val config =
+            mockk<PostgresSourceConfiguration> {
+                every { this@mockk.global } returns global
+                every { this@mockk.incrementalConfiguration } returns incrementalConfiguration
+            }
+        val handler = mockk<CatalogValidationFailureHandler>(relaxed = true)
+        return PostgresSourceJdbcPartitionFactory(
+            sharedState = mockk<DefaultJdbcSharedState>(relaxed = true),
+            selectQueryGenerator = mockk<PostgresSourceSelectQueryGenerator>(relaxed = true),
+            config = config,
+            handler = handler,
+            connectionFactory = mockk<PostgresSourceJdbcConnectionFactory>(relaxed = true)
+        ) to handler
+    }
+
+    private fun stream(syncMode: ConfiguredSyncMode): Stream {
+        val id = EmittedField("id", IntFieldType)
+        return Stream(
+            id =
+                StreamIdentifier.from(
+                    StreamDescriptor().withNamespace("public").withName("test_table")
+                ),
+            schema = setOf(id),
+            configuredSyncMode = syncMode,
+            configuredPrimaryKey = listOf(id),
+            configuredCursor = id,
+        )
+    }
+
+    private fun streamFeedBootstrap(stream: Stream, state: OpaqueStateValue?) =
+        StreamFeedBootstrap(
+            outputConsumer = BufferingOutputConsumer(ClockFactory().fixed()),
+            metaFieldDecorator =
+                object : MetaFieldDecorator {
+                    override val globalCursor: MetaField? = null
+                    override val globalMetaFields: Set<MetaField> = emptySet()
+
+                    override fun decorateRecordData(
+                        timestamp: OffsetDateTime,
+                        globalStateValue: OpaqueStateValue?,
+                        stream: Stream,
+                        recordData: ObjectNode,
+                    ) {}
+
+                    override fun decorateRecordData(
+                        timestamp: OffsetDateTime,
+                        globalStateValue: OpaqueStateValue?,
+                        stream: Stream,
+                        recordData: NativeRecordPayload,
+                    ) {}
+                },
+            stateManager = StateManager(initialStreamStates = mapOf(stream to state)),
+            stream,
+            DataChannelFormat.JSONL,
+            DataChannelMedium.STDIO,
+            8192,
+            ClockFactory().fixed(),
+        )
 }
