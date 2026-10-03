@@ -64,7 +64,7 @@ coverage-html = "poetry run pytest --cov=. --cov-report=html"
 
 # Check commands
 check-ruff-lint = "poetry run ruff check ."
-check-ruff-format = "poetry run ruff format ."
+check-ruff-format = "poetry run ruff format --check ."
 check-ruff = [
     "check-ruff-lint",
     "check-ruff-format",
@@ -77,7 +77,7 @@ check-all = [
 ]
 
 # Fix commands
-fix-ruff-format = "poetry run ruff format --fix ."
+fix-ruff-format = "poetry run ruff format ."
 fix-ruff-lint = "poetry run ruff check --fix ."
 fix-ruff = [
     "fix-ruff-format",
