@@ -216,6 +216,7 @@ Classes
     ### Descendants
 
     * airbyte_agent_sdk.connectors.google_drive.models.AirbyteSearchResult[FilesSearchData]
+    * airbyte_agent_sdk.connectors.google_drive.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

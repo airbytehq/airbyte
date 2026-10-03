@@ -2,21 +2,39 @@
 
 Airbyte connector for Miro can be used to extract data related to board content, user activities, and collaboration metrics, enabling integration with data warehouses and further analysis of team interactions and productivity.
 
+## Prerequisites
+
+The connector authenticates with a Miro OAuth access token. Miro's app Client ID and Client secret don't work as the API key.
+
+1. In Miro, open **Profile settings** > **Your apps** and create an app. Leave **Expire user authorization token** cleared. The connector doesn't refresh tokens, so an expiring token stops working after one hour, and Miro doesn't let you change this setting after you create the app.
+2. Under **Permissions**, enable the `boards:read` scope.
+3. Click **Install app and get OAuth token**, choose the team whose boards you want to sync, and click **Allow**.
+4. Copy the access token and paste it into the **API Key** field.
+
+The connector only reads boards that the token's user has access to in the team you installed the app to.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
+| `api_key` | `string` | API Key. A Miro OAuth access token. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | boards | id | DefaultPaginator | ✅ |  ❌  |
-| board_users |  | DefaultPaginator | ✅ |  ❌  |
+| board_users | id, board_id | DefaultPaginator | ✅ |  ❌  |
 | board_items |  | DefaultPaginator | ✅ |  ❌  |
 | board_tags |  | DefaultPaginator | ✅ |  ❌  |
 | board_groups |  | No pagination | ✅ |  ❌  |
 | board_connectors | id | DefaultPaginator | ✅ |  ❌  |
+
+The `boards` stream lists every board the token can access. The other streams are child streams that make requests for each board in the `boards` stream and add a `board_id` field to every record.
+
+## Limitations
+
+- The connector doesn't paginate the `board_groups` stream, so it only syncs the first page of groups that Miro returns for each board.
+- Miro [rate limits](https://developers.miro.com/reference/rate-limiting) API requests per user and per app using a credit system, with a global limit of 100,000 credits per minute. Because the child streams make requests for every board, syncs of accounts with many boards can reach this limit. When that happens, Miro returns a `429 Too Many Requests` error and the connector retries the request after waiting.
 
 ## IP allow list
 
@@ -29,6 +47,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.69 | 2026-10-03 | [87649](https://github.com/airbytehq/airbyte/pull/87649) | Document that the API key is a Miro OAuth access token |
+| 0.0.68 | 2026-09-29 | [87236](https://github.com/airbytehq/airbyte/pull/87236) | Update dependencies |
+| 0.0.67 | 2026-09-22 | [86693](https://github.com/airbytehq/airbyte/pull/86693) | Update dependencies |
+| 0.0.66 | 2026-09-15 | [86144](https://github.com/airbytehq/airbyte/pull/86144) | Update dependencies |
+| 0.0.65 | 2026-09-08 | [85570](https://github.com/airbytehq/airbyte/pull/85570) | Update dependencies |
 | 0.0.64 | 2026-08-18 | [84652](https://github.com/airbytehq/airbyte/pull/84652) | Update dependencies |
 | 0.0.63 | 2026-08-11 | [84022](https://github.com/airbytehq/airbyte/pull/84022) | Update dependencies |
 | 0.0.62 | 2026-08-04 | [83525](https://github.com/airbytehq/airbyte/pull/83525) | Update dependencies |

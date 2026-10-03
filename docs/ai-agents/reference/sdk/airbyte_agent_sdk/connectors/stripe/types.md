@@ -322,26 +322,6 @@ Classes
     `updated: Any`
     :   Timestamp of the last update to this charge object.
 
-<a id="ChargesApiSearchParams"></a>
-
-`ChargesApiSearchParams(*args, **kwargs)`
-:   Parameters for charges.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `limit: int`
-    :   The type of the None singleton.
-
-    `page: str`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
 <a id="ChargesArrayContainsCondition"></a>
 
 `ChargesArrayContainsCondition(*args, **kwargs)`
@@ -956,6 +936,26 @@ Classes
     `updated: int | None`
     :   Timestamp of the last update to this charge object.
 
+<a id="ChargesSearchParams"></a>
+
+`ChargesSearchParams(*args, **kwargs)`
+:   Parameters for charges.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `page: str`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
+
 <a id="ChargesSearchQuery"></a>
 
 `ChargesSearchQuery(*args, **kwargs)`
@@ -1472,26 +1472,6 @@ Classes
     `updated: Any`
     :   Timestamp indicating when the customer object was last updated.
 
-<a id="CustomersApiSearchParams"></a>
-
-`CustomersApiSearchParams(*args, **kwargs)`
-:   Parameters for customers.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `limit: int`
-    :   The type of the None singleton.
-
-    `page: str`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
 <a id="CustomersArrayContainsCondition"></a>
 
 `CustomersArrayContainsCondition(*args, **kwargs)`
@@ -2005,6 +1985,26 @@ Classes
 
     `updated: int | None`
     :   Timestamp indicating when the customer object was last updated.
+
+<a id="CustomersSearchParams"></a>
+
+`CustomersSearchParams(*args, **kwargs)`
+:   Parameters for customers.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `page: str`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
 
 <a id="CustomersSearchQuery"></a>
 
@@ -2677,26 +2677,6 @@ Classes
 
     `webhooks_delivered_at: Any`
     :   Timestamp indicating when webhooks for this invoice were successfully delivered.
-
-<a id="InvoicesApiSearchParams"></a>
-
-`InvoicesApiSearchParams(*args, **kwargs)`
-:   Parameters for invoices.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `limit: int`
-    :   The type of the None singleton.
-
-    `page: str`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
 
 <a id="InvoicesArrayContainsCondition"></a>
 
@@ -3564,6 +3544,26 @@ Classes
     `webhooks_delivered_at: float | None`
     :   Timestamp indicating when webhooks for this invoice were successfully delivered.
 
+<a id="InvoicesSearchParams"></a>
+
+`InvoicesSearchParams(*args, **kwargs)`
+:   Parameters for invoices.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `page: str`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
+
 <a id="InvoicesSearchQuery"></a>
 
 `InvoicesSearchQuery(*args, **kwargs)`
@@ -4185,26 +4185,6 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
-<a id="PaymentIntentsApiSearchParams"></a>
-
-`PaymentIntentsApiSearchParams(*args, **kwargs)`
-:   Parameters for payment_intents.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `limit: int`
-    :   The type of the None singleton.
-
-    `page: str`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
 <a id="PaymentIntentsCreateParams"></a>
 
 `PaymentIntentsCreateParams(*args, **kwargs)`
@@ -4278,6 +4258,26 @@ Classes
     :   The type of the None singleton.
 
     `lte: int`
+    :   The type of the None singleton.
+
+<a id="PaymentIntentsSearchParams"></a>
+
+`PaymentIntentsSearchParams(*args, **kwargs)`
+:   Parameters for payment_intents.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `page: str`
+    :   The type of the None singleton.
+
+    `query: str`
     :   The type of the None singleton.
 
 <a id="PaymentIntentsUpdateParams"></a>
@@ -4409,26 +4409,6 @@ Classes
 
     * builtins.dict
 
-<a id="ProductsApiSearchParams"></a>
-
-`ProductsApiSearchParams(*args, **kwargs)`
-:   Parameters for products.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `limit: int`
-    :   The type of the None singleton.
-
-    `page: str`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
 <a id="ProductsCreateParams"></a>
 
 `ProductsCreateParams(*args, **kwargs)`
@@ -4522,6 +4502,26 @@ Classes
     :   The type of the None singleton.
 
     `lte: int`
+    :   The type of the None singleton.
+
+<a id="ProductsSearchParams"></a>
+
+`ProductsSearchParams(*args, **kwargs)`
+:   Parameters for products.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `page: str`
+    :   The type of the None singleton.
+
+    `query: str`
     :   The type of the None singleton.
 
 <a id="ProductsUpdateParams"></a>
@@ -5413,26 +5413,6 @@ Classes
     `items(self, /) ‑> Any`
     :   Return a set-like object providing a view on the dict's items.
 
-<a id="SubscriptionsApiSearchParams"></a>
-
-`SubscriptionsApiSearchParams(*args, **kwargs)`
-:   Parameters for subscriptions.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `limit: int`
-    :   The type of the None singleton.
-
-    `page: str`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
 <a id="SubscriptionsArrayContainsCondition"></a>
 
 `SubscriptionsArrayContainsCondition(*args, **kwargs)`
@@ -6151,6 +6131,26 @@ Classes
 
     `items(self, /) ‑> dict[str, typing.Any] | None`
     :   Return a set-like object providing a view on the dict's items.
+
+<a id="SubscriptionsSearchParams"></a>
+
+`SubscriptionsSearchParams(*args, **kwargs)`
+:   Parameters for subscriptions.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `page: str`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
 
 <a id="SubscriptionsSearchQuery"></a>
 

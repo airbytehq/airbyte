@@ -6,7 +6,6 @@ products: all
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
-import Taxonomy from "@site/static/_taxonomy_of_data_movement.md";
 
 Use Airbyte's data replication platform to consolidate data from hundreds of sources into your data warehouses, data lakes, and databases. Then, move data into the operational tools where work happens, like CRMs, marketing platforms, and support systems.
 
@@ -30,30 +29,11 @@ Teams and organizations need efficient and timely data access to an ever-growing
 
 Airbyte is suitable for a wide range of data integration use cases, including AI data infrastructure and EL(T) workloads.
 
-### The use case for data replication
+### Build a context layer for AI agents
 
-Airbyte's data replication platform is an extract, load, and data activation solution. You might know this as ELT/reverse ETL.
+AI agents are only as useful as the context they can reach. Data replication gives agents that context. When you extract and load data from all your business systems into a warehouse or lake, you get a single place where data is complete, historical, and joined across sources. Agents can then answer questions that no single API can, without overloading your source systems or hitting their rate limits.
 
-Data replication is ideal when you:
-
-- Need all your data in one place
-- Need to join across datasets
-- Need more pipelines that can be slower
-- Want storage
-- Want to update content, but not trigger side effects
-- Rely on APIs that aren't good, although good APIs are preferable
-
-Data replication _isn't_ ideal when you:
-
-- Don't want storage
-- Care a lot about freshness and latency
-- Are working with a small amount of data
-- Need to trigger side effects, like sending an email or closing a ticket
-
-
-### Taxonomy of data movement
-
-<Taxonomy />
+Some questions need data that's fresher than the last sync. Airbyte Cloud's [context layer](/platform/context-layer) lets agents also read live data directly from supported sources and destinations through the [Airbyte MCP](/platform/airbyte-mcp).
 
 ## Plans
 
@@ -75,7 +55,7 @@ Airbyte's data replication platform is available as a self-managed, hybrid, or f
 
 <CardWithIcon title="Standard" description="A cloud solution that provides a fully managed experience for data replication. Focus on moving data while Airbyte manages the infrastructure. Free 30-day trial." ctaText="Sign up" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
 
-<CardWithIcon title="Plus" description="A self-serve upgrade with everything in Standard, plus 15-minute sync schedules, mappings, and higher priority support." ctaText="Sign up" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
+<CardWithIcon title="Plus" description="A self-serve upgrade with everything in Standard, plus more frequent syncs, more workspaces, single sign on, and premium support. Choose the number of credits that fits your usage." ctaText="Sign up" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
 
 <CardWithIcon title="Pro" description="A cloud solution for organizations looking to scale efficiently. Role based access control, single sign on, and more ensure Pro is a robust solution that can grow with your team." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
 
@@ -98,6 +78,10 @@ These are great choices for developers who want to automate the way you work wit
 - Airbyte's [API documentation](/developers/api-documentation) gives you programmatic access to Airbyte with code snippets in all common languages.
 - Airbyte's [Python SDK](https://github.com/airbytehq/airbyte-api-python-sdk) lets you programmatically control your Airbyte instance with Python.
 - Airbyte's [Java SDK](https://github.com/airbytehq/airbyte-api-java-sdk) lets you programmatically control your Airbyte instance with Java.
+
+### Airbyte MCP
+
+If you work with an AI agent like Claude, ChatGPT, or VS Code Copilot, the [Airbyte MCP](/platform/airbyte-mcp) lets your agent build, monitor, and troubleshoot your Airbyte data pipelines for you. Describe what you want in plain language, and your agent does the work with your Airbyte permissions. The Airbyte MCP is in private beta.
 
 ### Terraform
 

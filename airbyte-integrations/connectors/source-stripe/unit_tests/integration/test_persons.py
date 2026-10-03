@@ -445,7 +445,7 @@ class PersonsTest(TestCase):
 
             # first error is the actual error, second is to break the Python app with code != 0
             assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [
-                FailureType.system_error,
+                FailureType.transient_error,
                 FailureType.config_error,
             ]
             assert "Too many requests" in actual_messages.errors[0].trace.error.internal_message
@@ -530,6 +530,6 @@ class PersonsTest(TestCase):
 
         # first error is the actual error, second is to break the Python app with code != 0
         assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [
-            FailureType.system_error,
+            FailureType.transient_error,
             FailureType.config_error,
         ]
