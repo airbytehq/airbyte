@@ -71,8 +71,8 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 4. Enter a name for the Amazon Seller Partner connector.
 5. Click `Authenticate your account`.
 6. Log in and Authorize to your Amazon Seller Partner account.
-7. For `Start Date`, enter the date in `YYYY-MM-DD` format. The data added on and after this date will be replicated. This field is optional - if not provided or older than 2 years ago from today, the date 2 years ago from today will be used.
-8. For `End Date`, enter the date in `YYYY-MM-DD` format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
+7. Optionally, for **Start Date**, enter a UTC date and time in the format `2017-01-25T00:00:00Z`. Data added on and after this date is replicated. If you leave it empty or enter a date more than two years ago, the connector uses the date two years before today.
+8. Optionally, for **End Date**, enter a UTC date and time in the format `2017-01-25T00:00:00Z`. Data after this date isn't replicated. If you leave it empty, the connector syncs up to the time the sync runs, except for the vendor retail analytics streams described in [Data availability lag for vendor retail analytics reports](#data-availability-lag-for-vendor-retail-analytics-reports).
 9. **Financial Events Step Size**: Select the time window size for fetching financial events data for the ListFinancialEvents and ListFinancialEventGroups streams. Options include:
    - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
    - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
@@ -105,8 +105,8 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 2. On the Set up the source page, select Amazon Seller Partner from the Source type dropdown.
 3. Enter a name for the Amazon Seller Partner connector.
 4. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token.
-5. For Start Date, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided or older than 2 years ago from today, the date 2 years ago from today will be used.
-6. For End Date, enter the date in YYYY-MM-DD format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
+5. Optionally, for **Start Date**, enter a UTC date and time in the format `2017-01-25T00:00:00Z`. Data added on and after this date is replicated. If you leave it empty or enter a date more than two years ago, the connector uses the date two years before today.
+6. Optionally, for **End Date**, enter a UTC date and time in the format `2017-01-25T00:00:00Z`. Data after this date isn't replicated. If you leave it empty, the connector syncs up to the time the sync runs, except for the vendor retail analytics streams described in [Data availability lag for vendor retail analytics reports](#data-availability-lag-for-vendor-retail-analytics-reports).
 7. **Financial Events Step Size**: Select the time window size for fetching financial events data for the ListFinancialEvents and ListFinancialEventGroups streams. Options include:
    - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
    - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
@@ -256,11 +256,11 @@ Amazon reports data in the vendor retail analytics reports (Vendor Sales, Vendor
 
 ### Data availability lag for vendor retail analytics reports
 
-Amazon publishes the vendor retail analytics reports (Vendor Sales, Vendor Traffic, and Net Pure Product Margin) [72 hours after the close of the period they cover](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports). Asking for a day it has not published yet makes the report fail with `The report data for the requested date range is not yet available`, which fails the whole stream rather than skipping that one day.
+Amazon publishes the vendor retail analytics reports (Vendor Sales, Vendor Traffic, and Net Pure Product Margin) [72 hours after the close of the period they cover](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports). Asking for a day it has not published yet makes that day's report fail with `The report data for the requested date range is not yet available`. The connector reports that failure as a sync error instead of skipping the day, although the other days in the sync still load.
 
-From 6.0.4, these three streams stop four calendar days short of the present instead of syncing up to the moment the sync runs. Nothing is lost — each day is picked up by the first sync that runs after Amazon publishes it — but expect the most recent three to four days to be missing at any given time. If you set an explicit **End Date**, it is used as-is and this holdback is not applied, so a date range ending inside the last four days can still fail.
+From 6.0.4, these three streams stop four calendar days short of the present instead of syncing up to the moment the sync runs. Nothing is lost — each day is picked up by the first sync that runs once that day falls outside the four-day window — but expect the most recent three to four days to be missing at any given time. If you set an explicit **End Date**, it is used as-is and this holdback is not applied, so a date range ending inside the last four days can still fail.
 
-Before 6.0.4, every sync of these streams failed on its newest day. Because a sync is marked failed after 20 partial failures, a long-running connection could be marked failed even though most of its data had loaded.
+Before 6.0.4, every sync of these streams failed on the days Amazon hadn't published yet. Because a sync is marked failed after 20 partial failures, a long-running connection could be marked failed even though most of its data had loaded.
 
 <HideInUI>
 
@@ -497,7 +497,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 6.0.4 | 2026-09-29 | [86942](https://github.com/airbytehq/airbyte/pull/86942) | Stop requesting vendor retail analytics days Amazon has not published yet by holding the Vendor Sales, Vendor Traffic and Net Pure Product Margin cursors four days back |
+| 6.0.4 | 2026-10-02 | [86942](https://github.com/airbytehq/airbyte/pull/86942) | Stop requesting vendor retail analytics days Amazon has not published yet by holding the Vendor Sales, Vendor Traffic and Net Pure Product Margin cursors four days back |
 | 6.0.2 | 2026-09-29 | [87083](https://github.com/airbytehq/airbyte/pull/87083) | Update dependencies |
 | 6.0.1 | 2026-09-28 | [86940](https://github.com/airbytehq/airbyte/pull/86940) | Send configured `reportOptions` for the vendor sales, inventory, traffic, and net pure product margin reports instead of validating and then dropping them |
 | 6.0.0 | 2026-09-24 | [85813](https://github.com/airbytehq/airbyte/pull/85813) | Remove primary key from `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` streams; these line-item reports have no proven, reliably unique identifier, so deduplicating on `amazon-order-id` dropped records |
