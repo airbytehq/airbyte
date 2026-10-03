@@ -1,6 +1,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 
+import bz2
+import gzip
+import io
 import logging
 import stat
 from datetime import datetime
@@ -284,6 +287,26 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
                 globs,
             )
 
+    @staticmethod
+    def _compression_for(uri: str) -> Optional[str]:
+        lowered = uri.lower()
+        if lowered.endswith(".gz"):
+            return "gz"
+        if lowered.endswith(".bz2"):
+            return "bz2"
+        return None
+
     def open_file(self, file: SFTPBulkUploadableRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
-        remote_file = self.sftp_client.sftp_connection.open(file.uri, mode=mode.value)
-        return remote_file
+        compression = self._compression_for(file.uri)
+        if compression is None:
+            return self.sftp_client.sftp_connection.open(file.uri, mode=mode.value)
+
+        binary_remote = self.sftp_client.sftp_connection.open(file.uri, mode="rb")
+        if compression == "gz":
+            decompressed: IOBase = gzip.GzipFile(fileobj=binary_remote, mode="rb")
+        else:
+            decompressed = bz2.BZ2File(binary_remote, mode="rb")
+
+        if mode == FileReadMode.READ:
+            return io.TextIOWrapper(decompressed, encoding=encoding or "utf-8")
+        return decompressed
