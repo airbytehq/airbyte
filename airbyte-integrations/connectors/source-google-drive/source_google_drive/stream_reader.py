@@ -7,6 +7,7 @@ import io
 import json
 import logging
 import os
+import tempfile
 from datetime import datetime
 from io import IOBase
 from os.path import getsize
@@ -56,6 +57,27 @@ DOWNLOADABLE_DOCUMENTS_MIME_TYPES = {
     },
     GOOGLE_DRAWING_MIME_TYPE: {EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PDF, DOCUMENT_FILE_EXTENSION_KEY: ".pdf"},
 }
+
+
+class _TemporaryDownloadFile(io.BufferedRandom):
+    """
+    Disk-backed buffer for downloaded file content.
+
+    Unlike the object returned by `tempfile.TemporaryFile()`, its `name` is writable: the CDK's
+    unstructured parser sets `file.name = None` on any handle that has a `name` attribute.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(tempfile.TemporaryFile(buffering=0))
+        self._name: Optional[str] = None
+
+    @property
+    def name(self) -> Optional[str]:
+        return self._name
+
+    @name.setter
+    def name(self, value: Optional[str]) -> None:
+        self._name = value
 
 
 class GoogleDriveRemoteFile(RemoteFile):
@@ -229,7 +251,8 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=file.mime_type)
         else:
             request = self.google_drive_service.files().get_media(fileId=file.id)
-        handle = io.BytesIO()
+        # Download to disk rather than memory so large files don't OOM the connector.
+        handle = _TemporaryDownloadFile()
         downloader = MediaIoBaseDownload(handle, request)
         done = False
         while done is False:
@@ -240,10 +263,8 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         if mode == FileReadMode.READ_BINARY:
             return handle
         else:
-            # repack the bytes into a string with the right encoding
-            text_handle = io.StringIO(handle.read().decode(encoding or "utf-8"))
-            handle.close()
-            return text_handle
+            # newline="\n" leaves line endings untranslated (e.g. "\r\n" inside quoted CSV values).
+            return io.TextIOWrapper(handle, encoding=encoding or "utf-8", newline="\n")
 
     def _get_export_mime_type(self, original_mime_type: str):
         """
