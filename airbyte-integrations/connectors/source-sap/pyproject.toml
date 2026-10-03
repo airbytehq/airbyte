@@ -1,0 +1,65 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+# Legacy Poetry layout, not PEP 621, and deliberately so: Airbyte's connector CI
+# pins Poetry 1.8.5, which predates PEP 621 support and reads only [tool.poetry].
+# Every packaging QA check parses pyproject["tool"]["poetry"] as well, so a
+# hybrid file fails four checks and makes the CDK-tag check raise
+# KeyError: 'poetry'. See docs/registry-submission.md.
+[tool.poetry]
+name = "source-sap"
+version = "0.1.0"
+description = "Airbyte source for SAP ERP, BW and ODP, powered by the ERPL DuckDB extensions (https://erpl.io)."
+authors = ["DataZoo GmbH <info@data-zoo.de>"]
+license = "ELv2"
+readme = "README.md"
+homepage = "https://erpl.io"
+repository = "https://github.com/DataZooDE/erpl-airbyte"
+documentation = "https://docs.airbyte.com/integrations/sources/sap"
+packages = [{ include = "source_sap" }]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.14"
+airbyte-cdk = ">=7.28,<8"
+duckdb = ">=1.5.5,<2"
+# Imported directly by source_sap.duck and source_sap.types. It arrives
+# transitively through the CDK today, which makes it an undeclared dependency
+# one CDK release away from vanishing.
+orjson = ">=3.10"
+erpl-extensions = ">=2026.9.4"
+
+[tool.poetry.scripts]
+# The generated image's entrypoint invokes this script by the connector's kebab
+# directory name. Renaming it breaks the image, not just the console command.
+source-sap = "source_sap.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.0.0"
+pytest-mock = ">=3.6.1"
+ruff = ">=0.6"
+mypy = ">=1"
+
+# Airbyte's connector CI runs every step as `poe <task>` from the connector
+# directory, and the task definitions live in the monorepo. Without this include
+# `poe install`, `poe test-unit-tests` and `poe format-check` all fail at step
+# one -- and no QA check looks for it, because they never invoke poe.
+[tool.poe]
+include = ["${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["unit_tests", "integration_tests", "e2e"]
+# A bare `pytest` must not reach for a SAP system: Airbyte's CI has none.
+addopts = "-m 'not requires_creds'"
+markers = [
+    "requires_creds: needs a live SAP system (the local a4h ABAP trial)",
+    "slow: long-running test",
+    "image_tests: runs the built connector image with docker",
+]
