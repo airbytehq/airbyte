@@ -8,6 +8,7 @@ import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.data.LocalDateCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
+import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.TestFixtures.assertFailures
@@ -574,5 +575,100 @@ class JdbcPartitionsCreatorTest {
 
         // Should be null — stream is DONE
         Assertions.assertNull(partition2)
+    }
+
+    /**
+     * Regression test: CheckpointOnlyPartitionReader must include a partitionId in SOCKET mode.
+     *
+     * When dataChannelMedium is SOCKET, the destination expects both partition_id and id in
+     * additional properties. Without a partitionId, the destination throws
+     * IllegalStateException.
+     */
+    @Test
+    fun testCheckpointOnlyPartitionReaderIncludesPartitionIdInSocketMode() {
+        val stream = stream()
+        val sharedState =
+            sharedState(
+                mockedQueries =
+                    arrayOf(
+                        TestFixtures.MockedQuery(
+                            expectedQuerySpec =
+                                SelectQuerySpec(
+                                    SelectColumnMaxValue(ts),
+                                    From(stream().name, stream().namespace),
+                                ),
+                            expectedParameters = SelectQuerier.Parameters(fetchSize = null),
+                            mutableMapOf("max" to FieldValueEncoder(null, LocalDateCodec))
+                        ),
+                    )
+            )
+        val factory = sharedState.factory()
+        val initialPartition =
+            factory
+                .create(
+                    stream.bootstrap(
+                        opaqueStateValue(cursor = cursorCheckpoint),
+                        DataChannelMedium.SOCKET,
+                    )
+                )
+                .asPartition()
+        factory.assertFailures()
+
+        val readers = JdbcConcurrentPartitionsCreator(initialPartition, factory).runInTest()
+
+        Assertions.assertEquals(1, readers.size)
+        Assertions.assertTrue(
+            readers.first() is JdbcPartitionsCreator<*, *, *>.CheckpointOnlyPartitionReader
+        )
+
+        val checkpoint = readers.first().checkpoint()
+        Assertions.assertNotNull(
+            checkpoint.partitionId,
+            "CheckpointOnlyPartitionReader must set partitionId in SOCKET mode"
+        )
+        Assertions.assertEquals(4, checkpoint.partitionId!!.length)
+    }
+
+    /**
+     * Verify CheckpointOnlyPartitionReader does NOT include partitionId in STDIO mode.
+     */
+    @Test
+    fun testCheckpointOnlyPartitionReaderOmitsPartitionIdInStdioMode() {
+        val stream = stream()
+        val sharedState =
+            sharedState(
+                mockedQueries =
+                    arrayOf(
+                        TestFixtures.MockedQuery(
+                            expectedQuerySpec =
+                                SelectQuerySpec(
+                                    SelectColumnMaxValue(ts),
+                                    From(stream().name, stream().namespace),
+                                ),
+                            expectedParameters = SelectQuerier.Parameters(fetchSize = null),
+                            mutableMapOf("max" to FieldValueEncoder(null, LocalDateCodec))
+                        ),
+                    )
+            )
+        val factory = sharedState.factory()
+        val initialPartition =
+            factory
+                .create(
+                    stream.bootstrap(
+                        opaqueStateValue(cursor = cursorCheckpoint),
+                        DataChannelMedium.STDIO,
+                    )
+                )
+                .asPartition()
+        factory.assertFailures()
+
+        val readers = JdbcConcurrentPartitionsCreator(initialPartition, factory).runInTest()
+
+        Assertions.assertEquals(1, readers.size)
+        val checkpoint = readers.first().checkpoint()
+        Assertions.assertNull(
+            checkpoint.partitionId,
+            "CheckpointOnlyPartitionReader must not set partitionId in STDIO mode"
+        )
     }
 }
