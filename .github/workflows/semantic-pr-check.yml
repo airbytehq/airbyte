@@ -5,6 +5,7 @@
 #
 # Valid formats:
 # - feat(source-postgres): add new stream
+# - feat(`source-postgres`): backtick-wrapped scope is also valid
 # - fix(destination-bigquery): handle null values
 # - chore(source-github): update dependencies [2026-01-15]
 # - release(source-stripe): promote 5.15.18
@@ -41,6 +42,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          # Allow backticks in scope so titles like feat(`source-foo`): ... pass.
+          # The scope capture trims leading/trailing backticks if present.
+          headerPattern: '^(\w*)(?:\(`?([\w\$\.\-\*/ ]+)`?\))?!?: (.+)$'
+          headerPatternCorrespondence: type, scope, subject
           # Configure which types are allowed (newline-delimited).
           # Comparison is case-insensitive, so only lowercase variants are needed.
           # See: https://github.com/commitizen/conventional-commit-types/blob/master/index.json
