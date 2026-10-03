@@ -5,6 +5,10 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "manifest.yaml"
+        # The credentials spec was restructured under `credentials` in 0.1.0;
+        # legacy flat configs are migrated at runtime by config_normalization_rules.
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.0"
   connection:
     bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
   discovery:

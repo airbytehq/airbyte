@@ -1,0 +1,9 @@
+{
+  "credentials": {
+    "auth_type": "manual",
+    "client_id": "invalid_client_id.apps.googleusercontent.com",
+    "client_secret": "invalid_client_secret",
+    "refresh_token": "invalid_refresh_token"
+  },
+  "calendarid": "primary"
+}
