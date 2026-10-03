@@ -5,12 +5,12 @@ Updates the units schema and removes `units.isOccupied` and `units.cleanStatusTy
 
 Please account for any downstream changes to `units` (e.g. remove database columns).
 
-Readded `reservations.guestBreakdown` to make the reservation rates available; however this doesn't typically return results so no declared schema has been alotted for it.
+Readded `reservations.guestBreakdown` to make the reservation rates available; however this doesn't typically return results so no declared schema has been allotted for it.
 Reservation rates  are also present in `reservations.quoteBreakdown` if `guestBreakdown` doesn't have any values.
 
-Other updates include fixes to the stream API links in the connector docs and updating error filter criteria - reducing 429 error retries from 10 to 3, and specifing a 409 error method.
+Other updates include fixes to the stream API links in the connector docs and updating error filter criteria - reducing 429 error retries from 10 to 3, and specifying a 409 error method.
 * The constant backoff strategy appears to be working (these seemed to be exponential in Airbyte versions < v1.5.1).
-* The Track API errouneous 409 error is set to one retry, though 0 would be preferred (the Airbyte UI, as of v1.5.1, automatically removes the number of retries alltogether if 0). Might have to circle back on this one.
+* The Track API erroneous 409 error is set to one retry, though 0 would be preferred (the Airbyte UI, as of v1.5.1, automatically removes the number of retries altogether if 0). Might have to circle back on this one.
 
 ## Upgrading to 3.0.0
 

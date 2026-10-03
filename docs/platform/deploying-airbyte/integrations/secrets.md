@@ -78,7 +78,7 @@ stringData:
 
 ## Values
 
-Modifing the configuration of connector secret storage will cause all <i>existing</i> connectors to fail. You will need to recreate these connectors to ensure they are reading from the appropriate secret store.
+Modifying the configuration of connector secret storage will cause all <i>existing</i> connectors to fail. You will need to recreate these connectors to ensure they are reading from the appropriate secret store.
 
 <Tabs>
 <TabItem label="Amazon" value="Amazon" default>
