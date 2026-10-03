@@ -1,6 +1,56 @@
 # Yahoo Finance Price
 
-The Airbyte Source for [Yahoo Finance Price](https://finance.yahoo.com/)
+This source syncs historical and intraday price data for stocks, ETFs, and other instruments listed on [Yahoo Finance](https://finance.yahoo.com/). It reads from the Yahoo Finance chart endpoint (`https://query1.finance.yahoo.com/v8/finance/chart/{ticker}`).
+
+## Prerequisites
+
+You don't need a Yahoo account or API key. The connector calls a public, unauthenticated endpoint.
+
+Yahoo doesn't officially document or support this endpoint. Yahoo can change its behavior, limits, or availability without notice.
+
+## Set up the Yahoo Finance Price connector
+
+1. In Airbyte, create a new source and select **Yahoo Finance Price**.
+2. Enter a **Source name**.
+3. In **Tickers**, enter one or more Yahoo Finance ticker symbols separated by commas, for example `AAPL, MSFT, ^GSPC`. Spaces around each symbol are allowed. Use the symbol exactly as it appears on Yahoo Finance, including any exchange suffix such as `.L` or `.TO`.
+4. Select an **Interval**. This is the time between price points, from `1m` (one minute) to `3mo` (three months).
+5. Select a **Range**. This is how far back from the current time to fetch prices, from `1d` to `max`.
+6. Click **Set up source**.
+
+### Interval and range limits
+
+Yahoo Finance limits how far back you can request intraday data. If the interval and range you select exceed these limits, Yahoo returns an error and the sync fails.
+
+| Interval                        | Maximum range                                    |
+| :------------------------------ | :----------------------------------------------- |
+| `1m`                            | About 8 days. Use the `1d`, `5d`, or `7d` range. |
+| `5m`, `15m`, `30m`, `90m`       | Last 60 days. Use a range of `1mo` or less.      |
+| `1h`                            | Last 730 days. Use a range of `2y` or less.      |
+| `1d`, `5d`, `1wk`, `1mo`, `3mo` | No limit. Any range works.                       |
+
+## Supported sync modes
+
+The Yahoo Finance Price source supports the following sync modes:
+
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
+
+The connector doesn't support incremental syncs. Each sync fetches the full selected range again.
+
+## Supported streams
+
+| Stream  | Description                                                                                       |
+| :------ | :------------------------------------------------------------------------------------------------ |
+| `price` | One record per ticker per sync. Each record contains the complete chart response for that ticker. |
+
+Each `price` record has a single top-level `chart` object. Prices are in `chart.result[].indicators.quote[]`, where `open`, `high`, `low`, `close`, and `volume` are parallel arrays. The `chart.result[].timestamp` array holds the matching Unix timestamps, in seconds. Ticker metadata, such as `symbol`, `currency`, `exchangeName`, and trading periods, is in `chart.result[].meta`.
+
+Because prices are stored as arrays inside one record, you typically need to unnest these arrays in your destination to get one row per price point.
+
+## Limitations and troubleshooting
+
+- **Invalid tickers fail the sync.** The connector requests each ticker separately. If any ticker doesn't exist or is delisted, Yahoo returns `404 Not Found` and the sync fails. Check each symbol on Yahoo Finance before adding it.
+- **Interval and range errors.** If you see an error such as `1m data not available ... Only 8 days worth of 1m granularity data are allowed`, choose a shorter range or a longer interval. See [Interval and range limits](#interval-and-range-limits).
 
 ## IP allow list
 
@@ -13,7 +63,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.3.24 | 2026-10-02 | [87643](https://github.com/airbytehq/airbyte/pull/87643) | Replace sentinel pagination with per-ticker partitions (final request returned 404) |
+| 0.3.24 | 2026-10-03 | [87643](https://github.com/airbytehq/airbyte/pull/87643) | Replace sentinel pagination with per-ticker partitions (final request returned 404) |
 | 0.3.23 | 2025-05-24 | [60760](https://github.com/airbytehq/airbyte/pull/60760) | Update dependencies |
 | 0.3.22 | 2025-05-10 | [59990](https://github.com/airbytehq/airbyte/pull/59990) | Update dependencies |
 | 0.3.21 | 2025-05-04 | [59526](https://github.com/airbytehq/airbyte/pull/59526) | Update dependencies |
