@@ -4,27 +4,58 @@ Extract data from Uptick, a field service management platform designed for the f
 
 ## Prerequisites
 
+- Your Uptick instance URL, for example `https://yourcompany.onuptick.com`.
+- Credentials for one of the two authentication methods below. OAuth 2.0 is recommended; the username and password method remains available for existing connections.
+
+### OAuth 2.0 (recommended)
+
+On Airbyte Cloud, choose **OAuth 2.0 (Authenticate with Uptick)** under Authentication, enter only the subdomain of your Uptick URL (for `https://acme.onuptick.com` enter `acme`), click **Authenticate**, and approve the consent page that Uptick shows. The connector stores the resulting tokens in your connection's `credentials` block.
+
+On self-hosted Airbyte (OSS), first create an OAuth application in Uptick under **Control Panel > Uptick API > Create Application** with your Airbyte instance's redirect URI `https://<airbyte-host>/auth_flow`, using the authorization-code grant with PKCE (S256). Then choose **OAuth 2.0 (Authenticate with Uptick)**, enter your Uptick workspace plus the application's Client ID and Client Secret, and complete the flow.
+
+### Username & password (legacy)
+
 The connector authenticates with the Uptick API using OAuth 2.0 with the password grant, so you need both an OAuth application and an Uptick user account:
 
-- Your Uptick instance URL, for example `https://yourcompany.onuptick.com`.
 - An OAuth Client ID and Client Secret generated from your Uptick instance.
 - The email address and password of an Uptick user account. The connector signs in as this user, so the account must have permission to view every resource you want to sync.
 
-To generate the OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance, select **Create Application**, provide a name, and save. Uptick generates the Client ID and Client Secret for you. For step-by-step instructions, see [Uptick API - Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started).
+To generate the OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance, select **Create Application**, provide a name, and save. Uptick generates the Client ID and Client Secret for you. For step-by-step instructions, see [Uptick API - Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started). Existing connections that use the top-level `client_id`, `client_secret`, `username`, and `password` fields continue to work; on the first run after upgrading to 1.4.0, the connector copies them under Authentication (`credentials`) and saves the migrated config — the original fields are kept, so pinning back to 1.3.x keeps working.
 
-## Configuration
+The Uptick user account needs read access to each module you want to sync; in practice `task_profitability` has required the Intelligence reports permission.
+
+## Setup guide
+
+### Set up the Uptick source in Airbyte
+
+1. In Airbyte, go to **Sources** and select **+ New source**.
+2. Search for and select **Uptick** as the source type.
+3. Choose an **Authentication** method and fill in the fields from the configuration table below. For **OAuth 2.0 (Authenticate with Uptick)**, enter only the subdomain of your Uptick URL (for `https://acme.onuptick.com` enter `acme`) and click **Authenticate**; for **Username & password**, fill in `client_id`, `client_secret`, `username`, and `password`. Consider creating a dedicated Uptick service user for the connector: the API token inherits that user's permissions, so a service user keeps access scoped to exactly what you sync.
+4. Select **Set up source** to test the connection.
 
 | Input | Type | Description | Default Value |
 | ------- | ------ | ------------- | --------------- |
-| `base_url` | `string` | Root URL of your Uptick workspace, for example `https://yourcompany.onuptick.com`. The connector keeps only the host and always connects over HTTPS, so any scheme, path, or trailing slash you enter is ignored. | |
-| `client_id` | `string` | OAuth Client ID generated from **Control Panel > Uptick API**. | |
-| `client_secret` | `string` | OAuth Client Secret generated from **Control Panel > Uptick API**. | |
-| `username` | `string` | Email address for an Uptick user account with API access. Synced data is limited to what this user can see in Uptick. | |
-| `password` | `string` | Password for the Uptick user account. | |
+| `base_url` | `string` | API URL in the form `https://yourcompany.onuptick.com` (https, host only, no trailing slash). Required for username/password; optional for OAuth, where it is derived from the Uptick workspace. Syncs normalize the value automatically. | |
+| `credentials.auth_type` | `string` | `oauth2.0` for the OAuth flow, `password` for the legacy username and password method. | |
+| `credentials.workspace` | `string` | The `<workspace>` part of `https://<workspace>.onuptick.com` (lowercase letters, digits, hyphens). Required for `oauth2.0`; the OAuth consent and token URLs are built from it, and the Base Url is derived from it when left empty. | |
+| `credentials.client_id` | `string` | OAuth Client ID generated from **Control Panel > Uptick API**. Filled automatically by the OAuth flow on Airbyte Cloud. | |
+| `credentials.client_secret` | `string` | OAuth Client Secret generated from **Control Panel > Uptick API**. Filled automatically by the OAuth flow on Airbyte Cloud. | |
+| `credentials.refresh_token` | `string` | Refresh token obtained by authenticating with Uptick. Required for `oauth2.0`; filled automatically by the OAuth flow. | |
+| `credentials.username` | `string` | Email address for an Uptick user account with API access. Required for `password`. Synced data is limited to what this user can see in Uptick. | |
+| `credentials.password` | `string` | Password for the Uptick user account. Required for `password`. | |
 | `num_workers` | `integer` | Number of concurrent requests. Higher values speed up syncs but increase the chance of Uptick rate limiting. Allowed range 1–10. | `3` |
 | `max_requests_per_minute` | `integer` | Global request budget shared by all streams and threads. Uptick publishes no numeric limit; 60 is a conservative default. Allowed range 1–600. | `60` |
 
-## Streams
+## Supported sync modes
+
+| Sync mode | Supported |
+| --------- | --------- |
+| Full Refresh Sync | ✅ |
+| Incremental Sync | ✅ |
+
+All streams support both full refresh and incremental sync on the `updated` cursor. Only the streams marked ✅ in the **Supports Incremental** column below expose a `deleted` timestamp; on the streams marked `❌ (no soft delete)` an incremental sync retains rows in your destination after they're deleted in Uptick, so use full refresh for those. `task_profitability` is a generated report with no deleted state and is safe to sync incrementally.
+
+## Supported Streams
 
 The Uptick connector syncs data from the following streams, organized by functional area:
 
@@ -188,32 +219,58 @@ Prompt data spans three streams, and Uptick reworked its prompt model in API v2.
 
 ### Incremental sync
 
-For streams that support incremental sync, the connector uses each record's `updated` timestamp as the cursor and fetches only records changed since the last sync through the Uptick API's `updatedsince` filter. Streams that support only full refresh are re-read in full on every sync.
+For every stream, the connector uses each record's `updated` timestamp as the cursor and fetches only records changed since the last sync through the Uptick API's `updatedsince` filter.
 
 The `servicegroups` and `accreditationtypes` endpoints ignore the `updatedsince` filter and always return every row. For these two streams, the connector requests the full table on every sync and then drops records whose `updated` value is older than the saved cursor before emitting them. Sync time and API usage for these streams don't shrink in incremental mode, but from version 1.2.0 the connector no longer re-emits unchanged rows on every incremental sync.
 
-Airbyte still offers incremental sync in the UI for the streams marked `❌ (no soft delete)`, because the connector defines the `updated` cursor for every stream. Avoid it for those streams: their Uptick endpoints don't report deletions, so an incremental sync keeps records in your destination after they're deleted in Uptick. Sync them in full refresh mode instead.
+Avoid incremental sync for the streams marked `❌ (no soft delete)`: their Uptick endpoints don't report deletions, so an incremental sync keeps records in your destination after they're deleted in Uptick. Sync them with **Full Refresh | Overwrite** instead.
 
-## Rate limits and performance
+## Data type map
+
+| Connector schema type | Airbyte type |
+| --------------------- | ------------ |
+| string | string |
+| integer | integer |
+| number | number |
+| decimal | string (airbyte_type `decimal`) |
+| boolean | boolean |
+| date | string (format `date`) |
+| datetime | string (format `date-time`, airbyte_type `timestamp_with_timezone`) |
+| object | object |
+| array | array |
+
+## Limitations & Troubleshooting
+
+### Permission errors (403)
+
+If the Uptick user account lacks permission for an endpoint, the sync fails with `HTTP 403: Uptick user lacks permission for the requested endpoint.` Uptick doesn't publish a per-endpoint permission list; in production this has been seen on `task_profitability` (resolved by granting the Intelligence reports permission) and on `billingcontractlineitems`. The connector fails with a configuration error instead of retrying. Grant the missing module permission in Uptick or deselect the stream.
+
+**`403 Access denied … required licenses (FIELD, DESK, CONTRACTOR)` after logging in during "Authenticate with Uptick".** The Uptick user you signed in with has no licence in that workspace. Ask your Uptick administrator to grant one (for example, DESK), or use username/password authentication instead.
+
+### Authentication errors (401)
+
+Uptick rejects a wrong username or password with `invalid_grant`, and a wrong client ID or client secret with `invalid_client`. The connector reports these as a configuration error without retrying: `Refresh token was rejected by the OAuth provider (invalid, expired, or already used). Re-authenticate this source's credentials in its connection settings.` For `oauth2.0` connections, re-authenticate with Uptick so the stored credentials are refreshed. For `password` connections, check the four credential fields in the source configuration, and confirm that the OAuth application still exists under **Control Panel > Uptick API**.
+
+Uptick access tokens can also expire or be revoked during a long sync. If a stream request returns 401 mid-sync, the connector refreshes the token once and retries the request; if the refresh is rejected (for example because the password changed during the sync) the sync fails with the same configuration error, and if the retried request is still 401 it fails with `HTTP 401: Uptick rejected the access token.` Update the credentials and run the sync again.
+
+### Deleted records
+
+Streams marked `❌ (no soft delete)` in the table above don't report deletions, so records deleted in Uptick stay in your destination until you run a **Full Refresh | Overwrite** sync (Full Refresh | Append doesn't remove rows). The 12 JSON:API streams marked ✅ expose a `deleted` timestamp on deleted records; `task_profitability` is a generated report and has no deleted state.
+
+### Rate limits
 
 Uptick enforces rate limits and reasonable-use guidelines on its API but doesn't publish a numeric limit. Uptick states that it can revoke API access without notice for applications that violate these limits, so raise the connector's request rate cautiously.
 
 Two settings control how fast the connector reads from Uptick:
 
-- `max_requests_per_minute` sets a single request budget that all streams and threads share. The default of 60 requests per minute is a conservative value that Airbyte chose, and it's the throughput ceiling for the whole sync. Large workspaces with millions of records can sync more slowly than they did before version 1.3.0. If Uptick confirms your workspace tolerates more traffic, raise this value. If Uptick returns HTTP 429 responses, lower it.
+- `max_requests_per_minute` sets a single request budget that all streams and threads share (allowed range 1–600). The default of 60 requests per minute is a conservative value that Airbyte chose, and it's the throughput ceiling for the whole sync. Large workspaces with millions of records can sync more slowly than they did before version 1.3.0. If Uptick confirms your workspace tolerates more traffic, raise this value. If Uptick returns HTTP 429 responses, lower it.
 - `num_workers` sets how many requests run at the same time. The default is 3 and the maximum is 10. Because every request still counts against `max_requests_per_minute`, adding workers only speeds up a sync when slow API responses keep the connector from using its full per-minute budget.
 
 When Uptick throttles a request and returns a `Retry-After` header, the connector waits the indicated time before retrying. If the header asks for a wait of 30 minutes or longer, the connector fails the stream with a rate-limit error instead of waiting. Without a `Retry-After` header, the connector backs off exponentially. The connector retries a failed request up to five times.
 
 To reduce API usage, sync only the streams you need and schedule syncs no more often than your reporting requires.
 
-## Troubleshooting
-
-- **Invalid credentials.** Uptick rejects a wrong username or password with `invalid_grant`, and a wrong client ID or client secret with `invalid_client`. The connector reports these as configuration errors without retrying. Check the four credential fields, and confirm that the OAuth application still exists under **Control Panel > Uptick API**.
-- **HTTP 401 during a sync.** Uptick access tokens can expire or be revoked during a long sync. When a stream request returns HTTP 401, the connector requests a new token and retries the request once. If the retry also fails, or if Uptick rejects the new token request because the password changed during the sync, the sync fails with a configuration error. Update the credentials and run the sync again.
-- **HTTP 403.** The Uptick user that the connector signs in as doesn't have permission to read the endpoint behind a stream. The connector fails with a configuration error instead of retrying. Grant the user access to that data in Uptick, or deselect the stream.
-
-## IP allow list
+### IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
@@ -231,7 +288,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 1.1.3 | 2026-09-15 | [86280](https://github.com/airbytehq/airbyte/pull/86280) | Update dependencies |
 | 1.1.2 | 2026-09-08 | [85702](https://github.com/airbytehq/airbyte/pull/85702) | Update dependencies |
 | 1.1.1 | 2026-08-18 | [84790](https://github.com/airbytehq/airbyte/pull/84790) | Update dependencies |
-| 1.1.0 | 2026-08-12 | [83710](https://github.com/airbytehq/airbyte/pull/83710) | Add 6 new streams (clientcontacts, propertycontacts, promptquestions, promptanswergroups, promptanswers, majorservices), add fields to the clients, properties, invoices, defectquotes, servicequotes, users, and purchaseorders streams, and make relationship field extraction null-safe |
+| 1.1.0 | 2026-08-12 | [83710](https://github.com/airbytehq/airbyte/pull/83710) | Add 6 new streams, expand fields on 7 existing streams, and make relationship field extraction null-safe |
 | 1.0.3 | 2026-08-11 | [84162](https://github.com/airbytehq/airbyte/pull/84162) | Update dependencies |
 | 1.0.2 | 2026-08-04 | [83652](https://github.com/airbytehq/airbyte/pull/83652) | Update dependencies |
 | 1.0.1 | 2026-07-28 | [83098](https://github.com/airbytehq/airbyte/pull/83098) | Update dependencies |
@@ -252,7 +309,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.5.3 | 2026-02-23 | [72302](https://github.com/airbytehq/airbyte/pull/72302) | Add fields to defectquotes and projects streams |
 | 0.5.2 | 2026-02-17 | [73433](https://github.com/airbytehq/airbyte/pull/73433) | Update dependencies |
 | 0.5.1 | 2026-02-10 | [73007](https://github.com/airbytehq/airbyte/pull/73007) | Update dependencies |
-| 0.5.0 | 2026-01-22 | [71122](https://github.com/airbytehq/airbyte/pull/71122) | Add invoice_id to invoicelineitems, and add 6 new streams: servicetasks, routineservices, routineservicelevels, routineservicetypes, routineserviceleveltypes, subtasks |
+| 0.5.0 | 2026-01-22 | [71122](https://github.com/airbytehq/airbyte/pull/71122) | Add invoice_id to invoicelineitems and add 6 new routine-service and subtask streams |
 | 0.4.3 | 2026-01-20 | [72056](https://github.com/airbytehq/airbyte/pull/72056) | Update dependencies |
 | 0.4.2 | 2026-01-14 | [71437](https://github.com/airbytehq/airbyte/pull/71437) | Update dependencies |
 | 0.4.1 | 2025-12-18 | [70713](https://github.com/airbytehq/airbyte/pull/70713) | Update dependencies |
