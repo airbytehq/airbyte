@@ -296,7 +296,10 @@ class TestSideConversationsErrorHandling(TestCase):
             TicketsRecordBuilder.tickets_record().with_id(2).with_field(FieldPath("generated_timestamp"), int(start_date.timestamp()))
         )
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(int(start_date.timestamp())).build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator)
+            .with_start_time(int(start_date.timestamp()))
+            .with_per_page(100)
+            .build(),
             TicketsResponseBuilder.tickets_response().with_record(denied_ticket).with_record(readable_ticket).build(),
         )
 

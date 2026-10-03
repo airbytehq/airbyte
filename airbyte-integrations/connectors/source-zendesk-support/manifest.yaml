@@ -184,6 +184,18 @@ definitions:
     page_token_option:
       type: RequestPath
 
+  # Incremental Ticket Export pages are large (a ticket with many custom fields and
+  # long descriptions can exceed 100 KB), so the default 1,000/page export can exceed
+  # the source container's memory while a page is decoded. `per_page` is sent on
+  # every request; `after_url` may already carry it, the CDK de-duplicates identical
+  # query params.
+  tickets_after_url_paginator:
+    $ref: "#/definitions/after_url_paginator"
+    page_size_option:
+      type: RequestOption
+      field_name: "per_page"
+      inject_into: request_parameter
+
   end_of_stream_paginator:
     type: DefaultPaginator
     pagination_strategy:
@@ -1193,8 +1205,14 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        # Caching persists every export page to SQLite on top of decoding it in memory.
+        # The parent walks (`side_conversations`, stateful `ticket_metrics`) re-request the
+        # export instead; the API budget above keeps them within Zendesk's rate limit.
+        use_cache: false
       paginator:
-        $ref: "#/definitions/after_url_paginator"
+        $ref: "#/definitions/tickets_after_url_paginator"
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.TicketsStateMigration
