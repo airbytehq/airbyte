@@ -1,0 +1,1400 @@
+version: 7.0.4
+
+type: DeclarativeSource
+
+description: Claude Enterprise Analytics API endpoints
+
+check:
+  type: CheckStream
+  stream_names:
+    - user_activity
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: ApiKeyAuthenticator
+        header: x-api-key
+        api_token: "{{ config['admin_api_key'] }}"
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 5
+        response_filters:
+          - type: HttpResponseFilter
+            http_codes:
+              - 429
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            header: retry-after
+            max_waiting_time_in_seconds: 60
+      request_headers:
+        anthropic-version: "2023-06-01"
+      request_parameters:
+        bucket_width: 1d
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.next_page }}"
+          stop_condition: "{{ response.has_more == False }}"
+
+streams:
+  - type: DeclarativeStream
+    name: user_activity
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.anthropic.com/v1/organizations/analytics/users
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters:
+          limit: "1000"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - date
+      - user_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+          - user_id
+        properties:
+          date:
+            type: string
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              email_address:
+                type:
+                  - string
+                  - "null"
+          user_id:
+            type: string
+          chat_metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              message_count:
+                type:
+                  - number
+                  - "null"
+              connectors_used_count:
+                type:
+                  - number
+                  - "null"
+              thinking_message_count:
+                type:
+                  - number
+                  - "null"
+              distinct_skills_used_count:
+                type:
+                  - number
+                  - "null"
+              distinct_conversation_count:
+                type:
+                  - number
+                  - "null"
+              distinct_projects_used_count:
+                type:
+                  - number
+                  - "null"
+              distinct_files_uploaded_count:
+                type:
+                  - number
+                  - "null"
+              distinct_projects_created_count:
+                type:
+                  - number
+                  - "null"
+              distinct_artifacts_created_count:
+                type:
+                  - number
+                  - "null"
+              shared_conversations_viewed_count:
+                type:
+                  - number
+                  - "null"
+              distinct_shared_artifacts_viewed_count:
+                type:
+                  - number
+                  - "null"
+          cowork_metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              action_count:
+                type:
+                  - number
+                  - "null"
+              message_count:
+                type:
+                  - number
+                  - "null"
+              skills_used_count:
+                type:
+                  - number
+                  - "null"
+              dispatch_turn_count:
+                type:
+                  - number
+                  - "null"
+              connectors_used_count:
+                type:
+                  - number
+                  - "null"
+              distinct_session_count:
+                type:
+                  - number
+                  - "null"
+              distinct_skills_used_count:
+                type:
+                  - number
+                  - "null"
+              distinct_connectors_used_count:
+                type:
+                  - number
+                  - "null"
+          design_metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              message_count:
+                type:
+                  - number
+                  - "null"
+              distinct_session_count:
+                type:
+                  - number
+                  - "null"
+              distinct_projects_used_count:
+                type:
+                  - number
+                  - "null"
+              distinct_projects_created_count:
+                type:
+                  - number
+                  - "null"
+          office_metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              word:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  message_count:
+                    type:
+                      - number
+                      - "null"
+                  skills_used_count:
+                    type:
+                      - number
+                      - "null"
+                  connectors_used_count:
+                    type:
+                      - number
+                      - "null"
+                  distinct_session_count:
+                    type:
+                      - number
+                      - "null"
+                  distinct_skills_used_count:
+                    type:
+                      - number
+                      - "null"
+                  distinct_connectors_used_count:
+                    type:
+                      - number
+                      - "null"
+              excel:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  message_count:
+                    type:
+                      - number
+                      - "null"
+                  skills_used_count:
+                    type:
+                      - number
+                      - "null"
+                  connectors_used_count:
+                    type:
+                      - number
+                      - "null"
+                  distinct_session_count:
+                    type:
+                      - number
+                      - "null"
+                  distinct_skills_used_count:
+                    type:
+                      - number
+                      - "null"
+                  distinct_connectors_used_count:
+                    type:
+                      - number
+                      - "null"
+              outlook:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  message_count:
+                    type:
+                      - number
+                      - "null"
+                  skills_used_count:
+                    type:
+                      - number
+                      - "null"
+                  connectors_used_count:
+                    type:
+                      - number
+                      - "null"
+                  distinct_session_count:
+                    type:
+                      - number
+                      - "null"
+                  distinct_skills_used_count:
+                    type:
+                      - number
+                      - "null"
+                  distinct_connectors_used_count:
+                    type:
+                      - number
+                      - "null"
+              powerpoint:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  message_count:
+                    type:
+                      - number
+                      - "null"
+                  skills_used_count:
+                    type:
+                      - number
+                      - "null"
+                  connectors_used_count:
+                    type:
+                      - number
+                      - "null"
+                  distinct_session_count:
+                    type:
+                      - number
+                      - "null"
+                  distinct_skills_used_count:
+                    type:
+                      - number
+                      - "null"
+                  distinct_connectors_used_count:
+                    type:
+                      - number
+                      - "null"
+          web_search_count:
+            type:
+              - number
+              - "null"
+          claude_code_metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              core_metrics:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  commit_count:
+                    type:
+                      - number
+                      - "null"
+                  lines_of_code:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      added_count:
+                        type:
+                          - number
+                          - "null"
+                      removed_count:
+                        type:
+                          - number
+                          - "null"
+                  pull_request_count:
+                    type:
+                      - number
+                      - "null"
+                  distinct_session_count:
+                    type:
+                      - number
+                      - "null"
+              tool_actions:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  edit_tool:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      accepted_count:
+                        type:
+                          - number
+                          - "null"
+                      rejected_count:
+                        type:
+                          - number
+                          - "null"
+                  write_tool:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      accepted_count:
+                        type:
+                          - number
+                          - "null"
+                      rejected_count:
+                        type:
+                          - number
+                          - "null"
+                  multi_edit_tool:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      accepted_count:
+                        type:
+                          - number
+                          - "null"
+                      rejected_count:
+                        type:
+                          - number
+                          - "null"
+                  notebook_edit_tool:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      accepted_count:
+                        type:
+                          - number
+                          - "null"
+                      rejected_count:
+                        type:
+                          - number
+                          - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{stream_partition['start_time'] }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - user_id
+            value: "{{ record['user']['id'] }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (now_utc() - duration('P3D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      lookback_window: P3D
+      start_time_option:
+        type: RequestOption
+        field_name: date
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: user_cost_report
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.anthropic.com/v1/organizations/analytics/user_cost_report
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters:
+          limit: "1000"
+          group_by[]: >-
+            {{ ['product', 'model', 'context_window', 'inference_geo', 'speed',
+            'cost_type', 'token_type'] }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - starting_at
+      - product
+      - model
+      - context_window
+      - speed
+      - user_id
+      - cost_type
+      - token_type_not_null
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - starting_at
+          - product
+          - model
+          - context_window
+          - speed
+          - user_id
+          - cost_type
+          - token_type_not_null
+          - ending_at
+        properties:
+          actor:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              deleted:
+                type:
+                  - boolean
+                  - "null"
+              user_id:
+                type:
+                  - string
+                  - "null"
+          model:
+            type: string
+          speed:
+            type: string
+          amount:
+            type:
+              - string
+              - "null"
+          product:
+            type: string
+          user_id:
+            type: string
+          currency:
+            type:
+              - string
+              - "null"
+          cost_type:
+            type: string
+          ending_at:
+            type: string
+          token_type:
+            type:
+              - string
+              - "null"
+          list_amount:
+            type:
+              - string
+              - "null"
+          starting_at:
+            type: string
+          context_window:
+            type: string
+          token_type_not_null:
+            type: string
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - starting_at
+            value: "{{ stream_partition['start_time'] }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - ending_at
+            value: "{{ stream_partition['end_time'] }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - user_id
+            value: "{{ record['actor']['user_id'] }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - token_type_not_null
+            value: "{{ record.get('token_type') or '__NULL_TOKEN_TYPE__' }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: ending_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT00:00:00Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config[\"start_date\"] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_time_option:
+        type: RequestOption
+        field_name: ending_at
+        inject_into: request_parameter
+      lookback_window: P3D
+      start_time_option:
+        type: RequestOption
+        field_name: starting_at
+        inject_into: request_parameter
+      cursor_granularity: PT0S
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: user_usage_report
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.anthropic.com/v1/organizations/analytics/user_usage_report
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters:
+          limit: "1000"
+          group_by[]: >-
+            {{ ['product', 'model', 'context_window', 'inference_geo', 'speed']
+            }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - starting_at
+      - product
+      - model
+      - context_window
+      - speed
+      - user_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - starting_at
+          - product
+          - model
+          - context_window
+          - speed
+          - user_id
+          - ending_at
+        properties:
+          actor:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              deleted:
+                type:
+                  - boolean
+                  - "null"
+              user_id:
+                type:
+                  - string
+                  - "null"
+          model:
+            type: string
+          speed:
+            type: string
+          product:
+            type: string
+          user_id:
+            type: string
+          requests:
+            type:
+              - number
+              - "null"
+          ending_at:
+            type: string
+          starting_at:
+            type: string
+          total_tokens:
+            type:
+              - number
+              - "null"
+          output_tokens:
+            type:
+              - number
+              - "null"
+          cache_creation:
+            type:
+              - object
+              - "null"
+            properties:
+              ephemeral_1h_input_tokens:
+                type:
+                  - number
+                  - "null"
+              ephemeral_5m_input_tokens:
+                type:
+                  - number
+                  - "null"
+          context_window:
+            type: string
+          server_tool_use:
+            type:
+              - object
+              - "null"
+            properties:
+              web_search_requests:
+                type:
+                  - number
+                  - "null"
+          uncached_input_tokens:
+            type:
+              - number
+              - "null"
+          cache_read_input_tokens:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - starting_at
+            value: "{{ stream_partition['start_time'] }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - ending_at
+            value: "{{ stream_partition['end_time'] }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - user_id
+            value: "{{ record['actor']['user_id'] }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: ending_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT00:00:00Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config[\"start_date\"] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_time_option:
+        type: RequestOption
+        field_name: ending_at
+        inject_into: request_parameter
+      lookback_window: P3D
+      start_time_option:
+        type: RequestOption
+        field_name: starting_at
+        inject_into: request_parameter
+      cursor_granularity: PT0S
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: activity_summaries
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.anthropic.com/v1/organizations/analytics/summaries
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - summaries
+    primary_key: starting_at
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - starting_at
+          - ending_at
+        properties:
+          ending_at:
+            type: string
+          starting_at:
+            type: string
+          assigned_seat_count:
+            type:
+              - number
+              - "null"
+          daily_adoption_rate:
+            type:
+              - number
+              - "null"
+          pending_invite_count:
+            type:
+              - number
+              - "null"
+          weekly_adoption_rate:
+            type:
+              - number
+              - "null"
+          monthly_adoption_rate:
+            type:
+              - number
+              - "null"
+          daily_active_user_count:
+            type:
+              - number
+              - "null"
+          weekly_active_user_count:
+            type:
+              - number
+              - "null"
+          monthly_active_user_count:
+            type:
+              - number
+              - "null"
+          cowork_daily_active_user_count:
+            type:
+              - number
+              - "null"
+          cowork_weekly_active_user_count:
+            type:
+              - number
+              - "null"
+          cowork_monthly_active_user_count:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P31D
+      cursor_field: ending_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (now_utc() - duration('P2D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: ending_date
+        inject_into: request_parameter
+      lookback_window: P3D
+      start_time_option:
+        type: RequestOption
+        field_name: starting_date
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: project_activity
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.anthropic.com/v1/organizations/analytics/apps/chat/projects
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters:
+          limit: "1000"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - date
+      - project_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+          - project_id
+        properties:
+          date:
+            type: string
+          created_at:
+            type:
+              - string
+              - "null"
+          created_by:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              email_address:
+                type:
+                  - string
+                  - "null"
+          project_id:
+            type: string
+          project_name:
+            type:
+              - string
+              - "null"
+          message_count:
+            type:
+              - number
+              - "null"
+          distinct_user_count:
+            type:
+              - number
+              - "null"
+          distinct_conversation_count:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{stream_partition['start_time'] }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (now_utc() - duration('P3D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      lookback_window: P3D
+      start_time_option:
+        type: RequestOption
+        field_name: date
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: skill_activity
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.anthropic.com/v1/organizations/analytics/skills
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters:
+          limit: "1000"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - date
+      - skill_name
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+          - skill_name
+        properties:
+          date:
+            type: string
+          skill_name:
+            type: string
+          chat_metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              distinct_conversation_skill_used_count:
+                type:
+                  - number
+                  - "null"
+          cowork_metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              distinct_session_skill_used_count:
+                type:
+                  - number
+                  - "null"
+          office_metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              word:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  distinct_session_skill_used_count:
+                    type:
+                      - number
+                      - "null"
+              excel:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  distinct_session_skill_used_count:
+                    type:
+                      - number
+                      - "null"
+              outlook:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  distinct_session_skill_used_count:
+                    type:
+                      - number
+                      - "null"
+              powerpoint:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  distinct_session_skill_used_count:
+                    type:
+                      - number
+                      - "null"
+          claude_code_metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              distinct_session_skill_used_count:
+                type:
+                  - number
+                  - "null"
+          distinct_user_count:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{stream_partition['start_time'] }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (now_utc() - duration('P3D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      lookback_window: P3D
+      start_time_option:
+        type: RequestOption
+        field_name: date
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: connector_activity
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.anthropic.com/v1/organizations/analytics/connectors
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters:
+          limit: "1000"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - date
+      - connector_name
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - date
+          - connector_name
+        properties:
+          date:
+            type: string
+          chat_metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              distinct_conversation_connector_used_count:
+                type:
+                  - number
+                  - "null"
+          connector_name:
+            type: string
+          cowork_metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              distinct_session_connector_used_count:
+                type:
+                  - number
+                  - "null"
+          office_metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              word:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  distinct_session_connector_used_count:
+                    type:
+                      - number
+                      - "null"
+              excel:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  distinct_session_connector_used_count:
+                    type:
+                      - number
+                      - "null"
+              outlook:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  distinct_session_connector_used_count:
+                    type:
+                      - number
+                      - "null"
+              powerpoint:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  distinct_session_connector_used_count:
+                    type:
+                      - number
+                      - "null"
+          claude_code_metrics:
+            type:
+              - object
+              - "null"
+            properties:
+              distinct_session_connector_used_count:
+                type:
+                  - number
+                  - "null"
+          distinct_user_count:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{stream_partition['start_time'] }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (now_utc() - duration('P3D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      lookback_window: P3D
+      start_time_option:
+        type: RequestOption
+        field_name: date
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - admin_api_key
+      - start_date
+    properties:
+      start_date:
+        type: string
+        description: Value cannot be older than 365 days
+        order: 1
+        title: Start date
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      admin_api_key:
+        type: string
+        description: PLACEHOLDER
+        order: 0
+        title: Admin API key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    stream_0:
+      streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
+    cost_report:
+      isStale: false
+      hasRecords: true
+      streamHash: a036770868e30adae87f82474080bce511c37177
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    usage_report:
+      isStale: false
+      hasRecords: true
+      streamHash: 030304fb7ad6e1383acf7cb4413d45dcde77ae3c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    user_activity:
+      isStale: true
+      hasRecords: true
+      streamHash: 09da60c3cbb52a291238681f0aedc5389357ca72
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    skill_activity:
+      isStale: true
+      hasRecords: true
+      streamHash: 7b24be955e96a04be687887d4c1eaa5fd84ea8a6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    project_activity:
+      isStale: true
+      hasRecords: true
+      streamHash: b94434c5f2122d9cbafec84524fad8a4f510b2b1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    user_cost_report:
+      isStale: false
+      hasRecords: true
+      streamHash: aa81054a79953a52401327c9fde094c6405312a2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    user_usage_report:
+      isStale: false
+      hasRecords: true
+      streamHash: 5ba8ad7577351ab50e6577b193d005d9ff4c1d68
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    activity_summaries:
+      isStale: true
+      hasRecords: true
+      streamHash: ae6468efc3e138a151455b6bae2e5885b017d27a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    connector_activity:
+      isStale: false
+      hasRecords: false
+      streamHash: a363ebd303952a9bde84782b7473888dd958cf56
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    user_activity: true
+    skill_activity: true
+    project_activity: true
+    user_cost_report: true
+    user_usage_report: true
+    activity_summaries: true
+    connector_activity: true
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
