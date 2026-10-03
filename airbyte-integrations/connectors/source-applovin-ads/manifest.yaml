@@ -1,0 +1,1238 @@
+version: 7.23.8
+
+type: DeclarativeSource
+
+description: >-
+  Source for AppLovin's reporting APIs, all authenticated with the Report Key.
+  Covers advertiser reporting (/report, /webReport, /assetAnalyticsReport) and
+  MAX publisher reporting (/maxReport, /maxCohort and its imp and session
+  variants). The management and Conversions APIs are out of scope: they use
+  different hosts, header auth, different keys, and are write paths.
+
+check:
+  type: CheckStream
+  stream_names:
+    - asset_report_daily
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config['num_workers'] | default(2, true) }}"
+  max_concurrency: 20
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: https://r.applovin.com
+    http_method: GET
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['api_key'] }}"
+      inject_into:
+        type: RequestOption
+        field_name: api_key
+        inject_into: request_parameter
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+            - 401
+            - 403
+          failure_type: config_error
+          error_message: >-
+            AppLovin rejected the Report Key. Confirm the key is your Report Key
+            (AppLovin dashboard, account menu, Keys) and that it has reporting
+            access.
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
+            - 500
+            - 502
+            - 503
+            - 504
+
+  base_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      field_name: offset
+      inject_into: request_parameter
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: request_parameter
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 1000
+
+  base_record_selector:
+    type: RecordSelector
+    schema_normalization: Default
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - results
+
+  # All three endpoints are queried one day at a time (start == end) so every
+  # record belongs to a single date, which is what makes the cursor and the
+  # composite primary keys stable. `lookback_window` re-requests recent days so
+  # restated attribution data overwrites the earlier values.
+  #
+  # AppLovin enforces a request window: dates outside it return an error rather
+  # than empty results, so `min_datetime` clamps the start date to the oldest
+  # day the endpoint still serves. /report and /assetAnalyticsReport allow 45
+  # days; /webReport allows 90.
+  report_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: day
+    datetime_format: "%Y-%m-%d"
+    cursor_datetime_formats:
+      - "%Y-%m-%d"
+    lookback_window: P{{ config['lookback_window'] | default(3, true) }}D
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      min_datetime: "{{ day_delta(-44, format='%Y-%m-%d') }}"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('end_date') or today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+    step: P1D
+    cursor_granularity: P1D
+    start_time_option:
+      type: RequestOption
+      field_name: start
+      inject_into: request_parameter
+    end_time_option:
+      type: RequestOption
+      field_name: end
+      inject_into: request_parameter
+
+  web_report_incremental_sync:
+    $ref: "#/definitions/report_incremental_sync"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      min_datetime: "{{ day_delta(-89, format='%Y-%m-%d') }}"
+
+  # The asset report has no day dimension: a single-day range aggregates to that
+  # day, and the connector adds the requested date as `date`.
+  asset_report_incremental_sync:
+    $ref: "#/definitions/report_incremental_sync"
+    cursor_field: date
+
+  # MAX reporting endpoints all enforce a 45-day request window.
+  max_report_incremental_sync:
+    $ref: "#/definitions/report_incremental_sync"
+
+  # Cohort metrics are indexed by install day and keep changing for up to 45
+  # days as the cohort ages, so `pub_revenue_45` for a given day is not final
+  # until 45 days later. These streams use their own, much larger lookback.
+  max_cohort_incremental_sync:
+    $ref: "#/definitions/report_incremental_sync"
+    lookback_window: P{{ config['cohort_lookback_window'] | default(45, true) }}D
+
+  streams:
+    advertiser_report_daily:
+      type: DeclarativeStream
+      name: advertiser_report_daily
+      primary_key:
+        - day
+        - campaign_id_external
+        - creative_set_id
+        - country
+        - platform
+        - placement_type
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /report
+          request_parameters:
+            report_type: advertiser
+            format: json
+            columns: day,campaign,campaign_id_external,campaign_type,campaign_ad_type,campaign_package_name,country,creative_set,creative_set_id,custom_page_id,device_type,placement_type,platform,cost,impressions,clicks,ctr,average_cpc,average_cpa,conversions,conversion_rate,sales,sales_0d,sales_7d,sales_30d,cpp_0d,cpp_7d,cpp_30d,roas_0d,roas_7d,roas_30d,total_rev_0d,total_rev_7d,total_rev_30d
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      incremental_sync:
+        $ref: "#/definitions/report_incremental_sync"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/advertiser_report_daily"
+
+    web_report_daily:
+      type: DeclarativeStream
+      name: web_report_daily
+      primary_key:
+        - day
+        - campaign_id_external
+        - creative_set_id
+        - country
+        - platform
+        - placement_type
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /webReport
+          request_parameters:
+            report_type: advertiser
+            format: json
+            attribution_mode: "{{ config['attribution_mode'] | default('click', true) }}"
+            columns: day,campaign,campaign_id_external,campaign_type,country,creative_set,creative_set_id,placement_type,platform,cost,impressions,clicks,ctr,average_cpc,sales,sales_0d,sales_7d,sales_28d,cpp_0d,cpp_7d,cpp_28d,roas_0d,roas_7d,roas_28d,chka_usd_0d,chka_usd_7d,chka_usd_28d,new_visitor_rate,nc_d0_checkouts,nc_d0_checkout_rev,nc_d0_cpp,nc_d0_roas,nc_percent_d0_checkouts,nc_percent_d0_checkout_rev,nc_d7_checkouts,nc_d7_checkout_rev,nc_d7_cpp,nc_d7_roas,nc_percent_d7_checkouts,nc_percent_d7_checkout_rev
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      incremental_sync:
+        $ref: "#/definitions/web_report_incremental_sync"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/web_report_daily"
+
+    asset_report_daily:
+      type: DeclarativeStream
+      name: asset_report_daily
+      primary_key:
+        - date
+        - asset_id
+        - campaign_id
+        - creative_set_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /assetAnalyticsReport
+          request_parameters:
+            format: json
+            columns: asset_id,asset_name,asset_url,campaign,campaign_id,creative_set,creative_set_id,impressions,clicks,ctr,cost
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      incremental_sync:
+        $ref: "#/definitions/asset_report_incremental_sync"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date
+              value: "{{ stream_slice.start_time }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/asset_report_daily"
+
+    max_report_daily:
+      type: DeclarativeStream
+      name: max_report_daily
+      primary_key:
+        - day
+        - package_name
+        - max_ad_unit_id
+        - network
+        - network_placement
+        - country
+        - device_type
+        - ad_format
+        - platform
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /maxReport
+          request_parameters:
+            format: json
+            columns: day,application,package_name,store_id,platform,country,device_type,ad_format,max_ad_unit,max_ad_unit_id,network,network_placement,impressions,estimated_revenue,ecpm,attempts,responses,fill_rate
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      incremental_sync:
+        $ref: "#/definitions/max_report_incremental_sync"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/max_report_daily"
+    max_cohort_revenue_daily:
+      type: DeclarativeStream
+      name: max_cohort_revenue_daily
+      primary_key:
+        - day
+        - package_name
+        - platform
+        - country
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /maxCohort
+          request_parameters:
+            format: json
+            columns: day,application,package_name,platform,country,installs,pub_revenue_0,rpi_0,pub_revenue_1,rpi_1,pub_revenue_3,rpi_3,pub_revenue_7,rpi_7,pub_revenue_14,rpi_14,pub_revenue_30,rpi_30,pub_revenue_45,rpi_45,ads_pub_revenue_7,ads_rpi_7,iap_pub_revenue_7,iap_rpi_7,ads_pub_revenue_30,ads_rpi_30,iap_pub_revenue_30,iap_rpi_30
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      incremental_sync:
+        $ref: "#/definitions/max_cohort_incremental_sync"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/max_cohort_revenue_daily"
+    max_cohort_impressions_daily:
+      type: DeclarativeStream
+      name: max_cohort_impressions_daily
+      primary_key:
+        - day
+        - package_name
+        - platform
+        - country
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /maxCohort/imp
+          request_parameters:
+            format: json
+            columns: day,application,package_name,platform,country,installs,user_count_0,imp_0,imp_per_user_0,user_count_1,imp_1,imp_per_user_1,user_count_7,imp_7,imp_per_user_7,user_count_14,imp_14,imp_per_user_14,user_count_30,imp_30,imp_per_user_30
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      incremental_sync:
+        $ref: "#/definitions/max_cohort_incremental_sync"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/max_cohort_impressions_daily"
+    max_cohort_sessions_daily:
+      type: DeclarativeStream
+      name: max_cohort_sessions_daily
+      primary_key:
+        - day
+        - package_name
+        - platform
+        - country
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /maxCohort/session
+          request_parameters:
+            format: json
+            columns: day,application,package_name,platform,country,installs,user_count_0,session_count_0,session_length_0,daily_usage_0,retention_0,user_count_1,session_count_1,session_length_1,daily_usage_1,retention_1,user_count_7,session_count_7,session_length_7,daily_usage_7,retention_7,user_count_14,session_count_14,session_length_14,daily_usage_14,retention_14,user_count_30,session_count_30,session_length_30,daily_usage_30,retention_30
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      incremental_sync:
+        $ref: "#/definitions/max_cohort_incremental_sync"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/max_cohort_sessions_daily"
+streams:
+  - $ref: "#/definitions/streams/advertiser_report_daily"
+  - $ref: "#/definitions/streams/web_report_daily"
+  - $ref: "#/definitions/streams/asset_report_daily"
+  - $ref: "#/definitions/streams/max_report_daily"
+  - $ref: "#/definitions/streams/max_cohort_revenue_daily"
+  - $ref: "#/definitions/streams/max_cohort_impressions_daily"
+  - $ref: "#/definitions/streams/max_cohort_sessions_daily"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    title: AppLovin Ads Source Spec
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        title: Report Key
+        description: >-
+          Your AppLovin Report Key. In the AppLovin dashboard, click your account
+          in the top right and select Keys. The Management Key, Campaign
+          Management Key, and CAPI Key do not work for reporting.
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start Date
+        description: >-
+          UTC date to start replicating from, in YYYY-MM-DD format. AppLovin only
+          serves the last 45 days for app campaign and asset reports, and the last
+          90 days for web campaign reports, so earlier dates are clamped to the
+          oldest available day.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - "2026-01-01"
+        order: 1
+      end_date:
+        type: string
+        title: End Date
+        description: >-
+          UTC date to replicate up to, inclusive, in YYYY-MM-DD format. Defaults
+          to today.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - "2026-06-30"
+        order: 2
+      lookback_window:
+        type: integer
+        title: Lookback Window (days)
+        description: >-
+          Number of days before the last synced date to re-request on every
+          incremental sync. AppLovin restates recent metrics as attribution
+          arrives, so a lookback keeps already-synced days up to date.
+        default: 3
+        minimum: 0
+        maximum: 45
+        order: 3
+      cohort_lookback_window:
+        type: integer
+        title: Cohort Lookback Window (days)
+        description: >-
+          Number of days before the last synced date to re-request for the MAX
+          cohort streams. Cohort metrics are indexed by install day and keep
+          changing as the cohort ages, so a given day's 45-day figures are not
+          final until 45 days after that day. Lowering this reduces request
+          volume at the cost of leaving older cohorts stale.
+        default: 45
+        minimum: 0
+        maximum: 45
+        order: 4
+      attribution_mode:
+        type: string
+        title: Web Attribution Mode
+        description: >-
+          Attribution mode for the web campaign report. Click counts
+          click-through conversions only; click and view also counts
+          view-through conversions.
+        enum:
+          - click
+          - click_and_view
+        default: click
+        order: 5
+      num_workers:
+        type: integer
+        title: Number of Concurrent Workers
+        description: Number of streams to sync concurrently.
+        default: 2
+        minimum: 1
+        maximum: 20
+        order: 6
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    advertiser_report_daily: false
+    web_report_daily: false
+    asset_report_daily: false
+    max_report_daily: false
+    max_cohort_revenue_daily: false
+    max_cohort_impressions_daily: false
+    max_cohort_sessions_daily: false
+  yamlComponents:
+    global:
+      - authenticator
+
+schemas:
+  # The reporting APIs return every metric as a string. `schema_normalization:
+  # Default` casts values to the declared types so destinations receive plain
+  # scalars. Schemas stay permissive because AppLovin adds columns over time and
+  # users may request extra ones by editing the manifest.
+  advertiser_report_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      campaign:
+        type:
+          - string
+          - "null"
+      campaign_id_external:
+        type:
+          - string
+          - "null"
+      campaign_type:
+        type:
+          - string
+          - "null"
+      campaign_ad_type:
+        type:
+          - string
+          - "null"
+      campaign_package_name:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      creative_set:
+        type:
+          - string
+          - "null"
+      creative_set_id:
+        type:
+          - string
+          - "null"
+      custom_page_id:
+        type:
+          - string
+          - "null"
+      device_type:
+        type:
+          - string
+          - "null"
+      placement_type:
+        type:
+          - string
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - number
+          - "null"
+      impressions:
+        type:
+          - integer
+          - "null"
+      clicks:
+        type:
+          - integer
+          - "null"
+      ctr:
+        type:
+          - number
+          - "null"
+      average_cpc:
+        type:
+          - number
+          - "null"
+      average_cpa:
+        type:
+          - number
+          - "null"
+      conversions:
+        type:
+          - integer
+          - "null"
+      conversion_rate:
+        type:
+          - number
+          - "null"
+      sales:
+        type:
+          - integer
+          - "null"
+      sales_0d:
+        type:
+          - integer
+          - "null"
+      sales_7d:
+        type:
+          - integer
+          - "null"
+      sales_30d:
+        type:
+          - integer
+          - "null"
+      cpp_0d:
+        type:
+          - number
+          - "null"
+      cpp_7d:
+        type:
+          - number
+          - "null"
+      cpp_30d:
+        type:
+          - number
+          - "null"
+      roas_0d:
+        type:
+          - number
+          - "null"
+      roas_7d:
+        type:
+          - number
+          - "null"
+      roas_30d:
+        type:
+          - number
+          - "null"
+      total_rev_0d:
+        type:
+          - number
+          - "null"
+      total_rev_7d:
+        type:
+          - number
+          - "null"
+      total_rev_30d:
+        type:
+          - number
+          - "null"
+  web_report_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      campaign:
+        type:
+          - string
+          - "null"
+      campaign_id_external:
+        type:
+          - string
+          - "null"
+      campaign_type:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      creative_set:
+        type:
+          - string
+          - "null"
+      creative_set_id:
+        type:
+          - string
+          - "null"
+      placement_type:
+        type:
+          - string
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - number
+          - "null"
+      impressions:
+        type:
+          - integer
+          - "null"
+      clicks:
+        type:
+          - integer
+          - "null"
+      ctr:
+        type:
+          - number
+          - "null"
+      average_cpc:
+        type:
+          - number
+          - "null"
+      sales:
+        type:
+          - integer
+          - "null"
+      sales_0d:
+        type:
+          - integer
+          - "null"
+      sales_7d:
+        type:
+          - integer
+          - "null"
+      sales_28d:
+        type:
+          - integer
+          - "null"
+      cpp_0d:
+        type:
+          - number
+          - "null"
+      cpp_7d:
+        type:
+          - number
+          - "null"
+      cpp_28d:
+        type:
+          - number
+          - "null"
+      roas_0d:
+        type:
+          - number
+          - "null"
+      roas_7d:
+        type:
+          - number
+          - "null"
+      roas_28d:
+        type:
+          - number
+          - "null"
+      chka_usd_0d:
+        type:
+          - number
+          - "null"
+      chka_usd_7d:
+        type:
+          - number
+          - "null"
+      chka_usd_28d:
+        type:
+          - number
+          - "null"
+      new_visitor_rate:
+        type:
+          - number
+          - "null"
+      nc_d0_checkouts:
+        type:
+          - integer
+          - "null"
+      nc_d0_checkout_rev:
+        type:
+          - number
+          - "null"
+      nc_d0_cpp:
+        type:
+          - number
+          - "null"
+      nc_d0_roas:
+        type:
+          - number
+          - "null"
+      nc_percent_d0_checkouts:
+        type:
+          - number
+          - "null"
+      nc_percent_d0_checkout_rev:
+        type:
+          - number
+          - "null"
+      nc_d7_checkouts:
+        type:
+          - integer
+          - "null"
+      nc_d7_checkout_rev:
+        type:
+          - number
+          - "null"
+      nc_d7_cpp:
+        type:
+          - number
+          - "null"
+      nc_d7_roas:
+        type:
+          - number
+          - "null"
+      nc_percent_d7_checkouts:
+        type:
+          - number
+          - "null"
+      nc_percent_d7_checkout_rev:
+        type:
+          - number
+          - "null"
+  asset_report_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - "null"
+        format: date
+      asset_id:
+        type:
+          - string
+          - "null"
+      asset_name:
+        type:
+          - string
+          - "null"
+      asset_url:
+        type:
+          - string
+          - "null"
+      campaign:
+        type:
+          - string
+          - "null"
+      campaign_id:
+        type:
+          - string
+          - "null"
+      creative_set:
+        type:
+          - string
+          - "null"
+      creative_set_id:
+        type:
+          - string
+          - "null"
+      impressions:
+        type:
+          - integer
+          - "null"
+      clicks:
+        type:
+          - integer
+          - "null"
+      ctr:
+        type:
+          - number
+          - "null"
+      cost:
+        type:
+          - number
+          - "null"
+  max_report_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      application:
+        type:
+          - string
+          - "null"
+      package_name:
+        type:
+          - string
+          - "null"
+      store_id:
+        type:
+          - string
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      device_type:
+        type:
+          - string
+          - "null"
+      ad_format:
+        type:
+          - string
+          - "null"
+      max_ad_unit:
+        type:
+          - string
+          - "null"
+      max_ad_unit_id:
+        type:
+          - string
+          - "null"
+      network:
+        type:
+          - string
+          - "null"
+      network_placement:
+        type:
+          - string
+          - "null"
+      impressions:
+        type:
+          - integer
+          - "null"
+      estimated_revenue:
+        type:
+          - number
+          - "null"
+      ecpm:
+        type:
+          - number
+          - "null"
+      attempts:
+        type:
+          - integer
+          - "null"
+      responses:
+        type:
+          - integer
+          - "null"
+      fill_rate:
+        type:
+          - number
+          - "null"
+  max_cohort_revenue_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      application:
+        type:
+          - string
+          - "null"
+      package_name:
+        type:
+          - string
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      installs:
+        type:
+          - integer
+          - "null"
+      pub_revenue_0:
+        type:
+          - number
+          - "null"
+      rpi_0:
+        type:
+          - number
+          - "null"
+      pub_revenue_1:
+        type:
+          - number
+          - "null"
+      rpi_1:
+        type:
+          - number
+          - "null"
+      pub_revenue_3:
+        type:
+          - number
+          - "null"
+      rpi_3:
+        type:
+          - number
+          - "null"
+      pub_revenue_7:
+        type:
+          - number
+          - "null"
+      rpi_7:
+        type:
+          - number
+          - "null"
+      pub_revenue_14:
+        type:
+          - number
+          - "null"
+      rpi_14:
+        type:
+          - number
+          - "null"
+      pub_revenue_30:
+        type:
+          - number
+          - "null"
+      rpi_30:
+        type:
+          - number
+          - "null"
+      pub_revenue_45:
+        type:
+          - number
+          - "null"
+      rpi_45:
+        type:
+          - number
+          - "null"
+      ads_pub_revenue_7:
+        type:
+          - number
+          - "null"
+      ads_rpi_7:
+        type:
+          - number
+          - "null"
+      iap_pub_revenue_7:
+        type:
+          - number
+          - "null"
+      iap_rpi_7:
+        type:
+          - number
+          - "null"
+      ads_pub_revenue_30:
+        type:
+          - number
+          - "null"
+      ads_rpi_30:
+        type:
+          - number
+          - "null"
+      iap_pub_revenue_30:
+        type:
+          - number
+          - "null"
+      iap_rpi_30:
+        type:
+          - number
+          - "null"
+  max_cohort_impressions_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      application:
+        type:
+          - string
+          - "null"
+      package_name:
+        type:
+          - string
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      installs:
+        type:
+          - integer
+          - "null"
+      user_count_0:
+        type:
+          - integer
+          - "null"
+      imp_0:
+        type:
+          - integer
+          - "null"
+      imp_per_user_0:
+        type:
+          - number
+          - "null"
+      user_count_1:
+        type:
+          - integer
+          - "null"
+      imp_1:
+        type:
+          - integer
+          - "null"
+      imp_per_user_1:
+        type:
+          - number
+          - "null"
+      user_count_7:
+        type:
+          - integer
+          - "null"
+      imp_7:
+        type:
+          - integer
+          - "null"
+      imp_per_user_7:
+        type:
+          - number
+          - "null"
+      user_count_14:
+        type:
+          - integer
+          - "null"
+      imp_14:
+        type:
+          - integer
+          - "null"
+      imp_per_user_14:
+        type:
+          - number
+          - "null"
+      user_count_30:
+        type:
+          - integer
+          - "null"
+      imp_30:
+        type:
+          - integer
+          - "null"
+      imp_per_user_30:
+        type:
+          - number
+          - "null"
+  max_cohort_sessions_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      application:
+        type:
+          - string
+          - "null"
+      package_name:
+        type:
+          - string
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      installs:
+        type:
+          - integer
+          - "null"
+      user_count_0:
+        type:
+          - integer
+          - "null"
+      session_count_0:
+        type:
+          - integer
+          - "null"
+      session_length_0:
+        type:
+          - number
+          - "null"
+      daily_usage_0:
+        type:
+          - number
+          - "null"
+      retention_0:
+        type:
+          - number
+          - "null"
+      user_count_1:
+        type:
+          - integer
+          - "null"
+      session_count_1:
+        type:
+          - integer
+          - "null"
+      session_length_1:
+        type:
+          - number
+          - "null"
+      daily_usage_1:
+        type:
+          - number
+          - "null"
+      retention_1:
+        type:
+          - number
+          - "null"
+      user_count_7:
+        type:
+          - integer
+          - "null"
+      session_count_7:
+        type:
+          - integer
+          - "null"
+      session_length_7:
+        type:
+          - number
+          - "null"
+      daily_usage_7:
+        type:
+          - number
+          - "null"
+      retention_7:
+        type:
+          - number
+          - "null"
+      user_count_14:
+        type:
+          - integer
+          - "null"
+      session_count_14:
+        type:
+          - integer
+          - "null"
+      session_length_14:
+        type:
+          - number
+          - "null"
+      daily_usage_14:
+        type:
+          - number
+          - "null"
+      retention_14:
+        type:
+          - number
+          - "null"
+      user_count_30:
+        type:
+          - integer
+          - "null"
+      session_count_30:
+        type:
+          - integer
+          - "null"
+      session_length_30:
+        type:
+          - number
+          - "null"
+      daily_usage_30:
+        type:
+          - number
+          - "null"
+      retention_30:
+        type:
+          - number
+          - "null"
