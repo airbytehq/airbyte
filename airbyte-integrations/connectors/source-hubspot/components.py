@@ -35,6 +35,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.query_properties.properties_from_endpoint import PropertiesFromEndpoint
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
@@ -987,3 +988,12 @@ def _strtobool(value: str, /) -> int:
         return 0
 
     raise ValueError(f"Invalid boolean value: {normalized_str}")
+
+
+@dataclass
+class ConfigurablePropertiesFromEndpoint(PropertiesFromEndpoint):
+    def get_properties_from_endpoint(self) -> List[str]:
+        configured_properties = self.config.get("properties_with_history")
+        if configured_properties and len(configured_properties) > 0:
+            return configured_properties
+        return super().get_properties_from_endpoint()

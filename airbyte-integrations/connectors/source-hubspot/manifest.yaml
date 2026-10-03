@@ -401,6 +401,7 @@ definitions:
             type: QueryProperties
             property_list:
               type: PropertiesFromEndpoint
+              class_name: source_hubspot.components.ConfigurablePropertiesFromEndpoint
               property_field_path: ["name"]
               retriever:
                 type: SimpleRetriever
@@ -492,6 +493,7 @@ definitions:
             type: QueryProperties
             property_list:
               type: PropertiesFromEndpoint
+              class_name: source_hubspot.components.ConfigurablePropertiesFromEndpoint
               property_field_path: ["name"]
               retriever:
                 type: SimpleRetriever
@@ -615,6 +617,7 @@ definitions:
             type: QueryProperties
             property_list:
               type: PropertiesFromEndpoint
+              class_name: source_hubspot.components.ConfigurablePropertiesFromEndpoint
               property_field_path: ["name"]
               retriever:
                 type: SimpleRetriever
@@ -3026,6 +3029,16 @@ spec:
       - credentials
     additionalProperties: true
     properties:
+      properties_with_history:
+        type: array
+        items:
+          type: string
+        title: Properties With History
+        description: >-
+          A list of properties to fetch history for (e.g. ["dealstage"]). If left empty, the connector will fetch history for all properties.
+        default: []
+        examples:
+          - ["dealstage"]
       start_date:
         type: string
         title: Start date
