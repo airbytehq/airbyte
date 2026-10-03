@@ -337,7 +337,7 @@ data object TimeAccessor : JdbcAccessor<LocalTime> {
         paramIdx: Int,
         value: LocalTime,
     ) {
-        stmt.setTime(paramIdx, Time.valueOf(value))
+        stmt.setObject(paramIdx, value)
     }
 }
 
@@ -360,7 +360,7 @@ data object TimestampAccessor : JdbcAccessor<LocalDateTime> {
         paramIdx: Int,
         value: LocalDateTime,
     ) {
-        stmt.setTimestamp(paramIdx, Timestamp.valueOf(value))
+        stmt.setObject(paramIdx, value)
     }
 }
 
