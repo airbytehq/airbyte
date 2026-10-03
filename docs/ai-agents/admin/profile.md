@@ -35,6 +35,8 @@ Airbyte displays three values:
 
 Airbyte creates these credentials automatically for each organization. The client ID and client secret are sensitive values.
 
+These credentials are scoped to your organization. The [Airbyte model](../interfaces/model/readme.md) doesn't use them. It uses workspace-scoped keys you create yourself. See [API keys](./api-keys.md).
+
 ### View and copy credentials
 
 To copy a single value, click the copy icon next to that value. To reveal a hidden value before copying, click the eye icon to toggle visibility on the client ID or client secret.

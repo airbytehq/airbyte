@@ -1,0 +1,4 @@
+{
+  "label": "Airbyte model",
+  "description": "Point Codex, Claude Code, or any OpenAI or Anthropic client at Airbyte and ask questions in natural language."
+}
