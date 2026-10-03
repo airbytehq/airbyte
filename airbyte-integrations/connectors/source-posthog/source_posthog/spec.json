@@ -36,6 +36,23 @@
         "title": "Events stream slice step size (in days)",
         "description": "Set lower value in case of failing long running sync of events stream.",
         "examples": [30, 10, 5]
+      },
+      "persons_page_size": {
+        "type": "integer",
+        "default": 1000,
+        "minimum": 100,
+        "maximum": 10000,
+        "title": "Persons page size",
+        "description": "Persons per request. Larger pages reduce API requests during the full refresh; lower this if your PostHog server times out."
+      },
+      "events_lookback_hours": {
+        "type": "integer",
+        "title": "Event lookback hours",
+        "description": "Replay this many hours before the saved event timestamp to recover late arrivals. Use Append + Deduped with primary key id to avoid duplicates. Events arriving later than this window require a backfill. Zero still replays events at the saved timestamp.",
+        "default": 0,
+        "minimum": 0,
+        "maximum": 168,
+        "order": 7
       }
     }
   }

@@ -12,28 +12,32 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+    url_base: "{{ config.get('base_url') or 'https://app.posthog.com'}}/api/"
     http_method: "GET"
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_key'] }}"
+
+  paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CustomPaginationStrategy
+      class_name: source_posthog.components.PosthogNextPageStrategy
+    page_token_option:
+      type: RequestPath
 
   retriever:
     type: SimpleRetriever
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
-      type: "DefaultPaginator"
-      page_size_option:
-        inject_into: "request_parameter"
-        field_name: "limit"
-      pagination_strategy:
-        type: "OffsetIncrement"
-        page_size: 100
-      page_token_option:
-        type: RequestOption
-        field_name: "offset"
-        inject_into: "request_parameter"
+      $ref: "#/definitions/paginator"
 
   base_stream:
     primary_key: "id"
@@ -132,41 +136,113 @@ definitions:
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
-      transformations:
-        - class_name: "source_posthog.components.EventsSimpleRetriever"
-          fields:
-            - path: ["name"]
-              value: "{{ parameters['name'] }}"
-            - path: ["primary_key"]
-              value: "{{ parameters['primary_key'] }}"
-      name: "{{ parameters['name'] }}"
-      primary_key: "{{ parameters['primary_key'] }}"
-      record_selector:
-        $ref: "#/definitions/selector"
+      $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "/projects/{{ stream_slice.project_id }}/{{ parameters['name'] }}/"
+        path: "/projects/{{ stream_slice.project_id }}/events/"
       paginator:
-        type: "DefaultPaginator"
-        page_size_option:
-          inject_into: "request_parameter"
-          field_name: "limit"
-        pagination_strategy:
-          type: "OffsetIncrement"
-          page_size: 10000
-        page_token_option:
-          type: RequestOption
-          field_name: "offset"
-          inject_into: "request_parameter"
+        type: NoPagination
+
+  experiment_summaries_stream:
+    $ref: "#/definitions/base_slicing_stream"
+    $parameters:
+      name: "experiments"
+      path: "experiments"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/projects/{{ stream_slice.id }}/experiments"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream: "#/definitions/projects_stream"
+              parent_key: id
+              partition_field: id
+        - type: ListPartitionRouter
+          values: ["false", "true"]
+          cursor_field: archived
+          request_option:
+            type: RequestOption
+            field_name: archived
+            inject_into: request_parameter
+
+  experiments_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "experiments"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/projects/{{ stream_slice.parent_slice.id }}/experiments/{{ stream_slice.experiment_id }}/"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/experiment_summaries_stream"
+            parent_key: id
+            partition_field: experiment_id
+
+  experiment_results_stream:
+    $ref: "#/definitions/experiments_stream"
+    $parameters:
+      name: "experiment_results"
+    primary_key: ["project_id", "experiment_id"]
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["project_id"]
+            value: "{{ stream_slice.parent_slice.id }}"
+          - path: ["experiment_id"]
+            value: "{{ stream_slice.experiment_id }}"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/projects/{{ stream_slice.parent_slice.id }}/experiments/{{ stream_slice.experiment_id }}/metrics_recalculation/latest/"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [404]
+                  action: IGNORE
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+                - type: ExponentialBackoffStrategy
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/experiment_summaries_stream"
+            parent_key: id
+            partition_field: experiment_id
 
 streams:
   - "#/definitions/projects_stream"
   - "#/definitions/cohorts_stream"
   - "#/definitions/feature_flags_stream"
-  - "#/definitions/persons_stream"
   - "#/definitions/events_stream"
   - "#/definitions/annotations_stream"
   - "#/definitions/insights_stream"
+  - "#/definitions/experiments_stream"
+  - "#/definitions/experiment_results_stream"
+  - "#/definitions/persons_stream"
 
 check:
   type: CheckStream
