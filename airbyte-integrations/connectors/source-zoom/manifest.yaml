@@ -199,6 +199,16 @@ definitions:
           authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
         path: "/users/{{ stream_partition.parent_id }}/meetings"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+          - type: DefaultErrorHandler
+            response_filters:
+            - predicate: "{{ response.code == 3161 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+              type: HttpResponseFilter
+          - type: DefaultErrorHandler
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -387,6 +397,16 @@ definitions:
           authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
         path: "/meetings/{{ stream_partition.parent_id }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+          - type: DefaultErrorHandler
+            response_filters:
+            - predicate: "{{ response.code == 3001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+              type: HttpResponseFilter
+          - type: DefaultErrorHandler
       paginator:
         type: NoPagination
       record_selector:
@@ -409,6 +429,16 @@ definitions:
                   authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
+                error_handler:
+                  type: CompositeErrorHandler
+                  error_handlers:
+                  - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: "{{ response.code == 3161 }}"
+                      action: IGNORE
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                      type: HttpResponseFilter
+                  - type: DefaultErrorHandler
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -1221,6 +1251,10 @@ definitions:
           error_handlers:
           - type: DefaultErrorHandler
             response_filters:
+            - predicate: "{{ response.code == 3001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+              type: HttpResponseFilter
             - predicate: "{{ response.code == 300 }}"
               action: IGNORE
           - type: DefaultErrorHandler
@@ -1259,6 +1293,16 @@ definitions:
                   authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
+                error_handler:
+                  type: CompositeErrorHandler
+                  error_handlers:
+                  - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: "{{ response.code == 3161 }}"
+                      action: IGNORE
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                      type: HttpResponseFilter
+                  - type: DefaultErrorHandler
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -1568,6 +1612,10 @@ definitions:
           error_handlers:
           - type: DefaultErrorHandler
             response_filters:
+            - predicate: "{{ response.code == 3001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+              type: HttpResponseFilter
             - http_codes:
               - 400
               action: IGNORE
@@ -1595,6 +1643,16 @@ definitions:
                   authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
+                error_handler:
+                  type: CompositeErrorHandler
+                  error_handlers:
+                  - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: "{{ response.code == 3161 }}"
+                      action: IGNORE
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                      type: HttpResponseFilter
+                  - type: DefaultErrorHandler
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -1945,6 +2003,16 @@ definitions:
                   authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
+                error_handler:
+                  type: CompositeErrorHandler
+                  error_handlers:
+                  - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: "{{ response.code == 3161 }}"
+                      action: IGNORE
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                      type: HttpResponseFilter
+                  - type: DefaultErrorHandler
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -2202,6 +2270,10 @@ definitions:
           error_handlers:
           - type: DefaultErrorHandler
             response_filters:
+            - predicate: "{{ response.code == 3001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+              type: HttpResponseFilter
             - http_codes:
               - 400
               action: IGNORE
@@ -2228,6 +2300,16 @@ definitions:
                   authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
+                error_handler:
+                  type: CompositeErrorHandler
+                  error_handlers:
+                  - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: "{{ response.code == 3161 }}"
+                      action: IGNORE
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                      type: HttpResponseFilter
+                  - type: DefaultErrorHandler
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -3948,7 +4030,7 @@ definitions:
           client_secret: "{{ config['client_secret'] }}"
           authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
-        path: "/past_webinars/{{ stream_partition.parent_uuid }}/absentees"
+        path: "/past_webinars/{{ stream_partition.parent_uuid | urlencode | replace('/', '%2F') | urlencode }}/absentees"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -4665,7 +4747,7 @@ definitions:
           client_secret: "{{ config['client_secret'] }}"
           authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
-        path: "/past_webinars/{{ stream_partition.parent_id }}/polls"
+        path: "/past_webinars/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}/polls"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -4952,6 +5034,10 @@ definitions:
           error_handlers:
           - type: DefaultErrorHandler
             response_filters:
+            - predicate: "{{ response.code == 3001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+              type: HttpResponseFilter
             - http_codes:
               - 400
               action: IGNORE
@@ -5245,6 +5331,10 @@ definitions:
           error_handlers:
           - type: DefaultErrorHandler
             response_filters:
+            - predicate: "{{ response.code == 3001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+              type: HttpResponseFilter
             - http_codes:
               - 400
               action: IGNORE
@@ -5507,7 +5597,7 @@ definitions:
           client_secret: "{{ config['client_secret'] }}"
           authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
-        path: "/past_webinars/{{ stream_partition.parent_id }}/qa"
+        path: "/past_webinars/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}/qa"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -5814,6 +5904,16 @@ definitions:
                   authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
+                error_handler:
+                  type: CompositeErrorHandler
+                  error_handlers:
+                  - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: "{{ response.code == 3161 }}"
+                      action: IGNORE
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                      type: HttpResponseFilter
+                  - type: DefaultErrorHandler
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -6146,6 +6246,16 @@ definitions:
                   authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
+                error_handler:
+                  type: CompositeErrorHandler
+                  error_handlers:
+                  - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: "{{ response.code == 3161 }}"
+                      action: IGNORE
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                      type: HttpResponseFilter
+                  - type: DefaultErrorHandler
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -6412,12 +6522,16 @@ definitions:
           client_secret: "{{ config['client_secret'] }}"
           authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
-        path: "/report/webinars/{{ stream_partition.parent_id }}"
+        path: "/report/webinars/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
           - type: DefaultErrorHandler
             response_filters:
+            - predicate: "{{ response.code == 3001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+              type: HttpResponseFilter
             - http_codes:
               - 400
               action: IGNORE
@@ -6741,12 +6855,16 @@ definitions:
           client_secret: "{{ config['client_secret'] }}"
           authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
-        path: "/report/webinars/{{ stream_partition.parent_id }}/participants"
+        path: "/report/webinars/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}/participants"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
           - type: DefaultErrorHandler
             response_filters:
+            - predicate: "{{ response.code == 3001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+              type: HttpResponseFilter
             - http_codes:
               - 400
               action: IGNORE
@@ -7206,6 +7324,16 @@ streams:
         grant_type: "account_credentials"
         type: CustomAuthenticator
       path: "/meetings/{{ stream_partition.parent_id }}"
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+          - predicate: "{{ response.code == 3001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+            type: HttpResponseFilter
+        - type: DefaultErrorHandler
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -7231,6 +7359,16 @@ streams:
                 grant_type: "account_credentials"
                 type: CustomAuthenticator
               path: "/users/{{ stream_partition.parent_id }}/meetings"
+              error_handler:
+                type: CompositeErrorHandler
+                error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: "{{ response.code == 3161 }}"
+                    action: IGNORE
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                    type: HttpResponseFilter
+                - type: DefaultErrorHandler
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -8065,6 +8203,10 @@ streams:
         error_handlers:
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: "{{ response.code == 3001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+            type: HttpResponseFilter
           - predicate: "{{ response.code == 300 }}"
             action: IGNORE
             type: HttpResponseFilter
@@ -8108,6 +8250,16 @@ streams:
                 grant_type: "account_credentials"
                 type: CustomAuthenticator
               path: "/users/{{ stream_partition.parent_id }}/meetings"
+              error_handler:
+                type: CompositeErrorHandler
+                error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: "{{ response.code == 3161 }}"
+                    action: IGNORE
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                    type: HttpResponseFilter
+                - type: DefaultErrorHandler
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -8440,6 +8592,10 @@ streams:
         error_handlers:
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: "{{ response.code == 3001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+            type: HttpResponseFilter
           - http_codes:
             - 400
             action: IGNORE
@@ -8471,6 +8627,16 @@ streams:
                 grant_type: "account_credentials"
                 type: CustomAuthenticator
               path: "/users/{{ stream_partition.parent_id }}/meetings"
+              error_handler:
+                type: CompositeErrorHandler
+                error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: "{{ response.code == 3161 }}"
+                    action: IGNORE
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                    type: HttpResponseFilter
+                - type: DefaultErrorHandler
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -8848,6 +9014,16 @@ streams:
                 grant_type: "account_credentials"
                 type: CustomAuthenticator
               path: "/users/{{ stream_partition.parent_id }}/meetings"
+              error_handler:
+                type: CompositeErrorHandler
+                error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: "{{ response.code == 3161 }}"
+                    action: IGNORE
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                    type: HttpResponseFilter
+                - type: DefaultErrorHandler
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -9127,6 +9303,10 @@ streams:
         error_handlers:
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: "{{ response.code == 3001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+            type: HttpResponseFilter
           - http_codes:
             - 400
             action: IGNORE
@@ -9157,6 +9337,16 @@ streams:
                 grant_type: "account_credentials"
                 type: CustomAuthenticator
               path: "/users/{{ stream_partition.parent_id }}/meetings"
+              error_handler:
+                type: CompositeErrorHandler
+                error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: "{{ response.code == 3161 }}"
+                    action: IGNORE
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                    type: HttpResponseFilter
+                - type: DefaultErrorHandler
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -10784,7 +10974,7 @@ streams:
         authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
         type: CustomAuthenticator
-      path: "/past_webinars/{{ stream_partition.parent_uuid }}/absentees"
+      path: "/past_webinars/{{ stream_partition.parent_uuid | urlencode | replace('/', '%2F') | urlencode }}/absentees"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
@@ -11557,7 +11747,7 @@ streams:
         authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
         type: CustomAuthenticator
-      path: "/past_webinars/{{ stream_partition.parent_id }}/polls"
+      path: "/past_webinars/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}/polls"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
@@ -11871,6 +12061,10 @@ streams:
         error_handlers:
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: "{{ response.code == 3001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+            type: HttpResponseFilter
           - http_codes:
             - 400
             action: IGNORE
@@ -12191,6 +12385,10 @@ streams:
         error_handlers:
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: "{{ response.code == 3001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+            type: HttpResponseFilter
           - http_codes:
             - 400
             action: IGNORE
@@ -12481,7 +12679,7 @@ streams:
         authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
         type: CustomAuthenticator
-      path: "/past_webinars/{{ stream_partition.parent_id }}/qa"
+      path: "/past_webinars/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}/qa"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
@@ -12819,6 +13017,16 @@ streams:
                 grant_type: "account_credentials"
                 type: CustomAuthenticator
               path: "/users/{{ stream_partition.parent_id }}/meetings"
+              error_handler:
+                type: CompositeErrorHandler
+                error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: "{{ response.code == 3161 }}"
+                    action: IGNORE
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                    type: HttpResponseFilter
+                - type: DefaultErrorHandler
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -13178,6 +13386,16 @@ streams:
                 grant_type: "account_credentials"
                 type: CustomAuthenticator
               path: "/users/{{ stream_partition.parent_id }}/meetings"
+              error_handler:
+                type: CompositeErrorHandler
+                error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: "{{ response.code == 3161 }}"
+                    action: IGNORE
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                    type: HttpResponseFilter
+                - type: DefaultErrorHandler
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -13467,12 +13685,16 @@ streams:
         authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
         type: CustomAuthenticator
-      path: "/report/webinars/{{ stream_partition.parent_id }}"
+      path: "/report/webinars/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: "{{ response.code == 3001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+            type: HttpResponseFilter
           - http_codes:
             - 400
             action: IGNORE
@@ -13823,12 +14045,16 @@ streams:
         authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
         type: CustomAuthenticator
-      path: "/report/webinars/{{ stream_partition.parent_id }}/participants"
+      path: "/report/webinars/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}/participants"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: "{{ response.code == 3001 }}"
+            action: IGNORE
+            error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
+            type: HttpResponseFilter
           - http_codes:
             - 400
             action: IGNORE
