@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "SyncHRMSchedules",
+  "additionalProperties": true,
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": ["null", "integer"]
+    },
+    "AverageHours": {
+      "description": "Average hours per week in a schedule",
+      "type": ["null", "number"]
+    },
+    "BillabilityTarget": {
+      "description": "Billability target",
+      "type": ["null", "number"]
+    },
+    "Code": {
+      "description": "Schedule code",
+      "type": ["null", "string"]
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "ID of creator",
+      "type": ["null", "string"]
+    },
+    "CreatorFullName": {
+      "description": "Name of the creator",
+      "type": ["null", "string"]
+    },
+    "Days": {
+      "description": "Average days per week in the schedule",
+      "type": ["null", "number"]
+    },
+    "Description": {
+      "description": "Description of the schedule",
+      "type": ["null", "string"]
+    },
+    "Division": {
+      "description": "Division code",
+      "type": ["null", "integer"]
+    },
+    "Employment": {
+      "description": "Employment ID for schedule",
+      "type": ["null", "string"]
+    },
+    "EmploymentHID": {
+      "description": "Employment number",
+      "type": ["null", "integer"]
+    },
+    "EndDate": {
+      "description": "End date of the schedule",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Hours": {
+      "description": "Number of hours per week in a CLA for which the schedule is built",
+      "type": ["null", "number"]
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": ["null", "string"]
+    },
+    "LeaveHoursCompensation": {
+      "description": "Number of hours which are built up each week for later leave",
+      "type": ["null", "number"]
+    },
+    "Main": {
+      "description": "Indication if the schedule is a main schedule for a CLA. 1 = Yes, 0 = No",
+      "type": ["null", "integer"]
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "ID of modifier",
+      "type": ["null", "string"]
+    },
+    "ModifierFullName": {
+      "description": "Name of the modifier",
+      "type": ["null", "string"]
+    },
+    "PaymentParttimeFactor": {
+      "description": "Part-time factor for payroll calculation. Value between 0 and 1",
+      "type": ["null", "number"]
+    },
+    "ScheduleType": {
+      "description": "Type of schedule. 1 = Hours and average days, 2 = Hours and specific days, 3 = Hours per day, 4 = Time frames per day",
+      "type": ["null", "integer"]
+    },
+    "ScheduleTypeDescription": {
+      "description": "Description of the schedule type",
+      "type": ["null", "string"]
+    },
+    "StartDate": {
+      "description": "Week in the schedule which is used to start with. By default the number will be 1.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "StartWeek": {
+      "description": "Week to start the schedule from for an employee",
+      "type": ["null", "integer"]
+    }
+  }
+}
