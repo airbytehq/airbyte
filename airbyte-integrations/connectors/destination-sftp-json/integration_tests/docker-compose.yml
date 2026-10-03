@@ -4,7 +4,11 @@ services:
     image: atmoz/sftp
     ports:
       - "2222:22"
-    command: user1:abc123:1001:1001:upload
+    # user1 authenticates with a password (abc123); user2 authenticates with an
+    # SSH key whose public half is mounted below under user2/.ssh/keys.
+    command: user1:abc123:1001:1001:upload user2::1002:1002:upload
+    volumes:
+      - ./ssh_keys/user2.pub:/home/user2/.ssh/keys/user2.pub:ro
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "22"]
       interval: 2s
