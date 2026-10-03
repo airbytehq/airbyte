@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background with official Blackbaud green -->
+  <rect width="200" height="200" fill="#71bf43"/>
+  
+  <!-- Text "SKY" -->
+  <text x="100" y="90" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="white">SKY</text>
+  
+  <!-- Text "API" -->
+  <text x="100" y="130" font-family="Arial, sans-serif" font-size="36" font-weight="normal" text-anchor="middle" fill="white">API</text>
+  
+  <!-- Bottom accent line -->
+  <rect x="50" y="150" width="100" height="4" fill="white"/>
+</svg>
