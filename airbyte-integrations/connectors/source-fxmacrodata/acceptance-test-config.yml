@@ -1,0 +1,36 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+#
+# USD data is readable without an API key, so these tests run against the
+# public API with the keyless config in integration_tests/sample_config.json.
+connector_image: airbyte/source-fxmacrodata:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    tests:
+      - config_path: "integration_tests/sample_config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "integration_tests/sample_config.json"
+  basic_read:
+    tests:
+      - config_path: "integration_tests/sample_config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: forex
+            bypass_reason: "The forex endpoint needs an API key, so the keyless test config has no FX pairs."
+  incremental:
+    tests:
+      - config_path: "integration_tests/sample_config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+  full_refresh:
+    tests:
+      - config_path: "integration_tests/sample_config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

@@ -1,0 +1,575 @@
+version: 7.30.0
+
+type: DeclarativeSource
+
+description: >-
+  FXMacroData serves macroeconomic releases, release calendars and FX reference
+  rates for 22 currencies, sourced from central banks and national statistics
+  offices. USD data can be read without an API key; other currencies and FX
+  rates need one.
+
+check:
+  type: CheckStream
+  stream_names:
+    - announcements
+
+definitions:
+  requester:
+    type: HttpRequester
+    http_method: GET
+    # The key is optional. When it is not configured the header evaluates to
+    # null and is dropped, so keyless USD requests go out without it.
+    request_headers:
+      X-API-Key: "{{ config.get('api_key') }}"
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 5
+      response_filters:
+        - $ref: "#/definitions/auth_error_filter"
+        - $ref: "#/definitions/retry_filter"
+
+  auth_error_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    failure_type: config_error
+    http_codes:
+      - 401
+      - 403
+    error_message: >-
+      FXMacroData rejected the request: {{ response.get('detail', 'missing or invalid API key') }}
+      Only USD macro data can be read without an API key.
+
+  retry_filter:
+    type: HttpResponseFilter
+    action: RETRY
+    http_codes:
+      - 429
+      - 500
+      - 502
+      - 503
+      - 504
+
+  offset_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: offset
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: "{{ response.get('pagination', {}).get('next_offset') }}"
+      stop_condition: "{{ not response.get('pagination', {}).get('has_more') }}"
+
+  currency_router:
+    type: ListPartitionRouter
+    cursor_field: currency
+    values: "{{ config.get('currencies', ['USD']) }}"
+
+  date_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: date
+    cursor_datetime_formats:
+      - "%Y-%m-%d"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date') or '1900-01-01' }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+      datetime_format: "%Y-%m-%d"
+    start_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: start_date
+
+  announcements_stream:
+    type: DeclarativeStream
+    name: announcements
+    primary_key:
+      - currency
+      - indicator
+      - date
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        url: https://api.fxmacrodata.com/v1/announcements/{{ stream_partition['currency'] }}/{{ stream_partition['indicator'] }}
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 5
+          response_filters:
+            # Not every indicator is published for every currency. Skip those
+            # combinations instead of failing the whole sync.
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 404
+              error_message: "{{ response.get('detail', 'Indicator not available for this currency') }}"
+            - $ref: "#/definitions/auth_error_filter"
+            - $ref: "#/definitions/retry_filter"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        $ref: "#/definitions/offset_paginator"
+      partition_router:
+        - $ref: "#/definitions/currency_router"
+        - type: ListPartitionRouter
+          cursor_field: indicator
+          values: "{{ config.get('indicators', ['policy_rate', 'inflation']) }}"
+    incremental_sync:
+      $ref: "#/definitions/date_cursor"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - currency
+            value: "{{ stream_partition['currency'] }}"
+          - path:
+              - indicator
+            value: "{{ stream_partition['indicator'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/announcements"
+
+  calendar_stream:
+    type: DeclarativeStream
+    name: calendar
+    primary_key:
+      - currency
+      - release
+      - announcement_datetime
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        url: https://api.fxmacrodata.com/v1/calendar/{{ stream_partition['currency'] }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        $ref: "#/definitions/currency_router"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - currency
+            value: "{{ stream_partition['currency'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/calendar"
+
+  data_catalogue_stream:
+    type: DeclarativeStream
+    name: data_catalogue
+    primary_key:
+      - currency
+      - indicator
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        url: https://api.fxmacrodata.com/v1/data_catalogue/{{ stream_partition['currency'] }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          # The catalogue is an object keyed by indicator slug.
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.IndicatorCatalogueExtractor
+      partition_router:
+        $ref: "#/definitions/currency_router"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - currency
+            value: "{{ stream_partition['currency'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/data_catalogue"
+
+  forex_stream:
+    type: DeclarativeStream
+    name: forex
+    primary_key:
+      - base
+      - quote
+      - date
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        # Pairs are given as BASE/QUOTE, for example EUR/USD.
+        url: https://api.fxmacrodata.com/v1/forex/{{ stream_partition['pair'][:3] }}/{{ stream_partition['pair'][-3:] }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        $ref: "#/definitions/offset_paginator"
+      partition_router:
+        type: ListPartitionRouter
+        cursor_field: pair
+        values: "{{ config.get('forex_pairs', []) }}"
+    incremental_sync:
+      $ref: "#/definitions/date_cursor"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - base
+            value: "{{ stream_partition['pair'][:3] }}"
+          - path:
+              - quote
+            value: "{{ stream_partition['pair'][-3:] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/forex"
+
+streams:
+  - $ref: "#/definitions/announcements_stream"
+  - $ref: "#/definitions/calendar_stream"
+  - $ref: "#/definitions/data_catalogue_stream"
+  - $ref: "#/definitions/forex_stream"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/fxmacrodata
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: >-
+          Your FXMacroData API key, sent in the X-API-Key header. Leave empty
+          to read USD data without a key. Other currencies and the forex
+          stream need a key.
+        airbyte_secret: true
+        order: 0
+      currencies:
+        type: array
+        title: Currencies
+        description: >-
+          Currencies to read announcements, calendar and catalogue rows for.
+        default:
+          - USD
+        items:
+          type: string
+          enum:
+            - AUD
+            - BRL
+            - CAD
+            - CHF
+            - CNH
+            - CNY
+            - DKK
+            - EUR
+            - GBP
+            - HUF
+            - ILS
+            - JPY
+            - KRW
+            - MYR
+            - NGN
+            - NOK
+            - NZD
+            - PEN
+            - SEK
+            - THB
+            - TWD
+            - USD
+        uniqueItems: true
+        order: 1
+      indicators:
+        type: array
+        title: Indicators
+        description: >-
+          Indicator slugs to read for each currency, for example policy_rate,
+          inflation or unemployment. The data_catalogue stream lists the slugs
+          available for a currency. Combinations a currency does not publish
+          are skipped.
+        default:
+          - policy_rate
+          - inflation
+        examples:
+          - - policy_rate
+            - inflation
+            - unemployment
+            - gdp
+        items:
+          type: string
+        uniqueItems: true
+        order: 2
+      start_date:
+        type: string
+        title: Start Date
+        description: >-
+          Earliest observation date to read for announcements and forex, in
+          YYYY-MM-DD format. Leave empty to read the full history your key
+          allows. Keyless USD requests are limited to the most recent 90 days.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        format: date
+        examples:
+          - "2020-01-01"
+        order: 3
+      forex_pairs:
+        type: array
+        title: FX Pairs
+        description: >-
+          Currency pairs for the forex stream as BASE/QUOTE, for example
+          EUR/USD. Requires an API key.
+        default: []
+        examples:
+          - - EUR/USD
+            - USD/JPY
+        items:
+          type: string
+          pattern: ^[A-Z]{3}/?[A-Z]{3}$
+        uniqueItems: true
+        order: 4
+
+schemas:
+  announcements:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      currency:
+        type: string
+      indicator:
+        type: string
+      date:
+        type: string
+      val:
+        type:
+          - "null"
+          - number
+      announcement_id:
+        type:
+          - "null"
+          - string
+      announcement_datetime:
+        description: Release time as a Unix timestamp in seconds.
+        type:
+          - "null"
+          - integer
+      announcement_datetime_local:
+        type:
+          - "null"
+          - string
+      previous_value:
+        type:
+          - "null"
+          - number
+      previous_date:
+        type:
+          - "null"
+          - string
+      change_from_previous:
+        type:
+          - "null"
+          - number
+      pct_change_from_previous:
+        type:
+          - "null"
+          - number
+      source:
+        type:
+          - "null"
+          - string
+      source_url:
+        type:
+          - "null"
+          - string
+      observation_id:
+        type:
+          - "null"
+          - string
+      publication_time_status:
+        type:
+          - "null"
+          - string
+      vintage_status:
+        type:
+          - "null"
+          - string
+      is_first_release:
+        type:
+          - "null"
+          - boolean
+      revisions:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+  calendar:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      currency:
+        type: string
+      release:
+        type: string
+      announcement_datetime:
+        description: Scheduled release time as a Unix timestamp in seconds.
+        type: integer
+      announcement_datetime_utc:
+        type:
+          - "null"
+          - string
+      announcement_datetime_local:
+        type:
+          - "null"
+          - string
+      calendar_event_id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      date:
+        description: Reference period of the scheduled release.
+        type:
+          - "null"
+          - string
+      release_date_confirmed:
+        type:
+          - "null"
+          - boolean
+      source:
+        type:
+          - "null"
+          - string
+      source_url:
+        type:
+          - "null"
+          - string
+      event_importance:
+        type:
+          - "null"
+          - string
+      market_tier:
+        type:
+          - "null"
+          - integer
+  data_catalogue:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      currency:
+        type: string
+      indicator:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      unit:
+        type:
+          - "null"
+          - string
+      frequency:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+      source_url:
+        type:
+          - "null"
+          - string
+      seasonal_adjustment:
+        type:
+          - "null"
+          - string
+      price_basis:
+        type:
+          - "null"
+          - string
+      has_official_forecast:
+        type:
+          - "null"
+          - boolean
+      coverage:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      series_variants:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+  forex:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      base:
+        type: string
+      quote:
+        type: string
+      date:
+        type: string
+      val:
+        type:
+          - "null"
+          - number
+      open:
+        type:
+          - "null"
+          - number
+      high:
+        type:
+          - "null"
+          - number
+      low:
+        type:
+          - "null"
+          - number
+      close:
+        type:
+          - "null"
+          - number
+      announcement_datetime:
+        type:
+          - "null"
+          - integer
