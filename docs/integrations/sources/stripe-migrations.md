@@ -68,13 +68,13 @@ If the 30-day retention window is a concern, consider making a backup of your cu
 
 <MigrationGuide />
 
-### Upgrading to 5.6.0
+## Upgrading to 5.6.0
 
-The `Payment Methods` stream previously sync data from Treasury flows. This version will now provide data about customers' payment methods.
+The `Payment Methods` stream previously synced data from Treasury flows. This version now provides data about customers' payment methods.
 
-We bumped this in a minor version because we didn't want to pause all connection, but still want to document the process of moving to this latest version.
+This was released as a minor version because we didn't want to pause all connections, but still want to document the process of moving to this latest version.
 
-### Summary of changes:
+### Summary of changes
 
 - The stream `Payment Methods` will now provide data about customers' payment methods.
 - The stream `Payment Methods` now incrementally syncs using the `events` endpoint.
@@ -88,42 +88,40 @@ We bumped this in a minor version because we didn't want to pause all connection
    1. Select **Refresh source schema**.
    2. Select **OK**.
 
-```note
+:::note
 Any detected schema changes will be listed for your review.
-```
+:::
 
 3. Select **Save changes** at the bottom of the page.
    1. Ensure the **Reset affected streams** option is checked.
 
-```note
+:::note
 Depending on destination type you may not be prompted to reset your data.
-```
+:::
 
 4. Select **Save connection**.
 
-```note
+:::note
 This will reset the data in your destination and initiate a fresh sync.
-```
+:::
 
 For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
-
-
 
 ## Upgrading to 5.4.0
 
 The `Refunds` stream previously did not sync incrementally correctly. Incremental syncs are now resolved, and the `Refunds` stream now receives the correct updates using the `events` endpoint. This version resolves incremental sync issues with the `Refunds` stream.
 
-### Summary of changes: 
+### Summary of changes
 
-- The stream `Refunds` cursor changed from the field `created` to `updated` when syncing incrementally.
-- The stream `Refunds` now incrementally syncs using the `events` endpoint.
+- The `Refunds` stream cursor changed from the field `created` to `updated` when syncing incrementally.
+- The `Refunds` stream now incrementally syncs using the `events` endpoint.
 
-### Migration Steps
+### Migration steps
 
 1. Upgrade the Stripe connector by pressing the upgrade button and following the instructions on the screen.
 
 :::info
-The following migration steps are relevant for those who would like to sync `Refunds` incrementally. These migration steps can be skipped if you prefer to sync using `Full Refresh`. 
+The following migration steps are relevant for those who would like to sync `Refunds` incrementally. These migration steps can be skipped if you prefer to sync using `Full Refresh`.
 :::
 
 The stream `Refunds` will need to be synced historically again to ensure the connection continues syncing smoothly. If available for your destination, we recommend initiating a `Refresh` for the stream, which will pull in all historical data for the stream without removing the existing data first and update your destination with all data once complete. To initiate a `Refresh`:
@@ -148,12 +146,11 @@ This change fixes multiple incremental sync issues with the `Refunds`, `Checkout
 - `CheckoutSessionsLineItems` previously had potential data loss. It has been updated to use a new cursor field `checkout_session_updated`.
 - Incremental streams with the `created` cursor had been duplicating some data; this has been fixed.
 
-Stream schema update is a breaking change as well as changing the cursor field for the `Refunds` and the `CheckoutSessionsLineItems` stream. A schema refresh and data reset of all effected streams is required after the update is applied.
+The stream schema update is a breaking change, as is the changed cursor field for the `Refunds` and `CheckoutSessionsLineItems` streams. A schema refresh and data reset of all affected streams is required after the update is applied.
 
-Also, this update affects three more streams: `Invoices`, `Subscriptions`, `SubscriptionSchedule`. Schemas are changed in this update so that the declared data types would match the actual data.
+This update also affects three more streams: `Invoices`, `Subscriptions`, and `SubscriptionSchedule`. Schemas are changed in this update so that the declared data types match the actual data.
 
-Stream schema update is a breaking change as well as changing the cursor field for the `Refunds` and the `CheckoutSessionsLineItems` stream. A schema refresh and data reset of all effected streams is required after the update is applied.
-Because of the changed cursor field of the `Refunds` stream, incremental syncs will not reflect every update of the records that have been previously replicated. Only newly created records will be synced. To always have the up-to-date data, users are encouraged to make use of the lookback window.
+Because of the changed cursor field of the `Refunds` stream, incremental syncs will not reflect every update of the records that have been previously replicated. Only newly created records will be synced. To always have the up-to-date data, use the lookback window.
 
 ## Upgrading to 4.0.0
 
