@@ -39,9 +39,12 @@ The `application_criteria_evaluations` stream requires the AI Application Review
 | Feature | Supported |
 | :--- | :--- |
 | Full Refresh | Yes |
-| Incremental - Append | No |
+| Incremental - Append | Yes, for `applications` and `application_history` |
+| Incremental - Append + Deduped | Yes, for `applications` and `application_history` |
 
-Every sync re-reads each selected stream in full, subject to the start date where it applies. Many Ashby `.list` endpoints support incremental sync through a `syncToken`, but this connector doesn't use it.
+Starting in version 1.5.0, the `applications` and `application_history` streams support incremental sync on the application's `updatedAt` timestamp. Every other stream re-reads in full on each sync, subject to the start date where it applies. Many Ashby `.list` endpoints support incremental sync through a `syncToken`, but this connector doesn't use it.
+
+Ashby's `application.list` doesn't filter on `updatedAt`, so an incremental sync of `applications` still reads every application from Ashby and emits only those updated no earlier than 1 day before the latest `updatedAt` from the previous sync. The 1-day lookback exists because Ashby returns applications in creation order, so an application updated during a sync could otherwise be missed. Applications updated within that day are emitted again on the next sync, so use Incremental | Append + Deduped, keyed on `id`, to keep one row per application. Because every incremental sync still reads the full application list, the time savings come from `application_history`, described below. On existing connections, refresh the source schema to see the Incremental mode and the `application_updated_at` column on `application_history`.
 
 ## Supported streams
 
@@ -67,27 +70,45 @@ This source syncs the following streams:
 - [sources](https://developers.ashbyhq.com/reference/sourcelist)
 - [users](https://developers.ashbyhq.com/reference/userlist)
 
-The `application_criteria_evaluations` stream is a substream of `applications`. The connector requests evaluations only for applications whose current interview stage has the type `PreInterviewScreen` and whose status is neither `Archived` nor `Hired`, so it doesn't cover every application in your account. Each record carries an `application_id` field copied from the parent application, which is how you join evaluations back to `applications`. This stream has no primary key, and the connector doesn't paginate the evaluations endpoint, so only the first page of evaluations is synced for each application.
+The `application_criteria_evaluations` stream is a substream of `applications`. The connector requests evaluations only for applications whose current interview stage has the type `PreInterviewScreen` and whose status is neither `Archived` nor `Hired`, so it doesn't cover every application in your account. Each record carries an `application_id` field copied from the parent application, which is how you join evaluations back to `applications`. This stream has no primary key. Starting in version 1.4.0, the connector pages through every evaluation for each application. Earlier versions synced only the first page. Like `application_history`, this stream makes at least one request per application, so the connector caps `application.listCriteriaEvaluations` at 100 requests per minute and skips applications for which Ashby returns `application_not_found`.
 
-The `application_history` stream is a full-refresh substream of `applications`. Each record is one interview stage an application entered, with the `enteredStageAt` and `leftStageAt` timestamps that no other Ashby endpoint exposes. Join `application_history.application_id` to `applications.id` and `application_history.stageId` to `interview_stages.id`. Along with `application_id`, the connector copies the parent application's status and creation timestamp into each record as `application_status` and `application_created_at`, so you can analyze stage timing without joining back to `applications`. The stream has a primary key of `id`, so deduplicating destinations key history events instead of appending a copy on every sync.
+The `application_history` stream is a substream of `applications`. Each record is one interview stage an application entered, with the `enteredStageAt` and `leftStageAt` timestamps that no other Ashby endpoint exposes. Join `application_history.application_id` to `applications.id` and `application_history.stageId` to `interview_stages.id`. Along with `application_id`, the connector copies the parent application's status, creation timestamp, and update timestamp into each record as `application_status`, `application_created_at`, and `application_updated_at`, so you can analyze stage timing without joining back to `applications`. The stream has a primary key of `id`, so deduplicating destinations key history events instead of appending a copy on every sync.
 
 The parent application list uses the same `createdAfter` filter as the `applications` stream. A start date later than your oldest application returns partial history rather than an error.
 
-The connector requests history one application at a time, and `application.listHistory` accepts neither a date filter nor a `syncToken`, so every sync re-reads the full history of every selected application. The connector also caps this endpoint at 100 requests per minute, which puts a floor on how long a sync can take: 10,000 applications need at least 100 minutes, and applications with more than 100 history records need additional requests to paginate. Sync this stream on its own connection with an infrequent schedule rather than alongside the other streams.
+The connector requests history one application at a time, and `application.listHistory` accepts neither a date filter nor a `syncToken`. The connector caps this endpoint at 100 requests per minute, which puts a floor on how long a full sync can take: 10,000 applications need at least 100 minutes, and applications with more than 100 history records need additional requests to paginate.
+
+In incremental mode, the first sync requests history for every application. Later syncs request history only for applications updated no earlier than 1 day before the latest `updatedAt` from the previous sync, so applications updated during the previous sync aren't missed. In testing, Ashby updated `updatedAt` when an application moved to a new stage, so new stage entries are picked up. Ashby doesn't update `updatedAt` for every change, for example edits or deletions of history entries made through `application.updateHistory` and some application changes, so run a periodic Refresh and remove records if those matter. Each changed application re-emits its full history, so use Incremental | Append + Deduped, keyed on `id`, to keep one row per history event. Incremental | Append adds a copy of the history each time. Each incremental sync still reads the full application list to find the changed applications. In full refresh mode, every sync re-reads the history of every selected application, so sync it on its own connection with an infrequent schedule.
 
 If Ashby returns an `application_not_found` error for an application, which happens when the application is deleted or your API key can't access it, the connector skips that application's history, logs the Ashby request ID, and continues. It retries HTTP 429 and 5xx responses. Any other error fails the sync.
 
 The `application_feedback` stream returns submitted interview scorecards, one record per feedback form submission, with the `submittedValues` an interviewer entered and the `formDefinition` that was in effect when the form was submitted. Join `applicationId` to `applications.id`, `interviewId` to `interviews.id`, and `feedbackFormDefinitionId` to `feedback_form_definitions.id`. `submittedValues` is a free-form object keyed by each field's `path`, so the connector doesn't declare its keys. For select fields, it holds the stored option value, such as `hire`, rather than the display label, such as `Hire`. To get labels, map each value through `formDefinition.sections[].fields[].field.selectableValues` on the same record, not through the current `feedback_form_definitions` stream, because a form definition can change after feedback is submitted. The `creditedToUser` field was added to the Ashby API on 2026-07-21 and may be null on older records. This endpoint requires the **Candidates** read permission.
 
+The `interview_stages` stream is a substream of Ashby's interview plans. Ashby's `interviewStage.list` endpoint returns stages for one interview plan at a time, so starting in version 1.4.0 the connector lists your interview plans, including archived ones, and then requests the stages of each plan. Versions before 1.4.0 didn't send an interview plan ID and synced no stages. Each record carries `interviewPlanId` and an `interview_plan_is_archived` flag copied from the parent plan. Ashby's `interviewPlan.list` doesn't return draft plans, and it returns job-specific plans only when your API key can read the associated job, so grant the **Jobs** read permission if you need stages from job-specific plans.
+
 The `interviews` stream returns interview definitions, which are the interview types configured in your Ashby account, such as a technical phone screen. It doesn't return scheduled interviews. Each record carries the definition's `title`, `externalTitle`, instructions, feedback settings, and `feedbackFormDefinitionId`. For interviews that were actually scheduled, along with their times and interviewers, use `interview_schedules`.
 
-Starting in version 1.2.0, the connector sends `includeNonSharedInterviews: true`, so definitions that belong to a single job sync alongside shared ones. Use `jobId` to tell them apart: it holds the job the definition belongs to, and is null for shared definitions, which can be scheduled against any job. The connector leaves Ashby's `includeArchived` parameter at its default of `false`, so archived definitions aren't synced.
+Starting in version 1.2.0, the connector sends `includeNonSharedInterviews: true`, so definitions that belong to a single job sync alongside shared ones. Use `jobId` to tell them apart: it holds the job the definition belongs to, and is null for shared definitions, which can be scheduled against any job. Starting in version 1.4.0, the connector also sends `includeArchived: true`, so archived definitions sync too. Use `isArchived` to filter them out.
 
 Version 1.2.0 also declared the fields `interview.list` returns, which the schema previously omitted. Refresh the source schema and enable the new columns in your connection to replicate them. The stream keeps declaring twelve fields that describe a scheduled interview rather than a definition: `applicationId`, `interviewScheduleId`, `interviewStageId`, `status`, `createdAt`, `updatedAt`, `cancelledAt`, `startTime`, `endTime`, `interviewerUserIds`, `meetingLink`, and `feedbackLink`. Ashby's `interview.list` endpoint doesn't return them, so those columns are always null. They stay in the schema so that removing them can be released as a breaking change later.
 
+### Archived and deactivated records
+
+Starting in version 1.4.0, the connector asks Ashby to include archived records for `archive_reasons`, `candidate_tags`, `custom_fields`, `departments`, `feedback_form_definitions`, `interviews`, `locations`, and `sources`, and deactivated users for `users`. Earlier versions synced only active records from these streams, so your first sync after upgrading can return more rows. Filter on `isArchived`, or on `isEnabled` for `users`, if you only want active records.
+
 ## Performance considerations
 
-Ashby doesn't publish a rate limit for the `.list` endpoints this connector reads, and the connector reads one stream at a time, so syncs are unlikely to be throttled. Ashby's rate limits apply per organization, so an API key shared with other integrations has less headroom. To protect that shared headroom, the connector limits itself to 100 requests per minute against `application.listHistory`, the one endpoint it calls at least once per application. The connector applies no request budget to any other endpoint, though Ashby's per-organization limits still apply everywhere.
+Ashby documents a rate limit of [1,000 requests per minute per API key](https://docs.ashbyhq.com/how-do-i-generate-an-api-key). The connector reads up to two streams at a time. An API key shared with other integrations has less headroom, so to protect it, the connector limits itself to 100 requests per minute against each of `application.listHistory` and `application.listCriteriaEvaluations`, the endpoints it calls at least once per application. The connector applies no request budget to any other endpoint. If Ashby responds with HTTP 429, the connector waits for the `Retry-After` interval, or backs off exponentially if the header is missing, and retries.
+
+## Troubleshooting
+
+Ashby reports most errors as HTTP 200 responses with `success: false` in the body. Starting in version 1.4.0, the connector fails the sync on these responses and includes Ashby's error code, message, and request ID in the error. Earlier versions could finish a sync without records and without reporting an error.
+
+- **HTTP 401 Unauthorized**: Ashby rejected the API key. Check that the key in the source settings is correct and still active, or generate a new key in Ashby.
+- **HTTP 403 Forbidden**: The API key may be deactivated or lack access. Generate a new key in Ashby.
+- **`missing_endpoint_permission`**: The API key lacks the read permission a selected stream needs. The error message names the missing permission. Enable it on the key, using the [permission table](#prerequisites), or deselect the stream.
+
+The connector retries HTTP 429 and 5xx responses before failing.
 
 ## IP allow list
 
@@ -102,8 +123,11 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                     |
-|:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :-------- | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
+| 1.5.0 | 2026-10-02 | [87597](https://github.com/airbytehq/airbyte/pull/87597) | Add incremental sync to `applications` and `application_history`, so incremental syncs request history only for applications updated since the previous sync, with a 1-day lookback |
+| 1.4.0 | 2026-09-30 | [87051](https://github.com/airbytehq/airbyte/pull/87051) | Fail syncs on Ashby `success: false` errors, sync `interview_stages` per interview plan, paginate `application_criteria_evaluations`, and include archived and deactivated records in lookup streams |
+| 1.3.4 | 2026-09-29 | [87080](https://github.com/airbytehq/airbyte/pull/87080) | Update dependencies |
 | 1.3.3 | 2026-09-22 | [86515](https://github.com/airbytehq/airbyte/pull/86515) | Update dependencies |
 | 1.3.2 | 2026-09-21 | [86501](https://github.com/airbytehq/airbyte/pull/86501) | chore(source-ashby): wire sandbox acceptance-test secret, mark offers/interview_stages empty, add mock server tests |
 | 1.3.1 | 2026-09-15 | [85974](https://github.com/airbytehq/airbyte/pull/85974) | Update dependencies |
