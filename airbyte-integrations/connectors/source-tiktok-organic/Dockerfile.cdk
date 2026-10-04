@@ -1,0 +1,15 @@
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+WORKDIR /airbyte/integration_code
+
+# Copy connector source and install without Poetry lock-file resolution.
+COPY pyproject.toml ./
+COPY main.py ./
+COPY source_tiktok_organic ./source_tiktok_organic
+
+RUN pip install --no-cache-dir .
+
+USER airbyte
+ENV AIRBYTE_ENTRYPOINT="source-tiktok-organic"
+ENTRYPOINT ["source-tiktok-organic"]

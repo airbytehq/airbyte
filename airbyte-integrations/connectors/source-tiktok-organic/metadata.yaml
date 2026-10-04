@@ -1,0 +1,24 @@
+data:
+  allowedHosts:
+    hosts:
+      - business-api.tiktok.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
+  dockerImageTag: 2.0.28
+  maxSecondsBetweenMessages: 7200
+  dockerRepository: airbyte/source-tiktok-organic
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+  githubIssueLabel: source-tiktok-organic
+  icon: icon.svg
+  license: ELv2
+  name: TikTok Organic
+  tags:
+    - language:python
+  registryOverrides:
+    oss:
+      enabled: true
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-organic
+metadataSpecVersion: "1.0"
