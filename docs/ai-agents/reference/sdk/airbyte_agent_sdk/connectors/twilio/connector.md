@@ -323,11 +323,14 @@ Classes
         Returns:
             Conference
 
-    `list(self, account_sid: str, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.twilio.models.TwilioExecuteResultWithMeta[list[Conference], ConferencesListResultMeta]`
-    :   Returns a list of conferences for an account
+    `list(self, account_sid: str, status: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.twilio.models.TwilioExecuteResultWithMeta[list[Conference], ConferencesListResultMeta]`
+    :   Returns a list of conferences for an account. From September 30, 2026 Twilio returns only in-progress conferences when Status is omitted, so pass Status explicitly to retrieve init or completed conferences.
+        
         
         Args:
             account_sid: Account SID
+            status: Status of the conferences to return. Twilio defaults to in-progress conferences only from September 30, 2026; request completed conferences explicitly.
+        
             page_size: Number of items to return per page
             **kwargs: Additional parameters
         
