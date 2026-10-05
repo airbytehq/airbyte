@@ -149,7 +149,11 @@ class TestAdvertisersReportsDailyWindowSplitting(TestCase):
             ),
             HttpResponse(
                 body=json.dumps(
-                    {"code": 0, "message": "ok", "data": {"list": [{"advertiser_id": _OTHER_ADVERTISER_ID}, {"advertiser_id": _ADVERTISER_ID}]}}
+                    {
+                        "code": 0,
+                        "message": "ok",
+                        "data": {"list": [{"advertiser_id": _OTHER_ADVERTISER_ID}, {"advertiser_id": _ADVERTISER_ID}]},
+                    }
                 ),
                 status_code=200,
             ),
