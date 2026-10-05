@@ -87,7 +87,9 @@ definitions:
         http_codes:
           - 400
         error_message: >-
-          Bad request (400). Please verify your credentials and try again.
+          HubSpot rejected the request for stream '{{ parameters.get('name') or 'unknown' }}' with HTTP 400 (not an authentication error):
+          {{ response.get('message') or 'HubSpot returned no error details' }}
+          [category: {{ response.get('category') or 'unknown' }}{% if response.get('subCategory') %}, subCategory: {{ response.get('subCategory') }}{% endif %}{% if response.get('correlationId') %}, correlationId: {{ response.get('correlationId') }}{% endif %}].{% if response.get('correlationId') %} If the error persists, contact HubSpot support with the correlation ID.{% endif %}
 
   error_handler_ignore_invalid_object_type_for_list:
     # Same as the base error handler, but ignores 400 responses with
@@ -162,7 +164,9 @@ definitions:
           - 400
         failure_type: system_error
         error_message: >-
-          Bad request (400). Please verify your credentials and try again.
+          HubSpot rejected the request for stream '{{ parameters.get('name') or 'unknown' }}' with HTTP 400 (not an authentication error):
+          {{ response.get('message') or 'HubSpot returned no error details' }}
+          [category: {{ response.get('category') or 'unknown' }}{% if response.get('subCategory') %}, subCategory: {{ response.get('subCategory') }}{% endif %}{% if response.get('correlationId') %}, correlationId: {{ response.get('correlationId') }}{% endif %}].{% if response.get('correlationId') %} If the error persists, contact HubSpot support with the correlation ID.{% endif %}
 
   error_handler_ignore_403:
     # Same as the base error handler, but ignores 403 errors
@@ -212,7 +216,9 @@ definitions:
         http_codes:
           - 400
         error_message: >-
-          Bad request (400). Please verify your credentials and try again.
+          HubSpot rejected the request for stream '{{ parameters.get('name') or 'unknown' }}' with HTTP 400 (not an authentication error):
+          {{ response.get('message') or 'HubSpot returned no error details' }}
+          [category: {{ response.get('category') or 'unknown' }}{% if response.get('subCategory') %}, subCategory: {{ response.get('subCategory') }}{% endif %}{% if response.get('correlationId') %}, correlationId: {{ response.get('correlationId') }}{% endif %}].{% if response.get('correlationId') %} If the error persists, contact HubSpot support with the correlation ID.{% endif %}
 
   offset_paginator:
     type: DefaultPaginator
@@ -2267,6 +2273,8 @@ definitions:
   properties_stream:
     type: DeclarativeStream
     name: properties
+    $parameters:
+      name: properties
     retriever:
       type: SimpleRetriever
       requester:
@@ -2768,6 +2776,7 @@ dynamic_streams:
       name: custom_object_stream_name # will be set by components_resolver
       $parameters:
         entity: "custom_entity" # will be set by components_resolver
+        name: "custom_object_stream_name" # will be set by components_resolver
         schema_properties: "schema_properties_placeholder" # will be set by components_resolver
         schema_loader:
           type: CustomSchemaLoader
@@ -2909,6 +2918,25 @@ dynamic_streams:
           value: "{{ components_values.fullyQualifiedName or 'p_' + components_values.name }}"
         - type: ComponentMappingDefinition
           field_path:
+            - $parameters
+            - name
+          value: "{{ components_values.name }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path:
+            - full_refresh_stream
+            - $parameters
+            - name
+          value: "{{ components_values.name }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path:
+            - incremental_stream
+            - $parameters
+            - name
+          value: "{{ components_values.name }}"
+        - type: ComponentMappingDefinition
+          field_path:
             - full_refresh_stream
             - retriever
             - requester
@@ -2942,6 +2970,10 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: [ "name" ]
+          value: "{{ components_values['stream_name'] if components_values.get('stream_name') else 'associations_' + components_values['from_object'] + '_' + components_values['to_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "$parameters", "name" ]
           value: "{{ components_values['stream_name'] if components_values.get('stream_name') else 'associations_' + components_values['from_object'] + '_' + components_values['to_object'] }}"
         - type: ComponentMappingDefinition
           create_or_update: true
@@ -2984,6 +3016,10 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: [ "name" ]
+          value: "{{ components_values['stream_name'] if components_values.get('stream_name') else 'associations_' + components_values['from_object'] + '_' + components_values['to_object'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: [ "$parameters", "name" ]
           value: "{{ components_values['stream_name'] if components_values.get('stream_name') else 'associations_' + components_values['from_object'] + '_' + components_values['to_object'] }}"
         - type: ComponentMappingDefinition
           create_or_update: true
