@@ -3330,6 +3330,583 @@ streams:
             type:
               - "null"
               - string
+  - type: DeclarativeStream
+    name: openings
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ashbyhq.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: ""
+        path: /opening.list
+        http_method: POST
+        error_handler:
+          $ref: "#/definitions/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: cursor
+        page_size_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          openedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          closedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          isArchived:
+            type:
+              - "null"
+              - boolean
+          closeReasonId:
+            type:
+              - "null"
+              - string
+          archivedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          openingState:
+            type:
+              - "null"
+              - string
+          latestVersion:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              identifier:
+                type:
+                  - "null"
+                  - string
+              description:
+                type:
+                  - "null"
+                  - string
+              authorId:
+                type:
+                  - "null"
+                  - string
+              createdAt:
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              targetHireDate:
+                type:
+                  - "null"
+                  - string
+              targetStartDate:
+                type:
+                  - "null"
+                  - string
+              isBackfill:
+                type:
+                  - "null"
+                  - boolean
+              employmentType:
+                type:
+                  - "null"
+                  - string
+              teamId:
+                type:
+                  - "null"
+                  - string
+              jobIds:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: string
+              locationIds:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: string
+              hiringTeam:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: object
+                  additionalProperties: true
+                  properties:
+                    userId:
+                      type:
+                        - "null"
+                        - string
+                    firstName:
+                      type:
+                        - "null"
+                        - string
+                    lastName:
+                      type:
+                        - "null"
+                        - string
+                    email:
+                      type:
+                        - "null"
+                        - string
+                    role:
+                      type:
+                        - "null"
+                        - string
+              customFields:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: object
+                  additionalProperties: true
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    isPrivate:
+                      type:
+                        - "null"
+                        - boolean
+                    referenceIdentifier:
+                      type:
+                        - "null"
+                        - string
+                    title:
+                      type:
+                        - "null"
+                        - string
+                    valueLabel:
+                      type:
+                        - "null"
+                        - string
+                        - array
+                    value:
+                      type:
+                        - "null"
+                        - boolean
+                        - number
+                        - string
+                        - array
+                        - object
+  - type: DeclarativeStream
+    name: job_templates
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ashbyhq.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: ""
+        path: /jobTemplate.list
+        http_method: POST
+        error_handler:
+          $ref: "#/definitions/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: cursor
+        page_size_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          locationId:
+            type:
+              - "null"
+              - string
+          departmentId:
+            type:
+              - "null"
+              - string
+          defaultInterviewPlanId:
+            type:
+              - "null"
+              - string
+          interviewPlanIds:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+  - type: DeclarativeStream
+    name: job_boards
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ashbyhq.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: ""
+        path: /jobBoard.list
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+        error_handler:
+          $ref: "#/definitions/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: NoPagination
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          isInternal:
+            type:
+              - "null"
+              - boolean
+  - type: DeclarativeStream
+    name: approvals
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ashbyhq.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: ""
+        path: /approval.list
+        http_method: POST
+        error_handler:
+          $ref: "#/definitions/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: cursor
+        page_size_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          approvalDefinitionId:
+            type:
+              - "null"
+              - string
+          entityId:
+            type:
+              - "null"
+              - string
+          entityType:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          submittedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          completedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          steps:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                approvalsRequired:
+                  type:
+                    - "null"
+                    - integer
+                completedAt:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                approvers:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type: object
+                    additionalProperties: true
+                    properties:
+                      id:
+                        type:
+                          - "null"
+                          - string
+                      userId:
+                        type:
+                          - "null"
+                          - string
+                      decision:
+                        type:
+                          - "null"
+                          - string
+                      decidedAt:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      requestedAt:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+  - type: DeclarativeStream
+    name: projects
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ashbyhq.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: ""
+        path: /project.list
+        http_method: POST
+        error_handler:
+          $ref: "#/definitions/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: cursor
+        page_size_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          title:
+            type:
+              - "null"
+              - string
+          isArchived:
+            type:
+              - "null"
+              - boolean
+          authorId:
+            type:
+              - "null"
+              - string
+          descriptionPlain:
+            type:
+              - "null"
+              - string
+          descriptionHtml:
+            type:
+              - "null"
+              - string
+          confidential:
+            type:
+              - "null"
+              - boolean
+          customFieldEntries:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                isPrivate:
+                  type:
+                    - "null"
+                    - boolean
+                referenceIdentifier:
+                  type:
+                    - "null"
+                    - string
+                title:
+                  type:
+                    - "null"
+                    - string
+                valueLabel:
+                  type:
+                    - "null"
+                    - string
+                    - array
+                value:
+                  type:
+                    - "null"
+                    - boolean
+                    - number
+                    - string
+                    - array
+                    - object
 spec:
   type: Spec
   connection_specification:
@@ -3387,3 +3964,8 @@ metadata:
     interviewer_pools: false
     survey_form_definitions: false
     source_tracking_links: false
+    openings: false
+    job_templates: false
+    job_boards: false
+    approvals: false
+    projects: false
