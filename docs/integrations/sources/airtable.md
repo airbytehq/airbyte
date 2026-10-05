@@ -158,7 +158,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
-| 4.6.42 | 2026-10-05 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Fix schema discovery failing for bases with a lookup of an AI (`aiText`) field |
+| 4.6.42 | 2026-10-05 | [87680](https://github.com/airbytehq/airbyte/pull/87680) | Fix schema discovery failing for bases with a lookup of an AI (`aiText`) field |
 | 4.6.41 | 2026-09-29 | [87090](https://github.com/airbytehq/airbyte/pull/87090) | Update dependencies |
 | 4.6.40 | 2026-09-22 | [86538](https://github.com/airbytehq/airbyte/pull/86538) | Update dependencies |
 | 4.6.39 | 2026-09-15 | [85936](https://github.com/airbytehq/airbyte/pull/85936) | Update dependencies |
