@@ -17,7 +17,13 @@ from .config_builder import ConfigBuilder
 
 _REPORT_URL = "https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/"
 _ADVERTISER_ID = "872746382648"
-_QUERY_TOO_LARGE = {"code": 40067, "message": "The query is too large, please narrow the date range", "data": {}}
+_OTHER_ADVERTISER_ID = "111111111111"
+_QUERY_TOO_LARGE = {
+    "code": 40067,
+    "message": "Your query is too large, please reduce the query size (e.g. fewer metrics or time range) and retry after a while.",
+    "request_id": "20241015000000000000000000000000",
+    "data": {},
+}
 _METRICS = [
     "cash_spend",
     "voucher_spend",
@@ -49,9 +55,11 @@ _METRICS = [
     "real_time_app_install_cost",
     "app_install",
 ]
+# The audience retriever has no cash/voucher spend and no app install metrics.
+_AUDIENCE_METRICS = _METRICS[2:-3]
 
 
-def _report_request(start_date: str, end_date: str) -> HttpRequest:
+def _report_request(start_date: str, end_date: str, **query_overrides: str) -> HttpRequest:
     return HttpRequest(
         url=_REPORT_URL,
         query_params={
@@ -64,11 +72,12 @@ def _report_request(start_date: str, end_date: str) -> HttpRequest:
             "end_date": end_date,
             "page_size": 1000,
             "advertiser_id": _ADVERTISER_ID,
+            **query_overrides,
         },
     )
 
 
-def _report_response(*days: str) -> HttpResponse:
+def _report_response(*days: str, advertiser_id: str = _ADVERTISER_ID) -> HttpResponse:
     return HttpResponse(
         body=json.dumps(
             {
@@ -76,7 +85,7 @@ def _report_response(*days: str) -> HttpResponse:
                 "message": "ok",
                 "data": {
                     "list": [
-                        {"dimensions": {"advertiser_id": _ADVERTISER_ID, "stat_time_day": f"{day} 00:00:00"}, "metrics": {"spend": "1.00"}}
+                        {"dimensions": {"advertiser_id": advertiser_id, "stat_time_day": f"{day} 00:00:00"}, "metrics": {"spend": "1.00"}}
                         for day in days
                     ],
                     "page_info": {"total_number": len(days), "page": 1, "page_size": 1000, "total_page": 1},
@@ -126,6 +135,58 @@ class TestAdvertisersReportsDailyWindowSplitting(TestCase):
         ]
 
     @HttpMocker()
+    def test_given_40067_for_second_advertiser_when_read_then_first_advertiser_not_split(self, http_mocker: HttpMocker):
+        """The splitting advertiser is listed second, so halves read for the wrong partition would hit the first advertiser."""
+        config = self.config()
+        http_mocker.get(
+            HttpRequest(
+                url="https://business-api.tiktok.com/open_api/v1.3/oauth2/advertiser/get/",
+                query_params={"secret": config["credentials"]["secret"], "app_id": config["credentials"]["app_id"]},
+            ),
+            HttpResponse(
+                body=json.dumps(
+                    {"code": 0, "message": "ok", "data": {"list": [{"advertiser_id": _OTHER_ADVERTISER_ID}, {"advertiser_id": _ADVERTISER_ID}]}}
+                ),
+                status_code=200,
+            ),
+        )
+        other_advertiser_window = _report_request("2024-09-01", "2024-09-30", advertiser_id=_OTHER_ADVERTISER_ID)
+        http_mocker.get(other_advertiser_window, _report_response("2024-09-10", advertiser_id=_OTHER_ADVERTISER_ID))
+        http_mocker.get(_report_request("2024-09-01", "2024-09-30"), HttpResponse(body=json.dumps(_QUERY_TOO_LARGE), status_code=200))
+        http_mocker.get(_report_request("2024-09-01", "2024-09-15"), _report_response("2024-09-03"))
+        http_mocker.get(_report_request("2024-09-16", "2024-09-30"), _report_response("2024-09-20"))
+
+        output = self._read()
+
+        assert not output.errors
+        http_mocker.assert_number_of_calls(other_advertiser_window, 1)
+        assert output.most_recent_state.stream_state.__dict__["states"] == [
+            {"partition": {"advertiser_id": _OTHER_ADVERTISER_ID, "parent_slice": {}}, "cursor": {"stat_time_day": "2024-09-10"}},
+            {"partition": {"advertiser_id": _ADVERTISER_ID, "parent_slice": {}}, "cursor": {"stat_time_day": "2024-09-20"}},
+        ]
+
+    @HttpMocker()
+    def test_given_40067_on_audience_report_when_read_then_split_window_in_halves(self, http_mocker: HttpMocker):
+        audience_query = {
+            "report_type": "AUDIENCE",
+            "dimensions": '["advertiser_id", "stat_time_day", "gender", "age"]',
+            "metrics": json.dumps(_AUDIENCE_METRICS),
+        }
+        config = self.config()
+        mock_advertisers_slices(http_mocker, config)
+        http_mocker.get(
+            _report_request("2024-09-01", "2024-09-30", **audience_query), HttpResponse(body=json.dumps(_QUERY_TOO_LARGE), status_code=200)
+        )
+        http_mocker.get(_report_request("2024-09-01", "2024-09-15", **audience_query), _report_response("2024-09-03"))
+        http_mocker.get(_report_request("2024-09-16", "2024-09-30", **audience_query), _report_response("2024-09-20"))
+
+        catalog = CatalogBuilder().with_stream(name="advertisers_audience_reports_daily", sync_mode=SyncMode.incremental).build()
+        output = read(get_source(config=config, state=None), config, catalog)
+
+        assert not output.errors
+        assert len(output.records) == 2
+
+    @HttpMocker()
     def test_given_half_also_too_large_when_read_then_split_again(self, http_mocker: HttpMocker):
         mock_advertisers_slices(http_mocker, self.config())
         http_mocker.get(_report_request("2024-09-01", "2024-09-30"), HttpResponse(body=json.dumps(_QUERY_TOO_LARGE), status_code=200))
@@ -138,6 +199,9 @@ class TestAdvertisersReportsDailyWindowSplitting(TestCase):
 
         assert not output.errors
         assert len(output.records) == 3
+        assert output.most_recent_state.stream_state.__dict__["states"] == [
+            {"partition": {"advertiser_id": _ADVERTISER_ID, "parent_slice": {}}, "cursor": {"stat_time_day": "2024-09-25"}}
+        ]
 
     @HttpMocker()
     def test_given_single_day_still_too_large_when_read_then_transient_error(self, http_mocker: HttpMocker):
@@ -156,4 +220,21 @@ class TestAdvertisersReportsDailyWindowSplitting(TestCase):
 
         assert not output.records
         assert output.errors[0].trace.error.failure_type == FailureType.transient_error
-        assert "rejected a daily report request for a single day" in output.errors[0].trace.error.message
+        assert "TikTok rejected this daily report as too large even for a single day" in output.errors[0].trace.error.message
+        assert output.most_recent_state.stream_state.__dict__["states"] == [
+            {"partition": {"advertiser_id": _ADVERTISER_ID, "parent_slice": {}}, "cursor": {"stat_time_day": "2024-09-01"}}
+        ]
+
+    @HttpMocker()
+    def test_given_other_error_code_when_read_then_fail_without_split(self, http_mocker: HttpMocker):
+        mock_advertisers_slices(http_mocker, self.config())
+        http_mocker.get(
+            _report_request("2024-09-01", "2024-09-30"),
+            HttpResponse(body=json.dumps({"code": 40006, "message": "Invalid parameter", "data": {}}), status_code=200),
+        )
+
+        output = self._read(expecting_exception=True)
+
+        assert not output.records
+        assert output.errors[0].trace.error.failure_type == FailureType.system_error
+        assert output.errors[0].trace.error.message == "Invalid parameter"

@@ -145,7 +145,7 @@ def test_error_40067_not_on_global_requester():
     manifest = _load_manifest()
     global_filters = manifest["definitions"]["requester"]["error_handler"]["response_filters"]
     error_40067 = [f for f in global_filters if "40067" in f.get("predicate", "")]
-    assert len(error_40067) == 0, "Error 40067 config_error should NOT be on the global requester"
+    assert len(error_40067) == 0, "Error 40067 SPLIT_REQUEST_WINDOW belongs on report_daily_error_handler only, not on the global requester"
 
 
 @pytest.mark.parametrize(
