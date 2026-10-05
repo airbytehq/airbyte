@@ -64,6 +64,17 @@ What `airbytehq/oncall#13250` establishes is narrower than the mechanism above: 
 
 **Why this matters:** the failure looks unrelated to concurrency — the heartbeat error names whichever stream happens to be queued (often `group_memberships`), not `tickets`, and the sync logs carry no source stdout. Adding a `step` to `tickets` is not an alternative fix: the endpoint accepts `start_time` with no end bound, so each slice re-walks to the present and duplicates records. See `airbytehq/oncall#13250`.
 
+## 7. `ticket_comments` Answers a 504 by Halving `per_page`, Rewritten Inside the Next-Page URL
+
+The `ticket_events` incremental export returns a `504` when it cannot assemble the requested page in time. The stream used to answer that with `action: RETRY` and an exponential backoff, which re-issues the identical request: the endpoint is asked to build the same page again, so the retries cannot succeed on their own and the sync only fails later. It now answers with `action: REDUCE_PAGE_SIZE`, which re-issues the same page at half the `per_page` — the one thing that changes how much work the endpoint has to do.
+
+Two details of this stream make it different from an ordinary page size reduction:
+
+1. **The page size has to be rewritten inside the page token URL.** `page_token_option` is a `RequestPath`: the next page is a URL Zendesk builds, and it carries the `per_page` it echoed back. Injecting the reduced size as a request parameter would send both (`...?per_page=100&...&per_page=50`), and `HttpClient._dedupe_query_params` only drops the injected one when the two agree — exactly when there is nothing to reduce. `rewrite_page_size_in_page_token_url: true` makes the paginator replace that parameter inside the URL instead. It is an assertion about the API, not something the CDK can check: it holds here because the URL addresses records by `start_time`, a timestamp, so re-requesting it at a smaller page size returns the same records from the same place. It would be wrong for a URL carrying a page number.
+2. **The reduction path does not use the error handler's backoff.** Neither `backoff_strategies` nor a `Retry-After` header is consulted on a `REDUCE_PAGE_SIZE` response, so `backoff_seconds: 10` on `page_size_reduction` is what spaces the attempts out. It is set well above the CDK's half-second default because a `504` from this endpoint also means Zendesk is briefly overloaded, not only that the page is too big — and `retries_at_minimum_page_size: 3` exists for the same reason, so a page that reaches `per_page: 1` still gets a few waits before the sync fails.
+
+**Why this matters:** the `page_size` spec field is no longer the user's main lever against timeouts — the connector already reduces on its own, per page, and keeps the reduced size for the rest of the partition (`reset_policy: NEVER`). Lowering `page_size` is only worth it when a sync spends most of its time on those reductions. Note also that the `403`/`404` filter on this stream stays `FAIL` with `config_error`: a permission problem is not something a smaller page fixes.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.
