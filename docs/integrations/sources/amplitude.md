@@ -22,7 +22,7 @@ For more information, see [Manage your API keys and secret keys](https://amplitu
 6. For **Replication Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. Data added on and after this date is replicated. If this field is blank, Airbyte replicates all data.
 7. Optionally, configure the following fields:
    - **Data Region**: Select **EU Residency Server** if your Amplitude project is hosted in the EU data center. Defaults to **Standard Server**.
-   - **Request Time Range**: The time interval in hours for each Events stream request. Reduce this value if event exports time out due to large data volumes. Defaults to 24 hours. See [Amplitude's Export API considerations](https://amplitude.com/docs/apis/analytics/export#considerations) for details.
+   - **Request Time Range**: The time interval in hours for each Events stream request. Requests that Amplitude rejects as too large or that time out are split automatically. Defaults to 24 hours. See [Amplitude's Export API considerations](https://amplitude.com/docs/apis/analytics/export#considerations) for details.
    - **Active Users Group by Country**: When enabled, the Active Users stream groups results by country. Disable this if you encounter errors fetching the Active Users stream. Enabled by default.
 8. Click **Set up source**.
 
@@ -52,7 +52,7 @@ The Amplitude source connector supports the following [sync modes](https://docs.
 
 The connector automatically handles Amplitude's [API rate limits](https://amplitude.com/docs/apis/analytics/dashboard-rest#rate-limits). The Dashboard REST API enforces cost-based rate limits with a budget of 108,000 cost per hour and 1,000 cost per 5-minute burst window, plus a maximum of 5 concurrent requests. The connector tracks per-request costs and throttles automatically to stay within these limits.
 
-The Export API (used by the Events stream) limits each export to 4 GB and returns an error when a request exceeds that limit. Large exports can also time out. In either case, reduce the **Request Time Range** in the connector configuration so each request covers a shorter interval. For very large data volumes, Amplitude recommends its [Amazon S3 destination](https://amplitude.com/docs/data/destination-catalog/amazon-s3) instead of the Export API.
+The Export API (used by the Events stream) limits each export to 4 GB and returns an error when a request exceeds that limit. Large exports can also time out. In either case, the connector automatically splits the time window in half and retries each half. With a **Request Time Range** of up to 1024 hours, splitting can reach a one-hour window; above that, it stops at windows of 8-9 hours. A split that succeeds never duplicates records. If a window is still rejected, the sync fails with a transient error, and each retry re-reads the parts already read. The Append + Deduped sync mode removes these duplicates by `uuid`. An hour of data over 4 GB can only be exported with Amplitude's [Amazon S3 export](https://amplitude.com/docs/data/destination-catalog/amazon-s3). Splitting restarts for every window, so if most syncs need to split, lower the **Request Time Range** to avoid the extra failing requests.
 
 If you encounter rate limit issues that are not automatically retried, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
@@ -65,8 +65,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-|:-----------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :----------- | :----------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.7.39 | 2026-10-05 | [87560](https://github.com/airbytehq/airbyte/pull/87560) | Automatically split Events export windows that exceed Amplitude's 4 GB or timeout limits instead of failing the sync; parse zero-microsecond `server_upload_time` cursor values; show Amplitude's error for Dashboard API 400s and retry their 504s; upgrade to CDK 7.32.0 |
 | 0.7.38 | 2026-08-18 | [84470](https://github.com/airbytehq/airbyte/pull/84470) | Update dependencies |
 | 0.7.37 | 2026-08-11 | [83823](https://github.com/airbytehq/airbyte/pull/83823) | Update dependencies |
 | 0.7.36 | 2026-07-28 | [82323](https://github.com/airbytehq/airbyte/pull/82323) | Update dependencies |
