@@ -92,9 +92,10 @@ The connector reuses an access token until it expires, then refreshes it. If a r
 | `client_id` | `string` | OAuth Client ID.  |  |
 | `start_time` | `string` | Optional UTC start date applied to all three streams, in YYYY-MM-DDTHH:MM:SSZ format. A value earlier than 24 months ago is clamped for `campaign_report`, because Reddit only serves report data for the last 24 months. | 24 months before the current date |
 | `user_agent` | `string` | User Agent. A unique and descriptive user agent string in the format: platform:app_id:version (by /u/yourusername). Required for all requests. |  |
-| `ad_account_id` | `string` | ad_account_id.  |  |
+| `ad_account_id` | `string` | The Reddit Ads account ID to sync, shown in Reddit Ads Manager, for example a2_abc123. |  |
 | `client_secret` | `string` | OAuth Client Secret.  |  |
 | `refresh_token` | `string` | OAuth Refresh Token.  |  |
+| `num_workers` | `integer` | Number of concurrent workers. Higher values speed up syncs but increase the chance of Reddit rate limiting. | 3 |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -114,6 +115,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-09-28 | [87043](https://github.com/airbytehq/airbyte/pull/87043) | Show actionable errors for rejected refresh tokens or client credentials, invalid ad account IDs, and 400/403/404 responses, add a client-side API budget and configurable concurrency, add suggested streams, make spec titles human-readable, and add unit tests |
 | 0.0.12 | 2026-09-29 | [87338](https://github.com/airbytehq/airbyte/pull/87338) | Update dependencies |
 | 0.0.11 | 2026-09-22 | [86789](https://github.com/airbytehq/airbyte/pull/86789) | Update dependencies |
 | 0.0.10 | 2026-09-15 | [86198](https://github.com/airbytehq/airbyte/pull/86198) | Update dependencies |
