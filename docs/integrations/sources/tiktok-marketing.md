@@ -152,7 +152,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 
 ## Performance considerations
 
-The connector is restricted by the TikTok Marketing API [rate limits](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. TikTok enforces rate limits per access token, so if you see error 40100 ("rate limit exceeded"), check that only one Airbyte connection is running with the same TikTok credentials at a time. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The connector is restricted by the TikTok Marketing API [rate limits](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. TikTok enforces rate limits per access token and per advertiser. The connector backs off and retries when TikTok throttles a request (errors 40016, 40100 and 40133, "requests made too frequently"); if these keep failing a sync, check that only one Airbyte connection is running with the same TikTok credentials at a time. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 TikTok returns most errors with an HTTP 200 status and an error code in the response body. The connector automatically retries the following transient TikTok API errors, retrying a failed request up to 9 times with a 60-second wait before each retry:
 
@@ -180,7 +180,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 5.3.0 | 2026-10-02 | [87641](https://github.com/airbytehq/airbyte/pull/87641) | Split a daily report date range in half and retry when TikTok rejects it as too large (error 40067), instead of failing and asking to lower the `Daily Reports Date Step` |
+| 5.3.0 | 2026-10-05 | [87641](https://github.com/airbytehq/airbyte/pull/87641) | Split a daily report date range in half and retry when TikTok rejects it as too large (error 40067), instead of failing and asking to lower the `Daily Reports Date Step`; back off on throttling errors 40016 and 40133 |
 | 5.2.0 | 2026-09-14 | [85820](https://github.com/airbytehq/airbyte/pull/85820) | Add Website, App and Shop conversion metrics to the daily report streams |
 | 5.1.19 | 2026-09-29 | [87372](https://github.com/airbytehq/airbyte/pull/87372) | Update dependencies |
 | 5.1.18 | 2026-09-22 | [86854](https://github.com/airbytehq/airbyte/pull/86854) | Update dependencies |
