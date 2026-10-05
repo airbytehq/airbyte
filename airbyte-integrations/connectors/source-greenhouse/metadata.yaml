@@ -1,7 +1,7 @@
 data:
   ab_internal:
-    ql: 200
-    sl: 100
+    ql: 300
+    sl: 200
   allowedHosts:
     hosts:
       - harvest.greenhouse.io
@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
-  dockerImageTag: 1.5.1
+  dockerImageTag: 1.5.2
   dockerRepository: airbyte/source-greenhouse
   documentationUrl: https://docs.airbyte.com/integrations/sources/greenhouse
   githubIssueLabel: source-greenhouse
@@ -93,7 +93,7 @@ data:
       - users
       - departments
       - offices
-  supportLevel: community
+  supportLevel: certified
   tags:
     - language:manifest-only
     - cdk:low-code
