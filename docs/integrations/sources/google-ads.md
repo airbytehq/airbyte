@@ -327,7 +327,7 @@ SELECT
 FROM ad_group
 ```
 
-Note that `segments.date` is automatically added to the `WHERE` clause if it's included in the `SELECT` clause. Custom queries that include `segments.date` are synced one day at a time. Starting in connector version 6.0.0, these custom queries are limited to the same 37-month granular data retention window as built-in report streams; older report slices are skipped. See the [migration guide](/integrations/sources/google-ads-migrations) for upgrade guidance.
+Note that `segments.date` is automatically added to the `WHERE` clause if it's included in the `SELECT` clause. Custom queries that include `segments.date` sync incrementally on `segments.date` in 14-day date windows for each customer account, and re-read the number of days set in **Conversion Window** on each sync. Starting in connector version 6.0.0, these custom queries are limited to the same 37-month granular data retention window as built-in report streams; older report slices are skipped. See the [migration guide](/integrations/sources/google-ads-migrations) for upgrade guidance.
 
 Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains metrics fields in the select clause, it will not be executed against manager accounts.
 
@@ -338,7 +338,7 @@ For an existing Google Ads source, when you are updating or removing Custom GAQL
 :::
 
 :::note
-Custom queries that use `click_view` as the resource are subject to the same limitations as the built-in `click_view` stream: data can only be retrieved for the past 90 days, and syncs are performed one day at a time.
+Google Ads requires every `click_view` query to filter on a single day, and only returns `click_view` data from the past 90 days. The built-in `click_view` stream meets both requirements by reading one day at a time, starting no earlier than 90 days ago. Custom queries don't apply these limits: they request 14-day date ranges starting from your configured start date. To sync click-level data, use the built-in `click_view` stream instead of a custom query on `click_view`.
 :::
 
 :::note
@@ -387,6 +387,15 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 This source is constrained by the [Google Ads API limits](https://developers.google.com/google-ads/api/docs/best-practices/quotas). The API access level of the Google Cloud project that owns the OAuth client sets the daily operation quota. Requests that exceed a quota or rate limit fail with a `RESOURCE_EXHAUSTED` error.
 
 The **Number of Concurrent Threads** setting controls how many threads the connector uses to read streams and customer accounts at the same time, and defaults to 3. Raising it can shorten syncs for accounts with many customer IDs or many enabled streams, but it also sends requests faster, which consumes your daily quota sooner and makes `RESOURCE_EXHAUSTED` errors more likely. Increase it gradually and watch your quota usage. Regardless of this setting, the connector sends no more than 100 requests per second.
+
+### Interrupted report downloads
+
+Google Ads streams large reports, and the connection sometimes drops partway through a download. The connector recovers from these interruptions automatically:
+
+- For streams that sync incrementally on `segments.date`, including custom queries, the connector splits the interrupted date window into smaller windows and reads each one separately, down to a single day.
+- If a one-day window, or a stream without a date window, is interrupted, the connector retries the same request up to 3 times. If all retries fail, the sync fails with a transient error.
+
+Records the connector read before an interruption are sent again when it retries or splits that window, so the destination can receive duplicate records. The **Incremental Sync - Append + Deduped** sync mode removes these duplicates by primary key. Other sync modes keep them. The `shopping_performance_view` stream and custom query streams have no primary key, so deduplication can't remove duplicates from them.
 
 Due to a limitation in the Google Ads API which does not allow getting performance data at a granularity level smaller than a day, the Google Ads connector usually pulls data up until the previous day. For example, if the sync runs on Wednesday at 5 PM, then data up until Tuesday midnight is pulled. Data for Wednesday is exported only if a sync runs after Wednesday (for example, 12:01 AM on Thursday) and so on. This avoids syncing partial performance data, only to have to resync it again once the full day's data has been recorded by Google. For example, without this functionality, a sync which runs on Wednesday at 5 PM would get ads performance data for Wednesday between 12:01 AM - 5 PM on Wednesday, then it would need to run again at the end of the day to get all of Wednesday's data.
 </HideInUI>
