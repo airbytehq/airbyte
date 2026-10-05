@@ -31,6 +31,8 @@ import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.time.Duration
 import java.util.UUID
+import java.util.regex.Pattern
+import java.util.regex.PatternSyntaxException
 
 private val log = KotlinLogging.logger {}
 
@@ -45,6 +47,10 @@ data class MySqlSourceConfiguration(
     val debeziumSslProperties: Map<String, String>,
     override val namespaces: Set<String>,
     override val tableFilters: List<TableFilter>,
+    /** The "Database" field: connection default database and Debezium name. */
+    val defaultDatabase: String?,
+    /** Matched against "database.table"; when non-empty, [namespaces] is resolved at discovery. */
+    val tableIncludeRegex: List<Pattern>,
     val incrementalConfiguration: IncrementalConfiguration,
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
@@ -170,9 +176,38 @@ constructor(
                 }
             }
 
-        pojo.database.let { schema ->
-            JdbcSourceConfiguration.validateTableFilters(setOf(schema), jdbcTableFilters)
+        // Not trimmed: the value keys saved CDC offsets of existing connections.
+        val defaultDatabase: String? = pojo.database?.takeIf { it.isNotBlank() }
+        val tableIncludeRegex: List<Pattern> =
+            (pojo.tableIncludeRegex ?: emptyList())
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+                .distinct()
+                .map {
+                    try {
+                        Pattern.compile(it)
+                    } catch (e: PatternSyntaxException) {
+                        throw ConfigErrorException(
+                            "Invalid Table Include Regex '$it': ${e.description}",
+                            e,
+                        )
+                    }
+                }
+        if (defaultDatabase == null && tableIncludeRegex.isEmpty()) {
+            throw ConfigErrorException(
+                "Either \"Database\" or \"Table Include Regex\" must be configured."
+            )
         }
+        if (tableIncludeRegex.isNotEmpty() && jdbcTableFilters.isNotEmpty()) {
+            throw ConfigErrorException(
+                "\"Table Include Regex\" and \"Table Filters\" cannot be used together."
+            )
+        }
+
+        // With a table include regex, namespaces are resolved at discovery time.
+        val namespaces: Set<String> =
+            if (tableIncludeRegex.isEmpty()) setOfNotNull(defaultDatabase) else emptySet()
+        JdbcSourceConfiguration.validateTableFilters(namespaces, jdbcTableFilters)
 
         // Internal configuration settings.
         val checkpointTargetInterval: Duration =
@@ -216,8 +251,10 @@ constructor(
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
             debeziumSslProperties = sslProperties.debezium,
-            namespaces = setOf(pojo.database),
+            namespaces = namespaces,
             tableFilters = jdbcTableFilters,
+            defaultDatabase = defaultDatabase,
+            tableIncludeRegex = tableIncludeRegex,
             incrementalConfiguration = incremental,
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
