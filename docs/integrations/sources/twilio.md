@@ -126,7 +126,7 @@ By default, the connector syncs with 3 concurrent threads. Increase **Number of 
 
 ### Alerts pagination limit
 
-The [Alerts API](https://www.twilio.com/docs/usage/monitor-alert) limits each request to 10,000 Alert resources. If the `alerts` stream fails because a time window contains more than 10,000 Alert records, reduce **Slice Step Duration** to sync fewer Alert records per request.
+The [Alerts API](https://www.twilio.com/docs/usage/monitor-alert) limits each request to 10,000 Alert resources. When a time window contains more than 10,000 Alert records, the connector splits the window in half and reads each half, repeating up to 10 times. Twilio rejects a window only after the connector has read its first 10,000 records, so each split re-emits up to 10,000 records. Sync modes that deduplicate by primary key (`sid`) remove these duplicates; Append and Overwrite sync modes keep them. Because splitting stops after 10 halvings, the smallest window depends on **Slice Step Duration**: about 43 minutes with the default **1 Month** and about 84 seconds with **1 Day**. If the `alerts` stream still fails after splitting, decrease **Slice Step Duration**. If it is already **1 Day**, deselect the `alerts` stream.
 
 ### Tuning the slice step duration
 
@@ -134,7 +134,7 @@ Incremental streams page the Twilio API in fixed-size time windows between the r
 
 | Option     | ISO 8601 value | When to use                                                                                                                                                                |
 | :--------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1 Day**  | `P1D`          | Very high volume accounts where monthly or weekly windows trigger Twilio timeouts or exceed the result size Twilio returns.                                                |
+| **1 Day**  | `P1D`          | Very high volume accounts where monthly or weekly windows trigger Twilio timeouts, or where `alerts` can't split a window within 10 splits.                                |
 | **1 Week** | `P1W`          | High volume accounts that still time out with monthly windows.                                                                                                             |
 | **1 Month**| `P1M`          | Default. Works well for most accounts and minimizes request count compared to shorter windows.                                                                             |
 | **1 Year** | `P1Y`          | Low volume accounts or short backfills where you want to minimize the number of slices per stream.                                                                         |
@@ -167,6 +167,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.4 | 2026-10-05 | [87049](https://github.com/airbytehq/airbyte/pull/87049) | Automatically split Alerts time windows that exceed Twilio's 10,000-result limit instead of failing the sync |
 | 1.1.3 | 2026-09-29 | [87367](https://github.com/airbytehq/airbyte/pull/87367) | Update dependencies |
 | 1.1.2 | 2026-09-22 | [86857](https://github.com/airbytehq/airbyte/pull/86857) | Update dependencies |
 | 1.1.1 | 2026-09-15 | [84774](https://github.com/airbytehq/airbyte/pull/84774) | Update dependencies |
