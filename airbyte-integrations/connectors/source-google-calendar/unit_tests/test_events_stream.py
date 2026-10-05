@@ -38,6 +38,8 @@ _TOKEN_REQUEST = HttpRequest(
 )
 _TOKEN_RESPONSE = HttpResponse(json.dumps({"access_token": "at", "expires_in": 3600}))
 _EVENTS_URL = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
+_CALENDAR_URL = "https://www.googleapis.com/calendar/v3/calendars/primary"
+_CALENDAR_LIST_URL = "https://www.googleapis.com/calendar/v3/users/me/calendarList"
 _BASE_PARAMS = {"showDeleted": "true", "maxResults": "2500", "singleEvents": "false"}
 _DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 _RECORD = {"id": "e1", "updated": "2026-09-25T12:00:00.000000Z"}
@@ -69,8 +71,15 @@ def _config(**overrides) -> Mapping[str, Any]:
     return config
 
 
+def _mock_parent_partitions(http_mocker: HttpMocker) -> None:
+    """Mock the union partition-router parents: the configured calendar and the calendar list."""
+    http_mocker.get(HttpRequest(_CALENDAR_URL), HttpResponse(json.dumps({"id": "primary"})))
+    http_mocker.get(HttpRequest(_CALENDAR_LIST_URL), HttpResponse(json.dumps({"items": []})))
+
+
 def _read_events(http_mocker: HttpMocker, sync_mode: SyncMode, state=None, expecting_exception=False):
     http_mocker.post(_TOKEN_REQUEST, _TOKEN_RESPONSE)
+    _mock_parent_partitions(http_mocker)
     config = _config()
     source = get_source(config, state=state)
     return read(source, config, _catalog(sync_mode), state=state, expecting_exception=expecting_exception)
@@ -90,6 +99,7 @@ def test_full_refresh_no_state_sends_no_updated_min():
         request = _events_request()
         http_mocker.get(request, _items_response(_RECORD))
         http_mocker.post(_TOKEN_REQUEST, _TOKEN_RESPONSE)
+        _mock_parent_partitions(http_mocker)
 
         output = read(get_source(_config()), _config(), _catalog(SyncMode.full_refresh))
 
@@ -140,6 +150,7 @@ def test_incremental_stale_start_date_drops_updated_min():
         request = _events_request()
         http_mocker.get(request, _items_response(_RECORD))
         http_mocker.post(_TOKEN_REQUEST, _TOKEN_RESPONSE)
+        _mock_parent_partitions(http_mocker)
         config = _config(start_date=_days_ago(60))
 
         output = read(get_source(config), config, _catalog(SyncMode.incremental))
@@ -181,6 +192,7 @@ def test_410_fails_as_config_error_with_remediation():
             HttpResponse(json.dumps({"error": {"code": 410, "errors": [{"reason": "updatedMinTooLongAgo"}]}}), status_code=410),
         )
         http_mocker.post(_TOKEN_REQUEST, _TOKEN_RESPONSE)
+        _mock_parent_partitions(http_mocker)
         config = _config()
 
         output = read(get_source(config, state=state), config, _catalog(SyncMode.incremental), state=state, expecting_exception=True)
@@ -199,6 +211,7 @@ def test_cancelled_record_is_emitted_and_does_not_move_cursor():
         request = _events_request(updated_min=cursor)
         http_mocker.get(request, _items_response(cancelled, record))
         http_mocker.post(_TOKEN_REQUEST, _TOKEN_RESPONSE)
+        _mock_parent_partitions(http_mocker)
         config = _config()
 
         output = read(get_source(config, state=cursor_state), config, _catalog(SyncMode.incremental), state=cursor_state)
