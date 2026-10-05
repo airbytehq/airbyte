@@ -121,7 +121,7 @@ The deleted child streams were redundant in v3: `demographics_answers`, `intervi
 
 The connector uses Greenhouse's v3 rate-limit headers and a fixed 30-second window. Existing connections may take longer or process fewer concurrent requests while the connector uses its own conservative default request budget.
 
-Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Set each connection to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings.
+If you use OAuth, sync each connection at least once every 14 days. Greenhouse [refresh tokens expire after 14 days of non-use](https://harvestdocs.greenhouse.io/docs/harvest-partner-oauth) and rotate on every refresh, so a connection left paused, turned off, or failing for more than 14 days requires re-running the consent flow from the source settings. Client Credentials has no refresh token, so this doesn't apply to it.
 
 ## Connector upgrade guide
 
