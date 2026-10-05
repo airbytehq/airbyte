@@ -145,6 +145,7 @@ If either limit is exceeded, the API returns a `429` status code and requests mu
 - `createdTime` and `lastModifiedTime` emit `datetime` or `date` depending on the field's display configuration in Airtable. If no result type is configured for `lastModifiedTime`, it emits `string`.
 - `formula` emits `number` when the result type is numeric (number, currency, percent, duration), `array` for array-producing formulas (ARRAYCOMPACT, ARRAYFLATTEN, ARRAYUNIQUE, ARRAYSLICE), and `string` otherwise.
 - `lookup`, `multipleLookupValues`, and `rollup` emit typed arrays matching the referenced field's type (e.g., array of numbers for numeric fields, array of strings for text fields).
+- A `lookup` or `multipleLookupValues` of an `aiText` field emits an array of objects (`{state, value, isStale}`). A lookup whose referenced field type is not recognized emits an untyped `array` rather than failing schema discovery.
 
 ## IP allow list
 
@@ -157,6 +158,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.6.42 | 2026-10-05 | [87680](https://github.com/airbytehq/airbyte/pull/87680) | Fix schema discovery failing for bases with a lookup of an AI (`aiText`) field |
 | 4.6.41 | 2026-09-29 | [87090](https://github.com/airbytehq/airbyte/pull/87090) | Update dependencies |
 | 4.6.40 | 2026-09-22 | [86538](https://github.com/airbytehq/airbyte/pull/86538) | Update dependencies |
 | 4.6.39 | 2026-09-15 | [85936](https://github.com/airbytehq/airbyte/pull/85936) | Update dependencies |

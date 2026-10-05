@@ -310,6 +310,20 @@ definitions:
                 items: string
               current_type: lookup
               condition: "{{ not raw_schema['options']['result'] }}"
+            # A lookup of an AI field: each value is an object {state, value, isStale}.
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: object
+              current_type: lookup
+              condition: "{{ raw_schema['options']['result']['type'] in ['aiText'] }}"
+            # Fallback for result types not listed above. Must stay the LAST lookup rule
+            # (the first matching rule wins). A lookup value is always an array, so an
+            # untyped array is a safe shape; without it an unmapped result type fails
+            # discover for every table in the base.
+            - type: TypesMap
+              target_type: array
+              current_type: lookup
             - type: TypesMap
               target_type:
                 field_type: array
@@ -398,6 +412,20 @@ definitions:
                 items: string
               current_type: multipleLookupValues
               condition: "{{ not raw_schema['options']['result'] }}"
+            # A lookup of an AI field: each value is an object {state, value, isStale}.
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: object
+              current_type: multipleLookupValues
+              condition: "{{ raw_schema['options']['result']['type'] in ['aiText'] }}"
+            # Fallback for result types not listed above. Must stay the LAST multipleLookupValues rule
+            # (the first matching rule wins). A lookup value is always an array, so an
+            # untyped array is a safe shape; without it an unmapped result type fails
+            # discover for every table in the base.
+            - type: TypesMap
+              target_type: array
+              current_type: multipleLookupValues
             - type: TypesMap
               target_type: number
               current_type: formula
