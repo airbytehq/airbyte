@@ -85,7 +85,7 @@ Version 1.0.0 removes the redundant `applications_demographics_answers`, `applic
 
 Timestamp and date fields now carry `format: date-time` / `format: date`, so destinations type them as TIMESTAMP/DATE rather than string. This is another reason to give 1.0.0 its own tables: the v1 tables type those columns as string, and destinations do not change a column's type on a schema refresh.
 
-Most of the fields above are not gone from Harvest. Harvest v3 moved them off the parent record onto their own collection endpoints, and this release does not sync those endpoints yet. Adding the rest is tracked for a follow-up release and will require adding the corresponding scopes to your Greenhouse OAuth application and re-running consent. Until then, Harvest v3 still serves this data at:
+Most of the fields above are not gone from Harvest. Harvest v3 moved them off the parent record onto their own collection endpoints, and this release does not sync those endpoints yet. Adding the rest is tracked for a follow-up release and will require Airbyte to request the corresponding scopes in the consent flow, so you will need to re-run consent once those streams ship. Until then, Harvest v3 still serves this data at:
 
 | Dropped v1 field | Harvest v3 endpoint |
 |---|---|
@@ -121,7 +121,7 @@ The deleted child streams were redundant in v3: `demographics_answers`, `intervi
 
 The connector uses Greenhouse's v3 rate-limit headers and a fixed 30-second window. Existing connections may take longer or process fewer concurrent requests while the connector uses its own conservative default request budget.
 
-Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Set each connection to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings.
+Greenhouse [refresh tokens expire after 14 days of non-use](https://harvestdocs.greenhouse.io/docs/harvest-partner-oauth) and rotate on every refresh. Set each connection to sync at least once every 14 days. A connection left paused, turned off, or failing for more than 14 days requires re-running the consent flow from the source settings.
 
 ## Connector upgrade guide
 
