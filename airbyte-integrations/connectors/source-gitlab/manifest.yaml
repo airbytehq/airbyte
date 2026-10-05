@@ -243,6 +243,7 @@ definitions:
     use_cache: true
     error_handler:
       type: DefaultErrorHandler
+      max_retries: 10
       response_filters:
         - type: HttpResponseFilter
           action: IGNORE
