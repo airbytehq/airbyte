@@ -25,8 +25,7 @@ ENV_GCP_GSM_CREDENTIALS = "GCP_GSM_CREDENTIALS"
 def ci_credentials(ctx, connector_name: str, gcp_gsm_credentials):
     ctx.ensure_object(dict)
     logger.warning(
-        "ci_credentials is deprecated and no longer used by CI. "
-        "Use `airbyte-ops secrets fetch` / `airbyte-ops secrets push` instead."
+        "ci_credentials is deprecated and no longer used by CI. Use `airbyte-ops secrets fetch` / `airbyte-ops secrets push` instead."
     )
     ctx.obj["connector_name"] = connector_name
     # parse unique connector name, because it can have the common prefix "connectors/<unique connector name>"
