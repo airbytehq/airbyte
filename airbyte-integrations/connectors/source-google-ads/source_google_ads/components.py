@@ -622,13 +622,13 @@ class CriterionRetriever(SimpleRetriever):
 @dataclass
 class GoogleAdsRetriever(SimpleRetriever):
     """
-    Custom retriever for Google Ads that recovers from a ChunkedEncodingError raised while a large
-    report is streamed.
+    Custom retriever for Google Ads that recovers from a ChunkedEncodingError (or a read timeout's
+    ConnectionError) raised while a large report is streamed.
 
     When the window can still be halved, the error is turned into the CDK's
     RequestWindowSplitRequiredException and SimpleRetriever splits the date window with the stream's
     own cursor and reads each half in turn, down to cursor_granularity (1 day). A window that cannot be
-    split any further (a 1-day window, or a full refresh stream with no window) is retried in place up to
+    split any further (a 1-day window, or a stream whose cursor cannot split) is retried in place up to
     MAX_RETRIES times before failing with a transient error: a mid-stream drop is a transport blip, so the
     same window usually succeeds on the next attempt.
 
@@ -637,20 +637,15 @@ class GoogleAdsRetriever(SimpleRetriever):
     `cursor` field (the factory passes it to every retriever) and binds the splitter itself.
 
     Note: if the error occurs after some records have already been yielded, those records are re-emitted
-    when the window is split or retried. Most streams have primary keys, so destinations deduplicate them;
-    streams without one (shopping_performance_view, custom GAQL queries) may see duplicates in append mode.
+    when the window is split or retried. Primary keys only remove them in deduplicated sync modes; plain
+    Append keeps them on every stream.
     """
 
     MAX_RETRIES: ClassVar[int] = 3
-    REQUEST_WINDOW_SPLITTING: ClassVar[RequestWindowSplitting] = RequestWindowSplitting(
-        failure_message=(
-            "Google Ads kept interrupting the report stream even after splitting the date range 10 times. "
-            "Retry the sync; if it keeps failing, contact support."
-        )
-    )
 
     decoder: Decoder | None = None
     cursor: Optional[Cursor] = None
+    request_window_splitting: Optional[RequestWindowSplitting] = RequestWindowSplitting()
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
@@ -659,10 +654,10 @@ class GoogleAdsRetriever(SimpleRetriever):
         if self.decoder and isinstance(self.record_selector.extractor, DpathExtractor):
             self.record_selector.extractor.decoder = self.decoder
         _mount_timeout_adapter(self.requester)
-        # Full refresh streams get a FinalStateCursor, which has no `split_request_window`, so they keep
-        # retrying in place.
+        # Streams without incremental_sync get a FinalStateCursor, which has no `split_request_window`; the criterion
+        # streams' full refresh branch gets a per-partition cursor without cursor_granularity, whose splitter returns
+        # None. Both retry in place.
         self.request_window_splitter = getattr(self.cursor, "split_request_window", None)
-        self.request_window_splitting = self.REQUEST_WINDOW_SPLITTING
 
     def _read_pages(
         self,
@@ -679,39 +674,42 @@ class GoogleAdsRetriever(SimpleRetriever):
     ) -> Iterable[Record]:
         try:
             yield from super()._read_pages(records_generator_fn, stream_slice)
-        except requests.exceptions.ChunkedEncodingError as error:
+        except (requests.exceptions.ChunkedEncodingError, requests.exceptions.ConnectionError) as error:
+            # ConnectionError here is a stall past the idle timeout (iter_content); HttpClient retries and wraps pre-header ones.
             if self._can_split_window(stream_slice):
+                logger.warning(f"Response stream was interrupted for {stream_slice.cursor_slice}; splitting the window: {error}")
                 raise RequestWindowSplitRequiredException(stream_name=self.name, error_message=str(error)) from error
 
-            has_date_boundaries = bool(stream_slice.cursor_slice.get("start_time") and stream_slice.cursor_slice.get("end_time"))
+            start, end = stream_slice.cursor_slice.get("start_time"), stream_slice.cursor_slice.get("end_time")
+            at_minimum_window = bool(start) and start == end
             if retry_count < self.MAX_RETRIES:
-                if has_date_boundaries:
-                    logger.warning(f"ChunkedEncodingError on minimum slice size (1 day). Retry {retry_count + 1}/{self.MAX_RETRIES}...")
+                if at_minimum_window:
+                    logger.warning(f"{type(error).__name__} on minimum slice size (1 day). Retry {retry_count + 1}/{self.MAX_RETRIES}...")
                 else:
                     logger.warning(
-                        f"ChunkedEncodingError on slice without date boundaries (full refresh stream). "
+                        f"{type(error).__name__} on slice without date boundaries (full refresh stream). "
                         f"Retry {retry_count + 1}/{self.MAX_RETRIES}..."
                     )
                 yield from self._read_pages_with_retry(records_generator_fn, stream_slice, retry_count + 1)
                 return
 
-            if has_date_boundaries:
+            if at_minimum_window:
                 raise AirbyteTracedException(
                     message="Response stream was interrupted. The slice is already at minimum size (1 day) "
                     f"and {self.MAX_RETRIES} retries were exhausted.",
-                    internal_message=f"ChunkedEncodingError persisted after {self.MAX_RETRIES} retries on minimum slice.",
+                    internal_message=f"{type(error).__name__} persisted after {self.MAX_RETRIES} retries on minimum slice.",
                     failure_type=FailureType.transient_error,
                 ) from error
             raise AirbyteTracedException(
                 message=f"Response stream was interrupted. {self.MAX_RETRIES} retries were exhausted.",
-                internal_message=f"ChunkedEncodingError persisted after {self.MAX_RETRIES} retries on full refresh slice.",
+                internal_message=f"{type(error).__name__} persisted after {self.MAX_RETRIES} retries on full refresh slice.",
                 failure_type=FailureType.transient_error,
             ) from error
 
     def _can_split_window(self, stream_slice: StreamSlice) -> bool:
         """
         Ask the cursor whether `stream_slice` can still be halved, with the same `min_split_window` the CDK
-        will use. The cursor owns the floor: no splitter (full refresh), no `cursor_granularity`, or a window
+        will use. The cursor owns the floor: no splitter (FinalStateCursor), no `cursor_granularity`, or a window
         already at one granularity unit all answer `None`.
         """
         if self.request_window_splitter is None or self.request_window_splitting is None:

@@ -5,10 +5,11 @@
 import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import List
+from typing import List, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
+import requests
 from requests.exceptions import ChunkedEncodingError, StreamConsumedError
 from source_google_ads.components import (
     ClickViewHttpRequester,
@@ -25,8 +26,9 @@ from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
+from airbyte_cdk.sources.declarative.retrievers.request_window_splitting import RequestWindowSplitting
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
     CustomFormatConcurrentStreamStateConverter,
 )
@@ -527,20 +529,20 @@ class TestGoogleAdsStreamingDecoder:
             mock_stream.assert_called_once()
 
 
-def _daily_cursor() -> ConcurrentCursor:
-    """The shape of the incremental Google Ads streams' cursor: `%Y-%m-%d` dates with `cursor_granularity: P1D`."""
+def _daily_cursor(datetime_format: str = "%Y-%m-%d", cursor_granularity: Optional[timedelta] = timedelta(days=1)) -> ConcurrentCursor:
+    """By default the shape of the incremental Google Ads streams' cursor: `%Y-%m-%d` dates with `cursor_granularity: P1D`."""
     return ConcurrentCursor(
         stream_name="test_stream",
         stream_namespace=None,
         stream_state={},
         message_repository=MagicMock(),
         connector_state_manager=MagicMock(),
-        connector_state_converter=CustomFormatConcurrentStreamStateConverter(datetime_format="%Y-%m-%d", is_sequential_state=True),
+        connector_state_converter=CustomFormatConcurrentStreamStateConverter(datetime_format=datetime_format, is_sequential_state=True),
         cursor_field=CursorField(cursor_field_key="segments.date"),
         slice_boundary_fields=("start_time", "end_time"),
         start=datetime(2026, 1, 1, tzinfo=timezone.utc),
         end_provider=lambda: datetime(2026, 2, 1, tzinfo=timezone.utc),
-        cursor_granularity=timedelta(days=1),
+        cursor_granularity=cursor_granularity,
     )
 
 
@@ -563,8 +565,7 @@ class TestGoogleAdsRetriever:
         retriever = _google_ads_retriever(cursor)
 
         assert retriever.request_window_splitter == cursor.split_request_window
-        assert retriever.request_window_splitting is GoogleAdsRetriever.REQUEST_WINDOW_SPLITTING
-        assert "splitting the date range" in retriever.request_window_splitting.failure_message
+        assert retriever.request_window_splitting == RequestWindowSplitting()
 
     def test_given_no_cursor_then_no_splitter(self):
         """Full refresh streams have no splittable cursor, so they only ever retry in place."""
@@ -572,10 +573,14 @@ class TestGoogleAdsRetriever:
 
         assert retriever.request_window_splitter is None
 
-    def test_chunked_encoding_error_on_splittable_window_raises_split_required(self):
+    @pytest.mark.parametrize(
+        "error", [ChunkedEncodingError, requests.exceptions.ConnectionError], ids=["chunked_encoding_error", "read_timeout"]
+    )
+    def test_chunked_encoding_error_on_splittable_window_raises_split_required(self, error):
         """
         A 14-day window can still be halved, so the error is handed to the CDK as a split request instead of
-        being retried here. The read is attempted once; the CDK then reads each half.
+        being retried here. The read is attempted once; the CDK then reads each half. A stream stalled past the
+        idle timeout raises requests' ConnectionError from iter_content and is handled the same way.
         """
         retriever = _google_ads_retriever(_daily_cursor())
         call_count = 0
@@ -583,7 +588,7 @@ class TestGoogleAdsRetriever:
         def mock_read_pages(*args, **kwargs):
             nonlocal call_count
             call_count += 1
-            raise ChunkedEncodingError("simulated network error")
+            raise error("simulated network error")
             yield
 
         stream_slice = StreamSlice(
@@ -596,7 +601,7 @@ class TestGoogleAdsRetriever:
                 list(retriever._read_pages(MagicMock(), stream_slice))
 
         assert call_count == 1
-        assert isinstance(exc_info.value.__cause__, ChunkedEncodingError)
+        assert isinstance(exc_info.value.__cause__, error)
         assert "test_stream" in exc_info.value.internal_message
 
     def test_can_split_window_agrees_with_the_cursor(self):
@@ -620,7 +625,10 @@ class TestGoogleAdsRetriever:
 
         assert retriever._can_split_window(stream_slice) is False
 
-    def test_chunked_encoding_error_on_one_day_window_with_cursor_retries_in_place(self):
+    @pytest.mark.parametrize(
+        "error", [ChunkedEncodingError, requests.exceptions.ConnectionError], ids=["chunked_encoding_error", "read_timeout"]
+    )
+    def test_chunked_encoding_error_on_one_day_window_with_cursor_retries_in_place(self, error):
         """At the 1-day floor the cursor cannot split, so the retriever falls back to its own retries."""
         retriever = _google_ads_retriever(_daily_cursor())
         call_count = 0
@@ -629,7 +637,7 @@ class TestGoogleAdsRetriever:
             nonlocal call_count
             call_count += 1
             if call_count < 3:
-                raise ChunkedEncodingError("simulated network error")
+                raise error("simulated network error")
             yield MagicMock()
 
         stream_slice = StreamSlice(
@@ -643,31 +651,57 @@ class TestGoogleAdsRetriever:
         assert len(records) == 1
         assert call_count == 3
 
-    def test_criterion_full_refresh_slice_retries_instead_of_failing_to_parse_dates(self):
-        """
-        The criterion streams' full refresh branch has no cursor but carries `%Y-%m-%d %H:%M:%S.%f` boundaries.
-        It used to raise a ValueError parsing them as `%Y-%m-%d`; now it retries in place like any full refresh.
-        """
-        retriever = _google_ads_retriever()
+    def test_chunked_encoding_error_on_one_day_window_fails_after_exactly_three_retries(self):
+        """A drop that persists at the 1-day floor is read 1 + MAX_RETRIES times, then fails as a transient error."""
+        retriever = _google_ads_retriever(_daily_cursor())
         call_count = 0
 
-        def mock_read_pages_with_error(*args, **kwargs):
+        def mock_read_pages_always_fails(*args, **kwargs):
             nonlocal call_count
             call_count += 1
-            if call_count < 2:
-                raise ChunkedEncodingError("simulated network error")
-            yield MagicMock()
+            raise ChunkedEncodingError("persistent network error")
+            yield
+
+        stream_slice = StreamSlice(partition={"customer_id": "123"}, cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-01"})
+
+        with patch.object(SimpleRetriever, "_read_pages", side_effect=mock_read_pages_always_fails):
+            with pytest.raises(AirbyteTracedException) as exc_info:
+                list(retriever._read_pages(MagicMock(), stream_slice))
+
+        assert call_count == 4
+        assert exc_info.value.failure_type.value == "transient_error"
+        assert exc_info.value.message == (
+            "Response stream was interrupted. The slice is already at minimum size (1 day) and 3 retries were exhausted."
+        )
+        assert isinstance(exc_info.value.__cause__, ChunkedEncodingError)
+
+    def test_criterion_full_refresh_slice_retries_instead_of_failing_to_parse_dates(self):
+        """
+        The criterion streams' full refresh branch carries a `%Y-%m-%d %H:%M:%S.%f` start_date..now window and a cursor
+        without `cursor_granularity`, so its splitter cannot split it. It used to raise a ValueError parsing the boundaries
+        as `%Y-%m-%d`; now it is retried in place and fails with the full refresh wording, not the 1-day one.
+        """
+        retriever = _google_ads_retriever(_daily_cursor(datetime_format="%Y-%m-%d %H:%M:%S.%f", cursor_granularity=None))
+        call_count = 0
+
+        def mock_read_pages_always_fails(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            raise ChunkedEncodingError("simulated network error")
+            yield
 
         stream_slice = StreamSlice(
             partition={"customer_id": "123"},
             cursor_slice={"start_time": "2026-01-01 00:00:00.000000", "end_time": "2026-01-14 23:59:59.999999"},
         )
 
-        with patch.object(SimpleRetriever, "_read_pages", side_effect=mock_read_pages_with_error):
-            records = list(retriever._read_pages(MagicMock(), stream_slice))
+        with patch.object(SimpleRetriever, "_read_pages", side_effect=mock_read_pages_always_fails):
+            with pytest.raises(AirbyteTracedException) as exc_info:
+                list(retriever._read_pages(MagicMock(), stream_slice))
 
-        assert len(records) == 1
-        assert call_count == 2
+        assert retriever.request_window_splitter is not None
+        assert call_count == 4
+        assert exc_info.value.message == "Response stream was interrupted. 3 retries were exhausted."
 
     def test_chunked_encoding_error_retries_on_minimum_slice(self):
         """
@@ -892,6 +926,48 @@ def test_custom_retriever_incremental_streams_declare_cursor_granularity(stream_
     and every ChunkedEncodingError would fall through to 3 retries and a failure.
     """
     assert incremental_sync.get("cursor_granularity"), f"Stream {stream_name} has no cursor_granularity, so its window could never be split"
+
+
+_CRITERION_STREAMS = {"ad_group_criterion", "ad_listing_group_criterion", "campaign_criterion"}
+
+
+@pytest.mark.parametrize(
+    "custom_queries",
+    [
+        pytest.param([], id="static_streams"),
+        pytest.param(
+            [{"query": "SELECT campaign.id, segments.date FROM campaign", "table_name": "custom_incremental", "primary_key": None}],
+            id="custom_gaql_stream",
+        ),
+    ],
+)
+def test_built_google_ads_retriever_streams_split_with_their_own_cursor(custom_queries):
+    """
+    The factory, not the test, hands the cursor to GoogleAdsRetriever: every built incremental stream must split with
+    its own (per-partition) cursor, streams without incremental_sync (FinalStateCursor) must not, and the criterion full
+    refresh branch has a cursor but no cursor_granularity, so it cannot split either. Covers the dynamic custom GAQL
+    streams and StateDelegatingStream branches the YAML guard above does not see.
+    """
+    config = {**_DEFAULT_CONFIG, "custom_queries_array": custom_queries}
+    checked = set()
+    for stream in get_source(config).streams(config):
+        retriever = stream._stream_partition_generator._partition_factory._retriever
+        if not isinstance(retriever, GoogleAdsRetriever):
+            continue
+        checked.add(stream.name)
+        if isinstance(stream.cursor, FinalStateCursor):
+            assert retriever.request_window_splitter is None, stream.name
+            continue
+        assert retriever.request_window_splitter == stream.cursor.split_request_window, stream.name
+        if stream.name in _CRITERION_STREAMS:
+            window = {"start_time": "2024-01-01 00:00:00.000000", "end_time": "2024-01-14 23:59:59.999999"}
+            assert not retriever._can_split_window(StreamSlice(partition={"customer_id": "customers/1"}, cursor_slice=window)), stream.name
+        else:
+            window = {"start_time": "2024-01-01", "end_time": "2024-01-14"}
+            assert retriever._can_split_window(StreamSlice(partition={"customer_id": "customers/1"}, cursor_slice=window)), stream.name
+    assert _CRITERION_STREAMS <= checked
+    if custom_queries:
+        assert "custom_incremental" in checked
 
 
 @pytest.mark.parametrize(

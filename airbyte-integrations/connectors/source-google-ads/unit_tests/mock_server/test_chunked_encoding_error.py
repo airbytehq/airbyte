@@ -1,11 +1,13 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import json
+import re
 from unittest.mock import patch
 
+import requests
 from requests.exceptions import ChunkedEncodingError
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -14,6 +16,7 @@ from unit_tests.mock_server.config import ConfigBuilder
 from unit_tests.mock_server.conftest import create_source
 from unit_tests.mock_server.helpers import (
     API_BASE,
+    build_incremental_query,
     build_stream_response,
     get_customer_client_query,
     mock_accessible_accounts,
@@ -256,3 +259,153 @@ def test_chunked_encoding_error_on_one_customer_splits_only_that_customer():
     final_state = output.most_recent_state.stream_state.__dict__
     states = {state["partition"]["customer_id"]: state["cursor"]["segments.date"] for state in final_state["states"]}
     assert states == {f"customers/{_CUSTOMER_A}": "2024-01-10", f"customers/{_CUSTOMER_B}": "2024-01-12"}
+
+
+def test_drop_raised_while_decoding_the_response_body_splits_the_window():
+    """
+    The real failure point: the request succeeds and the body breaks while GoogleAdsStreamingDecoder reads it (requests
+    raises ChunkedEncodingError from iter_content). The error reaches GoogleAdsRetriever unwrapped, so the full window is
+    sent once and then split.
+    """
+    config = ConfigBuilder().with_start_date("2024-01-01").with_end_date("2024-01-14").build()
+    full_window_request = HttpRequest(
+        url=f"{API_BASE}/customers/{_CUSTOMER_ID}/googleAds:searchStream",
+        body=json.dumps({"query": build_incremental_query(_STREAM_NAME, "2024-01-01", "2024-01-14")}),
+    )
+    original_iter_content = requests.models.Response.iter_content
+
+    def iter_content_breaking_the_full_window(self, *args, **kwargs):
+        body = getattr(self.request, "body", None) or b""
+        if "BETWEEN '2024-01-01' AND '2024-01-14'" in (body.decode() if isinstance(body, bytes) else body):
+
+            def broken_stream():
+                raise ChunkedEncodingError("Connection broken: IncompleteRead(0 bytes read)")
+                yield
+
+            return broken_stream()
+        return original_iter_content(self, *args, **kwargs)
+
+    with HttpMocker() as http_mocker:
+        setup_full_refresh_parent_mocks(http_mocker)
+        http_mocker.post(full_window_request, build_stream_response([_RECORD_FIRST_HALF, _RECORD_SECOND_HALF]))
+        mock_incremental_stream(
+            http_mocker,
+            _STREAM_NAME,
+            start_date="2024-01-01",
+            end_date="2024-01-07",
+            response=build_stream_response([_RECORD_FIRST_HALF]),
+        )
+        mock_incremental_stream(
+            http_mocker,
+            _STREAM_NAME,
+            start_date="2024-01-08",
+            end_date="2024-01-14",
+            response=build_stream_response([_RECORD_SECOND_HALF]),
+        )
+
+        with patch.object(requests.models.Response, "iter_content", iter_content_breaking_the_full_window):
+            catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+            source = create_source(config=config, catalog=catalog)
+            output = read(source, config=config, catalog=catalog)
+        http_mocker.assert_number_of_calls(full_window_request, 1)
+
+    assert sorted(r.record.data["ad_group.id"] for r in output.records) == [400001, 400002]
+    final_state = output.most_recent_state.stream_state.__dict__
+    states = {state["partition"]["customer_id"]: state["cursor"]["segments.date"] for state in final_state["states"]}
+    assert states == {f"customers/{_CUSTOMER_ID}": "2024-01-10"}
+
+
+def test_drop_after_records_were_emitted_replays_them_and_keeps_the_latest_cursor():
+    """A large report drops after its first row was emitted: the split re-emits that row (at-least-once)."""
+    config = ConfigBuilder().with_start_date("2024-01-01").with_end_date("2024-01-14").build()
+
+    with HttpMocker() as http_mocker:
+        setup_full_refresh_parent_mocks(http_mocker)
+        for start_date, end_date, records in [
+            ("2024-01-01", "2024-01-14", [_RECORD_FIRST_HALF, _RECORD_SECOND_HALF]),
+            ("2024-01-01", "2024-01-07", [_RECORD_FIRST_HALF]),
+            ("2024-01-08", "2024-01-14", [_RECORD_SECOND_HALF]),
+        ]:
+            mock_incremental_stream(
+                http_mocker, _STREAM_NAME, start_date=start_date, end_date=end_date, response=build_stream_response(records)
+            )
+
+        original_read_pages = SimpleRetriever._read_pages
+
+        def read_pages_dropping_after_first_record(self, records_generator_fn, stream_slice):
+            records = original_read_pages(self, records_generator_fn, stream_slice)
+            cursor = stream_slice.cursor_slice
+            if self.name == _STREAM_NAME and cursor.get("start_time") == "2024-01-01" and cursor.get("end_time") == "2024-01-14":
+                yield next(iter(records))
+                raise ChunkedEncodingError("simulated midstream break")
+            yield from records
+
+        with patch.object(SimpleRetriever, "_read_pages", read_pages_dropping_after_first_record):
+            catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+            source = create_source(config=config, catalog=catalog)
+            output = read(source, config=config, catalog=catalog)
+
+    assert [r.record.data["ad_group.id"] for r in output.records] == [400001, 400001, 400002]
+    final_state = output.most_recent_state.stream_state.__dict__
+    states = {state["partition"]["customer_id"]: state["cursor"]["segments.date"] for state in final_state["states"]}
+    assert states == {f"customers/{_CUSTOMER_ID}": "2024-01-10"}
+
+
+def test_drop_that_persists_at_the_one_day_floor_fails_without_checkpointing_the_window():
+    """
+    Every window containing 2024-01-08 drops: 01..14 >> 01..07 (read) and 08..14 >> 08..10 >> 08..08, which is retried
+    3 times and then fails as a transient error. The partition is never closed, so no state moves past the start.
+    """
+    config = ConfigBuilder().with_start_date("2024-01-01").with_end_date("2024-01-14").build()
+    read_windows = []
+
+    with HttpMocker() as http_mocker:
+        setup_full_refresh_parent_mocks(http_mocker)
+        mock_incremental_stream(
+            http_mocker,
+            _STREAM_NAME,
+            start_date="2024-01-01",
+            end_date="2024-01-07",
+            response=build_stream_response([_RECORD_FIRST_HALF]),
+        )
+
+        original_read_pages = SimpleRetriever._read_pages
+
+        def read_pages_dropping_windows_with_jan_8(self, records_generator_fn, stream_slice):
+            if self.name == _STREAM_NAME:
+                start, end = stream_slice.cursor_slice.get("start_time"), stream_slice.cursor_slice.get("end_time")
+                read_windows.append((start, end))
+                if start <= "2024-01-08" <= end:
+                    raise ChunkedEncodingError("simulated midstream break")
+            yield from original_read_pages(self, records_generator_fn, stream_slice)
+
+        with patch.object(SimpleRetriever, "_read_pages", read_pages_dropping_windows_with_jan_8):
+            catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+            source = create_source(config=config, catalog=catalog)
+            output = read(source, config=config, catalog=catalog, expecting_exception=True)
+
+    assert read_windows == [
+        ("2024-01-01", "2024-01-14"),
+        ("2024-01-01", "2024-01-07"),
+        ("2024-01-08", "2024-01-14"),
+        ("2024-01-08", "2024-01-10"),
+        *[("2024-01-08", "2024-01-08")] * 4,
+    ]
+    assert [r.record.data["ad_group.id"] for r in output.records] == [400001]
+    stream_errors = [
+        (e.trace.error.failure_type, e.trace.error.message)
+        for e in output.errors
+        if e.trace.error.stream_descriptor and e.trace.error.stream_descriptor.name == _STREAM_NAME
+    ]
+    assert stream_errors == [
+        (
+            FailureType.transient_error,
+            "Response stream was interrupted. The slice is already at minimum size (1 day) and 3 retries were exhausted.",
+        )
+    ]
+    emitted = [
+        json.dumps(m.state.stream.stream_state.__dict__, default=vars)
+        for m in output.state_messages
+        if m.state.stream.stream_descriptor.name == _STREAM_NAME
+    ]
+    assert not [date for state in emitted for date in re.findall(r'"segments\.date": "([0-9-]+)"', state) if date >= "2024-01-03"]
