@@ -363,7 +363,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.8.6 | 2026-10-05 | [0](https://github.com/airbytehq/airbyte/pull/0) | Name the offending config key in the checkpoint interval error |
+| 3.8.6 | 2026-10-05 | [87689](https://github.com/airbytehq/airbyte/pull/87689) | Name the offending config key in the checkpoint interval error |
 | 3.8.6   | 2026-09-16 | [86369](https://github.com/airbytehq/airbyte/pull/86369) | Fix NULL array columns taking the previous record's value on the socket/protobuf CDC path.                                                                                 |
 | 3.8.5   | 2026-07-29 | [82773](https://github.com/airbytehq/airbyte/pull/82773) | Fix ClassCastException when an interval column has a default value during CDC.                                                                                             |
 | 3.8.4   | 2026-07-28 | [79110](https://github.com/airbytehq/airbyte/pull/79110) | Fix PostGIS geometry/geography columns returning NULL on CDC path. Values now always use hex-WEKB format, for both CDC and snapshots.                                      |
