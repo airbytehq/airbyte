@@ -162,7 +162,7 @@ in [Step 1](#step-1-set-up-key-pair-authentication) to authenticate.
 
 | Field | Description |
 | :---- | :---------- |
-| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html) | The Snowflake hostname or a custom proxy domain, such as `accountname.espressocomputing.com`. For direct connections, use the format `accountname.snowflakecomputing.com` or, for accounts that use a region-based locator, `accountname.region.cloud.snowflakecomputing.com`. Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
+| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html) | The host domain of the Snowflake instance, ending with `snowflakecomputing.com`. Use the format `accountname.snowflakecomputing.com` or, for accounts that use a region-based locator, `accountname.region.cloud.snowflakecomputing.com`. Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
 | [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles) | The role you created in Step 2 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE` |
 | [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 2 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE` |
 | [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The database you created in Step 2 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE` |
@@ -338,7 +338,6 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.1.1 | 2026-10-05 | | Allow arbitrary domains for Snowflake connections, including custom proxies. |
 | 5.1.0           | 2026-10-01 | [87611](https://github.com/airbytehq/airbyte/pull/87611)   | Add optional Fusion S3 sync copies of loaded batches (off by default; enabled through environment configuration). |
 | 5.0.1           | 2026-09-09 | [84953](https://github.com/airbytehq/airbyte/pull/84953)   | Add missing Airbyte meta columns (`_airbyte_meta`, `_airbyte_generation_id`) to tables created by connector versions prior to 3.10.0 when the `AIRBYTE_DESTINATION_SNOWFLAKE_META_COLUMN_REPAIR` env var is set to `true` (off by default), fixing "invalid identifier" sync failures after upgrading to 4.x. |
 | 5.0.0           | 2026-09-02 | [85314](https://github.com/airbytehq/airbyte/pull/85314)   | Deprecate username/password authentication; key pair authentication is now the only recommended auth method. Username/password will be removed in a future release.                      |

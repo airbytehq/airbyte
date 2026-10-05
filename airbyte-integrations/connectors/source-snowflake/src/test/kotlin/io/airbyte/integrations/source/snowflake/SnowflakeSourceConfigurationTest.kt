@@ -9,30 +9,17 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
 
 class SnowflakeSourceConfigurationTest {
 
     private val factory = SnowflakeSourceConfigurationFactory()
 
-    @ParameterizedTest
-    @ValueSource(
-        strings =
-            [
-                "test.snowflakecomputing.com",
-                "test.us-east-2.aws.snowflakecomputing.com",
-                "test.us-east-1.privatelink.snowflakecomputing.com",
-                "test.localstack.cloud",
-                "espressoai-benchmark.espressocomputing.com",
-                "proxy.example.org",
-            ]
-    )
-    fun testSchemaFilteringWithSpecifiedSchema(hostname: String) {
+    @Test
+    fun testSchemaFilteringWithSpecifiedSchema() {
         // Test that when schema is specified, it's used as the namespace
         val spec =
             SnowflakeSourceConfigurationSpecification().apply {
-                host = hostname
+                host = "test.snowflakecomputing.com"
                 role = "TEST_ROLE"
                 warehouse = "TEST_WAREHOUSE"
                 database = "TEST_DATABASE"
@@ -45,9 +32,6 @@ class SnowflakeSourceConfigurationTest {
             }
 
         val config = factory.makeWithoutExceptionHandling(spec)
-
-        assertEquals(hostname, config.realHost)
-        assertEquals("jdbc:snowflake://$hostname", config.jdbcUrlFmt.format(config.realHost))
 
         // Verify that namespaces contains the database name (not schema name)
         assertEquals(setOf("TEST_DATABASE"), config.namespaces)

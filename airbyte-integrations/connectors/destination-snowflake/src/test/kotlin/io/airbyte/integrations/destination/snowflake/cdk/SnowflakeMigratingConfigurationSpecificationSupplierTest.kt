@@ -34,7 +34,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
                 "account.us-east-2.aws.snowflakecomputing.com",
                 "account.us-east-1.privatelink.snowflakecomputing.com",
                 "account.localstack.cloud",
-                "espressoai-benchmark.espressocomputing.com",
+                "account.proxy.example.com",
                 "proxy.example.org",
                 "a.b.c.d.e.f.example.net",
             ]
