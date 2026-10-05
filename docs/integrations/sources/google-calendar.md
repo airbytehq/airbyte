@@ -1,27 +1,113 @@
 # Google Calendar
 
-Solves https://github.com/airbytehq/airbyte/issues/45995
+<HideInUI>
 
-## Configuration
+This page contains the setup guide and reference information for the [Google Calendar](https://calendar.google.com) source connector.
 
-| Input | Type | Description | Default Value |
-| ----- | ---- | ----------- | ------------- |
-| `client_id` | `string` | OAuth 2.0 client ID. | |
-| `client_secret` | `string` | OAuth 2.0 client secret. | |
-| `client_refresh_token_2` | `string` | OAuth refresh token. | |
-| `calendarid` | `string` | Calendar Id. | |
-| `start_date` | `string` | Only sync `events` modified on or after this date (incremental cursor start). Must be within roughly the last 30 days; older values are ignored and all events are read. | |
-| `num_workers` | `integer` | Number of concurrent workers. | 3 |
+</HideInUI>
 
-## Streams
+## Prerequisites
+
+- A Google account with access to the calendars you want to sync.
+- A Google Cloud project with the Google Calendar API enabled and OAuth credentials (Client ID, Client Secret, and a Refresh Token). See the setup steps below.
+- (Optional) A specific Calendar ID if you only want to sync one calendar.
+- (Optional) A Start Date to limit how far back incremental `events` syncs look.
+
+## Setup guide
+
+### Step 1: Obtain Google credentials
+
+To authenticate with OAuth you need a **Client ID**, **Client Secret**, and **Refresh Token** from your own Google Cloud project:
+
+1. Enable the Google Calendar API for your project in the [API Library](https://console.cloud.google.com/apis/library/calendar-json.googleapis.com).
+2. Create an OAuth client (type **Web application**) on the [Credentials page](https://console.cloud.google.com/apis/credentials). Add `https://developers.google.com/oauthplayground` as an authorized redirect URI.
+3. Obtain a refresh token with the [OAuth 2.0 Playground](https://developers.google.com/oauthplayground):
+   - Click the gear icon, check **Use your own OAuth credentials**, and enter your Client ID and Client Secret.
+   - Authorize the scopes `https://www.googleapis.com/auth/calendar.readonly` and `https://www.googleapis.com/auth/calendar.acls.readonly`, then exchange the authorization code for tokens. The `calendar.acls.readonly` scope is required for the `acl` stream; `calendar.readonly` alone is sufficient for all other streams.
+
+### Step 2: Set up the Google Calendar connector in Airbyte
+
+<!-- env:cloud -->
+
+#### For Airbyte Cloud
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Google Calendar** from the Source type dropdown.
+4. Enter a name for the connector.
+5. Enter the **Client ID**, **Client secret**, and **Refresh token** you obtained in Step 1.
+6. (Optional) For **Calendar Id**, enter a specific calendar ID to sync only that calendar. The calendar does not need to appear in the account's calendar list; it is read directly. The value `primary` is accepted for the account's primary calendar. Leave empty to sync every calendar in the account's calendar list.
+7. (Optional) For **Start Date**, enter the earliest `updated` timestamp for incremental `events` syncs in the format `YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`. When unset, the first sync fetches all events; values older than roughly 30 days are ignored and all events are read.
+8. (Optional) For **Number of concurrent workers**, set the number of concurrent request workers (1–10, default 3).
+9. Click **Set up source** and wait for the tests to complete.
+
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+#### For Airbyte Open Source
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Google Calendar** from the Source type dropdown.
+4. Enter a name for the connector.
+5. Enter the **Client ID**, **Client secret**, and **Refresh token** you obtained in Step 1 — a refresh token issued by *your own* Google Cloud OAuth app with the `calendar.readonly` and `calendar.acls.readonly` scopes, plus that app's client ID and client secret. Without `calendar.acls.readonly`, the `acl` stream is skipped (its 403 responses are ignored).
+6. (Optional) For **Calendar Id**, enter a specific calendar ID to sync only that calendar, or `primary` for the account's primary calendar. The calendar does not need to appear in the account's calendar list; it is read directly. Leave empty to sync all calendars.
+7. (Optional) For **Start Date**, enter the earliest `updated` timestamp for incremental `events` syncs (`YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`). When unset, the first sync fetches all events; values older than roughly 30 days are ignored and all events are read.
+8. (Optional) For **Number of concurrent workers**, set the number of concurrent request workers (1–10, default 3).
+9. Click **Set up source** and wait for the tests to complete.
+
+<!-- /env:oss -->
+
+<HideInUI>
+
+## Supported sync modes
+
+The Google Calendar source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (`events` only)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) (`events` only)
+
+## Supported streams
+
+The `events`, `acl`, and `freebusy` streams sync once per calendar. When **Calendar Id** is configured, only that calendar is synced — it is read directly, so it does not need to appear in the account's calendar list; otherwise every calendar in the account's calendar list is synced.
 
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-| ----------- | ----------- | ---------- | ------------------- | -------------------- |
+| ----------- | ----------- | ---------- | ------------------ | --------------------- |
 | colors | calendar.event | No pagination | ✅ | ❌ |
 | settings | id | DefaultPaginator | ✅ | ❌ |
 | calendarlist | id | DefaultPaginator | ✅ | ❌ |
 | calendars | id | DefaultPaginator | ✅ | ❌ |
 | events | id | DefaultPaginator | ✅ | ✅ |
+| acl | calendar_id, id | DefaultPaginator | ✅ | ❌ |
+| freebusy | calendar_id, start, end | No pagination | ✅ | ❌ |
+
+Deleted events are replicated: cancelled events arrive with `status: "cancelled"` (`showDeleted=true`).
+
+## Limitations & troubleshooting
+
+<details>
+<summary>
+Expand to see details about Google Calendar connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+- **API quota:** the Google Calendar API enforces per-user quotas (600 requests per minute per user per project; 10,000 per minute per project). The connector rate-limits itself to 500 requests/minute and retries rate-limit responses (403/429) automatically. See [Google's quota documentation](https://developers.google.com/calendar/api/guides/quota).
+- **Stale cursor:** Google only returns `events` changes from roughly the last 30 days. When the saved cursor or configured Start Date is older than that, the `updatedMin` bound is dropped and every event is re-read rather than failing with a `410` error. The 410 handler remains as a safety net (configuration error).
+- **`acl` scope and ownership:** the `acl` stream requires the `calendar.acls.readonly` scope and can only read ACLs for calendars the authenticated account owns; ACLs of other calendars are skipped.
+- **`freebusy` is a point-in-time window:** each sync queries busy blocks from `Start Date` (or 30 days ago) through 45 days in the future. It is a snapshot, not a historical record.
+- **`settings.value` is always a string**, including for numeric-looking settings.
+- **`colors` is a singleton:** it returns a single record containing `calendar` and `event` color-palette objects.
+- The `calendars` stream currently returns calendar-list entries; a fix is planned in a future major release.
+
+### Troubleshooting
+
+- Check out common troubleshooting issues for the Google Calendar source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+
+</details>
 
 ## IP allow list
 
@@ -92,3 +178,5 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.0.1 | 2024-10-06 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
 
 </details>
+
+</HideInUI>
