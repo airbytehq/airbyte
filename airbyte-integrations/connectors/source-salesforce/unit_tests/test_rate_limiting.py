@@ -161,6 +161,24 @@ class SalesforceRefreshAccessTokenIfStaleTest(TestCase):
             sf.refresh_access_token_if_stale()
         sf._perform_login.assert_called_once()
 
+    def test_proactive_refresh_queued_behind_a_rejected_grant_does_not_redeem_it(self) -> None:
+        """A thread that passed the unlocked check while another thread's refresh was being rejected must not redeem the grant again."""
+        sf = self._make_sf()
+        sf._last_login_time = 0.0
+
+        class _RejectedWhileWaiting:
+            def __enter__(self):
+                sf._login_permanently_failed = True
+
+            def __exit__(self, *args):
+                return False
+
+        sf._login_lock = _RejectedWhileWaiting()
+        with patch("source_salesforce.api.time.monotonic", return_value=_TOKEN_REFRESH_INTERVAL_SECONDS + 1):
+            sf.refresh_access_token_if_stale()
+
+        sf._perform_login.assert_not_called()
+
     def test_login_flags_permanent_failure_on_credential_error(self) -> None:
         sf = self._make_sf()
         sf._perform_login.side_effect = AirbyteTracedException(failure_type=FailureType.config_error)
@@ -243,6 +261,18 @@ class SalesforceErrorHandlerTest(TestCase):
 
         assert resolution.response_action == ResponseAction.RETRY
         token_provider.force_refresh.assert_called_once()
+
+    def test_invalid_session_does_not_claim_a_refresh_that_failed(self) -> None:
+        token_provider = MagicMock()
+        token_provider.force_refresh.return_value = False
+        token_provider.credentials_permanently_failed = False
+        handler = SalesforceErrorHandler(token_provider=token_provider)
+        response = self._create_response("GET", self._url_for_job_creation(), 401, [{"errorCode": "INVALID_SESSION_ID", "message": _ANY}])
+
+        resolution = handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.RETRY
+        assert resolution.error_message == "Salesforce session expired or invalid. The token could not be refreshed."
 
     def test_invalid_session_fails_as_config_error_when_credentials_permanently_failed(self) -> None:
         token_provider = MagicMock()

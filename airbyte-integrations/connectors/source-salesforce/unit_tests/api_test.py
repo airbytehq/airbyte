@@ -36,6 +36,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalogSerializer,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    FailureType,
     SyncMode,
     Type,
 )
@@ -44,6 +45,7 @@ from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
 
 _A_CHUNKED_RESPONSE = [b"first chunk", b"second chunk"]
@@ -165,6 +167,17 @@ def test_rotated_refresh_token_is_persisted(requests_mock, capsys):
 
     assert config["refresh_token"] == "new_refresh_token"
     assert _persisted_refresh_tokens(capsys) == ["new_refresh_token"]
+
+
+def test_rotated_refresh_token_is_masked_in_logs(requests_mock, capsys):
+    """A failed token request is logged with its body, so a rotated refresh token must be masked like the configured one."""
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    _register_login(requests_mock, refresh_token="rotated_refresh_token_to_mask")
+
+    source._get_sf_object(config)
+
+    assert filter_secrets("refresh_token=rotated_refresh_token_to_mask") == "refresh_token=****"
 
 
 def test_no_refresh_token_in_response_does_not_emit_control_message(requests_mock, capsys):
@@ -414,10 +427,14 @@ def test_pagination_rest(stream_config, stream_api):
         assert len(records) == 4
 
 
-def test_rest_authenticator_reads_the_current_token(stream_config, stream_api, monkeypatch):
-    """REST streams must authenticate with the shared provider's token, not one captured when the stream was built."""
+def test_rest_authenticator_reads_the_current_token(stream_config, stream_api, monkeypatch, mocker):
+    """
+    REST streams must authenticate with the token current at request time, not one captured when the stream was built. Reading it
+    must not trigger the proactive refresh: under Refresh Token Rotation that would only add rotations.
+    """
     stream: RestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
     authenticator = stream._http_client._session.auth
+    proactive_refresh = mocker.patch.object(stream_api, "refresh_access_token_if_stale")
     monkeypatch.setattr(stream_api, "access_token", "first_token")
 
     assert authenticator.token == "Bearer first_token"
@@ -425,10 +442,11 @@ def test_rest_authenticator_reads_the_current_token(stream_config, stream_api, m
     monkeypatch.setattr(stream_api, "access_token", "rotated_token")
 
     assert authenticator.token == "Bearer rotated_token"
+    proactive_refresh.assert_not_called()
 
 
 def test_rest_error_handler_can_force_a_refresh(stream_config, stream_api, mocker):
-    """Without a token provider the INVALID_SESSION_ID branch cannot refresh, which is what left REST streams unable to recover."""
+    """Without a token provider the INVALID_SESSION_ID branch cannot refresh, so a REST stream whose session ends cannot recover."""
     stream: RestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
     error_handler = stream._http_client._error_handler
 
@@ -441,8 +459,9 @@ def test_rest_error_handler_can_force_a_refresh(stream_config, stream_api, mocke
 
 def test_pagination_rest_retries_next_records_url_with_refreshed_token(stream_config, stream_api, mocker, monkeypatch):
     """
-    With Refresh Token Rotation, a refresh made by another stream ends the session a REST stream is paginating with. A query locator
-    belongs to the user rather than to the session, so retrying `nextRecordsUrl` with the refreshed token continues the query.
+    When the session a REST stream is paginating with ends (for example after a refresh with Refresh Token Rotation, as reported in
+    #87664), INVALID_SESSION_ID forces a refresh. A query locator belongs to the user rather than to the session, so retrying
+    `nextRecordsUrl` with the refreshed token continues the query.
     """
     monkeypatch.setattr(stream_api, "access_token", "old_token")
     stream: RestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
@@ -480,6 +499,21 @@ def test_pagination_rest_retries_next_records_url_with_refreshed_token(stream_co
     assert [record["Id"] for record in records] == ["001", "002", "003", "004"]
     login.assert_called_once()
     assert (dead_session.call_count, new_session.call_count) == (1, 1)
+
+
+def test_rest_invalid_session_fails_as_config_error_when_the_grant_is_rejected(stream_config, stream_api, mocker, monkeypatch):
+    """A dead session the grant cannot replace fails the REST stream right away as a config error instead of exhausting retries."""
+    stream: RestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
+    mocker.patch.object(stream_api, "login", side_effect=lambda: monkeypatch.setattr(stream_api, "_login_permanently_failed", True))
+    with requests_mock.Mocker() as m:
+        m.register_uri(
+            "GET", stream.path(), status_code=401, json=[{"errorCode": "INVALID_SESSION_ID", "message": "Session expired or invalid"}]
+        )
+
+        with pytest.raises(AirbyteTracedException) as exception:
+            list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+    assert exception.value.failure_type == FailureType.config_error
 
 
 @pytest.fixture(name="mocked_response")

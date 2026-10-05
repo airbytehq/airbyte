@@ -40,6 +40,7 @@ from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
+from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .api import (
@@ -118,6 +119,8 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         if not new_refresh_token or new_refresh_token == config.get("refresh_token"):
             return
         config["refresh_token"] = new_refresh_token
+        # A rotated token is as live as the configured one, so it must be masked too if a later token request is logged
+        add_to_secrets(new_refresh_token)
         message = create_connector_config_control_message(config)
         # Emit the CONNECTOR_CONFIG control message straight to stdout so the platform persists the
         # rotated token immediately (under RTR the previous token is already invalid, and check/discover
@@ -259,8 +262,10 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         sf_object: Salesforce,
     ) -> List[Stream]:
         """Generates a list of stream by their names. It can be used for different tests too"""
-        # Same provider-backed authenticator the Bulk path uses, so REST streams also see refreshed tokens
-        authenticator = BearerAuthenticator(token_provider=SalesforceTokenProvider(sf_object), config={}, parameters={})
+        # Reads the current token on every request and retry, so REST streams see any refresh
+        authenticator = BearerAuthenticator(
+            token_provider=SalesforceTokenProvider(sf_object, proactive_refresh=False), config={}, parameters={}
+        )
         schemas = sf_object.generate_schemas(stream_objects)
         default_args = [sf_object, authenticator, config]
         streams = []
