@@ -2891,17 +2891,17 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path:
             - name
-          value: "{{ components_values.name }}"
+          value: &custom_object_stream_name "{{ (components_values.fullyQualifiedName or 'p_' + components_values.name) if (components_values.name in ['campaigns', 'companies', 'companies_property_history', 'contact_lists', 'contacts', 'list_memberships', 'contacts_property_history', 'deal_pipelines', 'deal_splits', 'deals_archived', 'deals_property_history', 'deals', 'email_events', 'email_subscriptions', 'engagements', 'engagements_calls', 'engagements_emails', 'engagements_meetings', 'engagements_notes', 'engagements_tasks', 'form_submissions', 'forms', 'goals', 'leads', 'line_items', 'marketing_emails', 'owners_archived', 'owners', 'users', 'products', 'subscription_changes', 'ticket_pipelines', 'tickets', 'workflows', 'properties', 'account_details', 'contacts_web_analytics', 'companies_web_analytics', 'deals_web_analytics', 'tickets_web_analytics', 'engagements_calls_web_analytics', 'engagements_emails_web_analytics', 'engagements_meetings_web_analytics', 'engagements_notes_web_analytics', 'engagements_tasks_web_analytics', 'goals_web_analytics', 'line_items_web_analytics', 'products_web_analytics']) else components_values.name }}"
         - type: ComponentMappingDefinition
           field_path:
             - full_refresh_stream
             - name
-          value: "{{ components_values.name }}"
+          value: *custom_object_stream_name
         - type: ComponentMappingDefinition
           field_path:
             - incremental_stream
             - name
-          value: "{{ components_values.name }}"
+          value: *custom_object_stream_name
         - type: ComponentMappingDefinition
           field_path:
             - $parameters
