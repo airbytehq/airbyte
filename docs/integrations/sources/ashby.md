@@ -125,7 +125,7 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
-| 2.0.0 | 2026-10-05 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Breaking: type `applications.archiveReason` as an object and `job_postings.publishedDate` as a date, add a primary key to `application_criteria_evaluations`, and remove fields Ashby never returns from `interviews` and `application_criteria_evaluations`. See the [migration guide](/integrations/sources/ashby-migrations). |
+| 2.0.0 | 2026-10-05 | [87726](https://github.com/airbytehq/airbyte/pull/87726) | Breaking: type `applications.archiveReason` as an object and `job_postings.publishedDate` as a date, add a primary key to `application_criteria_evaluations`, and remove fields Ashby never returns from `interviews` and `application_criteria_evaluations`. See the [migration guide](/integrations/sources/ashby-migrations). |
 | 1.7.0 | 2026-10-02 | [87590](https://github.com/airbytehq/airbyte/pull/87590) | Add openings, job templates, job boards, approvals, and projects streams |
 | 1.6.0 | 2026-10-02 | [87587](https://github.com/airbytehq/airbyte/pull/87587) | Add interview plans, interview stage groups, interviewer pools, survey form definitions, and source tracking links streams |
 | 1.5.0 | 2026-10-02 | [87597](https://github.com/airbytehq/airbyte/pull/87597) | Add incremental sync to `applications` and `application_history`, so incremental syncs request history only for applications updated since the previous sync, with a 1-day lookback |
