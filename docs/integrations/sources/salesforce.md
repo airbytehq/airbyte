@@ -259,13 +259,9 @@ If you still encounter `INVALID_SESSION_ID` errors, verify that the connector is
 
 ### Session expiry during REST pagination
 
-Streams that cannot use the Bulk API, for example objects containing compound fields such as addresses, are read through the REST `queryAll` endpoint and paginated with `nextRecordsUrl`. A query locator belongs to the session that created it, so once that session is invalidated the locator cannot be resumed under a new one and `nextRecordsUrl` keeps returning `INVALID_SESSION_ID` however many times the token is refreshed.
+Streams that cannot use the Bulk API, for example objects containing compound fields such as addresses, are read through the REST `queryAll` endpoint and paginated with `nextRecordsUrl`. Prior to connector version 2.9.3, these REST streams authenticated with the access token captured when the stream was created, so they could neither refresh it nor pick up a token refreshed by another stream. With Refresh Token Rotation enabled, the proactive refresh described above ends the previous session, so a REST stream still paginating at that moment kept retrying `nextRecordsUrl` with the dead token until the sync failed with `INVALID_SESSION_ID`.
 
-This matters with Refresh Token Rotation enabled, because each token exchange ends the previous session, so every proactive refresh invalidates any locator that is open at that moment. Prior to version 2.9.3 the stream exhausted its retries and failed the sync, so a REST stream whose read outlived the 30 minute refresh interval could not complete. Without RTR the previous session survives a token refresh, which is why this went unnoticed for a long time.
-
-Two things were wrong before version 2.9.3. REST streams authenticated with a token captured when the stream was built, so they could neither trigger nor observe a refresh, and a locator whose session had been invalidated was retried rather than restarted.
-
-Starting in 2.9.3 REST streams read their token from the same provider the Bulk path uses, and a request rejected with `INVALID_SESSION_ID` mid-pagination restarts the query after the last record read instead of retrying the dead locator. To make that resume position well defined, this version also orders those queries by primary key. Streams without a replication key were already ordered that way; streams with one, including when they are read in full refresh mode, were not, so their queries now carry an `ORDER BY` they did not have before.
+Starting in version 2.9.3, REST streams read the current access token from the same provider the Bulk API path uses on every request and retry, and an `INVALID_SESSION_ID` response forces a token refresh before the retry. Salesforce keeps query results available to the same user across sessions, so the retried `nextRecordsUrl` continues where the stream stopped.
 
 ### Refresh Token Rotation (RTR)
 
@@ -332,7 +328,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.9.3 | 2026-10-03 | [87665](https://github.com/airbytehq/airbyte/pull/87665) | Let REST streams refresh their access token, and restart the query instead of retrying an expired `nextRecordsUrl`, when the session is invalidated mid-pagination |
+| 2.9.3 | 2026-10-03 | [87665](https://github.com/airbytehq/airbyte/pull/87665) | Let REST streams use the refreshed access token, so a session invalidated mid-pagination no longer fails the sync |
 | 2.9.2 | 2026-09-10 | [85166](https://github.com/airbytehq/airbyte/pull/85166) | Report a Salesforce field that no longer exists or is not accessible to the authenticated user as a configuration error naming the stream and field, instead of a system error containing the raw Salesforce response |
 | 2.9.1 | 2026-08-27 | [85057](https://github.com/airbytehq/airbyte/pull/85057) | Send PKCE `code_challenge`/`code_challenge_method=S256` on the consent URL and `code_verifier` on the token exchange, so OAuth works in orgs that require PKCE |
 | 2.9.0 | 2026-08-25 | [82722](https://github.com/airbytehq/airbyte/pull/82722) | Add an optional end date for bounded incremental syncs |

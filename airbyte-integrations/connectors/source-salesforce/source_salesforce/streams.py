@@ -42,7 +42,7 @@ from airbyte_cdk import (
     SimpleRetriever,
     StreamSlice,
 )
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import (
     AsyncJobOrchestrator,
 )
@@ -68,13 +68,11 @@ from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
 from airbyte_cdk.sources.types import StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils import AirbyteTracedException
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce, SalesforceTokenProvider
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .rate_limiting import (
     BulkNotSupportedException,
-    QueryLocatorExpiredException,
     SalesforceErrorHandler,
     default_backoff_handler,
 )
@@ -205,18 +203,12 @@ class PropertyChunk:
     first_time: bool
     record_counter: int
     next_page: Optional[Mapping[str, Any]]
-    last_primary_key: Optional[Any]
-    restart_after_primary_key: Optional[Any]
-    last_restart_primary_key: Optional[Any]
 
     def __init__(self, properties: Mapping[str, Any]):
         self.properties = properties
         self.first_time = True
         self.record_counter = 0
         self.next_page = None
-        self.last_primary_key = None
-        self.restart_after_primary_key = None
-        self.last_restart_primary_key = None
 
 
 class RestSalesforceStream(SalesforceStream):
@@ -225,15 +217,6 @@ class RestSalesforceStream(SalesforceStream):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         assert self.primary_key or not self.too_many_properties
-
-    @property
-    def supports_query_restart(self) -> bool:
-        """Restarting resumes after the last primary key read, which is only sound for a query ordered by that key."""
-        return (
-            isinstance(self.primary_key, str)
-            and self.name not in UNSUPPORTED_FILTERING_STREAMS
-            and self.name not in PARENT_SALESFORCE_OBJECTS
-        )
 
     def path(self, next_page_token: Mapping[str, Any] = None, **kwargs: Any) -> str:
         if next_page_token:
@@ -255,7 +238,6 @@ class RestSalesforceStream(SalesforceStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
         property_chunk: Mapping[str, Any] = None,
-        restart_after_primary_key: Optional[Any] = None,
     ) -> MutableMapping[str, Any]:
         """
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
@@ -272,8 +254,6 @@ class RestSalesforceStream(SalesforceStream):
             parent_field = PARENT_SALESFORCE_OBJECTS[self.name]["field"]
             parent_ids = [f"'{parent_record[parent_field]}'" for parent_record in stream_slice["parents"]]
             query += f" WHERE ContentDocumentId IN ({','.join(parent_ids)})"
-        elif restart_after_primary_key is not None:
-            query += f" WHERE {self.primary_key} > '{restart_after_primary_key}' "
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.primary_key} ASC"
@@ -308,10 +288,10 @@ class RestSalesforceStream(SalesforceStream):
         It should be the one with the least number of records read by the moment.
         """
         non_exhausted_chunks = {
-            # We skip chunks that have already attempted a sync before and do not have a next page or a pending restart
+            # We skip chunks that have already attempted a sync before and do not have a next page
             chunk_id: property_chunk.record_counter
             for chunk_id, property_chunk in property_chunks.items()
-            if property_chunk.first_time or property_chunk.next_page or property_chunk.restart_after_primary_key is not None
+            if property_chunk.first_time or property_chunk.next_page
         }
         if not non_exhausted_chunks:
             return None
@@ -343,41 +323,12 @@ class RestSalesforceStream(SalesforceStream):
                 break
 
             property_chunk = property_chunks[chunk_id]
-            try:
-                request, response = self._fetch_next_page_for_chunk(
-                    stream_slice,
-                    stream_state,
-                    property_chunk.next_page,
-                    property_chunk.properties,
-                    property_chunk.restart_after_primary_key,
-                )
-            except QueryLocatorExpiredException as exception:
-                if not self.supports_query_restart or property_chunk.last_primary_key is None:
-                    # No position to resume from. Transient because the next attempt starts a new query.
-                    raise AirbyteTracedException(
-                        message=f"The Salesforce session was invalidated while reading stream {self.name} and the query could not be "
-                        f"resumed. Retrying the sync will start the query again.",
-                        internal_message=str(exception),
-                        failure_type=FailureType.transient_error,
-                    ) from exception
-                if property_chunk.last_restart_primary_key == property_chunk.last_primary_key:
-                    # The previous restart read nothing, so restarting from the same position would loop forever
-                    raise AirbyteTracedException(
-                        message=f"The Salesforce session for stream {self.name} was invalidated repeatedly without the query making "
-                        f"progress. Retrying the sync will start the query again.",
-                        internal_message=str(exception),
-                        failure_type=FailureType.transient_error,
-                    ) from exception
-                self.logger.info(
-                    f"The query locator for stream {self.name} expired because its session was invalidated mid-pagination. Restarting the "
-                    f"query after {self.primary_key} `{property_chunk.last_primary_key}`."
-                )
-                property_chunk.next_page = None
-                property_chunk.restart_after_primary_key = property_chunk.last_primary_key
-                property_chunk.last_restart_primary_key = property_chunk.last_primary_key
-                continue
-
-            property_chunk.restart_after_primary_key = None
+            request, response = self._fetch_next_page_for_chunk(
+                stream_slice,
+                stream_state,
+                property_chunk.next_page,
+                property_chunk.properties,
+            )
 
             # When this is the first time we're getting a chunk's records, we set this to False to be used when deciding the next chunk
             if property_chunk.first_time:
@@ -390,8 +341,6 @@ class RestSalesforceStream(SalesforceStream):
                 # so there would be a single chunk, therefore we may and should yield records immediately
                 for record in chunk_page_records:
                     property_chunk.record_counter += 1
-                    if self.supports_query_restart and self.primary_key in record:
-                        property_chunk.last_primary_key = record[self.primary_key]
                     yield record
                 continue
 
@@ -399,7 +348,6 @@ class RestSalesforceStream(SalesforceStream):
             for record in chunk_page_records:
                 property_chunk.record_counter += 1
                 record_id = record[self.primary_key]
-                property_chunk.last_primary_key = record_id
                 if record_id not in records_by_primary_key:
                     records_by_primary_key[record_id] = (record, 1)
                     continue
@@ -434,7 +382,6 @@ class RestSalesforceStream(SalesforceStream):
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
         property_chunk: Mapping[str, Any] = None,
-        restart_after_primary_key: Optional[Any] = None,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
         request_headers = self.request_headers(
             stream_state=stream_state,
@@ -457,7 +404,6 @@ class RestSalesforceStream(SalesforceStream):
                 stream_slice=stream_slice,
                 next_page_token=next_page_token,
                 property_chunk=property_chunk,
-                restart_after_primary_key=restart_after_primary_key,
             ),
             json=self.request_body_json(
                 stream_state=stream_state,
@@ -1075,7 +1021,6 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, CheckpointMixin, ABC
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
         property_chunk: Mapping[str, Any] = None,
-        restart_after_primary_key: Optional[Any] = None,
     ) -> MutableMapping[str, Any]:
         if next_page_token:
             """
@@ -1086,14 +1031,10 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, CheckpointMixin, ABC
         property_chunk = property_chunk or {}
         select_fields = ",".join(property_chunk.keys())
         table_name = self.name
-        # Ordered so that a restart can resume after the last record read
-        order_by_clause = f" ORDER BY {self.primary_key} ASC" if self.supports_query_restart else ""
 
         if not self._stream_slicer_cursor:
             query = f"SELECT {select_fields} FROM {table_name}"
-            if restart_after_primary_key is not None:
-                query += f" WHERE {self.primary_key} > '{restart_after_primary_key}'"
-            return {"q": f"{query}{order_by_clause}"}
+            return {"q": query}
 
         start_date = max(
             (stream_state or {}).get(self.cursor_field, self.start_date),
@@ -1108,11 +1049,9 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, CheckpointMixin, ABC
             where_conditions.append(f"{self.cursor_field} >= {start_date}")
         if end_date:
             where_conditions.append(f"{self.cursor_field} < {end_date}")
-        if restart_after_primary_key is not None:
-            where_conditions.append(f"{self.primary_key} > '{restart_after_primary_key}'")
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
-        query = f"SELECT {select_fields} FROM {table_name} {where_clause}{order_by_clause}"
+        query = f"SELECT {select_fields} FROM {table_name} {where_clause}"
 
         return {"q": query}
 
