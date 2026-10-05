@@ -26,9 +26,10 @@ streams:
           - 400
           action: FAIL
           failure_type: config_error
-          error_message: The file size of the exported data is too large. Shorten
-            the time ranges and try again. The limit size is 4GB. Provide a shorter
-            'request_time_range' interval.
+          error_message: "Amplitude rejected the request (HTTP 400): {{ response.error.message
+            ~ (' (' ~ response.error.metadata.details ~ ')' if response.error.metadata is mapping
+            and response.error.metadata.details else '') if response.error is mapping
+            else response.error or 'no error details returned' }}"
           type: HttpResponseFilter
         - http_codes:
           - 403
@@ -41,15 +42,6 @@ streams:
           - 404
           action: IGNORE
           error_message: No data available for the time range requested.
-          type: HttpResponseFilter
-        - http_codes:
-          - 504
-          action: FAIL
-          failure_type: config_error
-          error_message: "The amount of data is large and may be causing a timeout.
-            For large amounts of data, the Amazon S3 destination is recommended. Refer
-            to Amplitude documentation for information on setting up the S3 destination:
-            https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
           type: HttpResponseFilter
       path: "/2/annotations"
   schema_loader:
@@ -108,9 +100,10 @@ streams:
           - 400
           action: FAIL
           failure_type: config_error
-          error_message: The file size of the exported data is too large. Shorten
-            the time ranges and try again. The limit size is 4GB. Provide a shorter
-            'request_time_range' interval.
+          error_message: "Amplitude rejected the request (HTTP 400): {{ response.error.message
+            ~ (' (' ~ response.error.metadata.details ~ ')' if response.error.metadata is mapping
+            and response.error.metadata.details else '') if response.error is mapping
+            else response.error or 'no error details returned' }}"
           type: HttpResponseFilter
         - http_codes:
           - 403
@@ -123,15 +116,6 @@ streams:
           - 404
           action: IGNORE
           error_message: No data available for the time range requested.
-          type: HttpResponseFilter
-        - http_codes:
-          - 504
-          action: FAIL
-          failure_type: config_error
-          error_message: "The amount of data is large and may be causing a timeout.
-            For large amounts of data, the Amazon S3 destination is recommended. Refer
-            to Amplitude documentation for information on setting up the S3 destination:
-            https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
           type: HttpResponseFilter
       path: "/3/cohorts"
   schema_loader:
@@ -306,9 +290,10 @@ streams:
           - 400
           action: FAIL
           failure_type: config_error
-          error_message: The file size of the exported data is too large. Shorten
-            the time ranges and try again. The limit size is 4GB. Provide a shorter
-            'request_time_range' interval.
+          error_message: "Amplitude rejected the request (HTTP 400): {{ response.error.message
+            ~ (' (' ~ response.error.metadata.details ~ ')' if response.error.metadata is mapping
+            and response.error.metadata.details else '') if response.error is mapping
+            else response.error or 'no error details returned' }}"
           type: HttpResponseFilter
         - http_codes:
           - 403
@@ -321,15 +306,6 @@ streams:
           - 404
           action: IGNORE
           error_message: No data available for the time range requested.
-          type: HttpResponseFilter
-        - http_codes:
-          - 504
-          action: FAIL
-          failure_type: config_error
-          error_message: "The amount of data is large and may be causing a timeout.
-            For large amounts of data, the Amazon S3 destination is recommended. Refer
-            to Amplitude documentation for information on setting up the S3 destination:
-            https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
           type: HttpResponseFilter
       request_parameters:
         start: "{{format_datetime(stream_slice.start_time, '%Y%m%d') }}"
@@ -395,9 +371,10 @@ streams:
           - 400
           action: FAIL
           failure_type: config_error
-          error_message: The file size of the exported data is too large. Shorten
-            the time ranges and try again. The limit size is 4GB. Provide a shorter
-            'request_time_range' interval.
+          error_message: "Amplitude rejected the request (HTTP 400): {{ response.error.message
+            ~ (' (' ~ response.error.metadata.details ~ ')' if response.error.metadata is mapping
+            and response.error.metadata.details else '') if response.error is mapping
+            else response.error or 'no error details returned' }}"
           type: HttpResponseFilter
         - http_codes:
           - 403
@@ -410,15 +387,6 @@ streams:
           - 404
           action: IGNORE
           error_message: No data available for the time range requested.
-          type: HttpResponseFilter
-        - http_codes:
-          - 504
-          action: FAIL
-          failure_type: config_error
-          error_message: "The amount of data is large and may be causing a timeout.
-            For large amounts of data, the Amazon S3 destination is recommended. Refer
-            to Amplitude documentation for information on setting up the S3 destination:
-            https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
           type: HttpResponseFilter
       request_parameters:
         start: "{{format_datetime(stream_slice.start_time, '%Y%m%d') }}"
@@ -484,9 +452,10 @@ streams:
           - 400
           action: FAIL
           failure_type: config_error
-          error_message: The file size of the exported data is too large. Shorten
-            the time ranges and try again. The limit size is 4GB. Provide a shorter
-            'request_time_range' interval.
+          error_message: "Amplitude rejected the request (HTTP 400): {{ response.error.message
+            ~ (' (' ~ response.error.metadata.details ~ ')' if response.error.metadata is mapping
+            and response.error.metadata.details else '') if response.error is mapping
+            else response.error or 'no error details returned' }}"
           type: HttpResponseFilter
         - http_codes:
           - 403
@@ -499,15 +468,6 @@ streams:
           - 404
           action: IGNORE
           error_message: No data available for the time range requested.
-          type: HttpResponseFilter
-        - http_codes:
-          - 504
-          action: FAIL
-          failure_type: config_error
-          error_message: "The amount of data is large and may be causing a timeout.
-            For large amounts of data, the Amazon S3 destination is recommended. Refer
-            to Amplitude documentation for information on setting up the S3 destination:
-            https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
           type: HttpResponseFilter
       path: /2/events/list
     record_selector:

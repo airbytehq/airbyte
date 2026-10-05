@@ -19,7 +19,7 @@ The Export API (`/2/export`, used only by the `events` stream) returns HTTP 400 
 - If a window is still rejected at that point, the stream fails with a `transient_error` carrying the `failure_message` from `request_window_splitting`. The platform retries `transient_error` attempts, and each retry repeats the splits and re-reads the halves that already succeeded, because the failed partition is never checkpointed (Append + Deduped removes them by the `uuid` primary key). An hour over 4GB can only be exported with Amplitude's Amazon S3 export.
 - The export is a single zip file per window with no pagination, so the error always arrives before any record of that window is emitted. A split that succeeds never re-emits records.
 - Splitting is not remembered: it restarts for every window, attempt and sync. A 24-hour window that only 1-hour windows fit costs 47 requests instead of 24, so projects whose windows split on most syncs should lower `request_time_range`.
-- The Dashboard REST API streams (`active_users`, `average_session_length`, `annotations`, `cohorts`, `events_list`) carry similar 400/504 filters, but a 400 there means something else (for example "Invalid chart definition" for `active_users`), so those streams must not split on it.
+- The Dashboard REST API streams (`active_users`, `average_session_length`, `annotations`, `cohorts`, `events_list`) must not split: a 400 there means something else (for example "Invalid chart definition" for `active_users`), so they fail with a `config_error` that shows Amplitude's own `error.message` and `error.metadata.details`. Their 504s use the CDK default (retry with backoff, then `transient_error`).
 
 The mechanism comes from airbytehq/airbyte-python-cdk#1171.
 
