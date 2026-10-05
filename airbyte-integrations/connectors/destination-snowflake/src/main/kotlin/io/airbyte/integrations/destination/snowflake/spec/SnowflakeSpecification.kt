@@ -21,13 +21,12 @@ import jakarta.inject.Singleton
 open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonSchemaTitle("Host")
     @get:JsonPropertyDescription(
-        "Enter your Snowflake account's <a href=\"https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#using-an-account-locator-as-an-identifier\">locator</a> (in the format <account_locator>.<region>.<cloud>.snowflakecomputing.com)"
+        "Enter your Snowflake hostname or a custom domain for a Snowflake proxy."
     )
     @get:JsonProperty("host")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 0, "examples":["accountname.us-east-2.aws.snowflakecomputing.com", "accountname.snowflakecomputing.com"], "pattern": "^(http(s)?:\\/\\/)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.(snowflakecomputing\\.com|localstack\\.cloud))$",
-        "pattern_descriptor": "{account_name}.snowflakecomputing.com or {accountname}.{aws_location}.aws.snowflakecomputing.com"}"""
+            """{"group": "connection", "order": 0, "examples": ["accountname.us-east-2.aws.snowflakecomputing.com", "accountname.snowflakecomputing.com", "accountname.espressocomputing.com"], "pattern": "^(http(s)?:\\/\\/)?([^./?#]+\\.)+[^./?#]+$", "pattern_descriptor": "A Snowflake hostname or custom proxy domain, optionally prefixed with http:// or https://"}"""
     )
     val host: String = ""
 

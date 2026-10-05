@@ -56,9 +56,7 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("host")
     @JsonSchemaTitle("Server URL")
     @JsonSchemaInject(json = """{"order":1}""")
-    @JsonPropertyDescription(
-        "The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com)."
-    )
+    @JsonPropertyDescription("The Snowflake hostname or a custom domain for a Snowflake proxy.")
     lateinit var host: String
 
     @JsonProperty("role")
