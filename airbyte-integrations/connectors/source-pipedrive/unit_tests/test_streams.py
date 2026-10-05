@@ -128,6 +128,7 @@ def test_legacy_teams_reads_records():
         pytest.param(403, {"success": False, "error": "Teams feature is not enabled in your company"}, id="feature_disabled"),
         pytest.param(404, {"success": False, "error": "Not found"}, id="endpoint_missing"),
         pytest.param(410, {"success": False}, id="endpoint_retired"),
+        pytest.param(415, {"success": False, "error": "Feature is not enabled"}, id="feature_not_enabled"),
     ],
 )
 def test_legacy_teams_ignores_unavailable_endpoint(status_code, body):
@@ -165,6 +166,7 @@ def test_projects_paginates_active_and_archived_projects():
     [
         pytest.param(402, {"success": False, "error": "Required suites missing", "errorCode": 402}, id="projects_suite_missing"),
         pytest.param(403, {"success": False}, id="forbidden"),
+        pytest.param(415, {"success": False, "error": "Feature is not enabled"}, id="feature_not_enabled"),
     ],
 )
 def test_projects_ignores_unavailable_endpoints(status_code, body):
@@ -195,12 +197,16 @@ def test_tasks_paginates():
     assert output.errors == []
 
 
-def test_tasks_ignores_missing_projects_suite():
+@pytest.mark.parametrize(
+    "status_code, body",
+    [
+        pytest.param(402, {"success": False, "error": "Required suites missing", "errorCode": 402}, id="projects_suite_missing"),
+        pytest.param(415, {"success": False, "error": "Feature is not enabled"}, id="feature_not_enabled"),
+    ],
+)
+def test_tasks_ignores_missing_projects_suite(status_code, body):
     with HttpMocker() as http_mocker:
-        http_mocker.get(
-            _request("api/v2/tasks", {"limit": "500"}),
-            _response({"success": False, "error": "Required suites missing", "errorCode": 402}, status_code=402),
-        )
+        http_mocker.get(_request("api/v2/tasks", {"limit": "500"}), _response(body, status_code=status_code))
 
         output = _read_stream("tasks")
 
@@ -263,6 +269,7 @@ def test_deal_installments_batches_archived_parents_too():
     [
         pytest.param(402, {"success": False, "error": "Required suites missing", "errorCode": 402}, id="suite_missing"),
         pytest.param(403, {"success": False, "error": "The company does not have access to this feature"}, id="feature_forbidden"),
+        pytest.param(415, {"success": False, "error": "Feature is not enabled"}, id="feature_not_enabled"),
     ],
 )
 def test_deal_installments_ignores_plan_without_installments(status_code, body):

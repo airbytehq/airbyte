@@ -53,6 +53,20 @@ def test_401_fails_as_config_error_with_pipedrive_error_text() -> None:
         http_mocker.assert_number_of_calls(deals, 1)
 
 
+def test_415_feature_not_enabled_fails_as_config_error() -> None:
+    with HttpMocker() as http_mocker:
+        deals = deals_request()
+        http_mocker.get(deals, pipedrive_error(415, "Feature is not enabled"))
+
+        output = read_stream("deals", expecting_exception=True)
+
+        error = _error_trace(output)
+        assert error.failure_type == FailureType.config_error
+        assert "415: Feature is not enabled" in error.message
+        assert "deselect the stream" in error.message
+        http_mocker.assert_number_of_calls(deals, 1)
+
+
 def test_check_with_invalid_token_returns_401_config_message() -> None:
     with HttpMocker() as http_mocker:
         # The check stream is `currencies` (#85764); `deals` is kept for manifests that still check on it.

@@ -1035,6 +1035,7 @@ definitions:
                       - 403
                       - 404
                       - 410
+                      - 415
                     error_message: "The legacy Teams feature is disabled for this Pipedrive company or the endpoint has been retired ({{ response.get('error', 'not available') }}); skipping legacy_teams."
               - $ref: "#/definitions/base_error_handler"
         record_selector:
@@ -1072,6 +1073,7 @@ definitions:
                       - 402
                       - 403
                       - 404
+                      - 415
                     error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read projects ({{ response.get('error', 'not available') }}); skipping projects."
               - $ref: "#/definitions/base_error_handler"
         record_selector:
@@ -1117,6 +1119,7 @@ definitions:
                       - 402
                       - 403
                       - 404
+                      - 415
                     error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read tasks ({{ response.get('error', 'not available') }}); skipping tasks."
               - $ref: "#/definitions/base_error_handler"
         record_selector:
@@ -1156,6 +1159,7 @@ definitions:
                     http_codes:
                       - 402
                       - 403
+                      - 415
                     error_message: "Installments are not included in this Pipedrive plan or the token cannot read deals ({{ response.get('error', 'not available') }}); skipping deal_installments."
               - $ref: "#/definitions/base_error_handler"
         record_selector:
@@ -1406,6 +1410,14 @@ definitions:
           Pipedrive reports this resource as permanently removed (410{{ ': ' ~ response['error'] if response.get('error') else '' }}).
           The endpoint may have been retired by Pipedrive. Upgrade to the latest connector version or
           disable the affected stream.
+      - type: HttpResponseFilter
+        http_codes: [415]
+        action: FAIL
+        failure_type: config_error
+        error_message: >-
+          Pipedrive reports that the feature this stream reads is not enabled for your company
+          (415{{ ': ' ~ response['error'] if response.get('error') else '' }}). Enable the feature in Pipedrive
+          company settings, or deselect the stream.
       - type: HttpResponseFilter
         http_codes: [429]
         action: RATE_LIMITED

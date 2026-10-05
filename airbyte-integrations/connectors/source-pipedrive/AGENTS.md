@@ -44,9 +44,13 @@ Every stream `$ref`s `definitions.base_requester`, which carries `definitions.ba
 | 402 | FAIL | `config_error` | Company account inactive (trial expired or billing missing) |
 | 403 | FAIL | `config_error` | Token owner lacks permission, the plan does not include the data, or Cloudflare blocked the token |
 | 410 | FAIL | `system_error` | Endpoint permanently removed by Pipedrive |
+| 415 | FAIL | `config_error` | Feature not enabled for the company |
 | 429 | RATE_LIMITED | transient | Burst or daily budget exceeded; retried with backoff |
 | 500, 502, 503, 504 | RETRY | transient | Temporary server error |
-| other | CDK default mapping | | e.g. 404 on a top-level stream fails as `system_error` |
+| 400, 404, 405, 501 | CDK default mapping | `system_error` | Malformed request, missing endpoint, wrong method or unsupported functionality on a top-level stream |
+| 422 | n/a | | Webhook limit; cannot occur on the read endpoints this connector calls |
+
+Status meanings follow Pipedrive's [HTTP status codes](https://pipedrive.readme.io/docs/http-status-codes) reference; the 429 handling follows its [rate limiting](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting) page.
 
 Backoff for RETRY and RATE_LIMITED (`max_retries: 10`): `WaitTimeFromHeader` on `x-ratelimit-reset` (Pipedrive reports a relative number of seconds; there is no `Retry-After`), then `ExponentialBackoffStrategy` with factor 5 when the header is absent. `max_waiting_time_in_seconds: 300` is a kill-switch, not a cap: if the header reports 300 s or more the stream stops with a transient error instead of waiting. Header-less retries are bounded by the CDK's 600 s `max_time`, so they get about seven attempts, not eleven.
 
@@ -54,7 +58,7 @@ Backoff for RETRY and RATE_LIMITED (`max_retries: 10`): `WaitTimeFromHeader` on 
 
 Pipedrive enforces two independent limits per API token ([docs](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting)): a rolling 2-second burst window (20/40/100/120 requests by plan) that recovers after a short wait, and a daily token budget (30,000 tokens x plan multiplier x seats) that, once exhausted, returns 429 on every request until midnight in Pipedrive's server timezone. Backoff cannot fix the second case; the 429 message says so.
 
-**Why this matters:** Keep the filters on `base_requester` so new endpoints (including the API v2 migration) inherit them. A per-stream `error_handler` must be a `CompositeErrorHandler` that lists the stream-specific IGNORE filter first and `$ref`s `base_error_handler` second: `$ref` merging is key-level, so a plain per-stream `DefaultErrorHandler` replaces the shared handler wholesale and loses every message, the 429 wait and `max_retries`. IGNORE on a top-level stream is allowed only for the plan or feature gating that Pipedrive reports for the whole endpoint, each with an INFO log line naming the feature: 402/403/404 on `projects` and `tasks` (Projects add-on), 402/403 on `deal_installments`, 403 on `permission_set_assignments`, 403/404/410 on `legacy_teams` (legacy Teams disabled or retired). Tests must not assert on retry log text, which comes from the CDK or the backoff library and changes between versions.
+**Why this matters:** Keep the filters on `base_requester` so new endpoints (including the API v2 migration) inherit them. A per-stream `error_handler` must be a `CompositeErrorHandler` that lists the stream-specific IGNORE filter first and `$ref`s `base_error_handler` second: `$ref` merging is key-level, so a plain per-stream `DefaultErrorHandler` replaces the shared handler wholesale and loses every message, the 429 wait and `max_retries`. IGNORE on a top-level stream is allowed only for the plan or feature gating that Pipedrive reports for the whole endpoint, each with an INFO log line naming the feature: 402/403/404/415 on `projects` and `tasks` (Projects add-on), 402/403/415 on `deal_installments`, 403 on `permission_set_assignments`, 403/404/410/415 on `legacy_teams` (legacy Teams disabled or retired). Tests must not assert on retry log text, which comes from the CDK or the backoff library and changes between versions.
 
 ## 7. One Shared Request Budget and a Small Thread Pool
 
