@@ -1,4 +1,6 @@
 #!/usr/bin/env -S uv run --script
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 # /// script
 # requires-python = ">=3.11"
 # dependencies = ["httpx>=0.27,<1"]
@@ -37,6 +39,7 @@ from datetime import datetime, timezone
 
 import httpx
 
+
 SCHEMA_VERSION = 1
 CHECK_NAME = "Hydra State"
 REPO = "airbytehq/airbyte"
@@ -62,9 +65,7 @@ BENIGN_CHECK_PATTERNS = [
     re.compile(r"^Suggest enabling autopilot rollouts$"),
 ]
 
-MARKER_RE = re.compile(
-    r"<!--\s*(?P<key>[a-z_]+?)_result:\s*(?P<value>[A-Za-z_]+)\s*;\s*head_sha:\s*(?P<sha>[0-9a-f]{7,40})\s*-->"
-)
+MARKER_RE = re.compile(r"<!--\s*(?P<key>[a-z_]+?)_result:\s*(?P<value>[A-Za-z_]+)\s*;\s*head_sha:\s*(?P<sha>[0-9a-f]{7,40})\s*-->")
 SESSION_LINK_RE = re.compile(r"app\.devin\.ai/sessions/([0-9a-f]{32})")
 
 PR_QUERY = """
@@ -441,7 +442,10 @@ def render_markdown(state: dict) -> str:
         lines += ["", "**Findings**", *[f"- ⚠️ {f}" for f in state["findings"]]]
     if state["other_sessions"]:
         lines += ["", "**Other linked sessions:** " + ", ".join(f"[{s['macro'] or '?'}]({s['url']})" for s in state["other_sessions"])]
-    lines += ["", f"<sub>labels: {', '.join(state['labels']) or 'none'} · devin: {state['sources']['devin']} · computed {state['computed_at']}</sub>"]
+    lines += [
+        "",
+        f"<sub>labels: {', '.join(state['labels']) or 'none'} · devin: {state['sources']['devin']} · computed {state['computed_at']}</sub>",
+    ]
     return "\n".join(lines)
 
 
@@ -483,7 +487,11 @@ def load_facts(args: argparse.Namespace) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(prog="hydra", description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
-    for name, help_text in (("facts", "print raw facts as JSON"), ("status", "print derived state"), ("publish", "write the Hydra State check run")):
+    for name, help_text in (
+        ("facts", "print raw facts as JSON"),
+        ("status", "print derived state"),
+        ("publish", "write the Hydra State check run"),
+    ):
         p = sub.add_parser(name, help=help_text)
         p.add_argument("pr", type=int)
         p.add_argument("--facts", help="read facts from a snapshot file instead of the APIs")
