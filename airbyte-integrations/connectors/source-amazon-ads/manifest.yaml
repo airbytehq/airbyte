@@ -1150,9 +1150,10 @@ definitions:
               - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
                 action: IGNORE
                 error_message: "{{ response }}"
+              # Matches 401 on any page, so a 401 mid-pagination would truncate that profile's report. Accepted as unlikely.
               - http_codes: [401]
                 action: IGNORE
-                error_message: "Profile is not authorized to use Amazon Attribution (HTTP 401). Skipping this profile. Enable Amazon Attribution for the profile, or grant your app access to the Attribution API, to sync it."
+                error_message: "Amazon returned 401 Unauthorized from the Attribution API for this profile, so its remaining attribution data was skipped. This usually means Amazon Attribution is not enabled for the profile or your app lacks Attribution API access."
               - predicate: "{{ 'message' in response }}"
                 action: FAIL
                 error_message: "{{ response.message }}"
@@ -1242,9 +1243,10 @@ definitions:
               - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
                 action: IGNORE
                 error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
+              # Matches 401 on any page, so a 401 mid-pagination would truncate that profile's report. Accepted as unlikely.
               - http_codes: [401]
                 action: IGNORE
-                error_message: "Profile is not authorized to use Amazon Attribution (HTTP 401). Skipping this profile. Enable Amazon Attribution for the profile, or grant your app access to the Attribution API, to sync it."
+                error_message: "Amazon returned 401 Unauthorized from the Attribution API for this profile, so its remaining attribution data was skipped. This usually means Amazon Attribution is not enabled for the profile or your app lacks Attribution API access."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"
@@ -1331,9 +1333,10 @@ definitions:
               - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
                 action: IGNORE
                 error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
+              # Matches 401 on any page, so a 401 mid-pagination would truncate that profile's report. Accepted as unlikely.
               - http_codes: [401]
                 action: IGNORE
-                error_message: "Profile is not authorized to use Amazon Attribution (HTTP 401). Skipping this profile. Enable Amazon Attribution for the profile, or grant your app access to the Attribution API, to sync it."
+                error_message: "Amazon returned 401 Unauthorized from the Attribution API for this profile, so its remaining attribution data was skipped. This usually means Amazon Attribution is not enabled for the profile or your app lacks Attribution API access."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"
@@ -1420,9 +1423,10 @@ definitions:
               - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
                 action: IGNORE
                 error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
+              # Matches 401 on any page, so a 401 mid-pagination would truncate that profile's report. Accepted as unlikely.
               - http_codes: [401]
                 action: IGNORE
-                error_message: "Profile is not authorized to use Amazon Attribution (HTTP 401). Skipping this profile. Enable Amazon Attribution for the profile, or grant your app access to the Attribution API, to sync it."
+                error_message: "Amazon returned 401 Unauthorized from the Attribution API for this profile, so its remaining attribution data was skipped. This usually means Amazon Attribution is not enabled for the profile or your app lacks Attribution API access."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"

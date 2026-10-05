@@ -631,7 +631,7 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
         assert not any(["Unauthorized" in error for error in error_logs])
 
         info_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.INFO))
-        assert any(["not authorized to use Amazon Attribution (HTTP 401)" in info for info in info_logs])
+        assert any(["Amazon returned 401 Unauthorized from the Attribution API" in info for info in info_logs])
 
     @HttpMocker()
     def test_given_attribution_unauthorized_401_when_read_products_then_stream_is_ignored(self, http_mocker):
@@ -656,6 +656,47 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
         self._assert_attribution_unauthorized_401_is_ignored(
             http_mocker, "attribution_report_performance_creative", AttributionReportRequestBuilder.performance_creative_endpoint
         )
+
+    @HttpMocker()
+    def test_given_one_profile_unauthorized_401_when_read_products_then_other_profiles_are_synced(self, http_mocker):
+        unauthorized_profile_id, authorized_profile_id = 1, 2
+        profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
+        start_date = _A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date()
+        end_date = _NOW.astimezone(ZoneInfo(profile_timezone)).date()
+        config = ConfigBuilder().with_start_date(start_date).with_profiles([unauthorized_profile_id, authorized_profile_id]).build()
+
+        http_mocker.post(
+            OAuthRequestBuilder.oauth_endpoint(
+                client_id=config["client_id"], client_secred=config["client_secret"], refresh_token=config["refresh_token"]
+            ).build(),
+            OAuthResponseBuilder.token_response().build(),
+        )
+        http_mocker.get(
+            ProfilesRequestBuilder.profiles_endpoint(client_id=config["client_id"], client_access_token=config["access_token"]).build(),
+            ProfilesResponseBuilder.profiles_response()
+            .with_record(ProfilesRecordBuilder.profiles_record().with_id(unauthorized_profile_id))
+            .with_record(ProfilesRecordBuilder.profiles_record().with_id(authorized_profile_id))
+            .build(),
+        )
+
+        unauthorized_error = ErrorRecordBuilder.breaking_error().with_error_message("Unauthorized")
+
+        http_mocker.post(
+            AttributionReportRequestBuilder.products_endpoint(
+                config["client_id"], config["access_token"], unauthorized_profile_id, start_date=start_date, end_date=end_date
+            ).build(),
+            ErrorResponseBuilder.breaking_error_response().with_record(unauthorized_error).with_status_code(401).build(),
+        )
+        http_mocker.post(
+            AttributionReportRequestBuilder.products_endpoint(
+                config["client_id"], config["access_token"], authorized_profile_id, start_date=start_date, end_date=end_date
+            ).build(),
+            AttributionReportResponseBuilder.products_response().with_record(AttributionReportRecordBuilder.products_record()).build(),
+        )
+
+        output = read_stream("attribution_report_products", SyncMode.full_refresh, config)
+        assert len(output.records) == 1
+        assert not output.errors
 
     # --- cursorId as JSON-shaped string: must remain a string through pagination ---
 
