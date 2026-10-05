@@ -253,7 +253,7 @@ jobs:
           steps.fetch-secrets.outcome == 'success'
         run: |
           # TODO: Drop this guard once an `airbyte-internal-ops` release with `secrets push` is on PyPI.
-          if ! airbyte-ops secrets push --help >/dev/null 2>&1; then
+          if ! airbyte-ops secrets --help 2>/dev/null | grep -qE '^\W*push\s'; then
             echo "::warning::Installed airbyte-ops has no 'secrets push' command; rotated secrets were not written back."
             exit 0
           fi
@@ -414,7 +414,7 @@ jobs:
           steps.fetch-secrets.outcome == 'success'
         run: |
           # TODO: Drop this guard once an `airbyte-internal-ops` release with `secrets push` is on PyPI.
-          if ! airbyte-ops secrets push --help >/dev/null 2>&1; then
+          if ! airbyte-ops secrets --help 2>/dev/null | grep -qE '^\W*push\s'; then
             echo "::warning::Installed airbyte-ops has no 'secrets push' command; rotated secrets were not written back."
             exit 0
           fi
