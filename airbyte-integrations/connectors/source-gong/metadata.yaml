@@ -28,7 +28,7 @@ data:
     breakingChanges:
       2.0.0:
         message: "The `extensiveCalls` stream schema now declares `parties[].context` as `array` (was `object`) and gives `media` an explicit `object` type, matching what Gong returns. Records are unchanged. After upgrading, refresh the source schema; do not clear the stream. Connections that don't sync `extensiveCalls` are unaffected. For more information, see the [Gong migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations)."
-        upgradeDeadline: "2026-10-09"
+        upgradeDeadline: "2026-10-16"
         deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
