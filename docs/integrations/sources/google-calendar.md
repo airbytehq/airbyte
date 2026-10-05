@@ -1,23 +1,27 @@
 # Google Calendar
+
 Solves https://github.com/airbytehq/airbyte/issues/45995
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `client_id` | `string` | Client ID.  |  |
-| `client_secret` | `string` | Client secret.  |  |
-| `client_refresh_token_2` | `string` | Refresh token.  |  |
-| `calendarid` | `string` | Calendar Id.  |  |
+| ----- | ---- | ----------- | ------------- |
+| `client_id` | `string` | OAuth 2.0 client ID. | |
+| `client_secret` | `string` | OAuth 2.0 client secret. | |
+| `client_refresh_token_2` | `string` | OAuth refresh token. | |
+| `calendarid` | `string` | Calendar Id. | |
+| `start_date` | `string` | Only sync `events` modified on or after this date (incremental cursor start). Must be within roughly the last 30 days; older values are ignored and all events are read. | |
+| `num_workers` | `integer` | Number of concurrent workers. | 3 |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| colors | calendar.event | No pagination | ✅ |  ❌  |
-| settings | id | DefaultPaginator | ✅ |  ❌  |
-| calendarlist | id | DefaultPaginator | ✅ |  ❌  |
-| calendars | id | DefaultPaginator | ✅ |  ❌  |
-| events | id | DefaultPaginator | ✅ |  ❌  |
+| ----------- | ----------- | ---------- | ------------------- | -------------------- |
+| colors | calendar.event | No pagination | ✅ | ❌ |
+| settings | id | DefaultPaginator | ✅ | ❌ |
+| calendarlist | id | DefaultPaginator | ✅ | ❌ |
+| calendars | id | DefaultPaginator | ✅ | ❌ |
+| events | id | DefaultPaginator | ✅ | ✅ |
 
 ## IP allow list
 
@@ -28,8 +32,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date | Pull Request | Subject |
+| ------- | ---- | ------------ | ------- |
+| 0.1.0 | 2026-10-05 | [86468](https://github.com/airbytehq/airbyte/pull/86468) | Add error handling, API budget, concurrency, incremental `events` (now includes cancelled events via `showDeleted=true`), and enable acceptance tests |
 | 0.0.54 | 2026-09-29 | [87194](https://github.com/airbytehq/airbyte/pull/87194) | Update dependencies |
 | 0.0.53 | 2026-09-22 | [86679](https://github.com/airbytehq/airbyte/pull/86679) | Update dependencies |
 | 0.0.52 | 2026-09-15 | [86070](https://github.com/airbytehq/airbyte/pull/86070) | Update dependencies |
