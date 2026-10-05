@@ -326,6 +326,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.5.38 | 2026-09-29 | [74814](https://github.com/airbytehq/airbyte/pull/74814) | Fix OOM during CHECK by using disk-backed temp files instead of in-memory BytesIO |
 | 0.5.37 | 2026-09-29 | [87198](https://github.com/airbytehq/airbyte/pull/87198) | Update dependencies |
 | 0.5.36 | 2026-09-22 | [86653](https://github.com/airbytehq/airbyte/pull/86653) | Update dependencies |
 | 0.5.35 | 2026-09-15 | [86072](https://github.com/airbytehq/airbyte/pull/86072) | Update dependencies |

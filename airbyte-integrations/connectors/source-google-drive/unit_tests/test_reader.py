@@ -3,6 +3,7 @@
 #
 
 
+import asyncio
 import datetime
 from os import path
 from typing import Dict
@@ -13,9 +14,13 @@ from source_google_drive.spec import ServiceAccountCredentials, SourceGoogleDriv
 from source_google_drive.stream_reader import GoogleDriveRemoteFile, SourceGoogleDriveStreamReader
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import DeliverRawFiles, DeliverRecords
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
+from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
+from airbyte_cdk.sources.file_based.file_types.csv_parser import CsvParser
+from airbyte_cdk.sources.file_based.file_types.unstructured_parser import UnstructuredParser
 
 
 TEST_LOCAL_DIRECTORY = "/tmp/airbyte-file-transfer"
@@ -1400,3 +1405,64 @@ def test_google_native_and_binary_with_same_final_name_collide(mock_build_servic
 
     assert [file.uri for file in files] == ["Report", "Report.docx"]
     assert [file.source_file_relative_path for file in files] == ["Report.docx", "Report.docx"]
+
+
+def _mock_drive_download(mock_build_service, mock_basedownload, file_content: bytes) -> None:
+    def next_chunk():
+        handle = mock_basedownload.call_args[0][0]
+        handle.write(file_content)
+        return (None, True)
+
+    mock_basedownload.return_value.next_chunk.side_effect = next_chunk
+    drive_service = MagicMock()
+    mock_build_service.return_value = drive_service
+
+
+@patch("source_google_drive.stream_reader.MediaIoBaseDownload")
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_open_file_text_mode_preserves_line_endings(mock_build_service, mock_service_account, mock_basedownload):
+    content = b'a,b\r\n"x\r\ny",z\r\n'
+    _mock_drive_download(mock_build_service, mock_basedownload, content)
+    file = GoogleDriveRemoteFile(
+        uri="test.csv",
+        id="abc",
+        mime_type="text/csv",
+        original_mime_type="text/csv",
+        last_modified=datetime.datetime(2021, 1, 1),
+        created_at=datetime.datetime(2021, 1, 1),
+        view_link="https://docs.google.com/file/d/abc/view?usp=drivesdk",
+    )
+    reader = create_reader()
+
+    with reader.open_file(file, FileReadMode.READ, None, MagicMock()) as handle:
+        assert handle.read() == content.decode("utf-8")
+
+    config = FileBasedStreamConfig(name="test", format=CsvFormat())
+    records = list(CsvParser().parse_records(config, file, reader, MagicMock(), None))
+    assert records == [{"a": "x\r\ny", "b": "z"}]
+
+
+@patch("source_google_drive.stream_reader.MediaIoBaseDownload")
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_unstructured_parser_handles_unknown_mime_type(mock_build_service, mock_service_account, mock_basedownload):
+    _mock_drive_download(mock_build_service, mock_basedownload, b"hello world")
+    file = GoogleDriveRemoteFile(
+        uri="notes.txt",
+        id="abc",
+        mime_type="application/octet-stream",
+        original_mime_type="application/octet-stream",
+        last_modified=datetime.datetime(2021, 1, 1),
+        created_at=datetime.datetime(2021, 1, 1),
+        view_link="https://docs.google.com/file/d/abc/view?usp=drivesdk",
+    )
+    reader = create_reader()
+    config = FileBasedStreamConfig(name="test", format=UnstructuredFormat(skip_unprocessable_files=False))
+    parser = UnstructuredParser()
+
+    schema = asyncio.run(parser.infer_schema(config, file, reader, MagicMock()))
+    assert set(schema) == {"content", "document_key", "_ab_source_file_parse_error"}
+
+    records = list(parser.parse_records(config, file, reader, MagicMock(), None))
+    assert records == [{"content": "hello world", "document_key": "notes.txt", "_ab_source_file_parse_error": None}]
