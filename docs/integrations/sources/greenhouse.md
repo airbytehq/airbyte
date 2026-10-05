@@ -315,6 +315,7 @@ To read full history again, clear **Start date** in your source settings, then [
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.5.2 | 2026-10-05 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Promote the connector to certified |
 | 1.5.1 | 2026-10-05 | [87670](https://github.com/airbytehq/airbyte/pull/87670) | Update to source-declarative-manifest 7.33.0 and name the fix for each authentication method in the `403` error message |
 | 1.5.0 | 2026-10-02 | [87442](https://github.com/airbytehq/airbyte/pull/87442) | Add the `scorecard_question_answers`, `scorecard_question_options`, `scorecard_question_answer_options`, `job_candidate_attributes`, and `job_post_locations` streams, which need new scopes - see [Streams added in 1.5.0](#streams-added-in-150) |
 | 1.4.0 | 2026-09-28 | [86478](https://github.com/airbytehq/airbyte/pull/86478) | Add the `candidate_attribute_types` and `job_notes` streams, which need new scopes - see [Streams added in 1.4.0](#streams-added-in-140) |
