@@ -36,7 +36,7 @@ class DynamoDbLocalContainer :
     }
 
     val endpoint: URI
-        get() = URI.create("http://$host:${getMappedPort(PORT)}")
+        get() = URI.create("http://$host:${getMappedPort(PORT)}") // ignore-https-check
 
     fun client(): DynamoDbClient =
         DynamoDbClient.builder()
