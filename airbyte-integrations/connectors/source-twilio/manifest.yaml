@@ -253,16 +253,22 @@ definitions:
       request_window_splitting:
         type: RequestWindowSplitting
         failure_message: >-
-          The Twilio Alerts API returns at most 10,000 Alert records per request. If this error persists, decrease Slice Step Duration in the source configuration so each slice starts from a smaller time window.
+          The Twilio Alerts API returns at most 10,000 Alert records per request window. Choose a shorter Slice Step Duration so the window can be split further (with 1 Day it can shrink to about 84 seconds). If Slice Step Duration is already 1 Day, deselect the alerts stream.
       requester:
         $ref: "#/definitions/base_requester"
         http_method: GET
         error_handler:
           $ref: "#/definitions/base_requester/error_handler"
           response_filters:
+            # Message match only, on purpose - HttpResponseFilter ORs its conditions, so `http_codes: [400]` here would split every 400.
             - type: HttpResponseFilter
               action: SPLIT_REQUEST_WINDOW
               error_message_contains: "Invalid page and pageSize combination"
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+                - 400
+              error_message: "Twilio rejected the Alerts request: {{ response.get('message', '') }}"
             - $ref: "#/definitions/base_requester/error_handler/response_filters/0"
             - $ref: "#/definitions/base_requester/error_handler/response_filters/1"
     incremental_sync:

@@ -35,6 +35,14 @@ ACCOUNTS_JSON = {
     ],
 }
 
+ALERTS_LIMIT_ERROR_JSON = {"message": "Invalid page and pageSize combination, data is limited to 10,000 results", "status": 400}
+ALERTS_INVALID_START_DATE_JSON = {"message": "Invalid StartDate", "status": 400}
+ALERTS_SPLIT_FAILURE_MESSAGE = (
+    "The Twilio Alerts API returns at most 10,000 Alert records per request window. Choose a shorter Slice Step Duration so the "
+    "window can be split further (with 1 Day it can shrink to about 84 seconds). If Slice Step Duration is already 1 Day, "
+    "deselect the alerts stream."
+)
+
 
 def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exception: bool = False) -> EntrypointOutput:
     catalog = CatalogBuilder().with_stream(stream, sync_mode).build()
@@ -335,13 +343,7 @@ class TestIncrementalTwilioStream:
         def split_response(request):
             window = _alert_window(request)
             if window == parent and request.get("PageToken") == "PT1":
-                return (
-                    {
-                        "code": 400,
-                        "message": "Invalid page and pageSize combination, data is limited to 10,000 results",
-                    },
-                    400,
-                )
+                return ALERTS_LIMIT_ERROR_JSON, 400
             if window == parent:
                 return _alerts_response([parent_record], next_page_url)
             if window == child1:
@@ -410,23 +412,11 @@ class TestIncrementalTwilioStream:
         def split_response(request):
             window = _alert_window(request)
             if window == parent and request.get("PageToken") == "PT1":
-                return (
-                    {
-                        "code": 400,
-                        "message": "Invalid page and pageSize combination, data is limited to 10,000 results",
-                    },
-                    400,
-                )
+                return ALERTS_LIMIT_ERROR_JSON, 400
             if window == parent:
                 return _alerts_response([parent_record], next_page_url)
             if window == child1:
-                return (
-                    {
-                        "code": 400,
-                        "message": "Invalid page and pageSize combination, data is limited to 10,000 results",
-                    },
-                    400,
-                )
+                return ALERTS_LIMIT_ERROR_JSON, 400
             if window == grandchild1:
                 return _alerts_response([parent_record, grandchild1_record])
             if window == grandchild2:
@@ -477,13 +467,7 @@ class TestIncrementalTwilioStream:
         requests, response_handler = _register_alerts_callback(requests_mock)
 
         def always_fail(_request):
-            return (
-                {
-                    "code": 400,
-                    "message": "Invalid page and pageSize combination, data is limited to 10,000 results",
-                },
-                400,
-            )
+            return ALERTS_LIMIT_ERROR_JSON, 400
 
         response_handler["callback"] = always_fail
         output = read_from_stream(TEST_CONFIG, "alerts", SyncMode.incremental, state, expecting_exception=True)
@@ -491,7 +475,7 @@ class TestIncrementalTwilioStream:
         assert not output.records
         assert output.errors
         assert output.errors[0].trace.error.failure_type == FailureType.transient_error
-        assert "The Twilio Alerts API returns at most 10,000 Alert records per request." in output.get_formatted_error_message()
+        assert ALERTS_SPLIT_FAILURE_MESSAGE in output.get_formatted_error_message()
         windows = [_alert_window(request) for request in requests]
         assert all(start <= end for start, end in windows)
         assert any(start == end for start, end in windows)
@@ -509,13 +493,7 @@ class TestIncrementalTwilioStream:
         requests, response_handler = _register_alerts_callback(requests_mock)
 
         def always_fail(_request):
-            return (
-                {
-                    "code": 400,
-                    "message": "Invalid page and pageSize combination, data is limited to 10,000 results",
-                },
-                400,
-            )
+            return ALERTS_LIMIT_ERROR_JSON, 400
 
         response_handler["callback"] = always_fail
         output = read_from_stream(config, "alerts", SyncMode.incremental, expecting_exception=True)
@@ -523,7 +501,7 @@ class TestIncrementalTwilioStream:
         assert not output.records
         assert output.errors
         assert output.errors[0].trace.error.failure_type == FailureType.transient_error
-        assert "The Twilio Alerts API returns at most 10,000 Alert records per request." in output.get_formatted_error_message()
+        assert ALERTS_SPLIT_FAILURE_MESSAGE in output.get_formatted_error_message()
         window_count = len({_alert_window(request) for request in requests})
         assert window_count == 22
         assert window_count < 100
@@ -537,7 +515,7 @@ class TestIncrementalTwilioStream:
 
         def response_for_request(request):
             if _alert_window(request) == parent:
-                return {"code": 400, "message": "Invalid StartDate"}, 400
+                return ALERTS_INVALID_START_DATE_JSON, 400
             if _alert_window(request) == partition2:
                 return _alerts_response()
             raise AssertionError(f"Unexpected Alerts request: {request}")
@@ -547,15 +525,83 @@ class TestIncrementalTwilioStream:
 
         assert output.errors
         failure = output.errors[0].trace.error
-        formatted_error = output.get_formatted_error_message()
-        assert not (failure.failure_type == FailureType.config_error and "10,000" in formatted_error)
         assert failure.failure_type == FailureType.system_error
-        requested_windows = {_alert_window(request) for request in requests}
-        assert requested_windows <= {parent, partition2}
-        assert (
-            "2022-11-15T00:00:00Z",
-            "2022-11-15T11:59:59Z",
-        ) not in requested_windows
+        assert failure.message == "Twilio rejected the Alerts request: Invalid StartDate"
+        assert sorted(_alert_window(request) for request in requests) == [parent, partition2]
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_alerts_split_request_window_checkpoints_split_partition(self, requests_mock):
+        config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
+        parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")
+        child1 = ("2022-11-15T00:00:00Z", "2022-11-15T11:59:59Z")
+        child2 = ("2022-11-15T12:00:00Z", "2022-11-15T23:59:59Z")
+        partition2 = ("2022-11-16T00:00:00Z", "2022-11-16T12:03:11Z")
+        next_page_url = (
+            "https://monitor.twilio.com/v1/Alerts?StartDate=2022-11-15T00:00:00Z"
+            "&EndDate=2022-11-15T23:59:59Z&PageSize=1000&Page=1&PageToken=PT1"
+        )
+        parent_record = _alert_record("parent-page-1", "2022-11-15T01:00:00Z")
+        child1_record = _alert_record("child-1", "2022-11-15T05:00:00Z")
+        child2_record = _alert_record("child-2", "2022-11-15T20:00:00Z")
+        requests, response_handler = _register_alerts_callback(requests_mock)
+
+        def split_response(request):
+            window = _alert_window(request)
+            if window == parent and request.get("PageToken") == "PT1":
+                return ALERTS_LIMIT_ERROR_JSON, 400
+            if window == parent:
+                return _alerts_response([parent_record], next_page_url)
+            if window == child1:
+                return _alerts_response([parent_record, child1_record])
+            if window == child2:
+                return _alerts_response([child2_record])
+            if window == partition2:
+                # Empty, so the final state can only come from the split partition.
+                return _alerts_response()
+            raise AssertionError(f"Unexpected Alerts request: {request}")
+
+        response_handler["callback"] = split_response
+        output = read_from_stream(config, "alerts", SyncMode.incremental)
+
+        assert not output.errors
+        assert sorted(_alert_window(request) for request in requests) == sorted([parent, parent, child1, child2, partition2])
+        # child1 re-reads the parent's first page, so its record is emitted twice.
+        assert sorted(message.record.data["sid"] for message in output.records) == ["child-1", "child-2", "parent-page-1", "parent-page-1"]
+        assert _alert_state_date(output) == "2022-11-15T20:00:00Z"
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_alerts_split_request_window_later_child_failure_does_not_checkpoint(self, requests_mock):
+        config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
+        parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")
+        child1 = ("2022-11-15T00:00:00Z", "2022-11-15T11:59:59Z")
+        child2 = ("2022-11-15T12:00:00Z", "2022-11-15T23:59:59Z")
+        partition2 = ("2022-11-16T00:00:00Z", "2022-11-16T12:03:11Z")
+        child1_record = _alert_record("child-1", "2022-11-15T05:00:00Z")
+        partition2_record = _alert_record("partition-2", "2022-11-16T01:00:00Z")
+        requests, response_handler = _register_alerts_callback(requests_mock)
+
+        def split_response(request):
+            window = _alert_window(request)
+            if window == parent:
+                return ALERTS_LIMIT_ERROR_JSON, 400
+            if window == child1:
+                return _alerts_response([child1_record])
+            if window == child2:
+                return ALERTS_INVALID_START_DATE_JSON, 400
+            if window == partition2:
+                return _alerts_response([partition2_record])
+            raise AssertionError(f"Unexpected Alerts request: {request}")
+
+        response_handler["callback"] = split_response
+        output = read_from_stream(config, "alerts", SyncMode.incremental, expecting_exception=True)
+
+        assert sorted(_alert_window(request) for request in requests) == sorted([parent, child1, child2, partition2])
+        failure = output.errors[0].trace.error
+        assert failure.failure_type == FailureType.system_error
+        assert failure.message == "Twilio rejected the Alerts request: Invalid StartDate"
+        assert sorted(message.record.data["sid"] for message in output.records) == ["child-1", "partition-2"]
+        # The partition whose second child failed is never checkpointed, so the state stays at the start date.
+        assert _alert_state_date(output) == "2022-11-15T00:00:00Z"
 
 
 class TestConferenceParticipantsStream:
