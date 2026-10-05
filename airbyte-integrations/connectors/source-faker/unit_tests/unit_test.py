@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from unittest.mock import patch
+
 import jsonschema
 import pytest
 from source_faker import SourceFaker
@@ -270,3 +272,22 @@ def test_ensure_no_purchases_without_users():
         state = {}
         iterator = source.read(logger, config, catalog, state)
         iterator.__next__()
+
+
+def test_users_fallback_and_check_connection():
+    source = SourceFaker()
+    config = {"count": 10, "parallelism": 1}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+    with patch("source_faker.streams.Pool", side_effect=OSError("cannot allocate memory")):
+        records = [row for row in source.read(logger, config, catalog, {}) if row.type is Type.RECORD]
+
+    assert len(records) == config["count"]
+    check_config = {"count": 10}
+    assert source.check_connection(logger, check_config) == (True, None)
+    assert check_config["parallelism"] == 4
