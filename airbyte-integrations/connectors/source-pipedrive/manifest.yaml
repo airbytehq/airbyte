@@ -2478,7 +2478,9 @@ schemas:
           - "null"
           - integer
       organization:
-        type: object
+        type:
+          - "null"
+          - object
         properties:
           name:
             type:
@@ -2513,6 +2515,40 @@ schemas:
         type:
           - "null"
           - boolean
+      pinned_to_project_flag:
+        type:
+          - "null"
+          - boolean
+      pinned_to_task_flag:
+        type:
+          - "null"
+          - boolean
+      project:
+        type:
+          - "null"
+          - object
+        properties:
+          title:
+            type:
+              - "null"
+              - string
+      project_id:
+        type:
+          - "null"
+          - integer
+      task:
+        type:
+          - "null"
+          - object
+        properties:
+          title:
+            type:
+              - "null"
+              - string
+      task_id:
+        type:
+          - "null"
+          - integer
       update_time:
         type:
           - "null"
@@ -2982,14 +3018,108 @@ schemas:
           - "null"
           - string
         format: date-time
+      bcc:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            email_address:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            latest_sent:
+              type:
+                - "null"
+                - boolean
+            linked_organization_id:
+              type:
+                - "null"
+                - integer
+            linked_person_id:
+              type:
+                - "null"
+                - integer
+            linked_person_name:
+              type:
+                - "null"
+                - string
+            mail_message_party_id:
+              type:
+                - "null"
+                - integer
+            message_time:
+              type:
+                - "null"
+                - number
+            name:
+              type:
+                - "null"
+                - string
       body_url:
         type:
           - "null"
           - string
+      cc:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            email_address:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            latest_sent:
+              type:
+                - "null"
+                - boolean
+            linked_organization_id:
+              type:
+                - "null"
+                - integer
+            linked_person_id:
+              type:
+                - "null"
+                - integer
+            linked_person_name:
+              type:
+                - "null"
+                - string
+            mail_message_party_id:
+              type:
+                - "null"
+                - integer
+            message_time:
+              type:
+                - "null"
+                - number
+            name:
+              type:
+                - "null"
+                - string
       deleted_flag:
         type:
           - "null"
           - integer
+      draft:
+        type:
+          - "null"
+          - string
       draft_flag:
         type:
           - "null"
@@ -3011,6 +3141,14 @@ schemas:
               type:
                 - "null"
                 - integer
+            latest_sent:
+              type:
+                - "null"
+                - boolean
+            linked_organization_id:
+              type:
+                - "null"
+                - integer
             linked_person_id:
               type:
                 - "null"
@@ -3023,6 +3161,10 @@ schemas:
               type:
                 - "null"
                 - integer
+            message_time:
+              type:
+                - "null"
+                - number
             name:
               type:
                 - "null"
@@ -3055,6 +3197,10 @@ schemas:
         type:
           - "null"
           - integer
+      mail_tracking_status:
+        type:
+          - "null"
+          - string
       message_time:
         type:
           - "null"
@@ -3105,6 +3251,14 @@ schemas:
               type:
                 - "null"
                 - integer
+            latest_sent:
+              type:
+                - "null"
+                - boolean
+            linked_organization_id:
+              type:
+                - "null"
+                - integer
             linked_person_id:
               type:
                 - "null"
@@ -3117,6 +3271,10 @@ schemas:
               type:
                 - "null"
                 - integer
+            message_time:
+              type:
+                - "null"
+                - number
             name:
               type:
                 - "null"
@@ -3392,6 +3550,10 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
       type:
         type:
           - "null"
@@ -4292,6 +4454,22 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      lead_id:
+        type:
+          - "null"
+          - string
+      mail_tracking_status:
+        type:
+          - "null"
+          - string
+      message_count:
+        type:
+          - "null"
+          - integer
+      read_flag:
+        type:
+          - "null"
+          - number
       version:
         type: integer
       account_id:
