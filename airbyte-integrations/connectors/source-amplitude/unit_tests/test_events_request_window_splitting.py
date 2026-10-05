@@ -6,16 +6,17 @@ import json
 import sys
 import zipfile
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 from unittest import TestCase
 
 from freezegun import freeze_time
 
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import AirbyteStateBlob, FailureType, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
 _CONNECTOR_DIR = Path(__file__).parent.parent
@@ -33,7 +34,12 @@ _CONFIG = {
     "data_region": "Standard Server",
     "request_time_range": 24,
 }
-_FAILURE_MESSAGE = "Amplitude rejected the Events export even after splitting it into smaller time windows"
+_FAILURE_MESSAGE = (
+    "Amplitude's Export API rejects exports over 4GB (HTTP 400) and times out on very large ones (HTTP 504). "
+    "An hour of data that large can only be exported with Amplitude's Amazon S3 export: "
+    "https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export. "
+    "If 'request_time_range' is above 1024 hours, lower it so splitting can reach a one-hour window."
+)
 
 
 def _export_request(start: str, end: str) -> HttpRequest:
@@ -54,10 +60,11 @@ def _error_response(status_code: int) -> HttpResponse:
     return HttpResponse(json.dumps({"error": "an error"}), status_code=status_code)
 
 
-def _read(expecting_exception: bool = False) -> EntrypointOutput:
+def _read(expecting_exception: bool = False, stream_state: Optional[AirbyteStateBlob] = None) -> EntrypointOutput:
     catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
-    source = YamlDeclarativeSource(config=_CONFIG, catalog=catalog, state=None, path_to_yaml=str(_MANIFEST_PATH))
-    return read(source, _CONFIG, catalog, None, expecting_exception)
+    state = StateBuilder().with_stream_state(_STREAM_NAME, stream_state).build() if stream_state else None
+    source = YamlDeclarativeSource(config=_CONFIG, catalog=catalog, state=state, path_to_yaml=str(_MANIFEST_PATH))
+    return read(source, _CONFIG, catalog, state, expecting_exception)
 
 
 def _event_ids(output: EntrypointOutput) -> List[str]:
@@ -112,6 +119,22 @@ class EventsRequestWindowSplittingTest(TestCase):
         assert output.state_messages[-1].state.stream.stream_state.__dict__ == {"server_upload_time": "20240101T20"}
 
     @HttpMocker()
+    def test_given_state_from_split_sync_when_next_sync_splits_partial_window_then_both_halves_read(self, http_mocker: HttpMocker) -> None:
+        _mock_split_into_halves(http_mocker, 400)
+        first_sync_state = _read().state_messages[-1].state.stream.stream_state
+        # The 2-hour lookback restarts the window at 20240101T18 and "now" cuts it at 20240102T05.
+        http_mocker.get(_export_request("20240101T18", "20240102T05"), _error_response(504))
+        http_mocker.get(_export_request("20240101T18", "20240101T23"), _export_response(["late-arrival"], "2024-01-01 21:00:00.123456"))
+        http_mocker.get(_export_request("20240102T00", "20240102T05"), _export_response(["next-day"], "2024-01-02 04:00:00.123456"))
+
+        with freeze_time("2024-01-02T05:30:00Z"):
+            output = _read(stream_state=first_sync_state)
+
+        assert not output.errors
+        assert _event_ids(output) == ["late-arrival", "next-day"]
+        assert output.state_messages[-1].state.stream.stream_state.__dict__ == {"server_upload_time": "20240102T04"}
+
+    @HttpMocker()
     def test_given_always_too_large_when_read_then_transient_error_at_one_hour_window(self, http_mocker: HttpMocker) -> None:
         for start, end in [
             ("20240101T00", "20240101T23"),
@@ -129,6 +152,24 @@ class EventsRequestWindowSplittingTest(TestCase):
         # errors[0] is the stream's own error; the last error is the CDK's sync summary, always a config_error.
         assert output.errors[0].trace.error.failure_type == FailureType.transient_error
         assert _FAILURE_MESSAGE in output.errors[0].trace.error.message
+
+    @HttpMocker()
+    def test_given_second_half_always_too_large_when_read_then_first_half_emitted_without_checkpoint(self, http_mocker: HttpMocker) -> None:
+        http_mocker.get(_export_request("20240101T00", "20240101T11"), _export_response(["first-half"], "2024-01-01 05:00:00.123456"))
+        for start, end in [
+            ("20240101T00", "20240101T23"),
+            ("20240101T12", "20240101T23"),
+            ("20240101T12", "20240101T17"),
+            ("20240101T12", "20240101T14"),
+            ("20240101T12", "20240101T12"),
+        ]:
+            http_mocker.get(_export_request(start, end), _error_response(400))
+
+        output = _read(expecting_exception=True)
+
+        assert _event_ids(output) == ["first-half"]
+        assert output.state_messages[-1].state.stream.stream_state.__dict__ == {"server_upload_time": "20240101T00"}
+        assert output.errors[0].trace.error.failure_type == FailureType.transient_error
 
     @HttpMocker()
     def test_given_403_when_read_then_config_error_without_split(self, http_mocker: HttpMocker) -> None:
@@ -150,3 +191,15 @@ class EventsRequestWindowSplittingTest(TestCase):
         http_mocker.assert_number_of_calls(request, 1)
         assert not output.errors
         assert not output.records
+
+    @HttpMocker()
+    def test_given_404_on_one_half_when_read_then_other_half_read(self, http_mocker: HttpMocker) -> None:
+        http_mocker.get(_export_request("20240101T00", "20240101T23"), _error_response(400))
+        http_mocker.get(_export_request("20240101T00", "20240101T11"), _error_response(404))
+        http_mocker.get(_export_request("20240101T12", "20240101T23"), _export_response(["second-half"], "2024-01-01 20:00:00.123456"))
+
+        output = _read()
+
+        assert not output.errors
+        assert _event_ids(output) == ["second-half"]
+        assert output.state_messages[-1].state.stream.stream_state.__dict__ == {"server_upload_time": "20240101T20"}

@@ -591,10 +591,11 @@ streams:
       type: NoPagination
     request_window_splitting:
       type: RequestWindowSplitting
-      failure_message: Amplitude rejected the Events export even after splitting
-        it into smaller time windows (the Export API allows at most 4GB per request).
-        Lower 'request_time_range', or for very large volumes use Amplitude's Amazon
-        S3 export https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export
+      failure_message: "Amplitude's Export API rejects exports over 4GB (HTTP 400)
+        and times out on very large ones (HTTP 504). An hour of data that large can
+        only be exported with Amplitude's Amazon S3 export: https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export.
+        If 'request_time_range' is above 1024 hours, lower it so splitting can reach
+        a one-hour window."
     requester:
       type: HttpRequester
       url_base: "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency
@@ -1026,8 +1027,9 @@ spec:
         type: integer
         title: Request time range
         description: >
-          According to <a href="https://www.docs.developers.amplitude.com/analytics/apis/export-api/#considerations">Considerations</a>
-          too large of a time range in te request can cause a timeout error. In this case, please provide a shorter time interval in hours.
+          The time range in hours that each Events export request covers. Windows that Amplitude rejects as too large or that time out
+          (see <a href="https://www.docs.developers.amplitude.com/analytics/apis/export-api/#considerations">Considerations</a>)
+          are split automatically, down to one hour for values up to 1024.
         default: 24
         minimum: 1
         maximum: 8760
