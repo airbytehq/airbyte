@@ -12,7 +12,7 @@ data:
   maxSecondsBetweenMessages: 86400
   connectorType: source
   definitionId: 32382e40-3b49-4b99-9c5c-4076501914e7
-  dockerImageTag: 2.0.0
+  dockerImageTag: 1.5.0
   dockerRepository: airbyte/source-gong
   documentationUrl: https://docs.airbyte.com/integrations/sources/gong
   githubIssueLabel: source-gong
@@ -26,14 +26,6 @@ data:
       enabled: true
   releases:
     breakingChanges:
-      2.0.0:
-        message: "The `extensiveCalls` stream schema now declares `parties[].context` as `array` (was `object`) and gives `media` an explicit `object` type, matching what Gong returns. Records are unchanged. After upgrading, refresh the source schema; do not clear the stream. Connections that don't sync `extensiveCalls` are unaffected. For more information, see the [Gong migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations)."
-        upgradeDeadline: "2026-10-16"
-        deadlineAction: "auto_upgrade"
-        scopedImpact:
-          - scopeType: stream
-            impactedScopes:
-              - "extensiveCalls"
       1.0.0:
         message: "The `extensiveCalls` stream schema has changed: the `context` field type changed from `object` to `array`, and the `value` field within `context.objects.fields` now accepts `string`, `number`, `boolean`, `object`, and `array` types instead of only `object`. Users syncing the `extensiveCalls` stream must refresh the source schema and reset the stream after upgrading. For more information, see the [Gong migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations)."
         upgradeDeadline: "2026-04-13"
