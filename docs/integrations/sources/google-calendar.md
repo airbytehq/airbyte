@@ -9,13 +9,26 @@ This page contains the setup guide and reference information for the [Google Cal
 ## Prerequisites
 
 - A Google account with access to the calendars you want to sync.
-- A Google Cloud project with the Google Calendar API enabled and OAuth credentials (Client ID, Client Secret, and a Refresh Token). See the setup steps below.
+- **Airbyte Cloud:** nothing else — you authenticate with your Google account during setup.
+- **Airbyte Open Source:** a Google Cloud project with the Google Calendar API enabled and OAuth credentials (Client ID, Client Secret, and a Refresh Token). See the setup steps below.
 - (Optional) A specific Calendar ID if you only want to sync one calendar.
 - (Optional) A Start Date to limit how far back incremental `events` syncs look.
 
 ## Setup guide
 
 ### Step 1: Obtain Google credentials
+
+<!-- env:cloud -->
+
+#### For Airbyte Cloud
+
+No prerequisite work is needed. In Step 2 you click **Authenticate your Google account** and sign in with the Google account whose calendars you want to sync.
+
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+#### For Airbyte Open Source
 
 To authenticate with OAuth you need a **Client ID**, **Client Secret**, and **Refresh Token** from your own Google Cloud project:
 
@@ -24,6 +37,8 @@ To authenticate with OAuth you need a **Client ID**, **Client Secret**, and **Re
 3. Obtain a refresh token with the [OAuth 2.0 Playground](https://developers.google.com/oauthplayground):
    - Click the gear icon, check **Use your own OAuth credentials**, and enter your Client ID and Client Secret.
    - Authorize the scopes `https://www.googleapis.com/auth/calendar.readonly` and `https://www.googleapis.com/auth/calendar.acls.readonly`, then exchange the authorization code for tokens. The `calendar.acls.readonly` scope is required for the `acl` stream; `calendar.readonly` alone is sufficient for all other streams.
+
+<!-- /env:oss -->
 
 ### Step 2: Set up the Google Calendar connector in Airbyte
 
@@ -35,7 +50,7 @@ To authenticate with OAuth you need a **Client ID**, **Client Secret**, and **Re
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Google Calendar** from the Source type dropdown.
 4. Enter a name for the connector.
-5. Enter the **Client ID**, **Client secret**, and **Refresh token** you obtained in Step 1.
+5. Under **Authentication**, choose **Authenticate via Google (OAuth)** and click **Authenticate your Google account** to authorize.
 6. (Optional) For **Calendar Id**, enter a specific calendar ID to sync only that calendar. The calendar does not need to appear in the account's calendar list; it is read directly. The value `primary` is accepted for the account's primary calendar. Leave empty to sync every calendar in the account's calendar list.
 7. (Optional) For **Start Date**, enter the earliest `updated` timestamp for incremental `events` syncs in the format `YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`. When unset, the first sync fetches all events; values older than roughly 30 days are ignored and all events are read.
 8. (Optional) For **Number of concurrent workers**, set the number of concurrent request workers (1–10, default 3).
@@ -51,7 +66,9 @@ To authenticate with OAuth you need a **Client ID**, **Client Secret**, and **Re
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Google Calendar** from the Source type dropdown.
 4. Enter a name for the connector.
-5. Enter the **Client ID**, **Client secret**, and **Refresh token** you obtained in Step 1 — a refresh token issued by *your own* Google Cloud OAuth app with the `calendar.readonly` and `calendar.acls.readonly` scopes, plus that app's client ID and client secret. Without `calendar.acls.readonly`, the `acl` stream is skipped (its 403 responses are ignored).
+5. Under **Authentication**, choose one of:
+   - **Authenticate via Google (OAuth):** sign in with Google using Airbyte's OAuth app (Cloud); enter the **Client ID**, **Client Secret**, and **Refresh Token** you obtained in Step 1.
+   - **Authenticate with custom app (client ID / secret):** enter a refresh token issued by *your own* Google Cloud OAuth app with the `calendar.readonly` and `calendar.acls.readonly` scopes, plus that app's **Client ID** and **Client Secret**. Without `calendar.acls.readonly`, the `acl` stream is skipped (its 403 responses are ignored). Existing configurations with flat `client_id`/`client_secret`/`client_refresh_token_2` fields are migrated automatically to this option.
 6. (Optional) For **Calendar Id**, enter a specific calendar ID to sync only that calendar, or `primary` for the account's primary calendar. The calendar does not need to appear in the account's calendar list; it is read directly. Leave empty to sync all calendars.
 7. (Optional) For **Start Date**, enter the earliest `updated` timestamp for incremental `events` syncs (`YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`). When unset, the first sync fetches all events; values older than roughly 30 days are ignored and all events are read.
 8. (Optional) For **Number of concurrent workers**, set the number of concurrent request workers (1–10, default 3).
@@ -120,6 +137,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.3.0 | 2026-10-05 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative OAuth (`advanced_auth`); legacy flat credentials migrate to the custom-app `credentials` option |
 | 0.2.0 | 2026-09-21 | [86470](https://github.com/airbytehq/airbyte/pull/86470) | Add `acl` and `freebusy` streams, partition `events`/`acl`/`freebusy` over all calendars, make `calendarid` optional |
 | 0.1.0 | 2026-10-05 | [86468](https://github.com/airbytehq/airbyte/pull/86468) | Add error handling, API budget, concurrency, incremental `events` (now includes cancelled events via `showDeleted=true`), and enable acceptance tests |
 | 0.0.54 | 2026-09-29 | [87194](https://github.com/airbytehq/airbyte/pull/87194) | Update dependencies |

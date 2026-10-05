@@ -25,9 +25,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 
 _CONFIG = {
-    "client_id": "id",
-    "client_secret": "secret",
-    "client_refresh_token_2": "rt",
+    "credentials": {"auth_type": "manual", "client_id": "id", "client_secret": "secret", "refresh_token": "rt"},
     "calendarid": "primary",
 }
 
