@@ -139,7 +139,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('start_date') or '2000-01-01T00:00:00.000000Z', '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime: "{{ format_datetime(config.get('start_date') or day_delta(-730, format='%Y-%m-%dT%H:%M:%S.%fZ'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       retriever:
         type: SimpleRetriever
