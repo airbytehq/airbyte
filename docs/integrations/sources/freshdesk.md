@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the [Freshdesk]
 
 - A Freshdesk account with an [API key](https://support.freshdesk.com/support/solutions/articles/215517). The API key belongs to the agent whose credentials are used, and that agent must have access to the resources you want to sync.
 - Your Freshdesk [domain](https://support.freshdesk.com/en/support/solutions/articles/50000004704-customizing-your-helpdesk-url) in the format `yourcompany.freshdesk.com`.
-- To sync **Ticket Activities**, your account must have Freshdesk's [scheduled ticket activities export](https://support.freshdesk.com/support/solutions/articles/226460-export-ticket-activities-from-your-helpdesk) enabled under **Admin > Account > Scheduled Exports**. Freshdesk deprecated this feature together with Legacy Reports (October 2023): it stays available only for accounts that had it enabled before the deprecation (Pro/Enterprise and legacy Estate/Forest plans) and cannot be newly enabled. Export files cover one day each and remain downloadable for 30 days, so the stream can only backfill about the last 30 days. Each export file follows the account's local day. The stream requests one file per UTC date from the start date onward and reads each file in full, skipping only records that an earlier sync already emitted or that precede the start date's UTC day. Without the export enabled the stream syncs successfully but returns no records.
+- To sync **Ticket Activities**, your account must have Freshdesk's [scheduled ticket activities export](https://support.freshdesk.com/support/solutions/articles/226460-export-ticket-activities-from-your-helpdesk) enabled under **Admin > Account > Scheduled Exports**, and the API key must belong to an account admin. See [Ticket Activities](#ticket-activities) for details.
 
 ## Set up the Freshdesk connector in Airbyte
 
@@ -17,11 +17,12 @@ This page contains the setup guide and reference information for the [Freshdesk]
 5. For **Domain**, enter your Freshdesk domain, for example `mycompany.freshdesk.com`.
 6. For **API Key**, enter your [Freshdesk API key](https://support.freshdesk.com/support/solutions/articles/215517).
 7. For **Start Date**, optionally enter a date in `YYYY-MM-DDTHH:mm:ssZ` format. Only data created or updated on or after this date will be replicated for incremental streams. If not set, the connector syncs all available data.
-8. For **Requests per minute**, optionally enter a custom rate limit. If left empty, the connector uses the default for your plan. See [Performance considerations](#performance-considerations) for details.
-9. For **Rate Limit Plan**, select your Freshdesk subscription plan. This tells the connector the per-endpoint rate limits for the Tickets and Contacts APIs, which differ from the general rate limit. If you are unsure, select **Free Plan** for the most conservative limits.
-10. For **Lookback Window**, you may specify a number of days back from the current stream state to re-read data for the **Satisfaction Ratings** stream. This helps capture updates made to existing ratings after their initial creation. Records updated before the lookback window boundary are not re-synced. The default is 14 days.
-11. For **Number of Concurrent Threads**, optionally adjust the number of parallel sync threads. Higher values speed up syncs but consume more of your API rate limit. The default is 5.
-12. Click **Set up source**.
+8. For **Lookback Window**, you may specify a number of days back from the current stream state to re-read data for the **Satisfaction Ratings** stream. This helps capture updates made to existing ratings after their initial creation. Records updated before the lookback window boundary are not re-synced. The default is 14 days.
+9. For **Subscription Plan/Tier**, select your Freshdesk plan: `growth`, `pro`, or `enterprise`. The connector uses this value to limit how many API requests it sends per minute. The default is `growth`. See [Performance considerations](#performance-considerations).
+10. For **Number of Concurrent Threads**, optionally adjust the number of parallel sync threads. Higher values speed up syncs but consume more of your API rate limit. The default is 5, and the allowed range is 2 to 16.
+11. Click **Set up source**.
+
+The form also shows **Requests per minute** and **Rate Limit Plan**. The connector doesn't currently read these fields, so setting them has no effect on rate limiting.
 
 ## Supported sync modes
 
@@ -64,18 +65,31 @@ Several output streams are available from this source:
 - [Ticket Fields](https://developers.freshdesk.com/api/#ticket-fields)
 - [Time Entries](https://developers.freshdesk.com/api/#time-entries)
 
+### Ticket Activities
+
+Freshdesk's REST API has no endpoint for ticket activity history. Instead, this stream downloads the daily files that Freshdesk's [scheduled ticket activities export](https://support.freshdesk.com/support/solutions/articles/226460-export-ticket-activities-from-your-helpdesk) produces, and uses `performed_at` as the cursor.
+
+- **The export must already be enabled on your account.** Freshdesk deprecated the export together with Legacy Reports in October 2023. Accounts that had it enabled before the deprecation keep it under **Admin > Account > Scheduled Exports**. Other accounts can't turn it on.
+- **You can only sync about the last 30 days.** Freshdesk keeps each daily export file for 30 days, so the connector starts the stream no earlier than midnight UTC 30 days ago, regardless of the **Start Date** you configure. If you don't set a start date, the stream starts at that same point.
+- **Each file is read in full.** Export files follow your Freshdesk account's local day. The connector requests one file per UTC date from the start date onward and reads each file completely. It skips only records that precede the start of the sync: records an earlier sync already emitted, or records before the start date's UTC day.
+- **Airbyte adds two fields.** Export rows have no identifier of their own, so the connector adds `_airbyte_ticket_activity_id`, a hash of the row contents, as the primary key. It also adds `export_date`, the date of the export file the row came from. Because the incremental cursor is inclusive, a record with the same `performed_at` as the saved state can be emitted again on the next sync. Use **Incremental | Append + Deduped** to collapse these repeats.
+- **Export files are downloaded from Amazon S3.** If you restrict outbound traffic, allow `s3.amazonaws.com`, `*.s3.amazonaws.com`, and `*.cloudfront.net` in addition to your Freshdesk domain.
+- **Some responses skip a day, others fail the sync.**
+  - If Freshdesk returns 404 or reports no export for a date, the connector logs it and moves to the next date. The sync succeeds with fewer records.
+  - If Freshdesk returns 401 or 403, the sync fails with a configuration error. Check that the API key belongs to an account admin and that the export is still enabled.
+  - If Freshdesk returns an export entry without a download URL, the sync fails with a system error instead of silently returning no records.
+
 ## Performance considerations
 
-Freshdesk enforces [API rate limits](https://developers.freshdesk.com/api/#ratelimit) that vary by plan:
+Freshdesk enforces account-wide [API rate limits](https://developers.freshdesk.com/api/#ratelimit) that vary by plan. Trial accounts are limited to 50 calls per minute. Freshdesk publishes these limits for current plans:
 
 | Plan | General rate limit | Tickets list limit | Contacts list limit |
 | :--- | :--- | :--- | :--- |
-| Free | 50/min | 50/min | 50/min |
-| Growth | 200/min | 20/min | 20/min |
+| Growth | 100/min | 40/min | 40/min |
 | Pro | 400/min | 100/min | 100/min |
 | Enterprise | 700/min | 200/min | 200/min |
 
-The connector respects the `Retry-After` header and automatically retries when rate-limited. To minimize rate limit errors, select the correct **Rate Limit Plan** in the connector configuration so the connector can budget API calls appropriately.
+The connector limits its own requests to Freshdesk's `/api/v2/` endpoints based on **Subscription Plan/Tier**: 200 per minute for `growth`, 400 for `pro`, and 700 for `enterprise`. This budget doesn't apply separate limits to the tickets and contacts list endpoints, and the `growth` budget is higher than Freshdesk's published Growth limit. When Freshdesk returns HTTP 429, the connector waits for the time in the `Retry-After` header and retries.
 
 If you increase **Number of Concurrent Threads**, monitor your rate limit usage. Higher concurrency speeds up syncs but increases the chance of hitting per-minute limits, especially on Free and Growth plans.
 
@@ -90,7 +104,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
-| 3.3.5 | 2026-09-30 | [86643](https://github.com/airbytehq/airbyte/pull/86643) | Fix the `ticket_activities` stream reading zero records when the Freshdesk export endpoint returns a list of exports, stop dropping records that fall outside the UTC day slice, and fail the sync instead of returning no records when an export has no download URL |
+| 3.3.5 | 2026-10-05 | [86643](https://github.com/airbytehq/airbyte/pull/86643) | Fix the `ticket_activities` stream reading zero records when the Freshdesk export endpoint returns a list of exports, stop dropping records that fall outside the UTC day slice, and fail the sync instead of returning no records when an export has no download URL |
 | 3.3.4 | 2026-09-29 | [87146](https://github.com/airbytehq/airbyte/pull/87146) | Update dependencies |
 | 3.3.3 | 2026-09-22 | [86635](https://github.com/airbytehq/airbyte/pull/86635) | Update dependencies |
 | 3.3.2 | 2026-09-15 | [86061](https://github.com/airbytehq/airbyte/pull/86061) | Update dependencies |
