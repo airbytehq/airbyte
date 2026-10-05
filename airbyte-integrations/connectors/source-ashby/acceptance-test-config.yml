@@ -25,6 +25,8 @@ acceptance_tests:
             bypass_reason: "Sandbox account has no job templates/approvals; covered by mock-server tests"
           - name: "approvals"
             bypass_reason: "Sandbox account has no job templates/approvals; covered by mock-server tests"
+          - name: "source_tracking_links"
+            bypass_reason: "Sandbox account has no source tracking links; covered by mock-server tests"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
