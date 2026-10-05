@@ -171,7 +171,7 @@
       "stream_state": {
         "use_global_cursor": true,
         "state": {
-          "updated_at": "2124-03-18T12:51:52.007000+00:00"
+          "pipeline_updated_at": "2124-03-18T12:51:52.007000+00:00"
         },
         "lookback_window": 1,
         "parent_state": {
@@ -183,7 +183,20 @@
                   "id": 25157276,
                   "parent_slice": {
                     "id": "new-group-airbute%2Fnew-ci-test-project"
-                  }
+                  },
+                  "pipeline_source": "default"
+                },
+                "cursor": {
+                  "updated_at": "2124-03-18T12:51:52.007000+00:00"
+                }
+              },
+              {
+                "partition": {
+                  "id": 25157276,
+                  "parent_slice": {
+                    "id": "new-group-airbute%2Fnew-ci-test-project"
+                  },
+                  "pipeline_source": "parent_pipeline"
                 },
                 "cursor": {
                   "updated_at": "2124-03-18T12:51:52.007000+00:00"
@@ -221,7 +234,20 @@
                   "id": 25157276,
                   "parent_slice": {
                     "id": "new-group-airbute%2Fnew-ci-test-project"
-                  }
+                  },
+                  "pipeline_source": "default"
+                },
+                "cursor": {
+                  "updated_at": "2124-03-18T12:51:52.007000+00:00"
+                }
+              },
+              {
+                "partition": {
+                  "id": 25157276,
+                  "parent_slice": {
+                    "id": "new-group-airbute%2Fnew-ci-test-project"
+                  },
+                  "pipeline_source": "parent_pipeline"
                 },
                 "cursor": {
                   "updated_at": "2124-03-18T12:51:52.007000+00:00"
@@ -259,7 +285,20 @@
                   "id": 25157276,
                   "parent_slice": {
                     "id": "new-group-airbute%2Fnew-ci-test-project"
-                  }
+                  },
+                  "pipeline_source": "default"
+                },
+                "cursor": {
+                  "updated_at": "2124-03-18T12:51:52.007000+00:00"
+                }
+              },
+              {
+                "partition": {
+                  "id": 25157276,
+                  "parent_slice": {
+                    "id": "new-group-airbute%2Fnew-ci-test-project"
+                  },
+                  "pipeline_source": "parent_pipeline"
                 },
                 "cursor": {
                   "updated_at": "2124-03-18T12:51:52.007000+00:00"

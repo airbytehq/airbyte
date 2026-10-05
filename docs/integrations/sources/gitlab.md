@@ -127,12 +127,14 @@ Incremental streams filter on `updated_at` and request data in 180-day windows, 
 
 ### Incremental pipeline child streams
 
-`jobs`, `pipelines_extended`, and `pipeline_trigger_jobs` make one request per pipeline. In Incremental mode, a sync only makes these requests for the pipelines returned by the incremental `pipelines` query, which are the pipelines whose `updated_at` is at or after the previous sync's cursor. Keep the following in mind:
+`jobs`, `pipelines_extended`, and `pipeline_trigger_jobs` make one request per pipeline. In Incremental mode, a sync only makes these requests for the pipelines returned by the incremental `pipelines` query, which are the pipelines whose `updated_at` is at or after the previous sync's cursor. All three streams use `pipeline_updated_at`, the pipeline's `updated_at` as returned by `pipelines`, as their cursor. Keep the following in mind:
 
 - Changes that don't update the parent pipeline's `updated_at`, such as erasing a job or job artifacts expiring, aren't picked up. Use Full Refresh for these streams if you need those changes.
-- The cursor has one-second precision and GitLab's `updated_after` filter includes the boundary, so the most recently updated pipeline in each project is requested again on every sync. Use **Incremental | Append + Deduped** to avoid duplicate rows.
-- A project added to the connector configuration after the first incremental sync starts from the stream's latest cursor, not from **Start date**. Refresh these streams to backfill a newly added project.
+- In `pipeline_trigger_jobs`, the `downstream_pipeline` fields, such as `status`, reflect the downstream pipeline when the upstream pipeline last changed. A trigger job without `strategy: depend` finishes as soon as the downstream pipeline is created, so later status changes in the downstream pipeline don't update the upstream pipeline, and the row isn't read again. To get the downstream pipeline's current status, join `downstream_pipeline_id` to the `pipelines` stream, or use Full Refresh for `pipeline_trigger_jobs`.
+- The cursor has one-second precision and GitLab's `updated_after` filter includes the boundary. On every sync, the most recently updated regular pipeline and the most recently updated child pipeline in each project are requested again, so up to two pipelines per project. Use **Incremental | Append + Deduped** to avoid duplicate rows.
+- A project that first appears after the first incremental sync starts from the latest `pipelines` cursor minus the duration of the previous sync, not from **Start date**. This applies to projects added to the connector configuration and to projects created in or moved into a configured group. Older pipelines in that project aren't read. Refresh these streams to backfill them.
 - If you switch these streams from Full Refresh to Incremental without clearing them, the first incremental sync continues from the state saved by the last Full Refresh sync instead of reading from **Start date**.
+- In Full Refresh mode, these streams also save their position during a sync. If an attempt fails, the next attempt resumes where it stopped instead of reading every pipeline again. Each new Full Refresh sync still starts from **Start date**.
 - Pipelines are paginated by page number. If a pipeline is updated while a sync is paging through results, another pipeline can shift to an earlier page and not be returned. That pipeline's child records are skipped until it's updated again.
 
 ### Child pipelines on very large instances

@@ -364,6 +364,13 @@ definitions:
         path: ["group_id"]
         value: "{{ stream_slice.id }}"
 
+  add_pipeline_updated_at_field:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path: ["pipeline_updated_at"]
+        value: "{{ stream_slice.extra_fields['updated_at'] }}"
+
   # Service streams
   base_full_refresh_stream:
     type: DeclarativeStream
@@ -402,10 +409,14 @@ definitions:
         field_name: "{{ parameters.get('upper_bound_filter', 'updated_before') }}"
         inject_into: request_parameter
 
+  # Pipeline children are incremental only through the parent `pipelines` state (incremental_dependency).
+  # This cursor holds state and is never sent to GitLab. The far-future end_datetime stops it from
+  # skipping a pipeline the parent returned when the stored cursor is later than the worker clock.
   pipelines_child_incremental_sync:
     type: DatetimeBasedCursor
-    cursor_field: "updated_at"
+    cursor_field: "pipeline_updated_at"
     start_datetime: "{{ config.get('start_date', '2014-01-01T00:00:00Z') }}"
+    end_datetime: "9999-12-31T00:00:00Z"
     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     cursor_datetime_formats: "#/definitions/cursor_datetime_formats"
     global_substream_cursor: true
@@ -414,6 +425,8 @@ definitions:
     $ref: "#/definitions/base_projects_child_stream"
     retriever: "#/definitions/pipelines_child_streams_retriever"
     incremental_sync: "#/definitions/pipelines_child_incremental_sync"
+    transformations:
+      - "#/definitions/add_pipeline_updated_at_field"
 
   groups_list_stream:
     name: "groups_list"
@@ -770,11 +783,9 @@ definitions:
     name: "jobs"
     $ref: "#/definitions/base_pipelines_incremental_child_stream"
     transformations:
+      - "#/definitions/add_pipeline_updated_at_field"
       - type: AddFields
         fields:
-          - type: AddedFieldDefinition
-            path: ["pipeline_updated_at"]
-            value: "{{ stream_slice.extra_fields['updated_at'] }}"
           - type: AddedFieldDefinition
             path: ["project_id"]
             value: "{{ stream_slice.parent_slice.id }}"
@@ -790,9 +801,6 @@ definitions:
           - type: AddedFieldDefinition
             path: ["commit_id"]
             value: "{{ (record.get('commit') or {}).get('id') }}"
-    incremental_sync:
-      $ref: "#/definitions/pipelines_child_incremental_sync"
-      cursor_field: "pipeline_updated_at"
     $parameters:
       path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}/jobs"
     schema_loader:
@@ -804,11 +812,9 @@ definitions:
     name: "pipeline_trigger_jobs"
     $ref: "#/definitions/base_pipelines_incremental_child_stream"
     transformations:
+      - "#/definitions/add_pipeline_updated_at_field"
       - type: AddFields
         fields:
-          - type: AddedFieldDefinition
-            path: ["pipeline_updated_at"]
-            value: "{{ stream_slice.extra_fields['updated_at'] }}"
           - type: AddedFieldDefinition
             path: ["project_id"]
             value: "{{ stream_slice.parent_slice.id }}"
@@ -824,9 +830,6 @@ definitions:
           - type: AddedFieldDefinition
             path: ["commit_id"]
             value: "{{ (record.get('commit') or {}).get('id') }}"
-    incremental_sync:
-      $ref: "#/definitions/pipelines_child_incremental_sync"
-      cursor_field: "pipeline_updated_at"
     $parameters:
       path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}/bridges"
     schema_loader:
@@ -4030,6 +4033,12 @@ schemas:
         format: date-time
       updated_at:
         description: The date and time when pipeline information was last updated
+        type:
+        - 'null'
+        - string
+        format: date-time
+      pipeline_updated_at:
+        description: The `updated_at` of the pipeline as listed by the `pipelines` stream; used as the incremental cursor.
         type:
         - 'null'
         - string
