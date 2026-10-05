@@ -114,19 +114,20 @@ class MongoDbSourceTest {
   }
 
   @Test
-  void testCheckOperationShardedClusterType() throws IOException {
+  void testCheckOperationInvalidClusterType() throws IOException {
     final ClusterDescription clusterDescription = mock(ClusterDescription.class);
     final Document response = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
-    when(clusterDescription.getType()).thenReturn(ClusterType.SHARDED);
+    when(clusterDescription.getType()).thenReturn(ClusterType.STANDALONE);
     when(mongoDatabase.runCommand(any())).thenReturn(response);
     when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
 
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
-    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, airbyteConnectionStatus.getStatus());
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
+    assertEquals("Target MongoDB instance is not a replica set cluster.", airbyteConnectionStatus.getMessage());
   }
 
   @Test
