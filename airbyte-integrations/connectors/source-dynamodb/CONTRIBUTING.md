@@ -211,7 +211,7 @@ and the role. Legacy returned `FAILED` without a message in all three cases.
 | `check` failure | `FAILED` with no message (vendor error only in logs) | `FAILED` with a classified message inside "Could not connect with provided configuration. Error: ..." plus an error `TRACE` (`application.yml` regex rules) |
 | `check` with zero tables | `SUCCEEDED` | fails with "Discovered zero tables." (`CheckOperation`) |
 | `check` without the `credentials` property | NPE message | "Missing required 'credentials' property ..." |
-| `discover` of an empty table | stream with `"properties": {}` | stream dropped (`DiscoverOperation` skips streams without fields) |
+| `discover` of an empty table | stream with `"properties": {}` | stream with the key attributes only, typed from `DescribeTable` (`S` string, `N` number, `B` binary); the Bulk CDK's `DiscoverOperation` drops a stream without fields, which would make a temporarily empty table vanish at a schema refresh |
 | `discover` schema shapes | `{"type": ["null", "string"]}`, `{"type": ["null", "integer"]}` | `{"type": "string"}`, `{"type": "number", "airbyte_type": "integer"}` (canonical Bulk CDK shapes, see above) |
 
 ### read parity (verified 2026-09-17 on DynamoDB Local 3.3.1 and on a real AWS account vs 0.3.11)

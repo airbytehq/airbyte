@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.CliRunner
+import io.airbyte.cdk.data.AirbyteSchemaType
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.protocol.models.v0.AirbyteCatalog
@@ -70,6 +72,60 @@ class DynamoDbSourceDiscoverTest {
         assertCatalogMatchesLegacy(container.config(extra = mapOf("discover_sample_size" to 1000)))
     }
 
+    /**
+     * A table without items is discovered with its key attributes, typed from `DescribeTable`; the
+     * legacy catalog lists it with no properties at all (and the legacy connector could not sync
+     * it).
+     */
+    @Test
+    fun testEmptyTableIsDiscoveredWithItsKeyAttributes() {
+        val catalogs: List<AirbyteCatalog> =
+            CliRunner.source("discover", container.config()).run().catalogs()
+        val stream: JsonNode =
+            Jsons.valueToTree<JsonNode>(catalogs.single()).get("streams").first {
+                it["name"].asText() == EMPTY_TABLE
+            }
+        Assertions.assertEquals(
+            Jsons.readTree("""{"id":{"type":"string"}}"""),
+            stream["json_schema"]["properties"],
+        )
+        Assertions.assertEquals(
+            Jsons.readTree("""[["id"]]"""),
+            stream["source_defined_primary_key"],
+        )
+        Assertions.assertEquals(
+            Jsons.readTree("""["full_refresh","incremental"]"""),
+            stream["supported_sync_modes"],
+        )
+    }
+
+    /** The fallback types composite, numeric and binary keys from the table description alone. */
+    @Test
+    fun testKeyAttributeFieldsFollowTheKeySchema() {
+        container.client().use { client ->
+            val querier =
+                DynamoDbSourceMetadataQuerier(
+                    DynamoDbSourceConfigurationFactory().make(container.config()),
+                    client,
+                )
+            fun keys(table: String): List<Pair<String, AirbyteSchemaType>> =
+                querier.keyAttributeFields(table).map { it.id to it.type.airbyteSchemaType }
+            Assertions.assertEquals(
+                listOf("pk" to LeafAirbyteSchemaType.STRING, "sk" to LeafAirbyteSchemaType.NUMBER),
+                keys("composite_key"),
+            )
+            Assertions.assertEquals(
+                listOf("id" to LeafAirbyteSchemaType.NUMBER),
+                keys("numeric_key")
+            )
+            Assertions.assertEquals(
+                listOf("id" to LeafAirbyteSchemaType.BINARY),
+                keys("binary_key")
+            )
+            Assertions.assertEquals(listOf("id" to LeafAirbyteSchemaType.STRING), keys(EMPTY_TABLE))
+        }
+    }
+
     private fun assertCatalogMatchesLegacy(config: DynamoDbSourceConfigurationSpecification) {
         val expected: JsonNode =
             normalize(Jsons.readTree(ResourceUtils.readResource(EXPECTED_CATALOG_RESOURCE)))
@@ -88,14 +144,15 @@ class DynamoDbSourceDiscoverTest {
      * already ignores.
      *
      * Known deviation: the legacy connector lists an empty table as a stream with no properties,
-     * whereas the Bulk CDK's `DiscoverOperation` drops streams without fields; such streams are
-     * removed from both sides before comparing.
+     * whereas this connector lists its key attributes (
+     * [testEmptyTableIsDiscoveredWithItsKeyAttributes]); that stream is removed from both sides
+     * before comparing.
      */
     private fun normalize(catalog: JsonNode): JsonNode {
         val streams: ArrayNode = catalog["streams"] as ArrayNode
         val sorted: List<JsonNode> =
             streams
-                .filter { it["json_schema"]["properties"].size() > 0 }
+                .filter { it["name"].asText() != EMPTY_TABLE }
                 .sortedBy { "${it["namespace"]?.asText() ?: ""}.${it["name"].asText()}" }
                 .map { stream: JsonNode ->
                     (stream.deepCopy<ObjectNode>()).apply {
@@ -153,6 +210,7 @@ class DynamoDbSourceDiscoverTest {
 
     companion object {
         const val EXPECTED_CATALOG_RESOURCE = "expected-catalog.json"
+        const val EMPTY_TABLE = "empty_table"
 
         lateinit var container: DynamoDbLocalContainer
 

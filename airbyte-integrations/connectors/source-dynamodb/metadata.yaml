@@ -44,7 +44,7 @@ data:
           from the environment the connector runs in) is no longer available; **AWS Region** is
           required; **DynamoDB Endpoint** must be an `http` or `https` URL; stream schemas use
           Airbyte's standard type shapes, so every column shows a schema change at the next schema
-          refresh; empty tables are no longer discovered.
+          refresh; an empty table is discovered with its key attributes only.
 
           **What to do:** edit sources that used role based authentication to use an access key, or an
           access key with an IAM role to assume, and set the region. Then refresh the source schema of

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.awssdk.core.SdkBytes
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 
 /**
  * Port of the legacy connector's `DynamodbSchemaSerializerTest` with the schemas in the canonical
@@ -225,6 +226,24 @@ class DynamoDbFieldTypeTest {
         Assertions.assertEquals(
             LeafAirbyteSchemaType.BINARY,
             derived("""{"type":"string","contentEncoding":"base64"}"""),
+        )
+    }
+
+    /** Key attributes of a table without items are typed from `DescribeTable`, not from a value. */
+    @Test
+    fun testKeyAttributeTypes() {
+        for ((scalar, leaf) in
+            listOf(
+                ScalarAttributeType.S to LeafAirbyteSchemaType.STRING,
+                ScalarAttributeType.N to LeafAirbyteSchemaType.NUMBER,
+                ScalarAttributeType.B to LeafAirbyteSchemaType.BINARY,
+            )) {
+            val type: DynamoDbFieldType = DynamoDbFieldType.ofKeyAttribute(scalar)!!
+            Assertions.assertEquals(leaf, type.airbyteSchemaType, scalar.toString())
+            Assertions.assertEquals(leaf.asJsonSchema(), type.jsonSchema(), scalar.toString())
+        }
+        Assertions.assertNull(
+            DynamoDbFieldType.ofKeyAttribute(ScalarAttributeType.UNKNOWN_TO_SDK_VERSION)
         )
     }
 }

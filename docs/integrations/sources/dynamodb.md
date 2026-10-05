@@ -161,7 +161,7 @@ Version 1.0.0 loads the configuration and the state of versions 0.3.x, and its `
 - **Integer cursors work.** Versions 0.3.x failed before the first record on any cursor attribute discovered as `integer`, which is every whole number.
 - **Syncs resume.** Full refresh and incremental streams save their position after every round of scan pages and resume there; versions 0.3.x saved one state at the end of an incremental stream and nothing for a full refresh.
 - **Failures carry a message.** The connection test reports why it failed; versions 0.3.x reported a failure without a message. A configured table that no longer exists, or whose stream has no fields, fails only its own stream; the other streams of the sync are read.
-- **Empty tables aren't discovered**, and the connection test fails when the region has no tables. Versions 0.3.x listed an empty table as a stream without fields and couldn't read it.
+- **An empty table is discovered with its key attributes only.** Its other attributes appear at the first schema refresh after the table has items. Versions 0.3.x listed an empty table as a stream without fields and couldn't read it. The connection test fails when the region has no tables.
 - **Large tables are read with parallel scans on Airbyte Cloud.** A table over 64 MB is split into scan segments that **Max Concurrent Queries to Database** reads in parallel; self-managed Airbyte, like versions 0.3.x, reads every table with one sequential scan.
 - **Discovery sample size and Max Concurrent Queries to Database** are new settings; versions 0.3.x always sampled 1000 items and read one table at a time.
 

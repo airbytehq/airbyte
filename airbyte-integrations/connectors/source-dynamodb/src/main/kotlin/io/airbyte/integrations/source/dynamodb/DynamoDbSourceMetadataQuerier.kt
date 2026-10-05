@@ -27,9 +27,11 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException
+import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement
 import software.amazon.awssdk.services.dynamodb.model.KeyType
 import software.amazon.awssdk.services.dynamodb.model.ListTablesRequest
 import software.amazon.awssdk.services.dynamodb.model.ListTablesResponse
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest
 import software.amazon.awssdk.services.dynamodb.model.ScanResponse
 import software.amazon.awssdk.services.dynamodb.model.TableDescription
@@ -41,7 +43,8 @@ private val log = KotlinLogging.logger {}
  *
  * There are no namespaces: the streams are the tables of the account and region the credentials
  * give access to. Fields are discovered by sampling items, the same way the legacy
- * `source-dynamodb` connector did.
+ * `source-dynamodb` connector did; a table with no items to sample gets its key attributes, the
+ * only schema DynamoDB itself keeps.
  */
 class DynamoDbSourceMetadataQuerier(
     val configuration: DynamoDbSourceConfiguration,
@@ -96,8 +99,8 @@ class DynamoDbSourceMetadataQuerier(
     }
 
     /**
-     * Fields of the table, discovered by sampling its items; empty for an empty table, which
-     * DISCOVER then omits from the catalog.
+     * Fields of the table, discovered by sampling its items, or its key attributes when it has none
+     * ([keyAttributeFields]).
      *
      * The first call schedules the sampling of every table so that DISCOVER, which calls this
      * method once per stream, runs them concurrently.
@@ -149,6 +152,12 @@ class DynamoDbSourceMetadataQuerier(
                 }
                 throw e
             }
+        if (items.isEmpty()) {
+            log.info {
+                "Table ${streamID.name} has no items to sample; discovering its key attributes only."
+            }
+            return keyAttributeFields(streamID.name)
+        }
         // Same merge as the legacy connector: top-level attributes only, later items override
         // earlier ones when an attribute appears with different types.
         val merged = LinkedHashMap<String, AttributeValue>()
@@ -157,6 +166,26 @@ class DynamoDbSourceMetadataQuerier(
         }
         return merged.mapNotNull { (name: String, value: AttributeValue) ->
             DynamoDbFieldType.of(value)?.let { EmittedField(name, it) }
+        }
+    }
+
+    /**
+     * The table's key attributes, typed from `DescribeTable`'s `AttributeDefinitions` and in key
+     * schema order (partition key, then sort key), for a table with no items to sample. The legacy
+     * connector listed such a table without any attribute and could not sync it; the Bulk CDK's
+     * `DiscoverOperation` drops a stream without fields, so a table that is empty at discovery time
+     * would otherwise vanish from the catalog at a schema refresh. The other attributes are
+     * discovered by the first schema refresh after items are written.
+     */
+    internal fun keyAttributeFields(tableName: String): List<EmittedField> {
+        val table: TableDescription = describeTable(tableName)
+        val types: Map<String, ScalarAttributeType> =
+            table.attributeDefinitions().associate { it.attributeName() to it.attributeType() }
+        return table.keySchema().mapNotNull { key: KeySchemaElement ->
+            val type: DynamoDbFieldType =
+                types[key.attributeName()]?.let(DynamoDbFieldType::ofKeyAttribute)
+                    ?: return@mapNotNull null
+            EmittedField(key.attributeName(), type)
         }
     }
 

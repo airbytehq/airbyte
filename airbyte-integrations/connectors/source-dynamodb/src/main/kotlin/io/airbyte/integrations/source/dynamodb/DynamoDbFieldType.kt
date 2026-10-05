@@ -23,6 +23,7 @@ import java.time.OffsetTime
 import java.time.format.DateTimeParseException
 import java.util.Base64
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 
 /**
  * [FieldType] of a top-level DynamoDB item attribute.
@@ -78,6 +79,19 @@ data class DynamoDbFieldType(
          */
         fun of(value: AttributeValue): DynamoDbFieldType? =
             jsonSchemaOf(value)?.let(::DynamoDbFieldType)
+
+        /**
+         * Field type of a key attribute from the table's `AttributeDefinitions`, for a table with
+         * no items to sample: `S` is a string, `B` binary and `N` a number, since nothing says
+         * whether the items will hold integral values. Null for a type unknown to the SDK.
+         */
+        fun ofKeyAttribute(type: ScalarAttributeType): DynamoDbFieldType? =
+            when (type) {
+                ScalarAttributeType.S -> leaf(LeafAirbyteSchemaType.STRING)
+                ScalarAttributeType.N -> leaf(LeafAirbyteSchemaType.NUMBER)
+                ScalarAttributeType.B -> leaf(LeafAirbyteSchemaType.BINARY)
+                ScalarAttributeType.UNKNOWN_TO_SDK_VERSION -> null
+            }?.let(::DynamoDbFieldType)
 
         /** Field type for a JSON schema taken from a configured catalog. */
         fun fromJsonSchema(jsonSchema: JsonNode): DynamoDbFieldType =

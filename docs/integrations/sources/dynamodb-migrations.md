@@ -28,7 +28,7 @@ The schemas of the discovered streams use the same shapes as Airbyte's other dat
 | `M` (map)             | `{"type": ["null", "object"], "properties": ...}`           | `{"type": "object", "properties": ...}`           |
 | `L`, `SS`, `NS`, `BS` | `{"type": ["null", "array"], "items": ...}`                 | `{"type": "array", "items": ...}`                 |
 
-- An empty table is no longer discovered as a stream, and the connection test fails with `Discovered zero tables.` when the identity can't see any table in the region.
+- An empty table is discovered with its key attributes only; versions 0.3.x listed it without any attribute and couldn't sync it. Its other attributes appear at the first schema refresh after it has items. The connection test fails with `Discovered zero tables.` when the identity can't see any table in the region.
 - A connection upgraded from 0.3.x keeps syncing with its saved catalog. Its next schema refresh shows a schema change on every column; the column types in the destination don't change.
 
 ### Value changes
