@@ -55,6 +55,27 @@ def test_api_budget_resolves_separate_campaign_and_report_policies() -> None:
     assert source.resolved_manifest["api_budget"]["status_codes_for_ratelimit_hit"] == [429]
 
 
+def test_rate_limit_and_retry_filters_precede_ad_account_classification() -> None:
+    source = get_source()
+    campaign_report = next(stream for stream in source.resolved_manifest["streams"] if stream["name"] == "campaign_report")
+    error_handlers = [
+        source.resolved_manifest["definitions"]["linked"]["HttpRequester"]["error_handler"],
+        campaign_report["retriever"]["requester"]["error_handler"],
+    ]
+    ad_account_filter = source.resolved_manifest["definitions"]["linked"]["BadAdAccount400Filter"]
+
+    for error_handler in error_handlers:
+        response_filters = error_handler["response_filters"]
+        assert response_filters[1]["action"] == "RATE_LIMITED"
+        assert response_filters[1]["http_codes"] == [429]
+        assert response_filters[2]["action"] == "RETRY"
+        assert response_filters[2]["http_codes"] == [500, 502, 503, 504]
+        ad_account_filter_index = next(
+            index for index, response_filter in enumerate(response_filters) if response_filter == ad_account_filter
+        )
+        assert ad_account_filter_index > 2
+
+
 def test_concurrency_resolves_default_configured_and_clamped_values() -> None:
     expected = [
         ({}, 3),

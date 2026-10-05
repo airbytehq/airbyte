@@ -47,9 +47,12 @@ definitions:
               - 401
             error_message: Token expired, refreshing...
           - type: HttpResponseFilter
-            action: RETRY
+            action: RATE_LIMITED
             http_codes:
               - 429
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
               - 500
               - 502
               - 503
@@ -458,9 +461,12 @@ streams:
                 - 401
               error_message: Token expired, refreshing...
             - type: HttpResponseFilter
-              action: RETRY
+              action: RATE_LIMITED
               http_codes:
                 - 429
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
                 - 500
                 - 502
                 - 503

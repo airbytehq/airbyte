@@ -38,7 +38,8 @@ accounted for. Concurrency defaults to 3 workers, configurable with
 | --- | --- |
 | API 401 | Refresh the access token and retry |
 | Token endpoint 400 "Bad Request" / 401 "Unauthorized" | `config_error`; re-authenticate the refresh token or check the client ID and secret |
-| API 429/500/502/503/504 | Retry with backoff before classifying ad-account 400, 403, 404, or other 400 responses |
+| API 429 | `RATE_LIMITED` with backoff before classifying ad-account 400, 403, 404, or other 400 responses |
+| API 500/502/503/504 | Retry with backoff before classifying ad-account 400, 403, 404, or other 400 responses |
 | API 400 ad-account error | `config_error`; check the ad account ID |
 | API 403 or 404 | `config_error`; permissions or ad account are incorrect |
 | Other API 400 | `system_error`; the request was invalid |
