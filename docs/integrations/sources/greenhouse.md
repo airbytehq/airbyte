@@ -4,7 +4,20 @@ This page contains the setup guide and reference information for the Greenhouse 
 
 ## Prerequisites
 
-The connector reads the Greenhouse Harvest v3 API, which [supports two authentication methods](https://harvestdocs.greenhouse.io/docs/authentication). Choose the one that matches your Airbyte deployment and where your credential comes from.
+The connector reads the Greenhouse Harvest v3 API, which [supports two authentication methods](https://harvestdocs.greenhouse.io/docs/authentication). You need one of:
+
+- **OAuth** (Airbyte Cloud only): a Greenhouse user who is a Site Admin to approve the consent flow. Airbyte supplies the client ID and client secret.
+- **Client Credentials**: the client ID and client secret of a **Harvest V3 (OAuth)** custom integration credential that you create in Greenhouse, and optionally the user ID of a Site Admin.
+
+Either way, the token needs the Harvest v3 [scopes](#scopes) for the streams you sync. The **Start date** and **Number of concurrent threads** settings are optional.
+
+## Setup guide
+
+Choose an authentication method and prepare it in Greenhouse, then create the source in Airbyte.
+
+## Set up Greenhouse
+
+Choose the method that matches your Airbyte deployment and where your credential comes from.
 
 ### OAuth
 
@@ -89,9 +102,7 @@ Harvest v3 rejects requests to its list endpoints from any user who isn't a Site
 
 With OAuth, Greenhouse ties the scopes to the refresh token it issued when you approved the consent flow. Versions 1.2.0, 1.4.0, and 1.5.0 each added streams that need new scopes. If you set up the source with OAuth before one of those versions, your token doesn't include the scopes it added, and enabling any of the [streams added in 1.2.0](#streams-added-in-120), [streams added in 1.4.0](#streams-added-in-140), or [streams added in 1.5.0](#streams-added-in-150) fails with a `403` error until you open the source settings, click **Authenticate**, and approve the consent flow again. Streams you already sync keep working without re-authenticating. The consent flow asks for the scopes of the version the source is running, so re-authenticate after an upgrade, not before. A connection that propagates all field and stream changes enables new streams on its own, and its syncs then fail with a `403` until you re-authenticate or disable those streams. With Client Credentials, grant the new scopes to the credential in Greenhouse instead.
 
-## Setup guide
-
-### Set up the Greenhouse connector in Airbyte
+## Set up the Greenhouse connector in Airbyte
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or open your self-managed Airbyte instance.
 2. Click **Sources** and then click **+ New source**.
@@ -105,7 +116,7 @@ With OAuth, Greenhouse ties the scopes to the refresh token it issued when you a
 8. Click **Set up source**.
 
 :::warning
-If you use OAuth, sync more often than once a day. Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh, so a connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings. See [Sync fails with a configuration error asking you to re-authenticate](#sync-fails-with-a-configuration-error-asking-you-to-re-authenticate) for the error this produces. Client Credentials has no refresh token, so this doesn't apply to it.
+If you use OAuth, sync at least once every 14 days. Greenhouse [refresh tokens expire after 14 days of non-use](https://harvestdocs.greenhouse.io/docs/harvest-partner-oauth) and rotate on every refresh, so a connection left paused, turned off, or failing for more than 14 days requires re-running the consent flow from the source settings. See [Sync fails with a configuration error asking you to re-authenticate](#sync-fails-with-a-configuration-error-asking-you-to-re-authenticate) for the error this produces. Client Credentials has no refresh token, so this doesn't apply to it.
 :::
 
 ## Supported sync modes
@@ -197,7 +208,7 @@ Version 1.5.0 added these 5 streams, all incremental on `updated_at`. Together w
 
 `job_candidate_attributes`, `job_post_locations`, `scorecard_question_answer_options`, `scorecard_question_answers`, `scorecard_question_options`
 
-All 5 are disabled by default on new and existing connections, unless a connection is set to propagate all field and stream changes, in which case Airbyte enables them automatically. Each one needs its own Harvest v3 scope. If you authorized an OAuth source before 1.5.0, re-run the consent flow after the upgrade, before you enable any of these streams. If your connection propagates all field and stream changes, Airbyte enables the five streams as soon as 1.5.0 reaches it, and syncs fail with a `403` configuration error until you re-run the consent flow or disable the streams. To prevent this, set the connection to propagate field changes only before the upgrade. With Client Credentials, grant `harvest:job_candidate_attributes:list`, `harvest:job_post_locations:list`, `harvest:scorecard_question_answer_options:list`, `harvest:scorecard_question_answers:list`, and `harvest:scorecard_question_options:list` to the credential in Greenhouse. See [Scopes](#scopes).
+All 5 are disabled by default on new and existing connections. Each one needs its own Harvest v3 scope. If you authorized an OAuth source before 1.5.0, re-run the consent flow after the upgrade, before you enable any of these streams. If your connection propagates all field and stream changes, Airbyte enables the five streams as soon as 1.5.0 reaches it, and syncs fail with a `403` configuration error until you re-run the consent flow or disable the streams. To prevent this, set the connection to propagate field changes only before the upgrade. With Client Credentials, grant `harvest:job_candidate_attributes:list`, `harvest:job_post_locations:list`, `harvest:scorecard_question_answer_options:list`, `harvest:scorecard_question_answers:list`, and `harvest:scorecard_question_options:list` to the credential in Greenhouse. See [Scopes](#scopes).
 
 ### Streams added in 1.4.0
 
@@ -205,7 +216,7 @@ Version 1.4.0 added these 2 streams, both incremental on `updated_at`:
 
 `candidate_attribute_types`, `job_notes`
 
-Both are disabled by default on new and existing connections. Each one needs its own Harvest v3 scope. On an OAuth source you authorized before 1.4.0, re-run the consent flow before enabling either of them. With Client Credentials, grant `harvest:candidate_attribute_types:list` and `harvest:job_notes:list` to the credential in Greenhouse. See [Scopes](#scopes).
+Both are disabled by default on new and existing connections, unless the connection propagates all field and stream changes, in which case Airbyte enables them on upgrade. Each one needs its own Harvest v3 scope. On an OAuth source you authorized before 1.4.0, re-run the consent flow before enabling either of them. With Client Credentials, grant `harvest:candidate_attribute_types:list` and `harvest:job_notes:list` to the credential in Greenhouse. See [Scopes](#scopes).
 
 ### Streams added in 1.2.0
 
@@ -213,7 +224,7 @@ Version 1.2.0 added these 20 streams, all incremental on `updated_at`. They carr
 
 `application_stages`, `applied_candidate_tags`, `approver_groups`, `approvers`, `attachments`, `candidate_educations`, `candidate_employments`, `interview_kits`, `interviewer_tags`, `interviewers`, `job_hiring_managers`, `job_interviews`, `job_owners`, `prospect_details`, `prospect_pool_stages`, `referrers`, `rejection_details`, `scorecard_candidate_attributes`, `scorecard_questions`, `user_emails`
 
-All 20 are disabled by default on new and existing connections. Each one needs its own Harvest v3 scope. On an OAuth source you authorized before 1.2.0, re-run the consent flow before enabling any of them. With Client Credentials, grant the corresponding scopes to the credential in Greenhouse. See [Scopes](#scopes).
+All 20 are disabled by default on new and existing connections, unless the connection propagates all field and stream changes, in which case Airbyte enables them on upgrade. Each one needs its own Harvest v3 scope. On an OAuth source you authorized before 1.2.0, re-run the consent flow before enabling any of them. With Client Credentials, grant the corresponding scopes to the credential in Greenhouse. See [Scopes](#scopes).
 
 ### Streams that became incremental in 1.1.0
 
@@ -225,17 +236,21 @@ This isn't a breaking change. Schemas, primary keys, and your existing sync mode
 
 One behavior does change: **Start date** now applies to these 18 streams, in every sync mode. Earlier versions sent no date filter on them and read your full Greenhouse history whatever **Start date** said. If you have a start date set, these streams now return only records updated on or after it - on full refresh as well as incremental, because the filter is part of the Greenhouse request rather than something applied to the sync. On a **Full refresh | Overwrite** connection that also removes the older rows from the destination table, because each sync replaces the table with what it read; on append and append + deduped connections the existing rows stay put and simply stop being refreshed. Clear **Start date** if you want these streams to keep reading full history, then [refresh](https://docs.airbyte.com/operator-guides/refreshes) them.
 
-### Performance considerations
+## Migration from Harvest v1
+
+Version 1.0.0 migrates the 33 streams carried over from 0.8.1 from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream, for 34 streams in total, because Greenhouse has scheduled the end of support for Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. Version 1.3.0 added [Client Credentials](#client-credentials) so that self-managed deployments, which can't use the OAuth consent flow, can authenticate with a credential you create in Greenhouse. We recommend creating a new connection on 1.0.0 rather than refreshing the existing one; see the [upgrade paths](./greenhouse-migrations.md#upgrade-paths) before upgrading.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+## Performance considerations
 
 Greenhouse [rate limits](https://harvestdocs.greenhouse.io/docs/api-rate-limiting) Harvest v3 in fixed 30-second windows. Each response reports your remaining allowance in `X-RateLimit-Remaining` and the time the current window resets in `X-RateLimit-Reset`. Greenhouse doesn't publish a fixed request ceiling for Harvest v3, and it applies different allowances to custom and partner integrations, so the connector holds itself to a conservative 50 requests per window, tracks those headers, and waits for the `Retry-After` interval when Greenhouse returns `429`. Because every thread draws on the same window, syncing many streams at a high **Number of concurrent threads** is a common cause of rate-limit errors. Lower that value before [creating an issue](https://github.com/airbytehq/airbyte/issues) about rate limits.
 
 The connector requests 500 records per page, the Harvest v3 maximum, and then follows the cursor links Greenhouse returns, so large accounts still page through many requests per stream.
 
 `application_stages`, `scorecard_candidate_attributes`, and `scorecard_question_answers` are high-volume streams: `application_stages` has one row per application per stage entered, `scorecard_candidate_attributes` has one row per rated attribute on each scorecard, and `scorecard_question_answers` has one row per question on each scorecard. Each holds several times as many rows as its parent stream, so each adds many requests to a sync and draws down the shared rate-limit window. Leave them disabled unless you need that detail.
-
-### Migration from Harvest v1
-
-Version 1.0.0 migrates the 33 streams carried over from 0.8.1 from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream, for 34 streams in total, because Greenhouse has scheduled the end of support for Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. Version 1.3.0 added [Client Credentials](#client-credentials) so that self-managed deployments, which can't use the OAuth consent flow, can authenticate with a credential you create in Greenhouse. We recommend creating a new connection on 1.0.0 rather than refreshing the existing one; see the [upgrade paths](./greenhouse-migrations.md#upgrade-paths) before upgrading.
 
 ## Limitations & Troubleshooting
 
@@ -273,7 +288,7 @@ This section covers OAuth. If you use Client Credentials, see [Client Credential
 
 The connector can't renew its access token because Greenhouse rejected the refresh token. Starting with version 1.0.1, the connector reports this as a configuration error instead of a system error. The Greenhouse error code in the sync log tells you what to fix:
 
-- `invalid_grant`: the refresh token expired or was invalidated. This happens when the connection hasn't synced for more than about 24 hours, or when another tool used the same refresh token, which causes Greenhouse to issue a new one that Airbyte never receives. Open the source settings, click **Authenticate**, and complete the consent flow again to store a new refresh token. Run the consent flow separately for each Airbyte source; don't reuse one refresh token across sources or other tools.
+- `invalid_grant`: the refresh token expired or was invalidated. This happens when the connection hasn't synced for more than 14 days, when another tool used the same refresh token, or when a sync was interrupted right after it renewed the token. In the last two cases Greenhouse issued a new refresh token that Airbyte never saved, because Greenhouse replaces the refresh token on every renewal. Open the source settings, click **Authenticate**, and complete the consent flow again to store a new refresh token. Run the consent flow separately for each Airbyte source; don't reuse one refresh token across sources or other tools.
 - `invalid_client` or `unauthorized_client`: Greenhouse rejected the partner application credentials Airbyte used for the refresh, or that application isn't allowed to use the refresh token grant. Open the source settings, click **Authenticate**, and complete the consent flow again. If the error persists, contact Airbyte support; there are no credentials for you to correct on your side.
 
 ### Client Credentials authentication fails
@@ -285,17 +300,13 @@ With Client Credentials the connector requests a new access token from Greenhous
 
 ### Sync fails with a `403` configuration error on a stream
 
-The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. This is expected when you enable one of the [streams added in 1.2.0](#streams-added-in-120), [streams added in 1.4.0](#streams-added-in-140), or [streams added in 1.5.0](#streams-added-in-150) on a source you authorized before that version. Compare the scopes in [Prerequisites](#prerequisites) with the ones you approved, then open the source settings, click **Authenticate**, and re-run the consent flow as a Site Admin. With Client Credentials, grant the missing scope to the credential in Greenhouse, and check that **Site Admin user ID** is blank or belongs to a Site Admin.
+The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. This is expected when one of the [streams added in 1.2.0](#streams-added-in-120), [streams added in 1.4.0](#streams-added-in-140), or [streams added in 1.5.0](#streams-added-in-150) is enabled on a source you authorized before that version, either because you enabled it or because the connection propagates all field and stream changes and Airbyte enabled it on upgrade. Compare the [scopes](#scopes) with the ones you approved, then open the source settings, click **Authenticate**, and re-run the consent flow as a Site Admin. With Client Credentials, grant the missing scope to the credential in Greenhouse, and check that **Site Admin user ID** is blank or belongs to a Site Admin.
 
 ### A stream returns fewer records after upgrading to 1.1.0
 
 1.1.0 made 18 streams incremental on `updated_at`, and **Start date** is applied as a Greenhouse query filter on those streams in every sync mode. If you have a start date set, records last updated before it are no longer returned - on incremental and full refresh alike. If the connection writes in **Full refresh | Overwrite**, those older rows are also deleted from the destination table on the first sync after the upgrade, so the gap shows up in your warehouse even though nothing failed. Earlier versions sent no date filter on these streams and ignored **Start date** for them entirely. [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110) lists them.
 
 To read full history again, clear **Start date** in your source settings, then [refresh](https://docs.airbyte.com/operator-guides/refreshes) the affected streams so the older records are written again.
-
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -304,11 +315,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.5.0 | 2026-10-01 | [87442](https://github.com/airbytehq/airbyte/pull/87442) | Add the `scorecard_question_answers`, `scorecard_question_options`, `scorecard_question_answer_options`, `job_candidate_attributes`, and `job_post_locations` streams - see [Streams added in 1.5.0](#streams-added-in-150). The consent flow requests five new scopes; enabling any of them on a source authorized before 1.5.0 requires re-running the consent flow |
-| 1.4.0 | 2026-09-28 | [86478](https://github.com/airbytehq/airbyte/pull/86478) | Add the `candidate_attribute_types` and `job_notes` streams - see [Streams added in 1.4.0](#streams-added-in-140). The consent flow requests two new scopes; enabling either stream on a source authorized before 1.4.0 requires re-running the consent flow |
+| 1.5.2 | 2026-10-05 | [87672](https://github.com/airbytehq/airbyte/pull/87672) | Promote the connector to certified |
+| 1.5.1 | 2026-10-05 | [87670](https://github.com/airbytehq/airbyte/pull/87670) | Update to source-declarative-manifest 7.33.0 and name the fix for each authentication method in the `403` error message |
+| 1.5.0 | 2026-10-02 | [87442](https://github.com/airbytehq/airbyte/pull/87442) | Add the `scorecard_question_answers`, `scorecard_question_options`, `scorecard_question_answer_options`, `job_candidate_attributes`, and `job_post_locations` streams, which need new scopes - see [Streams added in 1.5.0](#streams-added-in-150) |
+| 1.4.0 | 2026-09-28 | [86478](https://github.com/airbytehq/airbyte/pull/86478) | Add the `candidate_attribute_types` and `job_notes` streams, which need new scopes - see [Streams added in 1.4.0](#streams-added-in-140) |
 | 1.3.0 | 2026-09-24 | [85178](https://github.com/airbytehq/airbyte/pull/85178) | Add client-credentials authentication for Greenhouse custom integrations and self-managed deployments. |
-| 1.2.0 | 2026-09-21 | [86477](https://github.com/airbytehq/airbyte/pull/86477) | Add 20 Harvest v3 detail streams - see [Streams added in 1.2.0](#streams-added-in-120). The consent flow requests 20 new scopes; existing connections keep syncing unchanged, but enabling a new stream on a source authorized before 1.2.0 requires re-running the consent flow |
-| 1.1.0 | 2026-09-17 | [85841](https://github.com/airbytehq/airbyte/pull/85841) | Sync 18 previously full-refresh streams incrementally on `updated_at`. Not breaking, but **Start date** now applies to those 18 streams in every sync mode, including full refresh, where before they always read full history - see [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110). Also read `activity_feed`, `jobs_openings`, and `user_permissions` directly instead of once per 50 parents, and suggest 10 streams for new connections |
+| 1.2.0 | 2026-09-21 | [86477](https://github.com/airbytehq/airbyte/pull/86477) | Add 20 Harvest v3 detail streams, which need new scopes - see [Streams added in 1.2.0](#streams-added-in-120) |
+| 1.1.0 | 2026-09-17 | [85841](https://github.com/airbytehq/airbyte/pull/85841) | Sync 18 previously full-refresh streams incrementally, so **Start date** now applies to them in every sync mode, and suggest 10 streams for new connections - see [Streams that became incremental in 1.1.0](#streams-that-became-incremental-in-110) |
 | 1.0.3 | 2026-09-15 | [85507](https://github.com/airbytehq/airbyte/pull/85507) | Update dependencies |
 | 1.0.2 | 2026-09-02 | [85306](https://github.com/airbytehq/airbyte/pull/85306) | Clarify in the spec that OAuth credentials come from Airbyte's Greenhouse partner application and must not be requested from Greenhouse |
 | 1.0.1 | 2026-09-02 | [85300](https://github.com/airbytehq/airbyte/pull/85300) | Surface expired or rotated refresh tokens (`invalid_grant`) as a re-authenticate config error instead of a system error |
