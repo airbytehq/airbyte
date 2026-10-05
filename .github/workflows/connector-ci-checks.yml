@@ -123,6 +123,8 @@ jobs:
       # The commit SHA of the current branch, used to report test results:
       commit-sha: ${{ steps.checkout.outputs.commit }}
       creds-available: ${{ (secrets.GCP_PROJECT_ID == '') && (vars.GCP_PROJECT_ID == '') && 'false' || 'true' }}
+      # True when the code under test comes from a fork (fork PR, or a slash command pointed at one).
+      is-fork: ${{ ((inputs.repo != '' && !startsWith(inputs.repo, 'airbytehq/')) || (github.event.pull_request.head.repo.full_name != '' && !startsWith(github.event.pull_request.head.repo.full_name, 'airbytehq/'))) && 'true' || 'false' }}
 
   jvm-connectors-test:
     needs: [generate-matrix]
@@ -238,6 +240,18 @@ jobs:
         continue-on-error: ${{ steps.connector-test-policy.outputs.allow-test-failures == 'true' }}
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
+
+      - name: Push updated connector secrets
+        # Connectors that rotate credentials during tests (e.g. single-use OAuth refresh
+        # tokens) persist the new config under `secrets/updated_configurations/`. Write it
+        # back to GSM so the next run starts from valid credentials, even when tests failed.
+        # Skipped on forks and whenever secrets were not fetched successfully.
+        if: >
+          always() && matrix.connector &&
+          needs.generate-matrix.outputs.creds-available == 'true' &&
+          needs.generate-matrix.outputs.is-fork != 'true' &&
+          steps.fetch-secrets.outcome == 'success'
+        run: airbyte-ops secrets push ${{ matrix.connector }}
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@3a74b2957438d0b6e2e61d67b05318aa25c9e6c6 # v2.20.0
@@ -381,6 +395,18 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           airbyte-cdk image test
+
+      - name: Push updated connector secrets
+        # Connectors that rotate credentials during tests (e.g. single-use OAuth refresh
+        # tokens) persist the new config under `secrets/updated_configurations/`. Write it
+        # back to GSM so the next run starts from valid credentials, even when tests failed.
+        # Skipped on forks and whenever secrets were not fetched successfully.
+        if: >
+          always() && matrix.connector &&
+          needs.generate-matrix.outputs.creds-available == 'true' &&
+          needs.generate-matrix.outputs.is-fork != 'true' &&
+          steps.fetch-secrets.outcome == 'success'
+        run: airbyte-ops secrets push ${{ matrix.connector }}
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@3a74b2957438d0b6e2e61d67b05318aa25c9e6c6 # v2.20.0

@@ -81,6 +81,7 @@ jobs:
         run: uv tool install --upgrade airbyte-internal-ops
 
       - name: Fetch connector secrets
+        id: fetch-secrets
         if: matrix.connector && (vars.GCP_PROJECT_ID != '')
         run: airbyte-ops secrets fetch ${{ matrix.connector }}
 
@@ -99,6 +100,11 @@ jobs:
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
+
+      - name: Push updated connector secrets
+        # Persist credentials rotated during the tests back to GSM (see connector-ci-checks.yml).
+        if: always() && matrix.connector && steps.fetch-secrets.outcome == 'success'
+        run: airbyte-ops secrets push ${{ matrix.connector }}
 
       - name: Check if move team should be notified
         id: check-move-notify
