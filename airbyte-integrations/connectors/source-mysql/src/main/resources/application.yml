@@ -47,7 +47,7 @@ airbyte:
           # output: Optional, user-facing error message; when not set, the exception message is used instead.
           # reference-links: Optional, list of URLs appended to user-facing message after a newline.
 
-          - pattern: (?i).*can not read response from server\. expected to read ([1-9][\d,]*) bytes.*
+          - pattern: (?i).*can not read response from server\. expected to read ([1-9]\d*) bytes.*
             input-example: >-
               java.io.EOFException: Can not read response from server. 
               Expected to read 10 bytes, read 5 bytes before connection was unexpectedly lost.
@@ -55,14 +55,6 @@ airbyte:
             group: MySQL EOF Exception
             output: The sync was interrupted while reading data from the MySQL server, will retry.
             reference-links: https://docs.oracle.com/javase/8/docs/api/index.html?java/io/EOFException.html
-
-          - pattern: (?i).*Expected ([1-9][\d,]*) bytes, received only (\d[\d,]*) bytes.*
-            input-example: >-
-              java.io.EOFException: Expected 252 bytes, received only 227 bytes
-            error: transient
-            group: MySQL EOF Exception
-            output: The sync was interrupted while reading data from the MySQL server, will retry.
-            reference-links: https://docs.oracle.com/javase/8/docs/api/java/io/EOFException.html
 
           - pattern: (?i).*Failed to read remaining ([1-9]\d*) of ([1-9]\d*) bytes from position.*
             input-example: >-
@@ -112,14 +104,6 @@ airbyte:
             group: MySQL Vitess Connection Error
             output: The sync encountered a connection issue while reading from the MySQL Vitess database, will retry.
             reference-links: https://vitess.io/docs/archive/13.0/user-guides/configuration-basic/troubleshooting.html
-
-          - pattern: (?i).*Failed to read next byte from position.*
-            input-example: >-
-              java.io.EOFException: Failed to read next byte from position 9093464
-            error: transient
-            group: MySQL EOF Exception
-            output: The sync encountered a communication issue while reading data from the MySQL server, will retry.
-            reference-links: https://docs.oracle.com/javase/8/docs/api/java/io/EOFException.html
 
           - pattern: (?i).*exception occurred in the change event produce.*
             input-example: >-
