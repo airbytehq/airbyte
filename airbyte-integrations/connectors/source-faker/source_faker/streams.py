@@ -3,7 +3,9 @@
 #
 
 import datetime
+import logging
 import os
+from contextlib import contextmanager
 from multiprocessing import Pool
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
@@ -12,6 +14,23 @@ from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from .purchase_generator import PurchaseGenerator
 from .user_generator import UserGenerator
 from .utils import format_airbyte_time, generate_estimate, read_json
+
+
+logger = logging.getLogger(__name__)
+
+
+@contextmanager
+def worker_map(initializer, processes: int):
+    """Yield a map function backed by a worker pool, or a sequential one when the pool cannot be allocated."""
+    try:
+        pool = Pool(initializer=initializer, processes=processes)
+    except OSError as error:
+        logger.warning(f"Worker pool unavailable ({error}); falling back to sequential generation")
+        initializer()
+        yield lambda fn, items: [fn(item) for item in items]
+        return
+    with pool:
+        yield pool.map
 
 
 class Products(Stream, IncrementalMixin):
@@ -107,10 +126,10 @@ class Users(Stream, IncrementalMixin):
         yield generate_estimate(self.name, self.count, median_record_byte_size)
 
         loop_offset = 0
-        with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
+        with worker_map(self.generator.prepare, self.parallelism) as map_records:
             while loop_offset < self.count:
                 records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
-                users = pool.map(self.generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
+                users = map_records(self.generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
                 for user in users:
                     updated_at = user.record.data["updated_at"]
                     loop_offset += 1
@@ -168,10 +187,10 @@ class Purchases(Stream, IncrementalMixin):
         yield generate_estimate(self.name, (self.count) * 1.3, median_record_byte_size)
 
         loop_offset = 0
-        with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
+        with worker_map(self.generator.prepare, self.parallelism) as map_records:
             while loop_offset < self.count:
                 records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
-                carts = pool.map(self.generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
+                carts = map_records(self.generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
                 for purchases in carts:
                     loop_offset += 1
                     for purchase in purchases:

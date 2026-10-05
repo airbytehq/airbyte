@@ -2,6 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+from unittest.mock import patch
+
 import jsonschema
 import pytest
 from source_faker import SourceFaker
@@ -270,3 +273,33 @@ def test_ensure_no_purchases_without_users():
         state = {}
         iterator = source.read(logger, config, catalog, state)
         iterator.__next__()
+
+
+def test_worker_pool_fallback_and_check_connection():
+    source = SourceFaker()
+    config = {"count": 10, "parallelism": 1}
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStreamSerializer.load(
+                {
+                    "stream": {"name": name, "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "overwrite",
+                }
+            )
+            for name in ["users", "purchases"]
+        ]
+    )
+
+    with patch("source_faker.streams.Pool", side_effect=OSError("cannot allocate memory")):
+        records = [row for row in source.read(logger, config, catalog, {}) if row.type is Type.RECORD]
+
+    assert len([r for r in records if r.record.stream == "users"]) == config["count"]
+    assert len([r for r in records if r.record.stream == "purchases"]) > 0
+
+    check_config = {"count": 10}
+    assert source.check_connection(logger, check_config) == (True, None)
+    assert check_config["parallelism"] == 4
+
+    with patch("source_faker.source.Pool", side_effect=OSError("cannot allocate memory")):
+        assert source.check_connection(logging.getLogger("airbyte"), {"count": 10}) == (True, None)
