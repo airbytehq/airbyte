@@ -20,6 +20,8 @@ API v2 timestamps are RFC3339 with a `Z` suffix and are typed `format: date-time
 
 **Why this matters:** Typed destinations map `format`/`airbyte_type` to column types, so a wrong pairing (or a strftime pattern such as `"%Y-%m-%d %H:%M:%S"` in `format`, which two `deal_fields` properties carried until 3.0.0) fails schema evolution or produces unparseable values. Adding or changing a `format` on an existing field is a breaking change; the untyped v1 timestamps on `mail`, `mailThreads`, `call_logs`, `deal_flow.log_time` and `legacy_teams` are deliberately left for a later major release for that reason.
 
+**Declared types follow the vendor reference.** Every property's JSON `type` matches Pipedrive's OpenAPI ([v1](https://developers.pipedrive.com/docs/api/v1/openapi.yaml), [v2](https://developers.pipedrive.com/docs/api/v2/openapi.yaml)) and the values a live read returns: lead ids are UUID strings wherever they appear (`notes.lead_id`, `files.lead_id`, `mailThreads.lead_id`), and fields the reference types as `number`, including the 0/1 flags and epoch times on the mailbox endpoints, are `number`, not `integer`. Check the OpenAPI before changing a declared type: a type change is a breaking change for typed destinations and needs a major version with a migration guide.
+
 ## 4. Authentication Is a Query Parameter, Not an Authenticator
 
 There is no `authenticator` in the manifest. Every stream injects `api_token: "{{ config['api_token'] }}"` into `request_parameters`, which is how Pipedrive's [API token auth](https://pipedrive.readme.io/docs/core-api-concepts-authentication) works. The token belongs to a single user, so all streams are scoped to that user's visibility and permission set.

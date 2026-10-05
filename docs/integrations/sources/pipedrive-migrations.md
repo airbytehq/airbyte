@@ -2,6 +2,42 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Pipedrive Migration Guide
 
+## Upgrading to 4.0.0
+
+:::danger Risk of permanent data loss
+Clearing a stream deletes its destination table and re-syncs it from Pipedrive. Pipedrive doesn't return deleted notes, files, filters, leads, products, mail messages or legacy teams, so their rows aren't restored. Back up the affected tables before you clear them if you need that history.
+:::
+
+Version 4.0.0 changes the declared type of fields whose type didn't match Pipedrive's API reference. The values Pipedrive returns are unchanged; typed destinations now create these columns with the correct type.
+
+<details>
+<summary>Retyped fields</summary>
+
+- `notes`: `lead_id` changes from integer to string. Lead ids are UUIDs, so typed destinations dropped them under the old type.
+- `files`: `lead_id`, `cid`, `mail_message_id` and `mail_template_id` change from integer to string.
+- `filters`: `temporary_flag` changes from string to boolean.
+- `leads`: `value.amount` changes from integer to number, so fractional amounts are kept.
+- `products`: `visible_to` changes from integer to number.
+- `mail`: `deleted_flag`, `has_attachments_flag`, `has_body_flag`, `has_inline_attachments_flag`, `has_real_attachments_flag`, `mail_link_tracking_enabled_flag`, `read_flag`, `sent_flag`, `sent_from_pipedrive_flag`, `smart_bcc_flag`, `synced_flag` change from integer to number.
+- `mailThreads`: `version`, `all_messages_sent_flag`, `archived_flag`, `deleted_flag`, `external_deleted_flag`, `first_message_to_me_flag`, `has_attachments_flag`, `has_draft_flag`, `has_inline_attachments_flag`, `has_real_attachments_flag`, `has_sent_flag`, `mail_link_tracking_enabled_flag`, `shared_flag`, `smart_bcc_flag`, `synced_flag`, `parties.from[].message_time`, `parties.to[].message_time` change from integer to number.
+- `legacy_teams`: `active_flag` and `deleted_flag` change from integer to number.
+
+</details>
+
+This version also declares fields Pipedrive already returned: `cc`, `bcc`, `draft` and `mail_tracking_status` on `mail`; `lead_id`, `message_count`, `read_flag` and `mail_tracking_status` on `mailThreads`; `project`, `project_id`, `task`, `task_id`, `pinned_to_project_flag` and `pinned_to_task_flag` on `notes`; and `description` on `permission_sets`. `notes.organization` can now be null.
+
+If you don't sync any of the retyped streams, you don't need to take any action.
+
+To upgrade:
+
+1. Open the connection, go to **Schema** and click **Refresh source schema**.
+2. Clear data for the retyped streams you sync: `notes`, `files`, `filters`, `leads`, `products`, `mail`, `mailThreads` and `legacy_teams`.
+3. Run a sync.
+
+### Update downstream consumers
+
+Update casts and joins on the retyped columns: `notes.lead_id` and `files.lead_id` now hold the lead UUID and join to `leads.id`; `filters.temporary_flag` is a boolean; `leads.value.amount`, `products.visible_to` and the `mail`, `mailThreads` and `legacy_teams` flags are numeric with decimals allowed.
+
 ## Upgrading to 3.0.0
 
 :::danger Risk of permanent data loss

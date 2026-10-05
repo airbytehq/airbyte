@@ -2153,7 +2153,7 @@ schemas:
       cid:
         type:
           - "null"
-          - integer
+          - string
       deal_id:
         type:
           - "null"
@@ -2185,7 +2185,7 @@ schemas:
       lead_id:
         type:
           - "null"
-          - integer
+          - string
       lead_name:
         type:
           - "null"
@@ -2197,11 +2197,11 @@ schemas:
       mail_message_id:
         type:
           - "null"
-          - integer
+          - string
       mail_template_id:
         type:
           - "null"
-          - integer
+          - string
       name:
         type:
           - "null"
@@ -2294,7 +2294,7 @@ schemas:
       temporary_flag:
         type:
           - "null"
-          - string
+          - boolean
       update_time:
         type:
           - "null"
@@ -2416,7 +2416,7 @@ schemas:
           amount:
             type:
               - "null"
-              - integer
+              - number
           currency:
             type:
               - "null"
@@ -2472,7 +2472,7 @@ schemas:
       lead_id:
         type:
           - "null"
-          - integer
+          - string
       org_id:
         type:
           - "null"
@@ -3115,7 +3115,7 @@ schemas:
       deleted_flag:
         type:
           - "null"
-          - integer
+          - number
       draft:
         type:
           - "null"
@@ -3172,19 +3172,19 @@ schemas:
       has_attachments_flag:
         type:
           - "null"
-          - integer
+          - number
       has_body_flag:
         type:
           - "null"
-          - integer
+          - number
       has_inline_attachments_flag:
         type:
           - "null"
-          - integer
+          - number
       has_real_attachments_flag:
         type:
           - "null"
-          - integer
+          - number
       id:
         type:
           - "null"
@@ -3192,7 +3192,7 @@ schemas:
       mail_link_tracking_enabled_flag:
         type:
           - "null"
-          - integer
+          - number
       mail_thread_id:
         type:
           - "null"
@@ -3209,19 +3209,19 @@ schemas:
       read_flag:
         type:
           - "null"
-          - integer
+          - number
       sent_flag:
         type:
           - "null"
-          - integer
+          - number
       sent_from_pipedrive_flag:
         type:
           - "null"
-          - integer
+          - number
       smart_bcc_flag:
         type:
           - "null"
-          - integer
+          - number
       snippet:
         type:
           - "null"
@@ -3233,7 +3233,7 @@ schemas:
       synced_flag:
         type:
           - "null"
-          - integer
+          - number
       to:
         type:
           - "null"
@@ -3957,7 +3957,7 @@ schemas:
       visible_to:
         type:
           - "null"
-          - integer
+          - number
       owner_id:
         type:
           - "null"
@@ -4471,15 +4471,15 @@ schemas:
           - "null"
           - number
       version:
-        type: integer
+        type: number
       account_id:
         type: string
       add_time:
         type: string
       all_messages_sent_flag:
-        type: integer
+        type: number
       archived_flag:
-        type: integer
+        type: number
       deal_id:
         type:
           - integer
@@ -4489,29 +4489,29 @@ schemas:
           - string
           - "null"
       deleted_flag:
-        type: integer
+        type: number
       drafts_parties:
         type: array
       external_deleted_flag:
-        type: integer
+        type: number
       first_message_timestamp:
         type: string
       first_message_to_me_flag:
-        type: integer
+        type: number
       folders:
         type: array
         items:
           type: string
       has_attachments_flag:
-        type: integer
+        type: number
       has_draft_flag:
-        type: integer
+        type: number
       has_inline_attachments_flag:
-        type: integer
+        type: number
       has_real_attachments_flag:
-        type: integer
+        type: number
       has_sent_flag:
-        type: integer
+        type: number
       id:
         type: integer
       last_message_received_timestamp:
@@ -4523,7 +4523,7 @@ schemas:
       last_message_timestamp:
         type: string
       mail_link_tracking_enabled_flag:
-        type: integer
+        type: number
       parties:
         type: object
         properties:
@@ -4549,7 +4549,7 @@ schemas:
                 mail_message_party_id:
                   type: integer
                 message_time:
-                  type: integer
+                  type: number
                 name:
                   type: string
           to:
@@ -4574,13 +4574,13 @@ schemas:
                 mail_message_party_id:
                   type: integer
                 message_time:
-                  type: integer
+                  type: number
                 name:
                   type: string
       shared_flag:
-        type: integer
+        type: number
       smart_bcc_flag:
-        type: integer
+        type: number
       snippet:
         type: string
       snippet_draft:
@@ -4592,7 +4592,7 @@ schemas:
       subject:
         type: string
       synced_flag:
-        type: integer
+        type: number
       update_time:
         type: string
       user_id:
@@ -4776,7 +4776,7 @@ schemas:
       active_flag:
         type:
           - "null"
-          - integer
+          - number
       add_time:
         type:
           - "null"
@@ -4788,7 +4788,7 @@ schemas:
       deleted_flag:
         type:
           - "null"
-          - integer
+          - number
       description:
         type:
           - "null"
