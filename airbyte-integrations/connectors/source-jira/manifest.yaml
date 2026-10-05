@@ -6416,6 +6416,84 @@ definitions:
         additionalProperties: true
         description: List of all permission schemes.
 
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-plans/#api-rest-api-3-plans-plan-get
+  plans_stream:
+    $ref: "#/definitions/full_refresh_stream"
+    name: plans
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: maxResults
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: cursor
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.get('nextPageToken') }}"
+          stop_condition: "{{ response.get('isLast') or not response.get('nextPageToken') }}"
+          page_size: 50
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+          response_filters:
+          - http_codes: [403]
+            action: IGNORE
+            error_message: "Plans are not available on this Jira site (requires Jira Premium). Skipping the plans stream."
+    $parameters:
+      path: "plans/plan"
+      extract_field: "values"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The ID of the plan.
+            type: string
+          name:
+            description: The name of the plan.
+            type:
+            - 'null'
+            - string
+          scenarioId:
+            description: The ID of the plan's default scenario.
+            type:
+            - 'null'
+            - string
+          status:
+            description: The status of the plan (Active, Trashed, or Archived).
+            type:
+            - 'null'
+            - string
+          issueSources:
+            description: The issue sources included in the plan.
+            type:
+            - 'null'
+            - array
+            items:
+              type: object
+              properties:
+                type:
+                  description: The type of issue source (Board, Project, or Filter).
+                  type:
+                  - 'null'
+                  - string
+                value:
+                  description: The ID of the issue source.
+                  type:
+                  - 'null'
+                  - integer
+        additionalProperties: true
+        description: An Advanced Roadmaps plan.
+
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-search-get
   projects_stream:
     $ref: "#/definitions/full_refresh_stream"
@@ -14625,6 +14703,7 @@ streams:
 - "#/definitions/labels_stream"
 - "#/definitions/permissions_stream"
 - "#/definitions/permission_schemes_stream"
+- "#/definitions/plans_stream"
 - "#/definitions/projects_stream"
 - "#/definitions/project_categories_stream"
 - "#/definitions/project_roles_stream"
