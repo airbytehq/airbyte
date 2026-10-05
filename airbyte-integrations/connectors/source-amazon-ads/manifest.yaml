@@ -1150,6 +1150,9 @@ definitions:
               - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
                 action: IGNORE
                 error_message: "{{ response }}"
+              - http_codes: [401]
+                action: IGNORE
+                error_message: "Profile is not authorized to use Amazon Attribution (HTTP 401). Skipping this profile. Enable Amazon Attribution for the profile, or grant your app access to the Attribution API, to sync it."
               - predicate: "{{ 'message' in response }}"
                 action: FAIL
                 error_message: "{{ response.message }}"
@@ -1239,6 +1242,9 @@ definitions:
               - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
                 action: IGNORE
                 error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
+              - http_codes: [401]
+                action: IGNORE
+                error_message: "Profile is not authorized to use Amazon Attribution (HTTP 401). Skipping this profile. Enable Amazon Attribution for the profile, or grant your app access to the Attribution API, to sync it."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"
@@ -1325,6 +1331,9 @@ definitions:
               - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
                 action: IGNORE
                 error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
+              - http_codes: [401]
+                action: IGNORE
+                error_message: "Profile is not authorized to use Amazon Attribution (HTTP 401). Skipping this profile. Enable Amazon Attribution for the profile, or grant your app access to the Attribution API, to sync it."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"
@@ -1411,6 +1420,9 @@ definitions:
               - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
                 action: IGNORE
                 error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
+              - http_codes: [401]
+                action: IGNORE
+                error_message: "Profile is not authorized to use Amazon Attribution (HTTP 401). Skipping this profile. Enable Amazon Attribution for the profile, or grant your app access to the Attribution API, to sync it."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"
