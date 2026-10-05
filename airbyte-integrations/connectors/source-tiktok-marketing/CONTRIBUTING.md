@@ -63,8 +63,9 @@ transformation or the stream will emit invalid metric types.
 ## 4. Rate Limit Detection via Response Body Code
 
 TikTok's API does not use standard HTTP 429 status codes for rate limiting. Instead, it returns HTTP
-200 with a `code` field in the JSON response body set to `40100`. The error handler uses a predicate
-(`response.get('code') == 40100`) to detect rate limiting, and a separate predicate
+200 with a `code` field in the JSON response body set to `40100` or `40016` (app-level limits) or `40133`
+(advertiser-level limit). The error handler uses a predicate
+(`response.get('code') in [40016, 40100, 40133]`) to detect rate limiting, and a separate predicate
 (`response.get('code') == 50000`) retries transient server-side errors, while
 (`response.get('code') != 0`) detects general API errors.
 

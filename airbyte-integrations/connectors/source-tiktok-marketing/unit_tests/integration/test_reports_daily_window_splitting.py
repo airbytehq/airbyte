@@ -2,10 +2,14 @@
 
 import json
 from unittest import TestCase
+from unittest.mock import patch
 
 from freezegun import freeze_time
 
 from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.constant_backoff_strategy import (
+    ConstantBackoffStrategy,
+)
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -238,3 +242,23 @@ class TestAdvertisersReportsDailyWindowSplitting(TestCase):
         assert not output.records
         assert output.errors[0].trace.error.failure_type == FailureType.system_error
         assert output.errors[0].trace.error.message == "Invalid parameter"
+
+    @HttpMocker()
+    def test_given_40133_throttling_when_read_then_retry(self, http_mocker: HttpMocker):
+        """TikTok's advertiser-level QPS limit (40133) is a rate limit, not a failure."""
+        mock_advertisers_slices(http_mocker, self.config())
+        throttled = {
+            "code": 40133,
+            "message": f"Advertiser ({_ADVERTISER_ID})'s QPS (21) reaches QPS limit 20 for current path, request is temporarily restricted.",
+            "data": {},
+        }
+        http_mocker.get(
+            _report_request("2024-09-01", "2024-09-30"),
+            [HttpResponse(body=json.dumps(throttled), status_code=200), _report_response("2024-09-03")],
+        )
+
+        with patch.object(ConstantBackoffStrategy, "backoff_time", return_value=0):
+            output = self._read()
+
+        assert not output.errors
+        assert len(output.records) == 1

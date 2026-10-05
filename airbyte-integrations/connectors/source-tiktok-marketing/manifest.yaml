@@ -26,7 +26,7 @@ definitions:
         - type: ConstantBackoffStrategy
           backoff_time_in_seconds: 60
       response_filters:
-        - predicate: "{{ response.get('code') == 40100 }}"
+        - predicate: "{{ response.get('code') in [40016, 40100, 40133] }}"
           action: RATE_LIMITED
           error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
         - predicate: "{{ response.get('code') == 60001 }}"
@@ -429,7 +429,7 @@ definitions:
       - type: ConstantBackoffStrategy
         backoff_time_in_seconds: 60
     response_filters:
-      - predicate: "{{ response.get('code') == 40100 }}"
+      - predicate: "{{ response.get('code') in [40016, 40100, 40133] }}"
         action: RATE_LIMITED
         error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
       - predicate: "{{ response.get('code') == 60001 }}"
@@ -2277,7 +2277,7 @@ definitions:
             - type: ConstantBackoffStrategy
               backoff_time_in_seconds: 60
           response_filters:
-            - predicate: "{{ response.get('code') == 40100 }}"
+            - predicate: "{{ response.get('code') in [40016, 40100, 40133] }}"
               action: RATE_LIMITED
               error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
             # The pixel_instant_page_events and pixel_events_statistics streams iterate over all
@@ -2398,7 +2398,7 @@ definitions:
             - type: ConstantBackoffStrategy
               backoff_time_in_seconds: 60
           response_filters:
-            - predicate: "{{ response.get('code') == 40100 }}"
+            - predicate: "{{ response.get('code') in [40016, 40100, 40133] }}"
               action: RATE_LIMITED
               error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
             - predicate: "{{ response.get('code') == 40001 and 'Adv has no permission to operate on the Pixel' in response['message'] }}"
