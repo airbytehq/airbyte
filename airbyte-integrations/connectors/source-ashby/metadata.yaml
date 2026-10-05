@@ -6,7 +6,7 @@ data:
     hosts:
       - api.ashbyhq.com
   maxSecondsBetweenMessages: 3600
-  dockerImageTag: 1.7.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-ashby
   githubIssueLabel: source-ashby
   icon: ashby.svg
@@ -58,6 +58,17 @@ data:
       type: authentication_guide
   releases:
     breakingChanges:
+      2.0.0:
+        message: "This release corrects four stream schemas. `applications.archiveReason` changes from a string to an object, and `job_postings.publishedDate` changes from a date-time to a date. `application_criteria_evaluations` gains a primary key of `application_id` and `id`, and drops the never-populated `assessmentType`, `criterionName`, and `jobId` columns. `interviews` drops twelve never-populated scheduled-interview columns. Users must refresh the schema of the affected streams after upgrading, and data-lake destinations must recreate the affected tables. See the migration guide for details."
+        upgradeDeadline: "2026-11-09"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - applications
+              - job_postings
+              - application_criteria_evaluations
+              - interviews
       1.0.0:
         message: "This release declares item schemas for ten previously-untyped array columns across the `applications`, `candidates`, and `jobs` streams (`customFields`, `hiringTeam`, `emailAddresses`, `fileHandles`, `phoneNumbers`, `socialLinks`, and `tags`). This re-types those columns on data-lake destinations such as S3 Data Lake and Iceberg. Users must refresh the affected streams or recreate the affected tables after upgrading."
         upgradeDeadline: "2026-09-01"
