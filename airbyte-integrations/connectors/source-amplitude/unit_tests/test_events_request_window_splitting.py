@@ -203,3 +203,12 @@ class EventsRequestWindowSplittingTest(TestCase):
         assert not output.errors
         assert _event_ids(output) == ["second-half"]
         assert output.state_messages[-1].state.stream.stream_state.__dict__ == {"server_upload_time": "20240101T20"}
+
+    @HttpMocker()
+    def test_given_zero_microsecond_server_upload_time_when_read_then_state_advances_to_it(self, http_mocker: HttpMocker) -> None:
+        # TransformDatetimesToRFC3339 drops the ".000000" of a whole-second timestamp: "2024-01-01T05:00:00+00:00".
+        http_mocker.get(_export_request("20240101T00", "20240101T23"), _export_response(["whole-second"], "2024-01-01 05:00:00.000000"))
+
+        output = _read()
+
+        assert output.state_messages[-1].state.stream.stream_state.__dict__ == {"server_upload_time": "20240101T05"}

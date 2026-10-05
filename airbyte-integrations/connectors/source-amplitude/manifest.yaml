@@ -642,6 +642,7 @@ streams:
     cursor_datetime_formats:
     - "%Y-%m-%dT%H:%M:%S.%f%z"
     - "%Y-%m-%d %H:%M:%S.%f"
+    - "%Y-%m-%dT%H:%M:%S%z"
     datetime_format: "%Y%m%dT%H"
     cursor_granularity: PT1H
     step: PT{{ config.get("request_time_range", 24)}}H
