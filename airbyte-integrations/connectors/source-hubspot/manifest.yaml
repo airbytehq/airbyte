@@ -1821,6 +1821,35 @@ definitions:
           $ref: "#/schemas/engagements_tasks"
       - $ref: "#/definitions/base_dynamic_schema_loader"
 
+  engagements_task_pipelines_stream:
+    $ref: "#/definitions/stream_base"
+    name: engagements_task_pipelines
+    primary_key:
+      - id
+    $parameters:
+      name: engagements_task_pipelines
+      required_scopes: crm.objects.contacts.read
+    retriever:
+      # `/crm/v3/pipelines/tasks` returns every pipeline in a single response, so the shared
+      # offset paginator would only add a meaningless `limit` parameter to the request.
+      $ref: "#/definitions/retriever_without_pagination"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/pipelines/tasks
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record['createdAt'] }}"
+        condition: "{{ record.get('updatedAt') is none }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/engagements_task_pipelines"
+
   subscription_changes_stream:
     $ref: "#/definitions/stream_base"
     name: subscription_changes
@@ -2179,6 +2208,61 @@ definitions:
       from_object: ""
       to_object: ""
 
+  # Error handler shared by every request made on behalf of a custom object association stream: the association
+  # batch read as well as the parent `/crm/v3/objects/{from_object}/search` request. Both return 400 when the
+  # configured object identifier is not a fullyQualifiedName (`p_...`) or objectTypeId (`2-...`).
+  # Same as base_error_handler except for the custom-object-specific 400 and 403 messages.
+  custom_object_association_error_handler:
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes:
+          - 429
+        error_message: >-
+          HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 502
+          - 503
+        error_message: >-
+          HubSpot server error (5xx). Retrying with exponential backoff...
+      - type: HttpResponseFilter
+        action: REFRESH_TOKEN_THEN_RETRY
+        http_codes:
+          - 401
+        error_message: >-
+          Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 530
+        error_message: >-
+          The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 400
+        error_message: >-
+          Custom object identifier in 'from_object' or 'to_object' is not a valid HubSpot
+          fullyQualifiedName (for example 'p_my_custom_object') or objectTypeId (for example '2-12345').
+          You can find your custom object identifiers in HubSpot Settings or via the /crm/v3/schemas API.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 403
+        error_message: >-
+          Access denied (403). Credentials lack the read scope for the object in 'from_object' or 'to_object'
+          ('crm.objects.custom.read' for custom objects, or the standard object's read scope such as 'crm.objects.deals.read').
+
   # Custom object association stream - extends base_association_stream with error handling for invalid custom object names
   base_custom_object_association_stream:
     $ref: "#/definitions/base_association_stream"
@@ -2187,41 +2271,27 @@ definitions:
       requester:
         $ref: "#/definitions/base_association_stream/retriever/requester"
         error_handler:
-          type: DefaultErrorHandler
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: Retry-After
-            - type: ExponentialBackoffStrategy
-          response_filters:
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
-                - 429
-              error_message: >-
-                HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
-                - 502
-                - 503
-              error_message: >-
-                HubSpot server error (5xx). Retrying with exponential backoff...
-            - type: HttpResponseFilter
-              action: FAIL
-              http_codes:
-                - 400
-              error_message: >-
-                Bad request (400). The custom object name provided in the configuration is invalid.
-                Please verify that 'from_object' and 'to_object' values are correct custom object
-                identifiers (e.g., the fullyQualifiedName like 'p_my_custom_object' or the objectTypeId like '2-12345').
-                You can find your custom object identifiers in HubSpot Settings or via the /crm/v3/schemas API.
-            - type: HttpResponseFilter
-              action: FAIL
-              http_codes:
-                - 403
-              error_message: >-
-                Access denied (403). The authenticated user does not have permissions to access the custom object associations.
-                Ensure the 'crm.objects.custom.read' scope is granted for your OAuth or Private App credentials.
+          $ref: "#/definitions/custom_object_association_error_handler"
+      partition_router:
+        $ref: "#/definitions/base_association_stream/retriever/partition_router"
+        underlying_partition_router:
+          $ref: "#/definitions/base_association_stream/retriever/partition_router/underlying_partition_router"
+          parent_stream_configs:
+            - stream:
+                $ref: "#/definitions/base_crm_search_incremental_parent_stream"
+                $parameters:
+                  entity: from_object_name
+                  cursor_filter_property_field: hs_lastmodifieddate
+                name: stream_name
+                retriever:
+                  $ref: "#/definitions/base_crm_search_incremental_parent_stream/retriever"
+                  requester:
+                    $ref: "#/definitions/base_crm_search_incremental_parent_stream/retriever/requester"
+                    error_handler:
+                      $ref: "#/definitions/custom_object_association_error_handler"
+              parent_key: id
+              partition_field: id
+              incremental_dependency: true
 
   properties_stream:
     type: DeclarativeStream
@@ -2688,6 +2758,7 @@ streams:
   - "#/definitions/engagements_meetings_stream"
   - "#/definitions/engagements_notes_stream"
   - "#/definitions/engagements_tasks_stream"
+  - "#/definitions/engagements_task_pipelines_stream"
   - "#/definitions/form_submissions_stream"
   - "#/definitions/forms_stream"
   - "#/definitions/goals_stream"
@@ -3356,7 +3427,7 @@ api_budget:
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  default_concurrency: "{{ config.get('num_worker', 10) }}"
   max_concurrency: 40
 
 schemas:
@@ -5474,6 +5545,124 @@ schemas:
             - "null"
             - string
 
+  engagements_task_pipelines:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      label:
+        description: The label or name of the task pipeline.
+        type:
+          - "null"
+          - string
+      displayOrder:
+        description: The order in which the task pipeline is displayed.
+        type:
+          - "null"
+          - integer
+      id:
+        description: The unique identifier of the task pipeline.
+        type:
+          - "null"
+          - string
+      archived:
+        description: Indicates if the task pipeline is archived or not.
+        type:
+          - "null"
+          - boolean
+      stages:
+        description:
+          List of stages within the task pipeline. Join `stages[].id` against
+          `engagements_tasks.properties.hs_pipeline_stage` to resolve a task's stage label and
+          its open/closed state.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            label:
+              description: The label or name of the stage.
+              type:
+                - "null"
+                - string
+            displayOrder:
+              description: The order in which the stage is displayed.
+              type:
+                - "null"
+                - integer
+            metadata:
+              description:
+                Additional metadata related to the stage. HubSpot returns these values as
+                strings rather than native booleans or enums.
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                isClosed:
+                  description:
+                    Whether a task in this stage counts as closed, returned as the string
+                    "true" or "false".
+                  type:
+                    - "null"
+                    - string
+                state:
+                  description:
+                    The open/closed state of the stage, returned as the string "OPEN" or
+                    "CLOSED". Task stages use `state`, unlike ticket stages, which use
+                    `ticketState`.
+                  type:
+                    - "null"
+                    - string
+            id:
+              description:
+                The unique identifier of the stage. Always typed as a string. HubSpot's default
+                task stages use UUIDs while stages created later in the UI get numeric IDs
+                (for example `5996839954`), and `engagements_tasks.properties.hs_pipeline_stage`
+                is itself a string, so the join key must not be narrowed to an integer.
+              type:
+                - "null"
+                - string
+            createdAt:
+              description: The date and time when the stage was created.
+              type:
+                - "null"
+                - string
+              format: date-time
+            updatedAt:
+              description: The date and time when the stage was last updated.
+              type:
+                - "null"
+                - string
+              format: date-time
+            archived:
+              description: Indicates if the stage is archived or not.
+              type:
+                - "null"
+                - boolean
+            writePermissions:
+              description: Permissions for writing/modifying the stage.
+              type:
+                - "null"
+                - string
+      createdAt:
+        description: The date and time when the task pipeline was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: The date and time when the task pipeline was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+
   form_submissions:
     $schema: http://json-schema.org/schema#
     type:
@@ -6181,6 +6370,11 @@ schemas:
             type:
               - "null"
               - string
+          isAbVariation:
+            description: Whether this email is the variation of an A/B test.
+            type:
+              - "null"
+              - boolean
       updatedById:
         type:
           - "null"
@@ -6772,6 +6966,11 @@ schemas:
               type:
                 - "null"
                 - string
+            primary:
+              description: Whether this team is the owner's primary team.
+              type:
+                - "null"
+                - boolean
 
   owners_archived:
     $schema: http://json-schema.org/schema#
@@ -6852,6 +7051,11 @@ schemas:
               type:
                 - "null"
                 - string
+            primary:
+              description: Whether this team is the owner's primary team.
+              type:
+                - "null"
+                - boolean
 
   users:
     $schema: http://json-schema.org/schema#

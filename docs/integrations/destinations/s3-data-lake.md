@@ -27,6 +27,10 @@ Follow these steps to set up your S3 storage and Iceberg catalog permissions.
 
 S3 setup consists of creating a bucket policy and authenticating.
 
+:::note
+If you use S3-compatible storage instead of Amazon S3, set the **S3 Endpoint** field to your storage endpoint, for example `http://localhost:9000`. Leave this field empty for Amazon S3.
+:::
+
 #### Create a bucket policy
 
 Create a bucket policy.
@@ -254,6 +258,8 @@ To authenticate with Apache Polaris, follow these steps.
     - **Catalog Name**: The name of the catalog you created in Polaris (e.g., `quickstart_catalog`)
     - **Client ID**: The OAuth Client ID provided when creating the principal
     - **Client Secret**: The OAuth Client Secret provided when creating the principal
+    - **OAuth Scope**: The scope to request when authenticating, in the format `PRINCIPAL_ROLE:<role_name>`. For example: `PRINCIPAL_ROLE:catalog_admin`
+    - **OAuth2 Server URI**: The OAuth2 token endpoint, for example `https://polaris.example.com/oauth/tokens`. This field is optional today, but a future connector version requires it, so set it if you know it.
     - **Default namespace**: The namespace to be used for table identifiers when the destination namespace is set to "Destination-defined" or "Source-defined"
 
 5. Set the **Warehouse location** option to `s3://<bucket name>/path/within/bucket`.
@@ -274,24 +280,25 @@ To authenticate with Apache Polaris, follow these steps.
 
 ### How Airbyte generates the Iceberg schema
 
-In each stream, Airbyte maps top-level fields to Iceberg fields. Airbyte maps nested fields (objects, arrays, and unions) to string columns and writes them as serialized JSON.
+In each stream, Airbyte maps top-level fields to Iceberg fields. Airbyte writes objects and unions as string columns containing serialized JSON. Arrays keep their structure: if the source schema declares the array's item type, Airbyte writes an Iceberg `list` column of the mapped item type. Arrays without a declared item type become string columns containing serialized JSON.
 
 This is the full mapping between Airbyte types and Iceberg types.
 
-| Airbyte type               | Iceberg type                   |
-|----------------------------|--------------------------------|
-| Boolean                    | Boolean                        |
-| Date                       | Date                           |
-| Integer                    | Long                           |
-| Number                     | Double (String for primary keys)|
-| String                     | String                         |
-| Time with timezone*        | Time                           |
-| Time without timezone      | Time                           |
-| Timestamp with timezone*   | Timestamp with timezone        |
-| Timestamp without timezone | Timestamp without timezone     |
-| Object                     | String (JSON-serialized value) |
-| Array                      | String (JSON-serialized value) |
-| Union                      | String (JSON-serialized value) |
+| Airbyte type                           | Iceberg type                     |
+|----------------------------------------|----------------------------------|
+| Boolean                                | Boolean                          |
+| Date                                   | Date                             |
+| Integer                                | Long                             |
+| Number                                 | Double (String for primary keys) |
+| String                                 | String                           |
+| Time with timezone*                    | Time                             |
+| Time without timezone                  | Time                             |
+| Timestamp with timezone*               | Timestamp with timezone          |
+| Timestamp without timezone             | Timestamp without timezone       |
+| Object                                 | String (JSON-serialized value)   |
+| Array with a declared item type        | List of the mapped item type     |
+| Array without a declared item type     | String (JSON-serialized value)   |
+| Union                                  | String (JSON-serialized value)   |
 
 *Airbyte converts the `time with timezone` and `timestamp with timezone` types to Coordinated Universal Time (UTC) before writing to the Iceberg file.
 
@@ -320,6 +327,23 @@ In particular, when using AWS Glue, the connector will:
 
 - Lowercase all stream [table names and namespaces](https://docs.aws.amazon.com/glue/latest/webapi/API_Table.html)
 - Change any non-alphanumeric character in a table name/namespace to an [underscore](https://docs.aws.amazon.com/glue/latest/dg/define-database.html) for compatibility with Athena
+
+### Column names
+
+By default, column names are written to Iceberg exactly as they appear in the source (for example `Foo.Bar` or `userId`). Some query engines cannot read tables with mixed-case or special-character column names through a Glue catalog.
+
+Enable the **Normalize Column Names** option to normalize every column name before it is written. The connector applies these rules, in order:
+
+1. Removes accents and other combining marks (`café` becomes `cafe`).
+2. Replaces whitespace and every character other than a letter, digit, or underscore with an underscore (`Foo.Bar` becomes `Foo_Bar`).
+3. Converts the name to lowercase (`Foo_Bar` becomes `foo_bar`).
+4. Prefixes the result with an underscore if it's one of these SQL reserved words, which common query engines reject as unquoted column names: `constraint`, `current_date`, `current_time`, `current_timestamp`, `current_user`, `localtime`, `localtimestamp`. For example, `CURRENT_DATE` becomes `_current_date`.
+
+Names that normalize to the same value are made unique with a numeric suffix (`ID` and `id` become `id` and `id_1`). Airbyte's own `_airbyte_*` columns already satisfy these rules and are never renamed. The option applies to every catalog type and only affects top-level column names, not the keys inside JSON-serialized object columns.
+
+:::caution Changing the option on an existing connection
+Enabling **Normalize Column Names** on a connection whose tables already exist changes the column names of those tables. The connector refuses to sync until you [clear the stream's data](../../platform/operator-guides/clear) and run a full refresh, which recreates the table with the new column names. Clear the affected streams before disabling the option as well.
+:::
 
 ## Deduplication
 
@@ -409,6 +433,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.0 | 2026-09-15 | [85827](https://github.com/airbytehq/airbyte/pull/85827) | Add `normalize_column_names` option: lowercase column names, replace non-alphanumeric characters with underscores, and prefix SQL reserved keywords. |
+| 0.3.53 | 2026-08-24 | [84994](https://github.com/airbytehq/airbyte/pull/84994) | Upgrade to Bulk CDK 1.0.25. |
 | 0.3.52 | 2026-06-23 | [80349](https://github.com/airbytehq/airbyte/pull/80349) | Remove awssdk:bundle fat jar to fix OOMKilled during CHECK operations |
 | 0.3.51 | 2026-06-15 | [79123](https://github.com/airbytehq/airbyte/pull/79123) | Update Apache Iceberg dependencies. |
 | 0.3.50 | 2026-06-08 | [79112](https://github.com/airbytehq/airbyte/pull/79112) | Use unique staging branches and clean them up after each sync. |

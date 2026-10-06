@@ -19,17 +19,36 @@ For more details, see Monday.com's [authentication documentation](https://develo
 2. Search for and select **Monday**.
 3. Enter a name for the connector.
 4. Choose your authentication method and enter the required credentials.
-5. Optionally, enter one or more **Board IDs** to limit syncing to specific boards. If left empty, the connector syncs data from all boards in your account.
-6. Click **Set up source**.
+5. Optionally, enter one or more IDs in **Boards to sync** to limit the Boards, Items, and Activity logs streams to specific boards. If left empty, the connector syncs records from all boards in your account.
+6. Optionally, set **Number of concurrent threads** to control how many requests the connector makes in parallel. The default is 4 and the allowed range is 2 to 50, but the connector caps effective concurrency at 40, Monday.com's concurrency limit for the lowest plan tier. Increase this value only if your [Monday.com plan's rate limits](https://developer.monday.com/api-reference/docs/rate-limits) allow it; higher values can cause rate limit errors on lower tiers.
+7. Click **Set up source**.
 
 ### Connect using OAuth 2.0
 
 1. Select **OAuth2.0** in **Authorization Method**.
 2. If your Monday.com account uses a custom subdomain, enter it in the **Subdomain/Slug** field. This is the first part of the URL that appears before `.monday.com`. Leave this field empty if you use the default `monday.com` domain.
 3. Click **Authenticate your Monday account**.
-4. Complete the authentication flow using your Monday.com credentials.
+4. Complete the authentication flow using your Monday.com credentials. The Airbyte app must be installed on your Monday.com account before it can be authorized. If it is not installed yet, Monday.com asks an account admin to install it during this step and then continues to the consent screen; if you are not an admin, ask one to install the app first. If an admin completes the authorization instead, the source syncs with the admin's permissions.
+
+Airbyte stores the access token together with a refresh token and refreshes the access token automatically. Sources authenticated with connector versions earlier than 2.6.0 hold a legacy access token: on the first run on 2.6.0 the connector migrates it to the new OAuth flow automatically and asks you to re-authenticate only if that migration fails. Make sure the source runs once on 2.6.0 before October 1, 2026, when Monday.com stops accepting legacy tokens. See [Upgrading to 2.6.0](#upgrading-to-260). Monday.com expires a refresh token that has not been used for 3 months ([monday.com update](https://developer-community.monday.com/product-updates/oauth-2-1-is-now-open-for-all-monday-developers-5326)), so a source that does not sync for that long must be re-authenticated.
 
 The connector requests the following OAuth scopes: `me:read`, `boards:read`, `workspaces:read`, `users:read`, `account:read`, `updates:read`, `assets:read`, `tags:read`, and `teams:read`.
+
+#### Upgrading to 2.6.0
+
+Monday.com is moving its OAuth flow to OAuth 2.1 and stops accepting legacy OAuth access tokens on **October 1, 2026**. See the [monday.com announcement](https://developer-community.monday.com/product-updates/oauth-2-1-is-now-open-for-all-monday-developers-5326) and the [monday.com migration guide](https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow).
+
+Version 2.6.0 authenticates through the new token endpoint (`https://auth.monday.com/oauth_ms/oauth/token`) with PKCE and keeps the access token fresh with rotating refresh tokens. The connector configuration stores a `refresh_token` alongside the `access_token`, and the connector refreshes the access token automatically, persisting the newest refresh token after every refresh. This is not a breaking change: existing configurations stay valid and are migrated automatically on the first run.
+
+**Who is affected:** only sources that use the **OAuth2.0** authorization method. Sources that use a **Personal API Token** require no action.
+
+**What happens on upgrade:**
+
+1. On Airbyte Cloud the upgrade is applied automatically through a progressive rollout. On self-managed Airbyte, upgrade the connector to 2.6.0 **before October 1, 2026**.
+2. On the first run on 2.6.0 (connection test or sync), the connector exchanges the existing legacy access token for a new access token and refresh token through Monday.com's [token migration endpoint](https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow#6-migrate-legacy-api-tokens) and stores them in the source configuration. No re-authentication is needed when this succeeds.
+3. If a run fails with an error asking you to re-authenticate, open the source in Airbyte and click **Authenticate your Monday account**. If the Airbyte app is not installed on your Monday.com account (for example because it was removed), Monday.com asks an account admin to install it before showing the consent screen, so have an account admin install the app first. If the admin completes the authorization, the source syncs with the admin's permissions.
+
+The automatic migration only works while the legacy access token is still valid, so make sure the source runs once on 2.6.0 before October 1, 2026. Monday.com describes the migration endpoint as temporary and rate limited; when it rejects the token (expired or revoked token, Airbyte app removed from the account, migration disabled, or a personal API token stored in the OAuth2.0 settings) the source needs the manual re-authentication from step 3. Re-authenticating on a version earlier than 2.6.0 uses the legacy flow: it fails once the Airbyte app is switched to Monday.com's new OAuth flow, and any token it issues stops working on October 1, 2026. From that date, OAuth2.0 sources whose legacy token was not migrated stop syncing until they are re-authenticated.
 
 ### Connect using API Token
 
@@ -73,11 +92,13 @@ The following streams are available:
 
 - Incremental sync for the Items and Boards streams relies on the Activity logs stream. Board and item IDs are extracted from activity log events and used to selectively sync only the changed records. If the time between syncs exceeds the activity log retention period for your [Monday.com plan](https://monday.com/pricing), some changes may not be captured during incremental syncs.
 
+- The Items stream uses [cursor-based pagination](https://developer.monday.com/api-reference/reference/items-page#cursor-based-pagination-using-next_items_page), and Monday.com pagination cursors expire after 60 minutes. If reading a board takes longer than that (for example, due to rate limiting or very large boards), the API returns a `CursorExpiredError` and the connector restarts pagination for that stream from the beginning. Syncs of very large boards can take longer than expected as a result.
+
 If there are additional endpoints you'd like Airbyte to support, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
 ## Performance considerations
 
-The Monday connector should not run into Monday API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+Monday.com enforces [rate limits](https://developer.monday.com/api-reference/docs/rate-limits) based on your plan, including per-minute query limits and a query complexity budget. The connector automatically retries complexity budget errors and HTTP rate limit responses with backoff, honoring the `retry-after` header when present. If you see rate limit errors, reduce the **Number of concurrent threads** setting. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## IP allow list
 
@@ -90,6 +111,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.6.1 | 2026-09-29 | [87243](https://github.com/airbytehq/airbyte/pull/87243) | Update dependencies |
+| 2.6.0 | 2026-09-24 | [85170](https://github.com/airbytehq/airbyte/pull/85170) | Move OAuth to Monday's OAuth 2.1 flow (PKCE, new token endpoint, rotating refresh tokens); migrate existing legacy OAuth tokens automatically on the first run; prompt the admin to install the Airbyte app during authorization |
+| 2.5.22 | 2026-09-22 | [86707](https://github.com/airbytehq/airbyte/pull/86707) | Update dependencies |
+| 2.5.21 | 2026-09-15 | [86149](https://github.com/airbytehq/airbyte/pull/86149) | Update dependencies |
+| 2.5.20 | 2026-09-08 | [85557](https://github.com/airbytehq/airbyte/pull/85557) | Update dependencies |
+| 2.5.19 | 2026-08-18 | [84675](https://github.com/airbytehq/airbyte/pull/84675) | Update dependencies |
+| 2.5.18 | 2026-08-11 | [84004](https://github.com/airbytehq/airbyte/pull/84004) | Update dependencies |
 | 2.5.17 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
 | 2.5.16 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.5.14 — 2.5.15 is built on SDM 7.23.7, which breaks bundled custom components |
 | 2.5.15 | 2026-07-28 | [83007](https://github.com/airbytehq/airbyte/pull/83007) | Update dependencies |

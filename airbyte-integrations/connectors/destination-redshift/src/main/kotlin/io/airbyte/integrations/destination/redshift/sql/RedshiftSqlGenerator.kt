@@ -26,6 +26,9 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         get() = if (config.dropCascade) " CASCADE" else ""
 
     companion object {
+        /** Sentinel written to CSV for VARCHAR NULLs; mapped back to SQL NULL by `COPY NULL AS`. */
+        const val NULL_SENTINEL = "_AB_NULL_"
+
         private val EXTRACTED_AT_COLUMN_NAME = quoteIdentifier(COLUMN_NAME_AB_EXTRACTED_AT)
         private val DELETED_AT_COLUMN_NAME = quoteIdentifier(CDC_DELETED_AT_COLUMN)
 
@@ -48,12 +51,13 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
     fun createNamespace(namespace: String): String =
         "CREATE SCHEMA IF NOT EXISTS ${quoteIdentifier(namespace)};"
 
-    /** Generates a query to check if a schema exists via `information_schema.schemata`. */
+    /** Generates a query to check if a schema exists via `svv_all_schemas`. */
     fun namespaceExists(namespace: String): String =
         """
             |SELECT EXISTS(
-            |    SELECT 1 FROM information_schema.schemata
-            |    WHERE schema_name = '${RedshiftSqlEscapeUtils.escapeSqlString(namespace)}'
+            |    SELECT 1 FROM svv_all_schemas
+            |    WHERE database_name = current_database()
+            |    AND schema_name = '${RedshiftSqlEscapeUtils.escapeSqlString(namespace)}'
             |)
         """.trimMargin()
 
@@ -232,11 +236,9 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         // Step 2: CDC hard-delete (if enabled)
         if (cdcHardDeleteEnabled) {
             val primaryKeysMatchingCondition =
-                buildNullSafePkMatch(
-                    primaryKeyTargetColumns,
-                    getFullyQualifiedName(targetTableName),
-                    dedupRef,
-                )
+                primaryKeyTargetColumns.joinToString(" AND ") { pk ->
+                    "${getFullyQualifiedName(targetTableName)}.$pk = $dedupRef.$pk"
+                }
             val cursorComparison =
                 buildCursorComparison(cursorTargetColumn, targetTableName, dedupRef)
             statements.add(
@@ -309,11 +311,9 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         cursorTargetColumn: String?,
         cdcHardDeleteEnabled: Boolean,
     ): String {
-        // Redshift requires UPDATE...FROM to use a pure equijoin predicate (simple =)
-        val target = getFullyQualifiedName(targetTableName)
         val primaryKeysMatches =
             primaryKeyTargetColumns.joinToString(" AND ") { pk ->
-                "$target.$pk = $dedupTableAlias.$pk"
+                "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
             }
 
         val cursorComparison =
@@ -356,11 +356,15 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         cdcHardDeleteEnabled: Boolean,
     ): String {
         val primaryKeysConditions =
-            buildNullSafePkMatch(
-                primaryKeyTargetColumns,
-                getFullyQualifiedName(targetTableName),
-                dedupTableAlias,
-            )
+            primaryKeyTargetColumns.joinToString(" AND ") { pk ->
+                "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
+            }
+
+        // Ignore NULL PK records during INSERT
+        val pkNotNullFilters =
+            primaryKeyTargetColumns.joinToString(" AND ") { pk ->
+                "$dedupTableAlias.$pk IS NOT NULL"
+            }
 
         val skipCdcDeletedClause =
             if (cdcHardDeleteEnabled) {
@@ -377,7 +381,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |  ${allTargetColumns.joinToString(",\n  ")}
             |FROM $dedupTableAlias
             |WHERE
-            |  NOT EXISTS (
+            |  $pkNotNullFilters
+            |  AND NOT EXISTS (
             |    SELECT 1
             |    FROM ${getFullyQualifiedName(targetTableName)}
             |    WHERE $primaryKeysConditions
@@ -408,16 +413,6 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         }
     }
 
-    private fun buildNullSafePkMatch(
-        primaryKeyColumns: List<String>,
-        targetPrefix: String,
-        sourcePrefix: String,
-    ): String {
-        return primaryKeyColumns.joinToString(" AND ") { pk ->
-            "($targetPrefix.$pk = $sourcePrefix.$pk OR ($targetPrefix.$pk IS NULL AND $sourcePrefix.$pk IS NULL))"
-        }
-    }
-
     /**
      * Generates SQL to evolve a table's schema:
      * 1. ADD COLUMN with the new type (temp name)
@@ -430,7 +425,6 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
     fun matchSchemas(
         tableName: TableName,
         columnsToAdd: Map<String, ColumnType>,
-        columnsToRemove: Map<String, ColumnType>,
         columnsToModify: Map<String, ColumnTypeChange>,
     ): String {
         val clauses = mutableListOf<String>()
@@ -439,11 +433,6 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         // Add new columns (no NOT NULL -- preexisting rows would have no default)
         columnsToAdd.forEach { (name, columnType) ->
             clauses.add(addColumn(tableName, name, columnType.type))
-        }
-
-        // Remove columns
-        columnsToRemove.forEach { (name, _) ->
-            clauses.add("ALTER TABLE $fqn DROP COLUMN ${quoteIdentifier(name)}$cascadeSuffix;")
         }
 
         // Modify column types via 4-step rename pattern
@@ -573,7 +562,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |STATUPDATE OFF
             |ROUNDEC
             |IGNOREHEADER 1
-            |EMPTYASNULL;
+            |NULL AS '$NULL_SENTINEL';
         """.trimMargin()
 
     // ================================================================
