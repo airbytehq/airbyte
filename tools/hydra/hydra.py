@@ -87,6 +87,21 @@ query($owner: String!, $name: String!, $number: Int!) {
           ... on StatusContext { context state }
         } }
       } } } }
+      timelineItems(first: 250, itemTypes: [
+        PULL_REQUEST_COMMIT, HEAD_REF_FORCE_PUSHED_EVENT, LABELED_EVENT, UNLABELED_EVENT,
+        READY_FOR_REVIEW_EVENT, CONVERT_TO_DRAFT_EVENT, MERGED_EVENT, CLOSED_EVENT, REOPENED_EVENT
+      ]) { nodes {
+        __typename
+        ... on PullRequestCommit { commit { oid committedDate messageHeadline } }
+        ... on HeadRefForcePushedEvent { createdAt actor { login } afterCommit { oid } }
+        ... on LabeledEvent { createdAt actor { login } label { name } }
+        ... on UnlabeledEvent { createdAt actor { login } label { name } }
+        ... on ReadyForReviewEvent { createdAt actor { login } }
+        ... on ConvertToDraftEvent { createdAt actor { login } }
+        ... on MergedEvent { createdAt actor { login } }
+        ... on ClosedEvent { createdAt actor { login } }
+        ... on ReopenedEvent { createdAt actor { login } }
+      } }
     }
   }
 }
@@ -160,6 +175,9 @@ def fetch_devin_sessions(session_ids: list[str]) -> dict:
                     "status_detail": s.get("status_detail"),
                     "macro": macros.get(s.get("playbook_id")),
                     "tags": s.get("tags") or [],
+                    "origin": s.get("origin"),
+                    "user_id": s.get("user_id"),
+                    "service_user_id": s.get("service_user_id"),
                     "created_at": s.get("created_at"),
                     "updated_at": s.get("updated_at"),
                     "is_archived": s.get("is_archived"),
@@ -229,30 +247,216 @@ def result_from_output(stage: str, output: dict) -> tuple[str | None, str | None
     return None, None, []
 
 
-def latest_markers(pr: dict) -> dict:
-    """Latest trusted result marker per stage, from the PR body and comments (edited comments included)."""
-    found: dict = {}
+def iso(value: str | int | float | None) -> str | None:
+    """Normalize GitHub ISO strings and Devin epoch seconds to `YYYY-MM-DDTHH:MM:SSZ`."""
+    if value is None or value == "":
+        return None
+    if isinstance(value, (int, float)):
+        dt = datetime.fromtimestamp(value, tz=timezone.utc)
+    else:
+        dt = datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(timezone.utc)
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def all_markers(pr: dict) -> list[dict]:
+    """Every result marker on the PR, oldest first (edited comments ordered by their last edit)."""
+    found = []
     for c in sorted(pr["comments"]["nodes"], key=lambda c: c["updatedAt"]):
         author = ((c.get("author") or {}).get("login") or "").removesuffix("[bot]")
         for m in MARKER_RE.finditer(c["body"]):
             stage = MARKER_STAGES.get(m["key"])
-            if not stage:
-                continue
-            found[stage] = {
-                "verdict": m["value"].upper(),
-                "head_sha": m["sha"],
-                "author": author,
-                "trusted": author in TRUSTED_MARKER_AUTHORS,
-                "url": c["url"],
-            }
+            if stage:
+                found.append(
+                    {
+                        "stage": stage,
+                        "verdict": m["value"].upper(),
+                        "head_sha": m["sha"],
+                        "author": author,
+                        "trusted": author in TRUSTED_MARKER_AUTHORS,
+                        "url": c["url"],
+                        "at": iso(c["updatedAt"]),
+                    }
+                )
     return found
+
+
+def session_trigger(s: dict) -> str:
+    """Best-effort description of what launched a session."""
+    tags = s.get("tags") or []
+    if "hydra-stage-handoff" in tags:
+        return "hydra-stage-handoff workflow"
+    if "gh-actions-trigger" in tags:
+        return "GitHub workflow (slash command or label)"
+    return {"slack": "Slack", "webapp": "Devin web app", "api": "Devin API"}.get(s.get("origin") or "", s.get("origin") or "unknown")
+
+
+def build_runs(stage: str, sessions: list[dict], markers: list[dict], findings: list[str], pr: dict) -> list[dict]:
+    """One entry per attempt at a stage: every linked session, plus markers no session accounts for."""
+    runs = []
+    unmatched = list(markers)
+    for n, s in enumerate(sorted(sessions, key=lambda s: s.get("created_at") or 0), start=1):
+        run = {
+            "attempt": n,
+            "source": "devin_structured_output",
+            "session": s.get("url"),
+            "trigger": session_trigger(s),
+            "started_at": iso(s.get("created_at")),
+            "phase": session_phase(s),
+            "verdict": None,
+            "head_sha": None,
+            "concluded_at": None,
+            "concluded_at_source": None,
+            "notes": [],
+        }
+        output = s.get("structured_output")
+        if output:
+            run["verdict"], run["head_sha"], run["notes"] = result_from_output(stage, output)
+            match = next((m for m in unmatched if m["head_sha"] == run["head_sha"] and m["verdict"] == run["verdict"]), None)
+            if match:
+                unmatched.remove(match)
+                run["marker"] = {k: match[k] for k in ("verdict", "head_sha", "trusted", "url")}
+            # When the verdict landed: the output's own timestamp, else the matching marker comment, else last activity.
+            if output.get("timestamp"):
+                run["concluded_at"], run["concluded_at_source"] = iso(output["timestamp"]), "structured_output.timestamp"
+            elif stage == "fix" and (output.get("fix_pr") or {}).get("url") == pr["url"]:
+                # Fix sessions keep iterating on the PR they open, so last activity says nothing; the PR's creation does.
+                run["concluded_at"], run["concluded_at_source"] = iso(pr["createdAt"]), "pr_opened"
+            elif match:
+                run["concluded_at"], run["concluded_at_source"] = match["at"], "marker_comment"
+            else:
+                run["concluded_at"], run["concluded_at_source"] = iso(s.get("updated_at")), "session_last_activity"
+        elif run["phase"] in {"errored", "ended_without_output"}:
+            run["concluded_at"], run["concluded_at_source"] = iso(s.get("updated_at")), "session_last_activity"
+        runs.append(run)
+    for m in unmatched:
+        # A marker with no matching session: either the session wasn't linked from the PR, or it disagrees.
+        latest_with_output = next((r for r in reversed(runs) if r["verdict"]), None)
+        if latest_with_output and latest_with_output["head_sha"] == m["head_sha"]:
+            findings.append(
+                f"{stage}: marker says {m['verdict']}@{m['head_sha'][:7]} but session output says "
+                f"{latest_with_output['verdict']}@{m['head_sha'][:7]}"
+            )
+            continue
+        runs.append(
+            {
+                "attempt": None,
+                "source": "pr_marker",
+                "session": None,
+                "trigger": "unknown (session not linked from PR)",
+                "started_at": None,
+                "phase": "unknown",
+                "verdict": m["verdict"],
+                "head_sha": m["head_sha"],
+                "concluded_at": m["at"],
+                "concluded_at_source": "marker_comment",
+                "marker": {k: m[k] for k in ("verdict", "head_sha", "trusted", "url")},
+                "notes": [],
+            }
+        )
+    for m in markers:
+        if not m["trusted"]:
+            findings.append(f"{stage}: marker written by untrusted author {m['author']}")
+    runs.sort(key=lambda r: r["concluded_at"] or r["started_at"] or "")
+    for n, r in enumerate(runs, start=1):
+        r["attempt"] = n
+    return runs
+
+
+def build_timeline(pr: dict, runs_by_stage: dict[str, list[dict]], other_sessions: list[dict]) -> list[dict]:
+    """GitHub events and session starts/conclusions in time order."""
+    events = [{"at": iso(pr["createdAt"]), "kind": "pr_opened", "detail": f"opened by {(pr.get('author') or {}).get('login')}"}]
+    for item in pr["timelineItems"]["nodes"]:
+        kind = item["__typename"]
+        actor = (item.get("actor") or {}).get("login")
+        if kind == "PullRequestCommit":
+            c = item["commit"]
+            events.append({"at": iso(c["committedDate"]), "kind": "commit", "sha": c["oid"], "detail": c["messageHeadline"]})
+        elif kind == "HeadRefForcePushedEvent" and item.get("afterCommit"):
+            events.append({"at": iso(item["createdAt"]), "kind": "force_push", "sha": item["afterCommit"]["oid"], "detail": f"by {actor}"})
+        elif kind in {"LabeledEvent", "UnlabeledEvent"}:
+            name = item["label"]["name"]
+            if name.startswith("hyd-") or name in {"community", "auto-merge", "auto-ai-review"}:
+                verb = "added" if kind == "LabeledEvent" else "removed"
+                events.append({"at": iso(item["createdAt"]), "kind": f"label_{verb}", "detail": f"{name} by {actor}"})
+        else:
+            kind_name = re.sub(r"(?<!^)(?=[A-Z])", "_", kind.removesuffix("Event")).lower()
+            events.append({"at": iso(item["createdAt"]), "kind": kind_name, "detail": f"by {actor}"})
+    for c in pr["comments"]["nodes"]:
+        command = re.match(r"\s*(/[a-z][a-z0-9-]*)", c["body"])
+        if command:
+            author = (c.get("author") or {}).get("login")
+            events.append({"at": iso(c["createdAt"]), "kind": "command", "detail": f"{command[1]} by {author}", "url": c["url"]})
+    for stage, runs in runs_by_stage.items():
+        for r in runs:
+            if r["started_at"]:
+                events.append(
+                    {"at": r["started_at"], "kind": "session_started", "stage": stage, "attempt": r["attempt"], "detail": r["trigger"], "url": r["session"]}
+                )
+            if r["concluded_at"]:
+                result = f"{r['verdict']}@{r['head_sha'][:7]}" if r["verdict"] and r["head_sha"] else (r["verdict"] or r["phase"])
+                events.append(
+                    {
+                        "at": r["concluded_at"],
+                        "kind": "session_concluded" if r["session"] else "marker_posted",
+                        "stage": stage,
+                        "attempt": r["attempt"],
+                        "detail": result,
+                        "url": r["session"] or (r.get("marker") or {}).get("url"),
+                    }
+                )
+    for s in other_sessions:
+        events.append({"at": iso(s.get("created_at")), "kind": "session_started", "stage": None, "detail": s.get("macro") or "?", "url": s.get("url")})
+    return sorted((e for e in events if e["at"]), key=lambda e: e["at"])
+
+
+def build_transitions(timeline: list[dict], runs_by_stage: dict[str, list[dict]]) -> list[dict]:
+    """Replay the timeline and record each change to a stage's status and to the overall current stage."""
+    status: dict[str, tuple[str, str | None]] = {}  # stage -> (label, sha)
+    head = None
+    furthest = "none"
+    pr_status = "open"
+    transitions = []
+
+    def record(at: str, subject: str, before: str, after: str, cause: str) -> None:
+        if before != after:
+            transitions.append({"at": at, "subject": subject, "from": before, "to": after, "cause": cause})
+
+    for e in timeline:
+        if e["kind"] in {"commit", "force_push"}:
+            head = e["sha"]
+            for stage, (label, sha) in list(status.items()):
+                if sha and sha != head and not label.endswith("(stale)"):
+                    stale = f"{label} (stale)"
+                    status[stage] = (stale, sha)
+                    record(e["at"], stage, label, stale, f"head moved to {head[:7]}")
+        elif e["kind"] in {"session_concluded", "marker_posted"} and e.get("stage"):
+            run = next(r for r in runs_by_stage[e["stage"]] if r["attempt"] == e["attempt"])
+            # A fix's result is "the PR exists", not a judgment about one commit, so it never goes stale.
+            sha = None if e["stage"] == "fix" else run["head_sha"]
+            label = (run["verdict"] or run["phase"]) if e["stage"] == "fix" else e["detail"]
+            label += " (stale)" if sha and head and sha != head else ""
+            before = status.get(e["stage"], ("not run", None))[0]
+            status[e["stage"]] = (label, sha)
+            cause = f"attempt #{e['attempt']}" + (" (re-run)" if e["attempt"] > 1 else "")
+            record(e["at"], e["stage"], before, label, cause)
+            reached = [s for s in ["fix", "prove", "review", "ready"] if s in status]
+            if reached and reached[-1] != furthest:
+                record(e["at"], "current_stage", furthest, reached[-1], f"{e['stage']} attempt #{e['attempt']} concluded")
+                furthest = reached[-1]
+        elif e["kind"] in {"merged", "closed", "reopened"}:
+            if e["kind"] == "closed" and pr_status == "merged":
+                continue  # GitHub records a close alongside every merge
+            after = "open" if e["kind"] == "reopened" else e["kind"]
+            record(e["at"], "pr", pr_status, after, e["detail"])
+            pr_status = after
+    return transitions
 
 
 def derive_state(facts: dict) -> dict:
     pr = facts["pr"]
     head = pr["headRefOid"]
     labels = sorted(l["name"] for l in pr["labels"]["nodes"])
-    markers = latest_markers(pr)
+    markers = all_markers(pr)
     sessions = facts["devin"]["sessions"]
 
     by_stage: dict[str, list[dict]] = {}
@@ -262,39 +466,35 @@ def derive_state(facts: dict) -> dict:
         (by_stage.setdefault(stage, []) if stage else other_sessions).append(s)
 
     stages = {}
+    runs_by_stage = {}
     findings: list[str] = []
     for stage in STAGE_ORDER:
-        runs = sorted(by_stage.get(stage, []), key=lambda s: s.get("created_at") or 0)
-        marker = markers.get(stage)
-        if not runs and not marker:
+        stage_markers = [m for m in markers if m["stage"] == stage]
+        runs = build_runs(stage, by_stage.get(stage, []), stage_markers, findings, pr)
+        if not runs:
             continue
-        entry: dict = {"runs": len(runs)}
-        if runs:
-            latest = runs[-1]
-            phase = session_phase(latest)
-            entry.update({"phase": phase, "session": latest.get("url"), "source": "devin_structured_output"})
-            if latest.get("structured_output"):
-                verdict, sha, notes = result_from_output(stage, latest["structured_output"])
-                entry.update({"verdict": verdict, "head_sha": sha, "notes": notes})
-        else:
-            entry.update({"phase": "unknown", "source": "pr_marker"})
-        if marker:
-            entry["marker"] = {k: marker[k] for k in ("verdict", "head_sha", "trusted", "url")}
-            if entry.get("verdict") is None:
-                entry.update({"verdict": marker["verdict"], "head_sha": marker["head_sha"]})
-                if runs:
-                    entry["source"] = "pr_marker"
-            elif (marker["verdict"], marker["head_sha"]) != (entry["verdict"], entry.get("head_sha")):
-                findings.append(
-                    f"{stage}: marker says {marker['verdict']}@{marker['head_sha'][:7]} but session output says "
-                    f"{entry['verdict']}@{(entry.get('head_sha') or '?')[:7]}"
-                )
-            if not marker["trusted"]:
-                findings.append(f"{stage}: marker written by untrusted author {marker['author']}")
-        sha = entry.get("head_sha")
+        runs_by_stage[stage] = runs
+        # The stage's current result is the latest run that produced a verdict; its phase is the latest run's.
+        decisive = next((r for r in reversed(runs) if r["verdict"]), runs[-1])
+        latest = runs[-1]
+        entry = {
+            "phase": latest["phase"],
+            "verdict": decisive["verdict"],
+            "head_sha": decisive["head_sha"],
+            "session": decisive["session"],
+            "source": decisive["source"],
+            "notes": decisive["notes"],
+            "attempts": len(runs),
+        }
+        if decisive.get("marker"):
+            entry["marker"] = decisive["marker"]
+        sha = entry["head_sha"]
         entry["current"] = None if not sha else sha == head
-        entry["passed"] = entry.get("verdict") in PASSING.get(stage, set()) if entry.get("verdict") else None
+        entry["passed"] = entry["verdict"] in PASSING.get(stage, set()) if entry["verdict"] else None
+        entry["runs"] = runs
         stages[stage] = entry
+    timeline = build_timeline(pr, runs_by_stage, other_sessions)
+    transitions = build_transitions(timeline, runs_by_stage)
 
     rollup = (pr["commits"]["nodes"][0]["commit"].get("statusCheckRollup") or {}) if pr["commits"]["nodes"] else {}
     failing, pending, benign = [], [], []
@@ -334,6 +534,8 @@ def derive_state(facts: dict) -> dict:
         "other_sessions": [{"macro": s.get("macro"), "phase": session_phase(s), "url": s.get("url")} for s in other_sessions],
         "sources": {"devin": "available" if facts["devin"]["available"] else f"unavailable ({facts['devin']['error']})"},
         "findings": findings,
+        "transitions": transitions,
+        "timeline": timeline,
     }
     state["current_stage"] = current_stage(state)
     state["next"] = decide(state)
@@ -416,7 +618,7 @@ def render_markdown(state: dict) -> str:
         "",
     ]
     if state["stages"]:
-        lines += ["| Stage | Session | Verdict | For commit | Current | Marker | Source |", "|---|---|---|---|---|---|---|"]
+        lines += ["| Stage | Attempts | Session | Verdict | For commit | Current | Marker | Source |", "|---|---|---|---|---|---|---|---|"]
         for stage, e in state["stages"].items():
             session = f"[{PHASE_ICON.get(e['phase'], '')} {e['phase']}]({e['session']})" if e.get("session") else e["phase"]
             sha = f"`{e['head_sha'][:7]}`" if e.get("head_sha") else "—"
@@ -428,7 +630,7 @@ def render_markdown(state: dict) -> str:
                 verdict = f"✅ {verdict}"
             elif e.get("passed") is False:
                 verdict = f"❌ {verdict}"
-            lines.append(f"| {stage} | {session} | {verdict} | {sha} | {current} | {marker_cell} | {e['source']} |")
+            lines.append(f"| {stage} | {e['attempts']} | {session} | {verdict} | {sha} | {current} | {marker_cell} | {e['source']} |")
         lines.append("")
         notes = [f"- **{s}:** {n}" for s, e in state["stages"].items() for n in e.get("notes") or []]
         if notes:
@@ -442,11 +644,80 @@ def render_markdown(state: dict) -> str:
         lines += ["", "**Findings**", *[f"- ⚠️ {f}" for f in state["findings"]]]
     if state["other_sessions"]:
         lines += ["", "**Other linked sessions:** " + ", ".join(f"[{s['macro'] or '?'}]({s['url']})" for s in state["other_sessions"])]
+    lines += render_history(state)
     lines += [
         "",
         f"<sub>labels: {', '.join(state['labels']) or 'none'} · devin: {state['sources']['devin']} · computed {state['computed_at']}</sub>",
     ]
     return "\n".join(lines)
+
+
+TIMELINE_ICON = {
+    "pr_opened": "🆕",
+    "commit": "⬆️",
+    "force_push": "⏫",
+    "command": "💬",
+    "session_started": "▶️",
+    "session_concluded": "🏁",
+    "marker_posted": "🏷️",
+    "label_added": "➕",
+    "label_removed": "➖",
+    "ready_for_review": "👀",
+    "convert_to_draft": "📝",
+    "merged": "🟣",
+    "closed": "⛔",
+    "reopened": "🔄",
+}
+
+
+def short_time(at: str) -> str:
+    return at[5:16].replace("T", " ")  # MM-DD HH:MM (UTC)
+
+
+def link(text: str, url: str | None) -> str:
+    return f"[{text}]({url})" if url else text
+
+
+def render_history(state: dict) -> list[str]:
+    lines = []
+    if state["transitions"]:
+        lines += ["", "**State transitions** (UTC)", "", "| When | What | From | To | Why |", "|---|---|---|---|---|"]
+        for t in state["transitions"]:
+            lines.append(f"| {short_time(t['at'])} | {t['subject']} | {t['from']} | **{t['to']}** | {t['cause']} |")
+    runs = [(stage, r) for stage, e in state["stages"].items() for r in e["runs"]]
+    if runs:
+        lines += ["", f"<details><summary><b>Attempts per stage</b> ({len(runs)})</summary>", ""]
+        lines += ["| Stage | # | Trigger | Started | Concluded | Result | Session |", "|---|---|---|---|---|---|---|"]
+        for stage, r in runs:
+            result = f"{r['verdict'] or r['phase']}" + (f"@`{r['head_sha'][:7]}`" if r["head_sha"] else "")
+            concluded = short_time(r["concluded_at"]) + (" ≈" if r["concluded_at_source"] == "session_last_activity" else "") if r["concluded_at"] else "—"
+            started = short_time(r["started_at"]) if r["started_at"] else "—"
+            session = link("session", r["session"]) if r["session"] else link("marker only", (r.get("marker") or {}).get("url"))
+            lines.append(f"| {stage} | {r['attempt']} | {r['trigger']} | {started} | {concluded} | {result} | {session} |")
+        lines += ["", "<sub>≈ = conclusion time approximated from the session's last activity</sub>", "", "</details>"]
+    if state["timeline"]:
+        lines += ["", f"<details><summary><b>Timeline</b> ({len(state['timeline'])} events)</summary>", ""]
+        for e in state["timeline"]:
+            subject = f"{e['stage']} #{e['attempt']}: " if e.get("stage") and e.get("attempt") else ""
+            sha = f" `{e['sha'][:7]}`" if e.get("sha") else ""
+            text = f"{e['kind'].replace('_', ' ')}{sha} — {subject}{e['detail']}"
+            lines.append(f"- `{short_time(e['at'])}` {TIMELINE_ICON.get(e['kind'], '•')} {link(text, e.get('url'))}")
+        lines += ["", "<sub>commit times are commit dates, which can predate the push</sub>", "", "</details>"]
+    return lines
+
+
+def state_json_for_check(state: dict, limit: int = 60000) -> str:
+    """Serialize state for the check run, dropping the bulkiest history first so the JSON stays valid."""
+    body = json.dumps(state, indent=2)
+    if len(body) <= limit:
+        return body
+    trimmed = {**state, "timeline": [], "truncated": ["timeline"]}
+    body = json.dumps(trimmed, indent=2)
+    if len(body) <= limit:
+        return body
+    trimmed["stages"] = {k: {**v, "runs": v["runs"][-3:]} for k, v in state["stages"].items()}
+    trimmed["truncated"].append("stages.*.runs (kept last 3)")
+    return json.dumps(trimmed, indent=2)
 
 
 def check_run_payload(state: dict, on_sha: str, name: str) -> dict:
@@ -456,7 +727,7 @@ def check_run_payload(state: dict, on_sha: str, name: str) -> dict:
         mark = "✓" if e.get("passed") and e.get("current") else ("stale" if e.get("current") is False else (e.get("verdict") or e["phase"]))
         stage_bits.append(f"{stage} {mark}")
     title = f"next: {nxt['action']}" + (" (blocked)" if nxt["blocked"] else "") + (" · " + " · ".join(stage_bits) if stage_bits else "")
-    body = json.dumps(state, indent=2)
+    body = state_json_for_check(state)
     return {
         "name": name,
         "head_sha": on_sha,
@@ -467,7 +738,7 @@ def check_run_payload(state: dict, on_sha: str, name: str) -> dict:
         "output": {
             "title": title[:250],
             "summary": render_markdown(state)[:65000],
-            "text": f"<details><summary>Machine-readable state (schema v{SCHEMA_VERSION})</summary>\n\n```json\n{body[:64000]}\n```\n</details>",
+            "text": f"<details><summary>Machine-readable state (schema v{SCHEMA_VERSION})</summary>\n\n```json\n{body}\n```\n</details>",
         },
     }
 
