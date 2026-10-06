@@ -138,7 +138,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.2 | 2026-10-06 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add OAuth (Authenticate with Reddit) for Airbyte Cloud; make User Agent optional |
+| 0.1.2 | 2026-10-06 | [88145](https://github.com/airbytehq/airbyte/pull/88145) | Add OAuth (Authenticate with Reddit) for Airbyte Cloud; make User Agent optional |
 | 0.1.1 | 2026-10-06 | [88015](https://github.com/airbytehq/airbyte/pull/88015) | Update dependencies |
 | 0.1.0 | 2026-10-05 | [87043](https://github.com/airbytehq/airbyte/pull/87043) | Show actionable errors for rejected refresh tokens or client credentials, invalid ad account IDs, and 400/403/404 responses, add a client-side API budget and configurable concurrency, add suggested streams, make spec titles human-readable, and add unit tests |
 | 0.0.12 | 2026-09-29 | [87338](https://github.com/airbytehq/airbyte/pull/87338) | Update dependencies |
