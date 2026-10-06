@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the [Freshdesk]
 
 - A Freshdesk account with an [API key](https://support.freshdesk.com/support/solutions/articles/215517). The API key belongs to the agent whose credentials are used, and that agent must have access to the resources you want to sync.
 - Your Freshdesk [domain](https://support.freshdesk.com/en/support/solutions/articles/50000004704-customizing-your-helpdesk-url) in the format `yourcompany.freshdesk.com`.
-- To sync **Ticket Activities**, your account must have Freshdesk's [scheduled ticket activities export](https://support.freshdesk.com/support/solutions/articles/226460-export-ticket-activities-from-your-helpdesk) enabled under **Admin > Account > Scheduled Exports**. Freshdesk deprecated this feature together with Legacy Reports (October 2023): it stays available only for accounts that had it enabled before the deprecation (Pro/Enterprise and legacy Estate/Forest plans) and cannot be newly enabled. Export files cover one day each and remain downloadable for 30 days, so the stream can only backfill about the last 30 days. Without the export enabled the stream syncs successfully but returns no records.
+- To sync **Ticket Activities**, your account must have Freshdesk's [scheduled ticket activities export](https://support.freshdesk.com/support/solutions/articles/226460-export-ticket-activities-from-your-helpdesk) enabled under **Admin > Account > Scheduled Exports**. Freshdesk deprecated this feature together with Legacy Reports (October 2023): it stays available only for accounts that had it enabled before the deprecation (Pro/Enterprise and legacy Estate/Forest plans) and cannot be newly enabled. Export files cover one day each and remain downloadable for 30 days, so the stream can only backfill about the last 30 days. Each export file follows the account's local day. The stream requests one file per UTC date from the start date onward and reads each file in full, skipping only records that an earlier sync already emitted or that precede the start date's UTC day. Without the export enabled the stream syncs successfully but returns no records.
 
 ## Set up the Freshdesk connector in Airbyte
 
@@ -90,6 +90,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 3.3.6 | 2026-10-06 | [87870](https://github.com/airbytehq/airbyte/pull/87870) | Update dependencies |
+| 3.3.5 | 2026-09-30 | [86643](https://github.com/airbytehq/airbyte/pull/86643) | Fix the `ticket_activities` stream reading zero records when the Freshdesk export endpoint returns a list of exports, stop dropping records that fall outside the UTC day slice, and fail the sync instead of returning no records when an export has no download URL |
+| 3.3.4 | 2026-09-29 | [87146](https://github.com/airbytehq/airbyte/pull/87146) | Update dependencies |
 | 3.3.3 | 2026-09-22 | [86635](https://github.com/airbytehq/airbyte/pull/86635) | Update dependencies |
 | 3.3.2 | 2026-09-15 | [86061](https://github.com/airbytehq/airbyte/pull/86061) | Update dependencies |
 | 3.3.1 | 2026-09-08 | [85482](https://github.com/airbytehq/airbyte/pull/85482) | Update dependencies |

@@ -2,7 +2,7 @@
 
 The Google-Ads agent connector is a Python package that equips AI agents to interact with Google-Ads through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
-Google Ads API connector for accessing advertising account data including campaigns, ad groups, ads, and labels. This connector uses the Google Ads Query Language (GAQL) via the REST search endpoint to retrieve structured advertising data. Requires OAuth2 credentials and a Google Ads developer token for authentication. All data retrieval is read-only.
+Google Ads API connector for accessing advertising account data including campaigns, ad groups, ads, and labels. This connector uses the Google Ads Query Language (GAQL) via the REST search endpoint to retrieve structured advertising data. Authenticates with OAuth2 credentials from a Google Cloud project; a legacy developer token value is still accepted for compatibility with existing configurations. All data retrieval is read-only.
 
 ## Example prompts
 
@@ -490,7 +490,7 @@ connector = GoogleAdsConnector(
         client_id="<OAuth2 client ID from Google Cloud Console>",
         client_secret="<OAuth2 client secret from Google Cloud Console>",
         refresh_token="<OAuth2 refresh token>",
-        developer_token="<Google Ads API developer token>"
+        developer_token="<Legacy Google Ads API developer token. Google sunset developer tokens on 2026-09-09 and now ignores this value; any non-empty string is accepted. Existing tokens keep working unchanged.>"
     )
 )
 
@@ -511,7 +511,7 @@ connector = GoogleAdsConnector(
         client_id="<OAuth2 client ID from Google Cloud Console>",
         client_secret="<OAuth2 client secret from Google Cloud Console>",
         refresh_token="<OAuth2 refresh token>",
-        developer_token="<Google Ads API developer token>"
+        developer_token="<Legacy Google Ads API developer token. Google sunset developer tokens on 2026-09-09 and now ignores this value; any non-empty string is accepted. Existing tokens keep working unchanged.>"
     )
 )
 
@@ -539,7 +539,7 @@ connector = GoogleAdsConnector(
         client_id="<OAuth2 client ID from Google Cloud Console>",
         client_secret="<OAuth2 client secret from Google Cloud Console>",
         refresh_token="<OAuth2 refresh token>",
-        developer_token="<Google Ads API developer token>"
+        developer_token="<Legacy Google Ads API developer token. Google sunset developer tokens on 2026-09-09 and now ignores this value; any non-empty string is accepted. Existing tokens keep working unchanged.>"
     )
 )
 
@@ -562,7 +562,7 @@ connector = GoogleAdsConnector(
         client_id="<OAuth2 client ID from Google Cloud Console>",
         client_secret="<OAuth2 client secret from Google Cloud Console>",
         refresh_token="<OAuth2 refresh token>",
-        developer_token="<Google Ads API developer token>"
+        developer_token="<Legacy Google Ads API developer token. Google sunset developer tokens on 2026-09-09 and now ignores this value; any non-empty string is accepted. Existing tokens keep working unchanged.>"
     )
 )
 
@@ -586,7 +586,7 @@ connector = GoogleAdsConnector(
         client_id="<OAuth2 client ID from Google Cloud Console>",
         client_secret="<OAuth2 client secret from Google Cloud Console>",
         refresh_token="<OAuth2 refresh token>",
-        developer_token="<Google Ads API developer token>"
+        developer_token="<Legacy Google Ads API developer token. Google sunset developer tokens on 2026-09-09 and now ignores this value; any non-empty string is accepted. Existing tokens keep working unchanged.>"
     )
 )
 
@@ -634,7 +634,7 @@ connector = GoogleAdsConnector(
         client_id="<OAuth2 client ID from Google Cloud Console>",
         client_secret="<OAuth2 client secret from Google Cloud Console>",
         refresh_token="<OAuth2 refresh token>",
-        developer_token="<Google Ads API developer token>"
+        developer_token="<Legacy Google Ads API developer token. Google sunset developer tokens on 2026-09-09 and now ignores this value; any non-empty string is accepted. Existing tokens keep working unchanged.>"
     )
 )
 
@@ -684,7 +684,7 @@ connector = GoogleAdsConnector(
         client_id="<OAuth2 client ID from Google Cloud Console>",
         client_secret="<OAuth2 client secret from Google Cloud Console>",
         refresh_token="<OAuth2 refresh token>",
-        developer_token="<Google Ads API developer token>"
+        developer_token="<Legacy Google Ads API developer token. Google sunset developer tokens on 2026-09-09 and now ignores this value; any non-empty string is accepted. Existing tokens keep working unchanged.>"
     )
 )
 
@@ -708,7 +708,7 @@ connector = GoogleAdsConnector(
         client_id="<OAuth2 client ID from Google Cloud Console>",
         client_secret="<OAuth2 client secret from Google Cloud Console>",
         refresh_token="<OAuth2 refresh token>",
-        developer_token="<Google Ads API developer token>"
+        developer_token="<Legacy Google Ads API developer token. Google sunset developer tokens on 2026-09-09 and now ignores this value; any non-empty string is accepted. Existing tokens keep working unchanged.>"
     )
 )
 
@@ -733,7 +733,7 @@ connector = GoogleAdsConnector(
         client_id="<OAuth2 client ID from Google Cloud Console>",
         client_secret="<OAuth2 client secret from Google Cloud Console>",
         refresh_token="<OAuth2 refresh token>",
-        developer_token="<Google Ads API developer token>"
+        developer_token="<Legacy Google Ads API developer token. Google sunset developer tokens on 2026-09-09 and now ignores this value; any non-empty string is accepted. Existing tokens keep working unchanged.>"
     )
 )
 
@@ -761,7 +761,7 @@ connector = GoogleAdsConnector(
         client_id="<OAuth2 client ID from Google Cloud Console>",
         client_secret="<OAuth2 client secret from Google Cloud Console>",
         refresh_token="<OAuth2 refresh token>",
-        developer_token="<Google Ads API developer token>"
+        developer_token="<Legacy Google Ads API developer token. Google sunset developer tokens on 2026-09-09 and now ignores this value; any non-empty string is accepted. Existing tokens keep working unchanged.>"
     )
 )
 

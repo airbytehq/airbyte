@@ -2,6 +2,67 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 6, 2026
+
+Platform
+
+- If your organization's paid Airbyte Cloud subscription has ended, you can still view your past usage on the Usage pages and your invoice history on the Billing page in Organization settings. Previously, the Usage pages showed no data and the Billing page was hidden once your subscription ended.
+- Airbyte Cloud free trials last 14 days. The sign-up page and the trial banner now show this trial length. Previously, they said 30 days.
+
+## October 2, 2026
+
+Connections
+
+- The **Streams status** graph on a connection's Status page now loads reliably for connections whose syncs were retried. Previously, a retried sync could cause the graph to fail to load.
+
+Platform
+
+- If your organization is on a Plus plan, the Plans page in Organization settings now selects your current credit tier by default and labels it as your current plan. Previously, the page could show a different tier, such as 100 credits instead of your 40-credit plan. You can still pick another tier to upgrade or downgrade.
+
+## October 1, 2026
+
+Connections
+
+- If a connection is set to "Propagate field changes only" and a table is deleted at the source, Airbyte now removes that table from the connection on the next sync and records the removal in the connection timeline. Previously, the connection kept trying to sync the deleted table until you refreshed the schema.
+
+Platform
+
+- When you upgrade from the Standard plan to a Plus plan, the confirmation now accurately explains that you're charged immediately for Plus and any unbilled Standard usage, and that your billing cycle restarts that day. Previously, it said your first month would be prorated.
+
+## September 30, 2026
+
+Platform
+
+- If your organization is on the Standard plan or a trial, you now have until October 21 to upgrade to a Plus plan and receive free overage credits. This limited-time offer, announced on September 15, previously ended on September 29. Conditions apply, and the number of free overage credits depends on the Plus plan you select, as shown on the Plans page in Organization settings.
+
+## September 25, 2026
+
+Connections
+
+- You can now save a source or destination as a draft while you're setting it up. Use the new "Save draft" button to keep an incomplete configuration, come back to it later, and finish when you're ready. Drafts are marked with a "Draft" tag in your source and destination lists and become fully active only after a successful connection test. You can't use a draft in a connection or sync until then.
+- When you connect a Shopify source with OAuth, Airbyte now requests permission to view your store's markets. This lets you sync Shopify market data as the Shopify connector adds support for it. Existing Shopify sources keep working without any action, and the new permission is granted the next time you re-authenticate.
+
+Platform
+
+- If you use Okta single sign-on, signing in to Airbyte Cloud from the Airbyte tile on your Okta dashboard now works again. Previously, this could fail with an "Invalid parameter: redirect_uri" error, while signing in from the Airbyte login page continued to work.
+- Schema change notifications for sources with very large schemas now reach Slack reliably. If the list of changes is too long for a single Slack message, the notification is shortened and points you to the connection in Airbyte to see all changes.
+
+## September 23, 2026
+
+Connections
+
+- The tag shown on connections that use on-demand capacity now reads "On-demand" instead of "Burst," matching the name Airbyte uses for this feature everywhere else.
+- If a connector stops responding while Airbyte tests a source or destination or discovers its schema, the operation now fails after a timeout instead of staying stuck until a later safeguard cancels it. Standalone tests and schema refreshes time out after 9 minutes, and schema discovery that runs as part of a sync times out after 30 minutes.
+
+Platform
+
+- The Standard plan's new pricing, announced on September 15, is now in effect and reflected on the Plans page: $20 per month with 5 credits included, and additional credits at $5 each. The advance notice about the pricing change no longer appears on the Standard plan card.
+- On Cloud Pro and Enterprise Flex plans, the dotted line on the data worker usage charts is now labeled "Allocated capacity" instead of "Contracted capacity," because the capacity allocated to a region can differ from the total your contract includes. The label also stays readable when usage bars reach the line.
+
+API
+
+- When you list a user's permissions through the API, the response no longer includes permissions for workspaces that have been deleted, so it matches the workspaces the user can actually access.
+
 ## September 17, 2026
 
 Platform
