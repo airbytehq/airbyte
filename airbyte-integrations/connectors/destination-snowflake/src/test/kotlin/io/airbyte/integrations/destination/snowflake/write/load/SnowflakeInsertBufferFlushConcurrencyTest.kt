@@ -30,12 +30,12 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -138,25 +138,28 @@ internal class SnowflakeInsertBufferFlushConcurrencyTest {
 
     @ParameterizedTest
     @ValueSource(booleans = [false, true])
-    fun `PUT failure propagates and cleans up`(fusionEnabled: Boolean) {
+    fun `PUT failure waits for the S3 upload, propagates, and cleans up`(fusionEnabled: Boolean) {
         val failure = IOException("PUT failed")
         val uploadStarted = CountDownLatch(1)
-        val uploadCancelled = AtomicBoolean(false)
+        val putFailed = CompletableDeferred<Unit>()
+        val uploadFinished = AtomicBoolean(false)
+        val fileExistedWhenUploadFinished = AtomicBoolean(false)
         every { client.putInStage(table, any()) } answers
             {
                 if (fusionEnabled) {
                     check(uploadStarted.await(10, TimeUnit.SECONDS)) { "S3 upload never started" }
                 }
+                putFailed.complete(Unit)
                 throw failure
             }
         coEvery { s3Copy.upload(any(), copyContext, 1) } coAnswers
             {
                 uploadStarted.countDown()
-                try {
-                    awaitCancellation()
-                } finally {
-                    uploadCancelled.set(true)
-                }
+                putFailed.await()
+                // Give flush a chance to delete the file early if it stopped awaiting the upload.
+                delay(100)
+                fileExistedWhenUploadFinished.set(Files.exists(firstArg<Path>()))
+                uploadFinished.set(true)
             }
         val buffer = buffer(fusionEnabled)
         val path = requireNotNull(buffer.csvFilePath)
@@ -165,8 +168,10 @@ internal class SnowflakeInsertBufferFlushConcurrencyTest {
             assertThrows<IOException> { runBlocking { withTimeout(10_000) { buffer.flush() } } }
 
         assertFailure(failure, thrown)
+        assertTrue(generateSequence<Throwable>(thrown) { it.cause }.all { it.suppressed.isEmpty() })
         verify(exactly = 0) { client.copyFromStage(any(), any(), any()) }
-        assertEquals(fusionEnabled, uploadCancelled.get())
+        assertEquals(fusionEnabled, uploadFinished.get())
+        assertEquals(fusionEnabled, fileExistedWhenUploadFinished.get())
         assertCleaned(buffer, path)
     }
 

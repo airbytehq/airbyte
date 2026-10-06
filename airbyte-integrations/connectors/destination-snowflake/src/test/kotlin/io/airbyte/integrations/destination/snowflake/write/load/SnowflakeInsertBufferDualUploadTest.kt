@@ -94,19 +94,25 @@ internal class SnowflakeInsertBufferDualUploadTest {
     }
 
     @Test
-    fun `Snowflake failure waits for cancellation resistant S3 reader before deleting file`() {
+    fun `Snowflake failure waits for S3 upload and reader before deleting file`() {
         val failure = IOException("Snowflake COPY failed")
         val fixture = Fixture(snowflakeFailure = failure)
         exercise(fixture) { flush ->
             fixture.releaseSnowflake.countDown()
             fixture.snowflakeFinished.await()
-            // Do not release the normal upload gate: sibling failure cancels that wait.
-            // The fake then retains a real open reader in NonCancellable cleanup.
+            // The Snowflake failure does not cancel the upload; flush waits for it to finish.
+            assertFalse(fixture.archiveFinished.isCompleted)
+            fixture.assertPending(flush)
+            fixture.releaseArchive.complete(Unit)
             fixture.readerCleanupEntered.await()
-            assertFalse(fixture.releaseArchive.isCompleted)
             fixture.assertPending(flush)
             fixture.releaseReader.complete(Unit)
-            assertFailureCause(failure, flush.await().exceptionOrNull())
+            val thrown = flush.await().exceptionOrNull()
+            assertFailureCause(failure, thrown)
+            assertTrue(
+                generateSequence(thrown) { it.cause }.all { it.suppressed.isEmpty() },
+                "A completed upload must not attach a CancellationException to the failure",
+            )
             fixture.assertCleaned()
             fixture.verifyUploads()
         }

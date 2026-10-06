@@ -96,7 +96,9 @@ class SnowflakeInsertBuffer(
                 } else {
                     // PUT/COPY stays in the calling coroutine so the caller's dispatcher (e.g. the
                     // CDK's bounded final-flush dispatcher) keeps limiting concurrent use of the
-                    // Snowflake connection pool. Only the Fusion S3 upload runs alongside it.
+                    // Snowflake connection pool. Only the Fusion S3 upload runs alongside it. The
+                    // upload blocks uncancellably once started, so it is always awaited rather than
+                    // cancelled: the file must outlive its reader either way.
                     coroutineScope {
                         val archive =
                             async(Dispatchers.IO) { s3Copy.upload(filePath, context, recordCount) }
@@ -105,7 +107,6 @@ class SnowflakeInsertBuffer(
                             putAndCopy(filePath)
                         } catch (t: Throwable) {
                             failure = t
-                            archive.cancel()
                         }
                         try {
                             archive.await()
