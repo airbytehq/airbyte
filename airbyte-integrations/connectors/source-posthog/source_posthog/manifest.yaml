@@ -132,19 +132,14 @@ definitions:
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
-      transformations:
-        - class_name: "source_posthog.components.EventsSimpleRetriever"
-          fields:
-            - path: ["name"]
-              value: "{{ parameters['name'] }}"
-            - path: ["primary_key"]
-              value: "{{ parameters['primary_key'] }}"
       name: "{{ parameters['name'] }}"
       primary_key: "{{ parameters['primary_key'] }}"
       record_selector:
         $ref: "#/definitions/selector"
       requester:
         $ref: "#/definitions/requester"
+        type: CustomRequester
+        class_name: "source_posthog.components.EventsRequester"
         path: "/projects/{{ stream_slice.project_id }}/{{ parameters['name'] }}/"
       paginator:
         type: "DefaultPaginator"
@@ -152,12 +147,12 @@ definitions:
           inject_into: "request_parameter"
           field_name: "limit"
         pagination_strategy:
-          type: "OffsetIncrement"
-          page_size: 10000
+          type: "CursorPagination"
+          cursor_value: "{{ response.get('next') }}"
+          page_size: 1000
+          stop_condition: "{{ response.get('next') is none }}"
         page_token_option:
-          type: RequestOption
-          field_name: "offset"
-          inject_into: "request_parameter"
+          type: RequestPath
 
 streams:
   - "#/definitions/projects_stream"
