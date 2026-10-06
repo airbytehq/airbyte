@@ -1,0 +1,2077 @@
+{
+  "streams": [
+    {
+      "name": "all_types",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "big": {
+            "type": ["null", "number"]
+          },
+          "dec": {
+            "type": ["null", "number"]
+          },
+          "flag": {
+            "type": ["null", "boolean"]
+          },
+          "bin": {
+            "type": ["null", "string"],
+            "contentEncoding": "base64"
+          },
+          "nset": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "number"]
+            }
+          },
+          "nothing": {
+            "type": "null"
+          },
+          "list": {
+            "type": ["null", "array"],
+            "items": {
+              "anyOf": [
+                {
+                  "type": ["null", "string"]
+                },
+                {
+                  "type": ["null", "integer"]
+                },
+                {
+                  "type": ["null", "number"]
+                },
+                {
+                  "type": ["null", "boolean"]
+                },
+                {
+                  "type": "null"
+                },
+                {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "k": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                },
+                {
+                  "type": ["null", "array"],
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": ["null", "string"]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "int": {
+            "type": ["null", "integer"]
+          },
+          "bset": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"],
+              "contentEncoding": "base64"
+            }
+          },
+          "str": {
+            "type": ["null", "string"]
+          },
+          "neg": {
+            "type": ["null", "integer"]
+          },
+          "flexible": {
+            "type": ["null", "integer"]
+          },
+          "sset": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "id": {
+            "type": ["null", "string"]
+          },
+          "only_in_2_num": {
+            "type": ["null", "number"]
+          },
+          "map": {
+            "type": ["null", "object"],
+            "properties": {
+              "ss": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              "bs": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"],
+                  "contentEncoding": "base64"
+                }
+              },
+              "b": {
+                "type": ["null", "string"],
+                "contentEncoding": "base64"
+              },
+              "s": {
+                "type": ["null", "string"]
+              },
+              "n_int": {
+                "type": ["null", "integer"]
+              },
+              "bool": {
+                "type": ["null", "boolean"]
+              },
+              "nul": {
+                "type": "null"
+              },
+              "ns": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "number"]
+                }
+              },
+              "nested_list": {
+                "type": ["null", "array"],
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": ["null", "string"]
+                    },
+                    {
+                      "type": ["null", "integer"]
+                    }
+                  ]
+                }
+              },
+              "n_dec": {
+                "type": ["null", "number"]
+              },
+              "nested_map": {
+                "type": ["null", "object"],
+                "properties": {
+                  "deep": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          },
+          "only_in_2": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "binary_key",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": ["null", "string"]
+          },
+          "id": {
+            "type": ["null", "string"],
+            "contentEncoding": "base64"
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "composite_key",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "sk": {
+            "type": ["null", "integer"]
+          },
+          "v": {
+            "type": ["null", "string"]
+          },
+          "pk": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["pk"]]
+    },
+    {
+      "name": "empty_table",
+      "json_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "many_items",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": ["null", "integer"]
+          },
+          "late_only": {
+            "type": ["null", "string"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "numeric_key",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": ["null", "string"]
+          },
+          "id": {
+            "type": ["null", "integer"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_001",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_002",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_003",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_004",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_005",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_006",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_007",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_008",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_009",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_010",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_011",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_012",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_013",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_014",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_015",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_016",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_017",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_018",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_019",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_020",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_021",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_022",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_023",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_024",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_025",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_026",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_027",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_028",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_029",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_030",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_031",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_032",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_033",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_034",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_035",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_036",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_037",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_038",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_039",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_040",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_041",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_042",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_043",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_044",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_045",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_046",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_047",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_048",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_049",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_050",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_051",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_052",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_053",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_054",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_055",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_056",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_057",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_058",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_059",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_060",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_061",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_062",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_063",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_064",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_065",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_066",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_067",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_068",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_069",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_070",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_071",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_072",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_073",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_074",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_075",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_076",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_077",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_078",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_079",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_080",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_081",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_082",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_083",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_084",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_085",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_086",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_087",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_088",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_089",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_090",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_091",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_092",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_093",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_094",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_095",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_096",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_097",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_098",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_099",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_100",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_101",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_102",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_103",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_104",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "paging_105",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "table_index": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "reserved_words",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "field-name": {
+            "type": ["null", "boolean"]
+          },
+          "field.name": {
+            "type": ["null", "integer"]
+          },
+          "data": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "count": {
+            "type": ["null", "number"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          },
+          "status": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "default_cursor_field": [],
+      "source_defined_primary_key": [["id"]]
+    }
+  ]
+}

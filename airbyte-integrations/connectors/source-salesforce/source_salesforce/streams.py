@@ -596,7 +596,7 @@ class BulkSalesforceStream(SalesforceStream):
             config=config,
             parameters=parameters,
         )
-        error_handler = SalesforceErrorHandler(token_provider=token_provider)
+        error_handler = SalesforceErrorHandler(token_provider=token_provider, stream_name=self.name)
         select_fields = self.get_query_select_fields()
         query = f"SELECT {select_fields} FROM {self.name}"  # FIXME "def request_params" is also handling `next_token` (I don't know why, I think it's always None) and parent streams
         if self.cursor_field and self._stream_slicer_cursor:

@@ -4,7 +4,6 @@ sidebar_position: 2
 ---
 
 import DocCardList from '@theme/DocCardList';
-import SdkVsApi from '@site/static/\_ai-agents-sdk-vs-api.md';
 
 # SDK
 
@@ -20,17 +19,13 @@ This section walks through authenticate, add a connector, and execute operations
 
 If your agent already supports the Model Context Protocol, the [MCP server](../mcp/readme.md) gives you zero-install access. If you prefer a shell binary, see the [CLI](../cli/readme.md). For non-Python backends, use the [API](../api/readme.md) directly.
 
-## Choose your interface
-
-<SdkVsApi />
-
 ## Log in and sign up
 
 Log in or sign up at [app.airbyte.ai](https://app.airbyte.ai/).
 
 ## Install
 
-Add the SDK to a [uv](https://docs.astral.sh/uv/)-managed project:
+The SDK requires Python 3.11 or later. Add the SDK to a [uv](https://docs.astral.sh/uv/)-managed project:
 
 ```bash
 uv add airbyte-agent-sdk
