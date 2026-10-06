@@ -27,6 +27,6 @@ Contentful is a headless content management system (CMS) that stores structured 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2026-10-06 | | Initial release by [@paulb17](https://github.com/paulb17) via Connector Builder |
+| 0.0.1 | 2026-10-06 | [88148](https://github.com/airbytehq/airbyte/pull/88148)| Initial release by [@paulb17](https://github.com/paulb17) via Connector Builder |
 
 </details>
