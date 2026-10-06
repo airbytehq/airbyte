@@ -2,6 +2,100 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 6, 2026
+
+Platform
+
+- If your organization's paid Airbyte Cloud subscription has ended, you can still view your past usage on the Usage pages and your invoice history on the Billing page in Organization settings. Previously, the Usage pages showed no data and the Billing page was hidden once your subscription ended.
+- Airbyte Cloud free trials last 14 days. The sign-up page and the trial banner now show this trial length. Previously, they said 30 days.
+
+## October 2, 2026
+
+Connections
+
+- The **Streams status** graph on a connection's Status page now loads reliably for connections whose syncs were retried. Previously, a retried sync could cause the graph to fail to load.
+
+Platform
+
+- If your organization is on a Plus plan, the Plans page in Organization settings now selects your current credit tier by default and labels it as your current plan. Previously, the page could show a different tier, such as 100 credits instead of your 40-credit plan. You can still pick another tier to upgrade or downgrade.
+
+## October 1, 2026
+
+Connections
+
+- If a connection is set to "Propagate field changes only" and a table is deleted at the source, Airbyte now removes that table from the connection on the next sync and records the removal in the connection timeline. Previously, the connection kept trying to sync the deleted table until you refreshed the schema.
+
+Platform
+
+- When you upgrade from the Standard plan to a Plus plan, the confirmation now accurately explains that you're charged immediately for Plus and any unbilled Standard usage, and that your billing cycle restarts that day. Previously, it said your first month would be prorated.
+
+## September 30, 2026
+
+Platform
+
+- If your organization is on the Standard plan or a trial, you now have until October 21 to upgrade to a Plus plan and receive free overage credits. This limited-time offer, announced on September 15, previously ended on September 29. Conditions apply, and the number of free overage credits depends on the Plus plan you select, as shown on the Plans page in Organization settings.
+
+## September 25, 2026
+
+Connections
+
+- You can now save a source or destination as a draft while you're setting it up. Use the new "Save draft" button to keep an incomplete configuration, come back to it later, and finish when you're ready. Drafts are marked with a "Draft" tag in your source and destination lists and become fully active only after a successful connection test. You can't use a draft in a connection or sync until then.
+- When you connect a Shopify source with OAuth, Airbyte now requests permission to view your store's markets. This lets you sync Shopify market data as the Shopify connector adds support for it. Existing Shopify sources keep working without any action, and the new permission is granted the next time you re-authenticate.
+
+Platform
+
+- If you use Okta single sign-on, signing in to Airbyte Cloud from the Airbyte tile on your Okta dashboard now works again. Previously, this could fail with an "Invalid parameter: redirect_uri" error, while signing in from the Airbyte login page continued to work.
+- Schema change notifications for sources with very large schemas now reach Slack reliably. If the list of changes is too long for a single Slack message, the notification is shortened and points you to the connection in Airbyte to see all changes.
+
+## September 23, 2026
+
+Connections
+
+- The tag shown on connections that use on-demand capacity now reads "On-demand" instead of "Burst," matching the name Airbyte uses for this feature everywhere else.
+- If a connector stops responding while Airbyte tests a source or destination or discovers its schema, the operation now fails after a timeout instead of staying stuck until a later safeguard cancels it. Standalone tests and schema refreshes time out after 9 minutes, and schema discovery that runs as part of a sync times out after 30 minutes.
+
+Platform
+
+- The Standard plan's new pricing, announced on September 15, is now in effect and reflected on the Plans page: $20 per month with 5 credits included, and additional credits at $5 each. The advance notice about the pricing change no longer appears on the Standard plan card.
+- On Cloud Pro and Enterprise Flex plans, the dotted line on the data worker usage charts is now labeled "Allocated capacity" instead of "Contracted capacity," because the capacity allocated to a region can differ from the total your contract includes. The label also stays readable when usage bars reach the line.
+
+API
+
+- When you list a user's permissions through the API, the response no longer includes permissions for workspaces that have been deleted, so it matches the workspaces the user can actually access.
+
+## September 17, 2026
+
+Platform
+
+- On the Pro and Enterprise Flex plans, when Airbyte staff take an action in your organization as part of a support case, your audit logs now attribute that action to "Airbyte Support" instead of an individual employee's email address, making it clearer which changes came from Airbyte rather than from your own team.
+- Viewing your SCIM configuration no longer creates an audit log entry. Your audit logs now show only actual changes to SCIM settings, not every time an admin opens the page.
+
+## September 15, 2026
+
+**Important**: Updated pricing model
+
+- **Airbyte Cloud has a new pricing model** for self-serve plans (Standard and Plus). Pro and Flex are not affected. For many of you, **the price of the Plus plan is significantly cheaper** than the price of the Standard plan. We strongly recommend visiting [Airbyte's pricing page](https://airbyte.com/pricing) to determine the optimal plan for you. New Plus plans are available immediately. The Standard plan switches on September 21. Here's what's changing:
+    - **Standard**: the base price for Standard increases from $10 per month to $20 per month. The number of free credits each month also increases from 4 to 5. The price for additional credits increases from $2.50 to $5.00. Single sign on (SSO) is no longer available on Standard, but if you already use SSO, you may continue doing so as long as you keep your plan.
+    - **Plus**: Multiple new pricing tiers are available. All Plus plans include a much larger allocation of credits, less expensive overage credits, 15-minute sync frequency, two workspaces, mappings (renames only), single sign-on, and premium support. Existing Plus subscribers are being moved from 50 to 100 credits and your plan cost has dropped $50. The following Plus tiers are available:
+        - 40 credits: $189 (equivalent to $4.75/cr) + $5/cr for overages
+        - 100 credits: $449 (equivalent to $4.5/cr) + $5/cr for overages
+        - 250 credits: $999 (equivalent to $4/cr) + $4.5/cr for overages
+        - 500 credits: $1,799 (equivalent to $3.6/cr) + $4.15/cr for overages
+        - 1,000 credits: $3,199 (equivalent to $3.2/cr) + $3.75/cr for overages
+        - 2,000 credits: $4,999 (equivalent to $2.5/cr) + $2.5/cr for overages
+    - **Credit rollovers**: Unused credits now roll over for 3 months (previously 2), so you have a full quarter to use them.
+
+  As a temporary incentive to encourage you to optimize your spend, Airbyte is offering limited free overage credits to organizations that upgrade to a higher plan by September 29. Conditions apply, and the number of free overage credits depends on the plan you select.
+
+  To adjust your plan, open Airbyte Cloud and click **Organization settings** > **Plans**. See [Manage billing and credits](/platform/cloud/managing-airbyte-cloud/manage-credits) for more help.
+
+## September 10, 2026
+
+Platform
+
+- When your organization has reached the number of workspaces your plan includes, hovering over the locked New workspace button now shows how many workspaces you've used out of your limit and what upgrading to Plus or Pro adds, with links to view plans or talk to sales. Previously, the button only told you to upgrade your plan. The upgrade details also now correctly state that the Plus plan includes up to 2 workspaces.
+- If your organization doesn't have a subscription yet, the Billing page now also shows the Flex plan alongside Standard, Plus, and Pro, with a Talk to Sales link. Flex is a hybrid option for enterprises that need Airbyte's managed control plane with data planes they run themselves.
+
 ## September 4, 2026
 
 Platform

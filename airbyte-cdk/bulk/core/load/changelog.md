@@ -7,6 +7,14 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.1 — 2026-09-24
+
+Add the Fusion archive toolkit to the published bulk load CDK toolkits.
+
+### 1.1.0 — 2026-09-10
+
+[#82231](https://github.com/airbytehq/airbyte/pull/82231) - Feat: Add `tableIsEmpty` to `TableOperationsClient` and use existence checks (instead of `COUNT(*)`) when gathering direct-load initial status.
+
 ### 1.0.25 — 2026-08-20
 
 Fix: truncate-refresh dedup syncs no longer replace an already-committed real table with an empty or partial result on a later job attempt.
