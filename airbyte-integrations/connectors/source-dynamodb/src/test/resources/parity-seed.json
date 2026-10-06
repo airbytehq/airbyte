@@ -1,6 +1,6 @@
 {
   "_comment": [
-    "Shared seed for the source-dynamodb parity harness (parity/seed.py, legacy 0.3.11 image vs 1.0.0) and the connector's Testcontainers tests.",
+    "Shared seed for the source-dynamodb parity harness (parity/seed.py, legacy 0.3.11 image vs 0.4.0) and the connector's Testcontainers tests.",
     "Items use DynamoDB JSON (the wire format of PutItem): {\"S\":..}, {\"N\":\"12.5\"}, {\"B\":\"<base64>\"}, {\"SS\":[..]}, {\"NS\":[..]}, {\"BS\":[..]}, {\"M\":{..}}, {\"L\":[..]}, {\"BOOL\":true}, {\"NULL\":true}.",
     "keySchema[].attributeType is the AttributeDefinition type (S, N or B) of that key attribute.",
     "A table entry may carry `generate` instead of / in addition to `items`:",

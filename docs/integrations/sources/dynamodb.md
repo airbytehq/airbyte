@@ -8,20 +8,21 @@ description: >-
 
 The DynamoDB source connector reads the tables of an Amazon DynamoDB account and region. It supports full refresh and incremental syncs, infers each table's schema by sampling its items, reads a table page by page with the `Scan` API, and saves its position after every round of pages so that a large table resumes after an interruption instead of starting over.
 
-Version 1.0.0 rebuilds the connector on Airbyte's Bulk CDK. It accepts the configuration and the saved state of versions 0.3.x, so existing connections keep syncing without a reset. See [Changes in 1.0.0](#changes-in-100) for what changed and the [migration guide](dynamodb-migrations.md) for what to do.
+Version 0.4.0 rebuilds the connector on Airbyte's Bulk CDK. It accepts the saved state of versions 0.3.x and any configuration that uses an access key and a region, so those connections keep syncing without a reset. A source that used the role based authentication of versions 0.3.x, or that has no region, must be edited. See [Changes in 0.4.0](#changes-in-040) for what changed and what to do.
 
 ## Features
 
-| Feature                   | Supported | Notes                                                                                       |
-| :------------------------ | :-------- | :------------------------------------------------------------------------------------------ |
-| Full refresh sync         | Yes       | Resumable, see [State and resuming](#state-and-resuming)                                    |
-| Incremental sync - append | Yes       | Cursor based, see [Incremental sync](#incremental-sync)                                     |
-| Replicate deletes         | No        | The connector doesn't read DynamoDB Streams                                                 |
-| Change data capture (CDC) | No        |                                                                                             |
-| Namespaces                | No        | A region has a flat list of tables                                                          |
-| Primary keys              | Yes       | The table's partition key                                                                   |
-| Checkpoints               | Yes       | A state message after every round of scan pages, per scan segment                           |
-| Speed mode                | Yes       | The connector supports the socket data channel with JSONL and protocol buffer serialization |
+| Feature                             | Supported | Notes                                                                                                                   |
+| :---------------------------------- | :-------- | :---------------------------------------------------------------------------------------------------------------------- |
+| Full refresh sync                   | Yes       | Resumable, see [State and resuming](#state-and-resuming)                                                                |
+| Incremental sync - append           | Yes       | Cursor based, see [Incremental sync](#incremental-sync)                                                                 |
+| Incremental sync - append + deduped | Yes       | Removes duplicates by the table's partition key, see [Limitations](#limitations-and-troubleshooting) for composite keys |
+| Replicate deletes                   | No        | The connector doesn't read DynamoDB Streams                                                                             |
+| Change data capture (CDC)           | No        |                                                                                                                         |
+| Namespaces                          | No        | A region has a flat list of tables                                                                                      |
+| Primary keys                        | Yes       | The table's partition key                                                                                               |
+| Checkpoints                         | Yes       | A state message after every round of scan pages, per scan segment                                                       |
+| Speed mode                          | Yes       | The connector supports the socket data channel with JSONL and protocol buffer serialization                             |
 
 The connector is read-only. It calls `ListTables`, `DescribeTable` and `Scan` and never writes to your tables.
 
@@ -50,7 +51,7 @@ The connector offers two authentication methods. Both start from an access key.
 - **Access Key**: the access key ID and secret access key of an IAM user, or temporary credentials issued by AWS STS. For temporary credentials also fill in the **Session Token**. The connector signs every request with this key.
 - **Access Key and IAM Role**: an access key that is allowed to call `sts:AssumeRole` on an IAM role, plus the role's ARN and, when the role's trust policy requires one, the external ID. The connector assumes the role and reads the tables with the role's temporary credentials. Use this method for cross-account access or to keep the reading identity to a least-privilege role.
 
-The role based authentication of versions 0.3.x, which took credentials from the environment the connector runs in, is not available. A saved configuration that uses it fails the connection test with a message that says so.
+The role based authentication of versions 0.3.x, which took credentials from the environment the connector runs in, is not available. A saved configuration that uses it fails the connection test with a message that says so; edit it to use one of the two methods. **AWS Region** is required for the same reason.
 
 ### Set up the DynamoDB source in Airbyte
 
@@ -75,7 +76,7 @@ The role based authentication of versions 0.3.x, which took credentials from the
 
 ### Discovered streams
 
-Every table of the region is a stream. DynamoDB tables have no schema, only their key attributes are typed, so the connector infers a schema the way versions 0.3.x did: it scans up to **Discovery sample size** items of the table, merges the top-level attributes of every sampled item, and maps each attribute to a JSON schema from the type of its value. When an attribute has values of different types in different items, the last sampled item decides its type. Nested maps and lists keep the structure of the sampled values. An attribute that appears only in items outside the sample is missing from the schema, and a table without items isn't discovered at all.
+Every table of the region is a stream. DynamoDB tables have no schema, only their key attributes are typed, so the connector infers a schema the way versions 0.3.x did: it scans up to **Discovery sample size** items of the table, merges the top-level attributes of every sampled item, and maps each attribute to a JSON schema from the type of its value. When an attribute has values of different types in different items, the last sampled item decides its type. Nested maps and lists keep the structure of the sampled values. An attribute that appears only in items outside the sample is missing from the schema. A table without items is discovered with its key attributes only, typed from `DescribeTable`; its other attributes appear at the first schema refresh after it has items.
 
 The stream's primary key is the table's partition key. A table with a composite key reports only its partition key, as versions 0.3.x did, so more than one item can share a primary key value. Global and local secondary indexes are never read.
 
@@ -148,22 +149,31 @@ Each top-level attribute of a table becomes a field whose JSON schema and value 
 
 An attribute that a record's item doesn't have is `null` in the record.
 
-## Changes in 1.0.0
+## Changes in 0.4.0
 
-Version 1.0.0 loads the configuration and the state of versions 0.3.x, and its `discover` output lists the same streams, fields, and types for the same tables, with these differences. The [migration guide](dynamodb-migrations.md) says what to do about them.
+Version 0.4.0 loads the access key configurations and the state of versions 0.3.x, and its `discover` output lists the same streams, fields, and types for the same tables, with these differences. [What to do after upgrading](#what-to-do-after-upgrading) lists the few cases that need an action.
 
 - **Schemas use Airbyte's standard shapes.** Versions 0.3.x wrote `{"type": ["null", "string"]}` and `{"type": ["null", "integer"]}`; this connector writes `{"type": "string"}` and `{"type": "number", "airbyte_type": "integer"}`, like every other Airbyte database connector. A connection upgraded from 0.3.x keeps syncing with its saved catalog and shows a schema change on every column at its next schema refresh; the column types in the destination don't change.
 
-- **Credentials come from the configuration only.** Role based authentication, which used the credentials of the environment the connector ran in, is gone. Temporary credentials with a session token and role assumption with `sts:AssumeRole` are new, **AWS Region** is required and **DynamoDB Endpoint** must be an `http` or `https` URL.
+- **Credentials come from the configuration only.** Role based authentication, which used the credentials of the environment the connector ran in, is gone: a source configured without an access key fails the connection test with a message that says so. Temporary credentials with a session token and role assumption with `sts:AssumeRole` are new, **AWS Region** is required and **DynamoDB Endpoint** must be an `http` or `https` URL, which versions 0.3.x required in practice too.
 - **Reserved attribute names need no configuration.** Every attribute is aliased in the scan expressions, so the **Reserved attribute names** field is ignored. Versions 0.3.x failed on any unlisted reserved word or special character and could never read a table that had both `field.name` and `field-name`.
-- **Large numbers are exact.** An `N` value that doesn't fit in 64 bits is read as an exact decimal; versions 0.3.x converted it to a floating point number and lost precision.
-- **Absent attributes are `null`.** An attribute that an item doesn't have is present in the record as `null`; versions 0.3.x left it out.
+- **Large numbers are exact.** An `N` value that doesn't fit in 64 bits is read as an exact decimal; versions 0.3.x converted it to a floating point number and lost precision. Rows that versions 0.3.x already wrote keep their rounded value until the table is read in full again, and equality joins on such values may start or stop matching.
+- **Absent attributes are `null`.** An attribute that an item doesn't have is present in the record as `null`; versions 0.3.x left it out. Destinations that keep the record as JSON, such as object storage, now show the attribute as an explicit `null` key.
 - **Integer cursors work.** Versions 0.3.x failed before the first record on any cursor attribute discovered as `integer`, which is every whole number.
 - **Syncs resume.** Full refresh and incremental streams save their position after every round of scan pages and resume there; versions 0.3.x saved one state at the end of an incremental stream and nothing for a full refresh.
 - **Failures carry a message.** The connection test reports why it failed; versions 0.3.x reported a failure without a message. A configured table that no longer exists, or whose stream has no fields, fails only its own stream; the other streams of the sync are read.
 - **An empty table is discovered with its key attributes only.** Its other attributes appear at the first schema refresh after the table has items. Versions 0.3.x listed an empty table as a stream without fields and couldn't read it. The connection test fails when the region has no tables.
 - **Large tables are read with parallel scans on Airbyte Cloud.** A table over 64 MB is split into scan segments that **Max Concurrent Queries to Database** reads in parallel; self-managed Airbyte, like versions 0.3.x, reads every table with one sequential scan.
 - **Discovery sample size and Max Concurrent Queries to Database** are new settings; versions 0.3.x always sampled 1000 items and read one table at a time.
+
+### What to do after upgrading
+
+A source that uses an access key and has a region set needs no action: its connections keep syncing with their saved catalog, and incremental streams continue from their saved cursor value.
+
+1. If a source used role based authentication, edit it: choose **Access Key** and enter the access key of an IAM user or temporary credentials with a session token, or choose **Access Key and IAM Role** and enter an access key that may assume the role the connector should read with. See [IAM permissions](#iam-permissions) for what the identity needs. Until then the connection test and every sync of that source fail with a message that says so.
+2. If **AWS Region** is empty, set it to the region of the tables.
+3. Refreshing the source schema of a connection is recommended but optional. It shows a schema change on every column, picks up the key attributes of tables that were empty, and leaves the column types in the destination as they are.
+4. Clearing a stream's data is optional and only worthwhile when its table has `N` values wider than 64 bits that versions 0.3.x wrote as rounded numbers. The next sync reads the whole table again.
 
 ## Limitations and troubleshooting
 
@@ -188,7 +198,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                                              |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------- |
-| 1.0.0 | 2026-09-25 | [86997](https://github.com/airbytehq/airbyte/pull/86997) | Rebuild on the Bulk CDK: parallel scan segments on Airbyte Cloud, resumable full refresh and incremental syncs, speed mode, exact numbers, integer cursors, temporary credentials and IAM role assumption. See the migration guide |
+| 0.4.0 | 2026-10-05 | [86997](https://github.com/airbytehq/airbyte/pull/86997) | Rebuild on the Bulk CDK: parallel scan segments on Airbyte Cloud, resumable full refresh and incremental syncs, speed mode, exact numbers, integer cursors, temporary credentials and IAM role assumption. Role based authentication is removed, see [Changes in 0.4.0](#changes-in-040) |
 | 0.3.11 | 2025-07-10 | [62916](https://github.com/airbytehq/airbyte/pull/62916) | Add gradle docker plugins |
 | 0.3.10 | 2025-06-14 | [61601](https://github.com/airbytehq/airbyte/pull/61601) | fix(source-dynamodb): Replace ListNode with Iterator for lazyness #61600 |
 | 0.3.9 | 2025-02-12 | [53202](https://github.com/airbytehq/airbyte/pull/53202) | fixed IRSA by adding STS to classpath of connector. |

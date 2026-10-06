@@ -1,6 +1,6 @@
 # Contributing to source-dynamodb
 
-`source-dynamodb` 1.0.0 is a Bulk CDK (`airbyte-cdk/bulk`, `extract` core, no toolkits) rewrite of the
+`source-dynamodb` 0.4.0 is a Bulk CDK (`airbyte-cdk/bulk`, `extract` core, no toolkits) rewrite of the
 legacy Java connector (versions 0.3.x, last release 0.3.11). The legacy connector is the parity oracle: `spec`, `check`
 and `discover` output and saved configurations must stay compatible with it.
 
@@ -140,13 +140,13 @@ table's key schema (`S`, `N`, `B`).
 
 ## Relationship with versions 0.3.x
 
-1.0.0 keeps the legacy property names (`credentials` with `auth_type: "User"`,
+0.4.0 keeps the legacy property names (`credentials` with `auth_type: "User"`,
 `access_key_id`, `secret_access_key`, `endpoint`, `region`, `reserved_attribute_names`,
 `ignore_missing_read_permissions_tables`), so a legacy access-key configuration loads unchanged
 (`DynamoDbSourceSpecTest.testLegacyAccessKeyConfigurationStillLoads`). The spec itself deliberately
 differs from the legacy one (decision of 2026-09-17: credentials must come from the configuration):
 
-| | 0.3.11 (legacy) | 1.0.0 |
+| | 0.3.11 (legacy) | 0.4.0 |
 |---|---|---|
 | Role Based Authentication (SDK default credentials chain: env vars, profile, instance role) | yes | removed, no ambient credentials exist in the connector container |
 | Access key | `access_key_id`, `secret_access_key` | plus optional `session_token` for temporary STS credentials |
@@ -206,7 +206,7 @@ and the role. Legacy returned `FAILED` without a message in all three cases.
 - Scripts to run both Docker images against one DynamoDB Local container live in the
   `new-database-source-connector` skill (`databases/dynamodb/parity/`).
 
-| Case | Legacy 0.3.11 | 1.0.0 |
+| Case | Legacy 0.3.11 | 0.4.0 |
 |---|---|---|
 | `check` failure | `FAILED` with no message (vendor error only in logs) | `FAILED` with a classified message inside "Could not connect with provided configuration. Error: ..." plus an error `TRACE` (`application.yml` regex rules) |
 | `check` with zero tables | `SUCCEEDED` | fails with "Discovered zero tables." (`CheckOperation`) |
@@ -244,7 +244,7 @@ and binary keys, 1200 items, 105 paging tables) the records are identical after 
 deliberate differences below; an incremental sync resumed from a legacy state message (`str >
 "hello"`) returns the same 2 records and the same cursor (`world`, count 1) on both sides.
 
-| Case | Legacy 0.3.11 | 1.0.0 |
+| Case | Legacy 0.3.11 | 0.4.0 |
 |---|---|---|
 | `N` value beyond a `long` (`123456789012345678901234567890`) | `1.2345678901234568E29` (parsed as `double`, lossy) | exact `123456789012345678901234567890` |
 | attribute absent from an item | absent from the record | `null` (the Bulk CDK fills every schema field) |

@@ -20,10 +20,11 @@ import jakarta.inject.Singleton
  * `auth_type: "User"`, `access_key_id`, `secret_access_key`, `endpoint`, `region`,
  * `reserved_attribute_names`, `ignore_missing_read_permissions_tables`), so a legacy access-key
  * configuration still loads. Unlike the legacy spec, credentials can only come from this
- * configuration: the connector runs in a container with no AWS profile, instance role or
- * environment credentials, so the legacy "Role Based Authentication" option (SDK default
- * credentials chain) is gone, `region` is required, and temporary credentials / IAM role assumption
- * are supported. Use [DynamoDbSourceConfiguration] instead wherever possible.
+ * configuration (decision of 2026-09-17): the legacy "Role Based Authentication" option, which
+ * handed the choice to the SDK default credentials chain, is gone because the ambient identity of
+ * the connector's container is Airbyte's own on Airbyte Cloud and invisible in the connection form
+ * everywhere else. Hence `region` is required too, and temporary credentials / IAM role assumption
+ * are supported instead. Use [DynamoDbSourceConfiguration] instead wherever possible.
  */
 @JsonSchemaTitle("DynamoDB Source Spec")
 @JsonPropertyOrder(
