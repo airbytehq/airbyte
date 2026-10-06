@@ -2,6 +2,7 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
 from unittest import TestCase
@@ -12,7 +13,7 @@ from unit_tests.conftest import get_source
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
@@ -125,6 +126,47 @@ def _read_incremental(http_mocker: HttpMocker) -> Any:
     return read(source, config=config, catalog=_create_catalog(), state=state)
 
 
+def _legacy_invoice_event(
+    event_type: str,
+    api_version: str,
+    invoice_id: str,
+    created_offset: int,
+    lines: list[dict[str, Any]],
+    has_more: bool = False,
+    total_count: int | None = None,
+) -> Dict[str, Any]:
+    created = int(_STATE_DATE.timestamp()) + created_offset
+    return {
+        "id": f"evt_{invoice_id}_{created_offset}",
+        "object": "event",
+        "api_version": api_version,
+        "created": created,
+        "type": event_type,
+        "data": {
+            "object": {
+                "id": invoice_id,
+                "object": "invoice",
+                "created": created,
+                "lines": {
+                    "object": "list",
+                    "data": lines,
+                    "has_more": has_more,
+                    "total_count": len(lines) if total_count is None else total_count,
+                    "url": f"/v1/invoices/{invoice_id}/lines",
+                },
+            }
+        },
+    }
+
+
+def _raw_list_response(records: list[dict[str, Any]], status: int = 200) -> HttpResponse:
+    return HttpResponse(json.dumps({"object": "list", "data": records, "has_more": False}), status)
+
+
+def _raw_invoice_lines_request(invoice_id: str) -> StripeRequestBuilder:
+    return StripeRequestBuilder.invoice_lines_endpoint(invoice_id, _ACCOUNT_ID, _CLIENT_SECRET).with_limit(100)
+
+
 @freezegun.freeze_time(_NOW.isoformat())
 class InvoiceLineItemsIncrementalTest(TestCase):
     @HttpMocker()
@@ -183,3 +225,261 @@ class InvoiceLineItemsIncrementalTest(TestCase):
 
         assert len(output.records) == 10
         assert sorted(record.record.data["id"] for record in output.records) == sorted(all_line_ids)
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class InvoiceLineItemsLegacyApiVersionTest(TestCase):
+    @HttpMocker()
+    def test_2018_event_remaps_ii_and_sub_ids_and_backfills_subscription(self, http_mocker: HttpMocker) -> None:
+        lines = [
+            {
+                "id": "ii_A1",
+                "unique_id": "il_A1",
+                "object": "line_item",
+                "amount": 1000,
+                "currency": "usd",
+                "type": "invoiceitem",
+                "subscription": "sub_S",
+            },
+            {
+                "id": "sub_S",
+                "unique_id": "il_A2",
+                "unique_line_item_id": "sli_A2",
+                "object": "line_item",
+                "amount": 1000,
+                "currency": "usd",
+                "type": "subscription",
+                "subscription": None,
+            },
+        ]
+        http_mocker.get(
+            _events_request().with_any_query_params().build(),
+            _raw_list_response([_legacy_invoice_event("invoice.updated", "2018-02-28", "in_A", 1, lines)]),
+        )
+
+        output = _read_incremental(http_mocker)
+        records = [record.record.data for record in output.records]
+        by_id = {record["id"]: record for record in records}
+
+        assert set(by_id) == {"il_A1", "il_A2"}
+        assert by_id["il_A1"]["subscription"] == "sub_S"
+        assert by_id["il_A2"]["subscription"] == "sub_S"
+        assert all(record["invoice_id"] == "in_A" for record in records)
+        assert all(isinstance(record["invoice_updated"], int) for record in records)
+        assert all(not {"unique_id", "unique_line_item_id", "original_record"} & record.keys() for record in records)
+
+    @HttpMocker()
+    def test_2018_renewal_pair_sub_collision_yields_distinct_ids(self, http_mocker: HttpMocker) -> None:
+        events = [
+            _legacy_invoice_event(
+                "invoice.updated",
+                "2018-02-28",
+                invoice_id,
+                offset,
+                [
+                    {
+                        "id": "sub_S",
+                        "unique_id": line_id,
+                        "object": "line_item",
+                        "amount": 1000,
+                        "currency": "usd",
+                        "type": "subscription",
+                        "subscription": None,
+                    }
+                ],
+            )
+            for invoice_id, offset, line_id in [("in_C1", 1, "il_C1"), ("in_C2", 2, "il_C2")]
+        ]
+        http_mocker.get(_events_request().with_any_query_params().build(), _raw_list_response(events))
+
+        output = _read_incremental(http_mocker)
+        by_id = {record.record.data["id"]: record.record.data for record in output.records}
+
+        assert set(by_id) == {"il_C1", "il_C2"}
+        assert by_id["il_C1"]["invoice_id"] == "in_C1"
+        assert by_id["il_C2"]["invoice_id"] == "in_C2"
+        assert all(record["subscription"] == "sub_S" for record in by_id.values())
+
+    @HttpMocker()
+    def test_2019_sli_line_remapped_subscription_untouched(self, http_mocker: HttpMocker) -> None:
+        lines = [
+            {
+                "id": "sli_B1",
+                "unique_id": "il_B1",
+                "object": "line_item",
+                "amount": 1000,
+                "currency": "usd",
+                "type": "subscription",
+                "subscription": "sub_S",
+            }
+        ]
+        http_mocker.get(
+            _events_request().with_any_query_params().build(),
+            _raw_list_response([_legacy_invoice_event("invoice.updated", "2019-11-05", "in_B", 1, lines)]),
+        )
+
+        output = _read_incremental(http_mocker)
+        record = output.records[0].record.data
+
+        assert record["id"] == "il_B1"
+        assert record["subscription"] == "sub_S"
+        assert "unique_id" not in record
+
+    @HttpMocker()
+    def test_modern_event_is_noop(self, http_mocker: HttpMocker) -> None:
+        lines = [
+            {
+                "id": "il_D1",
+                "object": "line_item",
+                "amount": 1000,
+                "currency": "usd",
+                "type": "subscription",
+                "subscription": "sub_S",
+            },
+            {
+                "id": "il_D2",
+                "object": "line_item",
+                "amount": 500,
+                "currency": "usd",
+                "type": "invoiceitem",
+                "subscription": None,
+            },
+        ]
+        created = int(_STATE_DATE.timestamp()) + 1
+        http_mocker.get(
+            _events_request().with_any_query_params().build(),
+            _raw_list_response([_legacy_invoice_event("invoice.updated", "2025-03-31.basil", "in_D", 1, lines)]),
+        )
+
+        output = _read_incremental(http_mocker)
+        by_id = {record.record.data["id"]: record.record.data for record in output.records}
+
+        assert by_id == {
+            line["id"]: {
+                **{key: value for key, value in line.items() if value is not None},
+                "invoice_id": "in_D",
+                "invoice_updated": created,
+            }
+            for line in lines
+        }
+        assert "subscription" not in by_id["il_D2"]
+
+    @HttpMocker()
+    def test_truncated_legacy_event_uses_refetched_lines_unchanged(self, http_mocker: HttpMocker) -> None:
+        embedded_lines = [
+            {
+                "id": f"ii_T{index}",
+                "unique_id": f"il_T{index}",
+                "object": "line_item",
+                "amount": 100,
+                "currency": "usd",
+                "type": "invoiceitem",
+            }
+            for index in range(10)
+        ]
+        modern_lines = [
+            {
+                "id": f"il_T{index}",
+                "object": "line_item",
+                "amount": 100,
+                "currency": "usd",
+                "type": "invoiceitem",
+                "invoice": "in_T",
+            }
+            for index in range(12)
+        ]
+        http_mocker.get(
+            _events_request().with_any_query_params().build(),
+            _raw_list_response(
+                [_legacy_invoice_event("invoice.updated", "2018-02-28", "in_T", 1, embedded_lines, has_more=True, total_count=12)]
+            ),
+        )
+        http_mocker.get(_raw_invoice_lines_request("in_T").build(), _raw_list_response(modern_lines))
+
+        output = _read_incremental(http_mocker)
+        records = [record.record.data for record in output.records]
+
+        assert {record["id"] for record in records} == {f"il_T{index}" for index in range(12)}
+        assert len(records) == 12
+        assert all(record["invoice_id"] == "in_T" for record in records)
+        assert all("unique_id" not in record for record in records)
+
+    @HttpMocker()
+    def test_deleted_invoice_404_falls_back_to_remapped_embedded_lines(self, http_mocker: HttpMocker) -> None:
+        lines = [
+            {
+                "id": "ii_F1",
+                "unique_id": "il_F1",
+                "object": "line_item",
+                "amount": 1000,
+                "currency": "usd",
+                "type": "invoiceitem",
+            },
+            {
+                "id": "sub_S",
+                "unique_id": "il_F2",
+                "object": "line_item",
+                "amount": 1000,
+                "currency": "usd",
+                "type": "subscription",
+                "subscription": None,
+            },
+        ]
+        http_mocker.get(
+            _events_request().with_any_query_params().build(),
+            _raw_list_response([_legacy_invoice_event("invoice.deleted", "2018-02-28", "in_F", 1, lines, has_more=True)]),
+        )
+        http_mocker.get(
+            _raw_invoice_lines_request("in_F").build(),
+            HttpResponse(json.dumps({"error": {"message": "No such invoice: 'in_F'"}}), 404),
+        )
+
+        output = _read_incremental(http_mocker)
+        by_id = {record.record.data["id"]: record.record.data for record in output.records}
+
+        assert set(by_id) == {"il_F1", "il_F2"}
+        assert all(record["is_deleted"] is True for record in by_id.values())
+        assert by_id["il_F2"]["subscription"] == "sub_S"
+
+    @HttpMocker()
+    def test_missing_or_null_unique_id_leaves_record_unchanged(self, http_mocker: HttpMocker) -> None:
+        lines = [
+            {"id": "ii_X1", "object": "line_item", "type": "invoiceitem"},
+            {"id": "ii_X2", "unique_id": None, "object": "line_item", "type": "invoiceitem"},
+            {"id": "sub_X", "object": "line_item", "type": "subscription", "subscription": None},
+        ]
+        http_mocker.get(
+            _events_request().with_any_query_params().build(),
+            _raw_list_response([_legacy_invoice_event("invoice.updated", "2018-02-28", "in_X", 1, lines)]),
+        )
+
+        output = _read_incremental(http_mocker)
+        by_id = {record.record.data["id"]: record.record.data for record in output.records}
+
+        assert set(by_id) == {"ii_X1", "ii_X2", "sub_X"}
+        assert by_id["sub_X"].get("subscription") is None
+        assert all("unique_id" not in record for record in by_id.values())
+
+    @HttpMocker()
+    def test_subscription_backfill_requires_sub_prefix(self, http_mocker: HttpMocker) -> None:
+        lines = [
+            {
+                "id": "ii_Y1",
+                "unique_id": "il_Y1",
+                "object": "line_item",
+                "amount": 1000,
+                "currency": "usd",
+                "type": "subscription",
+                "subscription": None,
+            }
+        ]
+        http_mocker.get(
+            _events_request().with_any_query_params().build(),
+            _raw_list_response([_legacy_invoice_event("invoice.updated", "2018-02-28", "in_Y", 1, lines)]),
+        )
+
+        output = _read_incremental(http_mocker)
+        record = output.records[0].record.data
+
+        assert record["id"] == "il_Y1"
+        assert record.get("subscription") is None

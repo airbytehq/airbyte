@@ -153,7 +153,9 @@ The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https:
 
 ### Stripe API version
 
-This connector uses Stripe API version `2022-11-15`. Stripe returns data shaped according to this version regardless of the version configured in your Stripe dashboard. For details on Stripe API versioning, see [Stripe API upgrades](https://docs.stripe.com/upgrades).
+This connector sends Stripe API version `2022-11-15` with every request. Objects read directly from Stripe endpoints, which is what full refresh syncs and the first sync of each stream do, are shaped according to this version regardless of the version configured in your Stripe dashboard.
+
+Incremental syncs of streams that read from the Events API work differently. Stripe renders each event's `data.object` at your account's default API version as of the time the event was created, and the version the connector requests doesn't change it. Records synced incrementally from events can therefore differ from full refresh records. For example, fields added or removed in later API versions can be missing or `null`. For details, see [Stripe API upgrades](https://docs.stripe.com/upgrades) and [Versioning](https://docs.stripe.com/api/versioning).
 
 ## Limitations & Troubleshooting
 
@@ -286,6 +288,18 @@ For records the connector rebuilds from the Events API, `updated` comes from the
 - `Transactions`
 - `Transfers`
 
+#### Invoice line item IDs that don't start with `il_`
+
+Stripe accounts whose default API version is older than `2019-12-03` receive invoice line items in events with legacy IDs such as `ii_...`, `sub_...`, or `sli_...`. Before version 6.0.22, incremental syncs of `invoice_line_items` could write these legacy IDs, while full refresh syncs wrote the current `il_...` IDs for the same line items. A `sub_...` ID is the subscription's ID, so it repeats across renewal invoices, and a deduplicated destination kept only the most recent of those lines.
+
+From version 6.0.22, incremental syncs write `il_...` IDs. Rows written by earlier versions aren't removed automatically, so until you clean them up, affected line items can appear twice: once under the legacy ID and once under the `il_...` ID. To check whether you're affected, run a query like this against your destination:
+
+```sql
+SELECT COUNT(*) FROM <your_schema>.invoice_line_items WHERE id NOT LIKE 'il\_%';
+```
+
+If the count is greater than zero, upgrade to 6.0.22 or later, then [refresh the `invoice_line_items` stream and remove records](/platform/operator-guides/refreshes). A refreshed stream is rebuilt from the Invoices endpoints rather than from the 30-day Events API window, so no history is lost, except rows that marked deleted draft invoices (`is_deleted` is `true`), which aren't recreated. Refreshing and retaining records doesn't remove the legacy rows, because they have a different primary key.
+
 ### Incremental deletes
 
 The Stripe API also provides a way to implement incremental deletes for a limited number of streams:
@@ -320,6 +334,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.22 | 2026-10-05 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Fix `invoice_line_items` incremental syncs writing legacy line item IDs (`ii_`, `sub_`, `sli_`) for Stripe accounts whose default API version is older than `2019-12-03`: use the `il_` ID from `unique_id` and fill `subscription` on legacy subscription lines. If any `invoice_line_items` ID doesn't start with `il_`, refresh the stream and remove records. See Troubleshooting. |
 | 6.0.21 | 2026-09-29 | [87375](https://github.com/airbytehq/airbyte/pull/87375) | Update dependencies |
 | 6.0.20 | 2026-09-22 | [86838](https://github.com/airbytehq/airbyte/pull/86838) | Update dependencies |
 | 6.0.19 | 2026-09-21 | [85087](https://github.com/airbytehq/airbyte/pull/85087) | Fix truncated `invoice_line_items` on incremental syncs: fetch the complete line item list from `invoices/{id}/lines` when the event payload embeds only the first page. Existing destination data for invoices with more than 10 line items requires a Full Refresh to repair. |
