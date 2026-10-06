@@ -43,6 +43,10 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     INCREMENTALITY_WINDOW = "incrementality"
 
+    EV_ACTION_ATTRIBUTION_WINDOWS = [
+        "1d_ev",
+    ]
+
     breakdowns = []
     action_breakdowns = [
         "action_type",
@@ -84,6 +88,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         insights_job_timeout: int = 60,
         level: str = "ad",
         include_incrementality: bool = False,
+        include_engaged_view: bool = False,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -117,8 +122,12 @@ class AdsInsights(FBMarketingIncrementalStream):
         self.level = level
         self.entity_prefix = level
 
+        windows = list(self.ALL_ACTION_ATTRIBUTION_WINDOWS)
         if include_incrementality:
-            self.action_attribution_windows = list(self.ALL_ACTION_ATTRIBUTION_WINDOWS) + [self.INCREMENTALITY_WINDOW]
+            windows.append(self.INCREMENTALITY_WINDOW)
+        if include_engaged_view:
+            windows.extend(self.EV_ACTION_ATTRIBUTION_WINDOWS)
+        self.action_attribution_windows = windows
 
         # state
         self._cursor_values: Optional[Mapping[str, date]] = None  # latest period that was read for each account
@@ -437,6 +446,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                 job_timeout=self.insights_job_timeout,
                 primary_key=self.primary_key,
                 object_breakdowns=self.object_breakdowns,
+                stream_name=self.name,
             )
 
     def check_breakdowns(self, account_id: str):
@@ -661,7 +671,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         List of fields that we want to query, if no json_schema from configured catalog then will get all properties from stream's schema
         """
         if self._custom_fields:
-            return self._custom_fields
+            excluded_fields = self._fields_excluded_from_api_request()
+            return [field for field in self._custom_fields if field not in excluded_fields]
 
         if self._fields:
             return self._fields
@@ -672,14 +683,11 @@ class AdsInsights(FBMarketingIncrementalStream):
         )
         self._fields = list(schema.get("properties", {}).keys())
 
-        # Check that no breakdowns are injected from configured catalog schema (review "get_json_schema" doc).
-        removable_keys = list(self.breakdowns if self.breakdowns else [])
-        # Having this field in syncs seem to have caused data inaccuracy where fields like `spend` had the wrong values
-        removable_keys.append("wish_bid")
-        for removable_key in removable_keys:
-            try:
-                self._fields.remove(removable_key)
-            except ValueError:
-                pass
+        excluded_fields = self._fields_excluded_from_api_request()
+        self._fields = [field for field in self._fields if field not in excluded_fields]
 
         return self._fields
+
+    def _fields_excluded_from_api_request(self) -> set[str]:
+        object_breakdown_ids = {self.object_breakdowns[breakdown] for breakdown in self.breakdowns if breakdown in self.object_breakdowns}
+        return set(self.breakdowns) | object_breakdown_ids | {"wish_bid"}

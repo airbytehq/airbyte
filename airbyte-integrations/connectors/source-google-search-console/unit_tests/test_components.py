@@ -1,9 +1,11 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+import json
 import logging
 from pathlib import Path
 
 import pytest
+import requests
 import yaml
 
 
@@ -232,3 +234,69 @@ def test_complete_oauth_output_specification_contains_refresh_and_access_token()
     output_props = oauth_spec["complete_oauth_output_specification"]["properties"]
     assert "refresh_token" in output_props, "refresh_token must be in complete_oauth_output_specification"
     assert "access_token" in output_props, "access_token must be in complete_oauth_output_specification"
+
+
+def _make_response(body: str, status_code: int = 403) -> requests.Response:
+    response = requests.Response()
+    response.status_code = status_code
+    response._content = body.encode("utf-8")
+    response.headers["Content-Type"] = "application/json"
+    return response
+
+
+@pytest.mark.parametrize(
+    "response_or_exception,expected_backoff",
+    [
+        pytest.param(
+            _make_response(
+                json.dumps(
+                    {
+                        "error": {
+                            "code": 403,
+                            "message": "Search Analytics load quota exceeded. Learn about usage limits: https://developers.google.com/webmaster-tools/limits.",
+                        }
+                    }
+                )
+            ),
+            900.0,
+            id="load_quota_exceeded_returns_900",
+        ),
+        pytest.param(
+            _make_response(
+                json.dumps(
+                    {
+                        "error": {
+                            "code": 403,
+                            "message": "Search Analytics QPS quota exceeded.",
+                        }
+                    }
+                )
+            ),
+            None,
+            id="qps_quota_exceeded_returns_none",
+        ),
+        pytest.param(
+            _make_response("not json at all", status_code=403),
+            None,
+            id="malformed_non_json_response_returns_none",
+        ),
+        pytest.param(
+            _make_response(json.dumps({"unexpected": "shape"}), status_code=500),
+            None,
+            id="unexpected_json_shape_returns_none",
+        ),
+        pytest.param(
+            requests.RequestException("connection error"),
+            None,
+            id="request_exception_returns_none",
+        ),
+        pytest.param(
+            None,
+            None,
+            id="none_returns_none",
+        ),
+    ],
+)
+def test_load_quota_backoff_strategy(components_module, response_or_exception, expected_backoff):
+    strategy = components_module.LoadQuotaBackoffStrategy()
+    assert strategy.backoff_time(response_or_exception=response_or_exception, attempt_count=0) == expected_backoff

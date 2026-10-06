@@ -103,8 +103,8 @@ class DirectLoadTableStreamLoaderTest {
     @Test
     fun `DedupTruncateStreamLoader performUpsertWithTemporaryTable drops temp table after overwrite`() =
         runTest {
-            // When temp table already exists with matching generation ID,
-            // shouldCheckRealTableGeneration=false, so performUpsertWithTemporaryTable is called.
+            // The real table holds an older generation, so performUpsertWithTemporaryTable is
+            // called.
             val initialStatus =
                 DirectLoadInitialStatus(
                     realTable = DirectLoadTableStatus(isEmpty = false),
@@ -112,6 +112,7 @@ class DirectLoadTableStreamLoaderTest {
                 )
 
             coEvery { tableOperationsClient.getGenerationId(tempTableName) } returns 1L
+            coEvery { tableOperationsClient.getGenerationId(realTableName) } returns 0L
 
             val loader =
                 DirectLoadTableDedupTruncateStreamLoader(
@@ -131,11 +132,11 @@ class DirectLoadTableStreamLoaderTest {
 
             // Verify the performUpsertWithTemporaryTable path was taken
             coVerify(exactly = 1) {
-                tableOperationsClient.createTable(
+                tableOperationsClient.createTempTable(
                     stream,
                     tempTempTableName,
                     columnNameMapping,
-                    replace = true
+                    replace = true,
                 )
             }
             coVerify(exactly = 1) {
@@ -157,9 +158,106 @@ class DirectLoadTableStreamLoaderTest {
         }
 
     @Test
+    fun `DedupTruncateStreamLoader directly upserts when real table has current generation`() =
+        runTest {
+            val initialStatus =
+                DirectLoadInitialStatus(
+                    realTable = DirectLoadTableStatus(isEmpty = false),
+                    tempTable = DirectLoadTableStatus(isEmpty = true),
+                )
+
+            coEvery { tableOperationsClient.getGenerationId(realTableName) } returns 1L
+
+            val loader =
+                DirectLoadTableDedupTruncateStreamLoader(
+                    stream = stream,
+                    initialStatus = initialStatus,
+                    realTableName = realTableName,
+                    tempTableName = tempTableName,
+                    columnNameMapping = columnNameMapping,
+                    schemaEvolutionClient = schemaEvolutionClient,
+                    tableOperationsClient = tableOperationsClient,
+                    streamStateStore = streamStateStore,
+                    tempTableNameGenerator = tempTableNameGenerator,
+                )
+
+            loader.start()
+            loader.teardown(completedSuccessfully = true)
+
+            coVerify(exactly = 0) {
+                tableOperationsClient.createTempTable(
+                    stream,
+                    tempTempTableName,
+                    columnNameMapping,
+                    replace = true,
+                )
+            }
+            coVerify(exactly = 1) {
+                tableOperationsClient.upsertTable(
+                    stream,
+                    columnNameMapping,
+                    sourceTableName = tempTableName,
+                    targetTableName = realTableName,
+                )
+            }
+            coVerify(exactly = 0) { tableOperationsClient.overwriteTable(any(), any()) }
+            coVerify(exactly = 1) { tableOperationsClient.dropTable(tempTableName) }
+        }
+
+    @Test
+    fun `DedupTruncateStreamLoader overwrites when real table has older generation`() = runTest {
+        val initialStatus =
+            DirectLoadInitialStatus(
+                realTable = DirectLoadTableStatus(isEmpty = false),
+                tempTable = DirectLoadTableStatus(isEmpty = true),
+            )
+
+        coEvery { tableOperationsClient.getGenerationId(realTableName) } returns 0L
+
+        val loader =
+            DirectLoadTableDedupTruncateStreamLoader(
+                stream = stream,
+                initialStatus = initialStatus,
+                realTableName = realTableName,
+                tempTableName = tempTableName,
+                columnNameMapping = columnNameMapping,
+                schemaEvolutionClient = schemaEvolutionClient,
+                tableOperationsClient = tableOperationsClient,
+                streamStateStore = streamStateStore,
+                tempTableNameGenerator = tempTableNameGenerator,
+            )
+
+        loader.start()
+        loader.teardown(completedSuccessfully = true)
+
+        coVerify(exactly = 1) {
+            tableOperationsClient.createTempTable(
+                stream,
+                tempTempTableName,
+                columnNameMapping,
+                replace = true,
+            )
+        }
+        coVerify(exactly = 1) {
+            tableOperationsClient.upsertTable(
+                stream,
+                columnNameMapping,
+                sourceTableName = tempTableName,
+                targetTableName = tempTempTableName,
+            )
+        }
+        coVerify(exactly = 1) {
+            tableOperationsClient.overwriteTable(
+                sourceTableName = tempTempTableName,
+                targetTableName = realTableName,
+            )
+        }
+        coVerify(exactly = 1) { tableOperationsClient.dropTable(tempTableName) }
+    }
+
+    @Test
     fun `DedupTruncateStreamLoader performDirectUpsert also drops temp table`() = runTest {
-        // When no temp table exists initially, shouldCheckRealTableGeneration=true.
-        // When real table doesn't exist, shouldUpsertDirectly=true.
+        // When the real table doesn't exist, shouldUpsertDirectly=true.
         // This triggers the performDirectUpsert path.
         val initialStatus =
             DirectLoadInitialStatus(

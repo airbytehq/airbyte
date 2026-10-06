@@ -49,7 +49,7 @@ object Utils {
     fun getClickhouseAirbyteClient(spec: ConfigurationSpecification): ClickhouseAirbyteClient {
         return ClickhouseAirbyteClient(
             getClickhouseClient(spec),
-            ClickhouseSqlGenerator(),
+            ClickhouseSqlGenerator(specToConfig(spec)),
             DefaultTempTableNameGenerator(),
         )
     }

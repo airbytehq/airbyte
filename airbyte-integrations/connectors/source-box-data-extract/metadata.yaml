@@ -20,11 +20,11 @@ data:
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
     # baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   connectorSubtype: api
   connectorType: source
   definitionId: 852b8bda-6a51-4fc6-854e-6beace1614a8
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.14
   dockerRepository: airbyte/source-box-data-extract
   githubIssueLabel: source-box-data-extract
   icon: icon.svg

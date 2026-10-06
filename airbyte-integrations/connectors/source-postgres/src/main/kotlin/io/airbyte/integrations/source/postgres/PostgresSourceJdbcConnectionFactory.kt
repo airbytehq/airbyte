@@ -28,16 +28,16 @@ class PostgresSourceJdbcConnectionFactory(pgConfig: PostgresSourceConfiguration)
         private const val PASSWORD = "password"
     }
 
-    val replicationProps: Map<String, String> =
-        mapOf(
-            "assumeMinServerVersion" to "9.4",
-            "ApplicationName" to "Airbyte CDC Streaming",
-            "replication" to "database",
-            // replication protocol only supports simple query mode
-            "preferQueryMode" to "simple",
-            USER to config.jdbcProperties[USER]!!,
-            PASSWORD to config.jdbcProperties[PASSWORD]!!,
-        )
+    val replicationProps: Map<String, String> = buildMap {
+        put("assumeMinServerVersion", "9.4")
+        put("ApplicationName", "Airbyte CDC Streaming")
+        put("replication", "database")
+        // replication protocol only supports simple query mode
+        put("preferQueryMode", "simple")
+        put(USER, config.jdbcProperties[USER]!!)
+        // Password is optional
+        config.jdbcProperties[PASSWORD]?.also { put(PASSWORD, it) }
+    }
 
     override fun get(): Connection {
         // Setting autoCommit to false in pg jdbc allows the driver to start returning result before

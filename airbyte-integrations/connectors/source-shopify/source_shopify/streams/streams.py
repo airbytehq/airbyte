@@ -5,7 +5,7 @@
 
 import logging
 import sys
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 from source_shopify.shopify_graphql.bulk.query import (
@@ -18,6 +18,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     FulfillmentOrder,
     InventoryItem,
     InventoryLevel,
+    MarketCountry,
     MetafieldCollection,
     MetafieldCustomer,
     MetafieldDraftOrder,
@@ -34,13 +35,16 @@ from source_shopify.shopify_graphql.bulk.query import (
     ProfileLocationGroups,
     Transaction,
 )
-from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors
+from source_shopify.shopify_graphql.bulk.tools import BulkTools
+from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors, ShopifyRateLimiter, is_throttled_graphql_error
 
 from airbyte_cdk import HttpSubStream
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.utils import AirbyteTracedException
 
 from .base_streams import (
     FullRefreshShopifyGraphQlBulkStream,
@@ -91,6 +95,7 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
     data_field = "orders"
     deleted_events_api_name = "Order"
     initial_limit = 250
+    customer_prefix = "customer_"
 
     def __init__(self, config: Mapping[str, Any]):
         self._error_handler = LimitReducingErrorHandler(
@@ -98,6 +103,8 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
             error_mapping=DEFAULT_ERROR_MAPPING | ShopifyNonRetryableErrors("orders"),
         )
         super().__init__(config)
+        self._customer_fields = tuple(self.get_json_schema()["properties"]["customer"]["properties"])
+        self._customer_redaction_warning_logged = False
 
     def request_params(self, stream_state=None, next_page_token=None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
@@ -108,6 +115,30 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
 
     def get_error_handler(self):
         return self._error_handler
+
+    def flatten_customer(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        populate_customer_fields = self.config.get("populate_top_level_orders_customer_fields", False)
+        if not populate_customer_fields and not self._customer_redaction_warning_logged:
+            selected_properties = (self.configured_json_schema or {}).get("properties", {})
+            if any(f"{self.customer_prefix}{field}" in selected_properties for field in self._customer_fields):
+                self.logger.warning(
+                    'Orders: selected top-level customer fields are redacted to null because "Populate top-level customer fields in Orders" '
+                    "is off. Enable it in source settings to populate these fields, or deselect them. The nested customer object is not redacted."
+                )
+                self._customer_redaction_warning_logged = True
+        customer = record.get("customer")
+        if not populate_customer_fields or not isinstance(customer, Mapping):
+            customer = {}
+        for field in self._customer_fields:
+            record[f"{self.customer_prefix}{field}"] = customer.get(field)
+        return record
+
+    def produce_records(self, records=None):
+        if isinstance(records, MutableMapping):
+            records = self.flatten_customer(records)
+        else:
+            records = (self.flatten_customer(record) for record in records)
+        yield from super().produce_records(records)
 
 
 class Disputes(IncrementalShopifyStream):
@@ -426,6 +457,262 @@ class DiscountCodes(IncrementalShopifyGraphQlBulkStream):
     bulk_query: DiscountCode = DiscountCode
 
 
+class DiscountCodesSync(IncrementalShopifyStream):
+    """Fetches discount codes via synchronous GraphQL with explicit nested cursor pagination.
+
+    Shopify's Bulk Operations API does not fully expand nested connections beyond
+    ~100 records per parent. For stores with large `codeDiscount.codes` sets this
+    causes silent data truncation. This stream queries parent `codeDiscountNodes`
+    with cursor pagination, then explicitly pages each parent's child `codes`
+    connection (up to 250 per page), merging parent metadata onto every child
+    record to match the existing `discount_codes` schema.
+    """
+
+    data_field = "graphql"
+    cursor_field = "updated_at"
+    filter_field = None
+
+    PARENT_PAGE_SIZE = 50
+    CHILD_PAGE_SIZE = 250
+
+    PARENT_QUERY = """
+    query DiscountCodeNodes($first: Int!, $after: String, $query: String) {
+      codeDiscountNodes(first: $first, after: $after, query: $query, sortKey: UPDATED_AT) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          id
+          codeDiscount {
+            __typename
+            ... on DiscountCodeApp {
+              updatedAt
+              createdAt
+              discountClass
+              startsAt
+              endsAt
+              status
+              title
+              usageLimit
+              appliesOncePerCustomer
+              asyncUsageCount
+              codesCount { count }
+              totalSales { amount currencyCode }
+            }
+            ... on DiscountCodeBasic {
+              updatedAt
+              createdAt
+              discountClass
+              summary
+              startsAt
+              endsAt
+              status
+              title
+              usageLimit
+              appliesOncePerCustomer
+              asyncUsageCount
+              codesCount { count }
+              totalSales { amount currencyCode }
+            }
+            ... on DiscountCodeBxgy {
+              updatedAt
+              createdAt
+              discountClass
+              summary
+              startsAt
+              endsAt
+              status
+              title
+              usageLimit
+              appliesOncePerCustomer
+              asyncUsageCount
+              codesCount { count }
+              totalSales { amount currencyCode }
+            }
+            ... on DiscountCodeFreeShipping {
+              updatedAt
+              createdAt
+              discountClass
+              summary
+              startsAt
+              endsAt
+              status
+              title
+              usageLimit
+              appliesOncePerCustomer
+              asyncUsageCount
+              codesCount { count }
+              totalSales { amount currencyCode }
+            }
+          }
+        }
+      }
+    }
+    """
+
+    CHILD_CODES_QUERY = """
+    query DiscountCodesForNode($id: ID!, $first: Int!, $after: String) {
+      codeDiscountNode(id: $id) {
+        codeDiscount {
+          ... on DiscountCodeApp {
+            codes(first: $first, after: $after) {
+              pageInfo { hasNextPage endCursor }
+              nodes { id code asyncUsageCount createdBy { id title } }
+            }
+          }
+          ... on DiscountCodeBasic {
+            codes(first: $first, after: $after) {
+              pageInfo { hasNextPage endCursor }
+              nodes { id code asyncUsageCount createdBy { id title } }
+            }
+          }
+          ... on DiscountCodeBxgy {
+            codes(first: $first, after: $after) {
+              pageInfo { hasNextPage endCursor }
+              nodes { id code asyncUsageCount createdBy { id title } }
+            }
+          }
+          ... on DiscountCodeFreeShipping {
+            codes(first: $first, after: $after) {
+              pageInfo { hasNextPage endCursor }
+              nodes { id code asyncUsageCount createdBy { id title } }
+            }
+          }
+        }
+      }
+    }
+    """
+
+    @property
+    def _graphql_url(self) -> str:
+        return f"https://{self.config['shop']}.myshopify.com/admin/api/{self.api_version}/graphql.json"
+
+    _GRAPHQL_MAX_RETRIES = 5
+
+    def _graphql_request(self, query: str, variables: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Execute a GraphQL request via the stream's `HttpClient` (retry/backoff/OAuth aware).
+
+        Shopify GraphQL may return HTTP 200 with an `errors` array and `data: null` for
+        THROTTLED, MAX_COST_EXCEEDED, or internal errors. This method checks the `errors`
+        array and retries on throttle/transient codes, raising on non-retryable errors.
+        """
+        for attempt in range(1, self._GRAPHQL_MAX_RETRIES + 1):
+            _, response = self._http_client.send_request(
+                http_method="POST",
+                url=self._graphql_url,
+                request_kwargs={},
+                json={"query": query, "variables": variables},
+            )
+            result = response.json()
+            errors = result.get("errors")
+            if errors:
+                if is_throttled_graphql_error(errors):
+                    if attempt < self._GRAPHQL_MAX_RETRIES:
+                        ShopifyRateLimiter.wait_time(ShopifyRateLimiter.on_unknown_load)
+                        continue
+                    raise AirbyteTracedException(
+                        message="GraphQL query for stream `discount_codes_sync` exceeded max retries due to throttling."
+                    )
+                error_messages = "; ".join(e.get("message", str(e)) for e in errors)
+                raise AirbyteTracedException(message=f"GraphQL query failed for stream `discount_codes_sync`: {error_messages}")
+            ShopifyRateLimiter.wait_time(ShopifyRateLimiter.get_graphql_api_wait_time(response, threshold=0.9))
+            return result
+        raise AirbyteTracedException(message="GraphQL query for stream `discount_codes_sync` exceeded max retries due to throttling.")
+
+    @staticmethod
+    def _extract_codes_connection(code_discount: Mapping[str, Any]) -> Mapping[str, Any]:
+        return code_discount.get("codes", {"nodes": [], "pageInfo": {"hasNextPage": False}})
+
+    def _build_parent_metadata(self, code_discount: Mapping[str, Any]) -> Mapping[str, Any]:
+        total_sales = code_discount.get("totalSales") or {}
+        return {
+            "typename": code_discount.get("__typename"),
+            "updated_at": BulkTools.from_iso8601_to_rfc3339(code_discount, "updatedAt"),
+            "created_at": BulkTools.from_iso8601_to_rfc3339(code_discount, "createdAt"),
+            "discount_type": code_discount.get("discountClass"),
+            "summary": code_discount.get("summary"),
+            "starts_at": BulkTools.from_iso8601_to_rfc3339(code_discount, "startsAt"),
+            "ends_at": BulkTools.from_iso8601_to_rfc3339(code_discount, "endsAt"),
+            "status": code_discount.get("status"),
+            "title": code_discount.get("title"),
+            "usage_limit": code_discount.get("usageLimit"),
+            "applies_once_per_customer": code_discount.get("appliesOncePerCustomer"),
+            "async_usage_count": code_discount.get("asyncUsageCount"),
+            "codes_count": code_discount.get("codesCount"),
+            "total_sales": {"amount": total_sales.get("amount"), "currency_code": total_sales.get("currencyCode")} if total_sales else None,
+        }
+
+    def _build_child_record(self, code_node: Mapping[str, Any], parent_gid: str, parent_meta: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
+            "id": BulkTools.resolve_str_id(code_node.get("id")),
+            "admin_graphql_api_id": code_node.get("id"),
+            "price_rule_id": BulkTools.resolve_str_id(parent_gid),
+            "code": code_node.get("code"),
+            "usage_count": code_node.get("asyncUsageCount"),
+            "createdBy": code_node.get("createdBy"),
+            "shop_url": self.config["shop"],
+            **parent_meta,
+        }
+
+    def _fetch_child_codes(self, parent_gid: str, parent_meta: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        child_cursor: Optional[str] = None
+        has_more = True
+        while has_more:
+            variables: dict = {"id": parent_gid, "first": self.CHILD_PAGE_SIZE}
+            if child_cursor:
+                variables["after"] = child_cursor
+            result = self._graphql_request(self.CHILD_CODES_QUERY, variables)
+            code_discount = result.get("data", {}).get("codeDiscountNode", {}).get("codeDiscount") or {}
+            codes_conn = self._extract_codes_connection(code_discount)
+            for code_node in codes_conn.get("nodes", []):
+                record = self._build_child_record(code_node, parent_gid, parent_meta)
+                yield self._transformer.transform(record)
+            page_info = codes_conn.get("pageInfo", {})
+            has_more = page_info.get("hasNextPage", False)
+            child_cursor = page_info.get("endCursor")
+            if has_more and not child_cursor:
+                break
+
+    def read_records(
+        self,
+        sync_mode: Optional[Any] = None,
+        cursor_field: Optional[Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        state_value = (stream_state or {}).get(self.cursor_field, self.config.get("start_date", ""))
+        if state_value:
+            state_value = self._apply_lookback_window(state_value)
+
+        parent_cursor: Optional[str] = None
+        has_more_parents = True
+
+        while has_more_parents:
+            variables: dict = {"first": self.PARENT_PAGE_SIZE}
+            if state_value:
+                variables["query"] = f"updated_at:>='{state_value}'"
+            if parent_cursor:
+                variables["after"] = parent_cursor
+
+            result = self._graphql_request(self.PARENT_QUERY, variables)
+            data = result.get("data", {}).get("codeDiscountNodes", {})
+            page_info = data.get("pageInfo", {})
+
+            for node in data.get("nodes", []):
+                parent_gid = node.get("id")
+                code_discount = node.get("codeDiscount")
+                if not code_discount:
+                    continue
+                parent_meta = self._build_parent_metadata(code_discount)
+                yield from self._fetch_child_codes(parent_gid, parent_meta)
+
+            has_more_parents = page_info.get("hasNextPage", False)
+            parent_cursor = page_info.get("endCursor")
+            if has_more_parents and not parent_cursor:
+                break
+
+
 class Locations(ShopifyStream):
     """
     The location API does not support any form of filtering.
@@ -493,6 +780,12 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
         stream_state: Optional[Mapping[str, Any]] = None,
         **kwargs,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        if self.market_driven_shipping_enabled:
+            self.logger.warning(
+                f"Stream `{self.name}`: the shop uses market-driven shipping, `deliveryProfiles` is a snapshot frozen at migration time "
+                "and no longer reflects the live shipping settings. Use the `market_countries` stream (requires the `read_markets` scope) "
+                "for current data."
+            )
         for stream_slice in super().stream_slices(stream_state=stream_state, **kwargs):
             parent = stream_slice.get("parent", {})
             profile_location_groups = parent.get("profile_location_groups", [])
@@ -571,3 +864,135 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
 
         country["shop_url"] = self.config["shop"]
         return country
+
+
+class MarketCountries(FullRefreshShopifyGraphQlBulkStream):
+    """
+    Countries a shop ships to, sourced from Markets (`Market.conditions.regionsCondition.regions`)
+    together with the market's shipping configuration (`Market.delivery.shipping`).
+    Emits one record per market region (a whole country or a country subdivision, e.g. a US state)
+    and only for shops with `marketDrivenShipping` enabled,
+    where the legacy `deliveryProfiles` used by the `countries` stream returns a frozen snapshot.
+    https://shopify.dev/docs/api/admin-graphql/latest/queries/markets
+    """
+
+    query = MarketCountry
+    response_field = "markets"
+
+    def __init__(self, config: Mapping[str, Any]) -> None:
+        super().__init__(config)
+        self._page_cursor: Optional[str] = None
+        self._sub_page_cursor: Optional[str] = None
+
+    def stream_slices(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        **kwargs,
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        market_driven_shipping = self.market_driven_shipping_enabled
+        if market_driven_shipping is None:
+            # an empty but "successful" full refresh would overwrite the destination table, fail the stream instead
+            raise AirbyteTracedException(
+                message=f"Stream `{self.name}`: could not read `shop.features.marketDrivenShipping`, the sync will retry later.",
+                failure_type=FailureType.transient_error,
+            )
+        if not market_driven_shipping:
+            self.logger.info(
+                f"Stream `{self.name}`: the shop does not use market-driven shipping yet, its shipping settings are available "
+                "in the `countries` stream. No records will be emitted."
+            )
+            return
+        yield {}
+
+    @staticmethod
+    def _regions_page_info(market: Mapping[str, Any]) -> Mapping[str, Any]:
+        regions_condition = (market.get("conditions") or {}).get("regionsCondition") or {}
+        return (regions_condition.get("regions") or {}).get("pageInfo") or {"hasNextPage": False}
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        json_response = response.json().get("data") or {}
+        if not json_response:
+            return None
+
+        markets = json_response.get(self.response_field) or {}
+        page_info = markets.get("pageInfo") or {"hasNextPage": False}
+        # only one market per page in query
+        nodes = markets.get("nodes") or []
+        sub_page_info = self._regions_page_info(nodes[0]) if nodes else {"hasNextPage": False}
+
+        if sub_page_info["hasNextPage"]:
+            self._sub_page_cursor = sub_page_info["endCursor"]
+        elif page_info["hasNextPage"]:
+            self._page_cursor = page_info["endCursor"]
+            self._sub_page_cursor = None
+        else:
+            return None
+
+        return {
+            "cursor": self._page_cursor,
+            "sub_cursor": self._sub_page_cursor,
+        }
+
+    def request_body_json(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping[str, Any]]:
+        token = next_page_token or {}
+        self._page_cursor = token.get("cursor")
+        self._sub_page_cursor = token.get("sub_cursor")
+        return {"query": self.query(regions_cursor=self._sub_page_cursor).get(query_args={"cursor": self._page_cursor})}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for market in super().parse_response(response, **kwargs):
+            regions_condition = (market.get("conditions") or {}).get("regionsCondition") or {}
+            # `shipping` is null when the market inherits its shipping configuration from a parent market
+            shipping = (market.get("delivery") or {}).get("shipping")
+            shipping_options = (
+                None
+                if shipping is None
+                else [self._process_shipping_option(option) for option in (shipping.get("option_definitions") or {}).get("nodes") or []]
+            )
+            for region in (regions_condition.get("regions") or {}).get("nodes") or []:
+                # region types not covered by the query's inline fragments resolve to `__typename` only
+                if region.get("id"):
+                    yield self._transformer.transform(self._process_region(region, market, shipping or {}, shipping_options))
+
+    def _process_shipping_option(self, option: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
+            "id": BulkTools.resolve_str_id(option.get("id")),
+            "type": option.get("__typename"),
+            "name": option.get("name"),
+            "description": option.get("description"),
+            "currency": option.get("currency"),
+            "is_active": option.get("is_active"),
+            "free_delivery_minimum_value": option.get("free_delivery_minimum_value"),
+        }
+
+    def _process_region(
+        self,
+        region: Mapping[str, Any],
+        market: Mapping[str, Any],
+        shipping: Mapping[str, Any],
+        shipping_options: Optional[List[Mapping[str, Any]]],
+    ) -> Mapping[str, Any]:
+        is_subdivision = region.get("__typename") == "MarketRegionSubdivision"
+        country = (region.get("country") or {}) if is_subdivision else region
+        return {
+            # full GID: `MarketRegionCountry` and `MarketRegionSubdivision` ids live in different namespaces
+            "id": region["id"],
+            "name": country.get("name"),
+            "code": country.get("code"),
+            "subdivision_name": region.get("name") if is_subdivision else None,
+            "subdivision_code": region.get("code") if is_subdivision else None,
+            "currency_code": (region.get("currency") or {}).get("currency_code"),
+            "market_id": BulkTools.resolve_str_id(market.get("id")),
+            "market_name": market.get("name"),
+            "market_handle": market.get("handle"),
+            "market_status": market.get("status"),
+            "market_type": market.get("type"),
+            "shipping_enabled": shipping.get("is_enabled"),
+            "shipping_options": shipping_options,
+            "shop_url": self.config["shop"],
+        }

@@ -74,6 +74,10 @@ Link to Northpass LMS API documentation [here](https://developers.northpass.com/
 
 - [Course Enrollments](https://developers.northpass.com/reference/get_v2-courses-course-uuid-enrollments)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -81,6 +85,7 @@ Link to Northpass LMS API documentation [here](https://developers.northpass.com/
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.25 | 2026-06-02 | [78807](https://github.com/airbytehq/airbyte/pull/78807) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [60156](https://github.com/airbytehq/airbyte/pull/60156) | Update dependencies |
 | 0.2.23 | 2025-05-03 | [59487](https://github.com/airbytehq/airbyte/pull/59487) | Update dependencies |
 | 0.2.22 | 2025-04-27 | [58530](https://github.com/airbytehq/airbyte/pull/58530) | Update dependencies |

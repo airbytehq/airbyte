@@ -20,6 +20,7 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
+import io.airbyte.integrations.destination.snowflake.spec.NumberDataType
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.mockk.every
 import io.mockk.mockk
@@ -35,7 +36,13 @@ internal class SnowflakeValueCoercerTest {
 
     @BeforeEach
     fun setUp() {
-        coercer = SnowflakeValueCoercer(mockk { every { legacyRawTablesOnly } returns false })
+        coercer =
+            SnowflakeValueCoercer(
+                mockk {
+                    every { legacyRawTablesOnly } returns false
+                    every { numberDataTypeConversion } returns NumberDataType.FLOAT
+                }
+            )
     }
 
     @Test
@@ -727,5 +734,116 @@ internal class SnowflakeValueCoercerTest {
 
         val result = coercer.validate(airbyteValue)
         assertEquals(ValidationResult.Valid, result)
+    }
+
+    // NUMBER(38,9) mode
+    private fun numericModeCoercer(rawMode: Boolean = false) =
+        SnowflakeValueCoercer(
+            mockk {
+                every { legacyRawTablesOnly } returns rawMode
+                every { numberDataTypeConversion } returns NumberDataType.NUMBER_38_9
+            }
+        )
+
+    private fun enrichedNumber(value: String) =
+        EnrichedAirbyteValue(
+            abValue = NumberValue(BigDecimal(value)),
+            type = NumberType,
+            name = "number_col",
+            changes = mutableListOf(),
+            airbyteMetaField = null,
+        )
+
+    @Test
+    fun testNumberDataTypeToggleControlsNumberValidation() {
+        // 2^53 + 1: the first integer a FLOAT (64-bit double) cannot represent.
+        val value = "9007199254740993"
+
+        // FLOAT mode (the default fixture) loses the last digit and flags the row.
+        val floatResult = coercer.validate(enrichedNumber(value))
+        assertEquals(ValidationResult.ShouldTruncate::class, floatResult::class)
+        assertEquals(
+            BigDecimal.valueOf(9.007199254740992E15),
+            ((floatResult as ValidationResult.ShouldTruncate).truncatedValue as NumberValue).value
+        )
+
+        // NUMBER(38,9) mode keeps the exact value with no change flag.
+        assertEquals(ValidationResult.Valid, numericModeCoercer().validate(enrichedNumber(value)))
+    }
+
+    @Test
+    fun testNumericModeMaximumValueIsValid() {
+        // 29 digits before the decimal point and 9 after: the largest NUMBER(38,9) value,
+        // which is still valid.
+        val max = "9".repeat(29) + "." + "9".repeat(9)
+        assertEquals(ValidationResult.Valid, numericModeCoercer().validate(enrichedNumber(max)))
+        assertEquals(ValidationResult.Valid, numericModeCoercer().validate(enrichedNumber("-$max")))
+    }
+
+    @Test
+    fun testNumericModeThirtyIntegerDigitsAreNullified() {
+        // Values with more than 29 digits before the decimal point are set to NULL.
+        val tooBig = "1" + "0".repeat(29)
+        listOf(tooBig, "-$tooBig").forEach { value ->
+            val result = numericModeCoercer().validate(enrichedNumber(value))
+            assertEquals(ValidationResult.ShouldNullify::class, result::class)
+            assertEquals(
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                (result as ValidationResult.ShouldNullify).reason
+            )
+        }
+    }
+
+    @Test
+    fun testNumericModeExcessDecimalPlacesRoundedHalfUp() {
+        // Values with more than 9 decimal places are truncated to 9, rounding half away from
+        // zero (HALF_UP) to match Snowflake's cast semantics.
+        val result = numericModeCoercer().validate(enrichedNumber("0.1234567885"))
+        assertEquals(ValidationResult.ShouldTruncate::class, result::class)
+        val truncated = result as ValidationResult.ShouldTruncate
+        assertEquals(BigDecimal("0.123456789"), (truncated.truncatedValue as NumberValue).value)
+        assertEquals(
+            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+            truncated.reason
+        )
+
+        // Negative values also round away from zero.
+        val negativeResult = numericModeCoercer().validate(enrichedNumber("-0.1234567885"))
+        assertEquals(
+            BigDecimal("-0.123456789"),
+            ((negativeResult as ValidationResult.ShouldTruncate).truncatedValue as NumberValue)
+                .value
+        )
+    }
+
+    @Test
+    fun testNumericModeTrailingZerosBeyondScaleAreNotFlagged() {
+        // Scale > 9 but numerically unchanged by rounding: not a truncation.
+        assertEquals(
+            ValidationResult.Valid,
+            numericModeCoercer().validate(enrichedNumber("1.0000000000"))
+        )
+    }
+
+    @Test
+    fun testNumericModeRoundingCarryIntoThirtiethDigitIsNullified() {
+        // Rounding the 10th decimal up carries through all 29 nines into a 30th integer digit.
+        // NUMERIC(38,9) can only store 29 digits before the decimal point, so the rounded
+        // value is set to NULL.
+        val value = "9".repeat(29) + ".9999999995"
+        val result = numericModeCoercer().validate(enrichedNumber(value))
+        assertEquals(ValidationResult.ShouldNullify::class, result::class)
+    }
+
+    @Test
+    fun testNumericModeInRawTablesModeKeepsFloatValidation() {
+        // The toggle has no effect in legacy raw tables mode: values still go through the FLOAT
+        // validation, so 2^53 + 1 is truncated exactly as in FLOAT mode.
+        val result = numericModeCoercer(rawMode = true).validate(enrichedNumber("9007199254740993"))
+        assertEquals(ValidationResult.ShouldTruncate::class, result::class)
+        assertEquals(
+            BigDecimal.valueOf(9.007199254740992E15),
+            ((result as ValidationResult.ShouldTruncate).truncatedValue as NumberValue).value
+        )
     }
 }

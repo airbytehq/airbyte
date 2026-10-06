@@ -16,17 +16,18 @@ from requests.exceptions import RequestException
 from source_shopify.http_request import ShopifyErrorHandler
 from source_shopify.shopify_graphql.bulk.external_sort import DEFAULT_SORT_CHUNK_SIZE, external_stable_sort
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
-from source_shopify.shopify_graphql.bulk.query import DeliveryZoneList, ShopifyBulkQuery
+from source_shopify.shopify_graphql.bulk.query import DeliveryZoneList, ShopFeatures, ShopifyBulkQuery
 from source_shopify.transform import DataTypeEnforcer
-from source_shopify.utils import ApiTypeEnum, ShopifyNonRetryableErrors
+from source_shopify.utils import ApiTypeEnum, ShopifyGraphQlErrorHandler, ShopifyNonRetryableErrors, is_throttled_graphql_error
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from source_shopify.utils import ShopifyRateLimiter as limiter
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 class ShopifyStream(HttpStream, ABC):
@@ -34,7 +35,7 @@ class ShopifyStream(HttpStream, ABC):
     logger = logging.getLogger("airbyte")
 
     # Latest Stable Release
-    api_version = "2025-10"
+    api_version = "2026-07"
     # Page size
     limit = 250
 
@@ -210,6 +211,24 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         current_state_value = current_stream_state.get(self.cursor_field) or self.default_state_comparison_value
         return {self.cursor_field: max(last_record_value, current_state_value)}
 
+    def _apply_lookback_window(self, state_value: str) -> str:
+        """
+        Apply the lookback window to the state value by subtracting the configured number of days.
+        This helps capture records that may have been missed due to race conditions or late-arriving data.
+        """
+        lookback_days = self.config.get("lookback_window_in_days", 0)
+        if lookback_days > 0 and state_value:
+            state_datetime = pdm.parse(state_value)
+            adjusted_datetime = state_datetime.subtract(days=lookback_days)
+            # Ensure we don't go before the configured start_date
+            start_date = self.config.get("start_date")
+            if start_date:
+                start_datetime = pdm.parse(start_date)
+                if adjusted_datetime < start_datetime:
+                    adjusted_datetime = start_datetime
+            return adjusted_datetime.to_iso8601_string()
+        return state_value
+
     @stream_state_cache.cache_stream_state
     def request_params(
         self, stream_state: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs
@@ -219,7 +238,11 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         if not next_page_token:
             params["order"] = f"{self.order_field} asc"
             if stream_state:
-                params[self.filter_field] = stream_state.get(self.cursor_field)
+                state_value = stream_state.get(self.cursor_field)
+                # Apply lookback window only for datetime-based filter fields (not since_id)
+                if self.filter_field != "since_id" and isinstance(state_value, str):
+                    state_value = self._apply_lookback_window(state_value)
+                params[self.filter_field] = state_value
         return params
 
     def track_checkpoint_cursor(self, record_value: Union[str, int], filter_record_value: Optional[str] = None) -> None:
@@ -843,7 +866,10 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         if self.filter_field:
-            state = self._get_state_value(stream_state)
+            state = self._get_state_value(stream_state) or self.config.get("start_date")
+            # Apply lookback window to the start of the sync window for GraphQL BULK streams
+            if stream_state:
+                state = self._apply_lookback_window(state)
             start = pdm.parse(state)
             end = pdm.now()
             while start < end:
@@ -919,6 +945,45 @@ class FullRefreshShopifyGraphQlBulkStream(ShopifyStream):
     query: DeliveryZoneList
     response_field: str
 
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        # retries HTTP 200 pages that carry a THROTTLED GraphQL error, everything else follows the status-code mapping
+        return ShopifyGraphQlErrorHandler(
+            self.logger, max_retries=5, error_mapping=DEFAULT_ERROR_MAPPING | ShopifyNonRetryableErrors(self.name)
+        )
+
+    @cached_property
+    def market_driven_shipping_enabled(self) -> Optional[bool]:
+        """
+        Shops with `marketDrivenShipping` enabled keep their shipping configuration on `Market.delivery`;
+        for them the legacy `deliveryProfiles` API only returns a frozen snapshot.
+        Returns `None` when the flag cannot be read (HTTP 200 with GraphQL `errors`, e.g. THROTTLED, or a non-JSON body).
+        See https://shopify.dev/docs/apps/build/orders-fulfillment/market-driven-shipping/upgrade-your-app
+        """
+        try:
+            _, response = self._http_client.send_request(
+                http_method=self.http_method,
+                url=f"{self.url_base}{self.path()}",
+                json={"query": ShopFeatures().get()},
+                request_kwargs={},
+            )
+            json_response = response.json()
+        except AirbyteTracedException as error:
+            # e.g. the HTTP client exhausted its retries on a persistently throttled reply
+            self.logger.warning(f"Stream `{self.name}`: could not read `shop.features.marketDrivenShipping`: {error.message}")
+            return None
+        except RequestException:
+            json_response = {}
+        data = json_response.get("data") or {}
+        features = (data.get("shop") or {}).get("features") or {}
+        flag = features.get("marketDrivenShipping")
+        if not isinstance(flag, bool) or json_response.get("errors"):
+            self.logger.warning(
+                f"Stream `{self.name}`: could not read `shop.features.marketDrivenShipping`. "
+                f"Response: {json_response.get('errors') or json_response or response.text[:500]}"
+            )
+            return None
+        return flag
+
     def request_body_json(
         self,
         stream_state: Optional[Mapping[str, Any]],
@@ -930,9 +995,14 @@ class FullRefreshShopifyGraphQlBulkStream(ShopifyStream):
     @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.status_code is requests.codes.OK:
-            try:
-                json_response = response.json().get("data", {}).get(self.response_field, {}).get("nodes", [])
-                yield from json_response
-            except RequestException as e:
-                self.logger.warning(f"Unexpected error in `parse_response`: {e}, the actual response data: {response.text}")
-                yield {}
+            json_response = response.json()
+            errors = json_response.get("errors")
+            if errors:
+                # Shopify returns HTTP 200 with GraphQL `errors` (THROTTLED, ACCESS_DENIED, ...) and no usable `data`;
+                # treating such a page as empty would end the pagination and mark an incomplete snapshot as complete.
+                raise AirbyteTracedException(
+                    message=f"Stream `{self.name}`: Shopify GraphQL request failed: "
+                    + "; ".join(str(error.get("message", error)) for error in errors),
+                    failure_type=FailureType.transient_error if is_throttled_graphql_error(errors) else FailureType.system_error,
+                )
+            yield from ((json_response.get("data") or {}).get(self.response_field) or {}).get("nodes") or []

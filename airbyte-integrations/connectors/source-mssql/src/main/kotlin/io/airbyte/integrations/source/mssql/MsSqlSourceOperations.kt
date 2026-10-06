@@ -83,7 +83,11 @@ class MsSqlSourceOperations :
                         if (type.precision!! < 25) FloatFieldType else DoubleFieldType
                     JDBCType.DOUBLE -> DoubleFieldType
                     JDBCType.NUMERIC,
-                    JDBCType.DECIMAL -> BigDecimalFieldType
+                    JDBCType.DECIMAL ->
+                        // SQL Server NUMERIC/DECIMAL with scale 0 holds whole numbers; map to
+                        // Airbyte integer so downstream destinations preserve integral semantics
+                        // (e.g. Snowflake NUMBER vs FLOAT).
+                        if (type.scale == 0) BigIntegerFieldType else BigDecimalFieldType
                     JDBCType.CHAR,
                     JDBCType.VARCHAR,
                     JDBCType.LONGVARCHAR,

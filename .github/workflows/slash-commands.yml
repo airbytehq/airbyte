@@ -57,19 +57,24 @@ jobs:
           issue-type: both
 
           commands: |
+            ai-breaking-change-review
             ai-canary-prerelease
             ai-create-docs-pr
             ai-dev
             ai-docs-review
             ai-prove-fix
+            ai-ready
             ai-release-watch
+            ai-resolve-conflicts
             ai-review
             approve-regression-tests
             build-connector-images
             bump-progressive-rollout-version
             bump-version
+            enable-autopilot-rollouts
             force-merge
             format-fix
+            hydra-failure
             poe
             publish-connectors-prerelease
             publish-java-cdk
@@ -78,6 +83,7 @@ jobs:
             run-regression-tests
             test-performance
             update-connector-cdk-version
+            version-yank
 
           # Notes regarding static-args:
           # - Slash commands can be invoked from both issues and comments.

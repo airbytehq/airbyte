@@ -1,0 +1,1178 @@
+version: 6.33.6
+type: DeclarativeSource
+
+description: >-
+  Discord source connector for extracting data from the Discord REST API (v10).
+  Supports syncing guilds, channels, messages, members, roles, threads, and
+  scheduled events.
+
+check:
+  type: CheckStream
+  stream_names:
+    - guilds
+
+definitions:
+  authenticator:
+    type: ApiKeyAuthenticator
+    api_token: "Bot {{ config['bot_token'] }}"
+    inject_into:
+      type: RequestOption
+      field_name: Authorization
+      inject_into: header
+
+  base_requester:
+    type: HttpRequester
+    url_base: "https://discord.com/api/v10"
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+      response_filters:
+        - http_codes: [429]
+          action: RETRY
+          error_message: Rate limited by Discord API.
+        - http_codes: [500, 502, 503]
+          action: RETRY
+          error_message: Discord API server error.
+
+  permissive_requester:
+    type: HttpRequester
+    url_base: "https://discord.com/api/v10"
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+      response_filters:
+        - http_codes: [429]
+          action: RETRY
+          error_message: Rate limited by Discord API.
+        - http_codes: [500, 502, 503]
+          action: RETRY
+          error_message: Discord API server error.
+        - http_codes: [403]
+          action: IGNORE
+          error_message: >-
+            Bot lacks permission to access this channel or resource.
+            The record is skipped. Other accessible channels continue syncing.
+        - http_codes: [404]
+          action: IGNORE
+          error_message: >-
+            Requested resource no longer exists.
+            The record is skipped. Remaining resources continue syncing.
+
+  private_archived_threads_requester:
+    type: HttpRequester
+    url_base: "https://discord.com/api/v10"
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+      response_filters:
+        - http_codes: [429]
+          action: RETRY
+          error_message: Rate limited by Discord API.
+        - http_codes: [500, 502, 503]
+          action: RETRY
+          error_message: Discord API server error.
+        - http_codes: [403]
+          action: FAIL
+          error_message: >-
+            Bot lacks MANAGE_THREADS permission required to read private archived
+            threads. Grant the bot Manage Threads and Read Message History, or
+            disable private-archived-thread coverage.
+
+  base_record_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  streams:
+    guilds:
+      type: DeclarativeStream
+      name: guilds
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users/@me/guilds
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ last_page_size < 200 }}"
+            initial_token: "0"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/guilds"
+
+    channels:
+      type: DeclarativeStream
+      name: channels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/guilds/{{ stream_partition['guild_id'] }}/channels"
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: guild_id
+              stream:
+                $ref: "#/definitions/streams/guilds"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channels"
+
+    messages:
+      type: DeclarativeStream
+      name: messages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/permissive_requester"
+          path: "/channels/{{ stream_partition['channel_id'] }}/messages"
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: before
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ last_page_size < 100 }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: channel_id
+              stream:
+                $ref: "#/definitions/streams/message_parent_channels"
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: channel_id
+              stream:
+                $ref: "#/definitions/streams/threads"
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: channel_id
+              stream:
+                $ref: "#/definitions/streams/archived_public_threads"
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: channel_id
+              stream:
+                $ref: "#/definitions/streams/archived_private_threads"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["channel_id"]
+              value: "{{ stream_partition['channel_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/messages"
+
+    members:
+      type: DeclarativeStream
+      name: members
+      primary_key:
+        - user_id
+        - guild_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/guilds/{{ stream_partition['guild_id'] }}/members"
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ last_record['user']['id'] }}"
+            stop_condition: "{{ last_page_size < 1000 }}"
+            initial_token: "0"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: guild_id
+              stream:
+                $ref: "#/definitions/streams/guilds"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["guild_id"]
+              value: "{{ stream_partition['guild_id'] }}"
+            - path: ["user_id"]
+              value: "{{ record.get('user', {}).get('id', '') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/members"
+
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/guilds/{{ stream_partition['guild_id'] }}/roles"
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: guild_id
+              stream:
+                $ref: "#/definitions/streams/guilds"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["guild_id"]
+              value: "{{ stream_partition['guild_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+
+    threads:
+      type: DeclarativeStream
+      name: threads
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/permissive_requester"
+          path: "/guilds/{{ stream_partition['guild_id'] }}/threads/active"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - threads
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: guild_id
+              stream:
+                $ref: "#/definitions/streams/guilds"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["guild_id"]
+              value: "{{ stream_partition['guild_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/threads"
+
+    archived_public_threads:
+      type: DeclarativeStream
+      name: archived_public_threads
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/permissive_requester"
+          path: "/channels/{{ stream_partition['channel_id'] }}/threads/archived/public"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - threads
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: before
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['thread_metadata']['archive_timestamp'] }}"
+            stop_condition: "{{ not response.get('has_more', False) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: channel_id
+              stream:
+                $ref: "#/definitions/streams/archived_public_thread_parent_channels"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/threads"
+
+    archived_private_threads:
+      type: DeclarativeStream
+      name: archived_private_threads
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/private_archived_threads_requester"
+          path: "/channels/{{ stream_partition['channel_id'] }}/threads/archived/private"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - threads
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: before
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['thread_metadata']['archive_timestamp'] }}"
+            stop_condition: "{{ not response.get('has_more', False) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: channel_id
+              stream:
+                $ref: "#/definitions/streams/archived_private_thread_parent_channels"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/threads"
+
+    message_parent_channels:
+      type: DeclarativeStream
+      name: message_parent_channels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/guilds/{{ stream_partition['guild_id'] }}/channels"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+          record_filter:
+            condition: "{{ record.get('type') in [0, 5] }}"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: guild_id
+              stream:
+                $ref: "#/definitions/streams/guilds"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channels"
+
+    archived_public_thread_parent_channels:
+      type: DeclarativeStream
+      name: archived_public_thread_parent_channels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/guilds/{{ stream_partition['guild_id'] }}/channels"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+          record_filter:
+            condition: "{{ record.get('type') in [0, 5] }}"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: guild_id
+              stream:
+                $ref: "#/definitions/streams/guilds"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channels"
+
+    archived_private_thread_parent_channels:
+      type: DeclarativeStream
+      name: archived_private_thread_parent_channels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/guilds/{{ stream_partition['guild_id'] }}/channels"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+          record_filter:
+            condition: "{{ record.get('type') == 0 }}"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: guild_id
+              stream:
+                $ref: "#/definitions/streams/guilds"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channels"
+
+    scheduled_events:
+      type: DeclarativeStream
+      name: scheduled_events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/guilds/{{ stream_partition['guild_id'] }}/scheduled-events"
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: guild_id
+              stream:
+                $ref: "#/definitions/streams/guilds"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["guild_id"]
+              value: "{{ stream_partition['guild_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scheduled_events"
+
+    current_user:
+      type: DeclarativeStream
+      name: current_user
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users/@me
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: NoPagination
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/current_user"
+
+streams:
+  - $ref: "#/definitions/streams/guilds"
+  - $ref: "#/definitions/streams/channels"
+  - $ref: "#/definitions/streams/messages"
+  - $ref: "#/definitions/streams/members"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/threads"
+  - $ref: "#/definitions/streams/scheduled_events"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - bot_token
+    properties:
+      bot_token:
+        type: string
+        title: Bot Token
+        description: >-
+          Discord Bot Token used for authentication. Create a bot at
+          https://discord.com/developers/applications, then copy the token from
+          the Bot section. The bot must be invited to target guilds with
+          VIEW_CHANNEL, READ_MESSAGE_HISTORY, and MANAGE_THREADS permissions.
+          MANAGE_THREADS is required to read private archived threads. Enable the
+          MESSAGE_CONTENT and GUILD_MEMBERS privileged intents in the Developer
+          Portal if you want full message content and member data.
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+
+schemas:
+  guilds:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: Guild ID (snowflake).
+      name:
+        type: string
+        description: Guild name.
+      icon:
+        type:
+          - string
+          - "null"
+        description: Icon hash.
+      owner:
+        type:
+          - boolean
+          - "null"
+        description: Whether the current user is the owner.
+      permissions:
+        type:
+          - string
+          - "null"
+        description: Total permissions for the current user in the guild.
+      features:
+        type: array
+        description: Enabled guild features.
+        items:
+          type: string
+      approximate_member_count:
+        type:
+          - integer
+          - "null"
+        description: Approximate number of members in the guild.
+      approximate_presence_count:
+        type:
+          - integer
+          - "null"
+        description: Approximate number of non-offline members in the guild.
+
+  channels:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: Channel ID (snowflake).
+      type:
+        type: integer
+        description: >-
+          Type of channel (0=GUILD_TEXT, 2=GUILD_VOICE, 4=GUILD_CATEGORY,
+          5=GUILD_ANNOUNCEMENT, 10=ANNOUNCEMENT_THREAD, 11=PUBLIC_THREAD,
+          12=PRIVATE_THREAD, 13=GUILD_STAGE_VOICE, 15=GUILD_FORUM,
+          16=GUILD_MEDIA).
+      guild_id:
+        type:
+          - string
+          - "null"
+        description: ID of the guild the channel belongs to.
+      position:
+        type:
+          - integer
+          - "null"
+        description: Sorting position of the channel.
+      name:
+        type:
+          - string
+          - "null"
+        description: Name of the channel.
+      topic:
+        type:
+          - string
+          - "null"
+        description: Channel topic (0-4096 characters for forum/media, 0-1024 for others).
+      nsfw:
+        type:
+          - boolean
+          - "null"
+        description: Whether the channel is NSFW.
+      last_message_id:
+        type:
+          - string
+          - "null"
+        description: ID of the last message sent in the channel.
+      bitrate:
+        type:
+          - integer
+          - "null"
+        description: Bitrate of the voice channel.
+      user_limit:
+        type:
+          - integer
+          - "null"
+        description: User limit of the voice channel.
+      rate_limit_per_user:
+        type:
+          - integer
+          - "null"
+        description: Slowmode rate limit per user in seconds.
+      parent_id:
+        type:
+          - string
+          - "null"
+        description: ID of the parent category channel.
+      permission_overwrites:
+        type:
+          - array
+          - "null"
+        description: Explicit permission overwrites for members and roles.
+        items:
+          type: object
+          additionalProperties: true
+
+  messages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: Message ID (snowflake).
+      channel_id:
+        type: string
+        description: ID of the channel the message was sent in.
+      author:
+        type: object
+        description: The author of the message (user object).
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          username:
+            type: string
+          discriminator:
+            type: string
+          global_name:
+            type:
+              - string
+              - "null"
+          avatar:
+            type:
+              - string
+              - "null"
+      content:
+        type: string
+        description: Contents of the message.
+      timestamp:
+        type: string
+        description: When this message was sent (ISO8601 timestamp).
+        format: date-time
+      edited_timestamp:
+        type:
+          - string
+          - "null"
+        description: When this message was edited (ISO8601 timestamp), null if never.
+        format: date-time
+      tts:
+        type: boolean
+        description: Whether this was a TTS message.
+      mention_everyone:
+        type: boolean
+        description: Whether this message mentions everyone.
+      mentions:
+        type: array
+        description: Users specifically mentioned in the message.
+        items:
+          type: object
+          additionalProperties: true
+      mention_roles:
+        type: array
+        description: Roles specifically mentioned in this message.
+        items:
+          type: string
+      attachments:
+        type: array
+        description: Any attached files.
+        items:
+          type: object
+          additionalProperties: true
+      embeds:
+        type: array
+        description: Any embedded content.
+        items:
+          type: object
+          additionalProperties: true
+      reactions:
+        type:
+          - array
+          - "null"
+        description: Reactions to the message.
+        items:
+          type: object
+          additionalProperties: true
+      pinned:
+        type: boolean
+        description: Whether this message is pinned.
+      type:
+        type: integer
+        description: Type of message.
+      flags:
+        type:
+          - integer
+          - "null"
+        description: Message flags combined as a bitfield.
+      referenced_message:
+        type:
+          - object
+          - "null"
+        description: The message this message references (for replies).
+        additionalProperties: true
+      thread:
+        type:
+          - object
+          - "null"
+        description: Thread started from this message, includes thread member object.
+        additionalProperties: true
+
+  members:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      user:
+        type:
+          - object
+          - "null"
+        description: The user this guild member represents.
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+          username:
+            type: string
+          discriminator:
+            type: string
+          global_name:
+            type:
+              - string
+              - "null"
+          avatar:
+            type:
+              - string
+              - "null"
+      nick:
+        type:
+          - string
+          - "null"
+        description: This user's guild nickname.
+      avatar:
+        type:
+          - string
+          - "null"
+        description: The member's guild avatar hash.
+      roles:
+        type: array
+        description: Array of role IDs.
+        items:
+          type: string
+      joined_at:
+        type: string
+        description: When the user joined the guild (ISO8601 timestamp).
+        format: date-time
+      premium_since:
+        type:
+          - string
+          - "null"
+        description: When the user started boosting the guild (ISO8601 timestamp).
+        format: date-time
+      deaf:
+        type: boolean
+        description: Whether the user is deafened in voice channels.
+      mute:
+        type: boolean
+        description: Whether the user is muted in voice channels.
+      pending:
+        type:
+          - boolean
+          - "null"
+        description: Whether the user has passed the guild's membership screening.
+      communication_disabled_until:
+        type:
+          - string
+          - "null"
+        description: When the user's timeout will expire (ISO8601 timestamp).
+        format: date-time
+      guild_id:
+        type: string
+        description: ID of the guild this member belongs to.
+      user_id:
+        type: string
+        description: >-
+          Extracted user ID from the nested user object, used as part of
+          the composite primary key (user_id, guild_id).
+
+  roles:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: Role ID (snowflake).
+      name:
+        type: string
+        description: Role name.
+      color:
+        type: integer
+        description: Integer representation of hex color code.
+      hoist:
+        type: boolean
+        description: Whether this role is pinned in the user listing.
+      icon:
+        type:
+          - string
+          - "null"
+        description: Role icon hash.
+      unicode_emoji:
+        type:
+          - string
+          - "null"
+        description: Role unicode emoji.
+      position:
+        type: integer
+        description: Position of this role.
+      permissions:
+        type: string
+        description: Permission bit set.
+      managed:
+        type: boolean
+        description: Whether this role is managed by an integration.
+      mentionable:
+        type: boolean
+        description: Whether this role is mentionable.
+      tags:
+        type:
+          - object
+          - "null"
+        description: The tags this role has.
+        additionalProperties: true
+      guild_id:
+        type: string
+        description: ID of the guild this role belongs to.
+
+  threads:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: Thread channel ID (snowflake).
+      guild_id:
+        type:
+          - string
+          - "null"
+        description: ID of the guild.
+      parent_id:
+        type:
+          - string
+          - "null"
+        description: ID of the parent text channel.
+      owner_id:
+        type:
+          - string
+          - "null"
+        description: ID of the user who created the thread.
+      name:
+        type:
+          - string
+          - "null"
+        description: Name of the thread.
+      type:
+        type: integer
+        description: >-
+          Type of thread (10=ANNOUNCEMENT_THREAD, 11=PUBLIC_THREAD,
+          12=PRIVATE_THREAD).
+      message_count:
+        type:
+          - integer
+          - "null"
+        description: Approximate count of messages in the thread.
+      member_count:
+        type:
+          - integer
+          - "null"
+        description: Approximate count of users in the thread.
+      total_message_sent:
+        type:
+          - integer
+          - "null"
+        description: Total number of messages ever sent in the thread.
+      thread_metadata:
+        type:
+          - object
+          - "null"
+        description: Thread-specific fields.
+        additionalProperties: true
+        properties:
+          archived:
+            type:
+              - boolean
+              - "null"
+          auto_archive_duration:
+            type:
+              - integer
+              - "null"
+          archive_timestamp:
+            type:
+              - string
+              - "null"
+            format: date-time
+          locked:
+            type:
+              - boolean
+              - "null"
+      last_message_id:
+        type:
+          - string
+          - "null"
+        description: ID of the most recent message in the thread.
+
+  scheduled_events:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: Scheduled event ID (snowflake).
+      guild_id:
+        type: string
+        description: Guild ID the event belongs to.
+      channel_id:
+        type:
+          - string
+          - "null"
+        description: Channel ID of the event if applicable.
+      creator_id:
+        type:
+          - string
+          - "null"
+        description: ID of the user who created the event.
+      name:
+        type: string
+        description: Name of the event.
+      description:
+        type:
+          - string
+          - "null"
+        description: Description of the event.
+      scheduled_start_time:
+        type: string
+        description: When the event will start (ISO8601 timestamp).
+        format: date-time
+      scheduled_end_time:
+        type:
+          - string
+          - "null"
+        description: When the event will end (ISO8601 timestamp).
+        format: date-time
+      privacy_level:
+        type: integer
+        description: Privacy level of the event.
+      status:
+        type: integer
+        description: Status of the event (1=SCHEDULED, 2=ACTIVE, 3=COMPLETED, 4=CANCELED).
+      entity_type:
+        type: integer
+        description: Type of the event entity (1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL).
+      entity_id:
+        type:
+          - string
+          - "null"
+        description: Entity ID associated with the event.
+      entity_metadata:
+        type:
+          - object
+          - "null"
+        description: Additional metadata for the event entity.
+        additionalProperties: true
+      user_count:
+        type:
+          - integer
+          - "null"
+        description: Number of users subscribed to the event.
+
+  current_user:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: User ID (snowflake).
+      username:
+        type: string
+        description: The user's username.
+      discriminator:
+        type: string
+        description: The user's Discord tag.
+      global_name:
+        type:
+          - string
+          - "null"
+        description: The user's display name.
+      avatar:
+        type:
+          - string
+          - "null"
+        description: The user's avatar hash.
+      bot:
+        type:
+          - boolean
+          - "null"
+        description: Whether the user belongs to an OAuth2 application.
+      system:
+        type:
+          - boolean
+          - "null"
+        description: Whether the user is an Official Discord System user.
+      mfa_enabled:
+        type:
+          - boolean
+          - "null"
+        description: Whether the user has two-factor authentication enabled.
+      banner:
+        type:
+          - string
+          - "null"
+        description: The user's banner hash.
+      accent_color:
+        type:
+          - integer
+          - "null"
+        description: The user's banner color as an integer.
+      locale:
+        type:
+          - string
+          - "null"
+        description: The user's chosen language option.
+      verified:
+        type:
+          - boolean
+          - "null"
+        description: Whether the email on the account has been verified.
+      email:
+        type:
+          - string
+          - "null"
+        description: The user's email.
+      flags:
+        type:
+          - integer
+          - "null"
+        description: The flags on the user's account.
+      premium_type:
+        type:
+          - integer
+          - "null"
+        description: The type of Nitro subscription on the user's account.
+      public_flags:
+        type:
+          - integer
+          - "null"
+        description: The public flags on the user's account.

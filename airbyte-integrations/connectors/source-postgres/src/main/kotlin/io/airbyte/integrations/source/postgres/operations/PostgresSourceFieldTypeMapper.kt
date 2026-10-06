@@ -9,8 +9,6 @@ import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
 import io.airbyte.cdk.jdbc.BooleanFieldType
-import io.airbyte.cdk.jdbc.DoubleFieldType
-import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
@@ -23,6 +21,8 @@ import io.airbyte.integrations.source.postgres.operations.types.HstoreFieldType
 import io.airbyte.integrations.source.postgres.operations.types.LegacyBooleanBitsFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresByteaFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresDateFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresDoubleFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresFloatFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresMoneyArrayElementFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresMoneyFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresTimeFieldType
@@ -67,14 +67,14 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                 // oid type is unsigned and must be cast to Long to avoid truncation
                 if (type.scalarTypeName == "oid") LongFieldType else IntFieldType
             JDBCType.BIGINT -> LongFieldType
-            JDBCType.REAL -> FloatFieldType
+            JDBCType.REAL -> PostgresFloatFieldType
             JDBCType.FLOAT,
             JDBCType.DOUBLE ->
                 // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15879):
                 //  Fix type handling for numeric arrays. Arrays and scalars of money are handled
                 //  differently by the PostgresCustomConverter.
                 when {
-                    type.scalarTypeName != "money" -> DoubleFieldType
+                    type.scalarTypeName != "money" -> PostgresDoubleFieldType
                     type.isArray -> PostgresMoneyArrayElementFieldType
                     else -> PostgresMoneyFieldType
                 }

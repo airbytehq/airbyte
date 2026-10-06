@@ -8,7 +8,7 @@ import urllib3
 from destination_astra.config import AstraIndexingModel
 from destination_astra.indexer import AstraIndexer
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
 
 
 def create_astra_indexer():
@@ -93,7 +93,7 @@ def test_astra_index_upsert_batching():
 
 
 def generate_catalog():
-    return ConfiguredAirbyteCatalog.parse_obj(
+    return ConfiguredAirbyteCatalogSerializer.load(
         {
             "streams": [
                 {
