@@ -254,6 +254,14 @@ Earlier versions sent the wrong window on some of these streams, in two differen
 
 Amazon reports data in the vendor retail analytics reports (Vendor Sales, Vendor Inventory, Vendor Traffic, Net Pure Product Margin, Rapid Retail Analytics Inventory, and Vendor Forecasting) in Pacific Standard Time, regardless of your location or the marketplace's local time zone. Airbyte requests these reports using UTC date boundaries, so daily records can appear shifted if you compare them against a local-time report from Vendor Central.
 
+### Data availability lag for vendor retail analytics reports
+
+Amazon publishes the vendor retail analytics reports (Vendor Sales, Vendor Traffic, and Net Pure Product Margin) [72 hours after the close of the period they cover](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports). Asking for a day it has not published yet makes the report fail with `The report data for the requested date range is not yet available`, which fails the whole stream rather than skipping that one day.
+
+From 6.0.4, these three streams stop four calendar days short of the present instead of syncing up to the moment the sync runs. Nothing is lost — each day is picked up by the first sync that runs after Amazon publishes it — but expect the most recent three to four days to be missing at any given time. If you set an explicit **End Date**, it is used as-is and this holdback is not applied, so a date range ending inside the last four days can still fail.
+
+Before 6.0.4, every sync of these streams failed on its newest day. Because a sync is marked failed after 20 partial failures, a long-running connection could be marked failed even though most of its data had loaded.
+
 <HideInUI>
 
 ### Entity-Relationship Diagram (ERD)
@@ -489,7 +497,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 6.0.3 | 2026-09-30 | [85912](https://github.com/airbytehq/airbyte/pull/85912) | Fix `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` returning 0 records: download each settlement report document instead of reading its metadata, follow `nextToken` when listing settlement reports (sending it as the only query parameter, as Amazon requires), and resolve the pre-signed document URL immediately before downloading it so it cannot expire |
+| 6.0.6 | 2026-10-06 | [85912](https://github.com/airbytehq/airbyte/pull/85912) | Fix `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` returning 0 records: download each settlement report document instead of reading its metadata, follow `nextToken` when listing settlement reports (sending it as the only query parameter, as Amazon requires), and resolve the pre-signed document URL immediately before downloading it so it cannot expire |
+| 6.0.5 | 2026-10-06 | [87776](https://github.com/airbytehq/airbyte/pull/87776) | Update dependencies |
+| 6.0.4 | 2026-09-29 | [86942](https://github.com/airbytehq/airbyte/pull/86942) | Stop requesting vendor retail analytics days Amazon has not published yet by holding the Vendor Sales, Vendor Traffic and Net Pure Product Margin cursors four days back |
 | 6.0.2 | 2026-09-29 | [87083](https://github.com/airbytehq/airbyte/pull/87083) | Update dependencies |
 | 6.0.1 | 2026-09-28 | [86940](https://github.com/airbytehq/airbyte/pull/86940) | Send configured `reportOptions` for the vendor sales, inventory, traffic, and net pure product margin reports instead of validating and then dropping them |
 | 6.0.0 | 2026-09-24 | [85813](https://github.com/airbytehq/airbyte/pull/85813) | Remove primary key from `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` streams; these line-item reports have no proven, reliably unique identifier, so deduplicating on `amazon-order-id` dropped records |
