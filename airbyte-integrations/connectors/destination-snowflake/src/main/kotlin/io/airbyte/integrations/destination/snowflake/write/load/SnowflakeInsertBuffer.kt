@@ -25,6 +25,7 @@ import java.nio.file.Path
 import java.util.zip.GZIPOutputStream
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.pathString
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
@@ -89,34 +90,30 @@ class SnowflakeInsertBuffer(
                 logger.info {
                     "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}..."
                 }
-                coroutineScope {
-                    val snowflake =
-                        async(kotlinx.coroutines.Dispatchers.IO) {
-                            snowflakeClient.putInStage(tableName, filePath.pathString)
-                            logger.info {
-                                "Copying staging data into ${tableName.toPrettyString(quote = QUOTE)}..."
-                            }
-                            snowflakeClient.copyFromStage(
-                                tableName,
-                                filePath.fileName.toString(),
-                                columnManager.getTableColumnNames(columnSchema)
-                            )
+                val context = copyContext
+                if (context == null) {
+                    putAndCopy(filePath)
+                } else {
+                    // PUT/COPY stays in the calling coroutine so the caller's dispatcher (e.g. the
+                    // CDK's bounded final-flush dispatcher) keeps limiting concurrent use of the
+                    // Snowflake connection pool. Only the Fusion S3 upload runs alongside it.
+                    coroutineScope {
+                        val archive =
+                            async(Dispatchers.IO) { s3Copy.upload(filePath, context, recordCount) }
+                        var failure: Throwable? = null
+                        try {
+                            putAndCopy(filePath)
+                        } catch (t: Throwable) {
+                            failure = t
+                            archive.cancel()
                         }
-                    val archive = async {
-                        copyContext?.let { s3Copy.upload(filePath, it, recordCount) }
+                        try {
+                            archive.await()
+                        } catch (t: Throwable) {
+                            if (failure == null) failure = t else failure.addSuppressed(t)
+                        }
+                        failure?.let { throw it }
                     }
-                    var failure: Throwable? = null
-                    try {
-                        snowflake.await()
-                    } catch (t: Throwable) {
-                        failure = t
-                    }
-                    try {
-                        archive.await()
-                    } catch (t: Throwable) {
-                        if (failure == null) failure = t else failure.addSuppressed(t)
-                    }
-                    failure?.let { throw it }
                 }
                 logger.info {
                     "Finished insert of $recordCount row(s) into ${tableName.toPrettyString(quote = QUOTE)}."
@@ -132,6 +129,16 @@ class SnowflakeInsertBuffer(
             }
         }
             ?: logger.warn { "CSV file path is not set: nothing to upload to staging." }
+    }
+
+    private fun putAndCopy(filePath: Path) {
+        snowflakeClient.putInStage(tableName, filePath.pathString)
+        logger.info { "Copying staging data into ${tableName.toPrettyString(quote = QUOTE)}..." }
+        snowflakeClient.copyFromStage(
+            tableName,
+            filePath.fileName.toString(),
+            columnManager.getTableColumnNames(columnSchema)
+        )
     }
 
     private fun createCsvFile(): File {

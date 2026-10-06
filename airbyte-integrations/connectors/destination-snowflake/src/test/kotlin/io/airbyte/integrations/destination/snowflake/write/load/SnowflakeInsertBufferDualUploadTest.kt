@@ -231,8 +231,9 @@ internal class SnowflakeInsertBufferDualUploadTest {
         assertions: suspend (Deferred<Result<Unit>>) -> Unit,
     ) = runBlocking {
         // Catch inside the child so a flush failure is an observable result, not cancellation
-        // of the test driver before it can release the reader gates.
-        val flush = async { runCatching { fixture.buffer.flush() } }
+        // of the test driver before it can release the reader gates. PUT/COPY blocks the calling
+        // thread, so flush runs off the runBlocking event loop that drives the gates.
+        val flush = async(Dispatchers.IO) { runCatching { fixture.buffer.flush() } }
         try {
             withTimeout(10_000) {
                 fixture.snowflakeEntered.await()
