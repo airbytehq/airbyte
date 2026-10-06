@@ -320,6 +320,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.22 | 2026-10-06 | [88070](https://github.com/airbytehq/airbyte/pull/88070) | Update dependencies |
 | 6.0.21 | 2026-09-29 | [87375](https://github.com/airbytehq/airbyte/pull/87375) | Update dependencies |
 | 6.0.20 | 2026-09-22 | [86838](https://github.com/airbytehq/airbyte/pull/86838) | Update dependencies |
 | 6.0.19 | 2026-09-21 | [85087](https://github.com/airbytehq/airbyte/pull/85087) | Fix truncated `invoice_line_items` on incremental syncs: fetch the complete line item list from `invoices/{id}/lines` when the event payload embeds only the first page. Existing destination data for invoices with more than 10 line items requires a Full Refresh to repair. |
