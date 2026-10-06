@@ -73,7 +73,7 @@ You can follow the steps laid out below to create the application and obtain the
    - `r_marketing_leadgen_automation` - Read lead gen form data
    - `r_ads_leadgen_automation` - Read lead gen automation data
 
-   Not all scopes may be available depending on your LinkedIn API program access level. At a minimum, you need `r_ads` and `r_ads_reporting` to sync ad account data and analytics. The **Videos** stream also needs `r_organization_social`; see [Videos](#videos).
+   Not all scopes may be available depending on your LinkedIn API program access level. At a minimum, you need `r_ads` and `r_ads_reporting` to sync ad account data and analytics. The **Videos** stream also needs `r_organization_social`; see [Videos](#videos). The **Organizations** stream also needs `r_organization_admin`; see [Organizations](#organizations).
 5. Click **Request access token**. You will be redirected to an authorization page. Use your LinkedIn credentials to log in and authorize your app and obtain your **Access Token** and **Refresh Token**.
 
 :::caution
@@ -119,25 +119,24 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 6. For **Start Date**, use the provided datepicker or enter a date programmatically in the format YYYY-MM-DD. Any data before this date will not be replicated.
 7. (Optional) For **Account IDs**, you may optionally provide a space separated list of Account IDs to pull data from. If you do not specify any account IDs, the connector will replicate data from all accounts accessible using your credentials.
 8. (Optional) For **Lookback Window**, enter the number of days before the last saved cursor that each incremental sync re-fetches. The window applies to every incremental stream, so it captures late-arriving analytics values (such as conversions or attribution updates) as well as entities whose `lastModified` timestamp changed after the previous sync. The default is 0, which re-fetches nothing.
-9. (Optional) For **Number of Workers**, enter the number of concurrent workers for syncing ad analytics streams. The default is 3. Increasing this value may improve sync speed but could also increase the risk of hitting API rate limits.
+9. (Optional) For **Number of Workers**, enter the number of concurrent workers for syncing ad analytics streams. The default is 3, and the allowed range is 2 to 50. Increasing this value may improve sync speed but could also increase the risk of hitting API rate limits.
 10. (Optional) For **Custom Ad Analytics Reports**, you may optionally provide one or more custom reports to query the LinkedIn Ads API for. By defining custom reports, you can better align the data pulled from LinkedIn Ads with your particular needs. To add a custom report:
-   1. Click on **Add**.
-   2. Enter a **Report Name**. This will be used as the stream name during replication and will be preceded by `custom_`.
-   3. Select a **Pivot Category** from the dropdown. This defines the main dimension by which the report data will be grouped or segmented.
-   4. Select a **Time Granularity** to group the data in your report by time. The options are:
-      - `ALL`: Data is not grouped by time, providing a cumulative view.
-      - `DAILY`: Returns data grouped by day. Useful for closely monitoring short-term changes and effects.
-      - `MONTHLY`: Returns data grouped by month. Ideal for evaluating monthly goals or observing seasonal patterns.
-      - `YEARLY`: Returns data grouped by year. Ideal for high-level analysis of long-term trends and year-over-year comparisons.
+    1. Click on **Add**.
+    2. Enter a **Report Name**. This will be used as the stream name during replication and will be preceded by `custom_`.
+    3. Select a **Pivot Category** from the dropdown. This defines the main dimension by which the report data will be grouped or segmented.
+    4. Select a **Time Granularity** to group the data in your report by time. The options are:
+       - `ALL`: Data is not grouped by time, providing a cumulative view.
+       - `DAILY`: Returns data grouped by day. Useful for closely monitoring short-term changes and effects.
+       - `MONTHLY`: Returns data grouped by month. Ideal for evaluating monthly goals or observing seasonal patterns.
+       - `YEARLY`: Returns data grouped by year. Ideal for high-level analysis of long-term trends and year-over-year comparisons.
 11. (Optional) For **Custom Ad Statistics Reports**, you may optionally provide one or more reports that use LinkedIn's **Statistics Finder**, which groups results by up to three pivot categories at once. To add a statistics report:
-   1. Click on **Add**.
-   2. Enter a **Report Name**. This will be used as the stream name during replication and will be preceded by `custom_statistics_`.
-   3. Select up to three **Pivot Categories**. Airbyte sends these to LinkedIn's Statistics Finder (`q=statistics`) request format.
-   4. Select a **Time Granularity** (same options as above).
+    1. Click on **Add**.
+    2. Enter a **Report Name**. This will be used as the stream name during replication and will be preceded by `custom_statistics_`.
+    3. Select up to three **Pivot Categories**. Airbyte sends these to LinkedIn's Statistics Finder (`q=statistics`) request format.
+    4. Select a **Time Granularity** (same options as above).
 
-   **Note:** Analytics reports become streams named `custom_<Report Name>`; statistics reports become streams named `custom_statistics_<Report Name>`. Report names must be unique within each list. Also avoid naming an analytics report `statistics_<something>`, since that would collide with a statistics report named `<something>`.
+    **Note:** Analytics reports become streams named `custom_<Report Name>`; statistics reports become streams named `custom_statistics_<Report Name>`. Report names must be unique within each list. Also avoid naming an analytics report `statistics_<something>`, since that would collide with a statistics report named `<something>`.
 12. Click **Set up source** and wait for the tests to complete.
-<!-- /env:cloud -->
 
 ## Supported sync modes
 
@@ -171,12 +170,6 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 - [Ad Analytics by Member Seniority](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Region](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Company](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
-
-:::info
-
-The `Organizations` stream returns the organization access control (ACL) records of the authenticated member - one row per organization and role, with the organization URN, the role, and its state. All role states (`APPROVED`, `REQUESTED`, `REJECTED`, `REVOKED`) are returned; filter on the `state` field if you only need approved roles. This stream requires the `r_organization_admin` (or `rw_organization_admin`) OAuth scope - without it, LinkedIn returns a 403 for this stream only.
-
-:::
 
 :::info
 
@@ -222,9 +215,24 @@ The LinkedIn Ads API does not return records that have no values for any of the 
 
 ## Limitations
 
+### Accounts
+
+The **Accounts** stream supports Full Refresh sync mode only. The LinkedIn API doesn't support date-based filtering when listing ad accounts.
+
 ### Lead forms and Lead form responses
 
 The **Lead forms** and **Lead form responses** streams support Full Refresh sync mode only. Incremental sync is not available for these streams due to limitations in how the LinkedIn API handles time-range filtering for lead data.
+
+### Organizations
+
+The **Organizations** stream returns the [organization access control (ACL)](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/organization-access-control-by-role) records of the member who authenticated the connector: one row per organization and role, with the organization URN (`organization`), the member URN (`roleAssignee`), the `role` (for example, `ADMINISTRATOR` or `DIRECT_SPONSORED_CONTENT_POSTER`), and the role's `state`. It supports Full Refresh sync mode only, as the LinkedIn API doesn't expose a modification timestamp usable for filtering.
+
+Keep in mind the following:
+
+- The stream returns roles in every state (`APPROVED`, `REQUESTED`, `REJECTED`, `REVOKED`). Filter on `state` downstream if you only need approved roles.
+- The stream describes the authenticated member's organization roles, not ad accounts, so the **Account IDs** setting doesn't filter it.
+- The stream needs the `r_organization_admin` (or `rw_organization_admin`) scope. The connector's OAuth flow requests it; if you authenticate with an access token that lacks this scope, LinkedIn returns a 403 error and this stream fails. Other streams don't need this scope and aren't affected.
+- Unlike most other streams, where `created` and `lastModified` are converted to RFC 3339 timestamps, this stream keeps them as the objects LinkedIn returns: `actor` (the member URN that made the change) and `time` (epoch milliseconds).
 
 ### Videos
 
@@ -236,6 +244,7 @@ Keep in mind the following limitations:
 - Legacy media assets uploaded through the deprecated Assets API (`urn:li:digitalmediaAsset:` URNs) cannot be retrieved through the Videos API and are skipped.
 - Posts or videos that were deleted, or that the authenticated user is not allowed to read, are skipped with a log message rather than failing the sync.
 - Resolving a creative's post requires the `r_organization_social` scope ([Posts API permissions](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api#permissions)). The connector's OAuth flow requests it; if you authenticate with a raw access token that lacks this scope, the stream completes with zero records because every post lookup is skipped.
+- Creatives that don't reference a post, such as text ads or dynamic ads, have an empty or null `content.reference`. The connector doesn't look up a post for them, so they produce no videos.
 - Message Ads (Sponsored InMail) creatives reference InMail content (`urn:li:adInMailContent:` URNs) rather than a post; they cannot carry videos retrievable through the Videos API, so the post lookup is rejected with a `400` and the creative is skipped with a log message rather than failing the sync.
 - The stream intentionally does not use the Videos API `associatedAccount` finder (the account's whole media library): LinkedIn gates that finder at the application level, and applications holding only the `r_ads` scope receive `403 ACCESS_DENIED` from it. Fetching each video by URN works with the standard scopes this connector already requests.
 
