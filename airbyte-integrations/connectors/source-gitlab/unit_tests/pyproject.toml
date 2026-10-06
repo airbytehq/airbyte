@@ -14,6 +14,7 @@ python = "^3.10,<3.13"
 pytest = "^8"
 airbyte-cdk = "^7.32.0"
 requests-mock = "^1.12"
+freezegun = "^1.5"
 pytest-mock = "^3"
 [tool.pytest.ini_options]
 filterwarnings = [
