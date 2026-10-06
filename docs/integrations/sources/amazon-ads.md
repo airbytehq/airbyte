@@ -226,6 +226,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.2.7 | 2026-10-06 | [87668](https://github.com/airbytehq/airbyte/pull/87668) | Skip profiles that return HTTP 401 Unauthorized on attribution report streams instead of failing the sync |
 | 9.2.6 | 2026-10-06 | [87739](https://github.com/airbytehq/airbyte/pull/87739) | Update dependencies |
 | 9.2.5 | 2026-09-29 | [87079](https://github.com/airbytehq/airbyte/pull/87079) | Update dependencies |
 | 9.2.4 | 2026-09-24 | [86938](https://github.com/airbytehq/airbyte/pull/86938) | Retry 429 (honoring Retry-After) and 5xx responses on report creation and polling endpoints |
