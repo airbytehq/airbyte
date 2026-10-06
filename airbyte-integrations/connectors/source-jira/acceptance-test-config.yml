@@ -28,12 +28,16 @@ acceptance_tests:
         empty_streams:
           - name: "project_permission_schemes"
             bypass_reason: "Unable to populate. Jira doesn't support issue security for Free plan."
+          - name: "plans"
+            bypass_reason: "Unable to populate. Plans require Jira Premium."
         timeout_seconds: 2400
         fail_on_extra_columns: false
       - config_path: "secrets/service_account_config.json"
         empty_streams:
           - name: "project_permission_schemes"
             bypass_reason: "Unable to populate. Jira doesn't support issue security for Free plan."
+          - name: "plans"
+            bypass_reason: "Unable to populate. Plans require Jira Premium."
         timeout_seconds: 2400
         fail_on_extra_columns: false
   incremental:
