@@ -28,7 +28,9 @@ definitions:
             interval: "{{ config['interval'] }}"
             adjusted: "{{ config['adjusted'] }}"
         decoder:
-          type: CsvDecoder
+          type: GzipDecoder
+          decoder:
+            type: CsvDecoder
         record_selector:
           $ref: "#/definitions/csv_record_selector"
       transformations:
@@ -55,7 +57,9 @@ definitions:
             interval: "{{ config['interval'] }}"
             adjusted: "{{ config['adjusted'] }}"
         decoder:
-          type: CsvDecoder
+          type: GzipDecoder
+          decoder:
+            type: CsvDecoder
         record_selector:
           $ref: "#/definitions/csv_record_selector"
       transformations:
@@ -82,7 +86,9 @@ definitions:
             interval: "{{ config['interval'] }}"
             adjusted: "{{ config['adjusted'] }}"
         decoder:
-          type: CsvDecoder
+          type: GzipDecoder
+          decoder:
+            type: CsvDecoder
         record_selector:
           $ref: "#/definitions/csv_record_selector"
       transformations:
@@ -109,7 +115,9 @@ definitions:
             interval: "{{ config['interval'] }}"
             adjusted: "{{ config['adjusted'] }}"
         decoder:
-          type: CsvDecoder
+          type: GzipDecoder
+          decoder:
+            type: CsvDecoder
         record_selector:
           $ref: "#/definitions/csv_record_selector"
       transformations:
@@ -136,7 +144,9 @@ definitions:
             interval: "{{ config['interval'] }}"
             adjusted: "{{ config['adjusted'] }}"
         decoder:
-          type: CsvDecoder
+          type: GzipDecoder
+          decoder:
+            type: CsvDecoder
         record_selector:
           $ref: "#/definitions/csv_record_selector"
       transformations:
@@ -163,7 +173,9 @@ definitions:
             interval: "{{ config['interval'] }}"
             adjusted: "{{ config['adjusted'] }}"
         decoder:
-          type: CsvDecoder
+          type: GzipDecoder
+          decoder:
+            type: CsvDecoder
         record_selector:
           $ref: "#/definitions/csv_record_selector"
       transformations:
@@ -190,7 +202,9 @@ definitions:
             interval: "{{ config['interval'] }}"
             adjusted: "{{ config['adjusted'] }}"
         decoder:
-          type: CsvDecoder
+          type: GzipDecoder
+          decoder:
+            type: CsvDecoder
         record_selector:
           $ref: "#/definitions/csv_record_selector"
       transformations:

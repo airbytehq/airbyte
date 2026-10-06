@@ -1,5 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import gzip
 import json
 import logging
 from pathlib import Path
@@ -70,7 +71,7 @@ def _read_stream(stream_name: str, config: dict):
 def test_time_series_records_match_legacy_extractor(stream_name, function, series_key, key_field):
     """Emitted records must be identical to what the old ObjectDpathExtractor produced."""
     with HttpMocker() as http_mocker:
-        http_mocker.get(_request(function, "csv"), HttpResponse(_fixture(f"{stream_name}.csv")))
+        http_mocker.get(_request(function, "csv"), HttpResponse(gzip.compress(_fixture(f"{stream_name}.csv").encode()), headers={"Content-Encoding": "gzip"}))
 
         output = _read_stream(stream_name, _CONFIG)
 
@@ -90,7 +91,7 @@ def test_time_series_records_match_legacy_extractor(stream_name, function, serie
 def test_time_series_information_message_yields_no_records(stream_name, function):
     """Alpha Vantage returns a JSON throttle/error body even for datatype=csv; it must be filtered out."""
     with HttpMocker() as http_mocker:
-        http_mocker.get(_request(function, "csv"), HttpResponse(_fixture("information_message.json")))
+        http_mocker.get(_request(function, "csv"), HttpResponse(gzip.compress(_fixture("information_message.json").encode()), headers={"Content-Encoding": "gzip"}))
 
         output = _read_stream(stream_name, _CONFIG)
 
@@ -128,10 +129,10 @@ def test_discover_all_streams():
 
 def test_check_succeeds():
     with HttpMocker() as http_mocker:
-        http_mocker.get(_request("TIME_SERIES_WEEKLY", "csv"), HttpResponse(_fixture("time_series_weekly.csv")))
+        http_mocker.get(_request("TIME_SERIES_WEEKLY", "csv"), HttpResponse(gzip.compress(_fixture("time_series_weekly.csv").encode()), headers={"Content-Encoding": "gzip"}))
         http_mocker.get(
             _request("TIME_SERIES_WEEKLY_ADJUSTED", "csv"),
-            HttpResponse(_fixture("time_series_weekly_adjusted.csv")),
+            HttpResponse(gzip.compress(_fixture("time_series_weekly_adjusted.csv").encode()), headers={"Content-Encoding": "gzip"}),
         )
 
         status = get_source(_CONFIG).check(logging.getLogger("airbyte"), _CONFIG)
