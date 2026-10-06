@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "trigger": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "started_at": {
+      "type": ["null", "string"]
+    },
+    "completed_at": {
+      "type": ["null", "string"]
+    },
+    "query_to": {
+      "type": ["null", "string"]
+    },
+    "result_source": {
+      "type": ["null", "string"]
+    },
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "experiment_id": {
+      "type": ["null", "integer"]
+    },
+    "total_metrics": {
+      "type": ["null", "integer"]
+    },
+    "completed_metrics": {
+      "type": ["null", "integer"]
+    },
+    "failed_metrics": {
+      "type": ["null", "integer"]
+    },
+    "rows_read": {
+      "type": ["null", "integer"]
+    },
+    "estimated_rows_total": {
+      "type": ["null", "integer"]
+    },
+    "metric_errors": {},
+    "metric_retries": {},
+    "active_run": {},
+    "is_existing": {
+      "type": ["null", "boolean"]
+    },
+    "results": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  }
+}
