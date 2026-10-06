@@ -18,6 +18,18 @@ Several output streams are available from this source:
 - [Sender Identities](https://docs.customer.io/integrations/api/app/tag/sender-identities/listsenders/) \(Full Refresh\)
 - [Segments](https://docs.customer.io/integrations/api/app/tag/segments/listsegments/) \(Incremental\): archived segments are not included; a segment archived after an incremental sync keeps its last row in the destination
 - [Segment Usage](https://docs.customer.io/integrations/api/app/tag/segments/getsegmentdependencies/) \(Full Refresh\): one record per non-archived segment
+- [Subscription Topics](https://docs.customer.io/integrations/api/app/tag/subscription-center/gettopics/) \(Full Refresh\)
+- [Object Types](https://docs.customer.io/integrations/api/app/tag/objects/getobjecttypes/) \(Full Refresh\)
+- [Workspaces](https://docs.customer.io/integrations/api/app/tag/workspaces/listworkspaces/) \(Full Refresh\)
+- [Reporting Webhooks](https://docs.customer.io/integrations/api/app/tag/reporting-webhooks/listwebhooks/) \(Full Refresh\)
+- [Snippets](https://docs.customer.io/integrations/api/app/tag/snippets/listsnippets/) \(Incremental\)
+- [Collections](https://docs.customer.io/integrations/api/app/tag/collections/getcollections/) \(Incremental\)
+
+`reporting_webhooks` syncs each webhook's `endpoint` URL as Customer.io returns it. Customer.io documents basic authentication in the URL (`http://username:password@example.com`) as a way to secure a reporting webhook, so the URL can contain the receiving service's credentials. New connections leave the stream unselected; select it only if the destination may store them. A connection set up before 0.7.0 with **Propagate all field and stream changes** selects it on its own and syncs it in its first sync on 0.7.0. To prevent that, switch the connection to **Propagate field changes only** before the upgrade; otherwise deselect the stream and delete its data from the destination.
+
+`workspaces` lists every workspace in the account with message counts for the current billing period and current people and object totals, cached by Customer.io for up to two hours. The records have no update time, so use Full Refresh | Overwrite for the latest counts, or Full Refresh | Append to keep one snapshot per sync.
+
+`collections` lists each collection's name, schema, row count and size, not its contents.
 
 If there are more endpoints you'd like Faros AI to support, please [create an
 issue.](https://github.com/faros-ai/airbyte-connectors/issues/new)
@@ -58,6 +70,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                     |
 |:--------|:-----------| :------------------------------------------------------------- |:--------------------------------------------|
+| 0.7.0 | 2026-10-07 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add subscription topic, object type, workspace, reporting webhook, snippet and collection streams |
 | 0.6.0 | 2026-10-07 | [88130](https://github.com/airbytehq/airbyte/pull/88130) | Add broadcast, newsletter variant, transactional message, sender identity and segment streams |
 | 0.5.0 | 2026-10-07 | [88129](https://github.com/airbytehq/airbyte/pull/88129) | Add rate limiting, Retry-After retries, clearer authentication errors, a one-hour lookback, and missing fields |
 | 0.4.17 | 2026-10-06 | [87812](https://github.com/airbytehq/airbyte/pull/87812) | Update dependencies |
