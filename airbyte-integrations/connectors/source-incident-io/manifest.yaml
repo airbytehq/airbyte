@@ -31,6 +31,19 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v3/actions
           http_method: GET
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: incident_mode
+          values:
+            - standard
+            - retrospective
+            - test
+            - tutorial
+            - stream
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: incident_mode
         record_selector:
           type: RecordSelector
           extractor:
@@ -109,6 +122,19 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v3/follow_ups
           http_method: GET
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: incident_mode
+          values:
+            - standard
+            - retrospective
+            - test
+            - tutorial
+            - stream
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: incident_mode
         record_selector:
           type: RecordSelector
           extractor:
