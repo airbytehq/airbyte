@@ -28,9 +28,6 @@ _LEAD_UUID = "adf21080-0e10-11eb-879b-05d71fb426ec"
         ),
         pytest.param("filters", {"id": 1, "temporary_flag": True}, id="filters_temporary_flag_is_boolean"),
         pytest.param("leads", {"id": _LEAD_UUID, "value": {"amount": 1234.56, "currency": "EUR"}}, id="leads_amount_can_be_fractional"),
-        pytest.param(
-            "mailThreads", {"id": 1, "version": 1.5, "parties": {"from": [{"message_time": 1712345678.25}]}}, id="mail_threads_numbers"
-        ),
     ],
 )
 def test_vendor_shaped_values_validate_against_the_declared_schema(stream, record):

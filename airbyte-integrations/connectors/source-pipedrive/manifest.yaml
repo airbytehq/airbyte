@@ -3058,7 +3058,7 @@ schemas:
             message_time:
               type:
                 - "null"
-                - number
+                - integer
             name:
               type:
                 - "null"
@@ -3107,7 +3107,7 @@ schemas:
             message_time:
               type:
                 - "null"
-                - number
+                - integer
             name:
               type:
                 - "null"
@@ -3115,7 +3115,7 @@ schemas:
       deleted_flag:
         type:
           - "null"
-          - number
+          - integer
       draft:
         type:
           - "null"
@@ -3164,7 +3164,7 @@ schemas:
             message_time:
               type:
                 - "null"
-                - number
+                - integer
             name:
               type:
                 - "null"
@@ -3172,19 +3172,19 @@ schemas:
       has_attachments_flag:
         type:
           - "null"
-          - number
+          - integer
       has_body_flag:
         type:
           - "null"
-          - number
+          - integer
       has_inline_attachments_flag:
         type:
           - "null"
-          - number
+          - integer
       has_real_attachments_flag:
         type:
           - "null"
-          - number
+          - integer
       id:
         type:
           - "null"
@@ -3192,7 +3192,7 @@ schemas:
       mail_link_tracking_enabled_flag:
         type:
           - "null"
-          - number
+          - integer
       mail_thread_id:
         type:
           - "null"
@@ -3209,19 +3209,19 @@ schemas:
       read_flag:
         type:
           - "null"
-          - number
+          - integer
       sent_flag:
         type:
           - "null"
-          - number
+          - integer
       sent_from_pipedrive_flag:
         type:
           - "null"
-          - number
+          - integer
       smart_bcc_flag:
         type:
           - "null"
-          - number
+          - integer
       snippet:
         type:
           - "null"
@@ -3233,7 +3233,7 @@ schemas:
       synced_flag:
         type:
           - "null"
-          - number
+          - integer
       to:
         type:
           - "null"
@@ -3274,7 +3274,7 @@ schemas:
             message_time:
               type:
                 - "null"
-                - number
+                - integer
             name:
               type:
                 - "null"
@@ -3957,7 +3957,7 @@ schemas:
       visible_to:
         type:
           - "null"
-          - number
+          - integer
       owner_id:
         type:
           - "null"
@@ -4469,17 +4469,17 @@ schemas:
       read_flag:
         type:
           - "null"
-          - number
+          - integer
       version:
-        type: number
+        type: integer
       account_id:
         type: string
       add_time:
         type: string
       all_messages_sent_flag:
-        type: number
+        type: integer
       archived_flag:
-        type: number
+        type: integer
       deal_id:
         type:
           - integer
@@ -4489,29 +4489,29 @@ schemas:
           - string
           - "null"
       deleted_flag:
-        type: number
+        type: integer
       drafts_parties:
         type: array
       external_deleted_flag:
-        type: number
+        type: integer
       first_message_timestamp:
         type: string
       first_message_to_me_flag:
-        type: number
+        type: integer
       folders:
         type: array
         items:
           type: string
       has_attachments_flag:
-        type: number
+        type: integer
       has_draft_flag:
-        type: number
+        type: integer
       has_inline_attachments_flag:
-        type: number
+        type: integer
       has_real_attachments_flag:
-        type: number
+        type: integer
       has_sent_flag:
-        type: number
+        type: integer
       id:
         type: integer
       last_message_received_timestamp:
@@ -4523,7 +4523,7 @@ schemas:
       last_message_timestamp:
         type: string
       mail_link_tracking_enabled_flag:
-        type: number
+        type: integer
       parties:
         type: object
         properties:
@@ -4549,7 +4549,7 @@ schemas:
                 mail_message_party_id:
                   type: integer
                 message_time:
-                  type: number
+                  type: integer
                 name:
                   type: string
           to:
@@ -4574,13 +4574,13 @@ schemas:
                 mail_message_party_id:
                   type: integer
                 message_time:
-                  type: number
+                  type: integer
                 name:
                   type: string
       shared_flag:
-        type: number
+        type: integer
       smart_bcc_flag:
-        type: number
+        type: integer
       snippet:
         type: string
       snippet_draft:
@@ -4592,7 +4592,7 @@ schemas:
       subject:
         type: string
       synced_flag:
-        type: number
+        type: integer
       update_time:
         type: string
       user_id:
@@ -4776,7 +4776,7 @@ schemas:
       active_flag:
         type:
           - "null"
-          - number
+          - integer
       add_time:
         type:
           - "null"
@@ -4788,7 +4788,7 @@ schemas:
       deleted_flag:
         type:
           - "null"
-          - number
+          - integer
       description:
         type:
           - "null"
