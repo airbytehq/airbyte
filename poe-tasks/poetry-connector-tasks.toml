@@ -79,9 +79,9 @@ check-all = [
 # Fix commands
 fix-ruff-format = "poetry run ruff format ."
 fix-ruff-lint = "poetry run ruff check --fix ."
-fix-ruff = [
-    "fix-ruff-format",
+fix-ruff = [ # Lint fixes first, so the formatter has the last word (same order as pre-commit)
     "fix-ruff-lint",
+    "fix-ruff-format",
 ]
 fix-all = [
     "fix-ruff",
