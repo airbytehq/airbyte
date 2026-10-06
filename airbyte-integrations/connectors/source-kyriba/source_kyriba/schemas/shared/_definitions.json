@@ -1,0 +1,865 @@
+{
+  "definitions": {
+    "AggregatedGroupDto": {
+      "type": ["object", "null"],
+      "properties": {
+        "entity": {
+          "description": "Entity",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "date": {
+          "type": ["string", "null"],
+          "format": "date",
+          "description": "Date"
+        },
+        "aggregation": {
+          "description": "Calculated aggregation of the cash flows",
+          "$ref": "#/definitions/AggregationDto"
+        },
+        "aggregationLevel": {
+          "description": "The next aggregation level",
+          "$ref": "#/definitions/AggregationLevelDto"
+        }
+      },
+      "title": "AggregatedGroupDto"
+    },
+    "AggregationDto": {
+      "type": ["object", "null"],
+      "properties": {
+        "amount": {
+          "type": ["number", "null"],
+          "example": 10580.123,
+          "description": "Calculated aggregation amount of the cash flows expressed in conversion currency"
+        },
+        "count": {
+          "type": ["integer", "null"],
+          "format": "int32",
+          "description": "Count of the aggregated cash flows."
+        }
+      },
+      "title": "AggregationDto"
+    },
+    "AggregationLevelDto": {
+      "type": ["object", "null"],
+      "properties": {
+        "level": {
+          "type": ["integer", "null"],
+          "format": "int32",
+          "example": 1,
+          "description": "The level of the aggregation"
+        },
+        "groupingCriterion": {
+          "type": ["string", "null"],
+          "example": "BANK",
+          "description": "The grouping criterion for this level"
+        },
+        "groups": {
+          "type": ["array", "null"],
+          "description": "List of aggregated groups",
+          "items": {
+            "$ref": "#/definitions/AggregatedGroupDto"
+          }
+        }
+      },
+      "title": "AggregationLevelDto"
+    },
+    "AmountModel": {
+      "type": ["object", "null"],
+      "properties": {
+        "currency": {
+          "example": "USD",
+          "description": "Amount currency",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "amount": {
+          "type": ["number", "null"],
+          "format": "double",
+          "example": 10580.123,
+          "description": "Amount value"
+        },
+        "signedAmount": {
+          "type": ["number", "null"]
+        }
+      },
+      "title": "AmountModel"
+    },
+    "AmountResponseDTO": {
+      "type": ["object", "null"],
+      "properties": {
+        "amount": {
+          "type": ["number", "null"],
+          "format": "double",
+          "example": 10580.123,
+          "description": "Amount"
+        },
+        "currency": {
+          "example": "USD",
+          "description": "Amount currency",
+          "$ref": "#/definitions/ReferenceModel"
+        }
+      },
+      "title": "AmountResponseDTO"
+    },
+    "CashAmountModel": {
+      "type": ["object", "null"],
+      "properties": {
+        "accountAmount": {
+          "type": ["number", "null"],
+          "format": "double",
+          "example": 10580.123,
+          "description": "Account amount"
+        },
+        "feeAmount": {
+          "type": ["number", "null"],
+          "format": "double",
+          "example": 10580.123,
+          "description": "Fee amount"
+        },
+        "interestAmount": {
+          "type": ["number", "null"],
+          "format": "double",
+          "example": 10580.123,
+          "description": "Interest amount"
+        },
+        "commissionAmount": {
+          "type": ["number", "null"],
+          "format": "double",
+          "example": 10580.123,
+          "description": "Commission amount"
+        }
+      },
+      "title": "CashAmountModel"
+    },
+    "CashAmountResponseDTO": {
+      "type": ["object", "null"],
+      "properties": {
+        "account": {
+          "description": "Bank account",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "flowCode": {
+          "description": "Flow code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "budgetCode": {
+          "description": "Budget code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "date": {
+          "description": "Cash flow dates",
+          "$ref": "#/definitions/CashFlowDateModel"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Cash flow's description"
+        },
+        "flowAmount": {
+          "description": "Flow amount",
+          "$ref": "#/definitions/AmountResponseDTO"
+        },
+        "accountAmount": {
+          "description": "Account amount",
+          "$ref": "#/definitions/AmountResponseDTO"
+        },
+        "status": {
+          "type": ["string", "null"],
+          "example": "CONFIRMED",
+          "description": "Cash flow status"
+        },
+        "reference": {
+          "type": ["string", "null"],
+          "description": "Cash flow's reference"
+        },
+        "origin": {
+          "type": ["string", "null"],
+          "description": "Cash flow's origin"
+        },
+        "number": {
+          "type": ["integer", "null"],
+          "format": "int32",
+          "description": "Cash flow's number"
+        },
+        "glStatus": {
+          "type": ["string", "null"],
+          "description": "Cash flow's GL status"
+        },
+        "userZones": {
+          "description": "User zones of the cash flow",
+          "$ref": "#/definitions/UserZonesModel"
+        },
+        "actualMode": {
+          "type": ["string", "null"],
+          "example": "Manual",
+          "description": "Cash flow actual mode"
+        }
+      },
+      "title": "CashAmountResponseDTO"
+    },
+    "CashFlowAggregationFilteringDto": {
+      "type": ["object", "null"],
+      "properties": {
+        "entityFilters": {
+          "type": ["array", "null"],
+          "description": "The list of the filters by entities",
+          "items": {
+            "$ref": "#/definitions/EntityFilterDto"
+          }
+        },
+        "accountType": {
+          "type": ["string", "null"],
+          "description": "The account type selected to filter cash flows"
+        },
+        "period": {
+          "description": "The period used to filter cash flows",
+          "$ref": "#/definitions/FilteringPeriodDto"
+        },
+        "flowCode": {
+          "description": "Flow code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "budgetCode": {
+          "description": "Budget code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "origin": {
+          "type": ["string", "null"],
+          "description": "Origin of a cash flow"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Description of the cash flow"
+        },
+        "reference": {
+          "type": ["string", "null"],
+          "example": "123-ABC",
+          "description": "Reference of the cash flow"
+        },
+        "status": {
+          "type": ["string", "null"],
+          "description": "Status of a cash flow"
+        },
+        "actualMode": {
+          "type": ["string", "null"],
+          "description": "Select the actual mode to filter the cash flows"
+        },
+        "glStatus": {
+          "type": ["string", "null"],
+          "description": "GL status"
+        }
+      },
+      "title": "CashFlowAggregationFilteringDto"
+    },
+    "CashFlowAggregationLevelsDto": {
+      "type": ["object", "null"],
+      "properties": {
+        "level1": {
+          "type": ["string", "null"],
+          "description": "The first level of aggregation by the grouping criterion"
+        },
+        "level2": {
+          "type": ["string", "null"],
+          "description": "The second level of aggregation by the grouping criterion"
+        },
+        "level3": {
+          "type": ["string", "null"],
+          "description": "The third level of aggregation by the grouping criterion"
+        }
+      },
+      "title": "CashFlowAggregationLevelsDto"
+    },
+    "CashFlowAggregationRequestDto": {
+      "type": ["object", "null"],
+      "properties": {
+        "filtering": {
+          "description": "Filtering",
+          "$ref": "#/definitions/CashFlowAggregationFilteringDto"
+        },
+        "currencyConversion": {
+          "description": "Currency conversion",
+          "$ref": "#/definitions/CurrencyConversionDto"
+        },
+        "aggregation": {
+          "description": "Aggregation levels",
+          "$ref": "#/definitions/CashFlowAggregationLevelsDto"
+        }
+      },
+      "title": "CashFlowAggregationRequestDto"
+    },
+    "CashFlowAggregationResponseDto": {
+      "type": ["object", "null"],
+      "properties": {
+        "accountAmountAggregationTotal": {
+          "description": "Calculated aggregation total of the cash flows",
+          "$ref": "#/definitions/AggregationDto"
+        },
+        "currency": {
+          "description": "The selected currency for conversion",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "aggregationLevel": {
+          "description": "The aggregation level",
+          "$ref": "#/definitions/AggregationLevelDto"
+        }
+      },
+      "title": "CashFlowAggregationResponseDto"
+    },
+    "CashFlowDateModel": {
+      "type": ["object", "null"],
+      "properties": {
+        "transactionDate": {
+          "type": ["string", "null"],
+          "format": "date",
+          "example": "2021-04-01",
+          "description": "Transaction date"
+        },
+        "valueDate": {
+          "type": ["string", "null"],
+          "format": "date",
+          "example": "2021-04-02",
+          "description": "Value date"
+        },
+        "accountingDate": {
+          "type": ["string", "null"],
+          "format": "date",
+          "example": "2021-04-03",
+          "description": "Accounting date"
+        },
+        "updateDateTime": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "example": "2020-01-02T13:04:35Z",
+          "description": "Update date time"
+        }
+      },
+      "title": "CashFlowDateModel"
+    },
+    "CashFlowModel": {
+      "type": ["object", "null"],
+      "properties": {
+        "account": {
+          "description": "Bank account",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "flowCode": {
+          "description": "Flow code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "budgetCode": {
+          "description": "Budget code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "status": {
+          "type": ["string", "null"],
+          "example": "CONFIRMED",
+          "description": "Cash flow status"
+        },
+        "date": {
+          "description": "Cash flow dates",
+          "$ref": "#/definitions/CashFlowDateModel"
+        },
+        "flowAmount": {
+          "description": "Flow amount",
+          "$ref": "#/definitions/AmountModel"
+        },
+        "accountAmount": {
+          "description": "Account amount",
+          "$ref": "#/definitions/CashAmountModel"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Cash flow's description"
+        },
+        "reference": {
+          "type": ["string", "null"],
+          "description": "Cash flow's reference"
+        },
+        "userZones": {
+          "description": "User zones of the cash flow",
+          "$ref": "#/definitions/UserZonesModel"
+        }
+      },
+      "title": "CashFlowModel"
+    },
+    "CashFlowResponseDetailed": {
+      "type": ["object", "null"],
+      "properties": {
+        "currency": {
+          "example": "USD",
+          "description": "Amount currency",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "feeAmount": {
+          "type": ["number", "null"],
+          "format": "double",
+          "example": 10580.123,
+          "description": "Fee amount"
+        },
+        "interestAmount": {
+          "type": ["number", "null"],
+          "format": "double",
+          "example": 10580.123,
+          "description": "Interest amount"
+        },
+        "commissionAmount": {
+          "type": ["number", "null"],
+          "format": "double",
+          "example": 10580.123,
+          "description": "Commission amount"
+        },
+        "updateDateTime": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "example": "2021-04-02T12:12:12Z",
+          "description": "Last update date of the cash flow."
+        },
+        "flowID": {
+          "type": ["string", "null"],
+          "description": "Flow ID"
+        },
+        "companyConsolidationCode": {
+          "type": ["string", "null"],
+          "description": "Company consolidation code"
+        },
+        "company": {
+          "description": "Company",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "bank": {
+          "description": "Bank",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "branch": {
+          "description": "Branch",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "forecastGlCountervalue": {
+          "description": "Forecast GL Countervalue",
+          "$ref": "#/definitions/AmountResponseDTO"
+        },
+        "companyGlAmount": {
+          "description": "Company GL amount",
+          "$ref": "#/definitions/AmountResponseDTO"
+        },
+        "debitCreditType": {
+          "type": ["string", "null"],
+          "description": "Type of GL"
+        },
+        "counterpartyFlow": {
+          "description": "Counterparty flow",
+          "$ref": "#/definitions/CounterpartyFlowModel"
+        },
+        "account": {
+          "description": "Bank account",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "flowCode": {
+          "description": "Flow code",
+          "$ref": "#/definitions/ReferenceModel"
+        }
+      },
+      "title": "CashFlowResponseDetailed"
+    },
+    "CashFlowSearchModel": {
+      "type": ["object", "null"],
+      "properties": {
+        "account": {
+          "description": "Bank account",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "flowCode": {
+          "description": "Flow code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "budgetCode": {
+          "description": "Budget code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "date": {
+          "description": "Cash flow dates",
+          "$ref": "#/definitions/CashFlowDateModel"
+        },
+        "status": {
+          "type": ["string", "null"],
+          "example": "CONFIRMED",
+          "description": "Cash flow status"
+        },
+        "flowAmount": {
+          "description": "Flow amount",
+          "$ref": "#/definitions/AmountModel"
+        },
+        "accountAmount": {
+          "description": "Account amount",
+          "$ref": "#/definitions/AmountModel"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Cash flow's description"
+        },
+        "reference": {
+          "type": ["string", "null"],
+          "description": "Cash flow's reference"
+        },
+        "origin": {
+          "type": ["string", "null"],
+          "description": "Cash flow's origin"
+        },
+        "number": {
+          "type": ["integer", "null"],
+          "format": "int32",
+          "description": "Cash flow's number"
+        },
+        "glStatus": {
+          "type": ["string", "null"],
+          "example": "BALANCED",
+          "description": "Cash flow GL status"
+        },
+        "userZones": {
+          "description": "User zones of the cash flow",
+          "$ref": "#/definitions/UserZonesModel"
+        },
+        "actualMode": {
+          "type": ["string", "null"],
+          "example": "Manual",
+          "description": "Cash flow actual mode"
+        }
+      },
+      "title": "CashFlowSearchModel"
+    },
+    "CashFlowUpdateModel": {
+      "type": ["object", "null"],
+      "properties": {
+        "account": {
+          "description": "Bank account",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "flowCode": {
+          "description": "Flow code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "budgetCode": {
+          "description": "Budget code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "status": {
+          "type": ["string", "null"],
+          "example": "CONFIRMED",
+          "description": "Cash flow status"
+        },
+        "date": {
+          "description": "Cash flow dates",
+          "$ref": "#/definitions/CashFlowDateModel"
+        },
+        "flowAmount": {
+          "description": "Flow amount",
+          "$ref": "#/definitions/AmountModel"
+        },
+        "accountAmount": {
+          "description": "Account amount",
+          "$ref": "#/definitions/CashAmountModel"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Cash flow's description"
+        },
+        "reference": {
+          "type": ["string", "null"],
+          "description": "Cash flow's reference"
+        },
+        "userZones": {
+          "description": "User zones of the cash flow",
+          "$ref": "#/definitions/UserZonesModel"
+        }
+      },
+      "title": "CashFlowUpdateModel"
+    },
+    "CounterpartyFlowModel": {
+      "type": ["object", "null"],
+      "properties": {
+        "company": {
+          "description": "Company",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "consolidationCode": {
+          "type": ["string", "null"],
+          "description": "Consolidation code"
+        }
+      },
+      "title": "CounterpartyFlowModel"
+    },
+    "CurrencyConversionDto": {
+      "type": ["object", "null"],
+      "properties": {
+        "currency": {
+          "description": "Currency used for conversion",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "currencyRate": {
+          "description": "Currency rate to use for currency conversion",
+          "$ref": "#/definitions/CurrencyConversionRateDto"
+        }
+      },
+      "title": "CurrencyConversionDto"
+    },
+    "CurrencyConversionRateDto": {
+      "type": ["object", "null"],
+      "properties": {
+        "mode": {
+          "type": ["string", "null"],
+          "description": "Currency rate mode to use for currency conversion"
+        },
+        "fixingDate": {
+          "type": ["string", "null"],
+          "format": "date",
+          "example": "2020-02-01",
+          "description": "The date of the currency rate to be used if selected mode is FIXING."
+        },
+        "historicalDateType": {
+          "type": ["string", "null"],
+          "description": "The dates of that type of the cash flows will be used as the currency rate datesif selected mode is HISTORICAL."
+        },
+        "type": {
+          "description": "Currency rate type",
+          "$ref": "#/definitions/ReferenceModel"
+        }
+      },
+      "title": "CurrencyConversionRateDto"
+    },
+    "EntityFilterDto": {
+      "type": ["object", "null"],
+      "properties": {
+        "entityType": {
+          "type": ["string", "null"],
+          "description": "The entity type to filter cash flows"
+        },
+        "entities": {
+          "type": ["array", "null"],
+          "description": "The entities to filter cash flows of the specified type",
+          "items": {
+            "$ref": "#/definitions/ReferenceModel"
+          }
+        }
+      },
+      "title": "EntityFilterDto"
+    },
+    "FilteringPeriodDto": {
+      "type": ["object", "null"],
+      "properties": {
+        "dateType": {
+          "type": ["string", "null"],
+          "example": "TRANSACTION",
+          "description": "The date type based on which the period is defined"
+        },
+        "startDate": {
+          "type": ["string", "null"],
+          "format": "date",
+          "example": "2021-04-02",
+          "description": "The start date of the filtering period"
+        },
+        "endDate": {
+          "type": ["string", "null"],
+          "format": "date",
+          "example": "2021-04-03",
+          "description": "The end date of the filtering period"
+        }
+      },
+      "title": "FilteringPeriodDto"
+    },
+    "InnerError": {
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "type": ["string", "null"],
+          "example": "Invalid",
+          "description": "One of a server-defined set of error codes."
+        },
+        "innererror": {
+          "description": "An object containing more specific information than the current object about the error.",
+          "$ref": "#/definitions/InnerError"
+        }
+      },
+      "title": "InnerError",
+      "description": "An object containing more specific information than the current object about the error."
+    },
+    "ReferenceModel": {
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "type": ["null", "string"],
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": ["null", "string"],
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "ResponseUUIDModel": {
+      "type": ["object", "null"],
+      "properties": {
+        "uuid": {
+          "type": ["string", "null"],
+          "format": "uuid",
+          "example": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "description": "UUID of the created resource."
+        }
+      },
+      "title": "ResponseUUIDModel"
+    },
+    "RestApiError": {
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "type": ["string", "null"],
+          "example": "Invalid",
+          "description": "One of a server-defined set of error codes."
+        },
+        "details": {
+          "type": ["array", "null"],
+          "example": [
+            {
+              "code": "Invalid",
+              "message": "must not be blank",
+              "target": "target"
+            }
+          ],
+          "description": "An array of details about specific errors that led to this reported error.",
+          "items": {
+            "$ref": "#/definitions/RestApiError"
+          }
+        },
+        "innererror": {
+          "description": "An object containing more specific information than the current object about the error.",
+          "$ref": "#/definitions/InnerError"
+        },
+        "message": {
+          "type": ["string", "null"],
+          "example": "The request failed because it contained invalid values",
+          "description": "A human-readable representation of the error."
+        },
+        "target": {
+          "type": ["string", "null"],
+          "example": "target",
+          "description": "The target of the error."
+        }
+      },
+      "title": "RestApiError",
+      "description": "REST API Error."
+    },
+    "RestApiErrorResponse": {
+      "type": ["object", "null"],
+      "properties": {
+        "error": {
+          "description": "The error object.",
+          "$ref": "#/definitions/RestApiError"
+        }
+      },
+      "title": "RestApiErrorResponse",
+      "description": "REST API Error Response."
+    },
+    "UserZonesModel": {
+      "type": ["null", "object"],
+      "properties": {
+        "userZone1": {
+          "type": ["null", "string"],
+          "description": "Free field whose type (Alphanumeric, Numeric, Date, List) is defined in the application setup. The imported value must be consistent with the field type. And the total length across all user zone values must be of 250 characters max"
+        },
+        "userZone2": {
+          "type": ["null", "string"],
+          "description": "Free field. Same behavior as field User zone 1"
+        },
+        "userZone3": {
+          "type": ["null", "string"],
+          "description": "Free field. Same behavior as field User zone 1"
+        },
+        "userZone4": {
+          "type": ["null", "string"],
+          "description": "Free field. Same behavior as field User zone 1"
+        },
+        "userZone5": {
+          "type": ["null", "string"],
+          "description": "Free field. Same behavior as field User zone 1"
+        }
+      },
+      "title": "UserZonesModel"
+    },
+    "_links": {
+      "type": ["object", "null"],
+      "properties": {
+        "current": {
+          "type": ["string", "null"],
+          "example": "https://host/gateway/api/resources?page.limit=10&page.offset=10",
+          "description": "Current page."
+        },
+        "next": {
+          "type": ["string", "null"],
+          "example": "https://host/gateway/api/resources?page.limit=10&page.offset=20",
+          "description": "Next page."
+        },
+        "prev": {
+          "type": ["string", "null"],
+          "example": "https://host/gateway/api/resources?page.limit=10&page.offset=0",
+          "description": "Previous page."
+        }
+      },
+      "title": "_links"
+    },
+    "_metadata": {
+      "type": ["object", "null"],
+      "properties": {
+        "links": {
+          "description": "Links for pages.",
+          "$ref": "#/definitions/_links"
+        },
+        "numberOfTotalResults": {
+          "type": ["integer", "null"],
+          "format": "int64",
+          "example": 100,
+          "description": "The number of total records.",
+          "exclusiveMinimum": false
+        },
+        "pageLimit": {
+          "type": ["integer", "null"],
+          "format": "int32",
+          "example": 100,
+          "description": "Limit the number of records per page. By default 100.",
+          "exclusiveMinimum": false
+        },
+        "pageOffset": {
+          "type": ["integer", "null"],
+          "format": "int32",
+          "example": 0,
+          "description": "Page Offset means the number of records you want to skip before starting reading. By default 0.",
+          "exclusiveMinimum": false
+        },
+        "pageResults": {
+          "type": ["integer", "null"],
+          "format": "int64",
+          "example": 10,
+          "description": "The number of records in current page.",
+          "exclusiveMinimum": false
+        }
+      },
+      "title": "_metadata"
+    },
+    "_pageOfCashFlowSearchModel": {
+      "type": ["object", "null"],
+      "properties": {
+        "metadata": {
+          "$ref": "#/definitions/_metadata"
+        },
+        "results": {
+          "type": ["array", "null"],
+          "items": {
+            "$ref": "#/definitions/CashFlowSearchModel"
+          }
+        }
+      },
+      "title": "_pageOfCashFlowSearchModel"
+    }
+  }
+}

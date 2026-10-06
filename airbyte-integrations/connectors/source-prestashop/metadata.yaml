@@ -1,0 +1,45 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 100
+  allowedHosts:
+    hosts:
+      - ${domain}
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d60a46d4-709f-4092-a6b7-2457f7d455f5
+  dockerImageTag: 1.2.7
+  dockerRepository: airbyte/source-prestashop
+  documentationUrl: https://docs.airbyte.com/integrations/sources/prestashop
+  githubIssueLabel: source-prestashop
+  icon: prestashop.svg
+  license: ELv2
+  name: PrestaShop
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: beta
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-prestashop
+  supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+    - suite: unitTests
+    - suite: integrationTests
+  externalDocumentationUrls:
+    - title: PrestaShop Web Service API
+      url: https://devdocs.prestashop-project.org/8/webservice/
+      type: api_reference
+    - title: PrestaShop authentication
+      url: https://devdocs.prestashop-project.org/8/webservice/tutorials/creating-access/
+      type: authentication_guide
+metadataSpecVersion: "1.0"

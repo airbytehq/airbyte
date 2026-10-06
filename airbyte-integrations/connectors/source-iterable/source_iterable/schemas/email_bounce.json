@@ -1,0 +1,50 @@
+{
+  "properties": {
+    "createdAt": {
+      "description": "The date and time when the email bounce data was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "campaignId": {
+      "description": "The unique identifier of the campaign associated with the email bounce data.",
+      "type": ["null", "integer"]
+    },
+    "itblInternal": {
+      "description": "Internal information related to Iterable.",
+      "type": ["null", "object"],
+      "properties": {
+        "documentCreatedAt": {
+          "description": "The date and time when the internal document for Iterable was created.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "documentUpdatedAt": {
+          "description": "The date and time when the internal document for Iterable was last updated.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    },
+    "messageId": {
+      "description": "The unique identifier of the message associated with the email bounce data.",
+      "type": ["null", "string"]
+    },
+    "templateId": {
+      "description": "The unique identifier of the email template associated with the bounce data.",
+      "type": ["null", "integer"]
+    },
+    "email": {
+      "description": "The email address that encountered a bounce.",
+      "type": ["null", "string"]
+    },
+    "userId": {
+      "description": "The unique identifier of the user associated with the bounced email address.",
+      "type": ["null", "string"]
+    },
+    "recipientState": {
+      "description": "The state of the recipient email address at the time of the bounce (e.g., active, inactive).",
+      "type": ["null", "string"]
+    }
+  },
+  "type": ["null", "object"]
+}

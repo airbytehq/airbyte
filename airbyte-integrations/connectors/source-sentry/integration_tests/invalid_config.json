@@ -1,0 +1,6 @@
+{
+  "auth_token": "invalid-token",
+  "hostname": "sentry.io",
+  "organization": "invalid-organization",
+  "project": "invalid-project"
+}

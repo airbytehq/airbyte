@@ -1,0 +1,46 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 547dc08e-ab51-421d-953b-8f3745201a8c
+  dockerImageTag: 0.1.59
+  dockerRepository: airbyte/source-kyriba
+  documentationUrl: https://docs.airbyte.com/integrations/sources/kyriba
+  githubIssueLabel: source-kyriba
+  icon: kyriba.svg
+  license: ELv2
+  name: Kyriba
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-kyriba
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    # Disable acceptance tests for now
+    # No / Low airbyte cloud usage
+    # - suite: acceptanceTests
+    #   testSecrets:
+    #     - name: SECRET_SOURCE_KYRIBA__CREDS
+    #       fileName: config.json
+    #       secretStore:
+    #         type: GSM
+    #         alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Kyriba API documentation
+      url: https://developer.kyriba.com/
+      type: api_reference
+metadataSpecVersion: "1.0"

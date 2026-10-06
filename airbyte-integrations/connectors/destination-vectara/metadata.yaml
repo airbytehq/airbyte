@@ -1,0 +1,48 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.vectara.io
+      - vectara-prod-${self.customer_id}.auth.us-west-2.amazoncognito.com
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 102900e7-a236-4c94-83e4-a4189b99adc2
+  dockerImageTag: 0.2.31
+  dockerRepository: airbyte/destination-vectara
+  githubIssueLabel: destination-vectara
+  icon: vectara.svg
+  license: ELv2
+  name: Vectara
+  remoteRegistries:
+    pypi:
+      enabled: false # TODO: enable once the CLI is working
+      packageName: airbyte-destination-vectara
+  releaseDate: 2023-12-16
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/vectara
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION_VECTARA_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Vectara documentation
+      url: https://docs.vectara.com/
+      type: api_reference
+    - title: Authentication
+      url: https://docs.vectara.com/docs/learn/authentication/auth-overview
+      type: authentication_guide
+metadataSpecVersion: "1.0"

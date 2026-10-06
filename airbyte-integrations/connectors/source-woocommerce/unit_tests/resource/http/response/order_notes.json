@@ -1,0 +1,25 @@
+[
+  {
+    "id": 281,
+    "author": "WooCommerce",
+    "date_created": "2024-03-15T10:31:00",
+    "date_created_gmt": "2024-03-15T10:31:00",
+    "note": "Payment received via Stripe.",
+    "customer_note": false,
+    "_links": {
+      "self": [
+        {
+          "href": "https://test-shop.example.com/wp-json/wc/v3/orders/727/notes/281"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://test-shop.example.com/wp-json/wc/v3/orders/727/notes"
+        }
+      ],
+      "up": [
+        { "href": "https://test-shop.example.com/wp-json/wc/v3/orders/727" }
+      ]
+    }
+  }
+]

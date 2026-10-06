@@ -1,0 +1,827 @@
+version: 5.16.0
+
+type: DeclarativeSource
+
+description: >-
+  This is the Onfleet connector that ingests data from the Onfleet API.
+
+
+  Onfleet is the world's advanced logistics software that delights customers,
+  scale operations, and boost efficiency https://onfleet.com/
+
+
+  In order to use this source you must first create an account on Onfleet. Once
+  logged in, you can find the can create an API keys through the settings menu
+  in the dashboard, by going into the API section.
+
+
+  You can find more information about the API here
+  https://docs.onfleet.com/reference/setup-tutorial
+
+check:
+  type: CheckStream
+  stream_names:
+    - workers
+
+definitions:
+  streams:
+    workers:
+      type: DeclarativeStream
+      name: workers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/workers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workers"
+    administrators:
+      type: DeclarativeStream
+      name: administrators
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/admins
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/administrators"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/teams
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    hubs:
+      type: DeclarativeStream
+      name: hubs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/hubs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/hubs"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: lastId
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('lastId') }}"
+            stop_condition: "{{ response.get('lastId') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    containers:
+      type: DeclarativeStream
+      name: containers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/containers/workers/{{ stream_slice.worker_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: worker_id
+              stream:
+                $ref: "#/definitions/streams/workers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/containers"
+  base_requester:
+    type: HttpRequester
+    url_base: https://onfleet.com
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/workers"
+  - $ref: "#/definitions/streams/administrators"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/hubs"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/containers"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - password
+    properties:
+      api_key:
+        type: string
+        description: >-
+          API key to use for authenticating requests. You can create and manage
+          your API keys in the API section of the Onfleet dashboard.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      password:
+        type: string
+        description: >-
+          Placeholder for basic HTTP auth password - should be set to empty
+          string
+        name: password
+        order: 1
+        title: Placeholder Password
+        default: x
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    workers: true
+    administrators: false
+    teams: false
+    hubs: false
+    tasks: false
+    containers: true
+  testedStreams:
+    workers:
+      streamHash: 4e4085588a0a68d16ff464a0f06756f90ba1579c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    administrators:
+      streamHash: 86bf4b87b06b606bf5317cd75403626232cc338e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams:
+      streamHash: 5c5a6e8dfa1d1f93921563dbbe5c24179c4e3b54
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    hubs:
+      streamHash: 05fc33213f414d818d7100942eb057100bdcdbb5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tasks:
+      hasRecords: true
+      streamHash: e95fcb0a6846523fa0bd74c3aa979463ff7705f0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    containers:
+      streamHash: 2621785beff7dd4b16bc99cd0d2da1087166191c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://docs.onfleet.com/reference/setup-tutorial
+
+schemas:
+  workers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - array
+          - "null"
+      accountStatus:
+        type:
+          - string
+          - "null"
+      additionalCapacities:
+        type:
+          - object
+          - "null"
+        properties:
+          capacityA:
+            type:
+              - number
+              - "null"
+          capacityB:
+            type:
+              - number
+              - "null"
+          capacityC:
+            type:
+              - number
+              - "null"
+      capacity:
+        type:
+          - number
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      onDuty:
+        type:
+          - boolean
+          - "null"
+      organization:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      tasks:
+        type:
+          - array
+          - "null"
+      teams:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      timeCreated:
+        type:
+          - number
+          - "null"
+      timeLastModified:
+        type:
+          - number
+          - "null"
+      userData:
+        type:
+          - object
+          - "null"
+      vehicle:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          timeCreated:
+            type:
+              - number
+              - "null"
+          timeLastModified:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+  administrators:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - array
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isAccountOwner:
+        type:
+          - boolean
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      isReadOnly:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      organization:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      teams:
+        type:
+          - array
+          - "null"
+      timeCreated:
+        type:
+          - number
+          - "null"
+      timeLastModified:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  teams:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  hubs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - object
+          - "null"
+        properties:
+          apartment:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          number:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          street:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      location:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      name:
+        type:
+          - string
+          - "null"
+      teams:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - id
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      metadata:
+        type:
+          - array
+          - "null"
+      additionalQuantities:
+        type:
+          - object
+          - "null"
+        properties:
+          quantityA:
+            type:
+              - number
+              - "null"
+          quantityB:
+            type:
+              - number
+              - "null"
+          quantityC:
+            type:
+              - number
+              - "null"
+      appearance:
+        type:
+          - object
+          - "null"
+        properties: {}
+      completeAfter:
+        type:
+          - number
+          - "null"
+      completionDetails:
+        type:
+          - object
+          - "null"
+        properties:
+          actions:
+            type:
+              - array
+              - "null"
+          events:
+            type:
+              - array
+              - "null"
+          failureNotes:
+            type:
+              - string
+              - "null"
+          failureReason:
+            type:
+              - string
+              - "null"
+          firstLocation:
+            type:
+              - array
+              - "null"
+          lastLocation:
+            type:
+              - array
+              - "null"
+          successNotes:
+            type:
+              - string
+              - "null"
+          unavailableAttachments:
+            type:
+              - array
+              - "null"
+      container:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          organization:
+            type:
+              - string
+              - "null"
+      creator:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - array
+          - "null"
+      dependencies:
+        type:
+          - array
+          - "null"
+      destination:
+        type:
+          - object
+          - "null"
+        properties:
+          metadata:
+            type:
+              - array
+              - "null"
+          address:
+            type:
+              - object
+              - "null"
+            properties:
+              apartment:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              number:
+                type:
+                  - string
+                  - "null"
+              postalCode:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              street:
+                type:
+                  - string
+                  - "null"
+          googlePlaceId:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          location:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          notes:
+            type:
+              - string
+              - "null"
+          timeCreated:
+            type:
+              - number
+              - "null"
+          timeLastModified:
+            type:
+              - number
+              - "null"
+          useGPS:
+            type:
+              - boolean
+              - "null"
+          warnings:
+            type:
+              - array
+              - "null"
+      executor:
+        type:
+          - string
+          - "null"
+      feedback:
+        type:
+          - array
+          - "null"
+      id:
+        type: string
+      identity:
+        type:
+          - object
+          - "null"
+        properties:
+          failedScanCount:
+            type:
+              - number
+              - "null"
+      merchant:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      organization:
+        type:
+          - string
+          - "null"
+      overrides:
+        type:
+          - object
+          - "null"
+      pickupTask:
+        type:
+          - boolean
+          - "null"
+      quantity:
+        type:
+          - number
+          - "null"
+      recipients:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            metadata:
+              type:
+                - array
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            notes:
+              type:
+                - string
+                - "null"
+            organization:
+              type:
+                - string
+                - "null"
+            phone:
+              type:
+                - string
+                - "null"
+            skipSMSNotifications:
+              type:
+                - boolean
+                - "null"
+            timeCreated:
+              type:
+                - number
+                - "null"
+            timeLastModified:
+              type:
+                - number
+                - "null"
+      scanOnlyRequiredBarcodes:
+        type:
+          - boolean
+          - "null"
+      serviceTime:
+        type:
+          - number
+          - "null"
+      shortId:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - number
+          - "null"
+      timeCreated:
+        type:
+          - number
+          - "null"
+      timeLastModified:
+        type:
+          - number
+          - "null"
+      trackingURL:
+        type:
+          - string
+          - "null"
+      trackingViewed:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  containers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      organization:
+        type:
+          - string
+          - "null"
+      tasks:
+        type:
+          - array
+          - "null"
+      timeCreated:
+        type:
+          - number
+          - "null"
+      timeLastModified:
+        type:
+          - number
+          - "null"
+      worker:
+        type:
+          - string
+          - "null"
+    required:
+      - id

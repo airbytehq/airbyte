@@ -1,0 +1,83 @@
+# Airbyte
+
+This source syncs metadata about your Airbyte workspaces, connections, and sync jobs from the [Airbyte API](https://reference.airbyte.com/reference/getting-started). It works with Airbyte Cloud and with self-managed Airbyte deployments.
+
+## Prerequisites
+
+- An Airbyte application client ID and client secret. To create an application, see [Get an API access token](/platform/using-airbyte/configuring-api-access). The connector exchanges these credentials for an access token, so you don't need to generate a token yourself.
+- The connector can only read workspaces, connections, and jobs that the Airbyte user who owns the application can access.
+
+## Set up the connector
+
+1. Enter your **Client ID** and **Client Secret**.
+2. Enter a **Start date** in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2025-01-01T00:00:00Z`. The connector only syncs jobs updated on or after this date.
+3. If you use a self-managed deployment, enter its hostname in **Self-Managed Host**, for example `airbyte.example.com`. Don't include `https://` or a path. The connector sends requests to `https://<host>/api/public/v1/`, so your deployment must be reachable over HTTPS. Leave this field empty to connect to Airbyte Cloud.
+
+## Supported streams
+
+| Stream | Primary key | Full refresh | Incremental | Notes |
+| --- | --- | --- | --- | --- |
+| Workspaces | `workspaceId` | ✅ | ❌ | |
+| Connections | `connectionId` | ✅ | ❌ | Excludes deleted connections. |
+| Jobs | `jobId` | ✅ | ✅ | Uses `lastUpdatedAt` as the cursor. The connector requests jobs for each connection in the Connections stream, so jobs for deleted connections aren't synced. Jobs without a `lastUpdatedAt` value are skipped. |
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.1.37 | 2026-10-06 | [87758](https://github.com/airbytehq/airbyte/pull/87758) | Update dependencies |
+| 0.1.36 | 2026-10-03 | [87640](https://github.com/airbytehq/airbyte/pull/87640) | Fix OAuth token URL (`applications//token` returned 401) |
+| 0.1.35 | 2026-09-29 | [87056](https://github.com/airbytehq/airbyte/pull/87056) | Update dependencies |
+| 0.1.34 | 2026-09-22 | [86531](https://github.com/airbytehq/airbyte/pull/86531) | Update dependencies |
+| 0.1.33 | 2026-09-15 | [85954](https://github.com/airbytehq/airbyte/pull/85954) | Update dependencies |
+| 0.1.32 | 2026-09-08 | [85383](https://github.com/airbytehq/airbyte/pull/85383) | Update dependencies |
+| 0.1.31 | 2026-08-18 | [84501](https://github.com/airbytehq/airbyte/pull/84501) | Update dependencies |
+| 0.1.30 | 2026-08-11 | [83840](https://github.com/airbytehq/airbyte/pull/83840) | Update dependencies |
+| 0.1.29 | 2026-08-04 | [83350](https://github.com/airbytehq/airbyte/pull/83350) | Update dependencies |
+| 0.1.28 | 2026-07-28 | [82802](https://github.com/airbytehq/airbyte/pull/82802) | Update dependencies |
+| 0.1.27 | 2026-07-21 | [82327](https://github.com/airbytehq/airbyte/pull/82327) | Update dependencies |
+| 0.1.26 | 2026-07-14 | [81719](https://github.com/airbytehq/airbyte/pull/81719) | Update dependencies |
+| 0.1.25 | 2026-06-30 | [80967](https://github.com/airbytehq/airbyte/pull/80967) | Update dependencies |
+| 0.1.24 | 2026-06-23 | [80354](https://github.com/airbytehq/airbyte/pull/80354) | Update dependencies |
+| 0.1.23 | 2026-06-16 | [79755](https://github.com/airbytehq/airbyte/pull/79755) | Update dependencies |
+| 0.1.22 | 2026-06-09 | [79199](https://github.com/airbytehq/airbyte/pull/79199) | Update dependencies |
+| 0.1.21 | 2026-06-02 | [78606](https://github.com/airbytehq/airbyte/pull/78606) | Update dependencies |
+| 0.1.20 | 2026-04-28 | [77153](https://github.com/airbytehq/airbyte/pull/77153) | Update dependencies |
+| 0.1.19 | 2026-04-21 | [76495](https://github.com/airbytehq/airbyte/pull/76495) | Update dependencies |
+| 0.1.18 | 2026-03-17 | [74969](https://github.com/airbytehq/airbyte/pull/74969) | Update dependencies |
+| 0.1.17 | 2026-03-10 | [74556](https://github.com/airbytehq/airbyte/pull/74556) | Update dependencies |
+| 0.1.16 | 2026-02-03 | [72371](https://github.com/airbytehq/airbyte/pull/72371) | Update dependencies |
+| 0.1.15 | 2026-01-14 | [71507](https://github.com/airbytehq/airbyte/pull/71507) | Update dependencies |
+| 0.1.14 | 2025-12-18 | [70560](https://github.com/airbytehq/airbyte/pull/70560) | Update dependencies |
+| 0.1.13 | 2025-11-25 | [69908](https://github.com/airbytehq/airbyte/pull/69908) | Update dependencies |
+| 0.1.12 | 2025-10-29 | [69033](https://github.com/airbytehq/airbyte/pull/69033) | Update dependencies |
+| 0.1.11 | 2025-10-14 | [67831](https://github.com/airbytehq/airbyte/pull/67831) | Update dependencies |
+| 0.1.10 | 2025-09-30 | [65650](https://github.com/airbytehq/airbyte/pull/65650) | Update dependencies |
+| 0.1.9 | 2025-08-23 | [65318](https://github.com/airbytehq/airbyte/pull/65318) | Update dependencies |
+| 0.1.8 | 2025-07-19 | [63476](https://github.com/airbytehq/airbyte/pull/63476) | Update dependencies |
+| 0.1.7 | 2025-06-28 | [62144](https://github.com/airbytehq/airbyte/pull/62144) | Update dependencies |
+| 0.1.6 | 2025-06-15 | [60611](https://github.com/airbytehq/airbyte/pull/60611) | Update dependencies |
+| 0.1.5 | 2025-05-10 | [59852](https://github.com/airbytehq/airbyte/pull/59852) | Update dependencies |
+| 0.1.4 | 2025-05-03 | [59370](https://github.com/airbytehq/airbyte/pull/59370) | Update dependencies |
+| 0.1.3 | 2025-04-26 | [58721](https://github.com/airbytehq/airbyte/pull/58721) | Update dependencies |
+| 0.1.2 | 2025-04-19 | [58276](https://github.com/airbytehq/airbyte/pull/58276) | Update dependencies |
+| 0.1.1 | 2025-04-12 | [57637](https://github.com/airbytehq/airbyte/pull/57637) | Update dependencies |
+| 0.1.0 | 2025-04-08 | [57518](https://github.com/airbytehq/airbyte/pull/57518) | Fixed jobs incremental syncing by filtering out null updatedAt records |
+| 0.0.9 | 2025-04-05 | [57155](https://github.com/airbytehq/airbyte/pull/57155) | Update dependencies |
+| 0.0.8 | 2025-03-29 | [56560](https://github.com/airbytehq/airbyte/pull/56560) | Update dependencies |
+| 0.0.7 | 2025-03-22 | [56130](https://github.com/airbytehq/airbyte/pull/56130) | Update dependencies |
+| 0.0.6 | 2025-03-08 | [55365](https://github.com/airbytehq/airbyte/pull/55365) | Update dependencies |
+| 0.0.5 | 2025-03-01 | [54841](https://github.com/airbytehq/airbyte/pull/54841) | Update dependencies |
+| 0.0.4 | 2025-02-22 | [54269](https://github.com/airbytehq/airbyte/pull/54269) | Update dependencies |
+| 0.0.3 | 2025-02-15 | [48905](https://github.com/airbytehq/airbyte/pull/48905) | Update dependencies |
+| 0.0.2 | 2024-10-28 | [47572](https://github.com/airbytehq/airbyte/pull/47572) | Update dependencies |
+| 0.0.1 | 2024-08-27 | | Initial release by [@johnwasserman](https://github.com/johnwasserman) via Connector Builder |
+
+</details>

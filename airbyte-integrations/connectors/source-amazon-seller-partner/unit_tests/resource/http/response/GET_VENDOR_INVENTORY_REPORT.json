@@ -1,0 +1,167 @@
+{
+  "reportSpecification": {
+    "reportType": "GET_VENDOR_INVENTORY_REPORT",
+    "reportOptions": {
+      "reportPeriod": "WEEK",
+      "sellingProgram": "RETAIL",
+      "distributorView": "MANUFACTURING"
+    },
+    "dataStartTime": "2021-06-06",
+    "dataEndTime": "2021-06-19",
+    "marketplaceIds": ["ATVPDKIKX0DER"]
+  },
+  "inventoryAggregate": [
+    {
+      "startDate": "2021-06-06",
+      "endDate": "2021-06-12",
+      "vendorConfirmationRate": 0.88,
+      "netReceivedInventoryCost": {
+        "amount": 2345.5,
+        "currencyCode": "USD"
+      },
+      "netReceivedInventoryUnits": 278,
+      "openPurchaseOrderUnits": 123,
+      "averageVendorLeadTimeDays": 10.2,
+      "sellThroughRate": 0.88,
+      "unfilledCustomerOrderedUnits": 12,
+      "sellableOnHandInventoryCost": {
+        "amount": 43123.99,
+        "currencyCode": "USD"
+      },
+      "sellableOnHandInventoryUnits": 5490,
+      "unsellableOnHandInventoryCost": {
+        "amount": 2345.5,
+        "currencyCode": "USD"
+      },
+      "unsellableOnHandInventoryUnits": 881,
+      "aged90PlusDaysSellableInventoryCost": {
+        "amount": 123.5,
+        "currencyCode": "USD"
+      },
+      "aged90PlusDaysSellableInventoryUnits": 2234,
+      "unhealthyInventoryCost": {
+        "amount": 123.45,
+        "currencyCode": "USD"
+      },
+      "unhealthyInventoryUnits": 114,
+      "procurableProductOutOfStockRate": 0.72,
+      "uft": 0.19,
+      "receiveFillRate": 0.67
+    },
+    {
+      "startDate": "2021-06-13",
+      "endDate": "2021-06-19",
+      "vendorConfirmationRate": 0.98,
+      "netReceivedInventoryCost": {
+        "amount": 4335.5,
+        "currencyCode": "USD"
+      },
+      "netReceivedInventoryUnits": 123,
+      "openPurchaseOrderUnits": 422,
+      "averageVendorLeadTimeDays": 5.2,
+      "sellThroughRate": 0.98,
+      "unfilledCustomerOrderedUnits": 3,
+      "sellableOnHandInventoryCost": {
+        "amount": 43123.99,
+        "currencyCode": "USD"
+      },
+      "sellableOnHandInventoryUnits": 4490,
+      "unsellableOnHandInventoryCost": {
+        "amount": 3345.5,
+        "currencyCode": "USD"
+      },
+      "unsellableOnHandInventoryUnits": 881,
+      "aged90PlusDaysSellableInventoryCost": {
+        "amount": 323.5,
+        "currencyCode": "USD"
+      },
+      "aged90PlusDaysSellableInventoryUnits": 2234,
+      "unhealthyInventoryCost": {
+        "amount": 323.45,
+        "currencyCode": "USD"
+      },
+      "unhealthyInventoryUnits": 314,
+      "procurableProductOutOfStockRate": 0.73,
+      "uft": 0.18,
+      "receiveFillRate": 0.77
+    }
+  ],
+  "inventoryByAsin": [
+    {
+      "startDate": "2021-06-06",
+      "endDate": "2021-06-12",
+      "asin": "B123456789",
+      "vendorConfirmationRate": 0.88,
+      "netReceivedInventoryCost": {
+        "amount": 2345.5,
+        "currencyCode": "USD"
+      },
+      "netReceivedInventoryUnits": 278,
+      "openPurchaseOrderUnits": 123,
+      "averageVendorLeadTimeDays": 10.2,
+      "sellThroughRate": 0.88,
+      "unfilledCustomerOrderedUnits": 12,
+      "sellableOnHandInventoryCost": {
+        "amount": 43123.99,
+        "currencyCode": "USD"
+      },
+      "sellableOnHandInventoryUnits": 5490,
+      "unsellableOnHandInventoryCost": {
+        "amount": 2345.5,
+        "currencyCode": "USD"
+      },
+      "unsellableOnHandInventoryUnits": 881,
+      "aged90PlusDaysSellableInventoryCost": {
+        "amount": 123.5,
+        "currencyCode": "USD"
+      },
+      "aged90PlusDaysSellableInventoryUnits": 2234,
+      "unhealthyInventoryCost": {
+        "amount": 123.45,
+        "currencyCode": "USD"
+      },
+      "unhealthyInventoryUnits": 114,
+      "procurableProductOutOfStockRate": 0.47,
+      "uft": 0.26,
+      "receiveFillRate": 0.98
+    },
+    {
+      "startDate": "2021-06-06",
+      "endDate": "2021-06-12",
+      "asin": "B987654321",
+      "vendorConfirmationRate": 0.22,
+      "netReceivedInventoryCost": {
+        "amount": 235.5,
+        "currencyCode": "USD"
+      },
+      "netReceivedInventoryUnits": 78,
+      "openPurchaseOrderUnits": 23,
+      "averageVendorLeadTimeDays": 1.2,
+      "sellThroughRate": 0.28,
+      "unfilledCustomerOrderedUnits": 1,
+      "sellableOnHandInventoryCost": {
+        "amount": 123.99,
+        "currencyCode": "USD"
+      },
+      "sellableOnHandInventoryUnits": 590,
+      "unsellableOnHandInventoryCost": {
+        "amount": 245.5,
+        "currencyCode": "USD"
+      },
+      "unsellableOnHandInventoryUnits": 81,
+      "aged90PlusDaysSellableInventoryCost": {
+        "amount": 13.5,
+        "currencyCode": "USD"
+      },
+      "aged90PlusDaysSellableInventoryUnits": 234,
+      "unhealthyInventoryCost": {
+        "amount": 23.45,
+        "currencyCode": "USD"
+      },
+      "unhealthyInventoryUnits": 14,
+      "procurableProductOutOfStockRate": 0.25,
+      "uft": 0.49,
+      "receiveFillRate": 0.81
+    }
+  ]
+}

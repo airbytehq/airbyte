@@ -1,0 +1,2847 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  Jotform is a powerful online form builder that makes it easy to create robust
+  forms and collect important data.
+
+check:
+  type: CheckStream
+  stream_names:
+    - submissions
+
+definitions:
+  streams:
+    forms:
+      type: DeclarativeStream
+      name: forms
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user/forms
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - content
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/forms"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+    reports:
+      type: DeclarativeStream
+      name: reports
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user/reports
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - content
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reports"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+    questions:
+      type: DeclarativeStream
+      name: questions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /form//{{ stream_partition['form_id'] }}/questions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - content
+              - "*"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/forms"
+              parent_key: id
+              partition_field: form_id
+      primary_key:
+        - form_id
+        - qid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/questions"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - form_id
+              value: "{{ stream_partition['form_id'] }}"
+    form_files:
+      type: DeclarativeStream
+      name: form_files
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: form/{{ stream_partition['form_id'] }}/files
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - content
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/forms"
+              parent_key: id
+              partition_field: form_id
+      primary_key:
+        - url
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/form_files"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+    submissions:
+      type: DeclarativeStream
+      name: submissions
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user/submissions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - content
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/submissions"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+    form_properties:
+      type: DeclarativeStream
+      name: form_properties
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: form/{{ stream_partition['form_id'] }}/properties
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - content
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/forms"
+              parent_key: id
+              partition_field: form_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/form_properties"
+  base_requester:
+    type: HttpRequester
+    url_base: >-
+      {{ config['api_endpoint']['enterprise_url'] if
+      config['api_endpoint']['enterprise_url'] else 'https://' ~ ('eu-' if
+      config['api_endpoint']['url_prefix'] == 'EU' else 'hipaa-' if
+      config['api_endpoint']['url_prefix'] == 'HIPAA' else '') ~
+      'api.jotform.com' }}
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config["api_key"] }}'
+      inject_into:
+        type: RequestOption
+        field_name: apiKey
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/submissions"
+  - $ref: "#/definitions/streams/reports"
+  - $ref: "#/definitions/streams/forms"
+  - $ref: "#/definitions/streams/questions"
+  - $ref: "#/definitions/streams/form_properties"
+  - $ref: "#/definitions/streams/form_files"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - api_endpoint
+      - start_date
+      - end_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      end_date:
+        type: string
+        order: 3
+        title: End date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      api_endpoint:
+        type: object
+        oneOf:
+          - type: object
+            title: Basic
+            required:
+              - url_prefix
+            properties:
+              url_prefix:
+                type: string
+                description: >-
+                  You can access our API through the following URLs - Standard
+                  API Usage (Use the default API URL - https://api.jotform.com),
+                  For EU (Use the EU API URL - https://eu-api.jotform.com), For
+                  HIPAA (Use the HIPAA API URL - https://hipaa-api.jotform.com)
+                enum:
+                  - Standard
+                  - EU
+                  - HIPAA
+                title: Base URL Prefix
+                default: Standard
+              api_endpoint:
+                type: string
+                const: basic
+                order: 0
+          - type: object
+            title: Enterprise
+            required:
+              - enterprise_url
+            properties:
+              api_endpoint:
+                type: string
+                const: enterprise
+                order: 0
+              enterprise_url:
+                type: string
+                description: >-
+                  Upgrade to Enterprise to make your API url your-domain.com/API
+                  or subdomain.jotform.com/API instead of api.jotform.com
+                title: Enterprise URL
+        order: 1
+        title: API Endpoint
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://api.jotform.com/docs
+  testedStreams:
+    forms:
+      hasRecords: true
+      streamHash: 6bdcd7faad18f50e0b088ab2a0e943700537dec9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    reports:
+      hasRecords: true
+      streamHash: 95e991d54dcc280a4d0893057b7c103a55695789
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    questions:
+      hasRecords: true
+      streamHash: fb275409b9ef317b3bcd02f660bb8882fc24e895
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    form_files:
+      hasRecords: true
+      streamHash: 07fad443eac64b92b04a9320bbabe44574e237dc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    submissions:
+      hasRecords: true
+      streamHash: a633a65c8316b148a186f5dbf321007b2ce2969e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    form_properties:
+      hasRecords: true
+      streamHash: eb840db392bc3a86b70bee41638aa469298cd000
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    forms: true
+    reports: true
+    questions: true
+    form_files: true
+    submissions: true
+    form_properties: true
+
+schemas:
+  forms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      new:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      count:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      height:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - string
+          - "null"
+      favorite:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      hasPayment:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type: string
+      paymentProps:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          gateway:
+            type:
+              - string
+              - "null"
+          question_id:
+            type:
+              - number
+              - "null"
+      last_submission:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  reports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+      share:
+        type:
+          - object
+          - "null"
+        properties:
+          shareLink:
+            type:
+              - string
+              - "null"
+          sharedWith:
+            type:
+              - array
+              - "null"
+          permissions:
+            type:
+              - array
+              - "null"
+      title:
+        type:
+          - string
+          - "null"
+      fields:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      form_id:
+        type:
+          - string
+          - "null"
+      form_url:
+        type:
+          - string
+          - "null"
+      settings:
+        type:
+          - string
+          - "null"
+      list_type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      form_count:
+        type:
+          - number
+          - "null"
+      form_title:
+        type:
+          - string
+          - "null"
+      properties:
+        type:
+          - array
+          - "null"
+      updated_at:
+        type: string
+      isProtected:
+        type:
+          - boolean
+          - "null"
+      last_submission:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  questions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - form_id
+      - qid
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      alt:
+        type:
+          - string
+          - "null"
+      mde:
+        type:
+          - string
+          - "null"
+      qid:
+        type: string
+      cols:
+        type:
+          - string
+          - "null"
+      days:
+        type:
+          - string
+          - "null"
+      hint:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      rows:
+        type:
+          - string
+          - "null"
+      size:
+        type:
+          - string
+          - "null"
+      step:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      clear:
+        type:
+          - string
+          - "null"
+      order:
+        type:
+          - string
+          - "null"
+      print:
+        type:
+          - string
+          - "null"
+      today:
+        type:
+          - string
+          - "null"
+      width:
+        type:
+          - string
+          - "null"
+      format:
+        type:
+          - string
+          - "null"
+      middle:
+        type:
+          - string
+          - "null"
+      minAge:
+        type:
+          - string
+          - "null"
+      months:
+        type:
+          - string
+          - "null"
+      prefix:
+        type:
+          - string
+          - "null"
+      states:
+        type:
+          - string
+          - "null"
+      suffix:
+        type:
+          - string
+          - "null"
+      ccTitle:
+        type:
+          - string
+          - "null"
+      form_id:
+        type: number
+      maxsize:
+        type:
+          - string
+          - "null"
+      options:
+        type:
+          - string
+          - "null"
+      sandbox:
+        type:
+          - string
+          - "null"
+      showSPB:
+        type:
+          - string
+          - "null"
+      shuffle:
+        type:
+          - string
+          - "null"
+      special:
+        type:
+          - string
+          - "null"
+      wysiwyg:
+        type:
+          - string
+          - "null"
+      authOnly:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      liteMode:
+        type:
+          - string
+          - "null"
+      multiple:
+        type:
+          - string
+          - "null"
+      paypalBt:
+        type:
+          - string
+          - "null"
+      readonly:
+        type:
+          - string
+          - "null"
+      required:
+        type:
+          - string
+          - "null"
+      subLabel:
+        type:
+          - string
+          - "null"
+      useImage:
+        type:
+          - string
+          - "null"
+      allowTime:
+        type:
+          - string
+          - "null"
+      autoFixed:
+        type:
+          - string
+          - "null"
+      clearText:
+        type:
+          - string
+          - "null"
+      inputMask:
+        type:
+          - string
+          - "null"
+      limitDate:
+        type:
+          - string
+          - "null"
+      nonprofit:
+        type:
+          - string
+          - "null"
+      otherText:
+        type:
+          - string
+          - "null"
+      printText:
+        type:
+          - string
+          - "null"
+      showTotal:
+        type:
+          - string
+          - "null"
+      styleSize:
+        type:
+          - string
+          - "null"
+      subHeader:
+        type:
+          - string
+          - "null"
+      subfields:
+        type:
+          - string
+          - "null"
+      sublabels:
+        type:
+          - object
+          - "null"
+        properties:
+          day:
+            type:
+              - string
+              - "null"
+          area:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          full:
+            type:
+              - string
+              - "null"
+          hour:
+            type:
+              - string
+              - "null"
+          last:
+            type:
+              - string
+              - "null"
+          year:
+            type:
+              - string
+              - "null"
+          first:
+            type:
+              - string
+              - "null"
+          month:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          price:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          cc_ccv:
+            type:
+              - string
+              - "null"
+          masked:
+            type:
+              - string
+              - "null"
+          middle:
+            type:
+              - string
+              - "null"
+          postal:
+            type:
+              - string
+              - "null"
+          prefix:
+            type:
+              - string
+              - "null"
+          suffix:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          minutes:
+            type:
+              - string
+              - "null"
+          litemode:
+            type:
+              - string
+              - "null"
+          cc_number:
+            type:
+              - string
+              - "null"
+          addr_line1:
+            type:
+              - string
+              - "null"
+          addr_line2:
+            type:
+              - string
+              - "null"
+          debit_card:
+            type:
+              - string
+              - "null"
+          cc_exp_year:
+            type:
+              - string
+              - "null"
+          cc_lastName:
+            type:
+              - string
+              - "null"
+          cc_exp_month:
+            type:
+              - string
+              - "null"
+          cc_firstName:
+            type:
+              - string
+              - "null"
+          item_subtotal:
+            type:
+              - string
+              - "null"
+          cc_card_expiry:
+            type:
+              - string
+              - "null"
+          pay_with_paypal:
+            type:
+              - string
+              - "null"
+          pay_with_credit_card:
+            type:
+              - string
+              - "null"
+      textAlign:
+        type:
+          - string
+          - "null"
+      totalCost:
+        type:
+          - string
+          - "null"
+      allowOther:
+        type:
+          - string
+          - "null"
+      entryLimit:
+        type:
+          - string
+          - "null"
+      headerType:
+        type:
+          - string
+          - "null"
+      imageAlign:
+        type:
+          - string
+          - "null"
+      labelAlign:
+        type:
+          - string
+          - "null"
+      merchantId:
+        type:
+          - string
+          - "null"
+      onlyFuture:
+        type:
+          - string
+          - "null"
+      paymentCid:
+        type:
+          - string
+          - "null"
+      spreadCols:
+        type:
+          - string
+          - "null"
+      styleColor:
+        type:
+          - string
+          - "null"
+      styleLabel:
+        type:
+          - string
+          - "null"
+      styleShape:
+        type:
+          - string
+          - "null"
+      timeFormat:
+        type:
+          - string
+          - "null"
+      useDecimal:
+        type:
+          - string
+          - "null"
+      validation:
+        type:
+          - string
+          - "null"
+      buttonAlign:
+        type:
+          - string
+          - "null"
+      buttonStyle:
+        type:
+          - string
+          - "null"
+      countryCode:
+        type:
+          - string
+          - "null"
+      decimalMark:
+        type:
+          - string
+          - "null"
+      defaultDate:
+        type:
+          - string
+          - "null"
+      defaultTime:
+        type:
+          - string
+          - "null"
+      domainCheck:
+        type:
+          - string
+          - "null"
+      encryptIcon:
+        type:
+          - string
+          - "null"
+      headerImage:
+        type:
+          - string
+          - "null"
+      isValidated:
+        type:
+          - string
+          - "null"
+      paymentType:
+        type:
+          - string
+          - "null"
+      startWeekOn:
+        type:
+          - string
+          - "null"
+      styleLayout:
+        type:
+          - string
+          - "null"
+      autoCalendar:
+        type:
+          - string
+          - "null"
+      builderLabel:
+        type:
+          - string
+          - "null"
+      compoundHint:
+        type:
+          - string
+          - "null"
+      confirmation:
+        type:
+          - string
+          - "null"
+      defaultValue:
+        type:
+          - string
+          - "null"
+      disallowFree:
+        type:
+          - string
+          - "null"
+      donationText:
+        type:
+          - string
+          - "null"
+      orderSummary:
+        type:
+          - string
+          - "null"
+      billToAddress:
+        type:
+          - string
+          - "null"
+      dateSeparator:
+        type:
+          - string
+          - "null"
+      entryLimitMin:
+        type:
+          - string
+          - "null"
+      payLaterRatio:
+        type:
+          - string
+          - "null"
+      prefixChoices:
+        type:
+          - string
+          - "null"
+      allowedDomains:
+        type:
+          - string
+          - "null"
+      editButtonText:
+        type:
+          - string
+          - "null"
+      enableLightBox:
+        type:
+          - string
+          - "null"
+      hasGeolocation:
+        type:
+          - string
+          - "null"
+      inputMaskValue:
+        type:
+          - string
+          - "null"
+      nextButtonText:
+        type:
+          - string
+          - "null"
+      payLaterLayout:
+        type:
+          - string
+          - "null"
+      requiredInputs:
+        type:
+          - string
+          - "null"
+      showCardFields:
+        type:
+          - string
+          - "null"
+      ageVerification:
+        type:
+          - string
+          - "null"
+      donationOptions:
+        type:
+          - string
+          - "null"
+      hasAutocomplete:
+        type:
+          - string
+          - "null"
+      myBagButtonText:
+        type:
+          - string
+          - "null"
+      payLaterEnabled:
+        type:
+          - string
+          - "null"
+      confirmationHint:
+        type:
+          - string
+          - "null"
+      payLaterLogoType:
+        type:
+          - string
+          - "null"
+      payLaterTextSize:
+        type:
+          - string
+          - "null"
+      paymentFieldType:
+        type:
+          - string
+          - "null"
+      removeButtonText:
+        type:
+          - string
+          - "null"
+      updateButtonText:
+        type:
+          - string
+          - "null"
+      validateLiteDate:
+        type:
+          - string
+          - "null"
+      verificationCode:
+        type:
+          - string
+          - "null"
+      allowCustomAmount:
+        type:
+          - string
+          - "null"
+      payLaterTextColor:
+        type:
+          - string
+          - "null"
+      showQuestionCount:
+        type:
+          - string
+          - "null"
+      verticalTextAlign:
+        type:
+          - string
+          - "null"
+      allowCustomDomains:
+        type:
+          - string
+          - "null"
+      previousButtonText:
+        type:
+          - string
+          - "null"
+      donationAmountField:
+        type:
+          - string
+          - "null"
+      subscribeButtonText:
+        type:
+          - string
+          - "null"
+      backToListButtonText:
+        type:
+          - string
+          - "null"
+      confirmationSublabel:
+        type:
+          - string
+          - "null"
+      isOnlyConnectedToSPB:
+        type:
+          - string
+          - "null"
+      payLaterLogoPosition:
+        type:
+          - string
+          - "null"
+      customCountryDropdown:
+        type:
+          - string
+          - "null"
+      customValueDonationText:
+        type:
+          - string
+          - "null"
+      payLaterBackgroundColor:
+        type:
+          - string
+          - "null"
+      countryDropdownDefaultText:
+        type:
+          - string
+          - "null"
+      isPaymentStoreInBasicFields:
+        type:
+          - boolean
+          - "null"
+      showPredefinedDonationValues:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  form_files:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - url
+      - date
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      url:
+        type: string
+      date:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      size:
+        type:
+          - string
+          - "null"
+      form_id:
+        type:
+          - string
+          - "null"
+      uploaded:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+      submission_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  submissions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - created_at
+    properties:
+      id:
+        type: string
+      ip:
+        type:
+          - string
+          - "null"
+      new:
+        type:
+          - string
+          - "null"
+      flag:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      answers:
+        type:
+          - object
+          - "null"
+        properties:
+          "1":
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              text:
+                type:
+                  - string
+                  - "null"
+              order:
+                type:
+                  - string
+                  - "null"
+          "2":
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              text:
+                type:
+                  - string
+                  - "null"
+              order:
+                type:
+                  - string
+                  - "null"
+          "3":
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              text:
+                type:
+                  - string
+                  - "null"
+              order:
+                type:
+                  - string
+                  - "null"
+          "4":
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              text:
+                type:
+                  - string
+                  - "null"
+              order:
+                type:
+                  - string
+                  - "null"
+              answer:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  last:
+                    type:
+                      - string
+                      - "null"
+                  first:
+                    type:
+                      - string
+                      - "null"
+              sublabels:
+                type:
+                  - string
+                  - "null"
+              prettyFormat:
+                type:
+                  - string
+                  - "null"
+          "5":
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              text:
+                type:
+                  - string
+                  - "null"
+              order:
+                type:
+                  - string
+                  - "null"
+              answer:
+                type:
+                  - string
+                  - "null"
+          "6":
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              text:
+                type:
+                  - string
+                  - "null"
+              order:
+                type:
+                  - string
+                  - "null"
+              answer:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  full:
+                    type:
+                      - string
+                      - "null"
+              inputMask:
+                type:
+                  - string
+                  - "null"
+              sublabels:
+                type:
+                  - string
+                  - "null"
+              countryCode:
+                type:
+                  - string
+                  - "null"
+              prettyFormat:
+                type:
+                  - string
+                  - "null"
+              inputMaskValue:
+                type:
+                  - string
+                  - "null"
+          "7":
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              text:
+                type:
+                  - string
+                  - "null"
+              order:
+                type:
+                  - string
+                  - "null"
+              answer:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  day:
+                    type:
+                      - string
+                      - "null"
+                  year:
+                    type:
+                      - string
+                      - "null"
+                  month:
+                    type:
+                      - string
+                      - "null"
+                  datetime:
+                    type:
+                      - string
+                      - "null"
+              sublabels:
+                type:
+                  - string
+                  - "null"
+              timeFormat:
+                type:
+                  - string
+                  - "null"
+              prettyFormat:
+                type:
+                  - string
+                  - "null"
+      form_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+    additionalProperties: true
+  form_properties:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      v4:
+        type:
+          - string
+          - "null"
+      font:
+        type:
+          - string
+          - "null"
+      hash:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      count:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            to:
+              type:
+                - string
+                - "null"
+            body:
+              type:
+                - string
+                - "null"
+            from:
+              type:
+                - string
+                - "null"
+            html:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            dirty:
+              type:
+                - string
+                - "null"
+            replyTo:
+              type:
+                - string
+                - "null"
+            subject:
+              type:
+                - string
+                - "null"
+            sendDate:
+              type:
+                - string
+                - "null"
+            uniqueID:
+              type:
+                - string
+                - "null"
+            attachment:
+              type:
+                - string
+                - "null"
+            sendOnEdit:
+              type:
+                - string
+                - "null"
+            sendOnSubmit:
+              type:
+                - string
+                - "null"
+            pdfattachment:
+              type:
+                - string
+                - "null"
+            lastQuestionID:
+              type:
+                - string
+                - "null"
+            branding21Email:
+              type:
+                - string
+                - "null"
+            hideEmptyFields:
+              type:
+                - string
+                - "null"
+            uploadAttachment:
+              type:
+                - string
+                - "null"
+      height:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      styles:
+        type:
+          - string
+          - "null"
+      unique:
+        type:
+          - string
+          - "null"
+      isHIPAA:
+        type:
+          - string
+          - "null"
+      themeID:
+        type:
+          - string
+          - "null"
+      fontsize:
+        type:
+          - string
+          - "null"
+      formType:
+        type:
+          - string
+          - "null"
+      isEUForm:
+        type:
+          - string
+          - "null"
+      language:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            version:
+              type:
+                - string
+                - "null"
+            theme:
+              type:
+                - string
+                - "null"
+            options:
+              type:
+                - string
+                - "null"
+            showStatus:
+              type:
+                - string
+                - "null"
+            firstPageOnly:
+              type:
+                - string
+                - "null"
+            primaryLanguage:
+              type:
+                - string
+                - "null"
+            originalLanguage:
+              type:
+                - string
+                - "null"
+            saveUserLanguage:
+              type:
+                - string
+                - "null"
+            detectUserLanguage:
+              type:
+                - string
+                - "null"
+      products:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            pid:
+              type:
+                - string
+                - "null"
+            icon:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            order:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - string
+                - "null"
+            trial:
+              type:
+                - string
+                - "null"
+            images:
+              type:
+                - string
+                - "null"
+            period:
+              type:
+                - string
+                - "null"
+            options:
+              type:
+                - string
+                - "null"
+            setupfee:
+              type:
+                - string
+                - "null"
+            customPrice:
+              type:
+                - string
+                - "null"
+            hasQuantity:
+              type:
+                - string
+                - "null"
+            paymentUUID:
+              type:
+                - string
+                - "null"
+            recurringtimes:
+              type:
+                - string
+                - "null"
+            fitImageToCanvas:
+              type:
+                - string
+                - "null"
+            connectedProducts:
+              type:
+                - string
+                - "null"
+            customPriceSource:
+              type:
+                - string
+                - "null"
+            hasExpandedOption:
+              type:
+                - string
+                - "null"
+            hasSpecialPricing:
+              type:
+                - string
+                - "null"
+            connectedCategories:
+              type:
+                - string
+                - "null"
+      alignment:
+        type:
+          - string
+          - "null"
+      fontcolor:
+        type:
+          - string
+          - "null"
+      formWidth:
+        type:
+          - string
+          - "null"
+      injectCSS:
+        type:
+          - string
+          - "null"
+      pageColor:
+        type:
+          - string
+          - "null"
+      pagetitle:
+        type:
+          - string
+          - "null"
+      styleJSON:
+        type:
+          - string
+          - "null"
+      thanktext:
+        type:
+          - string
+          - "null"
+      assignSlug:
+        type:
+          - string
+          - "null"
+      background:
+        type:
+          - string
+          - "null"
+      conditions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            link:
+              type:
+                - string
+                - "null"
+            index:
+              type:
+                - string
+                - "null"
+            terms:
+              type:
+                - string
+                - "null"
+            action:
+              type:
+                - string
+                - "null"
+            priority:
+              type:
+                - string
+                - "null"
+      expireDate:
+        type:
+          - string
+          - "null"
+      fullScreen:
+        type:
+          - string
+          - "null"
+      labelWidth:
+        type:
+          - string
+          - "null"
+      responsive:
+        type:
+          - string
+          - "null"
+      smartEmbed:
+        type:
+          - string
+          - "null"
+      usesNewPDF:
+        type:
+          - string
+          - "null"
+      cardThemeID:
+        type:
+          - string
+          - "null"
+      dataHygiene:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            hyg-checkPid:
+              type:
+                - string
+                - "null"
+            hyg-checkProps:
+              type:
+                - string
+                - "null"
+            hyg-checkStock:
+              type:
+                - string
+                - "null"
+            hyg-checkCoupon:
+              type:
+                - string
+                - "null"
+            hyg-checkCategoryID:
+              type:
+                - string
+                - "null"
+            hyg-productUUIDCheck:
+              type:
+                - string
+                - "null"
+            hyg-isTheTemplateNewUI:
+              type:
+                - string
+                - "null"
+            hyg-isLongTextTruncated:
+              type:
+                - string
+                - "null"
+            hyg-isProductListHidden:
+              type:
+                - string
+                - "null"
+            hyg-checkMultipleGateway:
+              type:
+                - string
+                - "null"
+            hyg-checkConnectedProducts:
+              type:
+                - string
+                - "null"
+            hyg-checkProductsInDonationForm:
+              type:
+                - string
+                - "null"
+            hyg-singleSelectRequiredValueFix:
+              type:
+                - string
+                - "null"
+      formStrings:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            url:
+              type:
+                - string
+                - "null"
+            email:
+              type:
+                - string
+                - "null"
+            error:
+              type:
+                - string
+                - "null"
+            numeric:
+              type:
+                - string
+                - "null"
+            soldOut:
+              type:
+                - string
+                - "null"
+            currency:
+              type:
+                - string
+                - "null"
+            cyrillic:
+              type:
+                - string
+                - "null"
+            fillMask:
+              type:
+                - string
+                - "null"
+            lessThan:
+              type:
+                - string
+                - "null"
+            oneError:
+              type:
+                - string
+                - "null"
+            required:
+              type:
+                - string
+                - "null"
+            alphabetic:
+              type:
+                - string
+                - "null"
+            doneButton:
+              type:
+                - string
+                - "null"
+            fieldError:
+              type:
+                - string
+                - "null"
+            pleaseWait:
+              type:
+                - string
+                - "null"
+            requireOne:
+              type:
+                - string
+                - "null"
+            seeAllText:
+              type:
+                - string
+                - "null"
+            dateInvalid:
+              type:
+                - string
+                - "null"
+            dateLimited:
+              type:
+                - string
+                - "null"
+            doneMessage:
+              type:
+                - string
+                - "null"
+            invalidTime:
+              type:
+                - string
+                - "null"
+            justSoldOut:
+              type:
+                - string
+                - "null"
+            alphanumeric:
+              type:
+                - string
+                - "null"
+            ccInvalidCVC:
+              type:
+                - string
+                - "null"
+            confirmEmail:
+              type:
+                - string
+                - "null"
+            generalError:
+              type:
+                - string
+                - "null"
+            selectedTime:
+              type:
+                - string
+                - "null"
+            multipleError:
+              type:
+                - string
+                - "null"
+            validateEmail:
+              type:
+                - string
+                - "null"
+            freeEmailError:
+              type:
+                - string
+                - "null"
+            geoTimeoutDesc:
+              type:
+                - string
+                - "null"
+            maxDigitsError:
+              type:
+                - string
+                - "null"
+            nextButtonText:
+              type:
+                - string
+                - "null"
+            notEnoughStock:
+              type:
+                - string
+                - "null"
+            prevButtonText:
+              type:
+                - string
+                - "null"
+            requiredLegend:
+              type:
+                - string
+                - "null"
+            reviewBackText:
+              type:
+                - string
+                - "null"
+            uploadFilesize:
+              type:
+                - string
+                - "null"
+            wordLimitError:
+              type:
+                - string
+                - "null"
+            cancelSelection:
+              type:
+                - string
+                - "null"
+            ccInvalidNumber:
+              type:
+                - string
+                - "null"
+            geoTimeoutTitle:
+              type:
+                - string
+                - "null"
+            requireEveryRow:
+              type:
+                - string
+                - "null"
+            seeErrorsButton:
+              type:
+                - string
+                - "null"
+            slotUnavailable:
+              type:
+                - string
+                - "null"
+            startButtonText:
+              type:
+                - string
+                - "null"
+            submissionLimit:
+              type:
+                - string
+                - "null"
+            ccMissingDetails:
+              type:
+                - string
+                - "null"
+            ccMissingProduct:
+              type:
+                - string
+                - "null"
+            confirmClearForm:
+              type:
+                - string
+                - "null"
+            disallowDecimals:
+              type:
+                - string
+                - "null"
+            generalPageError:
+              type:
+                - string
+                - "null"
+            incompleteFields:
+              type:
+                - string
+                - "null"
+            noSlotsAvailable:
+              type:
+                - string
+                - "null"
+            requireEveryCell:
+              type:
+                - string
+                - "null"
+            restrictedDomain:
+              type:
+                - string
+                - "null"
+            reviewSubmitText:
+              type:
+                - string
+                - "null"
+            selectionSoldOut:
+              type:
+                - string
+                - "null"
+            submitButtonText:
+              type:
+                - string
+                - "null"
+            uploadExtensions:
+              type:
+                - string
+                - "null"
+            cancelAppointment:
+              type:
+                - string
+                - "null"
+            ccMissingDonation:
+              type:
+                - string
+                - "null"
+            geoPermissionDesc:
+              type:
+                - string
+                - "null"
+            gradingScoreError:
+              type:
+                - string
+                - "null"
+            inputCarretErrorA:
+              type:
+                - string
+                - "null"
+            inputCarretErrorB:
+              type:
+                - string
+                - "null"
+            uploadFilesizemin:
+              type:
+                - string
+                - "null"
+            wordMinLimitError:
+              type:
+                - string
+                - "null"
+            formerSelectedTime:
+              type:
+                - string
+                - "null"
+            geoPermissionTitle:
+              type:
+                - string
+                - "null"
+            maxCharactersError:
+              type:
+                - string
+                - "null"
+            maxSelectionsError:
+              type:
+                - string
+                - "null"
+            minCharactersError:
+              type:
+                - string
+                - "null"
+            minSelectionsError:
+              type:
+                - string
+                - "null"
+            noUploadExtensions:
+              type:
+                - string
+                - "null"
+            progressMiddleText:
+              type:
+                - string
+                - "null"
+            ccInvalidExpireDate:
+              type:
+                - string
+                - "null"
+            ccInvalidExpireYear:
+              type:
+                - string
+                - "null"
+            characterLimitError:
+              type:
+                - string
+                - "null"
+            dateInvalidSeparate:
+              type:
+                - string
+                - "null"
+            geoNotAvailableDesc:
+              type:
+                - string
+                - "null"
+            pastDatesDisallowed:
+              type:
+                - string
+                - "null"
+            subProductItemsLeft:
+              type:
+                - string
+                - "null"
+            ageVerificationError:
+              type:
+                - string
+                - "null"
+            ccInvalidExpireMonth:
+              type:
+                - string
+                - "null"
+            geoNotAvailableTitle:
+              type:
+                - string
+                - "null"
+            characterMinLimitError:
+              type:
+                - string
+                - "null"
+            ccDonationMinLimitError:
+              type:
+                - string
+                - "null"
+            chooseAFile_infoMessage:
+              type:
+                - string
+                - "null"
+            maxFileSize_infoMessage:
+              type:
+                - string
+                - "null"
+            multipleFileUploads_onLeave:
+              type:
+                - string
+                - "null"
+            notEnoughStock_remainedItems:
+              type:
+                - string
+                - "null"
+            multipleFileUploads_sizeError:
+              type:
+                - string
+                - "null"
+            multipleFileUploads_typeError:
+              type:
+                - string
+                - "null"
+            multipleFileUploads_emptyError:
+              type:
+                - string
+                - "null"
+            dragAndDropFilesHere_infoMessage:
+              type:
+                - string
+                - "null"
+            multipleFileUploads_minSizeError:
+              type:
+                - string
+                - "null"
+            multipleFileUploads_uploadFailed:
+              type:
+                - string
+                - "null"
+            multipleFileUploads_fileLimitError:
+              type:
+                - string
+                - "null"
+      isEncrypted:
+        type:
+          - string
+          - "null"
+      lineSpacing:
+        type:
+          - string
+          - "null"
+      optioncolor:
+        type:
+          - string
+          - "null"
+      submitError:
+        type:
+          - string
+          - "null"
+      uniqueField:
+        type:
+          - string
+          - "null"
+      welcomePage:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            logo:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            isActive:
+              type:
+                - string
+                - "null"
+            subTitle:
+              type:
+                - string
+                - "null"
+            buttonText:
+              type:
+                - string
+                - "null"
+            showQuestionCount:
+              type:
+                - string
+                - "null"
+      defaultTheme:
+        type:
+          - string
+          - "null"
+      integrations:
+        type:
+          - array
+          - "null"
+      isNewPDFUser:
+        type:
+          - boolean
+          - "null"
+      sendpostdata:
+        type:
+          - string
+          - "null"
+      thankYouPage:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            imageSrc:
+              type:
+                - string
+                - "null"
+            subTitle:
+              type:
+                - string
+                - "null"
+            redirectLink:
+              type:
+                - string
+                - "null"
+      attachInvoice:
+        type:
+          - string
+          - "null"
+      formOwnerName:
+        type:
+          - string
+          - "null"
+      highlightLine:
+        type:
+          - string
+          - "null"
+      activeRedirect:
+        type:
+          - string
+          - "null"
+      invoiceEnabled:
+        type:
+          - string
+          - "null"
+      lastQuestionID:
+        type:
+          - string
+          - "null"
+      mobileGoButton:
+        type:
+          - string
+          - "null"
+      paymentStrings:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            taxTax:
+              type:
+                - string
+                - "null"
+            totalTotal:
+              type:
+                - string
+                - "null"
+            couponApply:
+              type:
+                - string
+                - "null"
+            couponBlank:
+              type:
+                - string
+                - "null"
+            couponEnter:
+              type:
+                - string
+                - "null"
+            couponValid:
+              type:
+                - string
+                - "null"
+            couponChange:
+              type:
+                - string
+                - "null"
+            couponExpired:
+              type:
+                - string
+                - "null"
+            couponInvalid:
+              type:
+                - string
+                - "null"
+            totalSubtotal:
+              type:
+                - string
+                - "null"
+            shippingShipping:
+              type:
+                - string
+                - "null"
+            productListNameAZ:
+              type:
+                - string
+                - "null"
+            productListNameZA:
+              type:
+                - string
+                - "null"
+            productListSortBy:
+              type:
+                - string
+                - "null"
+            productListAllText:
+              type:
+                - string
+                - "null"
+            productListClearSort:
+              type:
+                - string
+                - "null"
+            productListSearchText:
+              type:
+                - string
+                - "null"
+            productListPriceLowest:
+              type:
+                - string
+                - "null"
+            productListPriceHighest:
+              type:
+                - string
+                - "null"
+            productListCategoriesText:
+              type:
+                - string
+                - "null"
+      errorNavigation:
+        type:
+          - string
+          - "null"
+      limitSubmission:
+        type:
+          - string
+          - "null"
+      showJotFormLogo:
+        type:
+          - string
+          - "null"
+      showProgressBar:
+        type:
+          - string
+          - "null"
+      thankYouIconSrc:
+        type:
+          - string
+          - "null"
+      themeRevisionID:
+        type:
+          - string
+          - "null"
+      clearFieldOnHide:
+        type:
+          - string
+          - "null"
+      creationLanguage:
+        type:
+          - string
+          - "null"
+      pageTitleChanged:
+        type:
+          - string
+          - "null"
+      thankYouImageSrc:
+        type:
+          - string
+          - "null"
+      submissionHeaders:
+        type:
+          - string
+          - "null"
+      thankYouFillAgain:
+        type:
+          - string
+          - "null"
+      formStringsChanged:
+        type:
+          - string
+          - "null"
+      preventCloningForm:
+        type:
+          - string
+          - "null"
+      submissionSettings:
+        type:
+          - array
+          - "null"
+      thankYouPageLayout:
+        type:
+          - string
+          - "null"
+      allowSubmissionEdit:
+        type:
+          - string
+          - "null"
+      hideMailEmptyFields:
+        type:
+          - string
+          - "null"
+      paymentListSettings:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            showSearch:
+              type:
+                - string
+                - "null"
+            showCategory:
+              type:
+                - string
+                - "null"
+            productCategories:
+              type:
+                - string
+                - "null"
+            productListLayout:
+              type:
+                - string
+                - "null"
+            showCategoryTitle:
+              type:
+                - string
+                - "null"
+            minTotalOrderAmount:
+              type:
+                - string
+                - "null"
+            showMinTotalOrderAmount:
+              type:
+                - string
+                - "null"
+      thankYouDownloadPDF:
+        type:
+          - string
+          - "null"
+      defaultEmailAssigned:
+        type:
+          - string
+          - "null"
+      formOwnerAccountType:
+        type:
+          - string
+          - "null"
+      hideSubmissionHeader:
+        type:
+          - string
+          - "null"
+      messageOfLimitedForm:
+        type:
+          - string
+          - "null"
+      statelessColorScheme:
+        type:
+          - string
+          - "null"
+      thankYouSelectedPDFs:
+        type:
+          - string
+          - "null"
+      paymentStringsChanged:
+        type:
+          - string
+          - "null"
+      thankYouEditSubmission:
+        type:
+          - string
+          - "null"
+      datetimeMigrationStatus:
+        type:
+          - string
+          - "null"
+      hideEmptySubmissionFields:
+        type:
+          - string
+          - "null"
+      isPaymentStoreInBasicFields:
+        type:
+          - string
+          - "null"
+      hideNonInputSubmissionFields:
+        type:
+          - string
+          - "null"
+      newPaymentUIForNewCreatedForms:
+        type:
+          - string
+          - "null"
+      defaultAutoResponderEmailAssigned:
+        type:
+          - string
+          - "null"
+      datetimeMigrationIncludesBirthDate:
+        type:
+          - string
+          - "null"
+    additionalProperties: true

@@ -1,0 +1,57 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+      - api.klarna.com
+      - api.playground.klarna.com
+      - api-${config.region}.klarna.com
+      - api-${config.region}.playground.klarna.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 60c24725-00ae-490c-991d-55b78c3197e0
+  dockerImageTag: 0.3.23
+  dockerRepository: airbyte/source-klarna
+  documentationUrl: https://docs.airbyte.com/integrations/sources/klarna
+  githubIssueLabel: source-klarna
+  icon: klarna.svg
+  license: ELv2
+  name: Klarna
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseDate: 2022-10-24
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-klarna
+  supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: klarna_config_dev_null
+          id: 0d630411-a503-46d1-8f8b-a106e4e90eab
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-KLARNA__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Klarna API reference
+      url: https://docs.klarna.com/api/
+      type: api_reference
+    - title: Klarna authentication
+      url: https://docs.klarna.com/api/authentication/
+      type: authentication_guide
+metadataSpecVersion: "1.0"

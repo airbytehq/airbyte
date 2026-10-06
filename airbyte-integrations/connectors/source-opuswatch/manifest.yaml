@@ -1,0 +1,1573 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: >-
+  ## Unlock Horticultural Insights with Airbyte and OPUSWatch
+
+
+  **What is OPUSWatch?**
+
+  OPUSWatch is a smart wearable solution developed by OPUS Solutions B.V., based
+  in the Netherlands. This innovative smartwatch is specifically designed for
+  the horticulture industry to digitize and streamline various operational
+  processes within greenhouses and nurseries. It empowers growers to gain
+  real-time insights into their labor, productivity, and overall operations.
+  Employees use the OPUSWatch to easily record their tasks, track their work on
+  specific crops, and even manage orders directly from their wrist. This data is
+  then fed into a central system for analysis and decision-making.
+
+
+  Website: opuswatch.nl
+
+
+  **What does the OPUSWatch Airbyte Connector do?**
+
+  The Airbyte connector for OPUSWatch allows you to seamlessly extract valuable
+  data from the OPUSWatch platform and load it into your data warehouse or lake.
+  By connecting OPUSWatch to Airbyte, you can centralize your horticultural
+  operational data with other business-critical information, enabling
+  comprehensive analysis and reporting.
+
+
+  **With the OPUSWatch Airbyte connector, you can retrieve the following streams
+  of data:**
+
+  * **Clients:** Information about your clients or customers.
+
+  * **Locations:** Details about the different locations or areas within your
+  greenhouse or nursery.
+
+  * **Rows:** Data pertaining to the specific rows or sections where plants are
+  cultivated.
+
+  * **Users:** Information about the individuals who have access to the
+  OPUSWatch system.
+
+  * **Workers:** Details about your workforce, including their identification
+  and potentially other relevant attributes.
+
+  * **Worker Groups:** Information about how your workers are organized into
+  teams or groups.
+
+  * **Tasks:** Data on the various activities or jobs that are performed by
+  workers.
+
+  * **Task Groups:** Information about how tasks are categorized or grouped
+  together.
+
+  * **Labels:** Details about the different labels used for plants, products, or
+  processes.
+
+  * **Varieties:** Information on the different plant varieties being
+  cultivated.
+
+  * **Registrations Initial:** A snapshot of initial work registrations recorded
+  by the OPUSWatch devices.
+
+  * **Registrations Incremental:** Updates and new work registrations recorded
+  by the OPUSWatch devices since the last synchronization.
+
+  * **Sessions Initial:** A snapshot of initial work sessions or periods tracked
+  by the OPUSWatch devices.
+
+  * **Sessions Incremental:** Updates and new work sessions or periods tracked
+  by the OPUSWatch devices since the last synchronization.
+
+
+  By leveraging the OPUSWatch Airbyte connector, horticultural businesses can
+  break down data silos and gain a holistic view of their operations. This
+  enables data-driven decision-making for optimizing labor allocation, improving
+  productivity, and ultimately enhancing the efficiency of their greenhouse or
+  nursery operations.
+
+check:
+  type: CheckStream
+  stream_names:
+    - workers
+
+definitions:
+  streams:
+    client:
+      type: DeclarativeStream
+      name: client
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: master/client
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/client"
+    locations:
+      type: DeclarativeStream
+      name: locations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: master/locations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locations"
+    rows:
+      type: DeclarativeStream
+      name: rows
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: master/rows
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/rows"
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: master/users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    workers:
+      type: DeclarativeStream
+      name: workers
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: master/workers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workers"
+    worker groups:
+      type: DeclarativeStream
+      name: worker groups
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: master/workergroups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/worker groups"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: master/tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    task groups:
+      type: DeclarativeStream
+      name: task groups
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: master/taskgroups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/task groups"
+    labels:
+      type: DeclarativeStream
+      name: labels
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: master/labels
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/labels"
+    varieties:
+      type: DeclarativeStream
+      name: varieties
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: master/varieties
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/varieties"
+    registrations initial:
+      type: DeclarativeStream
+      name: registrations initial
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: transactional/registrations
+          http_method: GET
+          request_parameters:
+            date: "{{config['start_date']}}"
+            return_breaks: "true"
+            return_leaves: "true"
+            days_from_date: "366"
+            filter_date_by: CREATED
+            return_archived: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10000
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/registrations initial"
+    registrations incremental:
+      type: DeclarativeStream
+      name: registrations incremental
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /transactional/registrations
+          http_method: GET
+          request_parameters:
+            return_breaks: "true"
+            return_leaves: "true"
+            days_till_date: "2"
+            filter_date_by: UPDATED
+            return_archived: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/registrations incremental"
+    sessions initial:
+      type: DeclarativeStream
+      name: sessions initial
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: transactional/sessions
+          http_method: GET
+          request_parameters:
+            date: "{{config['start_date']}}"
+            return_breaks: "true"
+            return_leaves: "true"
+            days_from_date: "366"
+            filter_date_by: CREATED
+            return_archived: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10000
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sessions initial"
+    sessions incremental:
+      type: DeclarativeStream
+      name: sessions incremental
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: transactional/sessions
+          http_method: GET
+          request_parameters:
+            return_breaks: "true"
+            return_leaves: "true"
+            days_till_date: "2"
+            filter_date_by: UPDATED
+            return_archived: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sessions incremental"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.opuswatch.nl/ext/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/client"
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/rows"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/workers"
+  - $ref: "#/definitions/streams/worker groups"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/task groups"
+  - $ref: "#/definitions/streams/labels"
+  - $ref: "#/definitions/streams/varieties"
+  - $ref: "#/definitions/streams/registrations initial"
+  - $ref: "#/definitions/streams/registrations incremental"
+  - $ref: "#/definitions/streams/sessions initial"
+  - $ref: "#/definitions/streams/sessions incremental"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start Date
+        default: "20250101"
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    client: true
+    locations: true
+    rows: true
+    users: true
+    workers: true
+    worker groups: true
+    tasks: true
+    task groups: true
+    labels: true
+    varieties: true
+    registrations initial: true
+    registrations incremental: true
+    sessions initial: true
+    sessions incremental: true
+  testedStreams:
+    client:
+      hasRecords: true
+      streamHash: 458dc3c34c8cdc41d65a487fe04539baff961cd4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    locations:
+      hasRecords: true
+      streamHash: 469d7f00d6275b884c1ce26c51b42275dc0638bc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    rows:
+      hasRecords: true
+      streamHash: 631f1fff505413bc3cad14685b0382194823ebf6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: d7f3751ed13b6487152de34d3bf8895d7ebd9409
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    workers:
+      hasRecords: true
+      streamHash: f9b8c62bed717866a2248f7431c2dbae58b77f22
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    worker groups:
+      hasRecords: true
+      streamHash: 0fa5cb71fd0d4885cbb5158b6db4915fa2901443
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tasks:
+      hasRecords: true
+      streamHash: 3482cfdc83dacd3f72ff76ec5610450b4f561a13
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    task groups:
+      hasRecords: true
+      streamHash: 3d7ee279c97dd6918045cdceaee9a8db753156c8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    labels:
+      hasRecords: true
+      streamHash: c4c8e11d360e7b08a4db4f8b14169f5592b93849
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    varieties:
+      hasRecords: true
+      streamHash: 56c4fce77cbdfdabdf6f076c22cbc7cb926f3ea2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    registrations initial:
+      hasRecords: true
+      streamHash: 0334407aaa680c8157e0c57ebbd72c3787913617
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    registrations incremental:
+      hasRecords: true
+      streamHash: 03f101e616dfa77a57d08c1addf7e460235ba375
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sessions initial:
+      hasRecords: true
+      streamHash: 5f31e5d9f1ff2576987ada8569dea39b6983f78e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sessions incremental:
+      hasRecords: true
+      streamHash: b3d1cad140437c559a7e88618608988591e38810
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: >-
+      https://docs.google.com/document/d/1-4Dq6OZnnPI2VQKEyaANxUEdiAVytfYTSReyyrnCPDM/edit?usp=sharing
+    openapiSpecUrl: https://api.opuswatch.nl/ext/
+
+schemas:
+  client:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      updatedTimestamp:
+        type:
+          - string
+          - "null"
+  locations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdTimestamp:
+        type:
+          - string
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      layoutIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updatedTimestamp:
+        type:
+          - string
+          - "null"
+  rows:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdTimestamp:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      labelIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      latestWorkerId:
+        type:
+          - string
+          - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      locationId:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      rowFloorArea:
+        type:
+          - number
+          - "null"
+      rowLength:
+        type:
+          - number
+          - "null"
+      rowNumber:
+        type:
+          - string
+          - "null"
+      rowWidth:
+        type:
+          - number
+          - "null"
+      updatedTimestamp:
+        type:
+          - string
+          - "null"
+      varietyId:
+        type:
+          - string
+          - "null"
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      associatedWorkerId:
+        type:
+          - string
+          - "null"
+      createdTimestamp:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      updatedTimestamp:
+        type:
+          - string
+          - "null"
+  workers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdTimestamp:
+        type:
+          - string
+          - "null"
+      endTimestamp:
+        type:
+          - string
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
+      hourlyRate:
+        type:
+          - number
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      labelIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      leftHanded:
+        type:
+          - boolean
+          - "null"
+      locationIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      name:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      startTimestamp:
+        type:
+          - string
+          - "null"
+      updatedTimestamp:
+        type:
+          - string
+          - "null"
+      workerCode:
+        type:
+          - string
+          - "null"
+      workerGroupId:
+        type:
+          - string
+          - "null"
+  worker groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdTimestamp:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updatedTimestamp:
+        type:
+          - string
+          - "null"
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdTimestamp:
+        type:
+          - string
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
+      function:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      locationIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      name:
+        type:
+          - string
+          - "null"
+      targetDevices:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      taskGroupIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      updatedTimestamp:
+        type:
+          - string
+          - "null"
+  task groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdTimestamp:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updatedTimestamp:
+        type:
+          - string
+          - "null"
+  labels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdTimestamp:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updatedTimestamp:
+        type:
+          - string
+          - "null"
+  varieties:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      assignedLocationIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      createdTimestamp:
+        type:
+          - string
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      labelIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updatedTimestamp:
+        type:
+          - string
+          - "null"
+  registrations initial:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      assetIds:
+        type:
+          - array
+          - "null"
+      assetNumbers:
+        type:
+          - array
+          - "null"
+      deviceNumber:
+        type:
+          - string
+          - "null"
+      endTimestamp:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      laborCost:
+        type:
+          - number
+          - "null"
+      location:
+        type:
+          - string
+          - "null"
+      locationId:
+        type:
+          - string
+          - "null"
+      rowLabels:
+        type:
+          - array
+          - "null"
+      startTimestamp:
+        type:
+          - string
+          - "null"
+      stepCounter:
+        type:
+          - number
+          - "null"
+      task:
+        type:
+          - string
+          - "null"
+      taskGroupIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      taskGroups:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      taskId:
+        type:
+          - string
+          - "null"
+      taskType:
+        type:
+          - string
+          - "null"
+      updatedTimestamp:
+        type:
+          - string
+          - "null"
+      varietyLabels:
+        type:
+          - array
+          - "null"
+      worker:
+        type:
+          - string
+          - "null"
+      workerGroup:
+        type:
+          - string
+          - "null"
+      workerGroupId:
+        type:
+          - string
+          - "null"
+      workerHourlyRate:
+        type:
+          - number
+          - "null"
+      workerId:
+        type:
+          - string
+          - "null"
+      workerLabels:
+        type:
+          - array
+          - "null"
+  registrations incremental:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      assetIds:
+        type:
+          - array
+          - "null"
+      assetNumbers:
+        type:
+          - array
+          - "null"
+      deviceNumber:
+        type:
+          - string
+          - "null"
+      endTimestamp:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      laborCost:
+        type:
+          - number
+          - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - string
+          - "null"
+      locationId:
+        type:
+          - string
+          - "null"
+      row:
+        type:
+          - string
+          - "null"
+      rowFloorArea:
+        type:
+          - number
+          - "null"
+      rowId:
+        type:
+          - string
+          - "null"
+      rowLabels:
+        type:
+          - array
+          - "null"
+      startTimestamp:
+        type:
+          - string
+          - "null"
+      stepCounter:
+        type:
+          - number
+          - "null"
+      task:
+        type:
+          - string
+          - "null"
+      taskGroupIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      taskGroups:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      taskId:
+        type:
+          - string
+          - "null"
+      taskType:
+        type:
+          - string
+          - "null"
+      updatedTimestamp:
+        type:
+          - string
+          - "null"
+      variety:
+        type:
+          - string
+          - "null"
+      varietyId:
+        type:
+          - string
+          - "null"
+      varietyLabels:
+        type:
+          - array
+          - "null"
+      worker:
+        type:
+          - string
+          - "null"
+      workerGroup:
+        type:
+          - string
+          - "null"
+      workerGroupId:
+        type:
+          - string
+          - "null"
+      workerHourlyRate:
+        type:
+          - number
+          - "null"
+      workerId:
+        type:
+          - string
+          - "null"
+      workerLabels:
+        type:
+          - array
+          - "null"
+  sessions initial:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      correctedCount:
+        type:
+          - number
+          - "null"
+      count:
+        type:
+          - number
+          - "null"
+      countCorrected:
+        type:
+          - number
+          - "null"
+      countCorrectedAtCreation:
+        type:
+          - number
+          - "null"
+      deviceNumber:
+        type:
+          - string
+          - "null"
+      endTimestampGross:
+        type:
+          - string
+          - "null"
+      endTimestampNet:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      laborCost:
+        type:
+          - number
+          - "null"
+      layout:
+        type:
+          - string
+          - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - string
+          - "null"
+      locationId:
+        type:
+          - string
+          - "null"
+      performanceGross:
+        type:
+          - number
+          - "null"
+      performanceNet:
+        type:
+          - number
+          - "null"
+      row:
+        type:
+          - string
+          - "null"
+      rowFloorArea:
+        type:
+          - number
+          - "null"
+      rowId:
+        type:
+          - string
+          - "null"
+      rowLabels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      startTimestampGross:
+        type:
+          - string
+          - "null"
+      startTimestampNet:
+        type:
+          - string
+          - "null"
+      trolley:
+        type:
+          - string
+          - "null"
+      updatedTimestamp:
+        type:
+          - string
+          - "null"
+      variety:
+        type:
+          - string
+          - "null"
+      varietyId:
+        type:
+          - string
+          - "null"
+      varietyLabels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      varietyPerformanceWeightedAvg:
+        type:
+          - number
+          - "null"
+      worker:
+        type:
+          - string
+          - "null"
+      workerGroup:
+        type:
+          - string
+          - "null"
+      workerGroupId:
+        type:
+          - string
+          - "null"
+      workerHourlyRate:
+        type:
+          - number
+          - "null"
+      workerId:
+        type:
+          - string
+          - "null"
+      workerLabels:
+        type:
+          - array
+          - "null"
+      workerPerformanceSlope:
+        type:
+          - number
+          - "null"
+      workerPerformanceWeightedAvg:
+        type:
+          - number
+          - "null"
+      workerToGroupPerformance:
+        type:
+          - number
+          - "null"
+  sessions incremental:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      correctedCount:
+        type:
+          - number
+          - "null"
+      count:
+        type:
+          - number
+          - "null"
+      countCorrected:
+        type:
+          - number
+          - "null"
+      countCorrectedAtCreation:
+        type:
+          - number
+          - "null"
+      deviceNumber:
+        type:
+          - string
+          - "null"
+      endTimestampGross:
+        type:
+          - string
+          - "null"
+      endTimestampNet:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      laborCost:
+        type:
+          - number
+          - "null"
+      layout:
+        type:
+          - string
+          - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - string
+          - "null"
+      locationId:
+        type:
+          - string
+          - "null"
+      performanceGross:
+        type:
+          - number
+          - "null"
+      performanceNet:
+        type:
+          - number
+          - "null"
+      row:
+        type:
+          - string
+          - "null"
+      rowFloorArea:
+        type:
+          - number
+          - "null"
+      rowId:
+        type:
+          - string
+          - "null"
+      rowLabels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      startTimestampGross:
+        type:
+          - string
+          - "null"
+      startTimestampNet:
+        type:
+          - string
+          - "null"
+      trolley:
+        type:
+          - string
+          - "null"
+      updatedTimestamp:
+        type:
+          - string
+          - "null"
+      variety:
+        type:
+          - string
+          - "null"
+      varietyId:
+        type:
+          - string
+          - "null"
+      varietyLabels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      varietyPerformanceWeightedAvg:
+        type:
+          - number
+          - "null"
+      worker:
+        type:
+          - string
+          - "null"
+      workerGroup:
+        type:
+          - string
+          - "null"
+      workerGroupId:
+        type:
+          - string
+          - "null"
+      workerHourlyRate:
+        type:
+          - number
+          - "null"
+      workerId:
+        type:
+          - string
+          - "null"
+      workerLabels:
+        type:
+          - array
+          - "null"
+      workerPerformanceSlope:
+        type:
+          - number
+          - "null"
+      workerPerformanceWeightedAvg:
+        type:
+          - number
+          - "null"
+      workerToGroupPerformance:
+        type:
+          - number
+          - "null"

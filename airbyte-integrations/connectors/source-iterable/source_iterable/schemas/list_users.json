@@ -1,0 +1,13 @@
+{
+  "properties": {
+    "email": {
+      "description": "The email address of the user.",
+      "type": ["null", "string"]
+    },
+    "listId": {
+      "description": "The unique identifier of the list to which the user belongs.",
+      "type": ["null", "integer"]
+    }
+  },
+  "type": ["null", "object"]
+}

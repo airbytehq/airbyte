@@ -1,0 +1,7 @@
+{
+  "surrealdb_url": "ws://surrealdb:8000",
+  "surrealdb_username": "root",
+  "surrealdb_password": "root",
+  "surrealdb_database": "test",
+  "surrealdb_namespace": "test"
+}

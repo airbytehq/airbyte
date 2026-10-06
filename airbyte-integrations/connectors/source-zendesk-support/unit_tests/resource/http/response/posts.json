@@ -1,0 +1,36 @@
+{
+  "meta": {
+    "has_more": false,
+    "after_cursor": "ZJWWk2QAAAAAaQ/KB9CYBgAA",
+    "before_cursor": "ZJWWk2QAAAAAaQ+0ds2YBgAA"
+  },
+  "links": {
+    "first": "https://d3v-airbyte.zendesk.com/api/v2/help_center/community/posts?page%5Bsize%5D=100",
+    "last": "https://d3v-airbyte.zendesk.com/api/v2/help_center/community/posts?page%5Bbefore%5D=bGFzdF9wYWdl&page%5Bsize%5D=100"
+  },
+  "posts": [
+    {
+      "id": 7253351904271,
+      "title": "How do I get around the community?",
+      "details": "<p>You can use search to find answers. You can also browse topics and posts using views and filters. See <a href=\"https://support.zendesk.com/hc/en-us/articles/203664386#topic_dqx_znw_3k\" target=\"_blank\" rel=\"nofollow noreferrer\">Getting around the community</a>.</p>",
+      "author_id": 360786799676,
+      "vote_sum": 0,
+      "vote_count": 0,
+      "comment_count": 0,
+      "follower_count": 0,
+      "topic_id": 7253351897871,
+      "html_url": "https://d3v-airbyte.zendesk.com/hc/en-us/community/posts/7253351904271-How-do-I-get-around-the-community-",
+      "created_at": "2023-06-22T00:32:21Z",
+      "updated_at": "2023-06-22T00:32:21Z",
+      "url": "https://d3v-airbyte.zendesk.com/api/v2/help_center/community/posts/7253351904271-How-do-I-get-around-the-community-.json",
+      "featured": false,
+      "pinned": false,
+      "closed": false,
+      "frozen": false,
+      "status": "none",
+      "non_author_editor_id": null,
+      "non_author_updated_at": null,
+      "content_tag_ids": []
+    }
+  ]
+}

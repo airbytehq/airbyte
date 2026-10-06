@@ -1,0 +1,219 @@
+{
+  "streams": [
+    {
+      "name": "ad_account",
+      "relations": {}
+    },
+    {
+      "name": "ad_sets",
+      "relations": {
+        "account_id": "ad_account.id"
+      }
+    },
+    {
+      "name": "ads",
+      "relations": {
+        "account_id": "ad_account.id",
+        "campaign_id": "campaigns.id",
+        "adset_id": "ad_sets.id"
+      }
+    },
+    {
+      "name": "ad_creatives",
+      "relations": {
+        "account_id": "ad_account.id"
+      }
+    },
+    {
+      "name": "ads_insights",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id",
+        "adset_id": "ad_sets.id",
+        "campaign_id": "campaigns.id"
+      }
+    },
+    {
+      "name": "ads_insights_age_and_gender",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id",
+        "adset_id": "ad_sets.id",
+        "campaign_id": "campaigns.id"
+      }
+    },
+    {
+      "name": "ads_insights_country",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_region",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_dma",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_platform_and_device",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_action_type",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_action_carousel_card",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_action_conversion_device",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_action_product_id",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_action_reaction",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_action_video_sound",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_action_video_type",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_delivery_device",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_delivery_platform",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_delivery_platform_and_device_platform",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_demographics_age",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_demographics_country",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_demographics_dma_region",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "ads_insights_demographics_gender",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    },
+    {
+      "name": "campaigns",
+      "relations": {
+        "account_id": "ad_account.id"
+      }
+    },
+    {
+      "name": "custom_conversions",
+      "relations": {
+        "account_id": "ad_account.id"
+      }
+    },
+    {
+      "name": "custom_audiences",
+      "relations": {
+        "account_id": "ad_account.id",
+        "pixel_id": "images.id"
+      }
+    },
+    {
+      "name": "images",
+      "relations": {
+        "account_id": "ad_account.id"
+      }
+    },
+    {
+      "name": "videos",
+      "relations": {
+        "account_id": "ad_account.id"
+      }
+    },
+    {
+      "name": "activities",
+      "relations": {
+        "account_id": "ad_account.id",
+        "actor_id": "ad_account.id",
+        "application_id": "ad_account.id",
+        "object_id": "ad_account.id"
+      }
+    },
+    {
+      "name": "customcustom_insight_stream",
+      "relations": {
+        "account_id": "ad_account.id",
+        "ad_id": "ads.id"
+      }
+    }
+  ]
+}

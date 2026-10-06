@@ -1,0 +1,7 @@
+{
+  "message": "No changes are scheduled for this subscription.",
+  "api_error_code": "invalid_request",
+  "error_code": "invalid_request",
+  "error_msg": "No changes are scheduled for this subscription.",
+  "http_status_code": 400
+}

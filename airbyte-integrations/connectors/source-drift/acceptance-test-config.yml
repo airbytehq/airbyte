@@ -1,0 +1,40 @@
+connector_image: airbyte/source-drift:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: users
+            bypass_reason: "Sandbox account can't seed this stream"
+          - name: contacts
+            bypass_reason: "Sandbox account can't seed this stream"
+          - name: accounts
+            bypass_reason: "Sandbox account can't seed this stream"
+  #        expect_records:
+  #          path: "integration_tests/expected_records.jsonl"
+  #          exact_order: no
+  incremental:
+    bypass_reason: "This connector does not implement incremental sync"
+  # TODO uncomment this block this block if your connector implements incremental sync:
+  #    tests:
+  #      - config_path: "secrets/config.json"
+  #        configured_catalog_path: "integration_tests/configured_catalog.json"
+  #        future_state:
+  #          future_state_path: "integration_tests/abnormal_state.json"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

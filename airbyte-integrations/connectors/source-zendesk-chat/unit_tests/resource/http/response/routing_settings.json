@@ -1,0 +1,19 @@
+{
+  "data": {
+    "enabled": true,
+    "max_queue_size": 10,
+    "chat_limit": {
+      "enabled": true,
+      "limit": 5,
+      "limit_type": "account"
+    },
+    "skill_routing": {
+      "enabled": false,
+      "max_wait_time": 60
+    },
+    "reassignment": {
+      "enabled": true,
+      "timeout": 30
+    }
+  }
+}

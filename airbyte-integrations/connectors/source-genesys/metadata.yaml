@@ -1,0 +1,46 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 5ea4459a-8f1a-452a-830f-a65c38cc438d
+  dockerImageTag: 0.1.42
+  dockerRepository: airbyte/source-genesys
+  githubIssueLabel: source-genesys
+  icon: genesys.svg
+  license: ELv2
+  name: Genesys
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-genesys
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/genesys
+  tags:
+    - language:python
+    - cdk:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
+  externalDocumentationUrls:
+    - title: Genesys Cloud API reference
+      url: https://developer.genesys.cloud/api/
+      type: api_reference
+    - title: Genesys authentication
+      url: https://developer.genesys.cloud/authorization/
+      type: authentication_guide
+    - title: Genesys rate limits
+      url: https://developer.genesys.cloud/api/rest/rate_limits
+      type: rate_limits
+    - title: Genesys Cloud Status
+      url: https://status.mypurecloud.com/
+      type: status_page
+metadataSpecVersion: "1.0"

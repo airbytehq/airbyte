@@ -1,0 +1,13 @@
+*
+!Dockerfile
+!entrypoint.sh
+!build/sshtunneling.sh
+!setup.py
+!normalization
+!dbt-project-template
+!dbt-project-template-mssql
+!dbt-project-template-mysql
+!dbt-project-template-oracle
+!dbt-project-template-clickhouse
+!dbt-project-template-snowflake
+!dbt-project-template-redshift

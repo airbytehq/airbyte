@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "cohort_id": {
+      "description": "The unique identifier of the cohort to which the member belongs",
+      "type": ["null", "integer"]
+    },
+    "distinct_id": {
+      "description": "The distinct identifier of the cohort member",
+      "type": ["null", "string"]
+    },
+    "browser": {
+      "description": "The web browser used by the cohort member",
+      "type": ["null", "string"]
+    },
+    "browser_version": {
+      "description": "The version of the web browser used by the cohort member",
+      "type": ["null", "string"]
+    },
+    "city": {
+      "description": "The city where the cohort member is located",
+      "type": ["null", "string"]
+    },
+    "country_code": {
+      "description": "The country code of the country where the cohort member is located",
+      "type": ["null", "string"]
+    },
+    "region": {
+      "description": "The region where the cohort member is located",
+      "type": ["null", "string"]
+    },
+    "timezone": {
+      "description": "The timezone of the cohort member",
+      "type": ["null", "string"]
+    },
+    "last_seen": {
+      "description": "The date and time when the cohort member was last seen",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "email": {
+      "description": "The email address of the cohort member",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The name of the cohort member",
+      "type": ["null", "string"]
+    },
+    "first_name": {
+      "description": "The first name of the cohort member",
+      "type": ["null", "string"]
+    },
+    "last_name": {
+      "description": "The last name of the cohort member",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identifier of the cohort member",
+      "type": ["null", "string"]
+    },
+    "unblocked": {
+      "description": "Indicator of whether the cohort member is unblocked",
+      "type": ["null", "string"]
+    }
+  }
+}

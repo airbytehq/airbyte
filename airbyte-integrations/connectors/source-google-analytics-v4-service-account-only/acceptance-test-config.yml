@@ -1,0 +1,35 @@
+connector_image: airbyte/source-google-analytics-v4-service-account-only:dev
+test_strictness_level: high
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: source_google_analytics_v4_service_account_only/spec.json
+  discovery:
+    tests:
+      - config_path: secrets/config.json
+  connection:
+    tests:
+      - config_path: secrets/config.json
+        status: succeed
+      - config_path: integration_tests/invalid_config.json
+        status: exception
+  basic_read:
+    tests:
+      - config_path: secrets/config.json
+        empty_streams:
+          - name: users_per_city
+            bypass_reason: no records in the stream
+        expect_records:
+          path: integration_tests/expected_records.jsonl
+        timeout_seconds: 1800
+  full_refresh:
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/configured_catalog.json
+  incremental:
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/configured_catalog.json
+        timeout_seconds: 2400
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json

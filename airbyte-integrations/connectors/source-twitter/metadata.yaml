@@ -1,0 +1,59 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 100
+  allowedHosts:
+    hosts:
+      - api.twitter.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d7fd4f40-5e5a-4b8b-918f-a73077f8c131
+  dockerImageTag: 0.3.11
+  dockerRepository: airbyte/source-twitter
+  documentationUrl: https://docs.airbyte.com/integrations/sources/twitter
+  githubIssueLabel: source-twitter
+  icon: twitter.svg
+  license: ELv2
+  name: Twitter
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-twitter
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: beta
+  supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: twitter_config_dev_null
+          id: 7ed4842f-7a28-4407-a684-c2c547797648
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-TWITTER__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.10@sha256:09947fb38d07e515f9901a12f22cc44f1512f6148703341de80403c0e0c1b8c3
+  externalDocumentationUrls:
+    - title: Twitter API v2
+      url: https://developer.twitter.com/en/docs/twitter-api
+      type: api_reference
+    - title: Twitter authentication
+      url: https://developer.twitter.com/en/docs/authentication/overview
+      type: authentication_guide
+    - title: Twitter rate limits
+      url: https://developer.twitter.com/en/docs/twitter-api/rate-limits
+      type: rate_limits
+    - title: Twitter API Status
+      url: https://api.twitterstat.us/
+      type: status_page
+metadataSpecVersion: "1.0"

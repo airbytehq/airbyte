@@ -1,0 +1,40 @@
+plugins {
+    id 'airbyte-bulk-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = ['extract-jdbc']
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.snowflake.SnowflakeSource'
+    applicationDefaultJvmArgs = [
+            '--add-opens=java.base/java.lang=ALL-UNNAMED',
+            '--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED',
+            '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
+            '--add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED',
+            '-Dnet.snowflake.jdbc.enableBouncyCastle=TRUE'
+    ]
+}
+
+dependencies {
+    implementation 'net.snowflake:snowflake-jdbc:4.0.2'
+    implementation 'org.apache.commons:commons-lang3:3.20.0'
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
+    testImplementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform() // Ensure this is set if not globally
+    jvmArgs(
+            '--add-opens=java.base/java.nio=ALL-UNNAMED',
+            '--add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED',
+            '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED'
+    )
+}

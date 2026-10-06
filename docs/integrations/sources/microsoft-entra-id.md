@@ -1,0 +1,108 @@
+# Microsoft Entra Id
+
+The Microsoft Entra ID Connector for Airbyte allows seamless integration with Microsoft Entra ID, enabling secure and automated data synchronization of identity and access management information. With this connector, users can efficiently retrieve and manage user, group, and directory data to streamline identity workflows and ensure up-to-date access control within their applications.
+
+## Authentication
+
+First of all you need to register an application in the Microsoft Entra Admin Center. Please folow [these](https://learn.microsoft.com/en-us/graph/auth-register-app-v2) steps to do so. After that you need to follow [these](https://learn.microsoft.com/en-us/graph/auth-v2-service?context=graph%2Fapi%2F1.0&view=graph-rest-1.0&tabs=http) steps to configure the api with right permissions and get the access token.
+
+## Configuration
+
+| Input           | Type     | Description      | Default Value |
+| --------------- | -------- | ---------------- | ------------- |
+| `client_id`     | `string` | Client ID.       |               |
+| `client_secret` | `string` | Client secret.   |               |
+| `tenant_id`     | `string` | Tenant Id.       |               |
+| `user_id`       | `string` | ID of the owner. |               |
+
+## Streams
+
+| Stream Name               | Primary Key | Pagination       | Supports Full Sync | Supports Incremental |
+| ------------------------- | ----------- | ---------------- | ------------------ | -------------------- |
+| users                     | id          | DefaultPaginator | ✅                 | ❌                   |
+| groups                    | id          | DefaultPaginator | ✅                 | ❌                   |
+| applications              | id          | DefaultPaginator | ✅                 | ❌                   |
+| user_owned_deleted_items  | id          | DefaultPaginator | ✅                 | ❌                   |
+| directoryroles            | id          | No pagination    | ✅                 | ❌                   |
+| directoryroletemplates    | id          | No pagination    | ✅                 | ❌                   |
+| directoryaudits           | id          | DefaultPaginator | ✅                 | ❌                   |
+| serviceprincipals         | id          | DefaultPaginator | ✅                 | ❌                   |
+| identityproviders         |             | DefaultPaginator | ✅                 | ❌                   |
+| adminconsentrequestpolicy |             | DefaultPaginator | ✅                 | ❌                   |
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                               |
+| ------- | ---------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 0.0.63 | 2026-10-06 | [87948](https://github.com/airbytehq/airbyte/pull/87948) | Update dependencies |
+| 0.0.62 | 2026-09-29 | [87258](https://github.com/airbytehq/airbyte/pull/87258) | Update dependencies |
+| 0.0.61 | 2026-09-22 | [86699](https://github.com/airbytehq/airbyte/pull/86699) | Update dependencies |
+| 0.0.60 | 2026-09-15 | [86120](https://github.com/airbytehq/airbyte/pull/86120) | Update dependencies |
+| 0.0.59 | 2026-09-08 | [85555](https://github.com/airbytehq/airbyte/pull/85555) | Update dependencies |
+| 0.0.58 | 2026-08-18 | [84646](https://github.com/airbytehq/airbyte/pull/84646) | Update dependencies |
+| 0.0.57 | 2026-08-11 | [84036](https://github.com/airbytehq/airbyte/pull/84036) | Update dependencies |
+| 0.0.56 | 2026-08-04 | [83552](https://github.com/airbytehq/airbyte/pull/83552) | Update dependencies |
+| 0.0.55 | 2026-07-28 | [83020](https://github.com/airbytehq/airbyte/pull/83020) | Update dependencies |
+| 0.0.54 | 2026-07-21 | [82514](https://github.com/airbytehq/airbyte/pull/82514) | Update dependencies |
+| 0.0.53 | 2026-07-14 | [81905](https://github.com/airbytehq/airbyte/pull/81905) | Update dependencies |
+| 0.0.52 | 2026-06-30 | [81130](https://github.com/airbytehq/airbyte/pull/81130) | Update dependencies |
+| 0.0.51 | 2026-06-23 | [80527](https://github.com/airbytehq/airbyte/pull/80527) | Update dependencies |
+| 0.0.50 | 2026-06-16 | [79946](https://github.com/airbytehq/airbyte/pull/79946) | Update dependencies |
+| 0.0.49 | 2026-06-09 | [79385](https://github.com/airbytehq/airbyte/pull/79385) | Update dependencies |
+| 0.0.48 | 2026-06-02 | [78815](https://github.com/airbytehq/airbyte/pull/78815) | Update dependencies |
+| 0.0.47 | 2026-04-28 | [77331](https://github.com/airbytehq/airbyte/pull/77331) | Update dependencies |
+| 0.0.46 | 2026-04-21 | [76712](https://github.com/airbytehq/airbyte/pull/76712) | Update dependencies |
+| 0.0.45 | 2026-03-17 | [74563](https://github.com/airbytehq/airbyte/pull/74563) | Update dependencies |
+| 0.0.44 | 2026-02-24 | [73817](https://github.com/airbytehq/airbyte/pull/73817) | Update dependencies |
+| 0.0.43 | 2026-02-03 | [72696](https://github.com/airbytehq/airbyte/pull/72696) | Update dependencies |
+| 0.0.42 | 2026-01-20 | [71996](https://github.com/airbytehq/airbyte/pull/71996) | Update dependencies |
+| 0.0.41 | 2026-01-14 | [71511](https://github.com/airbytehq/airbyte/pull/71511) | Update dependencies |
+| 0.0.40 | 2025-12-18 | [70771](https://github.com/airbytehq/airbyte/pull/70771) | Update dependencies |
+| 0.0.39 | 2025-11-25 | [70093](https://github.com/airbytehq/airbyte/pull/70093) | Update dependencies |
+| 0.0.38 | 2025-11-18 | [69542](https://github.com/airbytehq/airbyte/pull/69542) | Update dependencies |
+| 0.0.37 | 2025-10-29 | [69067](https://github.com/airbytehq/airbyte/pull/69067) | Update dependencies |
+| 0.0.36 | 2025-10-21 | [68465](https://github.com/airbytehq/airbyte/pull/68465) | Update dependencies |
+| 0.0.35 | 2025-10-14 | [67827](https://github.com/airbytehq/airbyte/pull/67827) | Update dependencies |
+| 0.0.34 | 2025-10-07 | [67389](https://github.com/airbytehq/airbyte/pull/67389) | Update dependencies |
+| 0.0.33 | 2025-09-30 | [66344](https://github.com/airbytehq/airbyte/pull/66344) | Update dependencies |
+| 0.0.32 | 2025-09-09 | [65885](https://github.com/airbytehq/airbyte/pull/65885) | Update dependencies |
+| 0.0.31 | 2025-08-23 | [65162](https://github.com/airbytehq/airbyte/pull/65162) | Update dependencies |
+| 0.0.30 | 2025-08-09 | [64700](https://github.com/airbytehq/airbyte/pull/64700) | Update dependencies |
+| 0.0.29 | 2025-08-02 | [64271](https://github.com/airbytehq/airbyte/pull/64271) | Update dependencies |
+| 0.0.28 | 2025-07-26 | [63882](https://github.com/airbytehq/airbyte/pull/63882) | Update dependencies |
+| 0.0.27 | 2025-07-19 | [63441](https://github.com/airbytehq/airbyte/pull/63441) | Update dependencies |
+| 0.0.26 | 2025-07-12 | [63188](https://github.com/airbytehq/airbyte/pull/63188) | Update dependencies |
+| 0.0.25 | 2025-07-05 | [62586](https://github.com/airbytehq/airbyte/pull/62586) | Update dependencies |
+| 0.0.24 | 2025-06-28 | [62414](https://github.com/airbytehq/airbyte/pull/62414) | Update dependencies |
+| 0.0.23 | 2025-06-21 | [61872](https://github.com/airbytehq/airbyte/pull/61872) | Update dependencies |
+| 0.0.22 | 2025-06-14 | [60484](https://github.com/airbytehq/airbyte/pull/60484) | Update dependencies |
+| 0.0.21 | 2025-05-10 | [60185](https://github.com/airbytehq/airbyte/pull/60185) | Update dependencies |
+| 0.0.20 | 2025-05-03 | [59253](https://github.com/airbytehq/airbyte/pull/59253) | Update dependencies |
+| 0.0.19 | 2025-04-26 | [58775](https://github.com/airbytehq/airbyte/pull/58775) | Update dependencies |
+| 0.0.18 | 2025-04-19 | [58218](https://github.com/airbytehq/airbyte/pull/58218) | Update dependencies |
+| 0.0.17 | 2025-04-12 | [57872](https://github.com/airbytehq/airbyte/pull/57872) | Update dependencies |
+| 0.0.16 | 2025-04-05 | [57073](https://github.com/airbytehq/airbyte/pull/57073) | Update dependencies |
+| 0.0.15 | 2025-03-29 | [56704](https://github.com/airbytehq/airbyte/pull/56704) | Update dependencies |
+| 0.0.14 | 2025-03-22 | [56005](https://github.com/airbytehq/airbyte/pull/56005) | Update dependencies |
+| 0.0.13 | 2025-03-08 | [55508](https://github.com/airbytehq/airbyte/pull/55508) | Update dependencies |
+| 0.0.12 | 2025-03-01 | [54777](https://github.com/airbytehq/airbyte/pull/54777) | Update dependencies |
+| 0.0.11 | 2025-02-22 | [54355](https://github.com/airbytehq/airbyte/pull/54355) | Update dependencies |
+| 0.0.10 | 2025-02-15 | [51193](https://github.com/airbytehq/airbyte/pull/51193) | Update dependencies |
+| 0.0.9 | 2024-12-28 | [50630](https://github.com/airbytehq/airbyte/pull/50630) | Update dependencies |
+| 0.0.8 | 2024-12-21 | [50133](https://github.com/airbytehq/airbyte/pull/50133) | Update dependencies |
+| 0.0.7 | 2024-12-14 | [49596](https://github.com/airbytehq/airbyte/pull/49596) | Update dependencies |
+| 0.0.6 | 2024-12-12 | [49270](https://github.com/airbytehq/airbyte/pull/49270) | Update dependencies |
+| 0.0.5 | 2024-12-11 | [48941](https://github.com/airbytehq/airbyte/pull/48941) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.0.4 | 2024-10-31 | [47997](https://github.com/airbytehq/airbyte/pull/47997) | Remove `audit_logs` and update auth remove `application_id_uri` parameter |
+| 0.0.3 | 2024-10-29 | [47892](https://github.com/airbytehq/airbyte/pull/47892) | Update dependencies |
+| 0.0.2 | 2024-10-28 | [47479](https://github.com/airbytehq/airbyte/pull/47479) | Update dependencies |
+| 0.0.1   | 2024-10-18 |                                                          | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+
+</details>

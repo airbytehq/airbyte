@@ -1,0 +1,34 @@
+[
+  {
+    "id": 15,
+    "name": "Electronics",
+    "slug": "electronics",
+    "parent": 0,
+    "description": "Electronic products and gadgets",
+    "display": "default",
+    "image": {
+      "id": 51,
+      "date_created": "2024-01-01T00:00:00",
+      "date_created_gmt": "2024-01-01T00:00:00",
+      "date_modified": "2024-01-01T00:00:00",
+      "date_modified_gmt": "2024-01-01T00:00:00",
+      "src": "https://test-shop.example.com/wp-content/uploads/category-electronics.jpg",
+      "name": "category-electronics",
+      "alt": "Electronics category"
+    },
+    "menu_order": 0,
+    "count": 25,
+    "_links": {
+      "self": [
+        {
+          "href": "https://test-shop.example.com/wp-json/wc/v3/products/categories/15"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://test-shop.example.com/wp-json/wc/v3/products/categories"
+        }
+      ]
+    }
+  }
+]

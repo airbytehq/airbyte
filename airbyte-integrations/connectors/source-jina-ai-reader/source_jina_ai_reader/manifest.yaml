@@ -1,0 +1,156 @@
+version: 1.3.1
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data"]
+
+  reader_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+      requester:
+        type: CustomRequester
+        class_name: source_jina_ai_reader.components.JinaAiHttpRequester
+        url_base: "https://r.jina.ai/{{ config['read_prompt'] }}"
+        http_method: "GET"
+        path: "/"
+        authenticator:
+          type: NoAuth
+        request_headers:
+          Accept: application/json
+          X-With-Links-Summary: "{{ config['gather_links'] }}"
+          X-With-Images-Summary: "{{ config['gather_images'] }}"
+    name: "reader"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/reader"
+
+  search_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+      requester:
+        type: CustomRequester
+        class_name: source_jina_ai_reader.components.JinaAiHttpRequester
+        url_base: "https://s.jina.ai/{{ config['search_prompt'] }}"
+        http_method: "GET"
+        path: "/"
+        authenticator:
+          type: NoAuth
+        request_headers:
+          Accept: application/json
+          X-With-Links-Summary: "{{ config['gather_links']}}"
+          X-With-Images-Summary: "{{ config['gather_images']}}"
+    name: "search"
+    $parameters:
+      path: "/example"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/search"
+
+streams:
+  - "#/definitions/reader_stream"
+  - "#/definitions/search_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "reader"
+    - "search"
+
+schemas:
+  search:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Jina AI URL Reader Schema
+    type: object
+    additionalProperties: true
+    properties:
+      title:
+        type: string
+      url:
+        type: string
+      content:
+        type: string
+      description:
+        type: string
+      links:
+        type: object
+        additionalProperties: true
+        properties:
+          More information...:
+            type: string
+
+  reader:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Jina AI prompt Reader Schema
+    type: object
+    additionalProperties: true
+    properties:
+      title:
+        type: string
+      url:
+        type: string
+      content:
+        type: string
+      description:
+        type: string
+      links:
+        type: object
+        additionalProperties: true
+        properties:
+          More information...:
+            type: string
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/jina-ai-reader
+  connection_specification:
+    title: Jina AI Reader Spec
+    type: object
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: >-
+          Your Jina AI API Key. See <a
+          href="https://jina.ai/reader/#apiform">here</a>.
+        airbyte_secret: true
+        order: 0
+      read_prompt:
+        type: string
+        title: Your read prompt url, that would be appended at the end of reader stream
+        default: "https://www.google.com"
+        order: 1
+      search_prompt:
+        type: string
+        title: >-
+          Your search prompt, that would be appended at the end of search stream, Should be an encoded string without spaces.
+          Visit https://coding.tools/url-encode for seamless encoding.
+        default: "Search%20airbyte"
+        order: 2
+      gather_links:
+        type: boolean
+        title: >-
+          Set this as true for creating "Buttons & Links" section at the end. This helps the downstream LLMs or web agents navigating 
+          the page or take further actions.
+        order: 3
+      gather_images:
+        type: boolean
+        title: >-
+          Set this as true for creating "Images" section at the end. This gives the downstream LLMs an overview of all visuals on the page, 
+          which may improve reasoning.
+        order: 4

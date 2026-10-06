@@ -1,0 +1,26 @@
+{
+  "reportSpecification": {
+    "reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+    "reportOptions": {
+      "reportPeriod": "DAY",
+      "sellingProgram": "RETAIL"
+    },
+    "dataStartTime": "2021-06-06",
+    "dataEndTime": "2021-06-19",
+    "marketplaceIds": ["ATVPDKIKX0DER"]
+  },
+  "reportData": [
+    {
+      "startTime": "2021-06-06T00:00:00Z",
+      "endTime": "2021-06-12T23:59:59Z",
+      "asin": "B123456789",
+      "highlyAvailableInventory": 500
+    },
+    {
+      "startTime": "2021-06-13T00:00:00Z",
+      "endTime": "2021-06-19T23:59:59Z",
+      "asin": "B987654321",
+      "highlyAvailableInventory": 750
+    }
+  ]
+}

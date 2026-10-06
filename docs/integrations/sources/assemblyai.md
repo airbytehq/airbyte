@@ -1,0 +1,77 @@
+# AssemblyAI
+Website: https://www.assemblyai.com/
+API Reference: https://www.assemblyai.com/docs/api-reference/overview
+
+## Configuration
+
+| Input | Type | Description | Default Value |
+|-------|------|-------------|---------------|
+| `api_key` | `string` | API Key. Your AssemblyAI API key. You can find it in the AssemblyAI dashboard at https://www.assemblyai.com/app/api-keys. |  |
+| `start_date` | `string` | Start date.  |  |
+| `subtitle_format` | `string` | Subtitle format. The subtitle format for transcript_subtitle stream | srt |
+
+## Streams
+| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
+|-------------|-------------|------------|---------------------|----------------------|
+| transcripts | id | DefaultPaginator | ✅ |  ✅  |
+| transcript_sentences | uuid | DefaultPaginator | ✅ |  ❌  |
+| paragraphs | uuid | DefaultPaginator | ✅ |  ❌  |
+| transcript_subtitle | uuid | DefaultPaginator | ✅ |  ❌  |
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
+
+| Version          | Date              | Pull Request | Subject        |
+|------------------|-------------------|--------------|----------------|
+| 0.0.44 | 2026-10-06 | [87774](https://github.com/airbytehq/airbyte/pull/87774) | Update dependencies |
+| 0.0.43 | 2026-09-29 | [87073](https://github.com/airbytehq/airbyte/pull/87073) | Update dependencies |
+| 0.0.42 | 2026-09-22 | [86514](https://github.com/airbytehq/airbyte/pull/86514) | Update dependencies |
+| 0.0.41 | 2026-09-15 | [85959](https://github.com/airbytehq/airbyte/pull/85959) | Update dependencies |
+| 0.0.40 | 2026-09-08 | [85400](https://github.com/airbytehq/airbyte/pull/85400) | Update dependencies |
+| 0.0.39 | 2026-08-18 | [84469](https://github.com/airbytehq/airbyte/pull/84469) | Update dependencies |
+| 0.0.38 | 2026-08-11 | [83824](https://github.com/airbytehq/airbyte/pull/83824) | Update dependencies |
+| 0.0.37 | 2026-08-04 | [83372](https://github.com/airbytehq/airbyte/pull/83372) | Update dependencies |
+| 0.0.36 | 2026-07-28 | [82839](https://github.com/airbytehq/airbyte/pull/82839) | Update dependencies |
+| 0.0.35 | 2026-07-21 | [82312](https://github.com/airbytehq/airbyte/pull/82312) | Update dependencies |
+| 0.0.34 | 2026-07-14 | [81743](https://github.com/airbytehq/airbyte/pull/81743) | Update dependencies |
+| 0.0.33 | 2026-06-30 | [80984](https://github.com/airbytehq/airbyte/pull/80984) | Update dependencies |
+| 0.0.32 | 2026-06-23 | [80353](https://github.com/airbytehq/airbyte/pull/80353) | Update dependencies |
+| 0.0.31 | 2026-06-16 | [79782](https://github.com/airbytehq/airbyte/pull/79782) | Update dependencies |
+| 0.0.30 | 2026-06-09 | [79216](https://github.com/airbytehq/airbyte/pull/79216) | Update dependencies |
+| 0.0.29 | 2026-06-02 | [78590](https://github.com/airbytehq/airbyte/pull/78590) | Update dependencies |
+| 0.0.28 | 2026-04-28 | [77136](https://github.com/airbytehq/airbyte/pull/77136) | Update dependencies |
+| 0.0.27 | 2026-04-21 | [76512](https://github.com/airbytehq/airbyte/pull/76512) | Update dependencies |
+| 0.0.26 | 2026-03-31 | [75896](https://github.com/airbytehq/airbyte/pull/75896) | Update dependencies |
+| 0.0.25 | 2026-03-17 | [75011](https://github.com/airbytehq/airbyte/pull/75011) | Update dependencies |
+| 0.0.24 | 2026-03-03 | [74172](https://github.com/airbytehq/airbyte/pull/74172) | Update dependencies |
+| 0.0.23 | 2026-02-17 | [73422](https://github.com/airbytehq/airbyte/pull/73422) | Update dependencies |
+| 0.0.22 | 2026-02-03 | [72716](https://github.com/airbytehq/airbyte/pull/72716) | Update dependencies |
+| 0.0.21 | 2026-01-20 | [71885](https://github.com/airbytehq/airbyte/pull/71885) | Update dependencies |
+| 0.0.20 | 2026-01-14 | [71436](https://github.com/airbytehq/airbyte/pull/71436) | Update dependencies |
+| 0.0.19 | 2025-12-18 | [70809](https://github.com/airbytehq/airbyte/pull/70809) | Update dependencies |
+| 0.0.18 | 2025-11-25 | [69899](https://github.com/airbytehq/airbyte/pull/69899) | Update dependencies |
+| 0.0.17 | 2025-11-18 | [69552](https://github.com/airbytehq/airbyte/pull/69552) | Update dependencies |
+| 0.0.16 | 2025-10-29 | [68907](https://github.com/airbytehq/airbyte/pull/68907) | Update dependencies |
+| 0.0.15 | 2025-10-21 | [68395](https://github.com/airbytehq/airbyte/pull/68395) | Update dependencies |
+| 0.0.14 | 2025-10-14 | [67990](https://github.com/airbytehq/airbyte/pull/67990) | Update dependencies |
+| 0.0.13 | 2025-10-07 | [67172](https://github.com/airbytehq/airbyte/pull/67172) | Update dependencies |
+| 0.0.12 | 2025-09-30 | [66277](https://github.com/airbytehq/airbyte/pull/66277) | Update dependencies |
+| 0.0.11 | 2025-09-09 | [65040](https://github.com/airbytehq/airbyte/pull/65040) | Update dependencies |
+| 0.0.10 | 2025-07-26 | [63808](https://github.com/airbytehq/airbyte/pull/63808) | Update dependencies |
+| 0.0.9 | 2025-07-19 | [63452](https://github.com/airbytehq/airbyte/pull/63452) | Update dependencies |
+| 0.0.8 | 2025-07-05 | [62533](https://github.com/airbytehq/airbyte/pull/62533) | Update dependencies |
+| 0.0.7 | 2025-06-21 | [61881](https://github.com/airbytehq/airbyte/pull/61881) | Update dependencies |
+| 0.0.6 | 2025-05-24 | [60630](https://github.com/airbytehq/airbyte/pull/60630) | Update dependencies |
+| 0.0.5 | 2025-05-10 | [59784](https://github.com/airbytehq/airbyte/pull/59784) | Update dependencies |
+| 0.0.4 | 2025-05-03 | [59329](https://github.com/airbytehq/airbyte/pull/59329) | Update dependencies |
+| 0.0.3 | 2025-04-26 | [58705](https://github.com/airbytehq/airbyte/pull/58705) | Update dependencies |
+| 0.0.2 | 2025-04-19 | [57655](https://github.com/airbytehq/airbyte/pull/57655) | Update dependencies |
+| 0.0.1 | 2025-04-05 | [57210](http://github.com/airbytehq/airbyte/pull/57210) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
+
+</details>

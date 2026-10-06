@@ -1,0 +1,57 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.12@sha256:b236b4ff8351a7d7f0ff7f938bbf0ab7b455c4c9e6e7cc93933f4aa9201d66cb
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 68b9c98e-0747-4c84-b05b-d30b47686725
+  dockerImageTag: 0.4.20
+  dockerRepository: airbyte/source-braze
+  documentationUrl: https://docs.airbyte.com/integrations/sources/braze
+  githubIssueLabel: source-braze
+  icon: braze.svg
+  license: ELv2
+  name: Braze
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-braze
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: braze_config_dev_null
+          id: 5df06901-b346-4401-81af-62b20deda255
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_BRAZE_INTEGRATION_TESTS_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Braze REST API reference
+      url: https://www.braze.com/docs/api/home
+      type: api_reference
+    - title: Braze API authentication
+      url: https://www.braze.com/docs/api/basics/
+      type: authentication_guide
+    - title: Braze API rate limits
+      url: https://www.braze.com/docs/api/api_limits/
+      type: rate_limits
+    - title: Braze Status
+      url: https://status.braze.com/
+      type: status_page
+metadataSpecVersion: "1.0"

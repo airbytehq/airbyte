@@ -1,0 +1,815 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - categorizers
+
+definitions:
+  streams:
+    categorizers:
+      type: DeclarativeStream
+      name: categorizers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/categorizers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - categorizers
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categorizers"
+    croppings:
+      type: DeclarativeStream
+      name: croppings
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/croppings?image_url={{ config['img_for_detection'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - croppings
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/croppings"
+    colors:
+      type: DeclarativeStream
+      name: colors
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/colors?image_url={{ config['img_for_detection'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - colors
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/colors"
+    faces_detections:
+      type: DeclarativeStream
+      name: faces_detections
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/faces/detections?image_url={{ config['img_for_detection'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - faces
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/faces_detections"
+    text:
+      type: DeclarativeStream
+      name: text
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/text?image_url={{ config['img_for_detection'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - text
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/text"
+    usage:
+      type: DeclarativeStream
+      name: usage
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/usage
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/usage"
+    barcodes:
+      type: DeclarativeStream
+      name: barcodes
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/barcodes?image_url={{ config['img_for_detection'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - barcodes
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/barcodes"
+    categorize_photos:
+      type: DeclarativeStream
+      name: categorize_photos
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /v2/categories/{{ stream_partition['cat_id'] }}?image_url={{
+            config['img_for_detection'] }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: SUCCESS
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      You have reached your concurrent request limits for your
+                      subscription
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - categories
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: cat_id
+              stream:
+                $ref: "#/definitions/streams/categorizers"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categorize_photos"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.imagga.com
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"api_secret\"] }}"
+      username: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/categorizers"
+  - $ref: "#/definitions/streams/croppings"
+  - $ref: "#/definitions/streams/colors"
+  - $ref: "#/definitions/streams/faces_detections"
+  - $ref: "#/definitions/streams/text"
+  - $ref: "#/definitions/streams/usage"
+  - $ref: "#/definitions/streams/barcodes"
+  - $ref: "#/definitions/streams/categorize_photos"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - api_secret
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your Imagga API key, available in your Imagga dashboard. Could be
+          found at `https://imagga.com/profile/dashboard`
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      api_secret:
+        type: string
+        description: >-
+          Your Imagga API secret, available in your Imagga dashboard. Could be
+          found at `https://imagga.com/profile/dashboard`
+        name: api_secret
+        title: API Secret
+        airbyte_secret: true
+        order: 1
+      img_for_detection:
+        type: string
+        description: An image for detection endpoints
+        title: Image URL for detection endpoints
+        default: https://imagga.com/static/images/categorization/child-476506_640.jpg
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    categorizers: true
+    croppings: true
+    colors: true
+    faces_detections: true
+    text: true
+    usage: true
+    barcodes: true
+    categorize_photos: true
+  testedStreams:
+    categorizers:
+      streamHash: 6eb15dc3d06509aec3abc9ada2a3fd74e28255c0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    croppings:
+      streamHash: 3db54042065e5deecb0f2fb3f1fb8bbd81249d2b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    colors:
+      streamHash: 2764c2859ec6489169ccf3fbbb72419ddef6bbed
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    faces_detections:
+      streamHash: 0730385a229df32f15ccb398b96febd8583555f1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    text:
+      streamHash: 6ce0b3d1c5936d0506b1055e600e5f9b9d7e280a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    usage:
+      streamHash: ce2d3b4663ef38344f4f96fb72cec7fc60c572ba
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    barcodes:
+      streamHash: 13b8bb19db8f66d296fdcd01b66f8e5eb58aa80b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    categorize_photos:
+      streamHash: 1a9309ad4fe1c8bb01596f1251b98eee28655036
+      hasResponse: true
+      responsesAreSuccessful: false
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://docs.imagga.com/#categorizers
+
+schemas:
+  categorizers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      labels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  croppings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      target_height:
+        type:
+          - number
+          - "null"
+      target_width:
+        type:
+          - number
+          - "null"
+      uuid:
+        type: string
+      x1:
+        type:
+          - number
+          - "null"
+      x2:
+        type:
+          - number
+          - "null"
+      y1:
+        type:
+          - number
+          - "null"
+      y2:
+        type:
+          - number
+          - "null"
+    required:
+      - uuid
+  colors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      background_colors:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            b:
+              type:
+                - number
+                - "null"
+            closest_palette_color:
+              type:
+                - string
+                - "null"
+            closest_palette_color_html_code:
+              type:
+                - string
+                - "null"
+            closest_palette_color_parent:
+              type:
+                - string
+                - "null"
+            closest_palette_distance:
+              type:
+                - number
+                - "null"
+            g:
+              type:
+                - number
+                - "null"
+            html_code:
+              type:
+                - string
+                - "null"
+            percent:
+              type:
+                - number
+                - "null"
+            r:
+              type:
+                - number
+                - "null"
+      color_percent_threshold:
+        type:
+          - number
+          - "null"
+      color_variance:
+        type:
+          - number
+          - "null"
+      foreground_colors:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            b:
+              type:
+                - number
+                - "null"
+            closest_palette_color:
+              type:
+                - string
+                - "null"
+            closest_palette_color_html_code:
+              type:
+                - string
+                - "null"
+            closest_palette_color_parent:
+              type:
+                - string
+                - "null"
+            closest_palette_distance:
+              type:
+                - number
+                - "null"
+            g:
+              type:
+                - number
+                - "null"
+            html_code:
+              type:
+                - string
+                - "null"
+            percent:
+              type:
+                - number
+                - "null"
+            r:
+              type:
+                - number
+                - "null"
+      image_colors:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            b:
+              type:
+                - number
+                - "null"
+            closest_palette_color:
+              type:
+                - string
+                - "null"
+            closest_palette_color_html_code:
+              type:
+                - string
+                - "null"
+            closest_palette_color_parent:
+              type:
+                - string
+                - "null"
+            closest_palette_distance:
+              type:
+                - number
+                - "null"
+            g:
+              type:
+                - number
+                - "null"
+            html_code:
+              type:
+                - string
+                - "null"
+            percent:
+              type:
+                - number
+                - "null"
+            r:
+              type:
+                - number
+                - "null"
+      object_percentage:
+        type:
+          - number
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  faces_detections:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributes:
+        type:
+          - array
+          - "null"
+      confidence:
+        type:
+          - number
+          - "null"
+      coordinates:
+        type:
+          - object
+          - "null"
+        properties:
+          height:
+            type:
+              - number
+              - "null"
+          width:
+            type:
+              - number
+              - "null"
+          xmax:
+            type:
+              - number
+              - "null"
+          xmin:
+            type:
+              - number
+              - "null"
+          ymax:
+            type:
+              - number
+              - "null"
+          ymin:
+            type:
+              - number
+              - "null"
+      face_id:
+        type:
+          - string
+          - "null"
+      landmarks:
+        type:
+          - array
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  text:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      coordinates:
+        type:
+          - object
+          - "null"
+        properties:
+          height:
+            type:
+              - number
+              - "null"
+          width:
+            type:
+              - number
+              - "null"
+          xmax:
+            type:
+              - number
+              - "null"
+          xmin:
+            type:
+              - number
+              - "null"
+          ymax:
+            type:
+              - number
+              - "null"
+          ymin:
+            type:
+              - number
+              - "null"
+      data:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  usage:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      billing_period_end:
+        type:
+          - string
+          - "null"
+      billing_period_start:
+        type:
+          - string
+          - "null"
+      daily_for:
+        type:
+          - string
+          - "null"
+      daily_processed:
+        type:
+          - number
+          - "null"
+      daily_requests:
+        type:
+          - number
+          - "null"
+      last_usage:
+        type:
+          - number
+          - "null"
+      monthly_limit:
+        type:
+          - number
+          - "null"
+      monthly_processed:
+        type:
+          - number
+          - "null"
+      monthly_requests:
+        type:
+          - number
+          - "null"
+      rps_limit:
+        type:
+          - number
+          - "null"
+      uuid:
+        type: string
+      weekly_processed:
+        type:
+          - number
+          - "null"
+      weekly_requests:
+        type:
+          - number
+          - "null"
+    required:
+      - uuid
+  barcodes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      data:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+      x1:
+        type:
+          - number
+          - "null"
+      x2:
+        type:
+          - number
+          - "null"
+      y1:
+        type:
+          - number
+          - "null"
+      y2:
+        type:
+          - number
+          - "null"
+    required:
+      - uuid
+  categorize_photos:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      confidence:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - object
+          - "null"
+        properties:
+          en:
+            type:
+              - string
+              - "null"
+      uuid:
+        type: string
+    required:
+      - uuid

@@ -1,0 +1,296 @@
+version: 6.13.0
+
+type: DeclarativeSource
+
+description: Connector for PayFit.
+
+check:
+  type: CheckStream
+  stream_names:
+    - Company
+
+definitions:
+  streams:
+    Company:
+      type: DeclarativeStream
+      name: Company
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies/{{ config["company_id"]  }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Company"
+    Collaborators:
+      type: DeclarativeStream
+      name: Collaborators
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: maxResults
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: nextPageToken
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response.get(\"meta\", {}).get(\"nextPageToken\", {}) }}"
+            stop_condition: "{{ not response.get(\"meta\", {}).get(\"nextPageToken\", {}) }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies/{{ config["company_id"]  }}/collaborators
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collaborators
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Collaborators"
+  base_requester:
+    type: HttpRequester
+    url_base: https://partner-api.payfit.com/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/Company"
+  - $ref: "#/definitions/streams/Collaborators"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - company_id
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      company_id:
+        type: string
+        order: 1
+        title: Company ID
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    Company:
+      hasRecords: true
+      streamHash: 8479e524d0cbc3f9dc160dd8cea58cac02887b8c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Collaborators:
+      hasRecords: true
+      streamHash: b7add3a2f30e27a8ca5b20bf961d00e5d9f6d839
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    Company: true
+    Collaborators: true
+
+schemas:
+  Company:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      nbActiveContracts:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  Collaborators:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      bic:
+        type:
+          - string
+          - "null"
+      iban:
+        type:
+          - string
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            email:
+              type:
+                - string
+                - "null"
+      gender:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      teamName:
+        type:
+          - string
+          - "null"
+      addresses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            address:
+              type:
+                - string
+                - "null"
+            country:
+              type:
+                - string
+                - "null"
+            postcode:
+              type:
+                - string
+                - "null"
+      birthDate:
+        type:
+          - string
+          - "null"
+      birthName:
+        type:
+          - string
+          - "null"
+      contracts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            endDate:
+              type:
+                - string
+                - "null"
+            startDate:
+              type:
+                - string
+                - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      managerId:
+        type:
+          - string
+          - "null"
+      matricule:
+        type:
+          - string
+          - "null"
+      nationality:
+        type:
+          - string
+          - "null"
+      phoneNumbers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            phoneNumber:
+              type:
+                - string
+                - "null"
+      countryOfBirth:
+        type:
+          - string
+          - "null"
+      terminationDate:
+        type:
+          - string
+          - "null"
+      socialSecurityNumber:
+        type:
+          - string
+          - "null"
+    additionalProperties: true

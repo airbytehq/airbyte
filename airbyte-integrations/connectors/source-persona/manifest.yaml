@@ -1,0 +1,2471 @@
+version: 5.8.1
+
+type: DeclarativeSource
+
+description: >-
+  Airbyte connector for Persona that makes it easy to move and manage your
+  identity verification data between platforms. This connector helps you
+  seamlessly sync your data from Persona, simplifying workflows and ensuring
+  your identity-related tasks are more efficient.
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+
+definitions:
+  streams:
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[after]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ response.get('data', [])[-1].get('id') if response.get('data')
+              else None }}
+            stop_condition: "{{ response.get('data')|length == 0 }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    cases:
+      type: DeclarativeStream
+      name: cases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /cases
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[after]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ response.get('data', [])[-1].get('id') if response.get('data')
+              else None }}
+            stop_condition: "{{ response.get('data')|length == 0 }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cases"
+    api-keys:
+      type: DeclarativeStream
+      name: api-keys
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api-keys
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[after]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ response.get('data', [])[-1].get('id') if response.get('data')
+              else None }}
+            stop_condition: "{{ response.get('data')|length == 0 }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/api-keys"
+    api-logs:
+      type: DeclarativeStream
+      name: api-logs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api-logs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[after]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ response.get('data', [])[-1].get('id') if response.get('data')
+              else None }}
+            stop_condition: "{{ response.get('data')|length == 0 }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/api-logs"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[after]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ response.get('data', [])[-1].get('id') if response.get('data')
+              else None }}
+            stop_condition: "{{ response.get('data')|length == 0 }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    inquiries:
+      type: DeclarativeStream
+      name: inquiries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /inquiries
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[after]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ response.get('data', [])[-1].get('id') if response.get('data')
+              else None }}
+            stop_condition: "{{ response.get('data')|length == 0 }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/inquiries"
+    inquiry-sessions:
+      type: DeclarativeStream
+      name: inquiry-sessions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /inquiry-sessions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[after]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ response.get('data', [])[-1].get('id') if response.get('data')
+              else None }}
+            stop_condition: "{{ response.get('data')|length == 0 }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/inquiry-sessions"
+    workflows-run:
+      type: DeclarativeStream
+      name: workflows-run
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /workflow-runs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[after]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ response.get('data', [])[-1].get('id') if response.get('data')
+              else None }}
+            stop_condition: "{{ response.get('data')|length == 0 }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workflows-run"
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /webhooks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[after]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ response.get('data', [])[-1].get('id') if response.get('data')
+              else None }}
+            stop_condition: "{{ response.get('data')|length == 0 }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+    workflow-runs:
+      type: DeclarativeStream
+      name: workflow-runs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /workflow-runs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[after]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ response.get('data', [])[-1].get('id') if response.get('data')
+              else None }}
+            stop_condition: "{{ response.get('data')|length == 0 }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workflow-runs"
+  base_requester:
+    type: HttpRequester
+    url_base: https://withpersona.com/api/v1
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/cases"
+  - $ref: "#/definitions/streams/api-keys"
+  - $ref: "#/definitions/streams/api-logs"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/inquiries"
+  - $ref: "#/definitions/streams/inquiry-sessions"
+  - $ref: "#/definitions/streams/workflows-run"
+  - $ref: "#/definitions/streams/webhooks"
+  - $ref: "#/definitions/streams/workflow-runs"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: API key or access token
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    accounts: true
+    cases: true
+    api-keys: false
+    api-logs: false
+    events: false
+    inquiries: false
+    inquiry-sessions: false
+    workflows-run: true
+    webhooks: false
+    workflow-runs: true
+  testedStreams:
+    accounts:
+      hasRecords: true
+      streamHash: 883643098191c5303d59c55fbad5568e95d6cd47
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    cases:
+      hasRecords: true
+      streamHash: 28c1344fb57dcff3c6ccd9392944dd352e06b3ef
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    api-keys:
+      hasRecords: true
+      streamHash: 8413a98ff095712851764af296dd1fa2e3e905f1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    api-logs:
+      hasRecords: true
+      streamHash: 256aa51cc5b27cb4a7edf149e15db937aea9c59a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    events:
+      streamHash: 0729d08389c5d409937cbaecc80b45087b103c9b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    inquiries:
+      hasRecords: true
+      streamHash: 83886b1e0c8a78440c238bd87b9d09cb787e8e58
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    inquiry-sessions:
+      hasRecords: true
+      streamHash: 0c12079b94849def3c8eec88c9c5e80afacb6d28
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    workflows-run:
+      streamHash: 927936cb02204d1aa9c2dd28e55d1cf44abfa553
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    webhooks:
+      streamHash: 63d5ed95c64932ade3cca91171154169e28bb745
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workflow-runs:
+      streamHash: dc945b22c1fec25429adab887152e19b62a9c24f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://docs.withpersona.com/reference/list-all-accounts
+    openapiSpecUrl: >-
+      https://raw.githubusercontent.com/persona-id/persona-openapi/refs/heads/main/openapi-bundled.json
+
+schemas:
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created-at:
+            type:
+              - string
+              - "null"
+          fields:
+            type:
+              - object
+              - "null"
+            properties:
+              address:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      city:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                      country_code:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                      postal_code:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                      street_1:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                      street_2:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                      subdivision:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+              birthdate:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              email_address:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              identification_numbers:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+              name:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      first:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                      last:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                      middle:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+              phone_number:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              selfie_photo:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+          identification-numbers:
+            type:
+              - object
+              - "null"
+          reference-id:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+          updated-at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+    required:
+      - id
+  cases:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          attachments:
+            type:
+              - array
+              - "null"
+          created-at:
+            type:
+              - string
+              - "null"
+          creator-id:
+            type:
+              - string
+              - "null"
+          creator-type:
+            type:
+              - string
+              - "null"
+          fields:
+            type:
+              - object
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+          updated-at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          accounts:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+          case-comments:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          case-queue:
+            type:
+              - object
+              - "null"
+            properties: {}
+          case-template:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          inquiries:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          reports:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          txns:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          verifications:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+    required:
+      - id
+  api-keys:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          api-attributes-blocklist:
+            type:
+              - array
+              - "null"
+          api-key-inflection:
+            type:
+              - string
+              - "null"
+          api-version:
+            type:
+              - string
+              - "null"
+          created-at:
+            type:
+              - string
+              - "null"
+          file-access-token-expires-in:
+            type:
+              - number
+              - "null"
+          ip-address-allowlist:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          last-used-at:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      id:
+        type: string
+    required:
+      - id
+  api-logs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created-at:
+            type:
+              - string
+              - "null"
+          request:
+            type:
+              - object
+              - "null"
+            properties:
+              get-params:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  page:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      after:
+                        type:
+                          - string
+                          - "null"
+                      size:
+                        type:
+                          - string
+                          - "null"
+              headers:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  Accept:
+                    type:
+                      - string
+                      - "null"
+                  Host:
+                    type:
+                      - string
+                      - "null"
+                  Persona-Version:
+                    type:
+                      - string
+                      - "null"
+                  User-Agent:
+                    type:
+                      - string
+                      - "null"
+              ip-address:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+              path:
+                type:
+                  - string
+                  - "null"
+              post-params:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  data:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      attributes:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          inquiry-id:
+                            type:
+                              - string
+                              - "null"
+          response:
+            type:
+              - object
+              - "null"
+            properties:
+              headers:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  Cache-Control:
+                    type:
+                      - string
+                      - "null"
+                  Content-Type:
+                    type:
+                      - string
+                      - "null"
+                  Expires:
+                    type:
+                      - string
+                      - "null"
+                  Persona-Host:
+                    type:
+                      - string
+                      - "null"
+                  Pragma:
+                    type:
+                      - string
+                      - "null"
+                  RateLimit-Limit:
+                    type:
+                      - number
+                      - "null"
+                  RateLimit-Remaining:
+                    type:
+                      - number
+                      - "null"
+                  RateLimit-Reset:
+                    type:
+                      - number
+                      - "null"
+                  Request-Id:
+                    type:
+                      - string
+                      - "null"
+                  Vary:
+                    type:
+                      - string
+                      - "null"
+              status:
+                type:
+                  - number
+                  - "null"
+      id:
+        type: string
+    required:
+      - id
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created-at:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          payload:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  attributes:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      attachments:
+                        type:
+                          - array
+                          - "null"
+                      behaviors:
+                        type:
+                          - object
+                          - "null"
+                        properties: {}
+                      completed-at:
+                        type:
+                          - string
+                          - "null"
+                      created-at:
+                        type:
+                          - string
+                          - "null"
+                      creator:
+                        type:
+                          - string
+                          - "null"
+                      creator-id:
+                        type:
+                          - string
+                          - "null"
+                      creator-type:
+                        type:
+                          - string
+                          - "null"
+                      enabled-locales:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+                      expired-at:
+                        type:
+                          - string
+                          - "null"
+                      fields:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          address:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              value:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  city:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      type:
+                                        type:
+                                          - string
+                                          - "null"
+                                  country_code:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      type:
+                                        type:
+                                          - string
+                                          - "null"
+                                  postal_code:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      type:
+                                        type:
+                                          - string
+                                          - "null"
+                                  street_1:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      type:
+                                        type:
+                                          - string
+                                          - "null"
+                                  street_2:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      type:
+                                        type:
+                                          - string
+                                          - "null"
+                                  subdivision:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      type:
+                                        type:
+                                          - string
+                                          - "null"
+                          address-city:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          address-country-code:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          address-postal-code:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          address-street-1:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          address-street-2:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          address-subdivision:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          birthdate:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          current-government-id:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          current-selfie:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          email-address:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          email_address:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          expiration-date:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          government-identification-number-map:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          identification-class:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          identification-number:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          identification_numbers:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              value:
+                                type:
+                                  - array
+                                  - "null"
+                          issue-date:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          issuing-authority:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          name:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              value:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  first:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      type:
+                                        type:
+                                          - string
+                                          - "null"
+                                  last:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      type:
+                                        type:
+                                          - string
+                                          - "null"
+                                  middle:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      type:
+                                        type:
+                                          - string
+                                          - "null"
+                          name-first:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          name-last:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          name-middle:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          phone-number:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          phone_number:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          selected-country-code:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              value:
+                                type:
+                                  - string
+                                  - "null"
+                          selected-id-class:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          selfie_photo:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                      identification-numbers:
+                        type:
+                          - object
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      next-step-name:
+                        type:
+                          - string
+                          - "null"
+                      published-at:
+                        type:
+                          - string
+                          - "null"
+                      reference-id:
+                        type:
+                          - string
+                          - "null"
+                      status:
+                        type:
+                          - string
+                          - "null"
+                      tags:
+                        type:
+                          - array
+                          - "null"
+                      theme:
+                        type:
+                          - object
+                          - "null"
+                        properties: {}
+                      updated-at:
+                        type:
+                          - string
+                          - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  meta:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      processing-time-seconds:
+                        type:
+                          - number
+                          - "null"
+                  relationships:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      account:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              id:
+                                type:
+                                  - string
+                                  - "null"
+                      accounts:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                type:
+                                  type:
+                                    - string
+                                    - "null"
+                                id:
+                                  type:
+                                    - string
+                                    - "null"
+                      case-comments:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - array
+                              - "null"
+                      case-queue:
+                        type:
+                          - object
+                          - "null"
+                        properties: {}
+                      case-template:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              id:
+                                type:
+                                  - string
+                                  - "null"
+                      creator:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              id:
+                                type:
+                                  - string
+                                  - "null"
+                      documents:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - array
+                              - "null"
+                      inquiries:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - array
+                              - "null"
+                      inquiry-template:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              id:
+                                type:
+                                  - string
+                                  - "null"
+                      inquiry-template-version:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              id:
+                                type:
+                                  - string
+                                  - "null"
+                      reports:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - array
+                              - "null"
+                      reviewer:
+                        type:
+                          - object
+                          - "null"
+                        properties: {}
+                      selfies:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - array
+                              - "null"
+                      sessions:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                type:
+                                  type:
+                                    - string
+                                    - "null"
+                                id:
+                                  type:
+                                    - string
+                                    - "null"
+                      template:
+                        type:
+                          - object
+                          - "null"
+                        properties: {}
+                      transaction:
+                        type:
+                          - object
+                          - "null"
+                        properties: {}
+                      txns:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - array
+                              - "null"
+                      verifications:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - array
+                              - "null"
+                      workflow:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              id:
+                                type:
+                                  - string
+                                  - "null"
+                      workflow-version:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              id:
+                                type:
+                                  - string
+                                  - "null"
+      id:
+        type: string
+    required:
+      - id
+  inquiries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          behaviors:
+            type:
+              - object
+              - "null"
+            properties: {}
+          created-at:
+            type:
+              - string
+              - "null"
+          creator:
+            type:
+              - string
+              - "null"
+          fields:
+            type:
+              - object
+              - "null"
+            properties:
+              address-city:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              address-country-code:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              address-postal-code:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              address-street-1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              address-street-2:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              address-subdivision:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              birthdate:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              current-government-id:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              current-selfie:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              email-address:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              expiration-date:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              government-identification-number-map:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              identification-class:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              identification-number:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              issue-date:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              issuing-authority:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              name-first:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              name-last:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              name-middle:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              phone-number:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              selected-country-code:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              selected-id-class:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+          next-step-name:
+            type:
+              - string
+              - "null"
+          reference-id:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+          updated-at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          account:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          documents:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          inquiry-template:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          inquiry-template-version:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          reports:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          reviewer:
+            type:
+              - object
+              - "null"
+            properties: {}
+          selfies:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          sessions:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          template:
+            type:
+              - object
+              - "null"
+            properties: {}
+          transaction:
+            type:
+              - object
+              - "null"
+            properties: {}
+          verifications:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+    required:
+      - id
+  inquiry-sessions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  workflows-run:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          completed-at:
+            type:
+              - string
+              - "null"
+          created-at:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          processing-time-seconds:
+            type:
+              - number
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          workflow:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          workflow-version:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  webhooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          api-attributes-blocklist:
+            type:
+              - array
+              - "null"
+          api-key-inflection:
+            type:
+              - string
+              - "null"
+          api-version:
+            type:
+              - string
+              - "null"
+          created-at:
+            type:
+              - string
+              - "null"
+          enabled-events:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          file-access-token-expires-in:
+            type:
+              - number
+              - "null"
+          payload-filter:
+            type:
+              - object
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+    required:
+      - id
+    additionalProperties: true
+  workflow-runs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          completed-at:
+            type:
+              - string
+              - "null"
+          created-at:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          processing-time-seconds:
+            type:
+              - number
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          workflow:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          workflow-version:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id

@@ -1,0 +1,59 @@
+# Using PyAirbyte
+
+PyAirbyte brings the power of Airbyte to every Python and AI developer.
+
+## Installation
+
+```bash
+pip install airbyte
+```
+
+## Quickstarts
+
+- **NEW:** [1.0 Launch Demo: AI and PyAirbyte](https://colab.research.google.com/github/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/AI%20ChatBot%20-%201.0%20Launch%20Demo.ipynb)
+- [Basic Demo](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Basic_Features_Demo.ipynb)
+- [CoinAPI](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_CoinAPI_Demo.ipynb)
+- [GA4](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_GA4_Demo.ipynb)
+- [Shopify](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Shopify_Demo.ipynb)
+- [GitHub](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Github_Incremental_Demo.ipynb)
+- [Postgres (cache)](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Postgres_Custom_Cache_Demo.ipynb)
+- [RAG With Langchain](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Document_Creation_RAG_with_Langchain_Demo.ipynb)
+
+## Demos
+
+Please check out this [YouTube video](https://youtu.be/tUTE-csnwCI) on how to get started with PyAirbyte!
+
+## PyAirbyte API Reference
+
+Please refer to our [PyAirbyte API Reference](https://airbytehq.github.io/PyAirbyte/index.html) for
+a full list of classes, methods, and usage examples.
+
+## Usage
+
+Data can be extracted from sources and loaded into caches:
+
+<a
+  href="https://colab.research.google.com/github/airbytehq/quickstarts/blob/master/pyairbyte_notebooks/PyAirbyte_Basic_Features_Demo.ipynb"
+  target="_parent"
+>
+  <img
+    src="https://img.shields.io/badge/-Try%20with%20Colab-grey?logo=googlecolab"
+    alt="Try with Colab"
+  />
+</a>
+
+```python
+import airbyte as ab
+
+source = ab.get_source(
+    "source-faker",
+    config={"count": 5_000},
+    install_if_missing=True,
+)
+source.check()
+source.select_all_streams()
+result = source.read()
+
+for name, records in result.streams.items():
+    print(f"Stream {name}: {len(list(records))} records")
+```

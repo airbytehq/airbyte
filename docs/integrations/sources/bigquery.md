@@ -1,0 +1,207 @@
+---
+description: >-
+  BigQuery is a fully managed, highly scalable, and cost-effective data warehouse
+  offered by Google Cloud.
+---
+
+# BigQuery
+
+The BigQuery source connector reads tables, views, materialized views, external tables and table snapshots from Google BigQuery datasets. It supports full refresh and incremental syncs, discovers nested `STRUCT` and `ARRAY` schemas and primary key constraints, and checkpoints while it reads so that large tables resume after an interruption. On Airbyte Cloud it reads tables through the BigQuery Storage Read API in parallel read streams.
+
+Version 1.0.0 rebuilt the connector on Airbyte's Bulk CDK. It accepts the same configuration properties as earlier versions. See the [migration guide](bigquery-migrations.md) for what changed.
+
+## Features
+
+| Feature                   | Supported | Notes                                                            |
+| :------------------------ | :-------- | :--------------------------------------------------------------- |
+| Full refresh sync         | Yes       |                                                                  |
+| Incremental sync - append | Yes       | Cursor based, see [Incremental sync](#incremental-sync)          |
+| Change data capture (CDC) | No        | BigQuery has no change log for the connector to read             |
+| Namespaces                | Yes       | Each dataset is a namespace                                      |
+| Primary keys              | Yes       | Read from the table's `PRIMARY KEY` constraint                   |
+| Nested schemas            | Yes       | `STRUCT` and `ARRAY` columns keep their structure in the catalog |
+| Storage Read API          | Yes       | Airbyte Cloud only, see [Read throughput](#read-throughput)      |
+| SSL                       | Yes       | All traffic to the BigQuery API uses HTTPS                       |
+
+The connector is read-only. It reads table data through the Storage Read API on Airbyte Cloud and through `SELECT` queries elsewhere, runs `SELECT` queries for views and incremental syncs, and never writes to your project.
+
+## Getting started
+
+### Requirements
+
+- A Google Cloud project with the BigQuery API enabled.
+- A service account with read access to the datasets to sync, permission to run query jobs and, for high-speed reads on Airbyte Cloud, permission to create Storage Read API sessions.
+- A JSON key for that service account.
+
+### Service account
+
+Create a dedicated service account for Airbyte by following Google's [Create service accounts](https://cloud.google.com/iam/docs/service-accounts-create) guide, then grant it the following roles. Using a dedicated account keeps permissions and auditing simple.
+
+| Role                                                          | Where to grant it                                                                               | Why                                                                                                                                                           |
+| :------------------------------------------------------------ | :---------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| BigQuery Data Viewer (`roles/bigquery.dataViewer`)            | The project, or each dataset to sync                                                            | Lists datasets and tables, reads table schemas and table data                                                                                                 |
+| BigQuery Job User (`roles/bigquery.jobUser`)                  | The project that runs the query jobs (**Project ID**, or **Job Execution Project ID** when set) | Runs the `SELECT` queries for views, incremental syncs and the fallback read path                                                                             |
+| BigQuery Read Session User (`roles/bigquery.readSessionUser`) | The project that runs the query jobs                                                            | Airbyte Cloud only. Reads tables through the Storage Read API, the high-speed path. See [Permissions for high-speed reads](#permissions-for-high-speed-reads) |
+
+### Permissions for high-speed reads
+
+On Airbyte Cloud the connector reads tables through the [BigQuery Storage Read API](https://cloud.google.com/bigquery/docs/reference/storage) by default; self-managed Airbyte reads every table through the query API instead and needs none of the permissions below. The Storage Read API is the path that makes large tables fast, and it needs permissions that the query path does not:
+
+| Permission                      | Included in role           | Where it is needed                                                                                 |
+| :------------------------------ | :------------------------- | :------------------------------------------------------------------------------------------------- |
+| `bigquery.readsessions.create`  | BigQuery Read Session User | The project that runs the jobs, which is **Project ID** or, when set, **Job Execution Project ID** |
+| `bigquery.readsessions.getData` | BigQuery Read Session User | The same project                                                                                   |
+| `bigquery.tables.getData`       | BigQuery Data Viewer       | The datasets to sync                                                                               |
+
+Google bills Storage Read API usage by the bytes read, separately from the bytes a query processes. See [BigQuery pricing](https://cloud.google.com/bigquery/pricing).
+
+Without these permissions the sync still works. At the start of every sync the connector checks once whether it can open a read session. If it can't, it logs a warning that names the missing permission and reads through the query path instead. That path is much slower and scans the table for every query it runs, so grant the role before syncing tables larger than a few gigabytes. Turning **Use the BigQuery Storage Read API** off forces the query path.
+
+The other permissions the connector uses are `bigquery.datasets.get`, `bigquery.tables.list`, `bigquery.tables.get` and `bigquery.jobs.create`.
+
+### Service account key
+
+Follow Google's [Create and delete service account keys](https://cloud.google.com/iam/docs/keys-create-delete) guide and choose the JSON key type. Download the key file: you paste its contents into the **Service Account Key JSON** field. Google shows the key only once, so keep the file until the source is set up, then delete it from your computer.
+
+### Set up the BigQuery source in Airbyte
+
+1. In the Airbyte UI, click **Sources** and then **+ New source**.
+2. Select **BigQuery** from the source type list.
+3. Fill in the connection fields:
+
+| Field                                  | Required | Description                                                                                                                                                                                                                                                                                                                                                                   |
+| :------------------------------------- | :------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Project ID**                         | Yes      | The Google Cloud project that owns the datasets to read.                                                                                                                                                                                                                                                                                                                      |
+| **Dataset ID**                         | No       | Restricts the source to one dataset. Leave it empty to discover every dataset of the project. Set it on projects with a large number of datasets, because discovery lists every table of every dataset it can see.                                                                                                                                                            |
+| **Service Account Key JSON**           | Yes      | The contents of the JSON key file.                                                                                                                                                                                                                                                                                                                                            |
+| **Job Execution Project ID**           | No       | Advanced. The project that runs, and is billed for, the query jobs. Use it to keep Airbyte's query quota and cost apart from the data project, or to read from a project where the service account only has data access. Defaults to **Project ID**.                                                                                                                          |
+| **Max Concurrent Queries to Database** | No       | Advanced, Airbyte Cloud only. How many queries and Storage Read API read streams the connector runs at the same time, across all tables. Leave it empty, which is recommended, to let Airbyte optimize concurrency for best performance: it runs one per data channel in speed mode, and one at a time otherwise. On self-managed Airbyte the field can't be edited and is fixed at 1. |
+| **Use the BigQuery Storage Read API**  | No       | Advanced, Airbyte Cloud only, on by default. Reads tables through the Storage Read API and streams query results through it. Turn it off to read everything through the query API, which is much slower on large tables. On self-managed Airbyte the field can't be edited and stays off: every table is read through the query API. See [Read throughput](#read-throughput). |
+
+4. Click **Set up source**. The connection test lists the datasets and their tables and runs a trivial query. It fails with `Discovered zero tables` when the dataset, or the whole project, contains no tables.
+
+## Replication
+
+### Discovered streams
+
+Every dataset is a namespace and every table, view, materialized view, external table and table snapshot in it is a stream. BigQuery ML models are skipped, as are tables without columns. Column names and types come from the table metadata, including the nested fields of `STRUCT` columns and the element type of `ARRAY` columns. A table with a `PRIMARY KEY` constraint, which BigQuery declares but does not enforce, reports it as the source-defined primary key.
+
+### Full refresh
+
+On Airbyte Cloud, a full refresh of a table opens a Storage Read API session, which splits the table into read streams. A read stream is BigQuery's unit of parallel reading and has nothing to do with an Airbyte stream. The connector reads the read streams in order, up to **Max Concurrent Queries to Database** at a time, and asks for many small read streams of about 8 GiB each so that checkpoints are frequent. Every completed read stream is a checkpoint.
+
+Views, materialized views, external tables and table snapshots can't be read through the Storage Read API. They are read with one `SELECT` query each, and so is every table on self-managed Airbyte, or when the Storage Read API is unavailable. On that fallback path a table with a single-column primary key is split into key ranges of roughly equal size, computed with `APPROX_QUANTILES` over the key column, and each range is one query and one checkpoint. Tables without such a key are read in one query.
+
+### Incremental sync
+
+Incremental sync uses a cursor column that you choose for each stream. The first sync of an incremental stream reads the whole table the same way a full refresh does, on Airbyte Cloud through the Storage Read API in parallel read streams, so a terabyte table's first sync takes minutes rather than days. To keep that read consistent, the connector pins it to one version of the table: it picks a snapshot time a couple of seconds in the past, opens the read session on the table as of that time, and reads the cursor's maximum as of that same time with BigQuery time travel. That maximum becomes the cursor checkpoint once every read stream is complete. Later syncs run a query for the rows whose cursor is greater than the checkpoint and not greater than the table's current maximum, and the highest value read becomes the next checkpoint. Rows whose cursor is `NULL` are never read.
+
+Choose a cursor column whose values only grow and are never updated, such as an insertion timestamp or a sequence number. If the table is partitioned or clustered on that column, BigQuery prunes the data it scans, which lowers the bytes billed for each incremental sync.
+
+The following column types are supported as cursors:
+
+| Cursor column type                          | Notes                                  |
+| :------------------------------------------ | :------------------------------------- |
+| `INT64`, `NUMERIC`, `BIGNUMERIC`, `FLOAT64` |                                        |
+| `STRING`                                    | Ordered as BigQuery orders strings     |
+| `DATE`, `DATETIME`, `TIME`, `TIMESTAMP`     | Compared at full microsecond precision |
+
+`BOOL`, `BYTES`, `JSON`, `STRUCT` and `ARRAY` columns can't be cursors. `GEOGRAPHY`, `INTERVAL` and `RANGE` columns appear in the cursor list because they are read as strings, but they haven't been validated as cursors, so prefer one of the types in the table.
+
+### State and resuming
+
+The connector emits state while it reads, not only at the end of a sync. For a table read through the Storage Read API the state names the read session, the last read stream that completed in order and the row offset of every read stream still in progress, and a sync that fails or is cancelled resumes exactly there. The first sync of an incremental stream also records its snapshot time and the cursor maximum at that time, so a resumed sync keeps the same table version and the same checkpoint. A read session is valid for six hours after it opens. A full refresh that resumes later than that reads the table again from the start; an incremental first sync reopens a session at its recorded snapshot time, which BigQuery serves for the table's time travel window of two to seven days, and only takes a new snapshot beyond that. On the query path the state holds the last completed key range of a full refresh, or the last cursor value of an incremental sync. Resetting the connection's state makes the next sync start from the beginning.
+
+The connector also reads the state saved by versions before 1.0.0. A stream with such state resumes after its saved cursor value instead of reading the table again, and its next state is written in the new format. If the configured cursor column differs from the one in the saved state, or the saved value cannot be interpreted as the column's type, the stream is read again in full.
+
+### Read throughput
+
+The Storage Read API path and concurrent reads are available on Airbyte Cloud only. Self-managed Airbyte reads every table through the query path, one table at a time.
+
+The Storage Read API delivers table data as compressed Arrow batches over many read streams at once, and BigQuery serves the read streams without running a query. The query path, used for views, incremental syncs and as the fallback, pages each result through the BigQuery REST API a few thousand rows at a time and scans the table for every query it runs. Measured on a table of 515 GiB and 275 million rows:
+
+| Read path                           | Throughput                      | Time to read the table                                  |
+| :---------------------------------- | :------------------------------ | :------------------------------------------------------ |
+| Storage Read API, four read streams | at least 480 MB/s of table data | well under an hour, depending on the worker's resources |
+| Query API, four queries at a time   | about 3.7 MB/s per query        | about ten hours                                         |
+
+On Airbyte Cloud, when the connector has the Storage Read API permissions, query results also stream through it, so views and incremental syncs benefit as well: on a 5.2 million row, 1.3 GB test table one query took about 15 minutes through the REST API and under a minute through the Storage Read API. The rows and values are identical on every path. The permissions are listed under [Permissions for high-speed reads](#permissions-for-high-speed-reads).
+
+### Bytes billed
+
+A full refresh of a table through the Storage Read API reads the table once and is billed as Storage Read API bytes, not as query bytes. Views, incremental syncs and the fallback path run queries whose bytes processed follow [BigQuery's on-demand pricing](https://cloud.google.com/bigquery/pricing), or your reservation. An incremental query reads the cursor range, and each key range of the fallback path scans the whole table unless the table is clustered or partitioned on the key. To move query cost and quota to another project, set **Job Execution Project ID**.
+
+## Data type mapping
+
+BigQuery column types are mapped to the following Airbyte types. The values every type produces are covered by the connector's [field type tests](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-bigquery/src/test/kotlin/io/airbyte/integrations/source/bigquery/BigQueryFieldTypesTest.kt).
+
+| BigQuery type                                                          | Airbyte type                 | Notes                                                    |
+| :--------------------------------------------------------------------- | :--------------------------- | :------------------------------------------------------- |
+| `BOOL`                                                                 | `boolean`                    |                                                          |
+| `INT64` (`INT`, `SMALLINT`, `INTEGER`, `BIGINT`, `TINYINT`, `BYTEINT`) | `integer`                    |                                                          |
+| `FLOAT64`                                                              | `number`                     |                                                          |
+| `NUMERIC` (`DECIMAL`)                                                  | `number`                     | Exact, written in plain decimal notation                 |
+| `BIGNUMERIC` (`BIGDECIMAL`)                                            | `number`                     | Exact, written in plain decimal notation                 |
+| `STRING`                                                               | `string`                     |                                                          |
+| `BYTES`                                                                | `string`                     | Base64 encoded                                           |
+| `DATE`                                                                 | `date`                       | Exact for every date, including dates before 1582-10-15  |
+| `DATETIME`                                                             | `timestamp without timezone` | Microsecond precision                                    |
+| `TIME`                                                                 | `time without timezone`      | Microsecond precision                                    |
+| `TIMESTAMP`                                                            | `timestamp with timezone`    | UTC, microsecond precision                               |
+| `JSON`                                                                 | `json`                       | Any JSON value: object, array, string, number or Boolean |
+| `GEOGRAPHY`                                                            | `string`                     | Well-known text (WKT)                                    |
+| `INTERVAL`                                                             | `string`                     | BigQuery's canonical interval text                       |
+| `RANGE<T>`                                                             | `string`                     | BigQuery's range text                                    |
+| `STRUCT`                                                               | `object`                     | Nested fields keep their own types in the schema         |
+| `ARRAY<T>`                                                             | `array`                      | Items keep the type of `T`                               |
+
+## Upgrading from versions before 1.0.0
+
+Version 1.0.0 keeps the configuration properties and understands the incremental state of earlier versions, but it types date, time, JSON and bytes columns, carries the nested schema of `STRUCT` and `ARRAY` columns, reports primary keys, restricts the incremental cursor to supported column types and requires a service account key. These are schema changes for existing connections, so every connection must refresh its source schema after upgrading. The [migration guide](bigquery-migrations.md) lists every change, what to do after upgrading and the downstream impact.
+
+## Limitations and troubleshooting
+
+- **No change data capture.** Deleted rows are not detected and updated rows are only picked up when the cursor column changes.
+- **`Discovered zero tables`** during the connection test means the dataset, or the project when **Dataset ID** is empty, has no tables the service account can see.
+- **Discovery of a whole project is slow** when the project has thousands of datasets, because the tables are listed one dataset at a time. Set **Dataset ID**.
+- **`Access Denied`, `PERMISSION_DENIED` or `Not found` errors** point at a missing role on the data project or the job project. Check the roles listed under [Service account](#service-account), and remember that **Job Execution Project ID** needs the BigQuery Job User role too.
+- **A warning about the Storage Read API at the start of a sync** means the service account lacks a permission listed under [Permissions for high-speed reads](#permissions-for-high-speed-reads). The sync completes through the query path, but large tables take much longer.
+- **Read sessions expire after six hours.** A full refresh that's interrupted and resumed more than six hours later reads the table again from the start. See [State and resuming](#state-and-resuming) for incremental first syncs.
+- **`invalid_grant` or `No valid credentials provided` errors** mean Google rejected the service account key: the key was deleted or disabled, or the JSON was pasted incompletely. Create a new key and paste the whole file.
+- **`GEOGRAPHY`, `INTERVAL` and `RANGE` cursors** haven't been validated. Use one of the [supported cursor types](#incremental-sync).
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0.0 | 2026-10-02 | [86950](https://github.com/airbytehq/airbyte/pull/86950) | Rebuild on the Bulk CDK: Storage Read API reads with resumable read streams (Airbyte Cloud only), typed date, time and JSON columns, nested schemas, primary keys, cursor incremental reads and speed mode. See the migration guide |
+| 0.4.5 | 2026-01-21 | [72203](https://github.com/airbytehq/airbyte/pull/72203) | Increase integration test timeouts from 1 to 10 minutes |
+| 0.4.4 | 2025-07-10 | [62911](https://github.com/airbytehq/airbyte/pull/62911) | Convert to new gradle build flow |
+| 0.4.3 | 2024-12-19 | [49875](https://github.com/airbytehq/airbyte/pull/49875) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 0.4.2 | 2024-02-23 | [35503](https://github.com/airbytehq/airbyte/pull/35503) | Source BigQuery: replicating RECORD REPEATED fields |
+| 0.4.1 | 2024-02-01 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
+| 0.4.0 | 2023-12-18 | [33484](https://github.com/airbytehq/airbyte/pull/33484) | Remove LEGACY state |
+| 0.3.0 | 2023-06-29 | [27737](https://github.com/airbytehq/airbyte/pull/27737) | License Update: Elv2 |
+| 0.2.3 | 2022-10-14 | [15535](https://github.com/airbytehq/airbyte/pull/15535) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
+| 0.2.2 | 2022-09-22 | [16902](https://github.com/airbytehq/airbyte/pull/16902) | Source BigQuery: added user agent header |
+| 0.2.1 | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage |
+| 0.2.0 | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields. |
+| 0.1.9 | 2022-07-21 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors |
+| 0.1.8 | 2022-06-21 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
+| 0.1.7 | 2022-04-13 | [11484](https://github.com/airbytehq/airbyte/pull/11484) | BigQuery connector escape column names |
+| 0.1.6 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
+| 0.1.5 | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
+| 0.1.4   | 2021-09-30 | [\#6524](https://github.com/airbytehq/airbyte/pull/6524) | Allow `dataset_id` null in spec                                                                                                           |
+| 0.1.3   | 2021-09-23 | [\#6051](https://github.com/airbytehq/airbyte/pull/6051) | Handle NPE `dataset_id` is not provided                                                                                                   |
+| 0.1.2   | 2021-09-17 | [\#6135](https://github.com/airbytehq/airbyte/pull/6135) | 🐛 BigQuery source: Fix nested structs                                                                                                    |
+| 0.1.1   | 2021-07-27 | [\#4981](https://github.com/airbytehq/airbyte/pull/4981) | 🐛 BigQuery source: Fix nested arrays                                                                                                     |
+| 0.1.0   | 2021-07-22 | [\#4457](https://github.com/airbytehq/airbyte/pull/4457) | 🎉 New Source: Big Query.                                                                                                                 |
+
+</details>

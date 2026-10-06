@@ -1,0 +1,20 @@
+{
+  "organization_lookup": {
+    "lastModified": "2050-01-01"
+  },
+  "follower_statistics": {
+    "lastModified": "2050-01-01"
+  },
+  "page_statistics": {
+    "lastModified": "2050-01-01"
+  },
+  "share_statistics": {
+    "lastModified": "2050-01-01"
+  },
+  "follower_statistics_time_bound": {
+    "timeRangeEnd": 9999999999999
+  },
+  "share_statistics_time_bound": {
+    "timeRangeEnd": 9999999999999
+  }
+}

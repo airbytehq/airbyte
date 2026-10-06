@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "applies_to": {
+      "type": ["null", "string"]
+    },
+    "applies_to_id": {
+      "type": ["null", "integer"]
+    },
+    "applies_to_product_type": {
+      "type": ["null", "string"]
+    },
+    "applies_to_resource": {
+      "type": ["null", "string"]
+    },
+    "channel_settings": {
+      "type": ["null", "object"],
+      "properties": {
+        "api": {
+          "type": "object",
+          "properties": {
+            "can_apply": {
+              "type": "boolean"
+            }
+          }
+        },
+        "checkout_page": {
+          "type": "object",
+          "properties": {
+            "can_apply": {
+              "type": "boolean"
+            }
+          }
+        },
+        "customer_portal": {
+          "type": "object",
+          "properties": {
+            "can_apply": {
+              "type": "boolean"
+            }
+          }
+        },
+        "merchant_portal": {
+          "type": "object",
+          "properties": {
+            "can_apply": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "code": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "discount_type": {
+      "type": ["null", "string"]
+    },
+    "duration": {
+      "type": ["null", "string"]
+    },
+    "duration_usage_limit": {
+      "type": ["null", "integer"]
+    },
+    "ends_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "external_discount_id": {
+      "type": ["null", "string"]
+    },
+    "external_discount_source": {
+      "type": ["null", "string"]
+    },
+    "first_time_customer_restriction": {
+      "type": ["null", "string"]
+    },
+    "once_per_customer": {
+      "type": ["null", "boolean"]
+    },
+    "prerequisite_subtotal_min": {
+      "type": ["null", "number"]
+    },
+    "starts_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "times_used": {
+      "type": ["null", "number"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "usage_limit": {
+      "type": ["null", "number"]
+    },
+    "value": {
+      "type": ["null", "number"]
+    }
+  }
+}

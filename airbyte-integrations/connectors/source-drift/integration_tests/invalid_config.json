@@ -1,0 +1,7 @@
+{
+  "access_token": "invalid_access_token",
+  "credentials": {
+    "credentials": "access_token",
+    "access_token": "migrated_from_old_config"
+  }
+}

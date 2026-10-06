@@ -1,0 +1,5 @@
+{
+  "zapier_supported_storage_stream": {
+    "some_key_other_than_data": "any_value_being_returned(this should not work)"
+  }
+}

@@ -1,0 +1,31 @@
+.connectorName {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: bold;
+}
+
+.connectorIconBackground {
+  background-color: var(--icon-background);
+  border-radius: 6px;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-right: 4px;
+}
+
+.links {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.linkSeparator {
+  color: var(--ifm-color-emphasis-400);
+  font-size: 0.85em;
+}

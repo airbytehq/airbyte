@@ -1,0 +1,21 @@
+{
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the list.",
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "description": "The name or title of the list.",
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "description": "The date and time when the list was created.",
+      "type": ["null", "integer"]
+    },
+    "listType": {
+      "description": "The type or category of the list.",
+      "type": ["null", "string"]
+    }
+  },
+  "type": ["null", "object"]
+}

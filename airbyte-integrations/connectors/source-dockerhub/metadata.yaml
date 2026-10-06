@@ -1,0 +1,61 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+      - hub.docker.com
+      - auth.docker.io
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 72d405a3-56d8-499f-a571-667c03406e43
+  dockerImageTag: 0.3.26
+  dockerRepository: airbyte/source-dockerhub
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dockerhub
+  githubIssueLabel: source-dockerhub
+  icon: dockerhub.svg
+  license: ELv2
+  name: Dockerhub
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseDate: 2022-05-20
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-dockerhub
+  supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: dockerhub_config_dev_null
+          id: 1627b271-52c6-410c-ae54-b83b8f98d846
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-DOCKERHUB__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Docker Hub API reference
+      url: https://docs.docker.com/docker-hub/api/latest/
+      type: api_reference
+    - title: Docker Hub authentication
+      url: https://docs.docker.com/docker-hub/api/latest/#section/Authentication
+      type: authentication_guide
+    - title: Docker Hub rate limits
+      url: https://docs.docker.com/docker-hub/download-rate-limit/
+      type: rate_limits
+    - title: Docker Status
+      url: https://www.dockerstatus.com/
+      type: status_page
+metadataSpecVersion: "1.0"

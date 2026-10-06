@@ -1,0 +1,191 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: Beamer NPS source
+
+check:
+  type: CheckStream
+  stream_names:
+    - nps
+
+definitions:
+  streams:
+    nps:
+      type: DeclarativeStream
+      name: nps
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: nps
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: maxResults
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: dateFrom
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: dateTo
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/nps"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.getbeamer.com/v0/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_key"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/nps"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    nps: true
+  testedStreams:
+    nps:
+      streamHash: 72f23da153429cbc6be71a80a01576b8c34c923a
+  assist: {}
+
+schemas:
+  nps:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      browser:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      date:
+        type: string
+      feedback:
+        type:
+          - string
+          - "null"
+      filter:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      origin:
+        type:
+          - string
+          - "null"
+      os:
+        type:
+          - string
+          - "null"
+      refUrl:
+        type:
+          - string
+          - "null"
+      score:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      userEmail:
+        type:
+          - string
+          - "null"
+      userFirstName:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+      userLastName:
+        type:
+          - string
+          - "null"
+    required:
+      - date

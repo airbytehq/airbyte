@@ -1,0 +1,1 @@
+{"type": "RECORD", "record": {"emitted_at": 2000, "data": {"id1": 1, "id2": 200, "updated_at": "2001-01-02T00:00:00Z", "_ab_cdc_deleted_at": null, "name": "Someone completely different v2"}}}

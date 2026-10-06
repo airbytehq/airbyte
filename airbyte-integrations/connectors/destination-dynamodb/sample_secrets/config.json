@@ -1,0 +1,6 @@
+{
+  "dynamodb_table_name_prefix": "paste-table-name-here",
+  "dynamodb_region": "paste-dynamodb-region-here",
+  "access_key_id": "paste-access-key-id-here",
+  "secret_access_key": "paste-secret-access-key-here"
+}

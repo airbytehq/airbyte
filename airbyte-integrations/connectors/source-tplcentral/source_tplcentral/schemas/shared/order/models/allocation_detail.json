@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ItemTraits": {
+      "description": "unique identifying characteristics of an item in a location",
+      "$ref": "../../generic/models/item_traits.json"
+    },
+    "LocationIdentifier": {
+      "$ref": "../../generic/models/location_identifier.json"
+    },
+    "SavedElements": {
+      "type": "array",
+      "items": {
+        "$ref": "../../generic/models/saved_element.json"
+      }
+    }
+  }
+}

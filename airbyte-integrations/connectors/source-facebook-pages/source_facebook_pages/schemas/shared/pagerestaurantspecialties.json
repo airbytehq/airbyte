@@ -1,0 +1,20 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "breakfast": {
+      "type": ["integer", "null"]
+    },
+    "coffee": {
+      "type": ["integer", "null"]
+    },
+    "dinner": {
+      "type": ["integer", "null"]
+    },
+    "drinks": {
+      "type": ["integer", "null"]
+    },
+    "lunch": {
+      "type": ["integer", "null"]
+    }
+  }
+}

@@ -1,0 +1,64 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+# Make sure the paths you have in each path matches with your data.
+#For multiple env testing, you can duplicate the tests and change the path to the proper credentials file
+connector_image: airbyte/source-paypal-transaction:dev
+test_strictness_level: high
+acceptance_tests:
+  spec:
+    tests:
+      # Test with Prod credentials (Make sure you purt the right ones)
+      - spec_path: "manifest.yaml"
+        config_path: secrets/config.json
+  connection:
+    tests:
+      # Test With Prod Credentials
+      - config_path: secrets/config.json
+        status: succeed
+        # Test with Invalid Credentials
+      - config_path: integration_tests/sample_files/invalid_config.json
+        status: failed
+  discovery:
+    tests:
+      - config_path: secrets/config.json
+  basic_read:
+    tests:
+      # Test Prod Environment - Uncomment and change according to your prod setup
+      # Change the expected records, remember to align them with the timeframe you have selected
+      # Do not select streams that take more than 5 mins to load data as that can lead to timeouts
+      # You can comment the lines if you are sure you have data for the below streams.
+      - config_path: secrets/config.json
+        empty_streams:
+          - name: search_invoices
+            bypass_reason:
+              "Order makes the diff fail."
+              # Have to add for testing PR CI.
+          - name: list_disputes
+            bypass_reason: "Disputes may not exist."
+          - name: transactions
+            bypass_reason: "Empty Stream."
+          - name: balances
+            bypass_reason: "as_of_time value will keep changing"
+        timeout_seconds: 3200
+        expect_records:
+          path: "integration_tests/sample_files/expected_records.jsonl"
+          exact_order: false
+        fail_on_extra_columns: false
+  incremental:
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/incremental_catalog.json
+        future_state:
+          future_state_path: integration_tests/sample_files/abnormal_state.json
+        skip_comprehensive_incremental_tests: true
+  full_refresh:
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/full_refresh_catalog.json
+        ignored_fields:
+          balances:
+            - name: last_refresh_time
+              bypass_reason: "field changes during every read"
+          list_products:
+            - name: description
+              bypass_reason: "Sometimes it is not contained in the response"

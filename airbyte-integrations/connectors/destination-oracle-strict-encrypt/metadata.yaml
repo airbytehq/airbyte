@@ -1,0 +1,51 @@
+data:
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.2@sha256:f8e47304842a2c4d75ac223cf4b3c4117aa1c5c9207149369d296616815fe5b0
+  ab_internal:
+    requireVersionIncrementsInPullRequests: false
+  registryOverrides:
+    cloud:
+      enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
+    oss:
+      enabled: false # strict encrypt connectors are not used on OSS.
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 3986776d-2319-4de9-8af8-db14c0996e72
+  dockerImageTag: 1.0.0
+  dockerRepository: airbyte/destination-oracle-strict-encrypt
+  githubIssueLabel: destination-oracle
+  icon: oracle.svg
+  license: ELv2
+  name: Oracle
+  releaseStage: alpha
+  releases:
+    breakingChanges:
+      1.0.0:
+        upgradeDeadline: "2024-05-01"
+        message: >
+          This version removes the option to use "normalization" with Oracle. It also changes
+          the schema and database of Airbyte's "raw" tables to be compatible with the new
+          [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2)
+          format. These changes will likely require updates to downstream dbt / SQL models.
+          Selecting `Upgrade` will upgrade **all** connections using this destination at their next sync.
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/oracle
+  supportsDbt: true
+  tags:
+    - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+  externalDocumentationUrls:
+    - title: Oracle Database documentation
+      url: https://docs.oracle.com/en/database/
+      type: api_reference
+    - title: Database authentication
+      url: https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/configuring-authentication.html
+      type: authentication_guide
+    - title: Managing security
+      url: https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/
+      type: permissions_scopes
+    - title: SQL language reference
+      url: https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/
+      type: sql_reference
+metadataSpecVersion: "1.0"

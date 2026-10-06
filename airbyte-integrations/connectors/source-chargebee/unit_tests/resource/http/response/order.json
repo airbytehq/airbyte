@@ -1,0 +1,20 @@
+{
+  "list": [
+    {
+      "order": {
+        "id": "order_001",
+        "document_number": "ORD-001",
+        "invoice_id": "inv_001",
+        "subscription_id": "sub_001",
+        "customer_id": "cust_001",
+        "status": "delivered",
+        "order_type": "manual",
+        "created_at": 1705312800,
+        "updated_at": 1705312800,
+        "object": "order",
+        "cf_shipping_method": "Express",
+        "cf_fulfillment_center": "US-WEST"
+      }
+    }
+  ]
+}

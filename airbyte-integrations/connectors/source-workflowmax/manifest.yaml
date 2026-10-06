@@ -1,0 +1,2275 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: >-
+  Website: https://app.workflowmax2.com/
+
+  API Documentation:
+  https://app.swaggerhub.com/apis-docs/WorkflowMax-BlueRock/WorkflowMax-BlueRock-OpenAPI3/0.1#/
+
+check:
+  type: CheckStream
+  stream_names:
+    - stafflist
+
+definitions:
+  streams:
+    stafflist:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: staff.api/list
+          http_method: GET
+          request_headers:
+            accept: application/json
+            account_id: '{{ config["account_id"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - StaffList
+              - Staff
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      name: stafflist
+      primary_key:
+        - UUID
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stafflist"
+    clientlist:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: client.api/list
+          http_method: GET
+          request_headers:
+            accept: application/json
+            account_id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Clients
+              - Client
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      name: clientlist
+      primary_key:
+        - UUID
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/clientlist"
+    clients_documents:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: client.api/documents/{{ stream_partition.uuid }}
+          http_method: GET
+          request_headers:
+            accept: application/json
+            account_id: '{{ config["account_id"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Documents
+              - Document
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: UUID
+              partition_field: uuid
+              stream:
+                $ref: "#/definitions/streams/clientlist"
+      name: clients_documents
+      primary_key:
+        - uuid
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/clients_documents"
+    clientgrouplist:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: clientgroup.api/list
+          http_method: GET
+          request_headers:
+            accept: application/json
+            account_id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Groups
+              - Group
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      name: clientgrouplist
+      primary_key:
+        - UUID
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/clientgrouplist"
+    costlist:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: cost.api/list
+          http_method: GET
+          request_headers:
+            accept: application/json
+            account_id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Costs
+              - Cost
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      name: costlist
+      primary_key:
+        - UUID
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/costlist"
+    invoice_current:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: invoice.api/current
+          http_method: GET
+          request_headers:
+            accept: application/json
+            account_id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Invoices
+              - Invoice
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      name: invoice_current
+      primary_key:
+        - UUID
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoice_current"
+    invoicelist:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: invoice.api/list
+          http_method: GET
+          request_headers:
+            accept: application/json
+            account_id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Invoices
+              - Invoice
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      name: invoicelist
+      primary_key:
+        - UUID
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: Date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoicelist"
+    joblist:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: job.api/list
+          http_method: GET
+          request_headers:
+            accept: application/json
+            account_id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Jobs
+              - Job
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      name: joblist
+      primary_key:
+        - UUID
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: DateModifiedUtc
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/joblist"
+    job_tasks:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: job.api/tasks
+          http_method: GET
+          request_headers:
+            accept: application/json
+            account_id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Jobs
+              - Job
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      name: job_tasks
+      primary_key:
+        - UUID
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: DateModifiedUtc
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/job_tasks"
+    leadlist:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: lead.api/list
+          http_method: GET
+          request_headers:
+            accept: application/json
+            account_id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Leads
+              - Lead
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      name: leadlist
+      primary_key:
+        - UUID
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: Date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/leadlist"
+    purchaseorderlist:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: purchaseorder.api/list
+          http_method: GET
+          request_headers:
+            accept: application/json
+            account_id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - PurchaseOrders
+              - PurchaseOrder
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      name: purchaseorderlist
+      primary_key:
+        - ID
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: Date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/purchaseorderlist"
+    tasklist:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: task.api/list
+          http_method: GET
+          request_headers:
+            accept: application/json
+            account_id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - TaskList
+              - Task
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      name: tasklist
+      primary_key:
+        - UUID
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasklist"
+    quotelist:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: quote.api/list
+          http_method: GET
+          request_headers:
+            accept: application/json
+            account_id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Quotes
+              - Quote
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      name: quotelist
+      primary_key:
+        - UUID
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: Date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/quotelist"
+    supplierlist:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: supplier.api/list
+          http_method: GET
+          request_headers:
+            accept: application/json
+            account_id: '{{ config["account_id"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Suppliers
+              - Supplier
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      name: supplierlist
+      primary_key:
+        - UUID
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/supplierlist"
+    timelist:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: time.api/list
+          http_method: GET
+          request_headers:
+            accept: application/json
+            account_id: '{{ config["account_id"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Response
+              - Times
+              - Time
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      name: timelist
+      primary_key:
+        - UUID
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: Date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/timelist"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.workflowmax2.com/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_key_2"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/stafflist"
+  - $ref: "#/definitions/streams/clientlist"
+  - $ref: "#/definitions/streams/clients_documents"
+  - $ref: "#/definitions/streams/clientgrouplist"
+  - $ref: "#/definitions/streams/costlist"
+  - $ref: "#/definitions/streams/invoice_current"
+  - $ref: "#/definitions/streams/invoicelist"
+  - $ref: "#/definitions/streams/joblist"
+  - $ref: "#/definitions/streams/job_tasks"
+  - $ref: "#/definitions/streams/leadlist"
+  - $ref: "#/definitions/streams/purchaseorderlist"
+  - $ref: "#/definitions/streams/tasklist"
+  - $ref: "#/definitions/streams/quotelist"
+  - $ref: "#/definitions/streams/supplierlist"
+  - $ref: "#/definitions/streams/timelist"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key_2
+      - account_id
+      - start_date
+    properties:
+      api_key_2:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      account_id:
+        type: string
+        description: The account id for workflowmax
+        order: 1
+        title: Account ID
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    stafflist: true
+    clientlist: true
+    clients_documents: true
+    clientgrouplist: true
+    costlist: true
+    invoice_current: true
+    invoicelist: true
+    joblist: true
+    job_tasks: true
+    leadlist: true
+    purchaseorderlist: true
+    tasklist: true
+    quotelist: true
+    supplierlist: true
+    timelist: true
+  testedStreams:
+    stafflist:
+      streamHash: 0281ff074eaaddd0df15d59a9e380a4d3a2e78f7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    clientlist:
+      streamHash: ed44da9fa9dede0bc317bd77fd7c5ea703c87984
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    clients_documents:
+      streamHash: eaefdc9fbdc6601e406e568c20d31b54b094ded1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    clientgrouplist:
+      streamHash: fb0a03a180e3c7dcd5f656b36f7e38e81cf3ffbc
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    costlist:
+      streamHash: 9f6bf81d11204f550546939f31b62294c8ddda62
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    invoice_current:
+      streamHash: 9e10c89d53f93d2605368d088f16ea9844c673fa
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    invoicelist:
+      streamHash: 81044cef1059acff4b8fe3d356745188974d5e53
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    joblist:
+      streamHash: 04869000bc6ae9fd7002ac2753b32da85d74585a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    job_tasks:
+      streamHash: 091958d11795783980a11c1ac66af864f0d959a4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    leadlist:
+      streamHash: 9b33ad5d3be07bc0e75daa324c891fa144472654
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    purchaseorderlist:
+      streamHash: e27532c632350ef5f0d5df0d5fd1bd3ea00944e9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tasklist:
+      streamHash: 3f627ebd2139cb196ef8b5f46d91e8a1f776aee9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    quotelist:
+      streamHash: 03bdc0373f16d0230a3fe260b2c89b60444ec6f8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    supplierlist:
+      streamHash: 6e4845faf573b7fc9931be4b85dd2197612ea395
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    timelist:
+      streamHash: b308b2b28e6e7f0749d0642b27061b943365efb5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  stafflist:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Address:
+        type:
+          - string
+          - "null"
+      Email:
+        type:
+          - string
+          - "null"
+      Mobile:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      PayrollCode:
+        type:
+          - string
+          - "null"
+      Phone:
+        type:
+          - string
+          - "null"
+      UUID:
+        type: string
+      WebURL:
+        type:
+          - string
+          - "null"
+    required:
+      - UUID
+  clientlist:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      AccountManager:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      Address:
+        type:
+          - string
+          - "null"
+      City:
+        type:
+          - string
+          - "null"
+      Contacts:
+        type:
+          - object
+          - "null"
+        properties:
+          Contact:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                Addressee:
+                  type:
+                    - string
+                    - "null"
+                Email:
+                  type:
+                    - string
+                    - "null"
+                IsPrimary:
+                  type:
+                    - string
+                    - "null"
+                Mobile:
+                  type:
+                    - string
+                    - "null"
+                Name:
+                  type:
+                    - string
+                    - "null"
+                Phone:
+                  type:
+                    - string
+                    - "null"
+                Position:
+                  type:
+                    - string
+                    - "null"
+                Salutation:
+                  type:
+                    - string
+                    - "null"
+                UUID:
+                  type:
+                    - string
+                    - "null"
+      Country:
+        type:
+          - string
+          - "null"
+      Fax:
+        type:
+          - string
+          - "null"
+      IsArchived:
+        type:
+          - string
+          - "null"
+      IsDeleted:
+        type:
+          - string
+          - "null"
+      IsProspect:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      Phone:
+        type:
+          - string
+          - "null"
+      PostCode:
+        type:
+          - string
+          - "null"
+      PostalAddress:
+        type:
+          - string
+          - "null"
+      ReferralSource:
+        type:
+          - string
+          - "null"
+      Type:
+        type:
+          - object
+          - "null"
+        properties: {}
+      UUID:
+        type: string
+      WebURL:
+        type:
+          - string
+          - "null"
+      Website:
+        type:
+          - string
+          - "null"
+    required:
+      - UUID
+  clients_documents:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      CreatedBy:
+        type:
+          - string
+          - "null"
+      Date:
+        type:
+          - string
+          - "null"
+      Folder:
+        type:
+          - string
+          - "null"
+      Text:
+        type:
+          - string
+          - "null"
+      Title:
+        type:
+          - string
+          - "null"
+      URL:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  clientgrouplist:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Name:
+        type:
+          - string
+          - "null"
+      Taxable:
+        type:
+          - string
+          - "null"
+      UUID:
+        type: string
+    required:
+      - UUID
+  costlist:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Code:
+        type:
+          - string
+          - "null"
+      Description:
+        type:
+          - string
+          - "null"
+      Note:
+        type:
+          - string
+          - "null"
+      Supplier:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      UUID:
+        type: string
+      UnitCost:
+        type:
+          - string
+          - "null"
+      UnitPrice:
+        type:
+          - string
+          - "null"
+    required:
+      - UUID
+  invoice_current:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Amount:
+        type:
+          - string
+          - "null"
+      AmountIncludingTax:
+        type:
+          - string
+          - "null"
+      AmountOutstanding:
+        type:
+          - string
+          - "null"
+      AmountPaid:
+        type:
+          - string
+          - "null"
+      AmountTax:
+        type:
+          - string
+          - "null"
+      Client:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      Contact:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      Date:
+        type:
+          - string
+          - "null"
+      Description:
+        type:
+          - string
+          - "null"
+      DueDate:
+        type:
+          - string
+          - "null"
+      ID:
+        type:
+          - string
+          - "null"
+      JobText:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      Type:
+        type:
+          - string
+          - "null"
+      UUID:
+        type: string
+    required:
+      - UUID
+  invoicelist:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Amount:
+        type:
+          - string
+          - "null"
+      AmountIncludingTax:
+        type:
+          - string
+          - "null"
+      AmountOutstanding:
+        type:
+          - string
+          - "null"
+      AmountPaid:
+        type:
+          - string
+          - "null"
+      AmountTax:
+        type:
+          - string
+          - "null"
+      Client:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      Contact:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      Date:
+        type: string
+      Description:
+        type:
+          - string
+          - "null"
+      DueDate:
+        type:
+          - string
+          - "null"
+      ID:
+        type:
+          - string
+          - "null"
+      JobText:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      Type:
+        type:
+          - string
+          - "null"
+      UUID:
+        type: string
+    required:
+      - UUID
+      - Date
+  joblist:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Assigned:
+        type:
+          - object
+          - "null"
+        properties:
+          Staff:
+            type:
+              - object
+              - "null"
+            properties:
+              Name:
+                type:
+                  - string
+                  - "null"
+              UUID:
+                type:
+                  - string
+                  - "null"
+      Budget:
+        type:
+          - string
+          - "null"
+      Client:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      ClientOrderNumber:
+        type:
+          - string
+          - "null"
+      DateCreatedUtc:
+        type:
+          - string
+          - "null"
+      DateModifiedUtc:
+        type: string
+      Description:
+        type:
+          - string
+          - "null"
+      DueDate:
+        type:
+          - string
+          - "null"
+      ID:
+        type:
+          - string
+          - "null"
+      Manager:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      Partner:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      StartDate:
+        type:
+          - string
+          - "null"
+      State:
+        type:
+          - string
+          - "null"
+      UUID:
+        type: string
+      WebURL:
+        type:
+          - string
+          - "null"
+    required:
+      - UUID
+      - DateModifiedUtc
+  job_tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Assigned:
+        type:
+          - object
+          - "null"
+        properties:
+          Staff:
+            type:
+              - object
+              - "null"
+            properties:
+              Name:
+                type:
+                  - string
+                  - "null"
+              UUID:
+                type:
+                  - string
+                  - "null"
+      Budget:
+        type:
+          - string
+          - "null"
+      Client:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      ClientOrderNumber:
+        type:
+          - string
+          - "null"
+      Contact:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      DateCreatedUtc:
+        type:
+          - string
+          - "null"
+      DateModifiedUtc:
+        type: string
+      Description:
+        type:
+          - string
+          - "null"
+      DueDate:
+        type:
+          - string
+          - "null"
+      ID:
+        type:
+          - string
+          - "null"
+      Manager:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      Partner:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      StartDate:
+        type:
+          - string
+          - "null"
+      State:
+        type:
+          - string
+          - "null"
+      Tasks:
+        type:
+          - object
+          - "null"
+        properties:
+          Task:
+            type:
+              - object
+              - "null"
+            properties:
+              ActualMinutes:
+                type:
+                  - string
+                  - "null"
+              Assigned:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  Staff:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      AllocatedMinutes:
+                        type:
+                          - string
+                          - "null"
+                      Name:
+                        type:
+                          - string
+                          - "null"
+                      UUID:
+                        type:
+                          - string
+                          - "null"
+              Billable:
+                type:
+                  - string
+                  - "null"
+              Completed:
+                type:
+                  - string
+                  - "null"
+              Description:
+                type:
+                  - string
+                  - "null"
+              DueDate:
+                type:
+                  - string
+                  - "null"
+              EstimatedMinutes:
+                type:
+                  - string
+                  - "null"
+              Name:
+                type:
+                  - string
+                  - "null"
+              StartDate:
+                type:
+                  - string
+                  - "null"
+              TaskUUID:
+                type:
+                  - string
+                  - "null"
+              UUID:
+                type:
+                  - string
+                  - "null"
+      UUID:
+        type: string
+      WebURL:
+        type:
+          - string
+          - "null"
+    required:
+      - UUID
+      - DateModifiedUtc
+  leadlist:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Client:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      Contact:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      Date:
+        type: string
+      Description:
+        type:
+          - string
+          - "null"
+      Dropbox:
+        type:
+          - string
+          - "null"
+      EstimatedValue:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      Owner:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      State:
+        type:
+          - string
+          - "null"
+      UUID:
+        type: string
+    required:
+      - UUID
+      - Date
+  purchaseorderlist:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Amount:
+        type:
+          - string
+          - "null"
+      AmountIncludingTax:
+        type:
+          - string
+          - "null"
+      AmountTax:
+        type:
+          - string
+          - "null"
+      Date:
+        type: string
+      DeliveryAddress:
+        type:
+          - string
+          - "null"
+      Description:
+        type:
+          - string
+          - "null"
+      ID:
+        type: string
+      Job:
+        type:
+          - object
+          - "null"
+        properties:
+          ID:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+      State:
+        type:
+          - string
+          - "null"
+      Supplier:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+    required:
+      - ID
+      - Date
+  tasklist:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Description:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      UUID:
+        type: string
+    required:
+      - UUID
+  quotelist:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Amount:
+        type:
+          - string
+          - "null"
+      AmountIncludingTax:
+        type:
+          - string
+          - "null"
+      AmountTax:
+        type:
+          - string
+          - "null"
+      Budget:
+        type:
+          - string
+          - "null"
+      Client:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      Contact:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      Date:
+        type: string
+      Description:
+        type:
+          - string
+          - "null"
+      EstimatedCost:
+        type:
+          - string
+          - "null"
+      EstimatedCostIncludingTax:
+        type:
+          - string
+          - "null"
+      EstimatedCostTax:
+        type:
+          - string
+          - "null"
+      ID:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      OptionExplanation:
+        type:
+          - string
+          - "null"
+      State:
+        type:
+          - string
+          - "null"
+      Type:
+        type:
+          - string
+          - "null"
+      UUID:
+        type: string
+      ValidDate:
+        type:
+          - string
+          - "null"
+    required:
+      - UUID
+      - Date
+  supplierlist:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Fax:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      Phone:
+        type:
+          - string
+          - "null"
+      UUID:
+        type: string
+    required:
+      - UUID
+  timelist:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Billable:
+        type:
+          - string
+          - "null"
+      Date:
+        type: string
+      Job:
+        type:
+          - object
+          - "null"
+        properties:
+          ID:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+      Minutes:
+        type:
+          - string
+          - "null"
+      Note:
+        type:
+          - string
+          - "null"
+      Staff:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      Task:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+          UUID:
+            type:
+              - string
+              - "null"
+      UUID:
+        type: string
+    required:
+      - UUID
+      - Date

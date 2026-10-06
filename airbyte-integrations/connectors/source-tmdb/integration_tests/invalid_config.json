@@ -1,0 +1,6 @@
+{
+  "api_key": "<WRONG_API_FROM>",
+  "movie_id": "<NON_SUPPORTED_ID>",
+  "query": "<GIBBERISH_QUERY>",
+  "language": "<UNSUPPORTED_ISO_639-1_VALUE>"
+}

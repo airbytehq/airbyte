@@ -1,0 +1,90 @@
+# Dolibarr
+
+Connector for the Dolibarr ERP/CRM REST API focused on GET operations
+
+## Pre-requisites
+- A Dolibarr Installation in Cloud SaaS, On-premises, Web Hosting or cPanel Server.
+- Identify your public Dolibarr URL that will be required to configure the conector.
+- Configure your company data in the Setup menu - Configure your company/organization: [Dolibarr documentation Wiki](https://wiki.dolibarr.org/index.php?title=First_setup#Company.2FOrganization)
+- In the module setup menu enable the Module Web Services API REST (developer) and configure it.
+- Enable the ERP/CRM modules of Dolibarr from you want to GET data with the REST API end points
+- For the API Key access create a Dolibarr user in your installation with the permissions to "read" modules corresponding to the REST API end points you will use with the streams. (some streams or end points, like GET company information, will require that your user be administrator or have read/write permissions to works fine with the GET end point)
+- In the setup/modify menu of the user created in the previous step, generate the API Key (different to the user password) that will be required for the setup of the connector.
+- Now your are ready to work with this connector.
+- For additional information about the use and configuration of your Dolibarr connection please review this guide: [Integration of Dolibarr to the Airbyte data integration platform](https://wiki.dolibarr.org/index.php?title=Integration_of_Dolibarr_to_the_Airbyte_data_integration_platform)
+
+## Configuration
+
+| Input | Type | Description | Default Value |
+|-------|------|-------------|---------------|
+| `api_key` | `string` | API Key.  |  |
+| `my_dolibarr_domain_url` | `string` | `my_dolibarr_domain/url`. Enter your `domain/dolibarr_url` without `https://` Example: `mydomain.com/dolibarr` |  |
+| `start_date` | `date` | Earliest start date of synchronization in source data in format `YYYY-MM-DDTHH:mm:ssZ` Enter the earliest modification date of data you want to incrementally synchronize |  |
+
+## Streams
+| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
+|-------------|-------------|------------|---------------------|----------------------|
+| Products list | product_id | DefaultPaginator | ✅ |  ✅  |
+| Products category id list |  | No pagination | ✅ |  ❌  |
+| Product categories list | category_id | DefaultPaginator | ✅ |  ✅  |
+| Customer invoices list | invoice_id | DefaultPaginator | ✅ |  ✅  |
+| Customer invoices lines list |  | No pagination | ✅ |  ❌  |
+| Customers list | customer_id | DefaultPaginator | ✅ |  ✅  |
+| Supplier invoices list | supp_invoice_id | DefaultPaginator | ✅ |  ✅  |
+| Supplier invoices lines list |  | No pagination | ✅ |  ❌  |
+| Suppliers list | supplier_id | DefaultPaginator | ✅ |  ✅  |
+| Internal Users | user_id | DefaultPaginator | ✅ |  ✅  |
+| Company profile data |  | No pagination | ✅ |  ❌  |
+| Customer invoices payments list | ref | No pagination | ✅ |  ❌  |
+| Supplier invoices payments list | ref | No pagination | ✅ |  ❌  |
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
+
+| Version          | Date              | Pull Request | Subject        |
+|------------------|-------------------|--------------|----------------|
+| 1.0.35 | 2026-10-06 | [87814](https://github.com/airbytehq/airbyte/pull/87814) | Update dependencies |
+| 1.0.34 | 2026-09-29 | [87123](https://github.com/airbytehq/airbyte/pull/87123) | Update dependencies |
+| 1.0.33 | 2026-09-22 | [86560](https://github.com/airbytehq/airbyte/pull/86560) | Update dependencies |
+| 1.0.32 | 2026-09-15 | [86017](https://github.com/airbytehq/airbyte/pull/86017) | Update dependencies |
+| 1.0.31 | 2026-09-08 | [85446](https://github.com/airbytehq/airbyte/pull/85446) | Update dependencies |
+| 1.0.30 | 2026-08-18 | [84531](https://github.com/airbytehq/airbyte/pull/84531) | Update dependencies |
+| 1.0.29 | 2026-08-11 | [83898](https://github.com/airbytehq/airbyte/pull/83898) | Update dependencies |
+| 1.0.28 | 2026-08-04 | [83421](https://github.com/airbytehq/airbyte/pull/83421) | Update dependencies |
+| 1.0.27 | 2026-07-28 | [82881](https://github.com/airbytehq/airbyte/pull/82881) | Update dependencies |
+| 1.0.26 | 2026-07-21 | [82366](https://github.com/airbytehq/airbyte/pull/82366) | Update dependencies |
+| 1.0.25 | 2026-07-14 | [81758](https://github.com/airbytehq/airbyte/pull/81758) | Update dependencies |
+| 1.0.24 | 2026-06-30 | [81009](https://github.com/airbytehq/airbyte/pull/81009) | Update dependencies |
+| 1.0.23 | 2026-06-23 | [80391](https://github.com/airbytehq/airbyte/pull/80391) | Update dependencies |
+| 1.0.22 | 2026-06-16 | [79823](https://github.com/airbytehq/airbyte/pull/79823) | Update dependencies |
+| 1.0.21 | 2026-06-09 | [79263](https://github.com/airbytehq/airbyte/pull/79263) | Update dependencies |
+| 1.0.20 | 2026-06-02 | [78630](https://github.com/airbytehq/airbyte/pull/78630) | Update dependencies |
+| 1.0.19 | 2026-04-28 | [77261](https://github.com/airbytehq/airbyte/pull/77261) | Update dependencies |
+| 1.0.18 | 2026-04-21 | [76577](https://github.com/airbytehq/airbyte/pull/76577) | Update dependencies |
+| 1.0.17 | 2026-03-17 | [75082](https://github.com/airbytehq/airbyte/pull/75082) | Update dependencies |
+| 1.0.16 | 2026-03-10 | [74449](https://github.com/airbytehq/airbyte/pull/74449) | Update dependencies |
+| 1.0.15 | 2026-03-03 | [74192](https://github.com/airbytehq/airbyte/pull/74192) | Update dependencies |
+| 1.0.14 | 2026-02-17 | [73544](https://github.com/airbytehq/airbyte/pull/73544) | Update dependencies |
+| 1.0.13 | 2025-10-07 | [67155](https://github.com/airbytehq/airbyte/pull/67155) | Update dependencies |
+| 1.0.12 | 2025-09-30 | [65758](https://github.com/airbytehq/airbyte/pull/65758) | Update dependencies |
+| 1.0.11 | 2025-08-23 | [65305](https://github.com/airbytehq/airbyte/pull/65305) | Update dependencies |
+| 1.0.10 | 2025-08-09 | [64715](https://github.com/airbytehq/airbyte/pull/64715) | Update dependencies |
+| 1.0.9 | 2025-08-02 | [64362](https://github.com/airbytehq/airbyte/pull/64362) | Update dependencies |
+| 1.0.8 | 2025-07-26 | [63981](https://github.com/airbytehq/airbyte/pull/63981) | Update dependencies |
+| 1.0.7 | 2025-07-19 | [63581](https://github.com/airbytehq/airbyte/pull/63581) | Update dependencies |
+| 1.0.6 | 2025-07-12 | [62976](https://github.com/airbytehq/airbyte/pull/62976) | Update dependencies |
+| 1.0.5 | 2025-07-09 | [62869](https://github.com/airbytehq/airbyte/pull/62869) | Enabled "incremental Parent" switch for the child streams that have parent streams with incremental sync. |
+| 1.0.4 | 2025-07-05 | [62779](https://github.com/airbytehq/airbyte/pull/62779) | Update dependencies |
+| 1.0.3 | 2025-06-28 | [62306](https://github.com/airbytehq/airbyte/pull/62306) | Update dependencies |
+| 1.0.2 | 2025-06-22 | [61992](https://github.com/airbytehq/airbyte/pull/61992) | Update dependencies |
+| 1.0.1 | 2025-06-14 | [61174](https://github.com/airbytehq/airbyte/pull/61174) | Update dependencies |
+| 1.0.0 | 2025-06-05 | [61388](https://github.com/airbytehq/airbyte/pull/61388) | Implements incremental sync in all applicable parent streams, improves the performance and efficiency of data extraction, compatible with Dolibarr 21.0.0 or higher versions |
+| 0.0.1 | 2025-05-20 | [60320](https://github.com/airbytehq/airbyte/pull/60320) | Initial release by [@leonmm2](https://github.com/leonmm2) via Connector Builder |
+
+</details>

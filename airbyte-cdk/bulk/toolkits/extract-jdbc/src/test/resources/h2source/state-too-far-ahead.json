@@ -1,0 +1,17 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "EVENTS",
+        "namespace": "PUBLIC"
+      },
+      "stream_state": {
+        "primary_key": {},
+        "cursors": {
+          "TS": "2049-04-30T00:00:00.000000-04:00"
+        }
+      }
+    }
+  }
+]

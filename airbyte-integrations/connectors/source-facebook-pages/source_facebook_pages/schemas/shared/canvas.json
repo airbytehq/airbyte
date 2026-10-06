@@ -1,0 +1,62 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "background_color": {
+      "type": ["string", "null"]
+    },
+    "business_id": {
+      "type": ["string", "null"]
+    },
+    "canvas_link": {
+      "type": ["string", "null"]
+    },
+    "element_payload": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "is_hidden": {
+      "type": ["boolean", "null"]
+    },
+    "is_published": {
+      "type": ["boolean", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "property_list": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "store_url": {
+      "type": ["string", "null"]
+    },
+    "style_list": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "tags": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "ui_property_list": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "update_time": {
+      "type": ["integer", "null"]
+    },
+    "use_retailer_item_ids": {
+      "type": ["boolean", "null"]
+    }
+  }
+}

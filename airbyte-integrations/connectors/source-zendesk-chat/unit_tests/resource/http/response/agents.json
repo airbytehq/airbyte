@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1001,
+    "first_name": "John",
+    "last_name": "Doe",
+    "display_name": "John Doe",
+    "email": "john.doe@example.com",
+    "role_id": 1,
+    "enabled": 1,
+    "departments": [1, 2],
+    "skills": [],
+    "create_date": "2021-01-01T00:00:00Z"
+  }
+]

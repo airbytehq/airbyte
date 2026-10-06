@@ -1,0 +1,1989 @@
+#
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+#
+
+
+import gzip
+import json
+from enum import Enum
+from http import HTTPStatus
+from typing import List, Optional
+
+import freezegun
+import pendulum
+import pytest
+import requests_mock
+
+from airbyte_cdk.models import AirbyteStateMessage, FailureType, Level, SyncMode
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.mock_http.matcher import HttpRequestMatcher
+from airbyte_cdk.test.state_builder import StateBuilder
+
+from .config import CONFIG_END_DATE, CONFIG_START_DATE, MARKETPLACE_ID, NOW, ConfigBuilder
+from .request_builder import RequestBuilder
+from .response_builder import build_response, response_with_status
+from .utils import assert_message_in_log_output, config, find_template, get_stream_by_name, mock_auth, read_output
+
+
+_DOCUMENT_DOWNLOAD_URL = "https://test.com/download"
+_REPORT_ID = "6789087632"
+_REPORT_DOCUMENT_ID = "report_document_id"
+
+DEFAULT_EXPECTED_NUMBER_OF_RECORDS = 2  # every test file in resource/http/response contains 2 records
+STREAMS = (
+    ("GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING", "csv"),
+    ("GET_ORDER_REPORT_DATA_SHIPPING", "xml"),
+    ("GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL", "csv"),
+    ("GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA", "csv"),
+    ("GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA", "csv"),
+    ("GET_SELLER_FEEDBACK_DATA", "csv"),
+    ("GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA", "csv"),
+    ("GET_LEDGER_DETAIL_VIEW_DATA", "csv"),
+    ("GET_AFN_INVENTORY_DATA_BY_COUNTRY", "csv"),
+    ("GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE", "csv"),
+    ("GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA", "csv"),
+    ("GET_AFN_INVENTORY_DATA", "csv"),
+    ("GET_MERCHANT_CANCELLED_LISTINGS_DATA", "csv"),
+    ("GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA", "csv"),
+    ("GET_LEDGER_SUMMARY_VIEW_DATA", "csv"),
+    ("GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE", "csv"),
+    ("GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA", "csv"),
+    ("GET_FBA_INVENTORY_PLANNING_DATA", "csv"),
+    ("GET_FBA_STORAGE_FEE_CHARGES_DATA", "csv"),
+    ("GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA", "csv"),
+    ("GET_STRANDED_INVENTORY_UI_DATA", "csv"),
+    ("GET_FBA_REIMBURSEMENTS_DATA", "csv"),
+)
+
+
+class ReportProcessingStatus(str, Enum):
+    CANCELLED = "CANCELLED"
+    DONE = "DONE"
+    FATAL = "FATAL"
+    IN_PROGRESS = "IN_PROGRESS"
+    IN_QUEUE = "IN_QUEUE"
+
+
+def _create_report_request(report_name: str) -> RequestBuilder:
+    """
+    A POST request needed to start generating a report on Amazon SP platform.
+    Performed in ReportsAmazonSPStream._create_report method.
+    """
+    return RequestBuilder.create_report_endpoint(report_name)
+
+
+def _check_report_status_request(report_id: str) -> RequestBuilder:
+    """
+    A GET request needed to check the report generating status.
+    Performed in ReportsAmazonSPStream._retrieve_report method.
+    """
+
+    return RequestBuilder.check_report_status_endpoint(report_id)
+
+
+def _get_document_download_url_request(document_id: str) -> RequestBuilder:
+    """
+    A GET request which returns a URL for the report download.
+    """
+
+    return RequestBuilder.get_document_download_url_endpoint(document_id)
+
+
+def _get_reports_request() -> RequestBuilder:
+    """
+    A GET request used by ReportCreationRequester to look up existing reports
+    before creating a new one.
+    """
+    return RequestBuilder.get_reports_endpoint()
+
+
+def _download_document_request(url: str) -> RequestBuilder:
+    """
+    A GET request which actually downloads the report.
+    Performed in ReportsAmazonSPStream.download_and_decompress_report_document method.
+    """
+
+    return RequestBuilder.download_document_endpoint(url)
+
+
+def _create_report_response(report_id: str, status_code: Optional[HTTPStatus] = HTTPStatus.ACCEPTED) -> HttpResponse:
+    response_body = {"reportId": report_id}
+    return build_response(response_body, status_code=status_code)
+
+
+def _check_report_status_response(
+    report_name: str,
+    processing_status: Optional[ReportProcessingStatus] = ReportProcessingStatus.DONE,
+    report_document_id: Optional[str] = None,
+) -> HttpResponse:
+    if processing_status == ReportProcessingStatus.DONE and not report_document_id:
+        raise ValueError("report_document_id value should be passed when processing_status is 'DONE'.")
+
+    response_body = {
+        "reportType": report_name,
+        "processingStatus": processing_status,
+        "marketplaceIds": [MARKETPLACE_ID],
+        "reportId": _REPORT_ID,
+        "dataEndTime": CONFIG_END_DATE,
+        "createdTime": CONFIG_START_DATE,
+        "dataStartTime": CONFIG_START_DATE,
+        "reportDocumentId": report_document_id,
+    }
+    if processing_status == ReportProcessingStatus.DONE:
+        response_body.update(
+            {
+                "processingEndTime": CONFIG_START_DATE,
+                "processingStartTime": CONFIG_START_DATE,
+            }
+        )
+
+    return build_response(response_body, status_code=HTTPStatus.OK)
+
+
+def _get_document_download_url_response(
+    document_download_url: str, report_document_id: str, compressed: Optional[bool] = False
+) -> HttpResponse:
+    response_body = {"reportDocumentId": report_document_id, "url": document_download_url}
+    if compressed:
+        # See https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference#compressionalgorithm
+        response_body["compressionAlgorithm"] = "GZIP"
+    return build_response(response_body, status_code=HTTPStatus.OK)
+
+
+def _get_reports_response(reports: Optional[List[dict]] = None) -> HttpResponse:
+    """Response for GET /reports — returns an empty list by default (no existing reports found)."""
+    response_body = {"reports": reports or []}
+    return build_response(response_body, status_code=HTTPStatus.OK)
+
+
+def _download_document_response(stream_name: str, data_format: Optional[str] = "csv", compressed: Optional[bool] = False) -> HttpResponse:
+    response_body = find_template(stream_name, __file__, data_format)
+    if compressed:
+        response_body = gzip.compress(response_body.encode("iso-8859-1"))
+    return HttpResponse(body=response_body, status_code=HTTPStatus.OK)
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestFullRefresh:
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+            expecting_exception=expecting_exception,
+        )
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_report_when_read_then_return_records(self, stream_name: str, data_format: str, http_mocker: HttpMocker) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_compressed_report_when_read_then_return_records(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID, compressed=True),
+        )
+
+        # a workaround to pass compressed document to the mocked response
+        document_request = _download_document_request(_DOCUMENT_DOWNLOAD_URL).build()
+        document_response = _download_document_response(stream_name, data_format=data_format, compressed=True)
+        document_request_matcher = HttpRequestMatcher(document_request, minimum_number_of_expected_match=1)
+        # http_mocker._matchers.append(document_request_matcher)
+
+        http_mocker._mocker.get(
+            requests_mock.ANY,
+            additional_matcher=http_mocker._matches_wrapper(document_request_matcher),
+            response_list=[{"content": document_response.body, "status_code": document_response.status_code}],
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_http_status_500_then_200_when_create_report_then_retry_and_return_records(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.post(
+            _create_report_request(stream_name).build(),
+            [response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR), _create_report_response(_REPORT_ID)],
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_http_status_500_then_200_when_retrieve_report_then_retry_and_return_records(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            [
+                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+                _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+            ],
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_http_status_500_then_200_when_get_document_url_then_retry_and_return_records(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            [
+                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+                _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+            ],
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_http_status_500_then_200_when_download_document_then_retry_and_return_records(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            [
+                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+                _download_document_response(stream_name, data_format=data_format),
+            ],
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_report_access_forbidden_when_read_then_no_records_and_error_logged(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+
+        # Mock GET /reports (ReportCreationRequester pre-check) returning empty list
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
+        http_mocker.post(_create_report_request(stream_name).build(), response_with_status(status_code=HTTPStatus.FORBIDDEN))
+
+        output = self._read(stream_name, config())
+        message_on_access_forbidden = "Forbidden. You don't have permission to access this resource."
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert message_on_access_forbidden in output.errors[0].trace.error.message
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_report_status_cancelled_when_read_then_stream_skipped_with_no_records(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        """CANCELLED reports are mapped to SKIPPED status in the CDK — the partition is
+        silently dropped (no retries, no record fetching, no error). Per SP-API docs,
+        CANCELLED means 'no data to return'."""
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.CANCELLED),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == 0
+        assert len(output.errors) == 0
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_report_status_fatal_when_read_then_exception_raised(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+
+        # Use without_amz_date() because tick=True advances time, changing x-amz-date header.
+        # Provide 3 responses each to cover _DEFAULT_MAX_JOB_RETRY = 3 retry cycles.
+        http_mocker.get(
+            _get_reports_request().without_amz_date().build(),
+            [_get_reports_response()] * 3,
+        )
+        http_mocker.post(
+            _create_report_request(stream_name).without_amz_date().build(),
+            [_create_report_response(_REPORT_ID)] * 3,
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).without_amz_date().build(),
+            [
+                _check_report_status_response(
+                    stream_name, processing_status=ReportProcessingStatus.FATAL, report_document_id=_REPORT_DOCUMENT_ID
+                )
+            ]
+            * 3,
+        )
+
+        output = self._read(stream_name, config().with_failed_retry_wait_time_in_seconds(1), expecting_exception=True)
+        assert output.errors[-1].trace.error.failure_type == FailureType.config_error
+        config_end_date = CONFIG_END_DATE
+        assert (
+            f"At least one job could not be completed for slice {{\\'start_time\\': \\'{CONFIG_START_DATE}\\', \\'end_time\\': \\'{config_end_date}\\'}}"
+        ) in output.errors[-1].trace.error.message
+
+    @pytest.mark.parametrize(
+        ("stream_name", "date_field", "expected_date_value"),
+        (
+            ("GET_SELLER_FEEDBACK_DATA", "date", "2023-10-20"),
+            ("GET_LEDGER_DETAIL_VIEW_DATA", "Date", "2023-11-21"),
+            ("GET_LEDGER_SUMMARY_VIEW_DATA", "Date", "2023-12-22"),
+        ),
+    )
+    @HttpMocker()
+    def test_given_report_with_incorrect_date_format_when_read_then_formatted(
+        self, stream_name: str, date_field: str, expected_date_value: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(_download_document_request(_DOCUMENT_DOWNLOAD_URL).build(), _download_document_response(stream_name))
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+        assert output.records[0].record.data.get(date_field) == expected_date_value
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_http_error_500_on_create_report_when_read_then_no_records_and_error_logged(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+
+        # Mock GET /reports (ReportCreationRequester pre-check) returning empty list
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
+        http_mocker.post(
+            _create_report_request(stream_name).build(),
+            response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+        )
+
+        message_on_backoff_exception = "Max retry limit reached after"
+
+        output = self._read(stream_name, config())
+
+        assert list(filter(lambda error: error.trace.error.failure_type == FailureType.config_error, output.errors))
+        assert_message_in_log_output(message=message_on_backoff_exception, entrypoint_output=output, log_level=Level.ERROR)
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_http_error_not_support_account_id_of_type_vendor_when_read_then_no_records_and_error_logged(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ):
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+
+        # Mock GET /reports (ReportCreationRequester pre-check) returning empty list
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
+        response_body = {
+            "errors": [
+                {
+                    "code": "InvalidInput",
+                    "message": "Report type 301 does not support account ID of type class com.amazon.partner.account.id.VendorGroupId.",
+                    "details": "",
+                }
+            ]
+        }
+        http_mocker.post(
+            _create_report_request(stream_name).build(),
+            response_with_status(status_code=HTTPStatus.BAD_REQUEST, body=response_body),
+        )
+
+        warning_message = (
+            "'POST' request to 'https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/reports' failed with status code '400' and"
+            " error message: 'Report type 301 does not support account ID of type class com.amazon.partner.account.id.VendorGroupId.'."
+        )
+
+        output = self._read(stream_name, config())
+
+        assert list(filter(lambda error: error.trace.error.failure_type == FailureType.config_error, output.errors))
+        assert_message_in_log_output(message=warning_message, entrypoint_output=output, log_level=Level.ERROR)
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestIncremental:
+    default_cursor_field = "dataEndTime"
+
+    @staticmethod
+    def _read(
+        stream_name: str,
+        config_: ConfigBuilder,
+        state: Optional[List[AirbyteStateMessage]] = None,
+        expecting_exception: bool = False,
+    ) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=stream_name,
+            sync_mode=SyncMode.incremental,
+            state=state,
+            expecting_exception=expecting_exception,
+        )
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_report_when_read_then_default_cursor_field_added_to_every_record(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert all([self.default_cursor_field in record.record.data for record in output.records])
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_report_when_read_then_state_message_produced_and_state_match_latest_record(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        """
+        This test requires datetime from the records to be higher than the start date of the stream else the cursor value will be the start date
+        """
+        _config = config()
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=data_format),
+        )
+
+        output = self._read(stream_name, _config)
+        assert (
+            len(output.state_messages) == 2
+        )  # we have two messages here, one for the slice and once of the "ensure_at_least_one_state_emitted"
+
+        cursor_field = get_stream_by_name(stream_name, _config.build()).cursor_field
+        cursor_value_from_latest_record = output.records[-1].record.data.get(cursor_field)
+
+        most_recent_state = output.most_recent_state.stream_state
+        # format between record and cursor value can differ hence we rely on pendulum parsing to ignore those discrepancies
+        assert pendulum.parse(most_recent_state.__dict__[cursor_field]) == pendulum.parse(cursor_value_from_latest_record)
+
+    @pytest.mark.parametrize(
+        "stream_name, cursor_field, state_cursor_value",
+        [
+            pytest.param("GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL", "dataEndTime", "2023-01-15T00:00:00Z", id="data_end_time"),
+        ],
+    )
+    @HttpMocker()
+    def test_given_hourly_lookback_window_when_incremental_read_then_create_report_uses_adjusted_start_time(
+        self, stream_name: str, cursor_field: str, state_cursor_value: str, http_mocker: HttpMocker
+    ) -> None:
+        initial_state = StateBuilder().with_stream_state(stream_name, {cursor_field: state_cursor_value}).build()
+        create_report_request_body = {
+            "reportType": stream_name,
+            "marketplaceIds": [MARKETPLACE_ID],
+            "dataStartTime": "2023-01-14T18:00:00Z",
+            "dataEndTime": CONFIG_END_DATE,
+        }
+
+        http_mocker.clear_all_matchers()
+        http_mocker.get(_get_reports_request().without_amz_date().build(), _get_reports_response())
+        mock_auth(http_mocker)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(create_report_request_body)).without_amz_date().build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format="csv"),
+        )
+
+        output = self._read(
+            stream_name,
+            config().with_report_stream_lookback_window_in_hours(6),
+            state=initial_state,
+        )
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(
+        "stream_name, cursor_field, state_cursor_value, create_report_request_body, download_response_stream_name",
+        [
+            pytest.param(
+                "GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH",
+                "queryEndDate",
+                "2023-01-15T00:00:00Z",
+                {
+                    "reportType": "GET_SALES_AND_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-15T00:00:00Z",
+                    "dataEndTime": "2023-01-16T00:00:00Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                    "reportOptions": {"dateGranularity": "MONTH", "asinGranularity": "PARENT"},
+                },
+                "GET_SALES_AND_TRAFFIC_REPORT",
+                id="monthly_sales_and_traffic",
+            ),
+            pytest.param(
+                "GET_VENDOR_SALES_REPORT",
+                "endDate",
+                "2023-01-15T00:00:00Z",
+                {
+                    "reportType": "GET_VENDOR_SALES_REPORT",
+                    # Window is day-aligned from the slice start day (lookback is still not applied here).
+                    "dataStartTime": "2023-01-15T00:00:00Z",
+                    "dataEndTime": "2023-01-15T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                "GET_VENDOR_SALES_REPORT",
+                id="vendor_sales_date_only",
+            ),
+        ],
+    )
+    @HttpMocker()
+    def test_given_hourly_lookback_window_when_unsupported_report_stream_then_create_report_does_not_apply_lookback(
+        self,
+        stream_name: str,
+        cursor_field: str,
+        state_cursor_value: str,
+        create_report_request_body: dict,
+        download_response_stream_name: str,
+        http_mocker: HttpMocker,
+    ) -> None:
+        initial_state = StateBuilder().with_stream_state(stream_name, {cursor_field: state_cursor_value}).build()
+
+        http_mocker.clear_all_matchers()
+        http_mocker.get(_get_reports_request().without_amz_date().build(), _get_reports_response())
+        mock_auth(http_mocker)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(create_report_request_body)).without_amz_date().build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(download_response_stream_name, data_format="json"),
+        )
+
+        config_builder = config().with_report_stream_lookback_window_in_hours(6).with_end_date(pendulum.parse("2023-01-16T00:00:00Z"))
+        if "VENDOR" in stream_name:
+            config_builder = config_builder.with_account_type("Vendor")
+        output = self._read(
+            stream_name,
+            config_builder,
+            state=initial_state,
+        )
+        assert len(output.records) > 0
+
+    @pytest.mark.parametrize(
+        "stream_name, cursor_field, create_report_request_body, download_response_stream_name, account_type",
+        [
+            pytest.param(
+                "GET_SALES_AND_TRAFFIC_REPORT",
+                "queryEndDate",
+                {
+                    "reportType": "GET_SALES_AND_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                    "reportOptions": {"asinGranularity": "PARENT"},
+                },
+                "GET_SALES_AND_TRAFFIC_REPORT",
+                "Seller",
+                id="sales_and_traffic",
+            ),
+            pytest.param(
+                "GET_SALES_AND_TRAFFIC_REPORT_BY_DATE",
+                "queryEndDate",
+                {
+                    "reportType": "GET_SALES_AND_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                "GET_SALES_AND_TRAFFIC_REPORT",
+                "Seller",
+                id="sales_and_traffic_by_date",
+            ),
+            pytest.param(
+                "GET_VENDOR_SALES_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_SALES_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                "GET_VENDOR_SALES_REPORT",
+                "Vendor",
+                id="vendor_sales",
+            ),
+        ],
+    )
+    @HttpMocker()
+    def test_given_off_midnight_state_when_incremental_read_then_report_window_is_day_aligned(
+        self,
+        stream_name: str,
+        cursor_field: str,
+        create_report_request_body: dict,
+        download_response_stream_name: str,
+        account_type: str,
+        http_mocker: HttpMocker,
+    ) -> None:
+        """Regression test for the off-midnight window drift (oncall #12765).
+
+        When a prior sync ends mid-day, the slice bounds drift off midnight
+        (e.g. 2023-01-29T13:27:00Z). The daily report streams must still request a single,
+        day-aligned calendar-day window ([<day>T00:00:00Z, <day>T23:59:59Z]) instead of the raw
+        drifted slice bounds, otherwise the API rounds the off-midnight window outward to every
+        calendar day it spans and sums them, inflating the day's metrics. The emitted cursor value
+        must likewise be day-aligned so destination deduplication compares stable per-day values.
+
+        The mocked create-report matcher only matches the day-aligned body, so a drifted window
+        would produce zero records and fail the assertions below.
+        """
+        initial_state = StateBuilder().with_stream_state(stream_name, {cursor_field: "2023-01-29T13:27:00Z"}).build()
+
+        http_mocker.clear_all_matchers()
+        http_mocker.get(_get_reports_request().without_amz_date().build(), _get_reports_response())
+        mock_auth(http_mocker)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(create_report_request_body)).without_amz_date().build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(download_response_stream_name, data_format="json"),
+        )
+
+        config_builder = config().with_end_date(pendulum.parse("2023-01-30T13:27:00Z"))
+        if account_type == "Vendor":
+            config_builder = config_builder.with_account_type("Vendor")
+
+        output = self._read(stream_name, config_builder, state=initial_state)
+
+        assert len(output.records) > 0
+        assert all(record.record.data.get(cursor_field) == "2023-01-29T23:59:59Z" for record in output.records)
+
+    @HttpMocker()
+    def test_given_cancelled_report_when_incremental_read_then_state_unchanged(self, http_mocker: HttpMocker) -> None:
+        """When a CANCELLED report is skipped (via SKIPPED status mapping), verify that:
+        1. The initial state before the read is preserved
+        2. No records are returned
+        3. No errors are raised
+        4. The state after the read matches the initial state (no advancement)
+        This validates that skipping a CANCELLED report does not corrupt or advance the cursor.
+        """
+        stream_name = "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
+        cursor_field = self.default_cursor_field
+        initial_cursor_value = "2023-01-15T00:00:00Z"
+
+        initial_state = StateBuilder().with_stream_state(stream_name, {cursor_field: initial_cursor_value}).build()
+
+        # Verify initial state is set correctly before the read
+        assert len(initial_state) == 1
+        assert initial_state[0].stream.stream_state.__dict__[cursor_field] == initial_cursor_value
+
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
+        # When state is provided, the stream slices from the cursor value to config end date.
+        # The POST body must match the state-based slice dates.
+        create_body = json.dumps(
+            {
+                "reportType": stream_name,
+                "marketplaceIds": [MARKETPLACE_ID],
+                "dataStartTime": initial_cursor_value,
+                "dataEndTime": CONFIG_END_DATE,
+            }
+        )
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.CANCELLED),
+        )
+
+        output = self._read(stream_name, config(), state=initial_state)
+
+        # No records should be returned for a CANCELLED (skipped) report
+        assert len(output.records) == 0
+        # No errors should be raised — SKIPPED is a clean terminal status
+        assert len(output.errors) == 0
+        # State should be emitted but cursor should not advance past the initial value
+        assert output.most_recent_state is not None
+        most_recent_state = output.most_recent_state.stream_state
+        assert pendulum.parse(most_recent_state.__dict__[cursor_field]) == pendulum.parse(initial_cursor_value)
+
+    @HttpMocker()
+    def test_given_done_empty_report_when_incremental_read_then_state_unchanged(self, http_mocker: HttpMocker) -> None:
+        """When a DONE report contains no data rows (empty CSV with headers only), verify that:
+        1. The initial state before the read is preserved
+        2. No records are returned
+        3. No errors are raised
+        4. The state after the read matches the initial state (no advancement)
+        This validates that an empty DONE report does not corrupt or advance the cursor.
+        """
+        stream_name = "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
+        cursor_field = self.default_cursor_field
+        initial_cursor_value = "2023-01-15T00:00:00Z"
+
+        initial_state = StateBuilder().with_stream_state(stream_name, {cursor_field: initial_cursor_value}).build()
+
+        # Verify initial state is set correctly before the read
+        assert len(initial_state) == 1
+        assert initial_state[0].stream.stream_state.__dict__[cursor_field] == initial_cursor_value
+
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
+        # When state is provided, the stream slices from the cursor value to config end date.
+        create_body = json.dumps(
+            {
+                "reportType": stream_name,
+                "marketplaceIds": [MARKETPLACE_ID],
+                "dataStartTime": initial_cursor_value,
+                "dataEndTime": CONFIG_END_DATE,
+            }
+        )
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        # Return a CSV with only the header row — no data rows
+        empty_csv_headers = (
+            "amazon-order-id\tmerchant-order-id\tshipment-id\tshipment-item-id\t"
+            "amazon-order-item-id\tmerchant-order-item-id\tpurchase-date\tpayments-date\t"
+            "shipment-date\treporting-date\tbuyer-email\tbuyer-name\tbuyer-phone-number\t"
+            "sku\tproduct-name\tquantity-shipped\tcurrency\titem-price\titem-tax\t"
+            "shipping-price\tshipping-tax\tgift-wrap-price\tgift-wrap-tax\tship-service-level\t"
+            "recipient-name\tship-address-1\tship-address-2\tship-address-3\tship-city\t"
+            "ship-state\tship-postal-code\tship-country\tship-phone-number\tbill-address-1\t"
+            "bill-address-2\tbill-address-3\tbill-city\tbill-state\tbill-postal-code\t"
+            "bill-country\titem-promotion-discount\tship-promotion-discount\tcarrier\t"
+            "tracking-number\testimated-arrival-date\tfulfillment-center-id\t"
+            "fulfillment-channel\tsales-channel\n"
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            HttpResponse(body=empty_csv_headers, status_code=HTTPStatus.OK),
+        )
+
+        output = self._read(stream_name, config(), state=initial_state)
+
+        # No records should be returned for an empty report document
+        assert len(output.records) == 0
+        # No errors should be raised — the report completed normally, just had no data
+        assert len(output.errors) == 0
+        # State should be emitted but cursor should not advance past the initial value
+        assert output.most_recent_state is not None
+        most_recent_state = output.most_recent_state.stream_state
+        assert pendulum.parse(most_recent_state.__dict__[cursor_field]) == pendulum.parse(initial_cursor_value)
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestVendorSalesReportsFullRefresh:
+    data_format = "json"
+    selling_program = ("RETAIL", "FRESH")
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor"),
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+            expecting_exception=expecting_exception,
+        )
+
+    @staticmethod
+    def _get_stream_name(selling_program: str) -> str:
+        return f"GET_VENDOR_FORECASTING_{selling_program}_REPORT"
+
+    @staticmethod
+    def _get_report_request_body(selling_program: str) -> str:
+        return json.dumps(
+            {
+                "reportType": "GET_VENDOR_FORECASTING_REPORT",
+                "marketplaceIds": [MARKETPLACE_ID],
+                "reportOptions": {"sellingProgram": selling_program},
+            }
+        )
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_report_when_read_then_return_records(self, selling_program: str, http_mocker: HttpMocker) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_compressed_report_when_read_then_return_records(self, selling_program: str, http_mocker: HttpMocker) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID, compressed=True),
+        )
+
+        # a workaround to pass compressed document to the mocked response
+        document_request = _download_document_request(_DOCUMENT_DOWNLOAD_URL).build()
+        document_response = _download_document_response(stream_name, data_format=self.data_format, compressed=True)
+        document_request_matcher = HttpRequestMatcher(document_request, minimum_number_of_expected_match=1)
+        # http_mocker._matchers.append(document_request_matcher)
+
+        http_mocker._mocker.get(
+            requests_mock.ANY,
+            additional_matcher=http_mocker._matches_wrapper(document_request_matcher),
+            response_list=[{"content": document_response.body, "status_code": document_response.status_code}],
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_http_status_500_then_200_when_create_report_then_retry_and_return_records(
+        self, selling_program: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            [response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR), _create_report_response(_REPORT_ID)],
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_http_status_500_then_200_when_retrieve_report_then_retry_and_return_records(
+        self, selling_program: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            [
+                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+                _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+            ],
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_http_status_500_then_200_when_get_document_url_then_retry_and_return_records(
+        self, selling_program: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            [
+                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+                _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+            ],
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_http_status_500_then_200_when_download_document_then_retry_and_return_records(
+        self, selling_program: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            [
+                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+                _download_document_response(stream_name, data_format=self.data_format),
+            ],
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_report_access_forbidden_when_read_then_no_records_and_error_logged(
+        self, selling_program: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+
+        # Mock GET /reports (ReportCreationRequester pre-check) returning empty list
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            response_with_status(status_code=HTTPStatus.FORBIDDEN),
+        )
+
+        output = self._read(stream_name, config())
+        message_on_access_forbidden = "Forbidden. You don't have permission to access this resource."
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert message_on_access_forbidden in output.errors[0].trace.error.message
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_report_status_cancelled_when_read_then_stream_skipped_with_no_records(
+        self, selling_program: str, http_mocker: HttpMocker
+    ) -> None:
+        """CANCELLED reports are mapped to SKIPPED status in the CDK — the partition is
+        silently dropped (no retries, no record fetching, no error)."""
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.CANCELLED),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == 0
+        assert len(output.errors) == 0
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_report_status_fatal_when_read_then_exception_raised(self, selling_program: str, http_mocker: HttpMocker) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+
+        # Use without_amz_date() because tick=True advances time, changing x-amz-date header.
+        # Provide 3 responses each to cover _DEFAULT_MAX_JOB_RETRY = 3 retry cycles.
+        http_mocker.get(
+            _get_reports_request().without_amz_date().build(),
+            [_get_reports_response()] * 3,
+        )
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).without_amz_date().build(),
+            [_create_report_response(_REPORT_ID)] * 3,
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).without_amz_date().build(),
+            [
+                _check_report_status_response(
+                    stream_name, processing_status=ReportProcessingStatus.FATAL, report_document_id=_REPORT_DOCUMENT_ID
+                )
+            ]
+            * 3,
+        )
+
+        output = self._read(stream_name, config().with_failed_retry_wait_time_in_seconds(1), expecting_exception=True)
+        assert output.errors[-1].trace.error.failure_type == FailureType.config_error
+        assert "At least one job could not be completed for slice {}" in output.errors[-1].trace.error.message
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_http_error_500_on_create_report_when_read_then_no_records_and_error_logged(
+        self, selling_program: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+
+        # Mock GET /reports (ReportCreationRequester pre-check) returning empty list
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+        )
+
+        message_on_backoff_exception = "Max retry limit reached after"
+
+        output = self._read(stream_name, config())
+
+        assert list(filter(lambda error: error.trace.error.failure_type == FailureType.config_error, output.errors))
+        assert_message_in_log_output(message=message_on_backoff_exception, entrypoint_output=output, log_level=Level.ERROR)
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestSalesAndTrafficReportRequestBody:
+    """
+    Tests validating that GET_SALES_AND_TRAFFIC_REPORT and GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH
+    streams include the correct reportOptions (asinGranularity) in the create report POST request body.
+    """
+
+    data_format = "json"
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+            expecting_exception=expecting_exception,
+        )
+
+    @staticmethod
+    def _get_report_request_body(report_options: dict, data_end_time: str = "2023-01-30T00:00:00Z") -> dict:
+        return {
+            "reportType": "GET_SALES_AND_TRAFFIC_REPORT",
+            "marketplaceIds": [MARKETPLACE_ID],
+            "dataStartTime": "2023-01-01T00:00:00Z",
+            "dataEndTime": data_end_time,
+            "reportOptions": report_options,
+        }
+
+    @HttpMocker()
+    def test_default_config_sends_asin_granularity_parent(self, http_mocker: HttpMocker) -> None:
+        """With default config (no asinGranularity set), reportOptions.asinGranularity = PARENT."""
+        stream_name = "GET_SALES_AND_TRAFFIC_REPORT"
+        http_mocker.clear_all_matchers()
+
+        create_report_request_body = self._get_report_request_body({"asinGranularity": "PARENT"}, data_end_time="2023-01-01T23:59:59Z")
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        mock_auth(http_mocker)
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config().with_end_date(pendulum.datetime(2023, 1, 2)))
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @HttpMocker()
+    def test_child_granularity_config_sends_asin_granularity_child(self, http_mocker: HttpMocker) -> None:
+        """With asinGranularity set to CHILD, reportOptions.asinGranularity = CHILD."""
+        stream_name = "GET_SALES_AND_TRAFFIC_REPORT"
+        http_mocker.clear_all_matchers()
+
+        create_report_request_body = self._get_report_request_body({"asinGranularity": "CHILD"}, data_end_time="2023-01-01T23:59:59Z")
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        mock_auth(http_mocker)
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config().with_asin_granularity("CHILD").with_end_date(pendulum.datetime(2023, 1, 2)))
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @HttpMocker()
+    def test_by_month_stream_sends_date_granularity_and_asin_granularity(self, http_mocker: HttpMocker) -> None:
+        """GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH includes both dateGranularity=MONTH and configured asinGranularity."""
+        stream_name = "GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH"
+        http_mocker.clear_all_matchers()
+
+        create_report_request_body = self._get_report_request_body({"dateGranularity": "MONTH", "asinGranularity": "SKU"})
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        mock_auth(http_mocker)
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response("GET_SALES_AND_TRAFFIC_REPORT", data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config().with_asin_granularity("SKU"))
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestVendorReportOptionsForwarding:
+    """
+    The four vendor retail analytics streams declare their own request_body_json, which replaces
+    rather than merges with the shared creation_requester, so configured Report Options used to be
+    validated and then dropped (issue #77617).
+
+    They now forward configured options, and - critically - still send no reportOptions key at all
+    when nothing is configured, so the request body for an unconfigured connection is unchanged.
+    The connector supplies no defaults of its own for these reports.
+    """
+
+    _VENDOR_STREAMS = (
+        "GET_VENDOR_SALES_REPORT",
+        "GET_VENDOR_INVENTORY_REPORT",
+        "GET_VENDOR_TRAFFIC_REPORT",
+        "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+    )
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor"),
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+        )
+
+    @staticmethod
+    def _expected_body(stream_name: str, report_options: Optional[dict]) -> dict:
+        # GET_VENDOR_INVENTORY_REPORT is a full-refresh snapshot: its request body carries no date
+        # window. The other three send the day-aligned window derived from the slice.
+        body = {"reportType": stream_name}
+        if stream_name != "GET_VENDOR_INVENTORY_REPORT":
+            body["dataStartTime"] = "2023-01-01T00:00:00Z"
+            body["dataEndTime"] = "2023-01-01T23:59:59Z"
+        body["marketplaceIds"] = [MARKETPLACE_ID]
+        if report_options is not None:
+            body["reportOptions"] = report_options
+        return body
+
+    def _mock_report_flow(self, http_mocker: HttpMocker, stream_name: str, body: dict) -> None:
+        http_mocker.clear_all_matchers()
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+        mock_auth(http_mocker)
+        # The byte-exact body matcher is the assertion: an unexpected or missing reportOptions
+        # key means no matcher matches and the read produces no records.
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(body)).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format="json"),
+        )
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_no_report_options_configured_when_read_then_report_options_omitted(
+        self, stream_name: str, http_mocker: HttpMocker
+    ) -> None:
+        """No configured options means no reportOptions key - the connector invents no defaults."""
+        self._mock_report_flow(http_mocker, stream_name, self._expected_body(stream_name, None))
+
+        output = self._read(stream_name, config().with_end_date(pendulum.datetime(2023, 1, 2)))
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_report_options_configured_when_read_then_options_sent(self, stream_name: str, http_mocker: HttpMocker) -> None:
+        """Configured options are forwarded verbatim, including reportPeriod."""
+        configured_options = {
+            "reportPeriod": "WEEK",
+            "distributorView": "SOURCING",
+            "sellingProgram": "FRESH",
+        }
+        self._mock_report_flow(http_mocker, stream_name, self._expected_body(stream_name, configured_options))
+
+        report_options = [
+            {
+                "report_name": stream_name,
+                "stream_name": stream_name,
+                "options_list": [{"option_name": name, "option_value": value} for name, value in configured_options.items()],
+            }
+        ]
+        output = self._read(
+            stream_name,
+            config().with_report_options_list(report_options).with_end_date(pendulum.datetime(2023, 1, 2)),
+        )
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @HttpMocker()
+    def test_given_report_options_for_other_stream_when_read_then_options_not_sent(self, http_mocker: HttpMocker) -> None:
+        """Options configured for another stream must not leak into this stream's request body."""
+        stream_name = "GET_VENDOR_SALES_REPORT"
+        self._mock_report_flow(http_mocker, stream_name, self._expected_body(stream_name, None))
+
+        report_options = [
+            {
+                "report_name": "GET_VENDOR_TRAFFIC_REPORT",
+                "stream_name": "GET_VENDOR_TRAFFIC_REPORT",
+                "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}],
+            }
+        ]
+        output = self._read(
+            stream_name,
+            config().with_report_options_list(report_options).with_end_date(pendulum.datetime(2023, 1, 2)),
+        )
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestVendorAnalyticsAvailabilityHoldback:
+    """
+    Amazon publishes the vendor retail analytics reports "72 hours after the close of the period"
+    (https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics). Requesting a day it
+    has not published yet makes the report FATAL with "The report data for the requested date range
+    is not yet available", which fails the stream rather than skipping the day, so the cursor holds
+    the newest requested day four calendar days back — a slice for day D closes at D 23:59:59 and is
+    published 72h after that, so four days is the smallest holdback that is safe at any time of day.
+
+    Every assertion here is a byte-exact create-report matcher: HttpMocker fails an unmatched
+    request, so a day requested inside the holdback window fails the test rather than passing
+    silently.
+    """
+
+    _VENDOR_STREAMS = (
+        "GET_VENDOR_SALES_REPORT",
+        "GET_VENDOR_TRAFFIC_REPORT",
+        "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+    )
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor"),
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+        )
+
+    @staticmethod
+    def _mock_report_flow(http_mocker: HttpMocker, stream_name: str, days: List[str]) -> None:
+        """Mock one full create/poll/download cycle per expected day, keyed by a byte-exact body."""
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), [_get_reports_response()] * len(days))
+        for index, day in enumerate(days):
+            report_id = f"{_REPORT_ID}_{index}"
+            document_id = f"{_REPORT_DOCUMENT_ID}_{index}"
+            download_url = f"{_DOCUMENT_DOWNLOAD_URL}/{index}"
+            body = {
+                "reportType": stream_name,
+                "dataStartTime": f"{day}T00:00:00Z",
+                "dataEndTime": f"{day}T23:59:59Z",
+                "marketplaceIds": [MARKETPLACE_ID],
+            }
+            http_mocker.post(
+                _create_report_request(stream_name).with_body(json.dumps(body)).build(),
+                _create_report_response(report_id),
+            )
+            http_mocker.get(
+                _check_report_status_request(report_id).build(),
+                _check_report_status_response(stream_name, report_document_id=document_id),
+            )
+            http_mocker.get(
+                _get_document_download_url_request(document_id).build(),
+                _get_document_download_url_response(download_url, document_id),
+            )
+            http_mocker.get(
+                _download_document_request(download_url).build(),
+                _download_document_response(stream_name, data_format="json"),
+            )
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_no_end_date_when_read_then_newest_requested_day_is_four_days_back(
+        self, stream_name: str, http_mocker: HttpMocker
+    ) -> None:
+        """
+        NOW is 2024-06-01T00:00:00Z, so the cursor's end bound is 2024-05-28T00:00:00Z. The bound is
+        exclusive, so the newest day requested is 2024-05-27 — published 2024-05-30T23:59:59Z, well
+        inside NOW.
+
+        2024-05-28 onwards is deliberately not mocked: requesting any of those days is the bug this
+        guards against.
+        """
+        self._mock_report_flow(http_mocker, stream_name, days=["2024-05-26", "2024-05-27"])
+
+        output = self._read(stream_name, config().without_end_date().with_start_date(pendulum.datetime(2024, 5, 26)))
+
+        assert len(output.records) == 2 * DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+        # Records alone are not enough: an unmocked day fails its own job and leaves the mocked
+        # days' records in place, so the error check is what actually pins the requested day set.
+        assert not output.errors
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_start_date_inside_holdback_window_when_read_then_no_report_requested(
+        self, stream_name: str, http_mocker: HttpMocker
+    ) -> None:
+        """
+        A start date newer than the holdback bound yields no slices rather than a failure.
+
+        No endpoint at all is mocked — not even the token refresh — so the read is only clean if it
+        makes no HTTP call whatsoever.
+        """
+        http_mocker.clear_all_matchers()
+
+        output = self._read(stream_name, config().without_end_date().with_start_date(pendulum.datetime(2024, 5, 30)))
+
+        assert output.records == []
+        assert not output.errors
+
+    @pytest.mark.parametrize("stream_name", _VENDOR_STREAMS)
+    @HttpMocker()
+    def test_given_explicit_end_date_when_read_then_holdback_not_applied(self, stream_name: str, http_mocker: HttpMocker) -> None:
+        """
+        An explicitly configured replication_end_date is honoured as-is, matching the pre-migration
+        Python connector where availability_sla_days only ever moved the "now" bound. 2024-05-31 is
+        inside the holdback window, so it is only requested because the config asked for it.
+        """
+        self._mock_report_flow(http_mocker, stream_name, days=["2024-05-31"])
+
+        output = self._read(
+            stream_name,
+            config().with_start_date(pendulum.datetime(2024, 5, 31)).with_end_date(pendulum.datetime(2024, 6, 1)),
+        )
+
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestVendorJsonReportsFullRefresh:
+    """Tests for vendor JSON report streams: Traffic, Net Pure Product Margin, and Real-Time Inventory."""
+
+    data_format = "json"
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor"),
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+            expecting_exception=expecting_exception,
+        )
+
+    @pytest.mark.parametrize(
+        "stream_name, create_report_body",
+        [
+            pytest.param(
+                "GET_VENDOR_TRAFFIC_REPORT",
+                {
+                    "reportType": "GET_VENDOR_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_traffic_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                {
+                    "reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_net_pure_product_margin_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                {
+                    "reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_real_time_inventory_report",
+            ),
+        ],
+    )
+    @HttpMocker()
+    def test_given_report_when_read_then_return_records(self, stream_name: str, create_report_body: dict, http_mocker: HttpMocker) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(create_report_body)).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        # These streams have P1D incremental sync; each daily slice returns 2 records
+        single_day_config = (
+            config().with_start_date(pendulum.parse(CONFIG_START_DATE)).with_end_date(pendulum.parse(CONFIG_START_DATE).add(days=1))
+        )
+        output = self._read(stream_name, single_day_config)
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(
+        "stream_name, create_report_body",
+        [
+            pytest.param(
+                "GET_VENDOR_TRAFFIC_REPORT",
+                {
+                    "reportType": "GET_VENDOR_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_traffic_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                {
+                    "reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_net_pure_product_margin_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                {
+                    "reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_real_time_inventory_report",
+            ),
+        ],
+    )
+    @HttpMocker()
+    def test_given_report_access_forbidden_when_read_then_config_error(
+        self, stream_name: str, create_report_body: dict, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(create_report_body)).build(),
+            response_with_status(status_code=HTTPStatus.FORBIDDEN),
+        )
+
+        single_day_config = (
+            config().with_start_date(pendulum.parse(CONFIG_START_DATE)).with_end_date(pendulum.parse(CONFIG_START_DATE).add(days=1))
+        )
+        output = self._read(stream_name, single_day_config)
+        message_on_access_forbidden = "Forbidden. You don't have permission to access this resource."
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert message_on_access_forbidden in output.errors[0].trace.error.message
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestVendorJsonReportsIncremental:
+    """Tests for incremental sync of vendor JSON report streams."""
+
+    data_format = "json"
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder, state: Optional[List[AirbyteStateMessage]] = None) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor"),
+            stream_name=stream_name,
+            sync_mode=SyncMode.incremental,
+            state=state,
+        )
+
+    @pytest.mark.parametrize(
+        "stream_name, cursor_field, create_report_body",
+        [
+            pytest.param(
+                "GET_VENDOR_TRAFFIC_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_traffic_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_net_pure_product_margin_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                "endTime",
+                {
+                    "reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_real_time_inventory_report",
+            ),
+        ],
+    )
+    @HttpMocker()
+    def test_given_state_when_read_incrementally_then_return_records(
+        self, stream_name: str, cursor_field: str, create_report_body: dict, http_mocker: HttpMocker
+    ) -> None:
+        cursor_value = "2023-01-29T00:00:00Z"
+        initial_state = StateBuilder().with_stream_state(stream_name, {cursor_field: cursor_value}).build()
+
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(create_report_body)).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config(), state=initial_state)
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(
+        "stream_name, cursor_field, create_report_body",
+        [
+            pytest.param(
+                "GET_VENDOR_TRAFFIC_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_traffic_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_net_pure_product_margin_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                "endTime",
+                {
+                    "reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_real_time_inventory_report",
+            ),
+        ],
+    )
+    @HttpMocker()
+    def test_given_off_midnight_state_when_incremental_read_then_report_window_is_day_aligned(
+        self, stream_name: str, cursor_field: str, create_report_body: dict, http_mocker: HttpMocker
+    ) -> None:
+        """Regression test for the off-midnight window drift (oncall #13097).
+
+        These P1D vendor streams replace the shared creation requester's ``request_body_json``
+        wholesale, so before the fix they sent no ``dataStartTime``/``dataEndTime`` at all while
+        still labelling every record with the raw, off-midnight slice end. The window must now be a
+        single day-aligned calendar day derived from the slice start day, and the emitted cursor
+        value must be day-aligned too so destination deduplication compares stable per-day values.
+
+        The mocked create-report matcher only matches the day-aligned body, so a missing or drifted
+        window would produce zero records and fail the assertions below.
+        """
+        initial_state = StateBuilder().with_stream_state(stream_name, {cursor_field: "2023-01-29T13:27:00Z"}).build()
+
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(create_report_body)).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config().with_end_date(pendulum.parse("2023-01-30T13:27:00Z")), state=initial_state)
+
+        assert not output.errors
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+        assert all(record.record.data.get(cursor_field) == "2023-01-29T23:59:59Z" for record in output.records)
+        # The day-aligned cursor is what stops the drift from recurring: the next slice starts at
+        # 2023-01-30T00:00:00Z (cursor_granularity is PT1S), so every later slice is day-aligned too.
+        assert output.most_recent_state.stream_state.__dict__[cursor_field] == "2023-01-29T23:59:59Z"
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestReportOptions:
+    """Tests that report_options_list config entries are reflected in the POST /reports request body."""
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+        )
+
+    @staticmethod
+    def _mock_report_flow(http_mocker: HttpMocker, stream_name: str, create_report_request: RequestBuilder) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.post(create_report_request.build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name),
+        )
+
+    @pytest.mark.parametrize("stream_name", ("GET_LEDGER_DETAIL_VIEW_DATA", "GET_LEDGER_SUMMARY_VIEW_DATA"))
+    @pytest.mark.parametrize("matching_key", ("stream_name", "report_name"))
+    @HttpMocker()
+    def test_given_report_options_list_when_read_then_options_included_in_request_body(
+        self, matching_key: str, stream_name: str, http_mocker: HttpMocker
+    ) -> None:
+        """When report_options_list is configured for a ledger stream (matched by either
+        stream_name or report_name - the latter covers legacy configs where stream_name is
+        a custom alias), the options must appear as reportOptions in the POST /reports body."""
+        configured_options = {"option1": "value1", "option2": "value2"}
+
+        self._mock_report_flow(
+            http_mocker,
+            stream_name,
+            RequestBuilder.create_report_endpoint(stream_name, report_options=configured_options),
+        )
+
+        # Both keys are required by the spec; only one of them matches the stream under test.
+        entry = {"stream_name": "custom_stream_alias", "report_name": "GET_SELLER_FEEDBACK_DATA", matching_key: stream_name}
+        entry["options_list"] = [{"option_name": k, "option_value": v} for k, v in configured_options.items()]
+        _config = config().with_report_options_list([entry])
+
+        output = self._read(stream_name, _config)
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @HttpMocker()
+    def test_given_report_options_for_other_stream_when_read_then_options_not_included_in_request_body(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """Options configured for a different stream must not leak into the ledger stream's
+        POST /reports request body - the reportOptions key must be omitted entirely."""
+        stream_name = "GET_LEDGER_DETAIL_VIEW_DATA"
+
+        # _create_report_request builds the body without a reportOptions key; the byte-exact
+        # body matcher fails if any options leak in.
+        self._mock_report_flow(http_mocker, stream_name, _create_report_request(stream_name))
+
+        _config = config().with_report_options_list(
+            [
+                {
+                    "stream_name": "GET_SELLER_FEEDBACK_DATA",
+                    "report_name": "GET_SELLER_FEEDBACK_DATA",
+                    "options_list": [{"option_name": "leaked", "option_value": "should_not_appear"}],
+                }
+            ]
+        )
+
+        output = self._read(stream_name, _config)
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS

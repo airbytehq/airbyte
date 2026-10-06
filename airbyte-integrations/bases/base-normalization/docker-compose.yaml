@@ -1,0 +1,22 @@
+version: "3.7"
+
+# this file only exists so that we can easily check that all of these images exist in docker hub in check_images_exist.sh
+services:
+  normalization:
+    image: airbyte/normalization:${VERSION}
+  normalization-mssql:
+    image: airbyte/normalization-mssql:${VERSION}
+  normalization-mysql:
+    image: airbyte/normalization-mysql:${VERSION}
+  normalization-oracle:
+    image: airbyte/normalization-oracle:${VERSION}
+  normalization-clickhouse:
+    image: airbyte/normalization-clickhouse:${VERSION}
+  normalization-snowflake:
+    image: airbyte/normalization-snowflake:${VERSION}
+  normalization-redshift:
+    image: airbyte/normalization-redshift:${VERSION}
+  normalization-tidb:
+    image: airbyte/normalization-tidb:${VERSION}
+  normalization-duckdb:
+    image: airbyte/normalization-duckdb:${VERSION}

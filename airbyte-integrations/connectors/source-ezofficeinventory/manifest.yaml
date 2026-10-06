@@ -1,0 +1,4122 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  A manifest only source for EZOfficeInventory.
+  https://ezo.io/ezofficeinventory/
+
+check:
+  type: CheckStream
+  stream_names:
+    - members
+
+definitions:
+  streams:
+    inventories:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /inventory.api
+          http_method: GET
+          request_parameters:
+            show_image_urls: "true"
+            show_document_urls: "true"
+            include_custom_fields: "true"
+            show_document_details: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - assets
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+      name: inventories
+      primary_key:
+        - identifier
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/inventories"
+    assets:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /assets.api
+          http_method: GET
+          request_parameters:
+            show_image_urls: "true"
+            show_document_urls: "true"
+            include_custom_fields: "true"
+            show_document_details: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - assets
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+      name: assets
+      primary_key:
+        - identifier
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/assets"
+    checked_out_assets:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /assets/filter.api
+          http_method: GET
+          request_parameters:
+            status: checked_out
+            show_image_urls: "true"
+            show_document_urls: "true"
+            include_custom_fields: "true"
+            show_document_details: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - assets
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+      name: checked_out_assets
+      primary_key:
+        - identifier
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/checked_out_assets"
+    asset_stocks:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /stock_assets.api
+          http_method: GET
+          request_parameters:
+            show_image_urls: "true"
+            show_document_urls: "true"
+            include_custom_fields: "true"
+            show_document_details: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - assets
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+      name: asset_stocks
+      primary_key:
+        - identifier
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/asset_stocks"
+    members:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /members.api
+          http_method: GET
+          request_parameters:
+            include_custom_fields: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - members
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+      name: members
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/members"
+    locations:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /locations/get_line_item_locations.api
+          http_method: GET
+          request_parameters:
+            status: all
+            include_custom_fields: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - locations
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+      name: locations
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locations"
+    groups:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /assets/classification_view.api
+          http_method: GET
+          request_parameters:
+            show_document_details: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - groups
+              - "*"
+              - group
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+      name: groups
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    subgroups:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /groups/get_sub_groups.api
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - sub_groups
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+      name: subgroups
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subgroups"
+    vendors:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /assets/vendors.api
+          http_method: GET
+          request_parameters:
+            include_custom_fields: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - vendors
+              - "*"
+              - vendor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+      name: vendors
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/vendors"
+    labels:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /print_label_templates.api
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - print_label_templates
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+      name: labels
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/labels"
+    custom_fields:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /assets/custom_attributes.api
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - custom_attributes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+      name: custom_fields
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_fields"
+    purchase_orders:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /purchase_orders.api
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - purchase_orders
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+      name: purchase_orders
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/purchase_orders"
+    bundles:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /bundles.api
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - bundles
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+      name: bundles
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bundles"
+    carts:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /baskets.api
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - baskets
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+      name: carts
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/carts"
+    inventory_histories:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /inventory/{{ stream_partition['inventory_id'] }}/history.api
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - history
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sequence_num
+              partition_field: inventory_id
+              stream:
+                $ref: "#/definitions/streams/inventories"
+      name: inventory_histories
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/inventory_histories"
+    asset_histories:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /assets/{{ stream_partition['asset_id'] }}/history_paginate.api
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - history
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sequence_num
+              partition_field: asset_id
+              stream:
+                $ref: "#/definitions/streams/assets"
+      name: asset_histories
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/asset_histories"
+    asset_stock_histories:
+      type: DeclarativeStream
+      state_migrations: []
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: false
+        requester:
+          use_cache: false
+          $ref: "#/definitions/base_requester"
+          path: /stock_assets/{{ stream_partition['asset_stock_id'] }}/history.api
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: Retry-After
+                    min_wait: 60
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Too many calls to the API - Rate Limit Hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - history
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sequence_num
+              partition_field: asset_stock_id
+              stream:
+                $ref: "#/definitions/streams/asset_stocks"
+      name: asset_stock_histories
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/asset_stock_histories"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['subdomain'] }}.ezofficeinventory.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config["api_key"] }}'
+      inject_into:
+        type: RequestOption
+        field_name: token
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/inventories"
+  - $ref: "#/definitions/streams/assets"
+  - $ref: "#/definitions/streams/checked_out_assets"
+  - $ref: "#/definitions/streams/asset_stocks"
+  - $ref: "#/definitions/streams/members"
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/subgroups"
+  - $ref: "#/definitions/streams/vendors"
+  - $ref: "#/definitions/streams/labels"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/purchase_orders"
+  - $ref: "#/definitions/streams/bundles"
+  - $ref: "#/definitions/streams/carts"
+  - $ref: "#/definitions/streams/inventory_histories"
+  - $ref: "#/definitions/streams/asset_histories"
+  - $ref: "#/definitions/streams/asset_stock_histories"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - subdomain
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your EZOfficeInventory Access Token. API Access is disabled by
+          default. Enable API Access in Settings > Integrations > API
+          Integration and click on Update to generate a new access token
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      subdomain:
+        type: string
+        description: >-
+          The company name used in signup, also visible in the URL when logged
+          in.
+        name: subdomain
+        order: 1
+        title: Subdomain
+        airbyte_secret: false
+      start_date:
+        type: string
+        description: >-
+          Earliest date you want to sync historical streams
+          (inventory_histories, asset_histories, asset_stock_histories) from
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    inventories: true
+    assets: true
+    checked_out_assets: true
+    asset_stocks: true
+    members: true
+    locations: true
+    groups: true
+    subgroups: true
+    vendors: true
+    labels: true
+    custom_fields: true
+    purchase_orders: true
+    bundles: true
+    carts: true
+    inventory_histories: true
+    asset_histories: true
+    asset_stock_histories: true
+  testedStreams:
+    inventories:
+      hasRecords: true
+      streamHash: 29ecada49a93b36ceec6486f760709a7abab5d25
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    assets:
+      hasRecords: true
+      streamHash: e0006e8c57b7964c2a503e1bf9d5a0a096f7bd15
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    checked_out_assets:
+      hasRecords: true
+      streamHash: 495b67ee76f4b21026b19e4bccdd685acd6db117
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    asset_stocks:
+      hasRecords: true
+      streamHash: b1fb8aaed2019418976d100e9edcb67366ab7f61
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    members:
+      hasRecords: true
+      streamHash: 287037a3ceb5e34519140effaeadfe28a9e9704b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    locations:
+      hasRecords: true
+      streamHash: c39d5bf600c7a83694f409d2943c09c1c825d73c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    groups:
+      hasRecords: true
+      streamHash: c97c0ea96306b177136aeba5e5c4b5294effdec7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    subgroups:
+      hasRecords: true
+      streamHash: f227aed8082dcd5e3512c9459f81c1b510564bb5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    vendors:
+      hasRecords: true
+      streamHash: c11526b731a2b9efef86fc845540bf83b093d96a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    labels:
+      hasRecords: true
+      streamHash: 5ad62dc7ad6898775ba4dc9e0ba23acf81d17b54
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    custom_fields:
+      hasRecords: true
+      streamHash: 6cebb61102c4b6ed727ed086b7603dd3789d2c27
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    purchase_orders:
+      hasRecords: true
+      streamHash: df779e9b5c887abbe5feae9f6f0e06b4b9af6276
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    bundles:
+      hasRecords: true
+      streamHash: 68cc5b45ec15448a27393caf69b6381757756523
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    carts:
+      streamHash: 31bca00f1e905e9fd86e7b1fa284020d684a9b44
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    inventory_histories:
+      streamHash: 5b2518818895cf344587215aaad07f6ec14767e3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    asset_histories:
+      streamHash: e7af190e95ba6b890a7f0f4c556e81151466fa12
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    asset_stock_histories:
+      streamHash: 5dab0cb42d57ea8f2792f6577079e90cc3388fe5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://ezo.io/ezofficeinventory/developers/
+
+schemas:
+  inventories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      Contact for Item:
+        type:
+          - string
+          - "null"
+      Internal Rating:
+        type:
+          - string
+          - "null"
+      action:
+        type:
+          - string
+          - "null"
+      advanced_pricing:
+        type:
+          - boolean
+          - "null"
+      arbitration:
+        type:
+          - number
+          - "null"
+      asset_type:
+        type:
+          - string
+          - "null"
+      audit_pending:
+        type:
+          - boolean
+          - "null"
+      available_for_sale:
+        type:
+          - boolean
+          - "null"
+      average_cost_per_unit:
+        type:
+          - string
+          - "null"
+      comments_count:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by_itam:
+        type:
+          - boolean
+          - "null"
+      current_meter_reading:
+        type:
+          - string
+          - "null"
+      default_excess_location_threshold:
+        type:
+          - number
+          - "null"
+      depreciation_calculation_required:
+        type:
+          - boolean
+          - "null"
+      display_image:
+        type:
+          - string
+          - "null"
+      document_urls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      documents:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            content_type:
+              type:
+                - string
+                - "null"
+            file_extension:
+              type:
+                - string
+                - "null"
+            file_name:
+              type:
+                - string
+                - "null"
+            file_size:
+              type:
+                - number
+                - "null"
+            file_url:
+              type:
+                - string
+                - "null"
+            upload_by_id:
+              type:
+                - number
+                - "null"
+            uploaded_at:
+              type:
+                - string
+                - "null"
+      documents_count:
+        type:
+          - number
+          - "null"
+      external_asset:
+        type:
+          - boolean
+          - "null"
+      featured_item:
+        type:
+          - boolean
+          - "null"
+      group_id:
+        type:
+          - number
+          - "null"
+      group_rule_provisioned:
+        type:
+          - boolean
+          - "null"
+      hidden_on_web_store:
+        type:
+          - boolean
+          - "null"
+      identifier:
+        type: string
+      image_urls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            original:
+              type:
+                - string
+                - "null"
+            small:
+              type:
+                - string
+                - "null"
+      initial_stock_quantity:
+        type:
+          - number
+          - "null"
+      inventory_threshold:
+        type:
+          - number
+          - "null"
+      is_processed:
+        type:
+          - boolean
+          - "null"
+      line_items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            created_at:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            location:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                apply_default_return_date_to_child_locations:
+                  type:
+                    - boolean
+                    - "null"
+                checkout_indefinitely:
+                  type:
+                    - boolean
+                    - "null"
+                city:
+                  type:
+                    - string
+                    - "null"
+                comments_count:
+                  type:
+                    - number
+                    - "null"
+                company_id:
+                  type:
+                    - number
+                    - "null"
+                country:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                default_return_duration:
+                  type:
+                    - number
+                    - "null"
+                default_return_duration_unit:
+                  type:
+                    - string
+                    - "null"
+                delta:
+                  type:
+                    - boolean
+                    - "null"
+                documents_count:
+                  type:
+                    - number
+                    - "null"
+                hidden_on_web_store:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                identification_number:
+                  type:
+                    - string
+                    - "null"
+                lft:
+                  type:
+                    - number
+                    - "null"
+                manual_lat_long:
+                  type:
+                    - boolean
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                parent_id:
+                  type:
+                    - number
+                    - "null"
+                rgt:
+                  type:
+                    - number
+                    - "null"
+                secure_code:
+                  type:
+                    - string
+                    - "null"
+                sequence_num:
+                  type:
+                    - number
+                    - "null"
+                state:
+                  type:
+                    - string
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                street1:
+                  type:
+                    - string
+                    - "null"
+                street2:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+                visible_on_web_store:
+                  type:
+                    - boolean
+                    - "null"
+                zipcode:
+                  type:
+                    - string
+                    - "null"
+            order_type:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            quantity_after_transaction:
+              type:
+                - number
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      location_based_threshold:
+        type:
+          - number
+          - "null"
+      location_id:
+        type:
+          - number
+          - "null"
+      location_name:
+        type:
+          - string
+          - "null"
+      location_number:
+        type:
+          - number
+          - "null"
+      location_rule_provisioned:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      net_quantity:
+        type:
+          - number
+          - "null"
+      network_asset:
+        type:
+          - boolean
+          - "null"
+      pending_verification:
+        type:
+          - boolean
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      product_changed_manually:
+        type:
+          - boolean
+          - "null"
+      product_model_number:
+        type:
+          - string
+          - "null"
+      rent_collected:
+        type:
+          - string
+          - "null"
+      rental_meter:
+        type:
+          - number
+          - "null"
+      rental_meter_threshold:
+        type:
+          - number
+          - "null"
+      sale_price:
+        type:
+          - string
+          - "null"
+      salvage_value:
+        type:
+          - string
+          - "null"
+      send_usage_meter_threshold_recurring_alert:
+        type:
+          - boolean
+          - "null"
+      sequence_num:
+        type:
+          - number
+          - "null"
+      services_count:
+        type:
+          - number
+          - "null"
+      sub_group_id:
+        type:
+          - number
+          - "null"
+      tax_free:
+        type:
+          - boolean
+          - "null"
+      update_counter:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      vendor_id:
+        type:
+          - number
+          - "null"
+      visible_on_web_store:
+        type:
+          - boolean
+          - "null"
+    required:
+      - identifier
+  assets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      Contact for Item:
+        type:
+          - string
+          - "null"
+      Internal Rating:
+        type:
+          - string
+          - "null"
+      action:
+        type:
+          - string
+          - "null"
+      advanced_pricing:
+        type:
+          - boolean
+          - "null"
+      arbitration:
+        type:
+          - number
+          - "null"
+      asset_type:
+        type:
+          - string
+          - "null"
+      assigned_to_user_email:
+        type:
+          - string
+          - "null"
+      assigned_to_user_name:
+        type:
+          - string
+          - "null"
+      audit_pending:
+        type:
+          - boolean
+          - "null"
+      available_for_sale:
+        type:
+          - boolean
+          - "null"
+      average_cost_per_unit:
+        type:
+          - string
+          - "null"
+      checkout_on:
+        type:
+          - string
+          - "null"
+      comments_count:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by_itam:
+        type:
+          - boolean
+          - "null"
+      current_meter_reading:
+        type:
+          - string
+          - "null"
+      default_excess_location_threshold:
+        type:
+          - number
+          - "null"
+      depreciated_value:
+        type:
+          - object
+          - "null"
+      depreciation_calculation_required:
+        type:
+          - boolean
+          - "null"
+      display_image:
+        type:
+          - string
+          - "null"
+      document_urls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      documents:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            content_type:
+              type:
+                - string
+                - "null"
+            file_extension:
+              type:
+                - string
+                - "null"
+            file_name:
+              type:
+                - string
+                - "null"
+            file_size:
+              type:
+                - number
+                - "null"
+            file_url:
+              type:
+                - string
+                - "null"
+            upload_by_id:
+              type:
+                - number
+                - "null"
+            uploaded_at:
+              type:
+                - string
+                - "null"
+      documents_count:
+        type:
+          - number
+          - "null"
+      external_asset:
+        type:
+          - boolean
+          - "null"
+      featured_item:
+        type:
+          - boolean
+          - "null"
+      group:
+        type:
+          - object
+          - "null"
+        properties:
+          depreciation_rates:
+            type:
+              - array
+              - "null"
+      group_id:
+        type:
+          - number
+          - "null"
+      group_rule_provisioned:
+        type:
+          - boolean
+          - "null"
+      hidden_on_web_store:
+        type:
+          - boolean
+          - "null"
+      identifier:
+        type: string
+      image_urls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            original:
+              type:
+                - string
+                - "null"
+            small:
+              type:
+                - string
+                - "null"
+      initial_stock_quantity:
+        type:
+          - number
+          - "null"
+      inventory_threshold:
+        type:
+          - number
+          - "null"
+      is_processed:
+        type:
+          - boolean
+          - "null"
+      last_history_id:
+        type:
+          - number
+          - "null"
+      location_based_threshold:
+        type:
+          - number
+          - "null"
+      location_id:
+        type:
+          - number
+          - "null"
+      location_name:
+        type:
+          - string
+          - "null"
+      location_number:
+        type:
+          - number
+          - "null"
+      location_rule_provisioned:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      net_quantity:
+        type:
+          - number
+          - "null"
+      network_asset:
+        type:
+          - boolean
+          - "null"
+      package_id:
+        type:
+          - number
+          - "null"
+      pending_verification:
+        type:
+          - boolean
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      product_changed_manually:
+        type:
+          - boolean
+          - "null"
+      product_id:
+        type:
+          - number
+          - "null"
+      product_identity:
+        type:
+          - string
+          - "null"
+      product_model_number:
+        type:
+          - string
+          - "null"
+      purchased_on:
+        type:
+          - string
+          - "null"
+      rent_collected:
+        type:
+          - string
+          - "null"
+      rental_meter:
+        type:
+          - number
+          - "null"
+      rental_meter_threshold:
+        type:
+          - number
+          - "null"
+      sale_price:
+        type:
+          - string
+          - "null"
+      salvage_value:
+        type:
+          - string
+          - "null"
+      send_usage_meter_threshold_recurring_alert:
+        type:
+          - boolean
+          - "null"
+      sequence_num:
+        type:
+          - number
+          - "null"
+      services_count:
+        type:
+          - number
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      sub_group_id:
+        type:
+          - number
+          - "null"
+      tax_free:
+        type:
+          - boolean
+          - "null"
+      update_counter:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      vendor_id:
+        type:
+          - number
+          - "null"
+      visible_on_web_store:
+        type:
+          - boolean
+          - "null"
+    required:
+      - identifier
+  checked_out_assets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      Contact for Item:
+        type:
+          - string
+          - "null"
+      Internal Rating:
+        type:
+          - string
+          - "null"
+      action:
+        type:
+          - string
+          - "null"
+      advanced_pricing:
+        type:
+          - boolean
+          - "null"
+      arbitration:
+        type:
+          - number
+          - "null"
+      asset_type:
+        type:
+          - string
+          - "null"
+      assigned_to_user_email:
+        type:
+          - string
+          - "null"
+      assigned_to_user_name:
+        type:
+          - string
+          - "null"
+      audit_pending:
+        type:
+          - boolean
+          - "null"
+      available_for_sale:
+        type:
+          - boolean
+          - "null"
+      average_cost_per_unit:
+        type:
+          - string
+          - "null"
+      checkout_on:
+        type:
+          - string
+          - "null"
+      comments_count:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by_itam:
+        type:
+          - boolean
+          - "null"
+      current_meter_reading:
+        type:
+          - string
+          - "null"
+      default_excess_location_threshold:
+        type:
+          - number
+          - "null"
+      depreciated_value:
+        type:
+          - object
+          - "null"
+      depreciation_calculation_required:
+        type:
+          - boolean
+          - "null"
+      display_image:
+        type:
+          - string
+          - "null"
+      document_urls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      documents:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            content_type:
+              type:
+                - string
+                - "null"
+            file_extension:
+              type:
+                - string
+                - "null"
+            file_name:
+              type:
+                - string
+                - "null"
+            file_size:
+              type:
+                - number
+                - "null"
+            file_url:
+              type:
+                - string
+                - "null"
+            upload_by_id:
+              type:
+                - number
+                - "null"
+            uploaded_at:
+              type:
+                - string
+                - "null"
+      documents_count:
+        type:
+          - number
+          - "null"
+      external_asset:
+        type:
+          - boolean
+          - "null"
+      featured_item:
+        type:
+          - boolean
+          - "null"
+      group:
+        type:
+          - object
+          - "null"
+        properties:
+          depreciation_rates:
+            type:
+              - array
+              - "null"
+      group_id:
+        type:
+          - number
+          - "null"
+      group_rule_provisioned:
+        type:
+          - boolean
+          - "null"
+      hidden_on_web_store:
+        type:
+          - boolean
+          - "null"
+      identifier:
+        type: string
+      image_urls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            original:
+              type:
+                - string
+                - "null"
+            small:
+              type:
+                - string
+                - "null"
+      initial_stock_quantity:
+        type:
+          - number
+          - "null"
+      inventory_threshold:
+        type:
+          - number
+          - "null"
+      is_processed:
+        type:
+          - boolean
+          - "null"
+      last_history_id:
+        type:
+          - number
+          - "null"
+      location_based_threshold:
+        type:
+          - number
+          - "null"
+      location_id:
+        type:
+          - number
+          - "null"
+      location_name:
+        type:
+          - string
+          - "null"
+      location_number:
+        type:
+          - number
+          - "null"
+      location_rule_provisioned:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      net_quantity:
+        type:
+          - number
+          - "null"
+      network_asset:
+        type:
+          - boolean
+          - "null"
+      pending_verification:
+        type:
+          - boolean
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      product_changed_manually:
+        type:
+          - boolean
+          - "null"
+      product_id:
+        type:
+          - number
+          - "null"
+      product_identity:
+        type:
+          - string
+          - "null"
+      product_model_number:
+        type:
+          - string
+          - "null"
+      purchased_on:
+        type:
+          - string
+          - "null"
+      rent_collected:
+        type:
+          - string
+          - "null"
+      rental_meter:
+        type:
+          - number
+          - "null"
+      rental_meter_threshold:
+        type:
+          - number
+          - "null"
+      sale_price:
+        type:
+          - string
+          - "null"
+      salvage_value:
+        type:
+          - string
+          - "null"
+      send_usage_meter_threshold_recurring_alert:
+        type:
+          - boolean
+          - "null"
+      sequence_num:
+        type:
+          - number
+          - "null"
+      services_count:
+        type:
+          - number
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      sub_group_id:
+        type:
+          - number
+          - "null"
+      tax_free:
+        type:
+          - boolean
+          - "null"
+      update_counter:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      vendor_id:
+        type:
+          - number
+          - "null"
+      visible_on_web_store:
+        type:
+          - boolean
+          - "null"
+    required:
+      - identifier
+  asset_stocks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      Contact for Item:
+        type:
+          - string
+          - "null"
+      Internal Rating:
+        type:
+          - string
+          - "null"
+      action:
+        type:
+          - string
+          - "null"
+      advanced_pricing:
+        type:
+          - boolean
+          - "null"
+      arbitration:
+        type:
+          - number
+          - "null"
+      asset_type:
+        type:
+          - string
+          - "null"
+      audit_pending:
+        type:
+          - boolean
+          - "null"
+      available_for_sale:
+        type:
+          - boolean
+          - "null"
+      available_quantity:
+        type:
+          - number
+          - "null"
+      average_cost_per_unit:
+        type:
+          - string
+          - "null"
+      comments_count:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by_itam:
+        type:
+          - boolean
+          - "null"
+      current_meter_reading:
+        type:
+          - string
+          - "null"
+      default_excess_location_threshold:
+        type:
+          - number
+          - "null"
+      depreciation_calculation_required:
+        type:
+          - boolean
+          - "null"
+      display_image:
+        type:
+          - string
+          - "null"
+      document_urls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      documents:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            content_type:
+              type:
+                - string
+                - "null"
+            file_extension:
+              type:
+                - string
+                - "null"
+            file_name:
+              type:
+                - string
+                - "null"
+            file_size:
+              type:
+                - number
+                - "null"
+            file_url:
+              type:
+                - string
+                - "null"
+            upload_by_id:
+              type:
+                - number
+                - "null"
+            uploaded_at:
+              type:
+                - string
+                - "null"
+      documents_count:
+        type:
+          - number
+          - "null"
+      external_asset:
+        type:
+          - boolean
+          - "null"
+      featured_item:
+        type:
+          - boolean
+          - "null"
+      group_id:
+        type:
+          - number
+          - "null"
+      group_rule_provisioned:
+        type:
+          - boolean
+          - "null"
+      hidden_on_web_store:
+        type:
+          - boolean
+          - "null"
+      identifier:
+        type: string
+      image_urls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            original:
+              type:
+                - string
+                - "null"
+            small:
+              type:
+                - string
+                - "null"
+      initial_stock_quantity:
+        type:
+          - number
+          - "null"
+      inventory_threshold:
+        type:
+          - number
+          - "null"
+      is_processed:
+        type:
+          - boolean
+          - "null"
+      line_items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            created_at:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            location:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                apply_default_return_date_to_child_locations:
+                  type:
+                    - boolean
+                    - "null"
+                checkout_indefinitely:
+                  type:
+                    - boolean
+                    - "null"
+                city:
+                  type:
+                    - string
+                    - "null"
+                comments_count:
+                  type:
+                    - number
+                    - "null"
+                company_id:
+                  type:
+                    - number
+                    - "null"
+                country:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                default_return_duration:
+                  type:
+                    - number
+                    - "null"
+                default_return_duration_unit:
+                  type:
+                    - string
+                    - "null"
+                delta:
+                  type:
+                    - boolean
+                    - "null"
+                documents_count:
+                  type:
+                    - number
+                    - "null"
+                hidden_on_web_store:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                identification_number:
+                  type:
+                    - string
+                    - "null"
+                lft:
+                  type:
+                    - number
+                    - "null"
+                manual_lat_long:
+                  type:
+                    - boolean
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                parent_id:
+                  type:
+                    - number
+                    - "null"
+                rgt:
+                  type:
+                    - number
+                    - "null"
+                secure_code:
+                  type:
+                    - string
+                    - "null"
+                sequence_num:
+                  type:
+                    - number
+                    - "null"
+                state:
+                  type:
+                    - string
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                street1:
+                  type:
+                    - string
+                    - "null"
+                street2:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+                visible_on_web_store:
+                  type:
+                    - boolean
+                    - "null"
+                zipcode:
+                  type:
+                    - string
+                    - "null"
+            order_type:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            quantity_after_transaction:
+              type:
+                - number
+                - "null"
+            remaining_quantity:
+              type:
+                - number
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      location_based_threshold:
+        type:
+          - number
+          - "null"
+      location_id:
+        type:
+          - number
+          - "null"
+      location_name:
+        type:
+          - string
+          - "null"
+      location_number:
+        type:
+          - number
+          - "null"
+      location_rule_provisioned:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      net_quantity:
+        type:
+          - number
+          - "null"
+      network_asset:
+        type:
+          - boolean
+          - "null"
+      pending_verification:
+        type:
+          - boolean
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      product_changed_manually:
+        type:
+          - boolean
+          - "null"
+      product_model_number:
+        type:
+          - string
+          - "null"
+      rent_collected:
+        type:
+          - string
+          - "null"
+      rental_meter:
+        type:
+          - number
+          - "null"
+      rental_meter_threshold:
+        type:
+          - number
+          - "null"
+      reorder_quantity:
+        type:
+          - number
+          - "null"
+      sale_price:
+        type:
+          - string
+          - "null"
+      salvage_value:
+        type:
+          - string
+          - "null"
+      send_usage_meter_threshold_recurring_alert:
+        type:
+          - boolean
+          - "null"
+      sequence_num:
+        type:
+          - number
+          - "null"
+      services_count:
+        type:
+          - number
+          - "null"
+      sub_group_id:
+        type:
+          - number
+          - "null"
+      tax_free:
+        type:
+          - boolean
+          - "null"
+      update_counter:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      vendor_id:
+        type:
+          - number
+          - "null"
+      visible_on_web_store:
+        type:
+          - boolean
+          - "null"
+    required:
+      - identifier
+  members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      alert_type:
+        type:
+          - string
+          - "null"
+      already_rated:
+        type:
+          - boolean
+          - "null"
+      attach_invoice_with_order_alerts:
+        type:
+          - boolean
+          - "null"
+      authorization_amount:
+        type:
+          - number
+          - "null"
+      auto_sync_with_ldap:
+        type:
+          - boolean
+          - "null"
+      automation_user:
+        type:
+          - boolean
+          - "null"
+      cc_business_in_alerts:
+        type:
+          - boolean
+          - "null"
+      cc_secondary_emails_in_alerts:
+        type:
+          - boolean
+          - "null"
+      collect_tax:
+        type:
+          - string
+          - "null"
+      comments_count:
+        type:
+          - number
+          - "null"
+      compact_view:
+        type:
+          - boolean
+          - "null"
+      company_default_payment_terms:
+        type:
+          - boolean
+          - "null"
+      contact_type:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - number
+          - "null"
+      created_by_scim:
+        type:
+          - boolean
+          - "null"
+      creation_source:
+        type:
+          - string
+          - "null"
+      credit_memo_amount:
+        type:
+          - string
+          - "null"
+      documents_count:
+        type:
+          - number
+          - "null"
+      dummy_location_member:
+        type:
+          - boolean
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      employee_identification_number:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      full_name:
+        type:
+          - string
+          - "null"
+      guest_user:
+        type:
+          - boolean
+          - "null"
+      hourly_rate:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_gsuite_user:
+        type:
+          - boolean
+          - "null"
+      is_ldap_user:
+        type:
+          - boolean
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      password_changed_at:
+        type:
+          - string
+          - "null"
+      role_id:
+        type:
+          - number
+          - "null"
+      role_name:
+        type:
+          - string
+          - "null"
+      saml_user:
+        type:
+          - boolean
+          - "null"
+      secure_code:
+        type:
+          - string
+          - "null"
+      services_count:
+        type:
+          - number
+          - "null"
+      settings_access:
+        type:
+          - boolean
+          - "null"
+      show_announcement:
+        type:
+          - boolean
+          - "null"
+      show_app_updates:
+        type:
+          - boolean
+          - "null"
+      single_step_addresses_qr_printing:
+        type:
+          - boolean
+          - "null"
+      single_step_baskets_qr_printing:
+        type:
+          - boolean
+          - "null"
+      single_step_bundles_qr_printing:
+        type:
+          - boolean
+          - "null"
+      single_step_contacts_qr_printing:
+        type:
+          - boolean
+          - "null"
+      single_step_customers_qr_printing:
+        type:
+          - boolean
+          - "null"
+      single_step_locations_qr_printing:
+        type:
+          - boolean
+          - "null"
+      single_step_members_qr_printing:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      stock_asset_current_checkout_view:
+        type:
+          - boolean
+          - "null"
+      stock_asset_group_by_column:
+        type:
+          - string
+          - "null"
+      subscribed_to_emails:
+        type:
+          - boolean
+          - "null"
+      unseen_app_updates_count:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      use_business_contact_details:
+        type:
+          - boolean
+          - "null"
+      user_listing_id:
+        type:
+          - number
+          - "null"
+      web_store_signup:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  locations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      comments_count:
+        type:
+          - number
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      delta:
+        type:
+          - boolean
+          - "null"
+      documents_count:
+        type:
+          - number
+          - "null"
+      hidden_on_web_store:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      identification_number:
+        type:
+          - string
+          - "null"
+      manual_lat_long:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      parent_id:
+        type:
+          - number
+          - "null"
+      secure_code:
+        type:
+          - string
+          - "null"
+      sequence_num:
+        type:
+          - number
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      street1:
+        type:
+          - string
+          - "null"
+      street2:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      visible_on_web_store:
+        type:
+          - boolean
+          - "null"
+      zipcode:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      allow_staff_to_set_checkout_duration:
+        type:
+          - boolean
+          - "null"
+      asset_depreciation_mode:
+        type:
+          - string
+          - "null"
+      assets_count:
+        type:
+          - number
+          - "null"
+      company_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      delta:
+        type:
+          - boolean
+          - "null"
+      depreciation_rates:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            created_at:
+              type:
+                - string
+                - "null"
+            depreciation_method_id:
+              type:
+                - number
+                - "null"
+            depreciation_method_name:
+              type:
+                - string
+                - "null"
+            group_id:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            rate:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+            useful_life:
+              type:
+                - number
+                - "null"
+      documents:
+        type:
+          - array
+          - "null"
+      documents_count:
+        type:
+          - number
+          - "null"
+      enable_service_triage:
+        type:
+          - boolean
+          - "null"
+      hidden_on_web_store:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      indefinite_triage_completion_period:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      staff_checkout_duration_days:
+        type:
+          - number
+          - "null"
+      staff_checkout_duration_hours:
+        type:
+          - number
+          - "null"
+      staff_checkout_duration_mins:
+        type:
+          - number
+          - "null"
+      staff_checkout_duration_months:
+        type:
+          - number
+          - "null"
+      staff_checkout_duration_weeks:
+        type:
+          - number
+          - "null"
+      triage_completion_period:
+        type:
+          - number
+          - "null"
+      triage_completion_period_basis:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      visible_on_web_store:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  subgroups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      allow_staff_to_set_checkout_duration:
+        type:
+          - boolean
+          - "null"
+      assets_count:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      enable_service_triage:
+        type:
+          - boolean
+          - "null"
+      group_id:
+        type:
+          - number
+          - "null"
+      hidden_on_web_store:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      indefinite_triage_completion_period:
+        type:
+          - boolean
+          - "null"
+      lft:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      rgt:
+        type:
+          - number
+          - "null"
+      staff_checkout_duration_days:
+        type:
+          - number
+          - "null"
+      staff_checkout_duration_hours:
+        type:
+          - number
+          - "null"
+      staff_checkout_duration_mins:
+        type:
+          - number
+          - "null"
+      staff_checkout_duration_months:
+        type:
+          - number
+          - "null"
+      staff_checkout_duration_weeks:
+        type:
+          - number
+          - "null"
+      subgroup_path:
+        type:
+          - string
+          - "null"
+      triage_completion_period:
+        type:
+          - number
+          - "null"
+      triage_completion_period_basis:
+        type:
+          - string
+          - "null"
+      triage_same_as_group:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      visible_on_web_store:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  vendors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      assets_count:
+        type:
+          - number
+          - "null"
+      company_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      delta:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      services_count:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  labels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      default:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      template_type:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  custom_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      options:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  purchase_orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      approver_type:
+        type:
+          - string
+          - "null"
+      company_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - number
+          - "null"
+      delta:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      net_amount:
+        type:
+          - string
+          - "null"
+      paid_amount:
+        type:
+          - string
+          - "null"
+      payable_amount:
+        type:
+          - string
+          - "null"
+      po_type:
+        type:
+          - string
+          - "null"
+      purchase_orders_assets:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            company_id:
+              type:
+                - number
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            delivery_location_same_as_po:
+              type:
+                - boolean
+                - "null"
+            group_id:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            line_total:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            original_quantity:
+              type:
+                - number
+                - "null"
+            price:
+              type:
+                - string
+                - "null"
+            purchase_order_id:
+              type:
+                - number
+                - "null"
+            purchase_order_line_item_id:
+              type:
+                - number
+                - "null"
+            purchase_order_line_item_type:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            quantity_received:
+              type:
+                - number
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            sub_group_id:
+              type:
+                - number
+                - "null"
+            tax_free:
+              type:
+                - boolean
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      requested_by_id:
+        type:
+          - number
+          - "null"
+      sequence_num:
+        type:
+          - number
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      tax_amounts:
+        type:
+          - object
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      vendor_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  bundles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      available_bundles:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      document_urls:
+        type:
+          - array
+          - "null"
+      image_thumbnail_url:
+        type:
+          - string
+          - "null"
+      image_url:
+        type:
+          - string
+          - "null"
+      items_per_bundle:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      sequence_num:
+        type:
+          - number
+          - "null"
+      state_label:
+        type:
+          - string
+          - "null"
+      total_bundles:
+        type:
+          - number
+          - "null"
+  carts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      basket_payment_histories:
+        type:
+          - array
+          - "null"
+      basket_recurring_line_items:
+        type:
+          - array
+          - "null"
+      basket_state:
+        type:
+          - string
+          - "null"
+      baskets_sub_rent_items:
+        type:
+          - array
+          - "null"
+      best_pricing_applies:
+        type:
+          - boolean
+          - "null"
+      bill_from:
+        type:
+          - string
+          - "null"
+      bundle_pricing_adjustments:
+        type:
+          - array
+          - "null"
+      bundle_snapshot_applied:
+        type:
+          - boolean
+          - "null"
+      checked_out_by_id:
+        type:
+          - number
+          - "null"
+      checked_out_on:
+        type:
+          - string
+          - "null"
+      checked_out_to_id:
+        type:
+          - number
+          - "null"
+      comments_count:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_attributes:
+        type:
+          - array
+          - "null"
+      custom_entries:
+        type:
+          - array
+          - "null"
+      damage_amount:
+        type:
+          - string
+          - "null"
+      delivery_cost:
+        type:
+          - string
+          - "null"
+      delta:
+        type:
+          - boolean
+          - "null"
+      documents_count:
+        type:
+          - number
+          - "null"
+      dynamic_line_items:
+        type:
+          - array
+          - "null"
+      enable_customers_pricing:
+        type:
+          - boolean
+          - "null"
+      enable_working_days:
+        type:
+          - boolean
+          - "null"
+      fixed_asset_rents:
+        type:
+          - array
+          - "null"
+      hide_time:
+        type:
+          - boolean
+          - "null"
+      inclusive_time_orders:
+        type:
+          - boolean
+          - "null"
+      inventory_prices:
+        type:
+          - array
+          - "null"
+      is_sold:
+        type:
+          - boolean
+          - "null"
+      item_level_charge:
+        type:
+          - string
+          - "null"
+      item_level_discount:
+        type:
+          - string
+          - "null"
+      item_level_discount_applied:
+        type:
+          - boolean
+          - "null"
+      late_fee_amount:
+        type:
+          - string
+          - "null"
+      late_fee_applied:
+        type:
+          - boolean
+          - "null"
+      late_fees:
+        type:
+          - array
+          - "null"
+      line_item_damages_applied:
+        type:
+          - boolean
+          - "null"
+      location_for_delivery:
+        type:
+          - boolean
+          - "null"
+      location_for_pickup:
+        type:
+          - boolean
+          - "null"
+      location_id:
+        type:
+          - number
+          - "null"
+      max_verification_count:
+        type:
+          - number
+          - "null"
+      net_amount:
+        type:
+          - number
+          - "null"
+      net_amount_modified:
+        type:
+          - boolean
+          - "null"
+      net_order_discount:
+        type:
+          - string
+          - "null"
+      no_of_days_in_month:
+        type:
+          - string
+          - "null"
+      order_discount:
+        type:
+          - string
+          - "null"
+      order_line_items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            asset:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                sequence_num:
+                  type:
+                    - number
+                    - "null"
+            id:
+              type:
+                - number
+                - "null"
+      order_state:
+        type:
+          - string
+          - "null"
+      order_type:
+        type:
+          - string
+          - "null"
+      overage_charge:
+        type:
+          - string
+          - "null"
+      payment_term_edited:
+        type:
+          - boolean
+          - "null"
+      persist_items_present_in_order_location:
+        type:
+          - boolean
+          - "null"
+      persist_location_based_searching:
+        type:
+          - boolean
+          - "null"
+      persist_only_available_assets_check:
+        type:
+          - boolean
+          - "null"
+      persist_show_only_available_bundles:
+        type:
+          - boolean
+          - "null"
+      pickup_cost:
+        type:
+          - string
+          - "null"
+      pre_paid_amount:
+        type:
+          - string
+          - "null"
+      prices_calculated_by_snapshot:
+        type:
+          - boolean
+          - "null"
+      pricing_coupon_discount:
+        type:
+          - string
+          - "null"
+      pricing_model:
+        type:
+          - string
+          - "null"
+      promotional_discount:
+        type:
+          - string
+          - "null"
+      qb_tax_amount:
+        type:
+          - string
+          - "null"
+      qbd_txn_date:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - number
+          - "null"
+      quickbooks_last_sync_order_status:
+        type:
+          - number
+          - "null"
+      quickbooks_last_sync_payment_status:
+        type:
+          - number
+          - "null"
+      quickbooks_sync_failed_count:
+        type:
+          - number
+          - "null"
+      refund_amount:
+        type:
+          - string
+          - "null"
+      resource_type:
+        type:
+          - string
+          - "null"
+      rules_and_coupons_enabled:
+        type:
+          - boolean
+          - "null"
+      sage_last_sync_order_status:
+        type:
+          - number
+          - "null"
+      sage_last_sync_payment_status:
+        type:
+          - number
+          - "null"
+      secure_code:
+        type:
+          - string
+          - "null"
+      sequence_num:
+        type:
+          - number
+          - "null"
+      service_offering_prices:
+        type:
+          - array
+          - "null"
+      skip_auto_accounting_syncing:
+        type:
+          - boolean
+          - "null"
+      state:
+        type:
+          - number
+          - "null"
+      stock_asset_rents:
+        type:
+          - array
+          - "null"
+      sync_qbd_discount_as_service:
+        type:
+          - boolean
+          - "null"
+      tax:
+        type:
+          - string
+          - "null"
+      tax_amounts:
+        type:
+          - array
+          - "null"
+      total_expenses:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      usage_charge:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+      xero_last_sync_order_status:
+        type:
+          - number
+          - "null"
+      xero_last_sync_payment_status:
+        type:
+          - number
+          - "null"
+      xero_sync_failed_count:
+        type:
+          - number
+          - "null"
+  inventory_histories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      agreement_accepted:
+        type:
+          - boolean
+          - "null"
+      asset_name:
+        type:
+          - string
+          - "null"
+      basket_asset_id:
+        type:
+          - number
+          - "null"
+      basket_id:
+        type:
+          - number
+          - "null"
+      company_id:
+        type:
+          - number
+          - "null"
+      cost_price:
+        type:
+          - string
+          - "null"
+      cost_valuation_method:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - number
+          - "null"
+      for_retiring_checked_out_stock:
+        type:
+          - boolean
+          - "null"
+      is_custody_transfer:
+        type:
+          - boolean
+          - "null"
+      is_transfer:
+        type:
+          - boolean
+          - "null"
+      order_type:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - number
+          - "null"
+      quantity_after_transaction:
+        type:
+          - number
+          - "null"
+      unit_cost_price:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            line_item:
+              type:
+                - number
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            unit_price:
+              type:
+                - string
+                - "null"
+      updated_at:
+        type: string
+      user_full_name:
+        type:
+          - string
+          - "null"
+    required:
+      - updated_at
+  asset_histories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      action_source:
+        type:
+          - string
+          - "null"
+      assigned_asset:
+        type:
+          - string
+          - "null"
+      assigned_to_id:
+        type:
+          - number
+          - "null"
+      assigned_to_name:
+        type:
+          - string
+          - "null"
+      assigned_to_type:
+        type:
+          - string
+          - "null"
+      basket_asset_id:
+        type:
+          - number
+          - "null"
+      basket_id:
+        type:
+          - number
+          - "null"
+      checked_out_duration_in_seconds:
+        type:
+          - number
+          - "null"
+      checkin_on:
+        type:
+          - string
+          - "null"
+      checkout_on:
+        type:
+          - string
+          - "null"
+      company_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - number
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      is_checkout:
+        type:
+          - boolean
+          - "null"
+      location_id:
+        type:
+          - number
+          - "null"
+      past_checkout:
+        type:
+          - boolean
+          - "null"
+      rent_collected:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - updated_at
+  asset_stock_histories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      agreement_accepted:
+        type:
+          - boolean
+          - "null"
+      asset_name:
+        type:
+          - string
+          - "null"
+      company_id:
+        type:
+          - number
+          - "null"
+      cost_price:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      for_retiring_checked_out_stock:
+        type:
+          - boolean
+          - "null"
+      is_custody_transfer:
+        type:
+          - boolean
+          - "null"
+      is_transfer:
+        type:
+          - boolean
+          - "null"
+      order_type:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - number
+          - "null"
+      quantity_after_transaction:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type: string
+      user_full_name:
+        type:
+          - string
+          - "null"
+    required:
+      - updated_at

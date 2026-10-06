@@ -1,0 +1,41 @@
+[
+  {
+    "id": "proj001",
+    "slug": "old-project-1",
+    "name": "Old Project 1",
+    "platform": "javascript",
+    "dateCreated": "2024-01-10T08:00:00Z",
+    "status": "active",
+    "organization": {
+      "id": "org123",
+      "slug": "test-org",
+      "name": "Test Organization"
+    }
+  },
+  {
+    "id": "proj002",
+    "slug": "old-project-2",
+    "name": "Old Project 2",
+    "platform": "python",
+    "dateCreated": "2024-01-12T14:00:00Z",
+    "status": "active",
+    "organization": {
+      "id": "org123",
+      "slug": "test-org",
+      "name": "Test Organization"
+    }
+  },
+  {
+    "id": "proj456",
+    "slug": "new-project",
+    "name": "New Project",
+    "platform": "python",
+    "dateCreated": "2024-01-20T10:00:00Z",
+    "status": "active",
+    "organization": {
+      "id": "org123",
+      "slug": "test-org",
+      "name": "Test Organization"
+    }
+  }
+]

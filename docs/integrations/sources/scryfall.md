@@ -1,0 +1,129 @@
+# Scryfall
+
+This connector syncs Magic: The Gathering card, set, and card symbol data from the [Scryfall API](https://scryfall.com/docs/api).
+
+## Prerequisites
+
+None. The Scryfall API is public and doesn't require an account or API key.
+
+## Setup guide
+
+This connector has no configuration options. Create a Scryfall source in Airbyte, give it a name, and select **Set up source**.
+
+## Supported sync modes
+
+This connector supports [Full Refresh](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes) syncs only. It doesn't support incremental syncs.
+
+## Supported streams
+
+| Stream | Scryfall endpoint | Primary key | Description |
+| ------ | ----------------- | ----------- | ----------- |
+| `cards` | [`GET /cards/search`](https://scryfall.com/docs/api/cards/search) | `id` | Cards returned by a search for `*`. See [Cards stream coverage](#cards-stream-coverage). |
+| `sets` | [`GET /sets`](https://scryfall.com/docs/api/sets/all) | `id` | All sets on Scryfall. |
+| `symbols` | [`GET /symbology`](https://scryfall.com/docs/api/card-symbols/all) | `symbol` | All card symbols, such as mana and tap symbols. |
+
+### Cards stream coverage
+
+The `cards` stream runs a Scryfall full-text search with the query `*` and Scryfall's default search options. Because of those defaults, the stream doesn't contain every card object in Scryfall's database:
+
+- Reprints are rolled up, so you get one printing of each unique card rather than every printing.
+- Only English cards are included.
+- Extras, such as tokens and planes, are excluded.
+- Rare card variations are excluded.
+
+The connector doesn't expose options to change this behavior. If you need every printing in every language, use Scryfall's [bulk data files](https://scryfall.com/docs/api/bulk-data) instead.
+
+## Limitations
+
+### Rate limits
+
+Scryfall enforces [hard rate limits](https://scryfall.com/docs/api/rate-limits): 2 requests per second for `/cards/search`, and 10 requests per second for other endpoints. The search endpoint returns 175 cards per page, so a full sync of the `cards` stream takes roughly 200 requests. If Scryfall responds with HTTP 429, the connector retries the request with backoff.
+
+### Sync frequency
+
+Scryfall only updates card prices once per day, and gameplay data such as card names and Oracle text changes less often. Syncing more than once a day doesn't return new prices.
+
+## Troubleshooting
+
+Scryfall requires every request to include a `User-Agent` and `Accept` header, and it rejects requests that use a default HTTP library user agent with HTTP 400. Versions of this connector before 0.0.66 don't send these headers, so connection checks and syncs fail. If you see HTTP 400 errors, upgrade to version 0.0.66 or later.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.0.67 | 2026-10-06 | [88025](https://github.com/airbytehq/airbyte/pull/88025) | Update dependencies |
+| 0.0.66 | 2026-10-03 | [87644](https://github.com/airbytehq/airbyte/pull/87644) | Send a custom User-Agent (Scryfall rejects default HTTP-library agents with 400) |
+| 0.0.65 | 2026-09-29 | [87339](https://github.com/airbytehq/airbyte/pull/87339) | Update dependencies |
+| 0.0.64 | 2026-09-22 | [86781](https://github.com/airbytehq/airbyte/pull/86781) | Update dependencies |
+| 0.0.63 | 2026-09-15 | [86218](https://github.com/airbytehq/airbyte/pull/86218) | Update dependencies |
+| 0.0.62 | 2026-09-08 | [85656](https://github.com/airbytehq/airbyte/pull/85656) | Update dependencies |
+| 0.0.61 | 2026-08-18 | [84734](https://github.com/airbytehq/airbyte/pull/84734) | Update dependencies |
+| 0.0.60 | 2026-08-11 | [84093](https://github.com/airbytehq/airbyte/pull/84093) | Update dependencies |
+| 0.0.59 | 2026-08-04 | [83609](https://github.com/airbytehq/airbyte/pull/83609) | Update dependencies |
+| 0.0.58 | 2026-07-28 | [83087](https://github.com/airbytehq/airbyte/pull/83087) | Update dependencies |
+| 0.0.57 | 2026-07-21 | [82586](https://github.com/airbytehq/airbyte/pull/82586) | Update dependencies |
+| 0.0.56 | 2026-07-14 | [82003](https://github.com/airbytehq/airbyte/pull/82003) | Update dependencies |
+| 0.0.55 | 2026-06-30 | [81215](https://github.com/airbytehq/airbyte/pull/81215) | Update dependencies |
+| 0.0.54 | 2026-06-23 | [80646](https://github.com/airbytehq/airbyte/pull/80646) | Update dependencies |
+| 0.0.53 | 2026-06-16 | [80026](https://github.com/airbytehq/airbyte/pull/80026) | Update dependencies |
+| 0.0.52 | 2026-06-09 | [79488](https://github.com/airbytehq/airbyte/pull/79488) | Update dependencies |
+| 0.0.51 | 2026-06-02 | [78953](https://github.com/airbytehq/airbyte/pull/78953) | Update dependencies |
+| 0.0.50 | 2026-04-28 | [77403](https://github.com/airbytehq/airbyte/pull/77403) | Update dependencies |
+| 0.0.49 | 2026-04-21 | [76766](https://github.com/airbytehq/airbyte/pull/76766) | Update dependencies |
+| 0.0.48 | 2026-03-31 | [75857](https://github.com/airbytehq/airbyte/pull/75857) | Update dependencies |
+| 0.0.47 | 2026-03-17 | [74963](https://github.com/airbytehq/airbyte/pull/74963) | Update dependencies |
+| 0.0.46 | 2026-02-24 | [73747](https://github.com/airbytehq/airbyte/pull/73747) | Update dependencies |
+| 0.0.45 | 2026-02-03 | [72553](https://github.com/airbytehq/airbyte/pull/72553) | Update dependencies |
+| 0.0.44 | 2026-01-20 | [72094](https://github.com/airbytehq/airbyte/pull/72094) | Update dependencies |
+| 0.0.43 | 2026-01-14 | [71515](https://github.com/airbytehq/airbyte/pull/71515) | Update dependencies |
+| 0.0.42 | 2025-12-18 | [70761](https://github.com/airbytehq/airbyte/pull/70761) | Update dependencies |
+| 0.0.41 | 2025-11-25 | [69983](https://github.com/airbytehq/airbyte/pull/69983) | Update dependencies |
+| 0.0.40 | 2025-11-18 | [69648](https://github.com/airbytehq/airbyte/pull/69648) | Update dependencies |
+| 0.0.39 | 2025-10-29 | [68892](https://github.com/airbytehq/airbyte/pull/68892) | Update dependencies |
+| 0.0.38 | 2025-10-21 | [68443](https://github.com/airbytehq/airbyte/pull/68443) | Update dependencies |
+| 0.0.37 | 2025-10-14 | [67908](https://github.com/airbytehq/airbyte/pull/67908) | Update dependencies |
+| 0.0.36 | 2025-10-07 | [67224](https://github.com/airbytehq/airbyte/pull/67224) | Update dependencies |
+| 0.0.35 | 2025-09-30 | [66858](https://github.com/airbytehq/airbyte/pull/66858) | Update dependencies |
+| 0.0.34 | 2025-09-24 | [66636](https://github.com/airbytehq/airbyte/pull/66636) | Update dependencies |
+| 0.0.33 | 2025-09-09 | [65655](https://github.com/airbytehq/airbyte/pull/65655) | Update dependencies |
+| 0.0.32 | 2025-08-24 | [65431](https://github.com/airbytehq/airbyte/pull/65431) | Update dependencies |
+| 0.0.31 | 2025-08-16 | [64990](https://github.com/airbytehq/airbyte/pull/64990) | Update dependencies |
+| 0.0.30 | 2025-08-02 | [64448](https://github.com/airbytehq/airbyte/pull/64448) | Update dependencies |
+| 0.0.29 | 2025-07-26 | [63939](https://github.com/airbytehq/airbyte/pull/63939) | Update dependencies |
+| 0.0.28 | 2025-07-19 | [63623](https://github.com/airbytehq/airbyte/pull/63623) | Update dependencies |
+| 0.0.27 | 2025-07-12 | [63052](https://github.com/airbytehq/airbyte/pull/63052) | Update dependencies |
+| 0.0.26 | 2025-06-28 | [62275](https://github.com/airbytehq/airbyte/pull/62275) | Update dependencies |
+| 0.0.25 | 2025-06-14 | [61294](https://github.com/airbytehq/airbyte/pull/61294) | Update dependencies |
+| 0.0.24 | 2025-05-25 | [60519](https://github.com/airbytehq/airbyte/pull/60519) | Update dependencies |
+| 0.0.23 | 2025-05-10 | [60186](https://github.com/airbytehq/airbyte/pull/60186) | Update dependencies |
+| 0.0.22 | 2025-05-04 | [59033](https://github.com/airbytehq/airbyte/pull/59033) | Update dependencies |
+| 0.0.21 | 2025-04-19 | [58414](https://github.com/airbytehq/airbyte/pull/58414) | Update dependencies |
+| 0.0.20 | 2025-04-12 | [57965](https://github.com/airbytehq/airbyte/pull/57965) | Update dependencies |
+| 0.0.19 | 2025-04-05 | [57487](https://github.com/airbytehq/airbyte/pull/57487) | Update dependencies |
+| 0.0.18 | 2025-03-29 | [56752](https://github.com/airbytehq/airbyte/pull/56752) | Update dependencies |
+| 0.0.17 | 2025-03-22 | [56185](https://github.com/airbytehq/airbyte/pull/56185) | Update dependencies |
+| 0.0.16 | 2025-03-08 | [55065](https://github.com/airbytehq/airbyte/pull/55065) | Update dependencies |
+| 0.0.15 | 2025-02-23 | [54600](https://github.com/airbytehq/airbyte/pull/54600) | Update dependencies |
+| 0.0.14 | 2025-02-15 | [53965](https://github.com/airbytehq/airbyte/pull/53965) | Update dependencies |
+| 0.0.13 | 2025-02-08 | [53510](https://github.com/airbytehq/airbyte/pull/53510) | Update dependencies |
+| 0.0.12 | 2025-02-01 | [53000](https://github.com/airbytehq/airbyte/pull/53000) | Update dependencies |
+| 0.0.11 | 2025-01-25 | [52514](https://github.com/airbytehq/airbyte/pull/52514) | Update dependencies |
+| 0.0.10 | 2025-01-18 | [51916](https://github.com/airbytehq/airbyte/pull/51916) | Update dependencies |
+| 0.0.9 | 2025-01-11 | [51347](https://github.com/airbytehq/airbyte/pull/51347) | Update dependencies |
+| 0.0.8 | 2024-12-28 | [50713](https://github.com/airbytehq/airbyte/pull/50713) | Update dependencies |
+| 0.0.7 | 2024-12-21 | [50286](https://github.com/airbytehq/airbyte/pull/50286) | Update dependencies |
+| 0.0.6 | 2024-12-14 | [49685](https://github.com/airbytehq/airbyte/pull/49685) | Update dependencies |
+| 0.0.5 | 2024-12-12 | [49369](https://github.com/airbytehq/airbyte/pull/49369) | Update dependencies |
+| 0.0.4 | 2024-12-11 | [49093](https://github.com/airbytehq/airbyte/pull/49093) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.0.3 | 2024-11-04 | [47879](https://github.com/airbytehq/airbyte/pull/47879) | Update dependencies |
+| 0.0.2 | 2024-10-28 | [47457](https://github.com/airbytehq/airbyte/pull/47457) | Update dependencies |
+| 0.0.1 | 2024-08-28 | | Initial release by [@michel-tricot](https://github.com/michel-tricot) via Connector Builder |
+
+</details>

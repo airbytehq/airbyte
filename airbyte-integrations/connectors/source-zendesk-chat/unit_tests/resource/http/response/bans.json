@@ -1,0 +1,19 @@
+{
+  "ip_address": [
+    {
+      "id": 1001,
+      "ip_address": "192.168.1.1",
+      "reason": "Spam",
+      "type": "ip_address"
+    }
+  ],
+  "visitor": [
+    {
+      "id": 2001,
+      "visitor_id": "visitor_123",
+      "visitor_name": "Banned Visitor",
+      "reason": "Abuse",
+      "type": "visitor"
+    }
+  ]
+}

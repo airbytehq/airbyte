@@ -1,0 +1,115 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "about": {
+      "type": ["string", "null"]
+    },
+    "birthday": {
+      "type": ["string", "null"]
+    },
+    "email": {
+      "type": ["string", "null"]
+    },
+    "first_name": {
+      "type": ["string", "null"]
+    },
+    "gender": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "install_type": {
+      "type": ["string", "null"]
+    },
+    "installed": {
+      "type": ["boolean", "null"]
+    },
+    "interested_in": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "is_guest_user": {
+      "type": ["boolean", "null"]
+    },
+    "is_verified": {
+      "type": ["boolean", "null"]
+    },
+    "last_name": {
+      "type": ["string", "null"]
+    },
+    "link": {
+      "type": ["string", "null"]
+    },
+    "local_news_megaphone_dismiss_status": {
+      "type": ["boolean", "null"]
+    },
+    "local_news_subscription_status": {
+      "type": ["boolean", "null"]
+    },
+    "locale": {
+      "type": ["string", "null"]
+    },
+    "meeting_for": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "middle_name": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "name_format": {
+      "type": ["string", "null"]
+    },
+    "political": {
+      "type": ["string", "null"]
+    },
+    "profile_pic": {
+      "type": ["string", "null"]
+    },
+    "quotes": {
+      "type": ["string", "null"]
+    },
+    "relationship_status": {
+      "type": ["string", "null"]
+    },
+    "religion": {
+      "type": ["string", "null"]
+    },
+    "shared_login_upgrade_required_by": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "short_name": {
+      "type": ["string", "null"]
+    },
+    "supports_donate_button_in_live_video": {
+      "type": ["boolean", "null"]
+    },
+    "third_party_id": {
+      "type": ["string", "null"]
+    },
+    "timezone": {
+      "type": ["number", "null"]
+    },
+    "token_for_business": {
+      "type": ["string", "null"]
+    },
+    "updated_time": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "verified": {
+      "type": ["boolean", "null"]
+    },
+    "website": {
+      "type": ["string", "null"]
+    }
+  }
+}

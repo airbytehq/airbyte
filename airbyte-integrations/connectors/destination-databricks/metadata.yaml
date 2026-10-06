@@ -1,0 +1,108 @@
+data:
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 072d5540-f236-4294-ba7c-ade8fd918496
+  dockerImageTag: 4.0.5
+  dockerRepository: airbyte/destination-databricks
+  githubIssueLabel: destination-databricks
+  icon: databricks.svg
+  license: ELv2
+  name: Databricks Lakehouse
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.4@sha256:5f343797cfcf021ca98ba9bdf5970ef66cbf6222d8cc17b0d61d13860a5bcc2b
+  connectorIPCOptions:
+    dataChannel:
+      version: 0.0.2
+      supportedSerialization:
+        - JSONL
+        - PROTOBUF
+      supportedTransport:
+        - SOCKET
+        - STDIO
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: >
+          **This is a private preview version, Do not upgrade until you review the changes**.\n
+          This version is a rewrite of the community connector with support for Unity catalog, and staging files using Unity catalog volumes.
+          This version also introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2),
+          which provides better error handling, incremental delivery of data for large syncs, and improved final table structures.
+          To review the breaking changes, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading).
+        upgradeDeadline: "2025-01-31"
+      3.0.0:
+        message: >
+          This version adds an `_airbyte_generation_id` column to the raw and final tables. If you ran a sync using 2.0.0, you MUST manually drop the
+          raw and final tables and then clear (reset) your connection; this release will not automatically upgrade your tables.
+        upgradeDeadline: "2025-01-31"
+      4.0.0:
+        message: >
+          This version upgrades Destination Databricks to the
+          [Direct-Load](https://docs.airbyte.com/platform/using-airbyte/core-concepts/direct-load-tables) paradigm,
+          which improves performance and reduces warehouse spend. Raw tables (`_airbyte_raw_*`) are no longer produced.
+          If you do not interact with the raw tables, you can safely upgrade. If you do, update any downstream
+          dbt models or SQL queries to reference the final tables instead, then drop old raw tables after verifying.
+        upgradeDeadline: "2026-10-01"
+        deadlineAction: "auto_upgrade"
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: slow
+      enableProgressiveRollout: true
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/databricks
+  resourceRequirements:
+    jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 600Mi
+          memory_request: 600Mi
+  tags:
+    - language:java
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: certified
+  supportsRefreshes: true
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-DATABRICKS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION_DATABRICKS_OAUTH_CONFIG
+          fileName: oauth_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION_DATABRICKS_PERSONAL_ACCESS_TOKEN_CONFIG
+          fileName: pat_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Release notes
+      url: https://docs.databricks.com/release-notes/index.html
+      type: api_release_history
+    - title: Authentication
+      url: https://docs.databricks.com/dev-tools/auth.html
+      type: authentication_guide
+    - title: Access control
+      url: https://docs.databricks.com/security/access-control/index.html
+      type: permissions_scopes
+    - title: SQL reference
+      url: https://docs.databricks.com/sql/language-manual/index.html
+      type: sql_reference
+    - title: Databricks Status
+      url: https://status.databricks.com/
+      type: status_page
+metadataSpecVersion: "1.0"

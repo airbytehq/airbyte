@@ -1,0 +1,14 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "webPublicationDate": "2022-10-25T10:10:10Z"
+      },
+      "stream_descriptor": {
+        "name": "content",
+        "namespace": null
+      }
+    }
+  }
+]

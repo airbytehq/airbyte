@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "channel_settings": {
+      "type": ["null", "object"],
+      "properties": {
+        "api": {
+          "type": ["null", "object"],
+          "properties": {
+            "display": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "checkout_page": {
+          "type": ["null", "object"],
+          "properties": {
+            "display": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "customer_portal": {
+          "type": ["null", "object"],
+          "properties": {
+            "display": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "merchant_portal": {
+          "type": ["null", "object"],
+          "properties": {
+            "display": {
+              "type": ["null", "boolean"]
+            }
+          }
+        }
+      }
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "deleted_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "discount_amount": {
+      "type": ["null", "integer"]
+    },
+    "discount_type": {
+      "type": ["null", "string"]
+    },
+    "external_product_id": {
+      "type": ["null", "object"],
+      "properties": {
+        "ecommerce": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "sort_order": {
+      "type": ["null", "integer"]
+    },
+    "subscription_preferences": {
+      "type": ["null", "object"],
+      "properties": {
+        "charge_interval_frequency": {
+          "type": ["null", "integer"]
+        },
+        "cutoff_day_of_month": {
+          "type": ["null", "integer"]
+        },
+        "cutoff_day_of_week": {
+          "type": ["null", "integer"]
+        },
+        "expire_after_specific_number_of_charges": {
+          "type": ["null", "integer"]
+        },
+        "interval_unit": {
+          "type": ["null", "string"]
+        },
+        "order_day_of_month": {
+          "type": ["null", "integer"]
+        },
+        "order_day_of_week": {
+          "type": ["null", "integer"]
+        },
+        "order_interval_frequency": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

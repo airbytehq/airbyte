@@ -1,0 +1,31 @@
+data:
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registryOverrides:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: database
+  connectorType: source
+  definitionId: FAKE-UUID-0000-0000-000000000000
+  dockerImageTag: 0.2.1
+  dockerRepository: airbyte/source-scaffold-java-jdbc
+  githubIssueLabel: source-scaffold-java-jdbc
+  icon: scaffold-java-jdbc.svg
+  license: ELv2
+  name: Scaffold Java Jdbc
+  releaseDate: TODO
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/scaffold-java-jdbc
+  tags:
+    - language:java
+  externalDocumentationUrls:
+    - title: JDBC documentation
+      url: https://docs.oracle.com/javase/tutorial/jdbc/
+      type: api_reference
+metadataSpecVersion: "1.0"

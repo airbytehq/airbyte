@@ -1,0 +1,32 @@
+[
+  {
+    "id": 720,
+    "code": "summer2024",
+    "amount": "10.00",
+    "status": "publish",
+    "date_created": "2024-01-10T08:00:00",
+    "date_created_gmt": "2024-01-10T08:00:00",
+    "date_modified": "2024-01-10T10:30:00",
+    "date_modified_gmt": "2024-01-10T10:30:00",
+    "discount_type": "percent",
+    "description": "Summer sale discount",
+    "date_expires": null,
+    "date_expires_gmt": null,
+    "usage_count": 5,
+    "individual_use": false,
+    "product_ids": [],
+    "excluded_product_ids": [],
+    "usage_limit": null,
+    "usage_limit_per_user": 1,
+    "limit_usage_to_x_items": null,
+    "free_shipping": false,
+    "product_categories": [],
+    "excluded_product_categories": [],
+    "exclude_sale_items": false,
+    "minimum_amount": "50.00",
+    "maximum_amount": "0.00",
+    "email_restrictions": [],
+    "used_by": [],
+    "meta_data": []
+  }
+]

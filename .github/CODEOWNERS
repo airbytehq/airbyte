@@ -1,0 +1,80 @@
+# =============================================================================
+# CODEOWNERS - Defines code ownership for pull request reviews
+# =============================================================================
+# Rules are evaluated top-to-bottom; later rules override earlier ones.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Protocol
+# -----------------------------------------------------------------------------
+/docs/understanding-airbyte/airbyte-protocol.md @airbytehq/destinations
+
+# -----------------------------------------------------------------------------
+# BULK CDK (Kotlin-based modern CDK)
+# -----------------------------------------------------------------------------
+/airbyte-cdk/bulk/ @airbytehq/dbsources @airbytehq/destinations
+/airbyte-cdk/bulk/core/extract/ @airbytehq/dbsources
+/airbyte-cdk/bulk/core/load/ @airbytehq/destinations
+/airbyte-cdk/bulk/toolkits/extract-*/ @airbytehq/dbsources
+/airbyte-cdk/bulk/toolkits/load-*/ @airbytehq/destinations
+/airbyte-cdk/bulk/toolkits/legacy-task-*/ @airbytehq/destinations
+
+# -----------------------------------------------------------------------------
+# JAVA CDK
+# -----------------------------------------------------------------------------
+/airbyte-cdk/java/airbyte-cdk/ @airbytehq/dbsources @airbytehq/destinations
+/airbyte-cdk/java/airbyte-cdk/*-sources/ @airbytehq/dbsources
+/airbyte-cdk/java/airbyte-cdk/*-destinations/ @airbytehq/destinations
+/airbyte-cdk/java/airbyte-cdk/typing-deduping/ @airbytehq/destinations
+
+# -----------------------------------------------------------------------------
+# BUILD INFRASTRUCTURE
+# -----------------------------------------------------------------------------
+/buildSrc/ @airbytehq/dbsources @airbytehq/destinations
+
+# -----------------------------------------------------------------------------
+# SOURCE CONNECTORS
+# -----------------------------------------------------------------------------
+/airbyte-integrations/connectors/source-*/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-pipedrive/ @airbytehq/dev-apis
+/airbyte-integrations/connectors/source-uptick/ @airbytehq/dev-apis
+
+# -----------------------------------------------------------------------------
+# DESTINATION CONNECTORS (certified + JDK-based only)
+# -----------------------------------------------------------------------------
+# Only destination connectors that are both certified AND JDK-based are owned
+# by @airbytehq/destinations. This avoids unnecessary review requests on
+# community or non-JDK connectors (e.g. dependabot bumps).
+/airbyte-integrations/connectors/destination-azure-blob-storage/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-bigquery/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-clickhouse/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-customer-io/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-databricks/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-gcs-data-lake/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-hubspot/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-mssql/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-postgres/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-redshift/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-s3/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-s3-data-lake/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-snowflake/ @airbytehq/destinations
+
+# Destination documentation
+/docs/integrations/destinations/ @airbytehq/destinations
+
+# -----------------------------------------------------------------------------
+# NO OWNERSHIP - Markdown files
+# -----------------------------------------------------------------------------
+# Documentation changes don't require team review. These rules override the
+# directory ownership rules above. The BREAKING CHANGES section below will
+# re-assign ownership for migration docs specifically.
+/airbyte-integrations/connectors/source-*/**/*.md
+/airbyte-integrations/connectors/destination-*/**/*.md
+/docs/**/*.md
+
+# -----------------------------------------------------------------------------
+# BREAKING CHANGES
+# -----------------------------------------------------------------------------
+# This rule ensures that breaking changes to connectors are reviewed by the
+# breaking-changes-reviewers team to manage and help message breaking changes.
+/docs/integrations/**/*-migrations.md @airbytehq/breaking-change-reviewers

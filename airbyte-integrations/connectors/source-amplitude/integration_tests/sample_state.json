@@ -1,0 +1,23 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "event_time": "20230215T08" },
+      "stream_descriptor": { "name": "events" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "date": "2023-02-17" },
+      "stream_descriptor": { "name": "active_users" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "date": "2023-02-17" },
+      "stream_descriptor": { "name": "average_session_length" }
+    }
+  }
+]

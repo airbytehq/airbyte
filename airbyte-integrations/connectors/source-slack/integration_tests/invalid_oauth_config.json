@@ -1,0 +1,13 @@
+{
+  "credentials": {
+    "option_title": "Default OAuth2.0 authorization",
+    "client_id": "fake-client-id",
+    "client_secret": "fake-client-secret",
+    "refresh_token": "fake-refresh-token",
+    "access_token": "fake-access-token"
+  },
+  "start_date": "2021-07-22T20:00:00Z",
+  "lookback_window": 2,
+  "join_channels": true,
+  "channel_filter": []
+}

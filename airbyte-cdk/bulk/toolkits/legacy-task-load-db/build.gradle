@@ -1,0 +1,6 @@
+dependencies {
+    // Needed for Micronaut annotations (jakarta.inject.*, io.micronaut.context.annotation.*)
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-object-storage')
+}

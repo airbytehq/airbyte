@@ -1,0 +1,44 @@
+connector_image: airbyte/source-apify-dataset:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: 2.0.0
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 2.0.0
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+  incremental:
+    bypass_reason: Connector doesn't use incremental sync
+    # tests:
+    #   - config_path: "secrets/config.json"
+    #     configured_catalog_path: "integration_tests/configured_catalog.json"
+    #     future_state:
+    #       future_state_path: "integration_tests/abnormal_state.json"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        ignored_fields:
+          dataset_collection:
+            - name: "accessedAt"
+              bypass_reason: "Change everytime"
+            - name: "stats/readCount"
+              bypass_reason: "Change everytime"
+          dataset:
+            - name: "accessedAt"
+              bypass_reason: "Change everytime"
+            - name: "stats/readCount"
+              bypass_reason: "Change everytime"

@@ -1,0 +1,19 @@
+plugins {
+    id 'airbyte-java-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.20.4'
+    features = ['db-sources']
+    useLocalCdk = false
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.e2e_test.CloudTestingSources'
+}
+
+dependencies {
+    implementation project(':airbyte-integrations:connectors:source-e2e-test')
+}

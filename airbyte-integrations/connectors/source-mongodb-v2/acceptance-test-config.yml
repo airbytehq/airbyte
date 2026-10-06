@@ -1,0 +1,16 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-mongodb-v2:dev
+acceptance_tests:
+  spec:
+    bypass_reason: "CAT Tests have been deprecated."
+  connection:
+    bypass_reason: "CAT Tests have been deprecated."
+  discovery:
+    bypass_reason: "CAT Tests have been deprecated."
+  basic_read:
+    bypass_reason: "CAT Tests have been deprecated."
+  full_refresh:
+    bypass_reason: "CAT Tests have been deprecated."
+  incremental:
+    bypass_reason: "CAT Tests have been deprecated."

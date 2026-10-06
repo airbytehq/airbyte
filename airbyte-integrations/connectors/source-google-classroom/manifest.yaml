@@ -1,0 +1,722 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  Google Classroom connector enables seamless data integration between Google
+  Classroom and various destinations. This connector facilitates the
+  synchronization of course information, rosters, assignments empowering
+  educators to automate reporting and streamline classroom data management
+  efficiently.
+
+check:
+  type: CheckStream
+  stream_names:
+    - courses
+
+definitions:
+  streams:
+    courses:
+      type: DeclarativeStream
+      name: courses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/courses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - courses
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken', '') }}"
+            stop_condition: >-
+              {{ response.get('nextPageToken') is none or
+              response.get('nextPageToken') == '' }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/courses"
+    teachers:
+      type: DeclarativeStream
+      name: teachers
+      primary_key:
+        - userId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/courses/{{ stream_partition.course }}/teachers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - teachers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken', '') }}"
+            stop_condition: >-
+              {{ response.get('nextPageToken') is none or
+              response.get('nextPageToken') == '' }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: course
+              stream:
+                $ref: "#/definitions/streams/courses"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teachers"
+    students:
+      type: DeclarativeStream
+      name: students
+      primary_key:
+        - userId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/courses/{{ stream_partition.course }}/students
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - students
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken', '') }}"
+            stop_condition: >-
+              {{ response.get('nextPageToken') is none or
+              response.get('nextPageToken') == '' }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: course
+              stream:
+                $ref: "#/definitions/streams/courses"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/students"
+    announcements:
+      type: DeclarativeStream
+      name: announcements
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/courses/{{ stream_partition.course }}/announcements
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - announcements
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken', '') }}"
+            stop_condition: >-
+              {{ response.get('nextPageToken') is not defined or
+              response.get('nextPageToken') == '' }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: course
+              stream:
+                $ref: "#/definitions/streams/courses"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/announcements"
+    coursework:
+      type: DeclarativeStream
+      name: coursework
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/courses/{{ stream_partition.course }}/courseWork
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - courseWork
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken', '') }}"
+            stop_condition: >-
+              {{ response.get('nextPageToken') is none or
+              response.get('nextPageToken') == '' }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: course
+              stream:
+                $ref: "#/definitions/streams/courses"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/coursework"
+    studentsubmissions:
+      type: DeclarativeStream
+      name: studentsubmissions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /v1/courses/{{ stream_partition.course }}/courseWork/{{
+            stream_partition.coursework }}/studentSubmissions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - studentSubmissions
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken', '') }}"
+            stop_condition: "{{ response.get('nextPageToken') is none }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: course
+                stream:
+                  $ref: "#/definitions/streams/courses"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: coursework
+                stream:
+                  $ref: "#/definitions/streams/coursework"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/studentsubmissions"
+  base_requester:
+    type: HttpRequester
+    url_base: https://classroom.googleapis.com
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      expires_in_name: expires_in
+      access_token_name: access_token
+      refresh_request_body: {}
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      token_refresh_endpoint: https://oauth2.googleapis.com/token
+
+streams:
+  - $ref: "#/definitions/streams/courses"
+  - $ref: "#/definitions/streams/teachers"
+  - $ref: "#/definitions/streams/students"
+  - $ref: "#/definitions/streams/announcements"
+  - $ref: "#/definitions/streams/coursework"
+  - $ref: "#/definitions/streams/studentsubmissions"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token
+    properties:
+      client_id:
+        type: string
+        name: client_id
+        title: OAuth Client ID
+        airbyte_secret: true
+        order: 0
+      client_secret:
+        type: string
+        name: client_secret
+        title: OAuth Client Secret
+        airbyte_secret: true
+        order: 1
+      client_refresh_token:
+        type: string
+        title: Refresh token
+        airbyte_secret: true
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    courses: true
+    teachers: true
+    students: true
+    announcements: true
+    coursework: true
+    studentsubmissions: true
+  testedStreams:
+    courses:
+      streamHash: b35f48d14765b3758d2cb63261ffcd44304ca08a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teachers:
+      streamHash: 8d5dd7e1d0f997f5cdb21e4e6595a029404c5af9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    students:
+      streamHash: 7521191448dff583fc642559f70cd5279a7b729d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    announcements:
+      streamHash: f98439e1e3ba08042beb284dd8335f48f8905b7e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    coursework:
+      streamHash: c951fbca5dec5bb25dfa0cdf9080beefc3ceb361
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    studentsubmissions:
+      streamHash: 1faa94727cbb66ac7412970a80546beafc3013eb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.google.com/classroom/reference/rest
+
+schemas:
+  courses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      alternateLink:
+        type:
+          - string
+          - "null"
+      courseGroupEmail:
+        type:
+          - string
+          - "null"
+      courseState:
+        type:
+          - string
+          - "null"
+      creationTime:
+        type:
+          - string
+          - "null"
+      enrollmentCode:
+        type:
+          - string
+          - "null"
+      gradebookSettings:
+        type:
+          - object
+          - "null"
+        properties:
+          calculationType:
+            type:
+              - string
+              - "null"
+          displaySetting:
+            type:
+              - string
+              - "null"
+      guardiansEnabled:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      teacherFolder:
+        type:
+          - object
+          - "null"
+        properties:
+          alternateLink:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+      teacherGroupEmail:
+        type:
+          - string
+          - "null"
+      updateTime:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  teachers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      courseId:
+        type:
+          - string
+          - "null"
+      profile:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - object
+              - "null"
+            properties:
+              familyName:
+                type:
+                  - string
+                  - "null"
+              fullName:
+                type:
+                  - string
+                  - "null"
+              givenName:
+                type:
+                  - string
+                  - "null"
+          permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                permission:
+                  type:
+                    - string
+                    - "null"
+      userId:
+        type: string
+    required:
+      - userId
+  students:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      courseId:
+        type:
+          - string
+          - "null"
+      profile:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - object
+              - "null"
+            properties:
+              familyName:
+                type:
+                  - string
+                  - "null"
+              fullName:
+                type:
+                  - string
+                  - "null"
+              givenName:
+                type:
+                  - string
+                  - "null"
+          permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                permission:
+                  type:
+                    - string
+                    - "null"
+      userId:
+        type: string
+    required:
+      - userId
+  announcements:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      alternateLink:
+        type:
+          - string
+          - "null"
+      assigneeMode:
+        type:
+          - string
+          - "null"
+      courseId:
+        type:
+          - string
+          - "null"
+      creationTime:
+        type:
+          - string
+          - "null"
+      creatorUserId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      state:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      updateTime:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  coursework:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      alternateLink:
+        type:
+          - string
+          - "null"
+      assigneeMode:
+        type:
+          - string
+          - "null"
+      courseId:
+        type:
+          - string
+          - "null"
+      creationTime:
+        type:
+          - string
+          - "null"
+      creatorUserId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      maxPoints:
+        type:
+          - number
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      submissionModificationMode:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updateTime:
+        type:
+          - string
+          - "null"
+      workType:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  studentsubmissions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      alternateLink:
+        type:
+          - string
+          - "null"
+      courseId:
+        type:
+          - string
+          - "null"
+      courseWorkId:
+        type:
+          - string
+          - "null"
+      courseWorkType:
+        type:
+          - string
+          - "null"
+      creationTime:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      shortAnswerSubmission:
+        type:
+          - object
+          - "null"
+        properties:
+          answer:
+            type:
+              - string
+              - "null"
+      state:
+        type:
+          - string
+          - "null"
+      submissionHistory:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            stateHistory:
+              type:
+                - object
+                - "null"
+              properties:
+                actorUserId:
+                  type:
+                    - string
+                    - "null"
+                state:
+                  type:
+                    - string
+                    - "null"
+                stateTimestamp:
+                  type:
+                    - string
+                    - "null"
+      updateTime:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+    required:
+      - id

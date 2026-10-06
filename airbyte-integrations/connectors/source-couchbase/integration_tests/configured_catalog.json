@@ -1,0 +1,53 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "travel-sample.inventory.airline",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "_id": {
+              "type": "string"
+            },
+            "_ab_cdc_updated_at": {
+              "type": "integer"
+            },
+            "airline": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "iata": {
+                  "type": "string"
+                },
+                "icao": {
+                  "type": "string"
+                },
+                "callsign": {
+                  "type": "string"
+                },
+                "country": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["_ab_cdc_updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["_ab_cdc_updated_at"],
+      "destination_sync_mode": "append"
+    }
+  ]
+}

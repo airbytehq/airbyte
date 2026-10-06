@@ -1,0 +1,26 @@
+.requestERD {
+  margin-top: 1em;
+  font-size: 0.8em;
+  color: var(--ifm-toc-link-color);
+}
+
+.requestERDButton {
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  color: var(--ifm-toc-link-color);
+
+  border: 1px solid var(--ifm-toc-link-color);
+  text-align: left;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.requestERDButton:hover {
+  color: var(--ifm-color-primary);
+  border: 1px solid var(--ifm-color-primary);
+}

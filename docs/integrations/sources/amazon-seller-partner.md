@@ -1,0 +1,673 @@
+# Amazon Seller Partner
+
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Amazon Seller Partner](https://developer.amazonservices.com/) source connector.
+
+</HideInUI>
+
+## Prerequisites
+
+- Amazon Seller Partner account
+- For Brand Analytics streams (Market Basket Analysis, Search Terms, Repeat Purchase, Alternate Purchase, Item Comparison reports): Registration in [Amazon Brand Registry](https://brandservices.amazon.com/) and the Brand Analytics role in your SP-API application
+- For the Sales and Traffic report streams and every vendor retail analytics report stream (Vendor Sales, Vendor Inventory, Vendor Traffic, Net Pure Product Margin, Rapid Retail Analytics Inventory, and Vendor Forecasting): the Brand Analytics role in your SP-API application. Amazon lists this role for each of these report types in the [analytics report type values](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics).
+- For PII access in Orders and OrderItems streams (BuyerInfo, ShippingAddress): An approved [Restricted Role](https://developer-docs.amazon.com/sp-api/docs/roles-in-the-selling-partner-api), either Direct-to-Consumer Shipping or Tax Invoicing, in your SP-API developer profile
+
+<!-- env:cloud -->
+
+**For Airbyte Cloud:**
+
+- AWS Environment
+- AWS Region
+- AWS Seller Partner Account Type
+- Granted OAuth access
+
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+**For Airbyte Open Source:**
+
+- AWS Environment
+- AWS Region
+- AWS Seller Partner Account Type
+- LWA Client Id
+- LWA Client Secret
+- Refresh Token
+
+<!-- /env:oss -->
+
+## Supported regions
+
+The connector supports the following Amazon marketplace regions: AE (United Arab Emirates), AU (Australia), BE (Belgium), BR (Brazil), CA (Canada), DE (Germany), EG (Egypt), ES (Spain), FR (France), GB (United Kingdom), IE (Ireland), IN (India), IT (Italy), JP (Japan), MX (Mexico), NL (Netherlands), PL (Poland), SA (Saudi Arabia), SE (Sweden), SG (Singapore), TR (Turkey), UK (United Kingdom), and US (United States).
+
+Both GB and UK refer to the United Kingdom marketplace and can be used interchangeably. For the complete list of Amazon marketplace IDs, see the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/docs/marketplace-ids).
+
+## Setup guide
+
+## Step 1: Set up Amazon Seller Partner
+
+[Register](https://sellercentral.amazon.com/) your Amazon Seller Partner account.
+
+<!-- env:oss -->
+
+**Airbyte Open Source setup steps**
+
+- [Register](https://developer-docs.amazon.com/sp-api/docs/registering-your-application) Amazon Seller Partner application. The application must be published as Amazon does not allow external parties such as Airbyte to access draft applications.
+
+<!-- /env:oss -->
+
+## Step 2: Set up the source connector in Airbyte
+
+To pass the check for Seller and Vendor accounts, you must have access to the [Orders endpoint](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference) and the [Vendor Orders endpoint](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders), respectively.
+
+<!-- env:cloud -->
+
+#### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Amazon Seller Partner from the Source type dropdown.
+4. Enter a name for the Amazon Seller Partner connector.
+5. Click `Authenticate your account`.
+6. Log in and Authorize to your Amazon Seller Partner account.
+7. For `Start Date`, enter the date in `YYYY-MM-DD` format. The data added on and after this date will be replicated. This field is optional - if not provided or older than 2 years ago from today, the date 2 years ago from today will be used.
+8. For `End Date`, enter the date in `YYYY-MM-DD` format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
+9. **Financial Events Step Size**: Select the time window size for fetching financial events data for the ListFinancialEvents and ListFinancialEventGroups streams. Options include:
+   - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
+   - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
+10. **Financial Events Max Results Per Page**: Set the maximum number of results per page for the ListFinancialEvents stream (1-100, default: 100). Lower this value if you encounter `InvalidInput` errors during sync, which occur when the response exceeds 10 MB.
+11. For **Sales and Traffic Report ASIN Granularity**, select the level of ASIN detail for the Sales and Traffic Report streams (`GET_SALES_AND_TRAFFIC_REPORT` and `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`). Options are:
+    - **PARENT** (default): Data aggregated at the parent ASIN level.
+    - **CHILD**: Data at the child ASIN level, with `childAsin` values populated.
+    - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
+12. Optionally, add per-report-type options in the **Report Options** section. The connector sends these options for the two Inventory Ledger streams and the four vendor retail analytics reports (Vendor Sales, Vendor Inventory, Vendor Traffic, Vendor Net Pure Product Margin)—see [Report options](#report-options) before you configure them.
+13. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
+14. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `72` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
+15. For **Report Stream Lookback Window (Hours)**, set how many hours of previously synced data incremental report streams should re-fetch on each sync. The default is `0`, which disables lookback. Increase this value when Amazon updates report data after a sync has already completed. This setting has no effect on `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`, `GET_VENDOR_SALES_REPORT`, `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, `GET_VENDOR_REAL_TIME_INVENTORY_REPORT`, or `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`. To re-fetch history for those streams, refresh them or move the replication start date back.
+16. For **Stop Sync When Report Streams Are Rate Limited**, enable this option to stop the source from retrying immediately once the rate limit retry budget is exhausted during report creation, and fail with an actionable configuration error. This is useful when persistent rate limiting indicates the connector configuration needs adjustment. When disabled (default), the source applies its backoff and retry strategy; if all retry attempts are exhausted, a transient error is thrown and the sync may be rescheduled automatically.
+17. **Inbound API settings (Fulfillment Inbound streams only)**:
+    - **Inbound Replication Mode**: Choose how the connector defines the time window for Fulfillment Inbound streams.
+      - `rolling_days` (default): Fetch data for the last **N days including today**.
+      - `fixed`: Fetch data for a fixed UTC datetime range.
+    - **Inbound Rolling Days**: Used only when `Inbound Replication Mode=rolling_days`. Required when `Inbound Replication Mode=rolling_days`. Default: `30`. Minimum: `1`.
+    - **Inbound Start Datetime** / **Inbound End Datetime**: Used only when `Inbound Replication Mode=fixed`. `Inbound Start Datetime` is required when `Inbound Replication Mode=fixed`. `Inbound End Datetime` is optional; if not set, the connector uses the current UTC time. Format: `YYYY-MM-DDTHH:MM:SSZ` (UTC), e.g. `2026-01-25T00:00:00Z`.
+    These options affect the following streams: **FbaInboundShipments** and **FbaInboundShipmentItems**.
+18. Click `Set up source`.
+
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+#### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. On the Set up the source page, select Amazon Seller Partner from the Source type dropdown.
+3. Enter a name for the Amazon Seller Partner connector.
+4. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token.
+5. For Start Date, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided or older than 2 years ago from today, the date 2 years ago from today will be used.
+6. For End Date, enter the date in YYYY-MM-DD format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
+7. **Financial Events Step Size**: Select the time window size for fetching financial events data for the ListFinancialEvents and ListFinancialEventGroups streams. Options include:
+   - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
+   - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
+8. **Financial Events Max Results Per Page**: Set the maximum number of results per page for the ListFinancialEvents stream (1-100, default: 100). Lower this value if you encounter `InvalidInput` errors during sync, which occur when the response exceeds 10 MB.
+9. For **Sales and Traffic Report ASIN Granularity**, select the level of ASIN detail for the Sales and Traffic Report streams (`GET_SALES_AND_TRAFFIC_REPORT` and `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`). Options are:
+    - **PARENT** (default): Data aggregated at the parent ASIN level.
+    - **CHILD**: Data at the child ASIN level, with `childAsin` values populated.
+    - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
+10. Optionally, add per-report-type options in the **Report Options** section. The connector sends these options for the two Inventory Ledger streams and the four vendor retail analytics reports (Vendor Sales, Vendor Inventory, Vendor Traffic, Vendor Net Pure Product Margin)—see [Report options](#report-options) before you configure them.
+11. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
+12. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `72` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
+13. For **Report Stream Lookback Window (Hours)**, set how many hours of previously synced data incremental report streams should re-fetch on each sync. The default is `0`, which disables lookback. Increase this value when Amazon updates report data after a sync has already completed. This setting has no effect on `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`, `GET_VENDOR_SALES_REPORT`, `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, `GET_VENDOR_REAL_TIME_INVENTORY_REPORT`, or `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`. To re-fetch history for those streams, refresh them or move the replication start date back.
+14. For **Stop Sync When Report Streams Are Rate Limited**, enable this option to stop the source from retrying immediately once the rate limit retry budget is exhausted during report creation, and fail with an actionable configuration error. This is useful when persistent rate limiting indicates the connector configuration needs adjustment. When disabled (default), the source applies its backoff and retry strategy; if all retry attempts are exhausted, a transient error is thrown and the sync may be rescheduled automatically.
+15. **Inbound API settings (Fulfillment Inbound streams only)**:
+    - **Inbound Replication Mode**: Choose how the connector defines the time window for Fulfillment Inbound streams.
+      - `rolling_days` (default): Fetch data for the last **N days including today**.
+      - `fixed`: Fetch data for a fixed UTC datetime range.
+    - **Inbound Rolling Days**: Used only when `Inbound Replication Mode=rolling_days`. Required when `Inbound Replication Mode=rolling_days`. Default: `30`. Minimum: `1`.
+    - **Inbound Start Datetime** / **Inbound End Datetime**: Used only when `Inbound Replication Mode=fixed`. `Inbound Start Datetime` is required when `Inbound Replication Mode=fixed`. `Inbound End Datetime` is optional; if not set, the connector uses the current UTC time. Format: `YYYY-MM-DDTHH:MM:SSZ` (UTC), e.g. `2026-01-25T00:00:00Z`.
+    These options affect the following streams: **FbaInboundShipments** and **FbaInboundShipmentItems**.
+16. Click `Set up source`.
+
+<!-- /env:oss -->
+
+## Supported sync modes
+
+The Amazon Seller Partner source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+
+- Full Refresh
+- Incremental
+
+The `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` reports contain one row per order item and have no proven, reliably unique row identifier, so they have no primary key and do not offer `Incremental | Append + Deduped`.
+
+## Supported Streams
+
+- [Active Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
+- [All Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
+- [Browse Tree Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-browse-tree) \(incremental\)
+- [Canceled Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
+- [FBA Amazon Fulfilled Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [FBA Amazon Fulfilled Shipments Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-sales-reports) \(incremental\)
+- [FBA Fee Preview Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-payments-reports) \(incremental\)
+- [FBA Manage Inventory](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [FBA Manage Inventory Health Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [FBA Multi-Country Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [FBA Promotions Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-sales-reports) \(incremental\)
+- [FBA Reimbursements Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-payments-reports) \(incremental\)
+- [FBA Removal Order Detail Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-removals-reports) \(incremental\)
+- [FBA Removal Shipment Detail Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-removals-reports) \(incremental\)
+- [FBA Replacements Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-concessions-reports) \(incremental\)
+- [FBA Returns Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-concessions-reports) \(incremental\)
+- [FBA Storage Fees Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [FBA Stranded Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [Financial Events](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialevents) \(incremental\) — see [Finances v0 deprecation](#finances-v0-deprecation)
+- [Financial Event Groups](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialeventgroups) \(incremental\)
+- [Flat File Archived Orders Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
+- [Flat File Feedback Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-performance) \(incremental\)
+- [Flat File Orders By Last Update Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
+- [Flat File Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
+- [Flat File Returns Report by Return Date](https://developer-docs.amazon.com/sp-api/docs/report-type-values-returns) \(incremental\)
+- [Flat File Settlement Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-settlement) \(incremental\) — this stream reads `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`, which Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) on March 17, 2025 and plans to remove on November 11, 2026
+- [Inactive Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
+- [Inventory Ledger Report - Detailed View](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [Inventory Ledger Report - Summary View](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
+- [Open Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
+- [Orders](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference) \(incremental\)
+- [Order Items](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorderitems) \(incremental\)
+- [Sales and Traffic Report By Date](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(incremental\)
+- [Restock Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
+- [Scheduled XML Order Report (Shipping)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-reports) \(incremental\)
+- [Suppressed Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
+- [Unshipped Orders Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-reports) \(incremental\)
+- [Vendor Direct Fulfillment Shipping](https://developer-docs.amazon.com/sp-api/docs/vendor-direct-fulfillment-shipping-api-v1-reference) \(incremental\)
+- [Vendor Forecasting Report (Fresh)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
+- [Vendor Forecasting Report (Retail)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
+- [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
+- [Vendor Order Status](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseOrdersStatus) \(incremental\)
+- [Fulfillment Inbound Shipments](https://developer-docs.amazon.com/sp-api/reference/getshipments) \(full-refresh\)
+- [Fulfillment Inbound Shipment Items](https://developer-docs.amazon.com/sp-api/reference/getshipmentitemsbyshipmentid) \(full-refresh\)
+- [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
+- [Market Basket Analysis Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
+- [Repeat Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
+- [Alternate Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
+- [Item Comparison Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
+- [Sales and Traffic Business Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(incremental\)
+- [Sales and Traffic Business Report \(Monthly\)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(incremental\)
+- [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
+- [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [Vendor Net Pure Product Margin Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [Vendor Rapid Retail Analytics Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\) — `GET_VENDOR_REAL_TIME_INVENTORY_REPORT`, which reports inventory in hourly buckets. The connector overwrites each record's `endTime` with `23:59:59Z` of the UTC day the report was requested for, because `endTime` is this stream's cursor. Use `startTime` to tell the hourly buckets apart.
+- [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
+
+### Stream availability by account type
+
+The connector automatically shows only the streams compatible with your configured **Account Type** (Seller or Vendor). Amazon SP-API treats these as distinct account types — a single set of credentials is associated with either a Seller Central or Vendor Central account.
+
+**Seller accounts** have access to:
+
+- Orders
+- Order Items
+- Financial Events
+- Financial Event Groups
+- Fulfillment Inbound Shipments
+- Fulfillment Inbound Shipment Items
+- All report streams (FBA reports, inventory reports, order reports, analytics, settlement, etc.)
+- All Brand Analytics streams
+
+**Vendor accounts** have access to:
+
+- Vendor Orders
+- Vendor Order Status
+- Vendor Direct Fulfillment Shipping
+- Vendor Forecasting Report (Fresh)
+- Vendor Forecasting Report (Retail)
+- Vendor Sales Report
+- Vendor Inventory Report
+- Vendor Traffic Report
+- Vendor Net Pure Product Margin Report
+- Vendor Rapid Retail Analytics Inventory Report
+- All report streams (FBA reports, inventory reports, order reports, analytics, settlement, etc.)
+- All Brand Analytics streams
+
+If you previously had streams from the wrong account type configured, they will be automatically removed from your connection's catalog after upgrading to version 5.7.10 or later. You may see a schema change notification prompting you to accept the updated catalog.
+
+For more information about Amazon SP-API roles and permissions, see the [Amazon SP-API Role Mappings documentation](https://developer-docs.amazon.com/sp-api/docs/role-mappings).
+
+### Finances v0 deprecation
+
+The Financial Events stream reads the Finances v0 `listFinancialEvents` operation. Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) that operation on July 21, 2025 and plans to remove it on August 27, 2027. Amazon's replacement is the Finances v2024-06-19 [`listTransactions`](https://developer-docs.amazon.com/sp-api/docs/finances-api-v2024-06-19-reference) operation, which this connector doesn't use yet. Amazon's deprecation list doesn't include `listFinancialEventGroups`, so the Financial Event Groups stream isn't affected.
+
+### Daily report windows
+
+The daily report streams — Sales and Traffic Business Report (`GET_SALES_AND_TRAFFIC_REPORT`), Sales and Traffic Report By Date (`GET_SALES_AND_TRAFFIC_REPORT_BY_DATE`), Vendor Sales Report (`GET_VENDOR_SALES_REPORT`), Vendor Traffic Report (`GET_VENDOR_TRAFFIC_REPORT`), Net Pure Product Margin Report (`GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`), and Rapid Retail Analytics Inventory Report (`GET_VENDOR_REAL_TIME_INVENTORY_REPORT`) — request one report per UTC calendar day, with the report window anchored to `00:00:00Z`–`23:59:59Z`. Amazon rounds any report window that doesn't start and end at midnight outward to every calendar day it touches and sums the results, so anchoring each request to a single day keeps each record's metrics scoped to that day.
+
+Earlier versions sent the wrong window on some of these streams, in two different ways. In both cases, upgrade and then refresh the affected streams (or re-sync the affected date range) to correct the stored data.
+
+| Streams | Affected versions | Symptom | Fixed in |
+| --- | --- | --- | --- |
+| Sales and Traffic Business Report, Sales and Traffic Report By Date, Vendor Sales Report | before 5.9.2 | Off-midnight windows when a sync ended mid-day, inflating the metrics for the days those windows overlapped. Days look doubled. | 5.9.2 |
+| Vendor Traffic Report, Net Pure Product Margin Report, Rapid Retail Analytics Inventory Report | 5.8.0 through 5.10.0 | No report window was sent at all, so Amazon returned its own default reporting period and every daily record was labelled with a date the report didn't cover. | 5.10.1 |
+
+### Time zone of vendor retail analytics data
+
+Amazon reports data in the vendor retail analytics reports (Vendor Sales, Vendor Inventory, Vendor Traffic, Net Pure Product Margin, Rapid Retail Analytics Inventory, and Vendor Forecasting) in Pacific Standard Time, regardless of your location or the marketplace's local time zone. Airbyte requests these reports using UTC date boundaries, so daily records can appear shifted if you compare them against a local-time report from Vendor Central.
+
+### Data availability lag for vendor retail analytics reports
+
+Amazon publishes the vendor retail analytics reports (Vendor Sales, Vendor Traffic, and Net Pure Product Margin) [72 hours after the close of the period they cover](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports). Asking for a day it has not published yet makes the report fail with `The report data for the requested date range is not yet available`, which fails the whole stream rather than skipping that one day.
+
+From 6.0.4, these three streams stop four calendar days short of the present instead of syncing up to the moment the sync runs. Nothing is lost — each day is picked up by the first sync that runs after Amazon publishes it — but expect the most recent three to four days to be missing at any given time. If you set an explicit **End Date**, it is used as-is and this holdback is not applied, so a date range ending inside the last four days can still fail.
+
+Before 6.0.4, every sync of these streams failed on its newest day. Because a sync is marked failed after 20 partial failures, a long-running connection could be marked failed even though most of its data had loaded.
+
+<HideInUI>
+
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+</HideInUI>
+
+## Report options
+
+Amazon accepts a `reportOptions` object when you request a report, and those options change what the report contains. Each report type accepts its own options—see Amazon's [report type values](https://developer-docs.amazon.com/sp-api/docs/report-type-values) documentation for the list.
+
+### Report options you configure
+
+The **Report Options** setting takes a report type, a stream name, and a list of option name/value pairs. As of version 6.0.1, the connector sends these options for six streams:
+
+- `GET_LEDGER_DETAIL_VIEW_DATA` — for example, set `eventType` to `Adjustments` to return only adjustment rows.
+- `GET_LEDGER_SUMMARY_VIEW_DATA` — for example, set `aggregatedByTimePeriod` to `DAILY` for daily rows instead of Amazon's `MONTHLY` default, or set `aggregateByLocation` to `FC` to break out rows by fulfillment center instead of by country.
+- `GET_VENDOR_SALES_REPORT` and `GET_VENDOR_INVENTORY_REPORT` — Amazon documents `reportPeriod`, `distributorView`, and `sellingProgram` as required for these reports.
+- `GET_VENDOR_TRAFFIC_REPORT` and `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT` — Amazon documents `reportPeriod` as required for these reports.
+
+For the other report types the **Report Options** dropdown offers, the connector accepts your entries and validates them, but doesn't send them to Amazon. Those reports come back with Amazon's defaults. [Issue #77617](https://github.com/airbytehq/airbyte/issues/77617) tracks the remaining streams.
+
+For the four vendor retail analytics reports, the connector sends only what you configure. It supplies no default values of its own, because the right values depend on your vendor account. If you configure nothing, the request goes to Amazon without a `reportOptions` object, exactly as in earlier versions, and Amazon can reject it. If these streams fail, add the required options for each one, for example `reportPeriod` = `DAY`, `distributorView` = `MANUFACTURING` or `SOURCING`, and `sellingProgram` = `RETAIL`. Amazon's [vendor retail analytics documentation](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) lists the values each report accepts. Use `DAY` for `reportPeriod`: the sales, traffic, and net pure product margin streams request one calendar day per report. Option names and values are case-sensitive: enter `distributorView`, not `distributorview`.
+
+If you already had report options configured for either ledger stream before 5.9.3, or for any of the four vendor retail analytics reports before 6.0.1, they take effect as soon as you upgrade, and the records can change shape. For example, a ledger summary view aggregated `DAILY` returns one row per day where it previously returned one per month, and a ledger detail view filtered by `eventType` returns fewer rows. Refresh the stream if you need history to match the new options.
+
+### Report options the connector sets for you
+
+Some streams send report options that you don't configure. Anything you enter in **Report Options** for these report types is ignored:
+
+| Stream | Report options sent |
+| :----- | :------------------ |
+| The five Brand Analytics streams | `reportPeriod: WEEK`, plus a fixed date range covering the most recent complete Sunday-to-Saturday week |
+| `GET_SALES_AND_TRAFFIC_REPORT` | `asinGranularity` from **Sales and Traffic Report ASIN Granularity** |
+| `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH` | `dateGranularity: MONTH` and `asinGranularity` |
+| `GET_VENDOR_FORECASTING_FRESH_REPORT` | `sellingProgram: FRESH` |
+| `GET_VENDOR_FORECASTING_RETAIL_REPORT` | `sellingProgram: RETAIL` |
+
+Both Vendor Forecasting streams read Amazon's single `GET_VENDOR_FORECASTING_REPORT` report type and differ only in the `sellingProgram` option they send.
+
+Because the Brand Analytics streams always request the same weekly window, they're full refresh only. Each sync replaces the previous week's data with the latest complete week.
+
+### Report window size
+
+**Period In Days** controls how much time each report request covers, and defaults to 90 days. Report streams cap it at 365 days, and these streams cap it lower because Amazon limits how much data they return per request:
+
+| Stream or report type | Maximum window |
+| :-------------------- | :------------- |
+| Orders | 30 days |
+| `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` | 30 days |
+| `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` | 30 days |
+| `GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL` | 30 days |
+| `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE` | 60 days |
+
+If you set a larger value, the connector uses the cap for those streams and your value for the rest.
+
+Other streams ignore **Period In Days** entirely:
+
+- The daily report streams listed in [Daily report windows](#daily-report-windows) always request a single calendar day per report, and Sales and Traffic Business Report (Monthly) always requests a single calendar month.
+- Vendor Orders, Vendor Order Status, and Vendor Direct Fulfillment Shipping always request 7 days at a time.
+- Financial Events and Financial Event Groups use **Financial Events Step Size** instead.
+
+## Performance considerations
+
+For information about rate limits, see [Usage Plans and Rate Limits in the SP-API](https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits-in-the-sp-api).
+
+Some report types carry their own limits on top of the API-wide ones. For example, Amazon allows only three requests for `GET_SALES_AND_TRAFFIC_REPORT` every five minutes, so a backfill of the Sales and Traffic streams over a long date range spends most of its time backing off.
+
+### Report reuse
+
+Before creating a new report, the connector checks the Amazon SP-API for an existing report that matches the same report type, date range, and marketplace IDs. If a matching report is found, it is reused instead of calling `createReport`, which reduces API calls and helps avoid 429 rate limit errors.
+
+- **In-progress reports** (IN_QUEUE, IN_PROGRESS) are always reused regardless of age.
+- **Completed reports** (DONE) are reused only if `max_done_report_age_hours` is greater than 0 and the report was created within that time window. With the default value of `0`, a fresh report is always created.
+- **Cancelled reports** (CANCELLED) are reused and silently skipped. The connector does not retry cancelled reports — the sync continues with the next date slice and the cursor state is not advanced, so the same period will be retried on the next sync.
+- **Failed reports** (FATAL) are reused and handled by the connector's retry logic.
+
+If the pre-check fails for any reason (network error, API error), the connector falls back to creating a new report normally.
+
+#### Report cancellation and data loss
+
+According to the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/reference/getreport), a report can be cancelled in two ways:
+
+1. **Automatic cancellation** — Amazon automatically cancels a report when there is no data to return for the requested parameters. This is normal behavior and no data is lost — there was simply nothing to report for that time period.
+2. **Manual cancellation** — A user or application explicitly cancels a report via the [cancelReport](https://developer-docs.amazon.com/sp-api/reference/cancelreport) API before processing completes.
+
+:::caution
+**If a report is manually cancelled, data for that time period will be skipped.** The connector treats all CANCELLED reports the same way — it skips the report without retrying or fetching records. If you or another application cancels a report that was being processed by the connector, the data for that report's date range will not be synced. The cursor state is not advanced, so the connector will attempt to create a new report for the same period on the next sync, but if the cancelled report is still the most recent match, it will be skipped again until it ages out of the report list.
+
+To avoid data loss, do not manually cancel reports that are being used by Airbyte syncs.
+:::
+
+- Use the **Financial Events Step Size** configuration for the ListFinancialEvents and ListFinancialEventGroups streams:
+  - **Hourly step sizes** (e.g., `1H`, `6H`) are recommended for high-volume sellers experiencing pagination token expiration (TTL errors). They fetch smaller chunks per request, reducing the risk of timeouts.
+  - **Daily step sizes** (e.g., `1D`, `7D`) are better for moderate data volumes, balancing sync speed with API efficiency.
+  - **Larger step sizes** (e.g., `30D`, `180D`) are more efficient for smaller data volumes, reducing the number of API calls.
+
+## Data type map
+
+| Integration Type         | Airbyte Type |
+|:-------------------------|:-------------|
+| `string`                 | `string`     |
+| `int`, `float`, `number` | `number`     |
+| `date`                   | `date`       |
+| `datetime`               | `datetime`   |
+| `array`                  | `array`      |
+| `object`                 | `object`     |
+
+## PII access for Orders and OrderItems
+
+The Orders and OrderItems streams can return personally identifiable information (PII) such as buyer names, shipping addresses, and phone numbers. Amazon gates these fields behind [Restricted Data Tokens (RDTs)](https://developer-docs.amazon.com/sp-api/docs/tokens-api-use-case-guide).
+
+To access PII fields, enable **Include PII** in the connector configuration. The connector then requests an RDT scoped to the Orders and OrderItems endpoints. The following prerequisites apply:
+
+- Your Amazon SP-API developer profile must have an approved Restricted Role: **Direct-to-Consumer Shipping** or **Tax Invoicing**. To request access, update your [developer profile](https://developer-docs.amazon.com/sp-api/docs/roles-in-the-selling-partner-api) and submit for Amazon's review.
+- The selling partner must have authorized your application.
+
+When **Include PII** is enabled:
+
+- The `ShippingAddress` object in Orders includes `Name`, `AddressLine1`, `AddressLine2`, `AddressLine3`, and `Phone` in addition to the standard address fields.
+- The `BuyerInfo` object includes buyer email and name information.
+
+If your application lacks the required Restricted Role, the connector logs a warning and falls back to standard authentication. PII fields remain empty, and non-PII data syncs normally. No manual intervention is required.
+
+## Limitations & Troubleshooting
+
+### Failed to retrieve the report
+
+```
+Failed to retrieve the report 'YOUR_REPORT_NAME' for period 2024-01-01T12:01:15Z-2024-01-15T12:01:14Z.
+This will be read during the next sync. Report ID: YOUR_REPORT_ID. Error: Failed to retrieve the report result document.
+```
+
+Requesting reports via Amazon Seller Partner API can lead to failed syncs with error above "Failed to retrieve the report...".
+
+One of the reasons why users face this issue is that report requests were made too often.
+
+**Solution:**
+
+Create a separate connection for streams which usually fail with error above "Failed to retrieve the report..." and disable sync of these streams in the first connection with streams which don't fail because of the error. Adjust the sync time of these two connections to not overlap. It's recommended to have a time break between syncs in the connections.
+
+### Rate Limit issue for Report Streams
+
+Syncing Report Streams sometimes may fail due to rate limits.
+
+The Amazon Seller Partner source connector makes requests according to the limits mentioned in the [SP API docs](https://developer-docs.amazon.com/sp-api/lang-pt_BR/docs/reports-api-rate-limits).
+But actual Rate Limits could be differ from ones mentioned in the docs. See [Usage Plans and Rate Limits](https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits) for more information.
+Depending on actual rate limits the Amazon Seller Partner source connector can receive "rate limited" responses, unfortunately there is no way to find actual rate limits values for account.
+
+We recommend next steps to overcome the rate limits issue:
+
+1. **Enable report reuse** by setting **Max Done Report Age (Hours)** (`max_done_report_age_hours`) to a value between `1` and `72` (e.g., `24`). This is highly recommended if your connection faces rate limit issues. When enabled, the connector reuses recently completed reports instead of creating new ones, significantly reducing the number of `createReport` API calls and helping avoid both 429 rate limit errors and FATAL cooldown errors. This field is available in the connector UI.
+2. **Reduce 429 retry attempts** by lowering **Report Creation 429 Max Retries** (`creation_requester_429_max_retries`) from the default of `5`. Each retry uses exponential backoff, but repeated retries consume rate limit budget that could be used by other streams. Set this via the connector config API. Set to `0` to skip 429 retries entirely and let the next sync attempt the request instead.
+3. **Stop sync on rate limit** by enabling **Stop Sync When Report Streams Are Rate Limited** (`stop_sync_on_rate_limit`). When enabled, the source stops retrying immediately once the rate limit retry budget is exhausted and fails with an actionable configuration error. This is useful when persistent rate limiting indicates the connector configuration needs adjustment (such as reducing the number of report streams or increasing the sync interval).
+4. **Adjust the FATAL report retry wait time** by setting **Failed Report Retry Wait Time** (`failed_retry_wait_time_in_seconds`). When a report returns FATAL status due to Amazon's per-report-type cooldown, the connector defers retry for this duration. Default is `1800` (30 minutes). If rate-limited report creation triggers FATAL responses, increasing this value gives Amazon more time to clear the cooldown. For daily FBA reports, set to `14400` (4 hours). Set this via the connector config API.
+5. Depending on your amount of data per [Period In Days](https://docs.airbyte.com/integrations/sources/amazon-seller-partner#reference) adjust this value to reduce time of processing the report on API Side. If creation of the report takes more than 1 hour it's recommended to set lower value for `Period In Days` setting.
+6. Configure affected Report Stream to read data incrementally, use Incremental Sync mode (Append). This will prevent the source of rereading already fetched data and make the source to read new data starting from state cursor value. See [Incremental Sync Mode - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) for more information.
+7. Set syncs to run every 24 hours.
+
+This configuration will sync partial data, until the source gets rate limited. Once state value reaches date that equal the date of sync, next sync will have only one partition(date period for report). The source will make only one request for affected report which should be enough to avoid rate limits issue.
+
+### Reports failing with FATAL status
+
+Amazon enforces an undocumented per-report-type cooldown after generating a report. If a new report of the same type is requested before the cooldown expires, Amazon returns a `FATAL` status instead of processing the report. The cooldown duration varies by report type:
+
+- **Near-real-time FBA reports** (for example, `GET_AFN_INVENTORY_DATA`, `GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA`): approximately 30 minutes.
+- **Daily FBA reports** (for example, `GET_FBA_STORAGE_FEE_CHARGES_DATA`, `GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA`): approximately 4 hours.
+
+The cooldown applies per seller, per report type, across all applications. Even requests from different apps count toward the same cooldown window.
+
+The connector handles this automatically by deferring retry of FATAL reports. When a report fails with FATAL status, the connector waits the configured cooldown period before retrying, allowing other report streams to continue processing in the meantime.
+
+**Tuning options** (set via connector config API, hidden from UI):
+
+- **Failed Report Retry Wait Time** (`failed_retry_wait_time_in_seconds`): Time in seconds to wait before retrying a FATAL report. Default is `1800` (30 minutes), which covers the most common cooldown. Range: `1`–`14400`. Increase this value to `14400` (4 hours) if you see repeated FATAL errors on daily FBA reports.
+- **Max Done Report Age (Hours)** (`max_done_report_age_hours`): When set to a value between `1` and `72`, the connector reuses recently completed reports instead of creating new ones, reducing the chance of triggering the cooldown in the first place.
+
+### Report creation failing with 429 rate limit errors
+
+When the connector creates report requests, the Amazon SP-API may return HTTP 429 (Too Many Requests) if the account exceeds rate limits. The connector automatically retries these requests with exponential backoff.
+
+**Tuning options:**
+
+- **Report Creation 429 Max Retries** (`creation_requester_429_max_retries`, hidden from UI): Maximum number of retry attempts for 429 errors during report creation. Default is `5`. Reduce this value to avoid exhausting rate limits on retrying requests. Set to `0` to disable 429 retries entirely. Set this via the connector config API.
+- **Max Done Report Age (Hours)** (`max_done_report_age_hours`, available in the UI): When set to a value between `1` and `72`, the connector reuses recently completed reports instead of creating new ones. This reduces the number of `createReport` API calls and helps avoid hitting rate limits.
+
+### ListFinancialEvents stream incompatible with deduplication on BigQuery
+
+The `ListFinancialEvents` stream does not define a primary key because the Amazon SP-API returns aggregated event lists per time range rather than individual events with unique identifiers. All top-level fields in this stream are arrays, such as `ShipmentEventList` and `RefundEventList`.
+
+BigQuery requires non-JSON, non-array types for its `CLUSTER BY` clause, which Airbyte uses during deduplication. Syncing `ListFinancialEvents` to BigQuery in deduplication mode fails with:
+
+```text
+CLUSTER BY expression must be groupable, but type is JSON.
+```
+
+**Solution:**
+
+Use **Append** sync mode instead of **Dedup** for the `ListFinancialEvents` stream when syncing to BigQuery. If you need deduplicated data, perform deduplication in BigQuery using SQL after the data lands in append mode.
+
+### InvalidInput error for ListFinancialEvents stream
+
+```text
+The API returned an InvalidInput error. This typically occurs when the response exceeds the maximum number of transactions or 10 MB per page.
+```
+
+This error occurs when the ListFinancialEvents stream returns more data than the API can handle in a single page response. According to the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference), if the response exceeds the maximum number of transactions or 10 MB, the API returns an `InvalidInput` error.
+
+**Solution:**
+
+Lower the **Financial Events Max Results Per Page** setting in your connector configuration:
+
+1. Go to the connector settings page.
+2. Find the **Financial Events Max Results Per Page** option.
+3. Reduce the value from the default of 100 to a smaller number (e.g., 50, 25, 10, or even 1 for very high-volume accounts).
+4. Save and retry the sync.
+
+You may also combine this with a smaller **Financial Events Step Size** (e.g., 1H or 6H) to further reduce the amount of data fetched per request.
+
+### Fulfillment Inbound shipment items pagination
+
+The `FbaInboundShipmentItems` stream reads items per shipment via the [getShipmentItemsByShipmentId](https://developer-docs.amazon.com/sp-api/reference/getshipmentitemsbyshipmentid) operation. Amazon's API model defines no pagination request parameter for this operation, although its response can include a `NextToken` value. If Amazon truncates the item list of a single shipment, the connector cannot request the remaining items for that shipment. If you observe incomplete item lists for very large shipments, [contact Airbyte Support](https://support.airbyte.com).
+
+Also note that Amazon selects inbound shipments by the shipment's last-update time, and item-quantity updates do not always advance it (see [amzn/selling-partner-api-models#2594](https://github.com/amzn/selling-partner-api-models/issues/2594)). Prefer a generous **Inbound Rolling Days** window over a narrow one if you rely on item quantities staying current.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date | Pull Request | Subject |
+| :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 6.0.5 | 2026-10-06 | [87776](https://github.com/airbytehq/airbyte/pull/87776) | Update dependencies |
+| 6.0.4 | 2026-09-29 | [86942](https://github.com/airbytehq/airbyte/pull/86942) | Stop requesting vendor retail analytics days Amazon has not published yet by holding the Vendor Sales, Vendor Traffic and Net Pure Product Margin cursors four days back |
+| 6.0.2 | 2026-09-29 | [87083](https://github.com/airbytehq/airbyte/pull/87083) | Update dependencies |
+| 6.0.1 | 2026-09-28 | [86940](https://github.com/airbytehq/airbyte/pull/86940) | Send configured `reportOptions` for the vendor sales, inventory, traffic, and net pure product margin reports instead of validating and then dropping them |
+| 6.0.0 | 2026-09-24 | [85813](https://github.com/airbytehq/airbyte/pull/85813) | Remove primary key from `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` streams; these line-item reports have no proven, reliably unique identifier, so deduplicating on `amazon-order-id` dropped records |
+| 5.10.5 | 2026-09-22 | [86512](https://github.com/airbytehq/airbyte/pull/86512) | Update dependencies |
+| 5.10.4 | 2026-09-21 | [86322](https://github.com/airbytehq/airbyte/pull/86322) | Add `order-item-id` to `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` schemas |
+| 5.10.3 | 2026-09-15 | [85942](https://github.com/airbytehq/airbyte/pull/85942) | Update dependencies |
+| 5.10.2 | 2026-09-08 | [85388](https://github.com/airbytehq/airbyte/pull/85388) | Update dependencies |
+| 5.10.1 | 2026-08-25 | [84913](https://github.com/airbytehq/airbyte/pull/84913) | Send an explicit, day-aligned report window for the daily `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, and `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` streams, fixing records that were labelled with a date the report did not actually cover |
+| 5.10.0 | 2026-08-24 | [76434](https://github.com/airbytehq/airbyte/pull/76434) | Add Fulfillment Inbound streams (FbaInboundShipments, FbaInboundShipmentItems) and Inbound API settings (`inbound_replication_mode`, `inbound_rolling_days`, `inbound_start_datetime`, `inbound_end_datetime`) |
+| 5.9.5 | 2026-08-18 | [84482](https://github.com/airbytehq/airbyte/pull/84482) | Update dependencies |
+| 5.9.4 | 2026-08-11 | [83818](https://github.com/airbytehq/airbyte/pull/83818) | Update dependencies |
+| 5.9.3 | 2026-08-07 | [77620](https://github.com/airbytehq/airbyte/pull/77620) | Pass configured Report Options to the report creation request for GET_LEDGER_DETAIL_VIEW_DATA and GET_LEDGER_SUMMARY_VIEW_DATA |
+| 5.9.2 | 2026-08-05 | [81374](https://github.com/airbytehq/airbyte/pull/81374) | Anchor the report window of the daily `GET_SALES_AND_TRAFFIC_REPORT`, `GET_SALES_AND_TRAFFIC_REPORT_BY_DATE`, and `GET_VENDOR_SALES_REPORT` streams to the slice's calendar day, fixing inflated/mislabeled metrics when a sync ends mid-day |
+| 5.9.1 | 2026-07-28 | [82829](https://github.com/airbytehq/airbyte/pull/82829) | Update dependencies |
+| 5.9.0 | 2026-07-24 | [82254](https://github.com/airbytehq/airbyte/pull/82254) | Add missing fields to GET_VENDOR_SALES_REPORT (customerReturns) and GET_VENDOR_INVENTORY_REPORT (startDate, endDate, unhealthyInventoryUnits, unhealthyInventoryCost, procurableProductOutOfStockRate, receiveFillRate, uft) |
+| 5.8.2 | 2026-07-21 | [82317](https://github.com/airbytehq/airbyte/pull/82317) | Update dependencies |
+| 5.8.1 | 2026-07-14 | [81724](https://github.com/airbytehq/airbyte/pull/81724) | Update dependencies |
+| 5.8.0 | 2026-07-08 | [80845](https://github.com/airbytehq/airbyte/pull/80845) | Add three missing vendor report streams: GET_VENDOR_TRAFFIC_REPORT, GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT, and GET_VENDOR_REAL_TIME_INVENTORY_REPORT |
+| 5.7.12 | 2026-07-07 | [80820](https://github.com/airbytehq/airbyte/pull/80820) | Add Ireland (IE) marketplace support |
+| 5.7.11 | 2026-07-07 | [77151](https://github.com/airbytehq/airbyte/pull/77151) | Update dependencies |
+| 5.7.10 | 2026-06-24 | [79172](https://github.com/airbytehq/airbyte/pull/79172) | Gate vendor-only and seller-only streams behind account type using ConditionalStreams; use CheckDynamicStream so connectivity check works for both Seller and Vendor accounts. Added documentation for stream availability by account type. |
+| 5.7.9 | 2026-06-17 | [75470](https://github.com/airbytehq/airbyte/pull/75470) | Fix GzipXmlDecoder error handling that caused AttributeError on malformed XML responses |
+| 5.7.8 | 2026-06-16 | [79673](https://github.com/airbytehq/airbyte/pull/79673) | Surface rate limit exhaustion on report creation as a config error with troubleshooting guidance |
+| 5.7.7 | 2026-05-26 | [78321](https://github.com/airbytehq/airbyte/pull/78321) | Add configurable hourly lookback window for incremental report streams except monthly sales-and-traffic and date-only vendor sales reports |
+| 5.7.6 | 2026-05-20 | [78285](https://github.com/airbytehq/airbyte/pull/78285) | Promoted release candidate to GA |
+| 5.7.6-rc.4 | 2026-05-13 | [78037](https://github.com/airbytehq/airbyte/pull/78037) | Make failed report retry wait time and report creation 429 max retries visible in the source configuration |
+| 5.7.6-rc.3 | 2026-05-11 | [77837](https://github.com/airbytehq/airbyte/pull/77837) | Add configurable cooldown-aware deferred retry for FATAL reports and dedicated 429 error handler with backoff on report creation |
+| 5.7.6-rc.2 | 2026-05-06 | [77800](https://github.com/airbytehq/airbyte/pull/77800) | Skip FATAL reports when checking for existing reports to prevent infinite retry loops |
+| 5.7.6-rc.1 | 2026-04-28 | [76093](https://github.com/airbytehq/airbyte/pull/76093) | Check for existing reports before creating new ones to avoid hitting Amazon SP-API rate limits |
+| 5.7.5 | 2026-05-04 | [76269](https://github.com/airbytehq/airbyte/pull/76269) | Use 89-day buffer for GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE start date to avoid 400 errors caused by network latency near Amazon's 90-day boundary |
+| 5.7.4 | 2026-04-28 | [77521](https://github.com/airbytehq/airbyte/pull/77521) | Restore HTTPAPIBudget that was temporarily commented out in 5.7.4-rc.1; revert default_concurrency back to 2. Concurrency tuning rollout was canceled and is being deferred. |
+| 5.7.4-rc.1 | 2026-04-27 | [76955](https://github.com/airbytehq/airbyte/pull/76955) | Concurrency tuning iteration 1: bump default_concurrency from 2 to 4 and temporarily comment out HTTPAPIBudget to measure empirical concurrency ceiling. |
+| 5.7.3 | 2026-04-21 | [76494](https://github.com/airbytehq/airbyte/pull/76494) | Update dependencies |
+| 5.7.2 | 2026-04-13 | [75143](https://github.com/airbytehq/airbyte/pull/75143) | Fix incorrect URL path for GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE stream — add missing `/reports/` segment |
+| 5.7.1 | 2026-04-08 | [76031](https://github.com/airbytehq/airbyte/pull/76031) | Deprecate non-functional `wait_to_avoid_fatal_errors` config option (hidden from UI) |
+| 5.7.0 | 2026-03-23 | [74740](https://github.com/airbytehq/airbyte/pull/74740) | Add configurable `asinGranularity` for GET_SALES_AND_TRAFFIC_REPORT streams, enabling CHILD and SKU level data with populated childAsin and sku values |
+| 5.6.1 | 2026-03-17 | [74538](https://github.com/airbytehq/airbyte/pull/74538) | Update dependencies |
+| 5.6.0 | 2026-03-10 | [74296](https://github.com/airbytehq/airbyte/pull/74296) | Add Restricted Data Token (RDT) support for Orders and OrderItems streams to access PII fields (BuyerInfo, ShippingAddress) via opt-in `include_pii` config option |
+| 5.5.1 | 2026-03-03 | [72961](https://github.com/airbytehq/airbyte/pull/72961) | Add time-windowed partitioning to Orders stream for proper state checkpointing of OrderItems substream |
+| 5.5.0 | 2026-02-26 | [72258](https://github.com/airbytehq/airbyte/pull/72258) | Add GET_SALES_AND_TRAFFIC_REPORT_BY_DATE stream |
+| 5.4.1 | 2026-02-24 | [73757](https://github.com/airbytehq/airbyte/pull/73757) | Update dependencies |
+| 5.4.0 | 2026-02-20 | [72837](https://github.com/airbytehq/airbyte/pull/72837) | Add marketplaceId to GET_SALES_AND_TRAFFIC_REPORT stream and add new GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH stream for monthly granularity |
+| 5.3.1 | 2026-02-10 | [73006](https://github.com/airbytehq/airbyte/pull/73006) | Update dependencies |
+| 5.3.0 | 2026-02-02 | [72259](https://github.com/airbytehq/airbyte/pull/72259) | Add configurable MaxResultsPerPage for ListFinancialEvents stream with InvalidInput error handling |
+| 5.2.0 | 2026-01-21 | [71055](https://github.com/airbytehq/airbyte/pull/71055) | Re-add 8 brand analytics and vendor analytics streams to Cloud. Fix token expiration handling for long-running syncs. |
+| 5.1.2 | 2026-01-20 | [71037](https://github.com/airbytehq/airbyte/pull/71037) | Fix GB marketplace_id config transformation |
+| 5.1.1 | 2026-01-20 | [71991](https://github.com/airbytehq/airbyte/pull/71991) | Update dependencies |
+| 5.1.0 | 2026-01-15 | [71327](https://github.com/airbytehq/airbyte/pull/71327) | Add rate limiting and hourly granularity options for ListFinancialEvents and ListFinancialEventGroups streams |
+| 5.0.2 | 2026-01-14 | [71526](https://github.com/airbytehq/airbyte/pull/71526) | Update dependencies |
+| 5.0.1 | 2025-12-11 | [70200](https://github.com/airbytehq/airbyte/pull/70200) | Fix financial events pagination causing 400 InvalidInput errors under rate limiting when syncing `ListFinancialEvents`, and align `ListFinancialEventGroups` pagination behavior |
+| 5.0.0 | 2025-12-08 | [69805](https://github.com/airbytehq/airbyte/pull/69805) | Remove deprecated FBA Subscribe and Save report types (GET_FBA_SNS_FORECAST_DATA and GET_FBA_SNS_PERFORMANCE_DATA) |
+| 4.9.1 | 2025-11-25 | [69935](https://github.com/airbytehq/airbyte/pull/69935) | Update dependencies |
+| 4.9.0 | 2025-11-10 | [66995](https://github.com/airbytehq/airbyte/pull/66995) | Add APIBudget for reports streams |
+| 4.8.4 | 2025-10-29 | [68678](https://github.com/airbytehq/airbyte/pull/68678) | Increase `maxSecondsBetweenMessages` to 14400 |
+| 4.8.3 | 2025-10-29 | [66030](https://github.com/airbytehq/airbyte/pull/66030) | Update dependencies |
+| 4.8.2 | 2025-09-24 | [66485](https://github.com/airbytehq/airbyte/pull/66485) | Upgrade to CDK v7 |
+| 4.8.1 | 2025-08-16 | [65047](https://github.com/airbytehq/airbyte/pull/65047) | Update dependencies |
+| 4.8.0 | 2025-07-29 | [55195](https://github.com/airbytehq/airbyte/pull/55195) | Add VendorOrdersStatus stream |
+| 4.7.2 | 2025-08-02 | [63032](https://github.com/airbytehq/airbyte/pull/63032) | Update dependencies |
+| 4.7.1 | 2025-07-15 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
+| 4.7.0 | 2025-07-08 | [62850](https://github.com/airbytehq/airbyte/pull/62850) | Promoting release candidate 4.7.0-rc.1 to a main version. |
+| 4.7.0-rc.1 | 2025-06-30 | [62119](https://github.com/airbytehq/airbyte/pull/62119) | Migrate to manifest-only |
+| 4.6.4 | 2025-06-15 | [54870](https://github.com/airbytehq/airbyte/pull/54870) | Update dependencies |
+| 4.6.3 | 2025-06-03 | [61351](https://github.com/airbytehq/airbyte/pull/61351) | Update dependencies |
+| 4.6.2 | 2025-04-09 | [57537](https://github.com/airbytehq/airbyte/pull/57537) | Fix Extend Minimum Date Range |
+| 4.6.1 | 2025-04-08 | [55238](https://github.com/airbytehq/airbyte/pull/55238) | Fix daterange in `DatetimeBasedCursor` and Added configurable step size for financial events streams (`list_financial_event_groups`, `list_financial_events`) |
+| 4.6.0 | 2025-02-24 | [53225](https://github.com/airbytehq/airbyte/pull/53225) | Add API Budget |
+| 4.5.3 | 2025-02-22 | [53928](https://github.com/airbytehq/airbyte/pull/53928) | Update dependencies |
+| 4.5.2 | 2025-02-17 | [53693](https://github.com/airbytehq/airbyte/pull/53693) | Add app_id to server configuration (OAuth) |
+| 4.5.1 | 2025-02-08 | [49297](https://github.com/airbytehq/airbyte/pull/49297) | Update dependencies |
+| 4.5.0 | 2025-02-04 | [53155](https://github.com/airbytehq/airbyte/pull/53155) | Promoting release candidate 4.5.0-rc.5 to a main version. |
+| 4.5.0-rc.5 | 2025-01-31 | [52700](https://github.com/airbytehq/airbyte/pull/52700) | Use incremental_dependency for the OrderItems substream |
+| 4.5.0-rc.4 | 2025-01-31 | [52683](https://github.com/airbytehq/airbyte/pull/52683) | Fix Rate Limiting issue; disable concurrency |
+| 4.5.0-rc.3 | 2025-01-28 | [52619](https://github.com/airbytehq/airbyte/pull/52619) | Fix `Orders` pagination |
+| 4.5.0-rc.2 | 2025-01-28 | [52592](https://github.com/airbytehq/airbyte/pull/52592) | Only request data for the `Orders` stream for up to 2 minutes before present if replication_start_date is not specified |
+| 4.5.0-rc.1 | 2025-01-27 | [49293](https://github.com/airbytehq/airbyte/pull/49293) | Convert to REST and reports streams to concurrent low-code CDK in v6. Remove buggy analytics streams |
+| 4.4.7 | 2024-11-14 | [47691](https://github.com/airbytehq/airbyte/pull/47691) | Fix `period_in_days` definition |
+| 4.4.6 | 2024-11-25 | [48644](https://github.com/airbytehq/airbyte/pull/48644) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 4.4.5 | 2024-11-04 | [47049](https://github.com/airbytehq/airbyte/pull/47049) | Update dependencies |
+| 4.4.4 | 2024-10-12 | [46817](https://github.com/airbytehq/airbyte/pull/46817) | Update dependencies |
+| 4.4.3 | 2024-10-05 | [46473](https://github.com/airbytehq/airbyte/pull/46473) | Update dependencies |
+| 4.4.2 | 2024-09-28 | [44748](https://github.com/airbytehq/airbyte/pull/44748) | Update dependencies |
+| 4.4.1 | 2024-08-17 | [43739](https://github.com/airbytehq/airbyte/pull/43739) | Update dependencies |
+| 4.4.0 | 2024-07-17 | [42052](https://github.com/airbytehq/airbyte/pull/42052) | Add waiting between requests logic to avoid failed report requests |
+| 4.3.11 | 2024-07-13 | [41873](https://github.com/airbytehq/airbyte/pull/41873) | Update dependencies |
+| 4.3.10 | 2024-07-10 | [41345](https://github.com/airbytehq/airbyte/pull/41345) | Update dependencies |
+| 4.3.9 | 2024-07-09 | [41158](https://github.com/airbytehq/airbyte/pull/41158) | Update dependencies |
+| 4.3.8 | 2024-07-08 | [40751](https://github.com/airbytehq/airbyte/pull/40751) | Improve error messaging and turning on alerting |
+| 4.3.7 | 2024-07-06 | [40990](https://github.com/airbytehq/airbyte/pull/40990) | Update dependencies |
+| 4.3.6 | 2024-07-01 | [40590](https://github.com/airbytehq/airbyte/pull/40590) | Add log message when data only accessible to seller accounts, add report id in log message for fatal report status, add check for start date. |
+| 4.3.5 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 4.3.4 | 2024-06-25 | [40384](https://github.com/airbytehq/airbyte/pull/40384) | Update dependencies |
+| 4.3.3 | 2024-06-22 | [40008](https://github.com/airbytehq/airbyte/pull/40008) | Update dependencies |
+| 4.3.2 | 2024-06-13 | [39441](https://github.com/airbytehq/airbyte/pull/39441) | Update state handling for incremental streams |
+| 4.3.1 | 2024-06-04 | [38969](https://github.com/airbytehq/airbyte/pull/38969) | [autopull] Upgrade base image to v1.2.1 |
+| 4.3.0      | 2024-05-24 | [#38657](https://github.com/airbytehq/airbyte/pull/38657) | Extend the report_options spec config with a `stream_name` attribute                                                                                                                |
+| 4.2.4      | 2024-05-15 | [#38210](https://github.com/airbytehq/airbyte/pull/38210) | Fix `GET_VENDOR_TRAFFIC_REPORT` stream with report option `reportPeriod=DAY`                                                                                                        |
+| 4.2.3      | 2024-05-09 | [#38078](https://github.com/airbytehq/airbyte/pull/38078) | Hide OSS-only streams in report options config for cloud users                                                                                                                      |
+| 4.2.2      | 2024-04-24 | [#36630](https://github.com/airbytehq/airbyte/pull/36630) | Schema descriptions and CDK 0.80.0                                                                                                                                                  |
+| 4.2.1      | 2024-04-08 | [#36895](https://github.com/airbytehq/airbyte/pull/36895) | Fix `reportPeriod` day query params                                                                                                                                                 |
+| 4.2.0      | 2024-03-19 | [#36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                                                                                     |
+| 4.1.0      | 2024-03-12 | [#35954](https://github.com/airbytehq/airbyte/pull/35954) | Add `GET_VENDOR_FORECASTING_FRESH_REPORT` and `GET_VENDOR_FORECASTING_RETAIL_REPORT` streams                                                                                        |
+| 4.0.0      | 2024-02-23 | [#35439](https://github.com/airbytehq/airbyte/pull/35439) | Update schema for the `GET_FBA_STORAGE_FEE_CHARGES_DATA` stream                                                                                                                     |
+| 3.5.0      | 2024-02-09 | [#35331](https://github.com/airbytehq/airbyte/pull/35331) | Fix check for Vendor accounts. Add failed report result message                                                                                                                     |
+| 3.4.0      | 2024-02-15 | [#35273](https://github.com/airbytehq/airbyte/pull/35273) | Add `VendorOrders` stream                                                                                                                                                           |
+| 3.3.2      | 2024-02-13 | [#33996](https://github.com/airbytehq/airbyte/pull/33996) | Add integration tests                                                                                                                                                               |
+| 3.3.1      | 2024-02-09 | [#35106](https://github.com/airbytehq/airbyte/pull/35106) | Add logs for the failed check command                                                                                                                                               |
+| 3.3.0      | 2024-02-09 | [#35062](https://github.com/airbytehq/airbyte/pull/35062) | Fix the check command for the `Vendor` account type                                                                                                                                 |
+| 3.2.2      | 2024-02-07 | [#34914](https://github.com/airbytehq/airbyte/pull/34914) | Fix date formatting for ledger reports with aggregation by month                                                                                                                    |
+| 3.2.1      | 2024-01-30 | [#34654](https://github.com/airbytehq/airbyte/pull/34654) | Fix date format in state message for streams with custom dates formatting                                                                                                           |
+| 3.2.0      | 2024-01-26 | [#34549](https://github.com/airbytehq/airbyte/pull/34549) | Update schemas for vendor analytics streams                                                                                                                                         |
+| 3.1.0      | 2024-01-17 | [#34283](https://github.com/airbytehq/airbyte/pull/34283) | Delete deprecated streams                                                                                                                                                           |
+| 3.0.1      | 2023-12-22 | [#33741](https://github.com/airbytehq/airbyte/pull/33741) | Improve report streams performance                                                                                                                                                  |
+| 3.0.0      | 2023-12-12 | [#32977](https://github.com/airbytehq/airbyte/pull/32977) | Make all streams incremental                                                                                                                                                        |
+| 2.5.0      | 2023-11-27 | [#32505](https://github.com/airbytehq/airbyte/pull/32505) | Make report options configurable via UI                                                                                                                                             |
+| 2.4.0      | 2023-11-23 | [#32738](https://github.com/airbytehq/airbyte/pull/32738) | Add `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, `GET_VENDOR_REAL_TIME_INVENTORY_REPORT`, and `GET_VENDOR_TRAFFIC_REPORT` streams                                                   |
+| 2.3.0      | 2023-11-22 | [#32541](https://github.com/airbytehq/airbyte/pull/32541) | Make `GET_AFN_INVENTORY_DATA`, `GET_AFN_INVENTORY_DATA_BY_COUNTRY`, and `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` streams incremental                                               |
+| 2.2.0      | 2023-11-21 | [#32639](https://github.com/airbytehq/airbyte/pull/32639) | Make start date optional, if start date is not provided, date 2 years ago from today will be used                                                                                   |
+| 2.1.1      | 2023-11-21 | [#32560](https://github.com/airbytehq/airbyte/pull/32560) | Silently exit sync if the retry attempts were unsuccessful                                                                                                                          |
+| 2.1.0      | 2023-11-21 | [#32591](https://github.com/airbytehq/airbyte/pull/32591) | Add new fields to GET_LEDGER_DETAIL_VIEW_DATA, GET_FBA_INVENTORY_PLANNING_DATA and Orders schemas                                                                                   |
+| 2.0.2      | 2023-11-17 | [#32462](https://github.com/airbytehq/airbyte/pull/32462) | Remove Max time option from specification; set default waiting time for reports to 1 hour                                                                                           |
+| 2.0.1      | 2023-11-16 | [#32550](https://github.com/airbytehq/airbyte/pull/32550) | Fix the OAuth flow                                                                                                                                                                  |
+| 2.0.0      | 2023-11-23 | [#32355](https://github.com/airbytehq/airbyte/pull/32355) | Remove Brand Analytics from Airbyte Cloud, permanently remove deprecated FBA reports                                                                                                |
+| 1.6.2      | 2023-11-14 | [#32508](https://github.com/airbytehq/airbyte/pull/32508) | Do not use AWS signature as it is no longer required by the Amazon API                                                                                                              |
+| 1.6.1      | 2023-11-13 | [#32457](https://github.com/airbytehq/airbyte/pull/32457) | Fix report decompression                                                                                                                                                            |
+| 1.6.0      | 2023-11-09 | [#32259](https://github.com/airbytehq/airbyte/pull/32259) | Mark "aws_secret_key" and "aws_access_key" as required in specification; update schema for stream `Orders`                                                                          |
+| 1.5.1      | 2023-08-18 | [#29255](https://github.com/airbytehq/airbyte/pull/29255) | Field role_arn is optional on UI but not really on the backend blocking connector set up using oauth                                                                                |
+| 1.5.0      | 2023-08-08 | [#29054](https://github.com/airbytehq/airbyte/pull/29054) | Add new stream `OrderItems`                                                                                                                                                         |
+| 1.4.1      | 2023-07-25 | [#27050](https://github.com/airbytehq/airbyte/pull/27050) | Fix - non vendor accounts connector create/check issue                                                                                                                              |
+| 1.4.0      | 2023-07-21 | [#27110](https://github.com/airbytehq/airbyte/pull/27110) | Add `GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING` and `GET_ORDER_REPORT_DATA_SHIPPING` streams                                                                                     |
+| 1.3.0      | 2023-06-09 | [#27110](https://github.com/airbytehq/airbyte/pull/27110) | Removed `app_id` from `InputConfiguration`, refactored `spec`                                                                                                                       |
+| 1.2.0      | 2023-05-23 | [#22503](https://github.com/airbytehq/airbyte/pull/22503) | Enabled stream attribute customization from Source configuration                                                                                                                    |
+| 1.1.0      | 2023-04-21 | [#23605](https://github.com/airbytehq/airbyte/pull/23605) | Add FBA Reimbursement Report stream                                                                                                                                                 |
+| 1.0.1      | 2023-03-15 | [#24098](https://github.com/airbytehq/airbyte/pull/24098) | Add Belgium Marketplace                                                                                                                                                             |
+| 1.0.0      | 2023-03-13 | [#23980](https://github.com/airbytehq/airbyte/pull/23980) | Make `app_id` required. Increase `end_date` gap up to 5 minutes from now for Finance streams. Fix connection check failure when trying to connect to Amazon Vendor Central accounts |
+| 0.2.33     | 2023-03-01 | [#23606](https://github.com/airbytehq/airbyte/pull/23606) | Implement reportOptions for all missing reports and refactor                                                                                                                        |
+| 0.2.32     | 2022-02-21 | [#23300](https://github.com/airbytehq/airbyte/pull/23300) | Make AWS Access Key, AWS Secret Access and Role ARN optional                                                                                                                        |
+| 0.2.31     | 2022-01-10 | [#16430](https://github.com/airbytehq/airbyte/pull/16430) | Implement slicing for report streams                                                                                                                                                |
+| 0.2.30     | 2022-12-28 | [#20896](https://github.com/airbytehq/airbyte/pull/20896) | Validate connections without orders data                                                                                                                                            |
+| 0.2.29     | 2022-11-18 | [#19581](https://github.com/airbytehq/airbyte/pull/19581) | Use user provided end date for GET_SALES_AND_TRAFFIC_REPORT                                                                                                                         |
+| 0.2.28     | 2022-10-20 | [#18283](https://github.com/airbytehq/airbyte/pull/18283) | Added multiple (22) report types                                                                                                                                                    |
+| 0.2.26     | 2022-09-24 | [#16629](https://github.com/airbytehq/airbyte/pull/16629) | Report API version to 2021-06-30, added multiple (5) report types                                                                                                                   |
+| 0.2.25     | 2022-07-27 | [#15063](https://github.com/airbytehq/airbyte/pull/15063) | Add Restock Inventory Report                                                                                                                                                        |
+| 0.2.24     | 2022-07-12 | [#14625](https://github.com/airbytehq/airbyte/pull/14625) | Add FBA Storage Fees Report                                                                                                                                                         |
+| 0.2.23     | 2022-06-08 | [#13604](https://github.com/airbytehq/airbyte/pull/13604) | Add new streams: Fullfiments returns and Settlement reports                                                                                                                         |
+| 0.2.22     | 2022-06-15 | [#13633](https://github.com/airbytehq/airbyte/pull/13633) | Fix - handle start date for financial stream                                                                                                                                        |
+| 0.2.21     | 2022-06-01 | [#13364](https://github.com/airbytehq/airbyte/pull/13364) | Add financial streams                                                                                                                                                               |
+| 0.2.20     | 2022-05-30 | [#13059](https://github.com/airbytehq/airbyte/pull/13059) | Add replication end date to config                                                                                                                                                  |
+| 0.2.19     | 2022-05-24 | [#13119](https://github.com/airbytehq/airbyte/pull/13119) | Add OAuth2.0 support                                                                                                                                                                |
+| 0.2.18     | 2022-05-06 | [#12663](https://github.com/airbytehq/airbyte/pull/12663) | Add GET_XML_BROWSE_TREE_DATA report                                                                                                                                                 |
+| 0.2.17     | 2022-05-19 | [#12946](https://github.com/airbytehq/airbyte/pull/12946) | Add throttling exception managing in Orders streams                                                                                                                                 |
+| 0.2.16     | 2022-05-04 | [#12523](https://github.com/airbytehq/airbyte/pull/12523) | Allow to use IAM user arn or IAM role                                                                                                                                               |
+| 0.2.15     | 2022-01-25 | [#9789](https://github.com/airbytehq/airbyte/pull/9789)   | Add stream FbaReplacementsReports                                                                                                                                                   |
+| 0.2.14     | 2022-01-19 | [#9621](https://github.com/airbytehq/airbyte/pull/9621)   | Add GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL report                                                                                                                     |
+| 0.2.13     | 2022-01-18 | [#9581](https://github.com/airbytehq/airbyte/pull/9581)   | Change createdSince parameter to dataStartTime                                                                                                                                      |
+| 0.2.12     | 2022-01-05 | [#9312](https://github.com/airbytehq/airbyte/pull/9312)   | Add all remaining brand analytics report streams                                                                                                                                    |
+| 0.2.11     | 2022-01-05 | [#9115](https://github.com/airbytehq/airbyte/pull/9115)   | Fix reading only 100 orders                                                                                                                                                         |
+| 0.2.10     | 2021-12-31 | [#9236](https://github.com/airbytehq/airbyte/pull/9236)   | Fix NoAuth deprecation warning                                                                                                                                                      |
+| 0.2.9      | 2021-12-30 | [#9212](https://github.com/airbytehq/airbyte/pull/9212)   | Normalize GET_SELLER_FEEDBACK_DATA header field names                                                                                                                               |
+| 0.2.8      | 2021-12-22 | [#8810](https://github.com/airbytehq/airbyte/pull/8810)   | Fix GET_SELLER_FEEDBACK_DATA Date cursor field format                                                                                                                               |
+| 0.2.7      | 2021-12-21 | [#9002](https://github.com/airbytehq/airbyte/pull/9002)   | Extract REPORTS_MAX_WAIT_SECONDS to configurable parameter                                                                                                                          |
+| 0.2.6      | 2021-12-10 | [#8179](https://github.com/airbytehq/airbyte/pull/8179)   | Add GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT report                                                                                                                                  |
+| 0.2.5      | 2021-12-06 | [#8425](https://github.com/airbytehq/airbyte/pull/8425)   | Update title, description fields in spec                                                                                                                                            |
+| 0.2.4      | 2021-11-08 | [#8021](https://github.com/airbytehq/airbyte/pull/8021)   | Added GET_SELLER_FEEDBACK_DATA report with incremental sync capability                                                                                                              |
+| 0.2.3      | 2021-11-08 | [#7828](https://github.com/airbytehq/airbyte/pull/7828)   | Remove datetime format from all streams                                                                                                                                             |
+| 0.2.2      | 2021-11-08 | [#7752](https://github.com/airbytehq/airbyte/pull/7752)   | Change `check_connection` function to use stream Orders                                                                                                                             |
+| 0.2.1      | 2021-09-17 | [#5248](https://github.com/airbytehq/airbyte/pull/5248)   | Added `extra stream` support. Updated `reports streams` logics                                                                                                                      |
+| 0.2.0      | 2021-08-06 | [#4863](https://github.com/airbytehq/airbyte/pull/4863)   | Rebuild source with `airbyte-cdk`                                                                                                                                                   |
+| 0.1.3      | 2021-06-23 | [#4288](https://github.com/airbytehq/airbyte/pull/4288)   | Bugfix failing `connection check`                                                                                                                                                   |
+| 0.1.2      | 2021-06-15 | [#4108](https://github.com/airbytehq/airbyte/pull/4108)   | Fixed: Sync fails with timeout when create report is CANCELLED`                                                                                                                     |
+
+</details>

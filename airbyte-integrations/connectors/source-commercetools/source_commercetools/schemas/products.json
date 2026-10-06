@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "key": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "number"]
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "createdBy": {
+      "$ref": "created_by.json"
+    },
+    "lastModifiedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "lastModifiedBy": {
+      "$ref": "last_modified_by.json"
+    },
+    "productType": {
+      "$ref": "reference.json"
+    },
+    "masterData": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "published": {
+          "type": ["null", "boolean"]
+        },
+        "current": {
+          "$ref": "product_data.json"
+        },
+        "staged": {
+          "$ref": "product_data.json"
+        },
+        "hasStagedChanges": {
+          "type": ["null", "boolean"]
+        }
+      }
+    },
+    "taxCategory": {
+      "$ref": "reference.json"
+    },
+    "state": {
+      "$ref": "reference.json"
+    },
+    "reviewRatingStatistics": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "averageRating": {
+          "type": ["null", "number"]
+        },
+        "highestRating": {
+          "type": ["null", "number"]
+        },
+        "lowestRating": {
+          "type": ["null", "number"]
+        },
+        "count": {
+          "type": ["null", "number"]
+        },
+        "ratingsDistribution": {
+          "type": ["null", "object"],
+          "additionalProperties": true
+        }
+      }
+    },
+    "lastMessageSequenceNumber": {
+      "type": ["null", "integer"]
+    },
+    "lastVariantId": {
+      "type": ["null", "integer"]
+    },
+    "versionModifiedAt": {
+      "type": ["null", "string"]
+    }
+  }
+}

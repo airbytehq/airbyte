@@ -1,0 +1,814 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://yousign.app/
+  API Reference: https://developers.yousign.com/reference/oas-specification
+
+check:
+  type: CheckStream
+  stream_names:
+    - signature_requests
+
+definitions:
+  streams:
+    signature_requests:
+      type: DeclarativeStream
+      name: signature_requests
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: signature_requests
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('meta', {}).get('next_cursor') }}"
+            stop_condition: "{{ response.get('meta', {}).get('next_cursor') is none }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/signature_requests"
+    signature_requests_followers:
+      type: DeclarativeStream
+      name: signature_requests_followers
+      primary_key:
+        - email
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: signature_requests/{{ stream_partition['sign_req'] }}/followers
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('meta', {}).get('next_cursor') }}"
+            stop_condition: "{{ response.get('meta', {}).get('next_cursor') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: sign_req
+              stream:
+                $ref: "#/definitions/streams/signature_requests"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/signature_requests_followers"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('meta', {}).get('next_cursor') }}"
+            stop_condition: "{{ response.get('meta', {}).get('next_cursor') is none }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('meta', {}).get('next_cursor') }}"
+            stop_condition: "{{ response.get('meta', {}).get('next_cursor') is none }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    workspaces:
+      type: DeclarativeStream
+      name: workspaces
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: workspaces
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('meta', {}).get('next_cursor') }}"
+            stop_condition: "{{ response.get('meta', {}).get('next_cursor') is none }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workspaces"
+    electronic_seal_images:
+      type: DeclarativeStream
+      name: electronic_seal_images
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: electronic_seal_images
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('meta', {}).get('next_cursor') }}"
+            stop_condition: "{{ response.get('meta', {}).get('next_cursor') is none }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/electronic_seal_images"
+    templates:
+      type: DeclarativeStream
+      name: templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: templates
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('meta', {}).get('next_cursor') }}"
+            stop_condition: "{{ response.get('meta', {}).get('next_cursor') is none }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+    labels:
+      type: DeclarativeStream
+      name: labels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: labels
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('meta', {}).get('next_cursor') }}"
+            stop_condition: "{{ response.get('meta', {}).get('next_cursor') is none }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/labels"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['subdomain'] }}.yousign.app/v3/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/signature_requests"
+  - $ref: "#/definitions/streams/signature_requests_followers"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/workspaces"
+  - $ref: "#/definitions/streams/electronic_seal_images"
+  - $ref: "#/definitions/streams/templates"
+  - $ref: "#/definitions/streams/labels"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - subdomain
+      - limit
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: API key or access token
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      subdomain:
+        type: string
+        description: >-
+          The subdomain for the Yousign API environment, such as 'sandbox' or
+          'api'.
+        title: Subdomain
+        default: api
+        enum:
+          - api-sandbox
+          - api
+        order: 1
+      limit:
+        type: string
+        description: Limit for each response objects
+        title: Limit
+        default: "10"
+        order: 2
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    signature_requests: true
+    signature_requests_followers: true
+    contacts: true
+    users: true
+    workspaces: true
+    electronic_seal_images: true
+    templates: true
+    labels: true
+  testedStreams:
+    signature_requests:
+      streamHash: aca56f27374b6933e06b91205c0d19a59706084e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    signature_requests_followers:
+      streamHash: d4cd95afcf8f4177400d78f0d684e9648162143a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contacts:
+      streamHash: 497340fd51ccd4d3c3dbdfe643a1e4ef378cde76
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 61118342fa50cc3eb98960731086b76bd114318f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workspaces:
+      streamHash: 7f62640252b4a07c03f0fe9d769bb28dc7b8e922
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    electronic_seal_images:
+      streamHash: 6f4ceaa3530c4e6077d79524de47149e51e99d69
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    templates:
+      streamHash: 5a135b881034ffed92cf71de1771f39a9accc9e1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    labels:
+      streamHash: 44933e0d7fc99f25a032836dd00824ea57865690
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.yousign.com/reference/oas-specification
+
+schemas:
+  signature_requests:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      approvers:
+        type:
+          - array
+          - "null"
+      audit_trail_locale:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+      delivery_mode:
+        type:
+          - string
+          - "null"
+      documents:
+        type:
+          - array
+          - "null"
+      email_notification:
+        type:
+          - object
+          - "null"
+        properties:
+          sender:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+      expiration_date:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      labels:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      ordered_signers:
+        type:
+          - boolean
+          - "null"
+      reminder_settings:
+        type:
+          - object
+          - "null"
+        properties:
+          interval_in_days:
+            type:
+              - number
+              - "null"
+          max_occurrences:
+            type:
+              - number
+              - "null"
+      signers:
+        type:
+          - array
+          - "null"
+      signers_allowed_to_decline:
+        type:
+          - boolean
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      workspace_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  signature_requests_followers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type: string
+      locale:
+        type:
+          - string
+          - "null"
+    required:
+      - email
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_name:
+        type:
+          - string
+          - "null"
+      locale:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_active:
+        type:
+          - boolean
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      workspaces:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+    required:
+      - id
+      - created_at
+  workspaces:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+      default:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      users:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+    required:
+      - id
+      - created_at
+  electronic_seal_images:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  labels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at

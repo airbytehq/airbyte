@@ -1,0 +1,38 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-file:dev
+test_strictness_level: high
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_file/spec.json"
+      - spec_path: "integration_tests/cloud_spec.json"
+        deployment_mode: "cloud"
+  connection:
+    tests:
+      - config_path: "integration_tests/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+      - config_path: "integration_tests/local_config.json"
+        deployment_mode: "cloud"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "integration_tests/config.json"
+  basic_read:
+    tests:
+      - config_path: "integration_tests/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          exact_order: no
+        validate_state_messages: False
+        file_types:
+          skip_test: yes
+          bypass_reason: "Source is not based on file based CDK"
+  full_refresh:
+    tests:
+      - config_path: "integration_tests/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+  incremental:
+    bypass_reason: "Incremental syncs are not supported on this connector."

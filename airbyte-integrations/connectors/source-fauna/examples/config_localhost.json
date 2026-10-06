@@ -1,0 +1,13 @@
+{
+  "secret": "secret",
+  "domain": "localhost",
+  "port": 8443,
+  "scheme": "http",
+  "collection": {
+    "page_size": 2,
+    "deletions": {
+      "deletion_mode": "deleted_field",
+      "column": "deleted_at"
+    }
+  }
+}

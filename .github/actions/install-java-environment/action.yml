@@ -1,0 +1,29 @@
+name: Install Java Environment
+description: "Installs the Java environment"
+inputs:
+  java_version:
+    description: "Java version"
+    required: false
+    default: "21"
+    type: string
+  gradle_cache_read_only:
+    description: "Whether to use a read-only Gradle cache"
+    required: false
+    default: false
+    type: boolean
+  gradle_cache_write_only:
+    description: "Whether to use a write-only Gradle cache"
+    required: false
+    default: false
+    type: boolean
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+      with:
+        distribution: corretto
+        java-version: ${{ inputs.java_version }}
+    - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
+      with:
+        cache-read-only: ${{ inputs.gradle_cache_read_only }}
+        cache-write-only: ${{ inputs.gradle_cache_write_only }}

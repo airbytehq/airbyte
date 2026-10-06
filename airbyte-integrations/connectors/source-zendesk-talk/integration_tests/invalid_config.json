@@ -1,0 +1,8 @@
+{
+  "credentials": {
+    "auth_type": "oauth2.0",
+    "access_token": "sometoken"
+  },
+  "subdomain": "d3v-airbyte",
+  "start_date": "2221-04-01T00:00:00Z"
+}

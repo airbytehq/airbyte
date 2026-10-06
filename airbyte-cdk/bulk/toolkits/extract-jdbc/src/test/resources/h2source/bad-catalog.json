@@ -1,0 +1,27 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "FOO",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "BAR": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "is_resumable": false,
+        "namespace": "PUBLIC"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["BAR"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    }
+  ]
+}

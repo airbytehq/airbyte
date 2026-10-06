@@ -1,0 +1,55 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.bamboohr.com
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 90916976-a132-4ce9-8bce-82a03dd58788
+  dockerImageTag: 0.9.3
+  dockerRepository: airbyte/source-bamboo-hr
+  documentationUrl: https://docs.airbyte.com/integrations/sources/bamboo-hr
+  githubIssueLabel: source-bamboo-hr
+  icon: bamboohr.svg
+  license: ELv2
+  releaseDate: 2021-08-27
+  name: BambooHR
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-bamboo-hr
+  supportLevel: community
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: bamboo-hr_config_dev_null
+          id: 8e16832e-a1c2-449e-80d8-6ac54b62db9d
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-BAMBOO-HR__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: API documentation
+      url: https://documentation.bamboohr.com/docs
+      type: api_reference
+    - title: Authentication
+      url: https://documentation.bamboohr.com/docs/getting-started
+      type: authentication_guide
+metadataSpecVersion: "1.0"

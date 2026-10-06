@@ -1,0 +1,3 @@
+include = [
+    "${POE_GIT_DIR}/poe-tasks/repo-root-tasks.toml",
+]

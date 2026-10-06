@@ -1,0 +1,57 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  allowedHosts:
+    hosts:
+      - graph.microsoft.com
+      - login.microsoftonline.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-microsoft-onedrive
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+  connectorSubtype: file
+  connectorType: source
+  definitionId: 01d1c685-fd4a-4837-8f4c-93fe5a0d2188
+  dockerImageTag: 0.2.44
+  dockerRepository: airbyte/source-microsoft-onedrive
+  githubIssueLabel: source-microsoft-onedrive
+  icon: microsoft-onedrive.svg
+  license: ELv2
+  name: Microsoft OneDrive
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-onedrive
+  tags:
+    - language:python
+    - cdk:python-file-based
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-MICROSOFT-ONEDRIVE_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: OneDrive API reference
+      url: https://learn.microsoft.com/en-us/onedrive/developer/
+      type: api_reference
+    - title: OneDrive authentication
+      url: https://learn.microsoft.com/en-us/onedrive/developer/rest-api/getting-started/authentication
+      type: authentication_guide
+    - title: Microsoft Graph throttling
+      url: https://learn.microsoft.com/en-us/graph/throttling
+      type: rate_limits
+    - title: Microsoft 365 Status
+      url: https://status.office365.com/
+      type: status_page
+metadataSpecVersion: "1.0"

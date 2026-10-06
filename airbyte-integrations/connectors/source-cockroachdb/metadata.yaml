@@ -1,0 +1,45 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+      - ${host}
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
+  connectorSubtype: database
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+  connectorType: source
+  definitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
+  dockerImageTag: 0.2.5
+  dockerRepository: airbyte/source-cockroachdb
+  documentationUrl: https://docs.airbyte.com/integrations/sources/cockroachdb
+  githubIssueLabel: source-cockroachdb
+  icon: cockroachdb.svg
+  license: ELv2
+  name: Cockroachdb
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:java
+  externalDocumentationUrls:
+    - title: CockroachDB Releases
+      url: https://www.cockroachlabs.com/docs/releases/
+      type: api_release_history
+    - title: CockroachDB authentication
+      url: https://www.cockroachlabs.com/docs/stable/authentication
+      type: authentication_guide
+    - title: CockroachDB SQL reference
+      url: https://www.cockroachlabs.com/docs/stable/sql-statements
+      type: sql_reference
+    - title: CockroachDB Status
+      url: https://status.cockroachlabs.com/
+      type: status_page
+metadataSpecVersion: "1.0"

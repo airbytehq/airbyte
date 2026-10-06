@@ -1,0 +1,143 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the payment entry",
+      "type": "integer"
+    },
+    "customer_id": {
+      "description": "Unique identifier for the customer",
+      "type": ["integer", "null"]
+    },
+    "order_id": {
+      "description": "Unique identifier for the associated order",
+      "type": ["integer", "null"]
+    },
+    "customer_payment_method_id": {
+      "description": "Unique identifier for the customer's payment method",
+      "type": ["integer", "null"]
+    },
+    "payment_method_id": {
+      "description": "Unique identifier for the payment method",
+      "type": ["integer", "null"]
+    },
+    "payment_type": {
+      "description": "Type of payment (e.g., Sale, Refund)",
+      "type": ["string", "null"]
+    },
+    "is_approved": {
+      "description": "Flag indicating if the payment was approved",
+      "type": ["boolean", "null"]
+    },
+    "is_declined": {
+      "description": "Flag indicating if the payment was declined",
+      "type": ["boolean", "null"]
+    },
+    "card_type": {
+      "description": "Type of the card used for payment (e.g., VISA, Mastercard)",
+      "type": ["string", "null"]
+    },
+    "card_expiration_month": {
+      "description": "Expiration month of the card used for payment",
+      "type": ["integer", "null"]
+    },
+    "card_expiration_year": {
+      "description": "Expiration year of the card used for payment",
+      "type": ["integer", "null"]
+    },
+    "cardholder_name": {
+      "description": "Name of the cardholder",
+      "type": ["string", "null"]
+    },
+    "paid_at": {
+      "description": "Timestamp when payment was completed",
+      "type": ["string", "null"]
+    },
+    "approved_at": {
+      "description": "Timestamp when the payment was approved",
+      "type": ["string", "null"]
+    },
+    "authorization_code": {
+      "description": "The authorization code obtained for the payment",
+      "type": ["string", "null"]
+    },
+    "reject_reason": {
+      "description": "Reason for payment rejection if applicable",
+      "type": ["string", "null"]
+    },
+    "avs_code": {
+      "description": "Address Verification System (AVS) code for payment validation",
+      "type": ["string", "null"]
+    },
+    "payment_method_name": {
+      "description": "Name of the payment method (e.g., Credit Card, PayPal)",
+      "type": ["string", "null"]
+    },
+    "transaction_type": {
+      "description": "Type of transaction (e.g., Authorization, Capture)",
+      "type": ["string", "null"]
+    },
+    "amount": {
+      "description": "The total amount of the payment",
+      "type": ["number", "null"]
+    },
+    "payment_note": {
+      "description": "Additional note or description related to the payment",
+      "type": ["string", "null"]
+    },
+    "updated_at": {
+      "description": "Timestamp when the payment entry was last updated",
+      "type": ["string", "null"]
+    },
+    "created_at": {
+      "description": "Timestamp when the payment entry was created",
+      "type": ["string", "null"]
+    },
+    "gift_certificate_id": {
+      "description": "Unique identifier for a gift certificate used in the payment",
+      "type": ["integer", "null"]
+    },
+    "is_captured": {
+      "description": "Flag indicating if the payment was captured",
+      "type": ["boolean", "null"]
+    },
+    "transaction_id": {
+      "description": "Unique identifier for the payment transaction",
+      "type": ["string", "null"]
+    },
+    "last_four": {
+      "description": "Last four digits of the card used for payment",
+      "type": ["string", "null"]
+    },
+    "is_void": {
+      "description": "Flag indicating if the payment was voided",
+      "type": ["boolean", "null"]
+    },
+    "gateway_response_code": {
+      "description": "Response code received from the payment gateway",
+      "type": ["string", "null"]
+    },
+    "cvv_response_code": {
+      "description": "Card Verification Value (CVV) response code for payment security",
+      "type": ["string", "null"]
+    },
+    "sent_to_spark_pay": {
+      "description": "Flag indicating if the payment details were sent to Spark Pay",
+      "type": ["boolean", "null"]
+    },
+    "token": {
+      "description": "Security token associated with the payment",
+      "type": ["string", "null"]
+    },
+    "payment_ref_num": {
+      "description": "Reference number associated with the payment transaction",
+      "type": ["string", "null"]
+    },
+    "store_payment_method_id": {
+      "description": "Unique identifier for the payment method stored by the store",
+      "type": ["integer", "null"]
+    }
+  }
+}

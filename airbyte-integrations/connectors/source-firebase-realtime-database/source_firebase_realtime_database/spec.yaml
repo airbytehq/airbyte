@@ -1,0 +1,27 @@
+documentationUrl: https://docs.airbyte.io/integrations/sources/firebase-realtime-database
+supported_sync_modes: ["full_refresh"]
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Firebase Realtime Database Spec
+  type: object
+  required:
+    - database_name
+    - google_application_credentials
+  properties:
+    database_name:
+      title: Database Name
+      type: string
+      description: Database name (This will be part of the url pointing to the database, https://<database_name>.firebaseio.com/)
+    google_application_credentials:
+      title: Service Account Key JSON
+      type: string
+      description: Cert credentials in JSON format of Service Account with Firebase Realtime Database Viewer role. (see, https://firebase.google.com/docs/projects/iam/roles-predefined-product#realtime-database)
+      airbyte_secret: true
+    path:
+      title: Node Path
+      type: string
+      description: Path to a node in the Firebase realtime database
+    buffer_size:
+      title: Buffer Size
+      type: number
+      description: Number of records to fetch at once

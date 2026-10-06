@@ -1,0 +1,173 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/dev-null",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "E2E Test Destination Spec",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "test_destination" : {
+        "oneOf" : [ {
+          "title" : "Logging",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "test_destination_type" : {
+              "type" : "string",
+              "enum" : [ "LOGGING" ],
+              "default" : "LOGGING"
+            },
+            "logging_config" : {
+              "oneOf" : [ {
+                "title" : "First N Entries",
+                "type" : "object",
+                "additionalProperties" : true,
+                "description" : "Log first N entries per stream.",
+                "properties" : {
+                  "logging_type" : {
+                    "type" : "string",
+                    "enum" : [ "FirstN" ],
+                    "default" : "FirstN"
+                  },
+                  "max_entry_count" : {
+                    "type" : "number",
+                    "minimum" : 1,
+                    "maximum" : 1000,
+                    "default" : 100,
+                    "description" : "Number of entries to log. This destination is for testing only. So it won't make sense to log infinitely. The maximum is 1,000 entries.",
+                    "title" : "N",
+                    "examples" : [ 100 ]
+                  }
+                },
+                "required" : [ "logging_type", "max_entry_count" ]
+              }, {
+                "title" : "Every N-th Entry",
+                "type" : "object",
+                "additionalProperties" : true,
+                "description" : "For each stream, log every N-th entry with a maximum cap.",
+                "properties" : {
+                  "logging_type" : {
+                    "type" : "string",
+                    "enum" : [ "EveryNth" ],
+                    "default" : "EveryNth"
+                  },
+                  "nth_entry_to_log" : {
+                    "type" : "integer",
+                    "minimum" : 1,
+                    "maximum" : 1000,
+                    "description" : "The N-th entry to log for each stream. N starts from 1. For example, when N = 1, every entry is logged; when N = 2, every other entry is logged; when N = 3, one out of three entries is logged.",
+                    "title" : "N",
+                    "examples" : [ 3 ]
+                  },
+                  "max_entry_count" : {
+                    "type" : "number",
+                    "minimum" : 1,
+                    "maximum" : 1000,
+                    "default" : 100,
+                    "description" : "Number of entries to log. This destination is for testing only. So it won't make sense to log infinitely. The maximum is 1,000 entries.",
+                    "title" : "Max Log Entries",
+                    "examples" : [ 100 ]
+                  }
+                },
+                "required" : [ "logging_type", "nth_entry_to_log", "max_entry_count" ]
+              }, {
+                "title" : "Random Sampling",
+                "type" : "object",
+                "additionalProperties" : true,
+                "description" : "For each stream, randomly log a percentage of the entries with a maximum cap.",
+                "properties" : {
+                  "logging_type" : {
+                    "type" : "string",
+                    "enum" : [ "RandomSampling" ],
+                    "default" : "RandomSampling"
+                  },
+                  "sampling_ratio" : {
+                    "type" : "number",
+                    "minimum" : 0,
+                    "maximum" : 1,
+                    "description" : "A positive floating number smaller than 1.",
+                    "title" : "Sampling Ratio",
+                    "examples" : [ 0.001 ],
+                    "default" : 0.001
+                  },
+                  "seed" : {
+                    "type" : "number",
+                    "description" : "When the seed is unspecified, the current time millis will be used as the seed.",
+                    "title" : "Random Number Generator Seed",
+                    "examples" : [ 1900 ]
+                  },
+                  "max_entry_count" : {
+                    "type" : "number",
+                    "minimum" : 1,
+                    "maximum" : 1000,
+                    "default" : 100,
+                    "description" : "Number of entries to log. This destination is for testing only. So it won't make sense to log infinitely. The maximum is 1,000 entries.",
+                    "title" : "Max Log Entries",
+                    "examples" : [ 100 ]
+                  }
+                },
+                "required" : [ "logging_type", "sampling_ratio", "max_entry_count" ]
+              } ],
+              "description" : "Configurate how the messages are logged.",
+              "title" : "Logging Configuration",
+              "type" : "object"
+            }
+          },
+          "required" : [ "test_destination_type", "logging_config" ]
+        }, {
+          "title" : "Silent",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "test_destination_type" : {
+              "type" : "string",
+              "enum" : [ "SILENT" ],
+              "default" : "SILENT"
+            }
+          },
+          "required" : [ "test_destination_type" ]
+        }, {
+          "title" : "Throttled",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "test_destination_type" : {
+              "type" : "string",
+              "enum" : [ "THROTTLED" ],
+              "default" : "THROTTLED"
+            },
+            "millis_per_record" : {
+              "type" : "integer",
+              "description" : "The number of milliseconds to wait between each record."
+            }
+          },
+          "required" : [ "test_destination_type", "millis_per_record" ]
+        }, {
+          "title" : "Failing",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "test_destination_type" : {
+              "type" : "string",
+              "enum" : [ "FAILING" ],
+              "default" : "FAILING"
+            },
+            "num_messages" : {
+              "type" : "integer",
+              "description" : "Number of messages after which to fail."
+            }
+          },
+          "required" : [ "test_destination_type", "num_messages" ]
+        } ],
+        "description" : "The type of destination to be used",
+        "title" : "Test Destination",
+        "type" : "object"
+      }
+    },
+    "required" : [ "test_destination" ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+}

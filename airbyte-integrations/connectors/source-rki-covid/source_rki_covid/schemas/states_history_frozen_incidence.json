@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "weekIncidence": {
+      "type": ["number", "null"]
+    },
+    "date": {
+      "type": ["string", "null"]
+    },
+    "dataSource": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "abbreviation": {
+      "type": ["string", "null"]
+    }
+  },
+  "required": ["abbreviation", "dataSource", "date", "name", "weekIncidence"]
+}

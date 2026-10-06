@@ -1,0 +1,65 @@
+{
+  "created_activities": {
+    "date_created": "2050-07-13T11:39:05.012000+00:00"
+  },
+  "opportunity_status_change_activities": {
+    "date_created": "2050-07-13T11:39:05.012000+00:00"
+  },
+  "note_activities": {
+    "date_created": "2050-07-13T11:39:03.728000+00:00"
+  },
+  "meeting_activities": {
+    "date_created": "2050-07-13T11:39:05.012000+00:00"
+  },
+  "call_activities": {
+    "date_created": "2050-07-16T00:00:12.646000+00:00"
+  },
+  "email_activities": {
+    "date_created": "2050-07-13T11:39:04.130000+00:00"
+  },
+  "email_thread_activities": {
+    "date_created": "2050-07-13T11:39:04.131000+00:00"
+  },
+  "lead_status_change_activities": {
+    "date_created": "2050-07-13T11:39:04.731000+00:00"
+  },
+  "sms_activities": {
+    "date_created": "2050-07-13T11:39:05.012000+00:00"
+  },
+  "task_completed_activities": {
+    "date_created": "2050-07-13T11:39:05.012000+00:00"
+  },
+  "leads": {
+    "date_updated": "2050-07-16T00:00:12.701000+00:00"
+  },
+  "lead_tasks": {
+    "date_created": "2050-07-13T11:39:03.520000+00:00"
+  },
+  "incoming_email_tasks": {
+    "date_created": "2050-07-13T11:39:03.520000+00:00"
+  },
+  "email_followup_tasks": {
+    "date_created": "2050-07-13T11:39:03.520000+00:00"
+  },
+  "missed_call_tasks": {
+    "date_created": "2050-07-13T11:39:03.520000+00:00"
+  },
+  "answered_detached_call_tasks": {
+    "date_created": "2050-07-13T11:39:03.520000+00:00"
+  },
+  "voicemail_tasks": {
+    "date_created": "2050-07-13T11:39:03.520000+00:00"
+  },
+  "opportunity_due_tasks": {
+    "date_created": "2050-07-13T11:39:03.520000+00:00"
+  },
+  "incoming_sms_tasks": {
+    "date_created": "2050-07-13T11:39:03.520000+00:00"
+  },
+  "events": {
+    "date_updated": "2050-07-16T00:00:12.701000"
+  },
+  "opportunities": {
+    "date_updated": "2050-07-16T00:00:12.701000"
+  }
+}

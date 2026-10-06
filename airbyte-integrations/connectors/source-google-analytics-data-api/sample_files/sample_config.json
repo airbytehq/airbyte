@@ -1,0 +1,12 @@
+{
+  "credentials": {
+    "auth_type": "Service",
+    "credentials_json": "{\"type\": \"service_account\",\"project_id\": \"foo\",\"private_key_id\": \"bar\",\"private_key\": \"\",\"client_email\": \"bar@foo.iam.gserviceaccount.com\",\"client_id\": \"123456789\",\"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\",\"token_uri\": \"https://oauth2.googleapis.com/token\",\"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\",\"client_x509_cert_url\": \"https://www.googleapis.com/robot/v1/metadata/x509/bar%40foo.iam.gserviceaccount.com\",\"universe_domain\": \"googleapis.com\"}"
+  },
+  "property_ids": ["12345678"],
+  "date_ranges_start_date": "2024-06-01",
+  "window_in_days": 60,
+  "lookback_window": 14,
+  "keep_empty_rows": true,
+  "convert_conversions_event": true
+}

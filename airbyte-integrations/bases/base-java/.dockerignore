@@ -1,0 +1,5 @@
+*
+!Dockerfile
+!build
+!javabase.sh
+!run_with_normalization.sh

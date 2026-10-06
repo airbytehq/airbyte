@@ -1,0 +1,43 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+  connectorSubtype: api
+  connectorType: source
+  definitionId: b8c917bc-7d1b-4828-995f-6726820266d0
+  dockerImageTag: 0.2.24
+  dockerRepository: airbyte/source-zapier-supported-storage
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zapier-supported-storage
+  githubIssueLabel: source-zapier-supported-storage
+  icon: zapiersupportedstorage.svg
+  license: ELv2
+  name: Zapier Supported Storage
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-zapier-supported-storage
+  supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ZAPIER-SUPPORTED-STORAGE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Zapier Storage documentation
+      url: https://help.zapier.com/hc/en-us/articles/8496293271053-Save-and-retrieve-data-from-Zaps
+      type: other
+metadataSpecVersion: "1.0"

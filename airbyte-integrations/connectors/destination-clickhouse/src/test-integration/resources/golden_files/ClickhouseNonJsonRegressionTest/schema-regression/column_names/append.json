@@ -1,0 +1,189 @@
+{
+  "tableSchema" : {
+    "columns" : {
+      "string" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "number" : {
+        "type" : "Decimal(38, 9)",
+        "nullable" : true
+      },
+      "integer" : {
+        "type" : "Int64",
+        "nullable" : true
+      },
+      "boolean" : {
+        "type" : "Bool",
+        "nullable" : true
+      },
+      "timestamp_with_timezone" : {
+        "type" : "DateTime64(3)",
+        "nullable" : true
+      },
+      "timestamp_without_timezone" : {
+        "type" : "DateTime64(3)",
+        "nullable" : true
+      },
+      "time_with_timezone" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "time_without_timezone" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "date" : {
+        "type" : "Date32",
+        "nullable" : true
+      },
+      "object" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "object_with_empty_schema" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "object_without_schema" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "array" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "array_without_schema" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "union" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "legacy_union" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "unknown" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "string_nonnull" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "number_nonnull" : {
+        "type" : "Decimal(38, 9)",
+        "nullable" : true
+      },
+      "integer_nonnull" : {
+        "type" : "Int64",
+        "nullable" : true
+      },
+      "boolean_nonnull" : {
+        "type" : "Bool",
+        "nullable" : true
+      },
+      "timestamp_with_timezone_nonnull" : {
+        "type" : "DateTime64(3)",
+        "nullable" : true
+      },
+      "timestamp_without_timezone_nonnull" : {
+        "type" : "DateTime64(3)",
+        "nullable" : true
+      },
+      "time_with_timezone_nonnull" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "time_without_timezone_nonnull" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "date_nonnull" : {
+        "type" : "Date32",
+        "nullable" : true
+      },
+      "object_nonnull" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "object_with_empty_schema_nonnull" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "object_without_schema_nonnull" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "array_nonnull" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "array_without_schema_nonnull" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "union_nonnull" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "legacy_union_nonnull" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "unknown_nonnull" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "table" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "column" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "create" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "delete" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "e________________________________" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "_1column" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "foo_" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "foo__1" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "foo__2" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "UPPER_CASE" : {
+        "type" : "String",
+        "nullable" : true
+      },
+      "Mixed_Case" : {
+        "type" : "String",
+        "nullable" : true
+      }
+    }
+  },
+  "additionalInfo" : {
+    "tableEngine" : "MergeTree ORDER BY _airbyte_raw_id SETTINGS index_granularity = 8192"
+  }
+}

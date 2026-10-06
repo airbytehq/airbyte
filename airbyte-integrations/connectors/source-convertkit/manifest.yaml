@@ -1,0 +1,1674 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: >-
+  ## Overview
+
+
+  Kit (formerly ConvertKit) is an email-first platform for creators who mean
+  business. This connector supports several streams related to contacts, email
+  campaigns, form submissions, and automations from the [Kit
+  API](https://developers.kit.com/v4).
+
+
+  ## Supported Streams
+
+
+  - `broadcasts`: one-to-many campaigns
+
+  - `current_account`: details on the account and user who connected it
+
+  - `custom_fields`: list of custom fields used on contacts
+
+  - `email_templates`: list of available templates
+
+  - `forms`: hosted signup forms (including pop-ups, slide-outs, and sticky
+  bars)
+
+  - `form_subscribers`: contacts associated with specific forms
+
+  - `purchases`: e-commerce transactions associated with contacts
+
+  - `segments`: list of segments created in account
+
+  - `sequences`: automated workflows and triggered mailings
+
+  - `sequence_subscribers`: contacts associated with specific sequences
+
+  - `subscribers`: contact details and metadata
+
+  - `tags`: used for tagging contacts for segmentation or suppression
+
+  - `tag_subscribers`: contacts associated with specific tags
+
+
+  ### Features
+
+
+  | Feature           | Supported?\(Yes/No\) | Notes |
+
+  | :---------------- | :------------------- | :---- |
+
+  | Full Refresh Sync  | Yes                  |       |
+
+  | Incremental Sync  | Yes                   | For all subscriber endpoints |
+
+
+  ### Performance Considerations
+
+
+  The Kit API has different rate limits depending on the authentication strategy
+  used:
+
+  - When using OAuth, no more than 600 requests over a rolling 60 second period
+  for given access token.
+
+  - When using API Keys, no more than 120 requests over a rolling 60 second
+  period for a given API Key.
+
+
+  If the request rate exceeds their limit, the connector will gracefully handle
+  the exponential backoff based on the HTTP 429 responses.
+
+
+  ## Getting Started
+
+
+  ### Authentication
+
+  This connector supports both supported Authentication types used by the Kit
+  API:
+
+  - API Key (allowed for use in your own account only; lower API limits)
+
+  - OAuth (requires Kit App; higher API limits)
+
+
+  For more details on the supported auth flows—including how to create a Kit app
+  for OAuth—see their [authentication
+  documentation](https://developers.kit.com/v4#authentication).
+
+check:
+  type: CheckStream
+  stream_names:
+    - forms
+
+definitions:
+  streams:
+    forms:
+      type: DeclarativeStream
+      name: forms
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /forms
+          http_method: GET
+          request_parameters:
+            status: all
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - forms
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.get('pagination',{}).get('end_cursor','') }}"
+            stop_condition: "{{ not response.get('pagination',{}).get('has_next_page',False) }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/forms"
+    sequences:
+      type: DeclarativeStream
+      name: sequences
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sequences
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - sequences
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.get('pagination',{}).get('end_cursor','') }}"
+            stop_condition: "{{ not response.get('pagination',{}).get('has_next_page',False) }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sequences"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tags
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.get('pagination',{}).get('end_cursor','') }}"
+            stop_condition: "{{ not response.get('pagination',{}).get('has_next_page',False) }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    subscribers:
+      type: DeclarativeStream
+      name: subscribers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /subscribers
+          http_method: GET
+          request_parameters:
+            status: all
+            sort_field: updated_at
+            sort_order: asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - subscribers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.get('pagination',{}).get('end_cursor','') }}"
+            stop_condition: "{{ not response.get('pagination',{}).get('has_next_page',False) }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_last_loaded
+        lookback_window: PT1H
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date_last_loaded
+              value: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscribers"
+    broadcasts:
+      type: DeclarativeStream
+      name: broadcasts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /broadcasts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - broadcasts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.get('pagination',{}).get('end_cursor','') }}"
+            stop_condition: "{{ not response.get('pagination',{}).get('has_next_page',False) }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/broadcasts"
+    form_subscribers:
+      type: DeclarativeStream
+      name: form_subscribers
+      primary_key:
+        - id
+        - form_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /forms/{{ stream_partition.form_id }}/subscribers
+          http_method: GET
+          request_parameters:
+            status: all
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - subscribers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.get('pagination',{}).get('end_cursor','') }}"
+            stop_condition: "{{ not response.get('pagination',{}).get('has_next_page',False) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: form_id
+              stream:
+                $ref: "#/definitions/streams/forms"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: added_at
+        lookback_window: PT1H
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: added_after
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - form_id
+              value: "{{ stream_partition.form_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/form_subscribers"
+    sequence_subscribers:
+      type: DeclarativeStream
+      name: sequence_subscribers
+      primary_key:
+        - id
+        - sequence_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sequences/{{ stream_partition.sequence_id }}/subscribers
+          http_method: GET
+          request_parameters:
+            status: all
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - subscribers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.get('pagination',{}).get('end_cursor','') }}"
+            stop_condition: "{{ not response.get('pagination',{}).get('has_next_page',False) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: sequence_id
+              stream:
+                $ref: "#/definitions/streams/sequences"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: added_at
+        lookback_window: PT1H
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: added_after
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - sequence_id
+              value: "{{ stream_partition.sequence_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sequence_subscribers"
+    tag_subscribers:
+      type: DeclarativeStream
+      name: tag_subscribers
+      primary_key:
+        - id
+        - tag_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tags/{{ stream_partition.tag_id }}/subscribers
+          http_method: GET
+          request_parameters:
+            status: all
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - subscribers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.get('pagination',{}).get('end_cursor','') }}"
+            stop_condition: "{{ not response.get('pagination',{}).get('has_next_page',False) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: tag_id
+              stream:
+                $ref: "#/definitions/streams/tags"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_loaded
+        lookback_window: PT1H
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: tagged_after
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - tag_id
+              value: "{{ stream_partition.tag_id }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date_loaded
+              value: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tag_subscribers"
+    current_account:
+      type: DeclarativeStream
+      name: current_account
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /account
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/current_account"
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /custom_fields
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - custom_fields
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.get('pagination',{}).get('end_cursor','') }}"
+            stop_condition: "{{ not response.get('pagination',{}).get('has_next_page',False) }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_fields"
+    purchases:
+      type: DeclarativeStream
+      name: purchases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /purchases
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The purchases endpoint requires the use of OAuth
+                      authentication and isn't available when using API Key
+                      auth. Please switch to OAuth or disable this stream.
+                    error_message_contains: OAuth authentication required
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - purchases
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.get('pagination', {}).get('end_cursor', '') }}"
+            stop_condition: >-
+              {{ not response.get('pagination', {}).get('has_next_page', False)
+              }}
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/purchases"
+    segments:
+      type: DeclarativeStream
+      name: segments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /segments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - segments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.get('links',{}).get('next') }}"
+            stop_condition: "{{ not response.get('links',{}).get('next') }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segments"
+    email_templates:
+      type: DeclarativeStream
+      name: email_templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /email_templates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - email_templates
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.get('links',{}).get('next') }}"
+            stop_condition: "{{ not response.get('links',{}).get('next') }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/email_templates"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.kit.com/v4
+    authenticator:
+      type: SelectiveAuthenticator
+      authenticators:
+        api_key:
+          type: ApiKeyAuthenticator
+          header: X-Kit-Api-Key
+          api_token: >-
+            {{ config.get('credentials',{}).get('api_key') or
+            config.get('api_secret') }}
+        oauth2.0:
+          type: OAuthAuthenticator
+          client_id: "{{ config.credentials.client_id }}"
+          client_secret: "{{ config.credentials.client_secret }}"
+          refresh_token: "{{ config.credentials.refresh_token }}"
+          token_expiry_date: "{{ config.credentials.expires_at }}"
+          access_token_value: "{{ config.credentials.access_token }}"
+          refresh_token_updater:
+            access_token_name: access_token
+            refresh_token_name: refresh_token
+            access_token_config_path:
+              - credentials
+              - access_token
+            refresh_token_config_path:
+              - credentials
+              - refresh_token
+            token_expiry_date_config_path:
+              - credentials
+              - expires_at
+          token_refresh_endpoint: https://api.kit.com/oauth/token
+      authenticator_selection_path:
+        - credentials
+        - auth_type
+
+streams:
+  - $ref: "#/definitions/streams/forms"
+  - $ref: "#/definitions/streams/sequences"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/subscribers"
+  - $ref: "#/definitions/streams/broadcasts"
+  - $ref: "#/definitions/streams/form_subscribers"
+  - $ref: "#/definitions/streams/sequence_subscribers"
+  - $ref: "#/definitions/streams/tag_subscribers"
+  - $ref: "#/definitions/streams/current_account"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/purchases"
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/email_templates"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - start_date
+      - credentials
+    properties:
+      start_date:
+        type: string
+        order: 0
+        title: Start date
+        format: date-time
+        default: "2013-01-01T00:00:00Z"
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      credentials:
+        type: object
+        oneOf:
+          - type: object
+            title: OAuth 2.0
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+                order: 0
+              client_id:
+                type: string
+                description: The client ID of your OAuth application.
+                order: 1
+                title: Client ID
+                airbyte_secret: true
+              expires_at:
+                type: string
+                description: The time at which the current access token is set to expire
+                order: 5
+                title: Access Token Expires At
+                format: date-time
+              access_token:
+                type: string
+                description: >-
+                  An access token generated using the provided client
+                  information and refresh token.
+                order: 4
+                title: Access Token
+                airbyte_secret: true
+              client_secret:
+                type: string
+                description: The client secret of your OAuth application.
+                order: 2
+                title: Client Secret
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                description: >-
+                  A current, non-expired refresh token genereted using the
+                  provided client ID and secret.
+                order: 3
+                title: Refresh Token
+                airbyte_secret: true
+          - type: object
+            title: API Key
+            required:
+              - auth_type
+              - api_key
+            properties:
+              api_key:
+                type: string
+                description: Kit/ConvertKit API Key
+                title: API Key
+                default: >-
+                  {{ config.get('credentials',{}).get('api_key') or
+                  config.get('api_secret') }}
+                airbyte_secret: true
+              auth_type:
+                type: string
+                const: api_key
+                order: 1
+        order: 1
+        title: Authentication Type
+      api_secret:
+        type: string
+        order: 2
+        title: Legacy Start Date
+        airbyte_hidden: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    forms: false
+    sequences: false
+    tags: false
+    subscribers: false
+    broadcasts: false
+    form_subscribers: false
+    sequence_subscribers: false
+    tag_subscribers: false
+    current_account: false
+    custom_fields: false
+    purchases: false
+    segments: false
+    email_templates: false
+  testedStreams:
+    forms:
+      hasRecords: true
+      streamHash: d227c09606eff776e6807d896925cebd7794c7e0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sequences:
+      hasRecords: true
+      streamHash: e82c4b217194e3bb0f9286de3a4785a66b3b402b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tags:
+      hasRecords: true
+      streamHash: 477de78d179557c9a7e6b4d230ec7f0d13dde800
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    subscribers:
+      hasRecords: true
+      streamHash: 5e8ef90bcc33664e2033ae383737464a631ac786
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    broadcasts:
+      hasRecords: true
+      streamHash: 0592fef3be3befd493525504b410f817483091b4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    form_subscribers:
+      hasRecords: true
+      streamHash: 43e8a25a06de024959f055c256d92e71f54a6589
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sequence_subscribers:
+      hasRecords: true
+      streamHash: 6c72a522c1375079888cb9f4fe5fbe40874c97ea
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tag_subscribers:
+      hasRecords: true
+      streamHash: 92af6496e6037f81bcea66df3599ec263c8851e0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    current_account:
+      hasRecords: true
+      streamHash: c97945339346d4893ba86c36853574b032682e17
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    custom_fields:
+      hasRecords: true
+      streamHash: e3321ccd544fc87b0b2f951a92e2d78acd49dba3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    purchases:
+      hasRecords: true
+      streamHash: 8d1090f34b719316e7b1e9c312512802fb569394
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    segments:
+      streamHash: fbd9e8a718f4f64a2acd5691f87b2510aa4ef4bb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    email_templates:
+      streamHash: 2de244891f1567c265838603aa7e5a6bd723d7e4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.kit.com/v4.html
+
+schemas:
+  forms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      embed_js:
+        type:
+          - string
+          - "null"
+      embed_url:
+        type:
+          - string
+          - "null"
+      format:
+        type:
+          - string
+          - "null"
+      id:
+        type: integer
+      name:
+        type:
+          - string
+          - "null"
+      uid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  sequences:
+    type: object
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      hold:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: integer
+      name:
+        type:
+          - string
+          - "null"
+      repeat:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      id:
+        type: integer
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  subscribers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      date_last_loaded:
+        type: string
+        format: date-time
+      email_address:
+        type:
+          - string
+          - "null"
+      fields:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          custom_source:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: integer
+      state:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - date_last_loaded
+  broadcasts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      email_address:
+        type:
+          - string
+          - "null"
+      email_template:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      id:
+        type: integer
+      preview_text:
+        type:
+          - string
+          - "null"
+      public:
+        type:
+          - boolean
+          - "null"
+      public_url:
+        type:
+          - string
+          - "null"
+      publication_id:
+        type:
+          - integer
+          - "null"
+      send_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      subject:
+        type:
+          - string
+          - "null"
+      subscriber_filter:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            all:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  action_type:
+                    type:
+                      - string
+                      - "null"
+                  codes:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  comparison:
+                    type:
+                      - string
+                      - "null"
+                  date:
+                    type:
+                      - string
+                      - "null"
+                    format: date-time
+                  ids:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - integer
+                        - "null"
+                  subscriber_custom_field_id:
+                    type:
+                      - integer
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+            any:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  action_type:
+                    type:
+                      - string
+                      - "null"
+                  codes:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  comparison:
+                    type:
+                      - string
+                      - "null"
+                  date:
+                    type:
+                      - string
+                      - "null"
+                    format: date-time
+                  ids:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - integer
+                        - "null"
+                  subscriber_custom_field_id:
+                    type:
+                      - integer
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+            none:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  action_type:
+                    type:
+                      - string
+                      - "null"
+                  codes:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  comparison:
+                    type:
+                      - string
+                      - "null"
+                  date:
+                    type:
+                      - string
+                      - "null"
+                    format: date-time
+                  ids:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - integer
+                        - "null"
+                  subscriber_custom_field_id:
+                    type:
+                      - integer
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+      thumbnail_alt:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  form_subscribers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      added_at:
+        type: string
+        format: date-time
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      email_address:
+        type:
+          - string
+          - "null"
+      fields:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties: {}
+      form_id:
+        type: integer
+      id:
+        type: integer
+      referrer:
+        type:
+          - string
+          - "null"
+      referrer_utm_parameters:
+        type:
+          - object
+          - "null"
+        properties:
+          campaign:
+            type:
+              - string
+              - "null"
+          content:
+            type:
+              - string
+              - "null"
+          medium:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+          term:
+            type:
+              - string
+              - "null"
+      state:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - added_at
+      - added_at
+  sequence_subscribers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      added_at:
+        type: string
+        format: date-time
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      email_address:
+        type:
+          - string
+          - "null"
+      fields:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties: {}
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: integer
+      referrer:
+        type:
+          - string
+          - "null"
+      sequence_id:
+        type: integer
+      state:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - added_at
+  tag_subscribers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      date_loaded:
+        type: string
+        format: date-time
+      email_address:
+        type:
+          - string
+          - "null"
+      fields:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          custom_source:
+            type:
+              - string
+              - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: integer
+      state:
+        type:
+          - string
+          - "null"
+      tag_id:
+        type: integer
+    required:
+      - id
+      - tag_id
+      - date_loaded
+  current_account:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          plan_type:
+            type:
+              - string
+              - "null"
+          primary_email_address:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - object
+              - "null"
+            properties:
+              friendly_name:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              utc_offset:
+                type:
+                  - string
+                  - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+  custom_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      key:
+        type:
+          - string
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  purchases:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      currency:
+        type:
+          - string
+          - "null"
+      discount:
+        type:
+          - number
+          - "null"
+      email_address:
+        type:
+          - string
+          - "null"
+      id:
+        type: integer
+      products:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            pid:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - integer
+                - "null"
+            sku:
+              type:
+                - string
+                - "null"
+            unit_price:
+              type:
+                - number
+                - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subtotal:
+        type:
+          - number
+          - "null"
+      tax:
+        type:
+          - number
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+      transaction_id:
+        type:
+          - string
+          - "null"
+      transaction_time:
+        type:
+          - string
+          - "null"
+        format: date-time
+    required:
+      - id
+  segments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      id:
+        type: integer
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  email_templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      category:
+        type:
+          - string
+          - "null"
+      id:
+        type: integer
+      is_default:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id

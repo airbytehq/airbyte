@@ -1,0 +1,1114 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - contactslist
+definitions:
+  streams:
+    contactslist:
+      type: DeclarativeStream
+      name: contactslist
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.mailjet.com/v3/REST
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['api_key_secret'] }}"
+          path: /contactslist
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Data
+            path: /contactslist
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            Address:
+              type: string
+            CreatedAt:
+              type: string
+            ID:
+              type: integer
+            IsDeleted:
+              type: boolean
+            Name:
+              type: string
+            SubscriberCount:
+              type: integer
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.mailjet.com/v3/REST
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['api_key_secret'] }}"
+          path: /contact
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Data
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            CreatedAt:
+              type: string
+            DeliveredCount:
+              type: integer
+            Email:
+              type: string
+            ExclusionFromCampaignsUpdatedAt:
+              type: string
+            ID:
+              type: integer
+            IsExcludedFromCampaigns:
+              type: boolean
+            IsOptInPending:
+              type: boolean
+            IsSpamComplaining:
+              type: boolean
+            LastActivityAt:
+              type: string
+            LastUpdateAt:
+              type: string
+            Name:
+              type: string
+            UnsubscribedAt:
+              type: string
+            UnsubscribedBy:
+              type: string
+    stats_api_lifetime_message:
+      type: DeclarativeStream
+      name: stats_api_lifetime_message
+      primary_key:
+        - APIKeyID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.mailjet.com/v3/REST
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['api_key_secret'] }}"
+          path: >-
+            /statcounters?CounterSource=APIKey&CounterResolution=Lifetime&CounterTiming=Message
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            APIKeyID:
+              type: integer
+            EventClickDelay:
+              type: integer
+            EventClickedCount:
+              type: integer
+            EventOpenDelay:
+              type: integer
+            EventOpenedCount:
+              type: integer
+            EventSpamCount:
+              type: integer
+            EventUnsubscribedCount:
+              type: integer
+            EventWorkflowExitedCount:
+              type: integer
+            MessageBlockedCount:
+              type: integer
+            MessageClickedCount:
+              type: integer
+            MessageDeferredCount:
+              type: integer
+            MessageHardBouncedCount:
+              type: integer
+            MessageOpenedCount:
+              type: integer
+            MessageQueuedCount:
+              type: integer
+            MessageSentCount:
+              type: integer
+            MessageSoftBouncedCount:
+              type: integer
+            MessageSpamCount:
+              type: integer
+            MessageUnsubscribedCount:
+              type: integer
+            MessageWorkFlowExitedCount:
+              type: integer
+            SourceID:
+              type: integer
+            Timeslice:
+              type: string
+            Total:
+              type: integer
+    campaign:
+      type: DeclarativeStream
+      name: campaign
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.mailjet.com/v3/REST
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['api_key_secret'] }}"
+          path: /campaign
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            CampaignType:
+              type: integer
+            ClickTracked:
+              type: integer
+            CreatedAt:
+              type: string
+            CustomValue:
+              type: string
+            FirstMessageID:
+              type: integer
+            FromEmail:
+              type: string
+            FromID:
+              type: number
+            FromName:
+              type: string
+            HasHtmlCount:
+              type: number
+            HasTxtCount:
+              type: number
+            ID:
+              type: integer
+            IsDeleted:
+              type: boolean
+            IsStarred:
+              type: boolean
+            ListID:
+              type: integer
+            NewsLetterID:
+              type: integer
+            OpenTracked:
+              type: number
+            SendEndAt:
+              type: string
+            SendStartAt:
+              type: string
+            SpamassScore:
+              type: integer
+            Status:
+              type: integer
+            Subject:
+              type: string
+            UnsubscribeTrackedCount:
+              type: integer
+    message:
+      type: DeclarativeStream
+      name: message
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.mailjet.com/v3/REST
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['api_key_secret'] }}"
+          path: /message?ShowSubject=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Data
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            ArrivedAt:
+              type: string
+            AttachmentCount:
+              type: integer
+            AttemptCount:
+              type: integer
+            CampaignID:
+              type: integer
+            ContactAlt:
+              type: string
+            ContactID:
+              type: integer
+            Delay:
+              type: integer
+            DestinationID:
+              type: integer
+            FilterTime:
+              type: integer
+            ID:
+              type: integer
+            IsClickTracked:
+              type: boolean
+            IsHTMLPartIncluded:
+              type: boolean
+            IsOpenTracked:
+              type: boolean
+            IsTextPartIncluded:
+              type: boolean
+            IsUnsubTracked:
+              type: boolean
+            MessageSize:
+              type: integer
+            SenderID:
+              type: integer
+            SpamassRules:
+              type: string
+            SpamassassinScore:
+              type: integer
+            StatePermanent:
+              type: boolean
+            Status:
+              type: string
+            Subject:
+              type: string
+            UUID:
+              type: string
+    listrecipient:
+      type: DeclarativeStream
+      name: listrecipient
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.mailjet.com/v3/REST
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['api_key_secret'] }}"
+          path: /listrecipient
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Data
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            ContactID:
+              type: integer
+            ID:
+              type: integer
+            IsActive:
+              type: boolean
+            IsUnsubscribed:
+              type: boolean
+            ListID:
+              type: integer
+            ListName:
+              type: string
+            SubscribedAt:
+              type: string
+            UnsubscribedAt:
+              type: string
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.mailjet.com/v3/REST
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_key'] }}"
+      password: "{{ config['api_key_secret'] }}"
+streams:
+  - type: DeclarativeStream
+    name: contactslist
+    primary_key:
+      - ID
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.mailjet.com/v3/REST
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key_secret'] }}"
+        path: /contactslist
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - Data
+          path: /contactslist
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          Address:
+            type: string
+          CreatedAt:
+            type: string
+          ID:
+            type: integer
+          IsDeleted:
+            type: boolean
+          Name:
+            type: string
+          SubscriberCount:
+            type: integer
+  - type: DeclarativeStream
+    name: contacts
+    primary_key:
+      - ID
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.mailjet.com/v3/REST
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key_secret'] }}"
+        path: /contact
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - Data
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          CreatedAt:
+            type: string
+          DeliveredCount:
+            type: integer
+          Email:
+            type: string
+          ExclusionFromCampaignsUpdatedAt:
+            type: string
+          ID:
+            type: integer
+          IsExcludedFromCampaigns:
+            type: boolean
+          IsOptInPending:
+            type: boolean
+          IsSpamComplaining:
+            type: boolean
+          LastActivityAt:
+            type: string
+          LastUpdateAt:
+            type: string
+          Name:
+            type: string
+          UnsubscribedAt:
+            type: string
+          UnsubscribedBy:
+            type: string
+  - type: DeclarativeStream
+    name: stats_api_lifetime_message
+    primary_key:
+      - APIKeyID
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.mailjet.com/v3/REST
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key_secret'] }}"
+        path: >-
+          /statcounters?CounterSource=APIKey&CounterResolution=Lifetime&CounterTiming=Message
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - Data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          APIKeyID:
+            type: integer
+          EventClickDelay:
+            type: integer
+          EventClickedCount:
+            type: integer
+          EventOpenDelay:
+            type: integer
+          EventOpenedCount:
+            type: integer
+          EventSpamCount:
+            type: integer
+          EventUnsubscribedCount:
+            type: integer
+          EventWorkflowExitedCount:
+            type: integer
+          MessageBlockedCount:
+            type: integer
+          MessageClickedCount:
+            type: integer
+          MessageDeferredCount:
+            type: integer
+          MessageHardBouncedCount:
+            type: integer
+          MessageOpenedCount:
+            type: integer
+          MessageQueuedCount:
+            type: integer
+          MessageSentCount:
+            type: integer
+          MessageSoftBouncedCount:
+            type: integer
+          MessageSpamCount:
+            type: integer
+          MessageUnsubscribedCount:
+            type: integer
+          MessageWorkFlowExitedCount:
+            type: integer
+          SourceID:
+            type: integer
+          Timeslice:
+            type: string
+          Total:
+            type: integer
+  - type: DeclarativeStream
+    name: campaign
+    primary_key:
+      - ID
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.mailjet.com/v3/REST
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key_secret'] }}"
+        path: /campaign
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - Data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          CampaignType:
+            type: integer
+          ClickTracked:
+            type: integer
+          CreatedAt:
+            type: string
+          CustomValue:
+            type: string
+          FirstMessageID:
+            type: integer
+          FromEmail:
+            type: string
+          FromID:
+            type: number
+          FromName:
+            type: string
+          HasHtmlCount:
+            type: number
+          HasTxtCount:
+            type: number
+          ID:
+            type: integer
+          IsDeleted:
+            type: boolean
+          IsStarred:
+            type: boolean
+          ListID:
+            type: integer
+          NewsLetterID:
+            type: integer
+          OpenTracked:
+            type: number
+          SendEndAt:
+            type: string
+          SendStartAt:
+            type: string
+          SpamassScore:
+            type: integer
+          Status:
+            type: integer
+          Subject:
+            type: string
+          UnsubscribeTrackedCount:
+            type: integer
+  - type: DeclarativeStream
+    name: message
+    primary_key:
+      - ID
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.mailjet.com/v3/REST
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key_secret'] }}"
+        path: /message?ShowSubject=true
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - Data
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          ArrivedAt:
+            type: string
+          AttachmentCount:
+            type: integer
+          AttemptCount:
+            type: integer
+          CampaignID:
+            type: integer
+          ContactAlt:
+            type: string
+          ContactID:
+            type: integer
+          Delay:
+            type: integer
+          DestinationID:
+            type: integer
+          FilterTime:
+            type: integer
+          ID:
+            type: integer
+          IsClickTracked:
+            type: boolean
+          IsHTMLPartIncluded:
+            type: boolean
+          IsOpenTracked:
+            type: boolean
+          IsTextPartIncluded:
+            type: boolean
+          IsUnsubTracked:
+            type: boolean
+          MessageSize:
+            type: integer
+          SenderID:
+            type: integer
+          SpamassRules:
+            type: string
+          SpamassassinScore:
+            type: integer
+          StatePermanent:
+            type: boolean
+          Status:
+            type: string
+          Subject:
+            type: string
+          UUID:
+            type: string
+  - type: DeclarativeStream
+    name: listrecipient
+    primary_key:
+      - ID
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.mailjet.com/v3/REST
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key_secret'] }}"
+        path: /listrecipient
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - Data
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          ContactID:
+            type: integer
+          ID:
+            type: integer
+          IsActive:
+            type: boolean
+          IsUnsubscribed:
+            type: boolean
+          ListID:
+            type: integer
+          ListName:
+            type: string
+          SubscribedAt:
+            type: string
+          UnsubscribedAt:
+            type: string
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - api_key_secret
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: >-
+          Your API Key. See <a
+          href="https://dev.mailjet.com/email/guides/#authentication">here</a>.
+        order: 0
+      api_key_secret:
+        type: string
+        title: API Secret Key
+        description: >-
+          Your API Secret Key. See <a
+          href="https://dev.mailjet.com/email/guides/#authentication">here</a>.
+        airbyte_secret: true
+        order: 1
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    contactslist: false
+    contacts: false
+    stats_api_lifetime_message: false
+    campaign: false
+    message: false
+    listrecipient: false
+  yamlComponents:
+    streams:
+      contactslist:
+        - paginator
+        - recordSelector
+      contacts:
+        - paginator
+        - recordSelector
+      stats_api_lifetime_message:
+        - recordSelector
+      campaign:
+        - recordSelector
+      message:
+        - paginator
+        - recordSelector
+      listrecipient:
+        - paginator
+        - recordSelector
+    global:
+      - authenticator
+schemas:
+  contactslist:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      Address:
+        type: string
+      CreatedAt:
+        type: string
+      ID:
+        type: integer
+      IsDeleted:
+        type: boolean
+      Name:
+        type: string
+      SubscriberCount:
+        type: integer
+  contacts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      CreatedAt:
+        type: string
+      DeliveredCount:
+        type: integer
+      Email:
+        type: string
+      ExclusionFromCampaignsUpdatedAt:
+        type: string
+      ID:
+        type: integer
+      IsExcludedFromCampaigns:
+        type: boolean
+      IsOptInPending:
+        type: boolean
+      IsSpamComplaining:
+        type: boolean
+      LastActivityAt:
+        type: string
+      LastUpdateAt:
+        type: string
+      Name:
+        type: string
+      UnsubscribedAt:
+        type: string
+      UnsubscribedBy:
+        type: string
+  stats_api_lifetime_message:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      APIKeyID:
+        type: integer
+      EventClickDelay:
+        type: integer
+      EventClickedCount:
+        type: integer
+      EventOpenDelay:
+        type: integer
+      EventOpenedCount:
+        type: integer
+      EventSpamCount:
+        type: integer
+      EventUnsubscribedCount:
+        type: integer
+      EventWorkflowExitedCount:
+        type: integer
+      MessageBlockedCount:
+        type: integer
+      MessageClickedCount:
+        type: integer
+      MessageDeferredCount:
+        type: integer
+      MessageHardBouncedCount:
+        type: integer
+      MessageOpenedCount:
+        type: integer
+      MessageQueuedCount:
+        type: integer
+      MessageSentCount:
+        type: integer
+      MessageSoftBouncedCount:
+        type: integer
+      MessageSpamCount:
+        type: integer
+      MessageUnsubscribedCount:
+        type: integer
+      MessageWorkFlowExitedCount:
+        type: integer
+      SourceID:
+        type: integer
+      Timeslice:
+        type: string
+      Total:
+        type: integer
+  campaign:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      CampaignType:
+        type: integer
+      ClickTracked:
+        type: integer
+      CreatedAt:
+        type: string
+      CustomValue:
+        type: string
+      FirstMessageID:
+        type: integer
+      FromEmail:
+        type: string
+      FromID:
+        type: number
+      FromName:
+        type: string
+      HasHtmlCount:
+        type: number
+      HasTxtCount:
+        type: number
+      ID:
+        type: integer
+      IsDeleted:
+        type: boolean
+      IsStarred:
+        type: boolean
+      ListID:
+        type: integer
+      NewsLetterID:
+        type: integer
+      OpenTracked:
+        type: number
+      SendEndAt:
+        type: string
+      SendStartAt:
+        type: string
+      SpamassScore:
+        type: integer
+      Status:
+        type: integer
+      Subject:
+        type: string
+      UnsubscribeTrackedCount:
+        type: integer
+  message:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      ArrivedAt:
+        type: string
+      AttachmentCount:
+        type: integer
+      AttemptCount:
+        type: integer
+      CampaignID:
+        type: integer
+      ContactAlt:
+        type: string
+      ContactID:
+        type: integer
+      Delay:
+        type: integer
+      DestinationID:
+        type: integer
+      FilterTime:
+        type: integer
+      ID:
+        type: integer
+      IsClickTracked:
+        type: boolean
+      IsHTMLPartIncluded:
+        type: boolean
+      IsOpenTracked:
+        type: boolean
+      IsTextPartIncluded:
+        type: boolean
+      IsUnsubTracked:
+        type: boolean
+      MessageSize:
+        type: integer
+      SenderID:
+        type: integer
+      SpamassRules:
+        type: string
+      SpamassassinScore:
+        type: integer
+      StatePermanent:
+        type: boolean
+      Status:
+        type: string
+      Subject:
+        type: string
+      UUID:
+        type: string
+  listrecipient:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      ContactID:
+        type: integer
+      ID:
+        type: integer
+      IsActive:
+        type: boolean
+      IsUnsubscribed:
+        type: boolean
+      ListID:
+        type: integer
+      ListName:
+        type: string
+      SubscribedAt:
+        type: string
+      UnsubscribedAt:
+        type: string

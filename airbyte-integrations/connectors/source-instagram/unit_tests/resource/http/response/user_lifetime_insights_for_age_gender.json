@@ -1,0 +1,26 @@
+{
+  "data": [
+    {
+      "name": "follower_demographics",
+      "period": "lifetime",
+      "title": "Follower demographics",
+      "description": "description.",
+      "total_value": {
+        "breakdowns": [
+          {
+            "dimension_keys": ["age", "gender"],
+            "results": [
+              { "dimension_values": ["18-24", "F"], "value": 10 },
+              { "dimension_values": ["18-24", "M"], "value": 7 },
+              { "dimension_values": ["18-24", "U"], "value": 1 },
+              { "dimension_values": ["25-34", "F"], "value": 25 },
+              { "dimension_values": ["25-34", "M"], "value": 19 },
+              { "dimension_values": ["25-34", "U"], "value": 2 }
+            ]
+          }
+        ]
+      },
+      "id": "id/insights/follower_demographics/lifetime"
+    }
+  ]
+}

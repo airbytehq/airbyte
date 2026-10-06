@@ -1,0 +1,1181 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  Freshchat is a cloud based messaging solution that allows you to effectively
+  interact with your business users. It provides an efficient messaging service
+  for lead generation, customer engagement, and customer support and thereby,
+  makes your business competent.
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    roles:
+      type: DeclarativeStream
+      name: roles
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: items_per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("links", {}).get("next_page", {}).get("href", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("links", {}).get("next_page", {}).get("href",
+              {}) }}
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/roles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - roles
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: items_per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("links", {}).get("next_page", {}).get("href", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("links", {}).get("next_page", {}).get("href",
+              {}) }}
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_to
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_from
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    agents:
+      type: DeclarativeStream
+      name: agents
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: items_per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("links", {}).get("next_page", {}).get("href", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("links", {}).get("next_page", {}).get("href",
+              {}) }}
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/agents
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - agents
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/agents"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_time
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: created_from
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: items_per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("links", {}).get("next_page", {}).get("href", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("links", {}).get("next_page", {}).get("href",
+              {}) }}
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - groups
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    account:
+      type: DeclarativeStream
+      name: account
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: items_per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("links", {}).get("next_page", {}).get("href", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("links", {}).get("next_page", {}).get("href",
+              {}) }}
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/accounts/configuration
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - account_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account"
+    channels:
+      type: DeclarativeStream
+      name: channels
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: items_per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 20
+            cursor_value: >-
+              {{ response.get("links", {}).get("next_page", {}).get("href", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("links", {}).get("next_page", {}).get("href",
+              {}) }}
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/channels
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - channels
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channels"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_to
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_from
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    conversations:
+      type: DeclarativeStream
+      name: conversations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/conversations/{{ stream_partition['conversation_id'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/users_conversations"
+              parent_key: id
+              partition_field: conversation_id
+      primary_key:
+        - conversation_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        end_time_option:
+          type: RequestOption
+          field_name: updated_to
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: updated_from
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    users_conversations:
+      type: DeclarativeStream
+      name: users_conversations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/users/{{ stream_partition['user_id'] }}/conversations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - conversations
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/users"
+              parent_key: id
+              partition_field: user_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users_conversations"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - user_id
+              value: "{{ stream_partition.user_id }}"
+    conversations_messages:
+      type: DeclarativeStream
+      name: conversations_messages
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: items_per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/conversations/{{ stream_partition['conversation_id'] }}/messages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - messages
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/users_conversations"
+              parent_key: id
+              partition_field: conversation_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations_messages"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_time
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: created_from
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    conversations_properties:
+      type: DeclarativeStream
+      name: conversations_properties
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/conversations/fields
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations_properties"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['account_name'] }}.freshchat.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_key"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/account"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/users_conversations"
+  - $ref: "#/definitions/streams/conversations"
+  - $ref: "#/definitions/streams/conversations_messages"
+  - $ref: "#/definitions/streams/conversations_properties"
+  - $ref: "#/definitions/streams/agents"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/channels"
+  - $ref: "#/definitions/streams/roles"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - account_name
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 1
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      account_name:
+        type: string
+        description: The unique account name for your Freshchat instance
+        name: account_name
+        order: 0
+        title: Account Name
+        airbyte_secret: false
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://developers.freshchat.com/api/
+  testedStreams:
+    roles:
+      hasRecords: true
+      streamHash: 00c27c4eef140527a4c2cd0b4761ed7e326668e4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: b80611737cf8d2ef88b457f8ba2bebdb276583ee
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    agents:
+      hasRecords: true
+      streamHash: a7d64eb0dc0abbeedc2cad1daf27cc447c46e9c7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    groups:
+      hasRecords: true
+      streamHash: 1397f7a9484b6a3a8755705e22d53b11c238b3ba
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    account:
+      hasRecords: true
+      streamHash: 564c580a312fad36e82249c3d30784157404f5ac
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    channels:
+      hasRecords: true
+      streamHash: ce3b6b60f1974781466fb520649c49932858ad6c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    conversations:
+      hasRecords: true
+      streamHash: 802cf36452d9b660fa35eceb85ce1a4c430b0899
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users_conversations:
+      hasRecords: true
+      streamHash: 00956d1eaa39d5b65c19fe8e9bbe904238da5ddb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    conversations_messages:
+      hasRecords: true
+      streamHash: 038b3ea7c0317f0c2daa76e87479a5ca4fa85818
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    conversations_properties:
+      hasRecords: true
+      streamHash: 47f60112857ed276c846443bd25aa7ad8acd0b89
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    roles: true
+    users: true
+    agents: true
+    groups: true
+    account: true
+    channels: true
+    conversations: true
+    users_conversations: true
+    conversations_messages: true
+    conversations_properties: true
+
+schemas:
+  roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      is_custom_role:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_time
+    properties:
+      id:
+        type: string
+      email:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      avatar:
+        type:
+          - object
+          - "null"
+        properties:
+          url:
+            type:
+              - string
+              - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      properties:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      login_status:
+        type:
+          - boolean
+          - "null"
+      updated_time:
+        type: string
+      org_contact_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  agents:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - created_time
+    properties:
+      id:
+        type: string
+      email:
+        type:
+          - string
+          - "null"
+      avatar:
+        type:
+          - object
+          - "null"
+      groups:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      role_id:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      role_name:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      is_deleted:
+        type:
+          - boolean
+          - "null"
+      agent_status:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+      created_time:
+        type: string
+      login_status:
+        type:
+          - boolean
+          - "null"
+      routing_type:
+        type:
+          - string
+          - "null"
+      agent_capacity:
+        type:
+          - number
+          - "null"
+      is_deactivated:
+        type:
+          - boolean
+          - "null"
+      social_profiles:
+        type:
+          - array
+          - "null"
+      freshchat_access:
+        type:
+          - boolean
+          - "null"
+      round_robin_access:
+        type:
+          - boolean
+          - "null"
+      availability_status:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      routing_type:
+        type:
+          - string
+          - "null"
+      chat_group_id:
+        type:
+          - string
+          - "null"
+      routing_logic:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  account:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - account_id
+    properties:
+      app_id:
+        type:
+          - string
+          - "null"
+      bundle_id:
+        type:
+          - number
+          - "null"
+      plan_type:
+        type:
+          - string
+          - "null"
+      account_id:
+        type: number
+      datacenter:
+        type:
+          - string
+          - "null"
+      bundle_type:
+        type:
+          - string
+          - "null"
+      web_chat_id:
+        type:
+          - string
+          - "null"
+      account_domain:
+        type:
+          - string
+          - "null"
+      organisation_id:
+        type:
+          - number
+          - "null"
+      organisation_domain:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  channels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_time
+    properties:
+      id:
+        type: string
+      icon:
+        type:
+          - object
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      public:
+        type:
+          - boolean
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      enabled:
+        type:
+          - boolean
+          - "null"
+      updated_time:
+        type: string
+      welcome_message:
+        type:
+          - object
+          - "null"
+        properties:
+          isBotsInput:
+            type:
+              - boolean
+              - "null"
+          message_type:
+            type:
+              - string
+              - "null"
+          message_parts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                text:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    content:
+                      type:
+                        - string
+                        - "null"
+          botsPrivateNote:
+            type:
+              - boolean
+              - "null"
+          restrictResponse:
+            type:
+              - boolean
+              - "null"
+    additionalProperties: true
+  conversations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - conversation_id
+      - updated_time
+    properties:
+      url:
+        type:
+          - string
+          - "null"
+      app_id:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      skill_id:
+        type:
+          - number
+          - "null"
+      channel_id:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      properties:
+        type:
+          - object
+          - "null"
+        properties:
+          priority:
+            type:
+              - string
+              - "null"
+      created_time:
+        type:
+          - string
+          - "null"
+      updated_time:
+        type: string
+      org_contact_id:
+        type:
+          - string
+          - "null"
+      conversation_id:
+        type: string
+      assigned_agent_id:
+        type:
+          - string
+          - "null"
+      assigned_org_agent_id:
+        type:
+          - string
+          - "null"
+      conversation_internal_id:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  users_conversations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      user_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  conversations_messages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - created_time
+    properties:
+      id:
+        type: string
+      app_id:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      actor_id:
+        type:
+          - string
+          - "null"
+      actor_type:
+        type:
+          - string
+          - "null"
+      bots_input:
+        type:
+          - boolean
+          - "null"
+      channel_id:
+        type:
+          - string
+          - "null"
+      isBotsInput:
+        type:
+          - boolean
+          - "null"
+      created_time:
+        type: string
+      message_type:
+        type:
+          - string
+          - "null"
+      org_actor_id:
+        type:
+          - string
+          - "null"
+      message_parts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            text:
+              type:
+                - object
+                - "null"
+              properties:
+                content:
+                  type:
+                    - string
+                    - "null"
+            email:
+              type:
+                - object
+                - "null"
+              properties:
+                content:
+                  type:
+                    - string
+                    - "null"
+                subject:
+                  type:
+                    - string
+                    - "null"
+      interaction_id:
+        type:
+          - string
+          - "null"
+      botsPrivateNote:
+        type:
+          - boolean
+          - "null"
+      conversation_id:
+        type:
+          - string
+          - "null"
+      restrictResponse:
+        type:
+          - boolean
+          - "null"
+      freshchat_channel_id:
+        type:
+          - string
+          - "null"
+      freshchat_conversation_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  conversations_properties:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      custom:
+        type:
+          - boolean
+          - "null"
+      fields:
+        type:
+          - array
+          - "null"
+      choices:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      editable:
+        type:
+          - boolean
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      required:
+        type:
+          - boolean
+          - "null"
+      column_name:
+        type:
+          - string
+          - "null"
+      default_value:
+        type:
+          - string
+          - "null"
+    additionalProperties: true

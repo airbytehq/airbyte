@@ -1,0 +1,189 @@
+pluginManagement {
+    repositories {
+        // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
+
+        // ## Prefer repos controlled by Airbyte.
+        maven {
+            url = 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+        }
+
+        // ## Look into other, public repos.
+        // Gradle plugin portal.
+        gradlePluginPortal()
+        // Maven Central has most of everything.
+        mavenCentral()
+    }
+}
+
+// Configure the gradle enterprise plugin to enable build scans. Enabling the plugin at the top of the settings file allows the build scan to record
+// as much information as possible.
+plugins {
+    id "com.gradle.develocity" version "3.19.2"
+    id 'com.github.burrunan.s3-build-cache' version "1.8.1"
+}
+
+final boolean isCI = System.getenv().containsKey("CI") || System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
+
+dependencyResolutionManagement {
+    // Set FAIL_ON_PROJECT_REPOS to ensure there are no more `repositories { ... }` blocks than necessary.
+    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+
+    repositories {
+        // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
+
+        // ## Prefer repos controlled by Airbyte.
+
+        maven {
+            // This repo hosts our public artifacts and can be referenced by anyone.
+            name 'airbyte-public-jars'
+            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+            content {
+                // Whitelist artifacts served by this repo because it's slow.
+                includeGroup 'io.airbyte'
+                includeGroupByRegex 'io\\.airbyte\\..*'
+                includeGroup 'com.hadoop.gplcompression'
+                includeGroup 'com.therealvan'
+            }
+        }
+        // TODO: add airbyte-controlled proxy repos here
+
+        // ## Look into other, public repos.
+
+        // Maven Central has most of everything.
+        mavenCentral()
+        // Jitpack is used to pull dependencies directly from github.
+        maven {
+            name 'jitpack'
+            url 'https://jitpack.io'
+            content {
+                includeGroupByRegex 'com\\.github\\..*'
+                includeGroup 'net.jimblackler.jsonschemafriend'
+            }
+        }
+        // Elastic Search repo.
+        maven {
+            name 'elastic-search-snapshots'
+            url 'https://snapshots.elastic.co/maven/'
+            content {
+                includeGroup 'co.elastic.clients'
+            }
+        }
+        // Redshift repo.
+        maven {
+            name 'redshift'
+            url 'https://s3.amazonaws.com/redshift-maven-repository/release'
+            content {
+                includeGroup 'com.amazon.redshift'
+            }
+        }
+        // Rockset repo.
+        maven {
+            name 'rockset'
+            url 'https://mvnrepository.com/artifact/com.rockset/rockset-java'
+            content {
+                includeGroup 'com.rockset'
+            }
+        }
+        // Awaitility repo.
+        maven {
+            name 'awaitility'
+            url 'https://mvnrepository.com/artifact/org.awaitility/awaitility'
+            content {
+                includeGroup 'org.awaitility'
+            }
+        }
+        // Confluent repo.
+        maven {
+            name 'confluent'
+            url "https://packages.confluent.io/maven"
+            content {
+                includeGroup 'io.confluent'
+                includeGroup 'org.apache.kafka'
+            }
+        }
+    }
+}
+
+develocity {
+    buildScan {
+        termsOfUseUrl = "https://gradle.com/terms-of-service"
+        termsOfUseAgree = "yes"
+        uploadInBackground = !isCI // Disable in CI or scan URLs may not work.
+        buildScanPublished { scan ->
+            file("scan-journal.log") << "${new Date()} - ${scan.buildScanId} - ${scan.buildScanUri}\n"
+        }
+    }
+}
+
+if (isCI) {
+    buildCache {
+        local {
+            // Local build cache is dangerous as it might produce inconsistent results
+            // in case developer modifies files while the build is running
+            enabled = true
+            push = true
+        }
+        remote(com.github.burrunan.s3cache.AwsS3BuildCache) {
+            enabled = !System.getenv().getOrDefault("S3_BUILD_CACHE_ACCESS_KEY_ID", "").isEmpty()
+            push = true
+            // The 'us-west-2' region was chosen because it was close to our v0.6 dagger runners
+            // we used to maintain in AWS, prior to migrating to v0.9 and to github runners.
+            // This may in fact no longer be the best choice, who knows? It's not terrible, at least.
+            region = 'us-west-2'
+            bucket = 'ab-ci-cache'
+            prefix = "${System.getProperty('s3BuildCachePrefix', 'connectors')}-ci-cache/"
+        }
+    }
+}
+
+rootProject.name = 'airbyte'
+
+boolean hasGradleBuildFile(java.nio.file.Path path) {
+    def buildFiles = file(path).list { file, name -> name.matches("build\\.gradle(?:\\.kts)?") }
+    return buildFiles.length == 1
+}
+
+void includeCdkProjects(String dir, String gradlePathPrefix, String projectNamePrefix) {
+    def path = rootDir.toPath().resolve(dir)
+    if (!path.toFile().exists()) {
+        path = rootDir.toPath().resolve("airbyte-submodule").resolve(dir)
+        if (!path.toFile().exists()) {
+            return
+        }
+    }
+    path.eachDir { subDir ->
+        if (!hasGradleBuildFile(subDir)) {
+            return
+        }
+        String gradlePath = gradlePathPrefix + subDir.getFileName()
+        include gradlePath
+        project(gradlePath).name = projectNamePrefix + subDir.getFileName()
+    }
+}
+
+// Include convenience aggregator.
+include ":airbyte-cdk"
+// Include all java CDK modules.
+includeCdkProjects("airbyte-cdk/java/airbyte-cdk", ":airbyte-cdk:java:airbyte-cdk:", "airbyte-cdk-")
+includeCdkProjects("airbyte-cdk/bulk/core", ":airbyte-cdk:bulk:core:", "bulk-cdk-core-")
+includeCdkProjects("airbyte-cdk/bulk/toolkits", ":airbyte-cdk:bulk:toolkits:", "bulk-cdk-toolkit-")
+
+// Include all java connector projects.
+def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
+integrationsPath.eachDir { dir ->
+    if (!hasGradleBuildFile(dir)) {
+        // Ignore python and other non-gradle connectors.
+        return
+    }
+    File metadataFile = dir.resolve("metadata.yaml").toFile()
+    if (!metadataFile.exists()) {
+        // Don't support connectors without metadata.
+        return
+    }
+    String metadataYaml = metadataFile.getText("UTF-8")
+    if (metadataYaml =~ /(?m)^\s+supportLevel:\s*["']?archived["']?\s*$/) {
+        // Ignore archived connectors.
+        return
+    }
+    include ":airbyte-integrations:connectors:${dir.getFileName()}"
+}

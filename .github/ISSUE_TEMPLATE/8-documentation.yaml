@@ -1,0 +1,17 @@
+name: 📚 Request or report a problem with documentation
+description: Typos, tutorial requests, and everything in between.
+title: "[Docs]: "
+labels: [area/documentation, needs-triage]
+body:
+  - type: input
+    id: url
+    attributes:
+      label: Page URL
+      description: If this is an issue with a specific page, paste the URL here.
+      placeholder: https://docs.airbyte.com/connector-development/connector-specification-reference
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: >-
+        Please provide as much detail as possible to ensure we can resolve the issue properly.

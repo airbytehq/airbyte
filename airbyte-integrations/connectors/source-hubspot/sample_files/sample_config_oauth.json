@@ -1,0 +1,9 @@
+{
+  "start_date": "2021-10-01T00:00:00Z",
+  "credentials": {
+    "credentials_title": "OAuth Credentials",
+    "client_id": "123456789_client_id_hubspot",
+    "client_secret": "123456789_client_secret_hubspot",
+    "refresh_token": "123456789_some_refresh_token"
+  }
+}

@@ -1,0 +1,16 @@
+airbyte-integrations/bases/base-normalization/integration_tests/normalization_test_output
+airbyte-integrations/connectors/destination-*/src/test-integration/resources/expected-spec*.json
+airbyte-integrations/connectors/destination-*/src/test-integration/resources/golden_files/**/*.json
+airbyte-cdk/bulk/*/*/src/test-integration/resources/expected-spec-*.json
+
+# Ignore documentation linter configuration files
+docs/vale-styles/**
+
+# Ignore manifest files in manifest-only connectors
+# This is done due to prettier being overly opinionated on the formatting of quotes
+# Ref: https://github.com/prettier/prettier/issues/973
+# And it not allowing rule opt outs
+# Ref: https://github.com/prettier/prettier/discussions/13925
+# Instead we rely on the contribution service to format these files
+# See: https://github.com/airbytehq/airbyte/blob/master/CONTRIBUTING.md#adding-a-new-connector
+airbyte-integrations/connectors/*/manifest.yaml

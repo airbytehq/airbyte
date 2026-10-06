@@ -1,0 +1,18 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "QueueMessages",
+        "json_schema": {
+          "$schema": "https://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "supported_destination_sync_modes": ["overwrite", "append_dedup"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "flat_rate",
+    "title": "Flat rate",
+    "description": "Lets you charge a fixed rate for shipping."
+  },
+  {
+    "id": "free_shipping",
+    "title": "Free shipping",
+    "description": "Free shipping is a special method which can be triggered with coupons and minimum spends."
+  }
+]

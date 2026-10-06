@@ -1,0 +1,8 @@
+[
+  {
+    "created": 1704067200,
+    "email": "bounce@example.com",
+    "reason": "550 5.1.1 The email account that you tried to reach does not exist",
+    "status": "5.1.1"
+  }
+]

@@ -1,0 +1,17 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-microsoft-dataverse:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_microsoft_dataverse/spec.yaml"
+  connection:
+    bypass_reason: "Community connector — no CI secrets available"
+  discovery:
+    bypass_reason: "Community connector — no CI secrets available"
+  basic_read:
+    bypass_reason: "Community connector — no CI secrets available"
+  incremental:
+    bypass_reason: "Community connector — no CI secrets available"
+  full_refresh:
+    bypass_reason: "Community connector — no CI secrets available"

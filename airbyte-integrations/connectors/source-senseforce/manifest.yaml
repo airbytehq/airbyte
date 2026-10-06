@@ -1,0 +1,289 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - dataset
+definitions:
+  streams:
+    dataset:
+      type: DeclarativeStream
+      name: dataset
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['backend_url'] }}"
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['access_token'] }}"
+          path: /api/dataset/execute/{{ config['dataset_id']}}
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_data: |
+            [{"clause": {"type": "timestamp", "operator": 10, "parameters": 
+                [{"value": {{ stream_slice['start_time'] | int * 1000 }} },
+                 {"value": {{ stream_slice['end_time'] | int * 1000 + (86400000 - 1) }} }
+                ]
+                
+              }, "orderBy": 1, "columnName": "Timestamp"}]/
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10000
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: airbyte_cursor
+        name: dataset
+        primary_key:
+          - id
+        path: /api/dataset/execute/{{ config['dataset_id']}}
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+        step: P100D
+        cursor_granularity: PT1S
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - airbyte_cursor
+              value: "{{ record['timestamp'] | int / 1000 }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            airbyte_cursor:
+              type: number
+            id:
+              type:
+                - "null"
+                - string
+            thing:
+              type: string
+            timestamp:
+              type: integer
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['backend_url'] }}"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['access_token'] }}"
+streams:
+  - type: DeclarativeStream
+    name: dataset
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['backend_url'] }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['access_token'] }}"
+        path: /api/dataset/execute/{{ config['dataset_id']}}
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+        request_body_data: |
+          [{"clause": {"type": "timestamp", "operator": 10, "parameters": 
+              [{"value": {{ stream_slice['start_time'] | int * 1000 }} },
+               {"value": {{ stream_slice['end_time'] | int * 1000 + (86400000 - 1) }} }
+              ]
+              
+            }, "orderBy": 1, "columnName": "Timestamp"}]/
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 10000
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: airbyte_cursor
+      name: dataset
+      primary_key:
+        - id
+      path: /api/dataset/execute/{{ config['dataset_id']}}
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc() }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+      step: P100D
+      cursor_granularity: PT1S
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - airbyte_cursor
+            value: "{{ record['timestamp'] | int / 1000 }}"
+            type: AddedFieldDefinition
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          airbyte_cursor:
+            type: number
+          id:
+            type:
+              - "null"
+              - string
+          thing:
+            type: string
+          timestamp:
+            type: integer
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - access_token
+      - backend_url
+      - dataset_id
+      - start_date
+    properties:
+      access_token:
+        type: string
+        title: API Access Token
+        description: >-
+          Your API access token. See <a
+          href="https://manual.senseforce.io/manual/sf-platform/public-api/get-your-access-token/">here</a>.
+          The toke is case sensitive.
+        airbyte_secret: true
+        order: 0
+      backend_url:
+        type: string
+        title: Senseforce backend URL
+        examples:
+          - https://galaxyapi.senseforce.io
+        description: >-
+          Your Senseforce API backend URL. This is the URL shown during the
+          Login screen. See <a
+          href="https://manual.senseforce.io/manual/sf-platform/public-api/get-your-access-token/">here</a>
+          for more details. (Note: Most Senseforce backend APIs have the term
+          'galaxy' in their ULR)
+        order: 1
+      dataset_id:
+        type: string
+        title: Dataset ID
+        examples:
+          - 8f418098-ca28-4df5-9498-0df9fe78eda7
+        description: >-
+          The ID of the dataset you want to synchronize. The ID can be found in
+          the URL when opening the dataset. See <a
+          href="https://manual.senseforce.io/manual/sf-platform/public-api/get-your-access-token/">here</a>
+          for more details. (Note: As the Senseforce API only allows to
+          synchronize a specific dataset, each dataset you  want to synchronize
+          needs to be implemented as a separate airbyte source).
+        order: 2
+      slice_range:
+        type: integer
+        title: Data request time increment in days
+        default: 10
+        minimum: 1
+        maximum: 365
+        examples:
+          - 1
+          - 3
+          - 10
+          - 30
+          - 180
+          - 360
+        airbyte_hidden: true
+        description: >-
+          The time increment used by the connector when requesting data from the
+          Senseforce API. The bigger the value is, the less requests will be
+          made and faster the sync will be. On the other hand, the more seldom
+          the state is persisted and the more likely one could run into rate
+          limites.  Furthermore, consider that large chunks of time might take a
+          long time for the Senseforce query to return data - meaning it could
+          take in effect longer than with more smaller time slices. If there are
+          a lot of data per day, set this setting to 1. If there is only very
+          little data per day, you might change the setting to 10 or more.
+        order: 3
+      start_date:
+        type: string
+        title: The first day (in UTC) when to read data from.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        description: >-
+          UTC date and time in the format 2017-01-25. Only data with "Timestamp"
+          after this date will be replicated. Important note: This start date
+          must be set to the first day of where your dataset provides data.  If
+          your dataset has data from 2020-10-10 10:21:10, set the start_date to
+          2020-10-10 or later
+        examples:
+          - "2017-01-25"
+        format: date
+        order: 4
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    dataset: false
+schemas:
+  dataset:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      airbyte_cursor:
+        type: number
+      id:
+        type:
+          - "null"
+          - string
+      thing:
+        type: string
+      timestamp:
+        type: integer

@@ -1,0 +1,51 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+      - api.glassfrog.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.33.0@sha256:3343cc05b79b9a3c07fa90152bd5348da7154b44f63521857bd2a745883d85cd
+  connectorSubtype: api
+  connectorType: source
+  definitionId: cf8ff320-6272-4faa-89e6-4402dc17e5d5
+  dockerImageTag: 0.3.65
+  dockerRepository: airbyte/source-glassfrog
+  documentationUrl: https://docs.airbyte.com/integrations/sources/glassfrog
+  githubIssueLabel: source-glassfrog
+  icon: glassfrog.svg
+  license: ELv2
+  name: Glassfrog
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseDate: "2022-06-16"
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-glassfrog
+  supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: glassfrog_config_dev_null
+          id: 08ee4e0c-60c1-4b0b-b05f-5be2302a550d
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GLASSFROG_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: GlassFrog API documentation
+      url: https://documenter.getpostman.com/view/1014385/glassfrog-api-v3/2SJViY
+      type: api_reference
+metadataSpecVersion: "1.0"

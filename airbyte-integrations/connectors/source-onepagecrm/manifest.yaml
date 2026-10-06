@@ -1,0 +1,3456 @@
+version: 6.4.0
+
+type: DeclarativeSource
+
+description: >-
+  Onepagecrm is a CRM solution for small busineeses.
+
+  Using this stream we can extarct data from various streams such as contacts ,
+  deals , pipelines and meetings
+
+  Docs : https://developer.onepagecrm.com/api/
+
+check:
+  type: CheckStream
+  stream_names:
+    - contacts
+
+definitions:
+  streams:
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - contacts
+              - "*"
+              - contact
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+              - user
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    bootstrap:
+      type: DeclarativeStream
+      name: bootstrap
+      primary_key:
+        - user_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: bootstrap
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bootstrap"
+    companies:
+      type: DeclarativeStream
+      name: companies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - companies
+              - "*"
+              - company
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+    actions:
+      type: DeclarativeStream
+      name: actions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: actions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - actions
+              - "*"
+              - action
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/actions"
+    action_stream:
+      type: DeclarativeStream
+      name: action_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: action_stream
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - contacts
+              - "*"
+              - contact
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/action_stream"
+    team_stream:
+      type: DeclarativeStream
+      name: team_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: team_stream
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - contacts
+              - "*"
+              - contact
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/team_stream"
+    deals:
+      type: DeclarativeStream
+      name: deals
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: deals
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - deals
+              - "*"
+              - deal
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals"
+    notes:
+      type: DeclarativeStream
+      name: notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: notes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - notes
+              - "*"
+              - note
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/notes"
+    relationship_types:
+      type: DeclarativeStream
+      name: relationship_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: relationship_types
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - relationship_types
+              - "*"
+              - relationship_type
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/relationship_types"
+    pipelines:
+      type: DeclarativeStream
+      name: pipelines
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: pipelines
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - pipelines
+              - "*"
+              - pipeline
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pipelines"
+    statuses:
+      type: DeclarativeStream
+      name: statuses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: statuses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+              - status
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/statuses"
+    lead_sources:
+      type: DeclarativeStream
+      name: lead_sources
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: lead_sources
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lead_sources"
+    filters:
+      type: DeclarativeStream
+      name: filters
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: filters
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - filters
+              - "*"
+              - filter
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/filters"
+    predefined_actions:
+      type: DeclarativeStream
+      name: predefined_actions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: predefined_actions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - predefined_actions
+              - "*"
+              - predefined_action
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/predefined_actions"
+    predefined_items:
+      type: DeclarativeStream
+      name: predefined_items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: predefined_items
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - predefined_items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/predefined_items"
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: custom_fields
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - custom_fields
+              - "*"
+              - custom_field
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_fields"
+    calls:
+      type: DeclarativeStream
+      name: calls
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: calls
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - calls
+              - "*"
+              - call
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/calls"
+    meetings:
+      type: DeclarativeStream
+      name: meetings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: meetings
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - meetings
+              - "*"
+              - meeting
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/meetings"
+  base_requester:
+    type: HttpRequester
+    url_base: https://app.onepagecrm.com/api/v3/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/bootstrap"
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/actions"
+  - $ref: "#/definitions/streams/action_stream"
+  - $ref: "#/definitions/streams/team_stream"
+  - $ref: "#/definitions/streams/deals"
+  - $ref: "#/definitions/streams/notes"
+  - $ref: "#/definitions/streams/relationship_types"
+  - $ref: "#/definitions/streams/pipelines"
+  - $ref: "#/definitions/streams/statuses"
+  - $ref: "#/definitions/streams/lead_sources"
+  - $ref: "#/definitions/streams/filters"
+  - $ref: "#/definitions/streams/predefined_actions"
+  - $ref: "#/definitions/streams/predefined_items"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/calls"
+  - $ref: "#/definitions/streams/meetings"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+    properties:
+      username:
+        type: string
+        description: Enter the user ID of your API app
+        order: 0
+        title: Username
+      password:
+        type: string
+        description: Enter your API Key of your API app
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    contacts: true
+    users: true
+    bootstrap: true
+    companies: true
+    actions: true
+    action_stream: true
+    team_stream: true
+    deals: true
+    notes: true
+    relationship_types: true
+    pipelines: true
+    statuses: true
+    lead_sources: true
+    filters: true
+    predefined_actions: true
+    predefined_items: true
+    custom_fields: true
+    calls: true
+    meetings: true
+  testedStreams:
+    contacts:
+      streamHash: 06ce92bcf6d640369df5eaf8da3ef346abf2d64e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 22003c3855db928ae3f867eb7f28fc94a8a6525d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    bootstrap:
+      streamHash: fc6dd707cd79cf754316e18c1d340d1c2e1f021d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    companies:
+      streamHash: 7312a2a979698dbbfb0686984760edf3795bcb84
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    actions:
+      streamHash: 64f7c9c02fc042a6b0643370f11b2d87ec1ebfc6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    action_stream:
+      streamHash: ceecc67cb97e8167c9d89afffe004554d67f5359
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    team_stream:
+      streamHash: 1cd192c8d4f707e3b038e669eb591a1a5ec00209
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    deals:
+      streamHash: bc7f9772f5687078b8781913a103217c076d695d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    notes:
+      streamHash: a4bb26f23939d0d65f8d6873e888d31234273a12
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    relationship_types:
+      streamHash: e6b42d0d6fcbb51b53a8eb83fbdec5aa4fc94219
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    pipelines:
+      streamHash: 20bb29598673e65aa51983595285d23be9162fd1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    statuses:
+      streamHash: c95e4f28ee436dd7dd585dac4642648b9684b1d6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    lead_sources:
+      streamHash: b48a41a79686b71164d8b9e89288f49e8eb38e6f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    filters:
+      streamHash: 4d212113b76a91e37a36d29b0bb85a1e81474865
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    predefined_actions:
+      streamHash: 732b1dc7a6784428916470b67feb9bdb7b8dfbd4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    predefined_items:
+      streamHash: 552609f0a4cfaa6f29c599ce6ebc048d500164eb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    custom_fields:
+      streamHash: 409703f19317a646c520d9a8ec3a59a68aac16e5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    calls:
+      streamHash: b74fae76c231a845ce35a39e0bad1cfc894dfde7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    meetings:
+      streamHash: f394ab61c4daf7bec64b718c2f10b6f949aefeea
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address_list:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            address:
+              type:
+                - string
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            country_code:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            zip_code:
+              type:
+                - string
+                - "null"
+      background:
+        type:
+          - string
+          - "null"
+      closed_sales:
+        type:
+          - array
+          - "null"
+      company_id:
+        type:
+          - string
+          - "null"
+      company_name:
+        type:
+          - string
+          - "null"
+      company_size:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+      email_sync_available:
+        type:
+          - boolean
+          - "null"
+      email_sync_enabled:
+        type:
+          - boolean
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      enhanceable:
+        type:
+          - boolean
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      job_title:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      lead_source:
+        type:
+          - string
+          - "null"
+      lead_source_id:
+        type:
+          - string
+          - "null"
+      letter:
+        type:
+          - string
+          - "null"
+      modified_at:
+        type:
+          - string
+          - "null"
+      owner_id:
+        type:
+          - string
+          - "null"
+      pending_deal:
+        type:
+          - boolean
+          - "null"
+      phones:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      photo_url:
+        type:
+          - string
+          - "null"
+      sales_closed_for:
+        type:
+          - array
+          - "null"
+      starred:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      status_id:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      total_deals_count:
+        type:
+          - number
+          - "null"
+      total_pendings:
+        type:
+          - number
+          - "null"
+      urls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+    required:
+      - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_rights:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      account_role:
+        type:
+          - string
+          - "null"
+      bcc_email:
+        type:
+          - string
+          - "null"
+      company_name:
+        type:
+          - string
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_name:
+        type:
+          - string
+          - "null"
+      photo_url:
+        type:
+          - string
+          - "null"
+      virtual_group_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  bootstrap:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_type:
+        type:
+          - string
+          - "null"
+      auth_key:
+        type:
+          - string
+          - "null"
+      call_results:
+        type:
+          - object
+          - "null"
+        properties:
+          interested:
+            type:
+              - string
+              - "null"
+          left_message:
+            type:
+              - string
+              - "null"
+          no_answer:
+            type:
+              - string
+              - "null"
+          not_interested:
+            type:
+              - string
+              - "null"
+          other:
+            type:
+              - string
+              - "null"
+      call_results_order:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      company_fields:
+        type:
+          - array
+          - "null"
+      cost_setup:
+        type:
+          - object
+          - "null"
+        properties:
+          commission_base:
+            type:
+              - string
+              - "null"
+          commission_percentage:
+            type:
+              - number
+              - "null"
+          cost_enabled:
+            type:
+              - boolean
+              - "null"
+          cost_required:
+            type:
+              - boolean
+              - "null"
+      current_card_scans_number:
+        type:
+          - number
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            custom_field:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                mandatory:
+                  type:
+                    - boolean
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                position:
+                  type:
+                    - number
+                    - "null"
+                reminder_days:
+                  type:
+                    - number
+                    - "null"
+      deal_fields:
+        type:
+          - array
+          - "null"
+      filters:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            filter:
+              type:
+                - object
+                - "null"
+              properties:
+                conditions:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+      max_card_scans_limit:
+        type:
+          - number
+          - "null"
+      next_action_dates:
+        type:
+          - array
+          - "null"
+      predefined_action_groups:
+        type:
+          - array
+          - "null"
+      predefined_actions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            predefined_action:
+              type:
+                - object
+                - "null"
+              properties:
+                action_group_id:
+                  type:
+                    - string
+                    - "null"
+                days:
+                  type:
+                    - number
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                position:
+                  type:
+                    - number
+                    - "null"
+                text:
+                  type:
+                    - string
+                    - "null"
+      reason_losts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            position:
+              type:
+                - number
+                - "null"
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          bcc_email_enabled:
+            type:
+              - boolean
+              - "null"
+          company_address_enabled:
+            type:
+              - boolean
+              - "null"
+          company_description_enabled:
+            type:
+              - boolean
+              - "null"
+          company_phone_enabled:
+            type:
+              - boolean
+              - "null"
+          company_url_enabled:
+            type:
+              - boolean
+              - "null"
+          contact_attributes_default_types:
+            type:
+              - object
+              - "null"
+            properties:
+              address:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              phone:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          currency_symbol:
+            type:
+              - string
+              - "null"
+          date_format:
+            type:
+              - string
+              - "null"
+          deal_stages:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                label:
+                  type:
+                    - string
+                    - "null"
+                stage:
+                  type:
+                    - number
+                    - "null"
+          default_contact_type:
+            type:
+              - string
+              - "null"
+          delimiter:
+            type:
+              - string
+              - "null"
+          listing_size:
+            type:
+              - number
+              - "null"
+          not_working_days:
+            type:
+              - string
+              - "null"
+          pipelines:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                pipeline:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    default:
+                      type:
+                        - boolean
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    stages:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          label:
+                            type:
+                              - string
+                              - "null"
+                          stage:
+                            type:
+                              - number
+                              - "null"
+                    won_column_enabled:
+                      type:
+                        - boolean
+                        - "null"
+                    won_column_name:
+                      type:
+                        - string
+                        - "null"
+          popular_countries:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          reason_lost_enabled:
+            type:
+              - boolean
+              - "null"
+          reminder:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              hour:
+                type:
+                  - number
+                  - "null"
+          send_push_notifications:
+            type:
+              - boolean
+              - "null"
+          separator:
+            type:
+              - string
+              - "null"
+          show_company_fields_with_contact:
+            type:
+              - boolean
+              - "null"
+          show_deals_and_pipeline:
+            type:
+              - boolean
+              - "null"
+          show_tidy_stream:
+            type:
+              - boolean
+              - "null"
+          time_with_ampm:
+            type:
+              - boolean
+              - "null"
+          time_zone:
+            type:
+              - string
+              - "null"
+          virtual_groups_enabled:
+            type:
+              - boolean
+              - "null"
+      subscription_plan:
+        type:
+          - object
+          - "null"
+        properties:
+          display_name:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      team:
+        type:
+          - array
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              account_rights:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              account_role:
+                type:
+                  - string
+                  - "null"
+              bcc_email:
+                type:
+                  - string
+                  - "null"
+              company_name:
+                type:
+                  - string
+                  - "null"
+              country_code:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              first_name:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              last_name:
+                type:
+                  - string
+                  - "null"
+              photo_url:
+                type:
+                  - string
+                  - "null"
+              virtual_group_id:
+                type:
+                  - string
+                  - "null"
+      user_id:
+        type: string
+      virtual_groups:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            default:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+    required:
+      - user_id
+  companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      address:
+        type:
+          - object
+          - "null"
+        properties: {}
+      company_fields:
+        type:
+          - array
+          - "null"
+      contacts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            contact:
+              type:
+                - object
+                - "null"
+              properties:
+                address_list:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      address:
+                        type:
+                          - string
+                          - "null"
+                      city:
+                        type:
+                          - string
+                          - "null"
+                      country_code:
+                        type:
+                          - string
+                          - "null"
+                      state:
+                        type:
+                          - string
+                          - "null"
+                      zip_code:
+                        type:
+                          - string
+                          - "null"
+                background:
+                  type:
+                    - string
+                    - "null"
+                closed_sales:
+                  type:
+                    - array
+                    - "null"
+                company_id:
+                  type:
+                    - string
+                    - "null"
+                company_name:
+                  type:
+                    - string
+                    - "null"
+                company_size:
+                  type:
+                    - number
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                custom_fields:
+                  type:
+                    - array
+                    - "null"
+                email_sync_available:
+                  type:
+                    - boolean
+                    - "null"
+                email_sync_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                emails:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                enhanceable:
+                  type:
+                    - boolean
+                    - "null"
+                first_name:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                job_title:
+                  type:
+                    - string
+                    - "null"
+                last_name:
+                  type:
+                    - string
+                    - "null"
+                lead_source:
+                  type:
+                    - string
+                    - "null"
+                lead_source_id:
+                  type:
+                    - string
+                    - "null"
+                letter:
+                  type:
+                    - string
+                    - "null"
+                modified_at:
+                  type:
+                    - string
+                    - "null"
+                owner_id:
+                  type:
+                    - string
+                    - "null"
+                pending_deal:
+                  type:
+                    - boolean
+                    - "null"
+                phones:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                photo_url:
+                  type:
+                    - string
+                    - "null"
+                sales_closed_for:
+                  type:
+                    - array
+                    - "null"
+                starred:
+                  type:
+                    - boolean
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                status_id:
+                  type:
+                    - string
+                    - "null"
+                tags:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                total_deals_count:
+                  type:
+                    - number
+                    - "null"
+                total_pendings:
+                  type:
+                    - number
+                    - "null"
+                urls:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+            most_urgent_action:
+              type:
+                - object
+                - "null"
+              properties:
+                assignee_id:
+                  type:
+                    - string
+                    - "null"
+                contact_id:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                date:
+                  type:
+                    - string
+                    - "null"
+                done:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                modified_at:
+                  type:
+                    - string
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                text:
+                  type:
+                    - string
+                    - "null"
+            next_action:
+              type:
+                - object
+                - "null"
+              properties:
+                assignee_id:
+                  type:
+                    - string
+                    - "null"
+                contact_id:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                date:
+                  type:
+                    - string
+                    - "null"
+                done:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                modified_at:
+                  type:
+                    - string
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                text:
+                  type:
+                    - string
+                    - "null"
+            next_action_conflicts:
+              type:
+                - array
+                - "null"
+            next_actions:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  assignee_id:
+                    type:
+                      - string
+                      - "null"
+                  contact_id:
+                    type:
+                      - string
+                      - "null"
+                  created_at:
+                    type:
+                      - string
+                      - "null"
+                  date:
+                    type:
+                      - string
+                      - "null"
+                  done:
+                    type:
+                      - boolean
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  modified_at:
+                    type:
+                      - string
+                      - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+                  text:
+                    type:
+                      - string
+                      - "null"
+            queued_actions:
+              type:
+                - array
+                - "null"
+      contacts_count:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modified_at:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      pending_deals:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            deal:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - number
+                    - "null"
+                attachments:
+                  type:
+                    - array
+                    - "null"
+                author:
+                  type:
+                    - string
+                    - "null"
+                commission:
+                  type:
+                    - number
+                    - "null"
+                commission_base:
+                  type:
+                    - string
+                    - "null"
+                commission_percentage:
+                  type:
+                    - number
+                    - "null"
+                commission_type:
+                  type:
+                    - string
+                    - "null"
+                contact_id:
+                  type:
+                    - string
+                    - "null"
+                contact_info:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    company:
+                      type:
+                        - string
+                        - "null"
+                    contact_name:
+                      type:
+                        - string
+                        - "null"
+                    contact_owner_id:
+                      type:
+                        - string
+                        - "null"
+                cost:
+                  type:
+                    - number
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                date:
+                  type:
+                    - string
+                    - "null"
+                deal_fields:
+                  type:
+                    - array
+                    - "null"
+                deal_items:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      description:
+                        type:
+                          - string
+                          - "null"
+                      amount:
+                        type:
+                          - number
+                          - "null"
+                      cost:
+                        type:
+                          - number
+                          - "null"
+                      created_at:
+                        type:
+                          - string
+                          - "null"
+                      deal_id:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      modified_at:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      position:
+                        type:
+                          - number
+                          - "null"
+                      predefined_item_id:
+                        type:
+                          - string
+                          - "null"
+                      price:
+                        type:
+                          - number
+                          - "null"
+                      qty:
+                        type:
+                          - number
+                          - "null"
+                expected_close_date:
+                  type:
+                    - string
+                    - "null"
+                has_deal_items:
+                  type:
+                    - boolean
+                    - "null"
+                has_related_notes:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                margin:
+                  type:
+                    - number
+                    - "null"
+                modified_at:
+                  type:
+                    - string
+                    - "null"
+                months:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                owner:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                owner_id:
+                  type:
+                    - string
+                    - "null"
+                pipeline_id:
+                  type:
+                    - string
+                    - "null"
+                stage:
+                  type:
+                    - number
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                text:
+                  type:
+                    - string
+                    - "null"
+                total_amount:
+                  type:
+                    - number
+                    - "null"
+                total_cost:
+                  type:
+                    - number
+                    - "null"
+      pending_deals_count:
+        type:
+          - number
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      syncing_status:
+        type:
+          - boolean
+          - "null"
+      syncing_tags:
+        type:
+          - boolean
+          - "null"
+      total_pending_amount:
+        type:
+          - number
+          - "null"
+      total_won_amount:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      won_deals_count:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  actions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      assignee_id:
+        type:
+          - string
+          - "null"
+      contact_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      done:
+        type:
+          - boolean
+          - "null"
+      done_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modified_at:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  action_stream:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address_list:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            address:
+              type:
+                - string
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            country_code:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            zip_code:
+              type:
+                - string
+                - "null"
+      background:
+        type:
+          - string
+          - "null"
+      closed_sales:
+        type:
+          - array
+          - "null"
+      company_id:
+        type:
+          - string
+          - "null"
+      company_name:
+        type:
+          - string
+          - "null"
+      company_size:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+      email_sync_available:
+        type:
+          - boolean
+          - "null"
+      email_sync_enabled:
+        type:
+          - boolean
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      enhanceable:
+        type:
+          - boolean
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      job_title:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      lead_source:
+        type:
+          - string
+          - "null"
+      lead_source_id:
+        type:
+          - string
+          - "null"
+      letter:
+        type:
+          - string
+          - "null"
+      modified_at:
+        type:
+          - string
+          - "null"
+      owner_id:
+        type:
+          - string
+          - "null"
+      pending_deal:
+        type:
+          - boolean
+          - "null"
+      phones:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      photo_url:
+        type:
+          - string
+          - "null"
+      sales_closed_for:
+        type:
+          - array
+          - "null"
+      starred:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      status_id:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      total_deals_count:
+        type:
+          - number
+          - "null"
+      total_pendings:
+        type:
+          - number
+          - "null"
+      urls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+  team_stream:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address_list:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            address:
+              type:
+                - string
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            country_code:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            zip_code:
+              type:
+                - string
+                - "null"
+      background:
+        type:
+          - string
+          - "null"
+      closed_sales:
+        type:
+          - array
+          - "null"
+      company_id:
+        type:
+          - string
+          - "null"
+      company_name:
+        type:
+          - string
+          - "null"
+      company_size:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+      email_sync_available:
+        type:
+          - boolean
+          - "null"
+      email_sync_enabled:
+        type:
+          - boolean
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      enhanceable:
+        type:
+          - boolean
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      job_title:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      lead_source:
+        type:
+          - string
+          - "null"
+      lead_source_id:
+        type:
+          - string
+          - "null"
+      letter:
+        type:
+          - string
+          - "null"
+      modified_at:
+        type:
+          - string
+          - "null"
+      owner_id:
+        type:
+          - string
+          - "null"
+      pending_deal:
+        type:
+          - boolean
+          - "null"
+      phones:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      photo_url:
+        type:
+          - string
+          - "null"
+      sales_closed_for:
+        type:
+          - array
+          - "null"
+      starred:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      status_id:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      total_deals_count:
+        type:
+          - number
+          - "null"
+      total_pendings:
+        type:
+          - number
+          - "null"
+      urls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+  deals:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - number
+          - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      author:
+        type:
+          - string
+          - "null"
+      close_date:
+        type:
+          - string
+          - "null"
+      commission:
+        type:
+          - number
+          - "null"
+      commission_base:
+        type:
+          - string
+          - "null"
+      commission_percentage:
+        type:
+          - number
+          - "null"
+      commission_type:
+        type:
+          - string
+          - "null"
+      contact_id:
+        type:
+          - string
+          - "null"
+      contact_info:
+        type:
+          - object
+          - "null"
+        properties:
+          company:
+            type:
+              - string
+              - "null"
+          contact_name:
+            type:
+              - string
+              - "null"
+          contact_owner_id:
+            type:
+              - string
+              - "null"
+      cost:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      deal_fields:
+        type:
+          - array
+          - "null"
+      deal_items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            amount:
+              type:
+                - number
+                - "null"
+            cost:
+              type:
+                - number
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            deal_id:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            modified_at:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            position:
+              type:
+                - number
+                - "null"
+            predefined_item_id:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - number
+                - "null"
+            qty:
+              type:
+                - number
+                - "null"
+      expected_close_date:
+        type:
+          - string
+          - "null"
+      has_deal_items:
+        type:
+          - boolean
+          - "null"
+      has_related_notes:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      margin:
+        type:
+          - number
+          - "null"
+      modified_at:
+        type:
+          - string
+          - "null"
+      months:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      owner_id:
+        type:
+          - string
+          - "null"
+      pipeline_id:
+        type:
+          - string
+          - "null"
+      stage:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      total_amount:
+        type:
+          - number
+          - "null"
+      total_cost:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attachments:
+        type:
+          - array
+          - "null"
+      author:
+        type:
+          - string
+          - "null"
+      contact_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      linked_deal_id:
+        type:
+          - string
+          - "null"
+      linked_deal_name:
+        type:
+          - string
+          - "null"
+      modified_at:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  relationship_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modified_at:
+        type:
+          - string
+          - "null"
+      relationship_variants:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      symmetrical:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  pipelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      default:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      stages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            label:
+              type:
+                - string
+                - "null"
+            stage:
+              type:
+                - number
+                - "null"
+      won_column_enabled:
+        type:
+          - boolean
+          - "null"
+      won_column_name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  statuses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      action_stream_count:
+        type:
+          - number
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      counts:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      status:
+        type:
+          - string
+          - "null"
+      team_counts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            counts:
+              type:
+                - number
+                - "null"
+            user_id:
+              type:
+                - string
+                - "null"
+      text:
+        type:
+          - string
+          - "null"
+      total_count:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  lead_sources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      action_stream_count:
+        type:
+          - number
+          - "null"
+      counts:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      team_counts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            counts:
+              type:
+                - number
+                - "null"
+            user_id:
+              type:
+                - string
+                - "null"
+      text:
+        type:
+          - string
+          - "null"
+      total_count:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  filters:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      conditions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - array
+            - "null"
+          items:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  predefined_actions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      action_group_id:
+        type:
+          - string
+          - "null"
+      days:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      position:
+        type:
+          - number
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  predefined_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  custom_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      mandatory:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      reminder_days:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  calls:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attachments:
+        type:
+          - array
+          - "null"
+      author:
+        type:
+          - string
+          - "null"
+      call_result:
+        type:
+          - string
+          - "null"
+      call_time_int:
+        type:
+          - number
+          - "null"
+      contact_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      index:
+        type:
+          - number
+          - "null"
+      modified_at:
+        type:
+          - string
+          - "null"
+      phone_number:
+        type:
+          - string
+          - "null"
+      recording_link:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      via:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  meetings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attachments:
+        type:
+          - array
+          - "null"
+      author:
+        type:
+          - string
+          - "null"
+      contact_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      index:
+        type:
+          - number
+          - "null"
+      meeting_time_int:
+        type:
+          - number
+          - "null"
+      modified_at:
+        type:
+          - string
+          - "null"
+      place:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+    required:
+      - id

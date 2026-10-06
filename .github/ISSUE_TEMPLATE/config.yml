@@ -1,0 +1,12 @@
+---
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question or get help troubleshooting issues
+    url: https://github.com/airbytehq/airbyte/discussions/new?category=questions
+    about: Use GitHub Discussions to engage with fellow users. Share insights on best practices, address issues, and explore potential workarounds collaboratively.
+  - name: Request a New Connector
+    url: https://github.com/airbytehq/airbyte/discussions/new?category=new-connector-request
+    about: Request a New Source or a New Destination Connector.
+  - name: Request a New Feature
+    url: https://github.com/airbytehq/airbyte/discussions/new?category=ideas-and-features
+    about: A new idea or want to discuss a new feature, here is the place.

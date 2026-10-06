@@ -1,0 +1,19 @@
+# This file is auto-generated. Do not edit.
+*
+# Ignore everything not explicitly allowed below
+build/
+!build/distributions/*.tar
+.venv/
+secrets/
+!setup.py
+!pyproject.toml
+!poetry.lock
+!poetry.toml
+!manifest.yaml
+!components.py
+!requirements.txt
+!README.md
+!metadata.yaml
+!build_customization.py
+!source_*
+!destination_*

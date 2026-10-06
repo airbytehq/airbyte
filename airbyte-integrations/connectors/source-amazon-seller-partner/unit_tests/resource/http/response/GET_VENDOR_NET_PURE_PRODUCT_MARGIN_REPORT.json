@@ -1,0 +1,26 @@
+{
+  "reportSpecification": {
+    "reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+    "reportOptions": {
+      "reportPeriod": "DAY",
+      "sellingProgram": "RETAIL"
+    },
+    "dataStartTime": "2021-06-06",
+    "dataEndTime": "2021-06-19",
+    "marketplaceIds": ["ATVPDKIKX0DER"]
+  },
+  "netPureProductMarginByAsin": [
+    {
+      "startDate": "2021-06-06",
+      "endDate": "2021-06-12",
+      "asin": "B123456789",
+      "netPureProductMargin": 0.35
+    },
+    {
+      "startDate": "2021-06-13",
+      "endDate": "2021-06-19",
+      "asin": "B987654321",
+      "netPureProductMargin": 0.42
+    }
+  ]
+}

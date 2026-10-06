@@ -1,0 +1,56 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 919984ef-53a2-479b-8ffe-9c1ddb9fc3f3
+  dockerImageTag: 0.3.22
+  dockerRepository: airbyte/source-coin-api
+  documentationUrl: https://docs.airbyte.com/integrations/sources/coin-api
+  githubIssueLabel: source-coin-api
+  icon: coinapi.svg
+  license: ELv2
+  name: Coin API
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-coin-api
+  supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: coin-api_config_dev_null
+          id: 3999ec4a-cb58-4bce-b508-7b23e94e1360
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-COIN-API__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: CoinAPI documentation
+      url: https://docs.coinapi.io/
+      type: api_reference
+    - title: CoinAPI authentication
+      url: https://docs.coinapi.io/#authentication
+      type: authentication_guide
+    - title: CoinAPI rate limits
+      url: https://docs.coinapi.io/#rate-limits
+      type: rate_limits
+    - title: CoinAPI Status
+      url: https://status.coinapi.io/
+      type: status_page
+metadataSpecVersion: "1.0"

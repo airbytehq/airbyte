@@ -1,0 +1,21 @@
+{
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the channel.",
+      "type": ["null", "number"]
+    },
+    "name": {
+      "description": "The name or title of the channel.",
+      "type": ["null", "string"]
+    },
+    "channelType": {
+      "description": "The type of channel, such as email, SMS, or push notification.",
+      "type": ["null", "string"]
+    },
+    "messageMedium": {
+      "description": "The medium used to deliver messages through this channel, such as text, image, or video.",
+      "type": ["null", "string"]
+    }
+  },
+  "type": ["null", "object"]
+}

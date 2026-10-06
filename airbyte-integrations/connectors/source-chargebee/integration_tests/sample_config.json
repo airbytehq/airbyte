@@ -1,0 +1,6 @@
+{
+  "site": "airbyte-test",
+  "site_api_key": "<your_api_key>",
+  "start_date": "2021-06-22T06:57:44Z",
+  "product_catalog": "2.0"
+}

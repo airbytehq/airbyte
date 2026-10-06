@@ -1,0 +1,2628 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://admin.myshopwired.uk/
+  API Reference: https://api.shopwired.co.uk/
+
+check:
+  type: CheckStream
+  stream_names:
+    - countries
+
+definitions:
+  streams:
+    countries:
+      type: DeclarativeStream
+      name: countries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/countries
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/countries"
+    pages:
+      type: DeclarativeStream
+      name: pages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/pages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at_utc
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created_at_utc
+              value: >-
+                {{ format_datetime(record['createdAt'], '%Y-%m-%dT%H:%M:%S',
+                '%a, %d %b %Y %H:%M:%S %z') }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pages"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at_utc
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created_at_utc
+              value: >-
+                {{ format_datetime(record['createdAt'], '%Y-%m-%dT%H:%M:%S',
+                '%a, %d %b %Y %H:%M:%S %z') }}
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated_at_utc
+              value: >-
+                {{ format_datetime(record['updatedAt'], '%Y-%m-%dT%H:%M:%S',
+                '%a, %d %b %Y %H:%M:%S %z') }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    products_images:
+      type: DeclarativeStream
+      name: products_images
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/products/{{ stream_partition['prd_id'] }}/images
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: prd_id
+              stream:
+                $ref: "#/definitions/streams/products"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products_images"
+    choice_sets:
+      type: DeclarativeStream
+      name: choice_sets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/choice-sets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/choice_sets"
+    products_reviews:
+      type: DeclarativeStream
+      name: products_reviews
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/products/{{ stream_partition['prd_id'] }}/reviews
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: prd_id
+              stream:
+                $ref: "#/definitions/streams/products"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at_utc
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created_at_utc
+              value: >-
+                {{ format_datetime(record['createdAt'], '%Y-%m-%dT%H:%M:%S',
+                '%a, %d %b %Y %H:%M:%S %z') }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products_reviews"
+    product_options:
+      type: DeclarativeStream
+      name: product_options
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/products/{{ stream_partition['prd_id'] }}/options
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: prd_id
+              stream:
+                $ref: "#/definitions/streams/products"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_options"
+    products_variations:
+      type: DeclarativeStream
+      name: products_variations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/products/{{ stream_partition['prd_id'] }}/variations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: prd_id
+              stream:
+                $ref: "#/definitions/streams/products"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products_variations"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/customers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at_utc
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created_at_utc
+              value: >-
+                {{ format_datetime(record['createdAt'], '%Y-%m-%dT%H:%M:%S',
+                '%a, %d %b %Y %H:%M:%S %z') }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    orders:
+      type: DeclarativeStream
+      name: orders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/orders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at_utc
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created_at_utc
+              value: >-
+                {{ format_datetime(record['created'], '%Y-%m-%dT%H:%M:%S', '%a,
+                %d %b %Y %H:%M:%S %z') }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+    shipping_zones:
+      type: DeclarativeStream
+      name: shipping_zones
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/shipping-zones
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/shipping_zones"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/events
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at_utc
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created_at_utc
+              value: >-
+                {{ format_datetime(record['createdAt'], '%Y-%m-%dT%H:%M:%S',
+                '%a, %d %b %Y %H:%M:%S %z') }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    categories:
+      type: DeclarativeStream
+      name: categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at_utc
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created_at_utc
+              value: >-
+                {{ format_datetime(record['createdAt'], '%Y-%m-%dT%H:%M:%S',
+                '%a, %d %b %Y %H:%M:%S %z') }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+    themes:
+      type: DeclarativeStream
+      name: themes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/themes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at_utc
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - created_at_utc
+              value: >-
+                {{ format_datetime(record['createdAt'], '%Y-%m-%dT%H:%M:%S',
+                '%a, %d %b %Y %H:%M:%S %z') }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/themes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.ecommerceapi.uk
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"api_secret\"] }}"
+      username: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/countries"
+  - $ref: "#/definitions/streams/pages"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/products_images"
+  - $ref: "#/definitions/streams/choice_sets"
+  - $ref: "#/definitions/streams/products_reviews"
+  - $ref: "#/definitions/streams/product_options"
+  - $ref: "#/definitions/streams/products_variations"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/shipping_zones"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/themes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - api_secret
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your API Key, which acts as the username for Basic Authentication. You
+          can find it in your ShopWired account under API settings.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      api_secret:
+        type: string
+        description: >-
+          Your API Secret, which acts as the password for Basic Authentication.
+          You can find it in your ShopWired account under API settings.
+        name: api_secret
+        order: 1
+        title: API Secret
+        airbyte_secret: true
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    countries: true
+    pages: true
+    products: true
+    products_images: true
+    choice_sets: true
+    products_reviews: true
+    product_options: true
+    products_variations: true
+    customers: true
+    orders: true
+    shipping_zones: true
+    events: true
+    categories: true
+    themes: true
+  testedStreams:
+    countries:
+      streamHash: abf7009f1cba55b7d7918f834dab33bccd367ec1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    pages:
+      streamHash: 9036bd24827d2397e92805c5f7f49b86fedce5c5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    products:
+      streamHash: 08fdd33c53dcd6ae9e1af0483bc9bb4555c50524
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    products_images:
+      streamHash: 47d74f20a73717f866ccf59e09d4a915fccab24b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    choice_sets:
+      streamHash: 57e60c879cbcccc5837e5b96b707fe7846f8b431
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    products_reviews:
+      streamHash: 5e489f538516aa2de96df7f1035f8c2c99a63b2d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    product_options:
+      streamHash: 2335319092be748f8e274a2346baa5b85d9a8383
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    products_variations:
+      streamHash: d597462ca6b60f3b8ae2cfef76321a448591bc41
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customers:
+      streamHash: bf5b0de89e2313e7363ee76fa3ab22fbab3c01e7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    orders:
+      streamHash: 7786dfba1c9e0bcb226bff50f7416b0c973878b6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    shipping_zones:
+      streamHash: c7b2c6c85044c490a9ca3c70b6af442184ad439b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    events:
+      streamHash: 83c443429807e088c054b0d7d28b74620daf211f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    categories:
+      streamHash: 8a7273ce7a741fd9e27cfc29e132fd24415d2efa
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    themes:
+      streamHash: 95f5c90526abe31dbca3a56c1771251e0ea54fe6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://help.shopwired.co.uk/api/shipping/api-countries-states
+
+schemas:
+  countries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      iso:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  pages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+      created_at_utc:
+        type: string
+      id:
+        type: number
+      metaDescription:
+        type:
+          - string
+          - "null"
+      metaKeywords:
+        type:
+          - string
+          - "null"
+      metaTitle:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at_utc
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      bundle:
+        type:
+          - boolean
+          - "null"
+      comparePrice:
+        type:
+          - number
+          - "null"
+      costPrice:
+        type:
+          - number
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      created_at_utc:
+        type:
+          - string
+          - "null"
+      deliveryPrice:
+        type:
+          - number
+          - "null"
+      deliveryPrices:
+        type:
+          - array
+          - "null"
+      description2:
+        type:
+          - string
+          - "null"
+      description3:
+        type:
+          - string
+          - "null"
+      description4:
+        type:
+          - string
+          - "null"
+      description5:
+        type:
+          - string
+          - "null"
+      eBayBestOffer:
+        type:
+          - boolean
+          - "null"
+      eBayCondition:
+        type:
+          - number
+          - "null"
+      excludedFromTradeDiscounts:
+        type:
+          - boolean
+          - "null"
+      fileUploadsAllowed:
+        type:
+          - number
+          - "null"
+      freeDelivery:
+        type:
+          - boolean
+          - "null"
+      googleIsBundle:
+        type:
+          - boolean
+          - "null"
+      googleNoIdentifierExists:
+        type:
+          - boolean
+          - "null"
+      gtin:
+        type:
+          - string
+          - "null"
+      hasRandomRelatedProducts:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      metaDescription:
+        type:
+          - string
+          - "null"
+      metaKeywords:
+        type:
+          - string
+          - "null"
+      metaTitle:
+        type:
+          - string
+          - "null"
+      mpn:
+        type:
+          - string
+          - "null"
+      new:
+        type:
+          - boolean
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      rewardPoints:
+        type:
+          - number
+          - "null"
+      salePrice:
+        type:
+          - number
+          - "null"
+      searchKeywords:
+        type:
+          - string
+          - "null"
+      shippingAddressNotRequired:
+        type:
+          - boolean
+          - "null"
+      singleDeliveryPrice:
+        type:
+          - boolean
+          - "null"
+      sku:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      sortOrder:
+        type:
+          - number
+          - "null"
+      stock:
+        type:
+          - number
+          - "null"
+      subscription:
+        type:
+          - boolean
+          - "null"
+      threeForTwo:
+        type:
+          - boolean
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      twoForOne:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updated_at_utc:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+      vatExclusive:
+        type:
+          - boolean
+          - "null"
+      videoCode:
+        type:
+          - string
+          - "null"
+      warehouseNotes:
+        type:
+          - string
+          - "null"
+      weight:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - updated_at_utc
+  products_images:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      sortOrder:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  choice_sets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      displayName:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      internalName:
+        type:
+          - string
+          - "null"
+      values:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  products_reviews:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      created_at_utc:
+        type: string
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      rating:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - created_at_utc
+  product_options:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  products_variations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      costPrice:
+        type:
+          - number
+          - "null"
+      gtin:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      image:
+        type:
+          - number
+          - "null"
+      mpn:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      rewardPoints:
+        type:
+          - number
+          - "null"
+      salePrice:
+        type:
+          - number
+          - "null"
+      sku:
+        type:
+          - string
+          - "null"
+      stock:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      values:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            option:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+      weight:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      acceptsMarketing:
+        type:
+          - boolean
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      addressLine1:
+        type:
+          - string
+          - "null"
+      addressLine2:
+        type:
+          - string
+          - "null"
+      addressLine3:
+        type:
+          - string
+          - "null"
+      adminCreated:
+        type:
+          - boolean
+          - "null"
+      autoCreated:
+        type:
+          - boolean
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      created_at_utc:
+        type: string
+      email:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      lastName:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      postcode:
+        type:
+          - string
+          - "null"
+      province:
+        type:
+          - string
+          - "null"
+      rewardPoints:
+        type:
+          - number
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+      trade:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+      - created_at_utc
+  orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      anonymized:
+        type:
+          - boolean
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      billingAddress:
+        type:
+          - object
+          - "null"
+        properties:
+          addressLine1:
+            type:
+              - string
+              - "null"
+          addressLine2:
+            type:
+              - string
+              - "null"
+          addressLine3:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          companyName:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          countryId:
+            type:
+              - number
+              - "null"
+          emailAddress:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          postcode:
+            type:
+              - string
+              - "null"
+          province:
+            type:
+              - string
+              - "null"
+          telephone:
+            type:
+              - string
+              - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      created_at_utc:
+        type: string
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      discounts:
+        type:
+          - array
+          - "null"
+      earnedRewardPoints:
+        type:
+          - number
+          - "null"
+      fees:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      invoiceUrl:
+        type:
+          - string
+          - "null"
+      lineItemVatCalculation:
+        type:
+          - boolean
+          - "null"
+      marketing:
+        type:
+          - boolean
+          - "null"
+      originalShippingTotal:
+        type:
+          - number
+          - "null"
+      partialPaymentTotal:
+        type:
+          - number
+          - "null"
+      partialPayments:
+        type:
+          - array
+          - "null"
+      paymentMethod:
+        type:
+          - string
+          - "null"
+      products:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            choices:
+              type:
+                - array
+                - "null"
+            comments:
+              type:
+                - string
+                - "null"
+            extras:
+              type:
+                - array
+                - "null"
+            giftVoucher:
+              type:
+                - boolean
+                - "null"
+            gtin:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            itemId:
+              type:
+                - number
+                - "null"
+            mpn:
+              type:
+                - string
+                - "null"
+            originalPrice:
+              type:
+                - number
+                - "null"
+            price:
+              type:
+                - number
+                - "null"
+            priceVat:
+              type:
+                - number
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            rewardPointsEarned:
+              type:
+                - number
+                - "null"
+            sku:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            total:
+              type:
+                - number
+                - "null"
+            totalVat:
+              type:
+                - number
+                - "null"
+            variation:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+            vatRate:
+              type:
+                - number
+                - "null"
+            warehouseNotes:
+              type:
+                - string
+                - "null"
+      reference:
+        type:
+          - number
+          - "null"
+      referrerId:
+        type:
+          - number
+          - "null"
+      refunds:
+        type:
+          - array
+          - "null"
+      shipping:
+        type:
+          - array
+          - "null"
+      shippingAddress:
+        type:
+          - object
+          - "null"
+        properties:
+          addressLine1:
+            type:
+              - string
+              - "null"
+          addressLine2:
+            type:
+              - string
+              - "null"
+          addressLine3:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          companyName:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          countryId:
+            type:
+              - number
+              - "null"
+          emailAddress:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          postcode:
+            type:
+              - string
+              - "null"
+          province:
+            type:
+              - string
+              - "null"
+          telephone:
+            type:
+              - string
+              - "null"
+      shippingTotal:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          sortOrder:
+            type:
+              - number
+              - "null"
+      subTotal:
+        type:
+          - number
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+      totalWeight:
+        type:
+          - string
+          - "null"
+      trackingUrl:
+        type:
+          - string
+          - "null"
+      weightUnit:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at_utc
+  shipping_zones:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      country:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+      uuid:
+        type: string
+      vat:
+        type:
+          - boolean
+          - "null"
+    required:
+      - uuid
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+      created_at_utc:
+        type: string
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          action:
+            type:
+              - string
+              - "null"
+          count:
+            type:
+              - number
+              - "null"
+          isVariation:
+            type:
+              - boolean
+              - "null"
+          newQuantity:
+            type:
+              - number
+              - "null"
+          object:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              acceptsMarketing:
+                type:
+                  - boolean
+                  - "null"
+              active:
+                type:
+                  - boolean
+                  - "null"
+              addressLine1:
+                type:
+                  - string
+                  - "null"
+              addressLine2:
+                type:
+                  - string
+                  - "null"
+              addressLine3:
+                type:
+                  - string
+                  - "null"
+              adminCreated:
+                type:
+                  - boolean
+                  - "null"
+              anonymized:
+                type:
+                  - boolean
+                  - "null"
+              archived:
+                type:
+                  - boolean
+                  - "null"
+              autoCreated:
+                type:
+                  - boolean
+                  - "null"
+              billingAddress:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  addressLine1:
+                    type:
+                      - string
+                      - "null"
+                  addressLine2:
+                    type:
+                      - string
+                      - "null"
+                  addressLine3:
+                    type:
+                      - string
+                      - "null"
+                  city:
+                    type:
+                      - string
+                      - "null"
+                  companyName:
+                    type:
+                      - string
+                      - "null"
+                  country:
+                    type:
+                      - string
+                      - "null"
+                  countryId:
+                    type:
+                      - number
+                      - "null"
+                  emailAddress:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  postcode:
+                    type:
+                      - string
+                      - "null"
+                  province:
+                    type:
+                      - string
+                      - "null"
+                  telephone:
+                    type:
+                      - string
+                      - "null"
+              bundle:
+                type:
+                  - boolean
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              comments:
+                type:
+                  - string
+                  - "null"
+              companyName:
+                type:
+                  - string
+                  - "null"
+              comparePrice:
+                type:
+                  - number
+                  - "null"
+              costPrice:
+                type:
+                  - number
+                  - "null"
+              country:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - number
+                      - "null"
+              created:
+                type:
+                  - string
+                  - "null"
+              createdAt:
+                type:
+                  - string
+                  - "null"
+              customer:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - number
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+              deliveryPrice:
+                type:
+                  - number
+                  - "null"
+              deliveryPrices:
+                type:
+                  - array
+                  - "null"
+              description2:
+                type:
+                  - string
+                  - "null"
+              description3:
+                type:
+                  - string
+                  - "null"
+              description4:
+                type:
+                  - string
+                  - "null"
+              description5:
+                type:
+                  - string
+                  - "null"
+              discounts:
+                type:
+                  - array
+                  - "null"
+              eBayBestOffer:
+                type:
+                  - boolean
+                  - "null"
+              eBayCondition:
+                type:
+                  - number
+                  - "null"
+              earnedRewardPoints:
+                type:
+                  - number
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              excludedFromTradeDiscounts:
+                type:
+                  - boolean
+                  - "null"
+              fees:
+                type:
+                  - array
+                  - "null"
+              fileUploadsAllowed:
+                type:
+                  - number
+                  - "null"
+              firstName:
+                type:
+                  - string
+                  - "null"
+              freeDelivery:
+                type:
+                  - boolean
+                  - "null"
+              googleIsBundle:
+                type:
+                  - boolean
+                  - "null"
+              googleNoIdentifierExists:
+                type:
+                  - boolean
+                  - "null"
+              gtin:
+                type:
+                  - string
+                  - "null"
+              hasRandomRelatedProducts:
+                type:
+                  - boolean
+                  - "null"
+              hsCode:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              invoiceUrl:
+                type:
+                  - string
+                  - "null"
+              lastName:
+                type:
+                  - string
+                  - "null"
+              lineItemVatCalculation:
+                type:
+                  - boolean
+                  - "null"
+              marketing:
+                type:
+                  - boolean
+                  - "null"
+              metaDescription:
+                type:
+                  - string
+                  - "null"
+              metaKeywords:
+                type:
+                  - string
+                  - "null"
+              metaTitle:
+                type:
+                  - string
+                  - "null"
+              mpn:
+                type:
+                  - string
+                  - "null"
+              new:
+                type:
+                  - boolean
+                  - "null"
+              notes:
+                type:
+                  - string
+                  - "null"
+              options:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+              originalShippingTotal:
+                type:
+                  - number
+                  - "null"
+              partialPaymentTotal:
+                type:
+                  - number
+                  - "null"
+              partialPayments:
+                type:
+                  - array
+                  - "null"
+              paymentMethod:
+                type:
+                  - string
+                  - "null"
+              phone:
+                type:
+                  - string
+                  - "null"
+              postcode:
+                type:
+                  - string
+                  - "null"
+              price:
+                type:
+                  - number
+                  - "null"
+              products:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    choices:
+                      type:
+                        - array
+                        - "null"
+                    comments:
+                      type:
+                        - string
+                        - "null"
+                    extras:
+                      type:
+                        - array
+                        - "null"
+                    giftVoucher:
+                      type:
+                        - boolean
+                        - "null"
+                    gtin:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    itemId:
+                      type:
+                        - number
+                        - "null"
+                    mpn:
+                      type:
+                        - string
+                        - "null"
+                    originalPrice:
+                      type:
+                        - number
+                        - "null"
+                    price:
+                      type:
+                        - number
+                        - "null"
+                    priceVat:
+                      type:
+                        - number
+                        - "null"
+                    quantity:
+                      type:
+                        - number
+                        - "null"
+                    rewardPointsEarned:
+                      type:
+                        - number
+                        - "null"
+                    sku:
+                      type:
+                        - string
+                        - "null"
+                    title:
+                      type:
+                        - string
+                        - "null"
+                    total:
+                      type:
+                        - number
+                        - "null"
+                    totalVat:
+                      type:
+                        - number
+                        - "null"
+                    variation:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          name:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                    vatRate:
+                      type:
+                        - number
+                        - "null"
+                    warehouseNotes:
+                      type:
+                        - string
+                        - "null"
+              province:
+                type:
+                  - string
+                  - "null"
+              reference:
+                type:
+                  - number
+                  - "null"
+              referrerId:
+                type:
+                  - number
+                  - "null"
+              refunds:
+                type:
+                  - array
+                  - "null"
+              rewardPoints:
+                type:
+                  - number
+                  - "null"
+              salePrice:
+                type:
+                  - number
+                  - "null"
+              searchKeywords:
+                type:
+                  - string
+                  - "null"
+              shipping:
+                type:
+                  - array
+                  - "null"
+              shippingAddress:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  addressLine1:
+                    type:
+                      - string
+                      - "null"
+                  addressLine2:
+                    type:
+                      - string
+                      - "null"
+                  addressLine3:
+                    type:
+                      - string
+                      - "null"
+                  city:
+                    type:
+                      - string
+                      - "null"
+                  companyName:
+                    type:
+                      - string
+                      - "null"
+                  country:
+                    type:
+                      - string
+                      - "null"
+                  countryId:
+                    type:
+                      - number
+                      - "null"
+                  emailAddress:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  postcode:
+                    type:
+                      - string
+                      - "null"
+                  province:
+                    type:
+                      - string
+                      - "null"
+                  telephone:
+                    type:
+                      - string
+                      - "null"
+              shippingAddressNotRequired:
+                type:
+                  - boolean
+                  - "null"
+              shippingTotal:
+                type:
+                  - number
+                  - "null"
+              singleDeliveryPrice:
+                type:
+                  - boolean
+                  - "null"
+              sku:
+                type:
+                  - string
+                  - "null"
+              slug:
+                type:
+                  - string
+                  - "null"
+              sortOrder:
+                type:
+                  - number
+                  - "null"
+              source:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - number
+                      - "null"
+              status:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  sortOrder:
+                    type:
+                      - number
+                      - "null"
+              stock:
+                type:
+                  - number
+                  - "null"
+              subTotal:
+                type:
+                  - number
+                  - "null"
+              subscription:
+                type:
+                  - boolean
+                  - "null"
+              threeForTwo:
+                type:
+                  - boolean
+                  - "null"
+              title:
+                type:
+                  - string
+                  - "null"
+              total:
+                type:
+                  - number
+                  - "null"
+              totalWeight:
+                type:
+                  - string
+                  - "null"
+              trackingUrl:
+                type:
+                  - string
+                  - "null"
+              trade:
+                type:
+                  - boolean
+                  - "null"
+              twoForOne:
+                type:
+                  - boolean
+                  - "null"
+              updatedAt:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              vatExclusive:
+                type:
+                  - boolean
+                  - "null"
+              videoCode:
+                type:
+                  - string
+                  - "null"
+              warehouseNotes:
+                type:
+                  - string
+                  - "null"
+              weight:
+                type:
+                  - number
+                  - "null"
+              weightUnit:
+                type:
+                  - string
+                  - "null"
+          orderId:
+            type:
+              - number
+              - "null"
+          sku:
+            type:
+              - string
+              - "null"
+      generator:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      subjectId:
+        type:
+          - number
+          - "null"
+      subjectType:
+        type:
+          - string
+          - "null"
+      topic:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at_utc
+  categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      created_at_utc:
+        type: string
+      description2:
+        type:
+          - string
+          - "null"
+      featured:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      image:
+        type:
+          - object
+          - "null"
+        properties:
+          url:
+            type:
+              - string
+              - "null"
+      metaDescription:
+        type:
+          - string
+          - "null"
+      metaKeywords:
+        type:
+          - string
+          - "null"
+      metaTitle:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      sortOrder:
+        type:
+          - number
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      tradeOnly:
+        type:
+          - boolean
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at_utc
+  themes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+      created_at_utc:
+        type: string
+      id:
+        type: number
+      live:
+        type:
+          - boolean
+          - "null"
+      previewUrl:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at_utc

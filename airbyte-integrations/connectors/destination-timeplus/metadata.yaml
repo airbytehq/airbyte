@@ -1,0 +1,46 @@
+data:
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: f70a8ece-351e-4790-b37b-cb790bcd6d54
+  dockerImageTag: 0.1.45
+  dockerRepository: airbyte/destination-timeplus
+  githubIssueLabel: destination-timeplus
+  icon: timeplus.svg
+  license: ELv2
+  name: Timeplus
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/timeplus
+  tags:
+    - language:python
+    - cdk:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    # Disabling integration tests
+    # They are not passing
+    # No Airbyte Cloud Usage
+    # - suite: integrationTests
+    #   testSecrets:
+    #     - name: SECRET_DESTINATION-TIMEPLUS__CREDS
+    #       fileName: config.json
+    #       secretStore:
+    #         type: GSM
+    #         alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+  externalDocumentationUrls:
+    - title: Timeplus documentation
+      url: https://docs.timeplus.com/
+      type: api_reference
+    - title: SQL reference
+      url: https://docs.timeplus.com/sql-reference
+      type: sql_reference
+metadataSpecVersion: "1.0"

@@ -1,0 +1,37 @@
+.pageRate {
+  margin-top: 1em;
+  font-size: 0.8em;
+  color: var(--ifm-toc-link-color);
+}
+
+:global(.theme-doc-toc-mobile) .pageRate {
+  /* Hide rating in mobile collapsed TOC */
+  display: none;
+}
+
+.buttonWrapper {
+  display: flex;
+  gap: 0.5em;
+  margin-top: 0.6em;
+}
+
+.rateButton {
+  cursor: pointer;
+  display: flex;
+  gap: 0.3em;
+  align-items: center;
+  appearance: none;
+  background: none;
+  border: none;
+  color: inherit;
+}
+
+.rateButton:hover {
+  color: var(--ifm-color-primary);
+}
+
+.thanks {
+  margin-top: 0.6em;
+  color: var(--ifm-font-color-base);
+  font-weight: bold;
+}

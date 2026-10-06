@@ -1,0 +1,48 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+  connectorSubtype: api
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: liveTests
+      testConnections:
+        - name: the-guardian-api_config_dev_null
+          id: 28833186-4803-4694-926e-1b0c5d534df8
+    - suite: acceptanceTests
+      testSecrets:
+        - fileName: config.json
+          name: SECRET_SOURCE-THE-GUARDIAN-API__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+  connectorType: source
+  definitionId: d42bd69f-6bf0-4d0b-9209-16231af07a92
+  dockerImageTag: 0.2.26
+  dockerRepository: airbyte/source-the-guardian-api
+  documentationUrl: https://docs.airbyte.com/integrations/sources/the-guardian-api
+  githubIssueLabel: source-the-guardian-api
+  icon: theguardian.svg
+  license: ELv2
+  name: The Guardian API
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-the-guardian-api
+  supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  externalDocumentationUrls:
+    - title: The Guardian Open Platform
+      url: https://open-platform.theguardian.com/documentation/
+      type: api_reference
+metadataSpecVersion: "1.0"

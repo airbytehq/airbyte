@@ -1,0 +1,273 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+import json
+import logging
+from dataclasses import dataclass
+from datetime import timedelta
+from time import sleep
+
+import backoff
+from facebook_business import FacebookAdsApi
+from facebook_business.adobjects.adaccount import AdAccount
+from facebook_business.api import FacebookResponse
+from facebook_business.exceptions import FacebookRequestError
+
+from source_facebook_marketing.streams.common import FACEBOOK_RATE_LIMIT_ERROR_CODES, retry_pattern
+
+
+logger = logging.getLogger("airbyte")
+
+
+class FacebookAPIException(Exception):
+    """General class for all API errors"""
+
+
+backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+
+
+class MyFacebookAdsApi(FacebookAdsApi):
+    """Custom Facebook API class to intercept all API calls and handle call rate limits"""
+
+    MAX_RATE, MAX_PAUSE_INTERVAL = (95, timedelta(minutes=10))
+    MIN_RATE, MIN_PAUSE_INTERVAL = (85, timedelta(minutes=2))
+
+    # Graph API error codes that mean the ad account/app is locked out until a quota block clears,
+    # rather than a transient failure the generic expo backoff can retry through. Value is the set
+    # of error_subcodes that qualify for that code. Only codes backed by production evidence are
+    # enabled here; other known rate-limit codes (4 app-level, 80000-80004 business use case, 613
+    # custom rate limit) can be added the same way once they're observed to need this treatment.
+    QUOTA_BLOCK_ERROR_CODES = {
+        17: {2446079},  # "Ad Account Has Too Many API Calls"
+    }
+
+    # Observed quota blocks lasted up to an hour. Cap the cumulative wait on one block episode so a
+    # block that never clears still surfaces as a failure -- through the unchanged backoff/give-up
+    # path -- instead of holding the worker forever.
+    MAX_QUOTA_BLOCK_WAIT = timedelta(hours=1)
+
+    # see `_should_restore_page_size` method docstring for more info.
+    # attribute to handle the reduced request limit
+    request_record_limit_is_reduced: bool = False
+    # attribute to save the status of the last successful call
+    last_api_call_is_successful: bool = False
+    # cumulative quota-block wait of the current block episode; kept on the instance so it survives
+    # @backoff_policy re-entering `call()`, reset by the next successful call
+    _quota_block_wait_elapsed: timedelta = timedelta()
+    # the connection check turns this off: the platform fails a check that has not finished within 9 minutes
+    # (total run time), so waiting out a rate limit there only replaces the connector's error with a platform timeout
+    pause_on_rate_limit: bool = True
+
+    @dataclass
+    class Throttle:
+        """Utilization of call rate in %, from 0 to 100"""
+
+        per_application: float
+        per_account: float
+
+    # Insights async jobs throttle
+    _ads_insights_throttle: Throttle
+
+    @property
+    def ads_insights_throttle(self) -> Throttle:
+        return self._ads_insights_throttle
+
+    @staticmethod
+    def _parse_call_rate_header(headers):
+        usage = 0
+        pause_interval = timedelta()
+
+        usage_header_business = headers.get("x-business-use-case-usage")
+        usage_header_app = headers.get("x-app-usage")
+        usage_header_ad_account = headers.get("x-ad-account-usage")
+
+        if usage_header_ad_account:
+            usage_header_ad_account_loaded = json.loads(usage_header_ad_account)
+            usage = max(usage, float(usage_header_ad_account_loaded.get("acc_id_util_pct", 0)))
+            # seconds until the ad-account score resets - the wait hint for the account-level limit
+            pause_interval = max(pause_interval, timedelta(seconds=float(usage_header_ad_account_loaded.get("reset_time_duration", 0))))
+
+        if usage_header_app:
+            usage_header_app_loaded = json.loads(usage_header_app)
+            usage = max(
+                usage,
+                float(usage_header_app_loaded.get("call_count", 0)),
+                float(usage_header_app_loaded.get("total_time", 0)),
+                float(usage_header_app_loaded.get("total_cputime", 0)),
+            )
+
+        if usage_header_business:
+            usage_header_business_loaded = json.loads(usage_header_business)
+            for business_object_id in usage_header_business_loaded:
+                # one entry per rate-limit type (ads_management, ads_insights, ...): take the worst of them
+                for usage_limits in usage_header_business_loaded.get(business_object_id) or []:
+                    usage = max(
+                        usage,
+                        float(usage_limits.get("call_count", 0)),
+                        float(usage_limits.get("total_cputime", 0)),
+                        float(usage_limits.get("total_time", 0)),
+                    )
+                    pause_interval = max(
+                        pause_interval,
+                        timedelta(minutes=usage_limits.get("estimated_time_to_regain_access", 0)),
+                    )
+
+        return usage, pause_interval
+
+    def _compute_pause_interval(self, usage, pause_interval):
+        """The sleep time will be calculated based on usage consumed."""
+        if usage >= self.MAX_RATE:
+            return max(self.MAX_PAUSE_INTERVAL, pause_interval)
+        return max(self.MIN_PAUSE_INTERVAL, pause_interval)
+
+    def _get_max_usage_pause_interval_from_batch(self, records):
+        usage = 0
+        pause_interval = self.MIN_PAUSE_INTERVAL
+
+        for record in records:
+            # there are two types of failures:
+            # 1. no response (we execute batch until all inner requests has response)
+            # 2. response with error (we crash loudly)
+            # in case it is failed inner request the headers might not be present
+            if "headers" not in record:
+                continue
+            headers = {header["name"].lower(): header["value"] for header in record["headers"]}
+            (
+                usage_from_response,
+                pause_interval_from_response,
+            ) = self._parse_call_rate_header(headers)
+            usage = max(usage, usage_from_response)
+            pause_interval = max(pause_interval_from_response, pause_interval)
+        return usage, pause_interval
+
+    def _pause_if_usage_high(self, usage, pause_interval):
+        if self.pause_on_rate_limit and usage >= self.MIN_RATE:
+            sleep_time = self._compute_pause_interval(usage=usage, pause_interval=pause_interval)
+            logger.warning(f"Facebook API Utilization is too high ({usage})%, pausing for {sleep_time}")
+            sleep(sleep_time.total_seconds())
+
+    def _handle_call_rate_limit(self, response, params):
+        if "batch" in params:
+            records = response.json()
+            usage, pause_interval = self._get_max_usage_pause_interval_from_batch(records)
+        else:
+            headers = response.headers()
+            usage, pause_interval = self._parse_call_rate_header(headers)
+
+        self._pause_if_usage_high(usage, pause_interval)
+
+    def _is_quota_block_error(self, exc: FacebookRequestError) -> bool:
+        """A quota block (e.g. code 17 / 2446079, "Ad Account Has Too Many API Calls") means the
+        account is locked out until the block clears -- retrying it on the generic expo backoff
+        ladder just spends more rejected calls inside that same window."""
+        subcodes = self.QUOTA_BLOCK_ERROR_CODES.get(exc.api_error_code())
+        return subcodes is not None and exc.api_error_subcode() in subcodes
+
+    def _handle_quota_block_error(self, exc: FacebookRequestError) -> timedelta:
+        """A quota block's own response usually carries `estimated_time_to_regain_access`; wait
+        that long instead of the ~75s expo ladder, capped at MAX_PAUSE_INTERVAL since a block can
+        last up to an hour and re-checking is better than sleeping through it in one shot. Fall
+        back to MAX_PAUSE_INTERVAL when the field isn't present. Returns the wait applied, so the
+        caller can bound how long it keeps retrying."""
+        _, pause_interval = self._parse_call_rate_header(exc.http_headers())
+        wait = min(pause_interval, self.MAX_PAUSE_INTERVAL) if pause_interval else self.MAX_PAUSE_INTERVAL
+        logger.warning(
+            f"Facebook API quota block (code={exc.api_error_code()}, subcode={exc.api_error_subcode()}); "
+            f"pausing for {wait} before retrying ({self._quota_block_wait_elapsed + wait} of {self.MAX_QUOTA_BLOCK_WAIT} wait budget used)"
+        )
+        sleep(wait.total_seconds())
+        return wait
+
+    def _handle_failed_call_rate_limit(self, exc: FacebookRequestError):
+        """The rate-limit signal lives in the response headers, which for a failed call are only
+        reachable through the raised exception -- mirrors `_handle_call_rate_limit` so a failing
+        call gets the same utilization-based pause a successful one would. Capped at
+        MAX_PAUSE_INTERVAL because @backoff_policy repeats this pause on every retry."""
+        usage, pause_interval = self._parse_call_rate_header(exc.http_headers())
+        self._pause_if_usage_high(usage, min(pause_interval, self.MAX_PAUSE_INTERVAL))
+
+    def _update_insights_throttle_limit(self, response: FacebookResponse):
+        """
+        For /insights call every response contains x-fb-ads-insights-throttle
+        header representing current throttle limit parameter for async insights
+        jobs for current app/account.  We need this information to adjust
+        number of running async jobs for optimal performance.
+        """
+        ads_insights_throttle = response.headers().get("x-fb-ads-insights-throttle")
+        if ads_insights_throttle:
+            ads_insights_throttle = json.loads(ads_insights_throttle)
+            self._ads_insights_throttle = self.Throttle(
+                per_application=float(ads_insights_throttle.get("app_id_util_pct", 0)),
+                per_account=float(ads_insights_throttle.get("acc_id_util_pct", 0)),
+            )
+
+    def _should_restore_default_page_size(self, params):
+        """
+        Track the state of the `request_record_limit_is_reduced` and `last_api_call_is_successful`,
+        based on the logic from `@backoff_policy` (common.py > `reduce_request_record_limit` and `revert_request_record_limit`)
+        """
+        params = True if params else False
+        return params and not self.request_record_limit_is_reduced and self.last_api_call_is_successful
+
+    @backoff_policy
+    def call(
+        self,
+        method,
+        path,
+        params=None,
+        headers=None,
+        files=None,
+        url_override=None,
+        api_version=None,
+    ):
+        """Makes an API call, delegate actual work to parent class and handles call rates"""
+        if self._should_restore_default_page_size(params):
+            params.update(**{"limit": self.default_page_size})
+        while True:
+            try:
+                response = super().call(method, path, params, headers, files, url_override, api_version)
+            except FacebookRequestError as exc:
+                if not self.pause_on_rate_limit:
+                    raise
+                if self._is_quota_block_error(exc):
+                    # Handled and retried here, without raising, so the wait isn't counted against
+                    # @backoff_policy's max_tries -- a quota block can outlast that budget. Once the
+                    # MAX_QUOTA_BLOCK_WAIT budget is spent, re-raise without pausing again so the
+                    # ladder gives up in seconds instead of re-entering with a fresh budget.
+                    if self._quota_block_wait_elapsed < self.MAX_QUOTA_BLOCK_WAIT:
+                        self._quota_block_wait_elapsed += self._handle_quota_block_error(exc)
+                        continue
+                elif exc.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES:
+                    self._handle_failed_call_rate_limit(exc)
+                raise
+            self._quota_block_wait_elapsed = timedelta()
+            self._update_insights_throttle_limit(response)
+            self._handle_call_rate_limit(response, params)
+            return response
+
+
+class API:
+    """Simple wrapper around Facebook API"""
+
+    def __init__(self, access_token: str, page_size: int = 100):
+        self._accounts = {}
+        # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
+        self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
+        # adding the default page size from config to the api base class
+        # reference issue: https://github.com/airbytehq/airbyte/issues/25383
+        setattr(self.api, "default_page_size", page_size)
+        # set the default API client to Facebook lib.
+        FacebookAdsApi.set_default_api(self.api)
+
+    def get_account(self, account_id: str) -> AdAccount:
+        """Get AdAccount object by id"""
+        if account_id in self._accounts:
+            return self._accounts[account_id]
+        self._accounts[account_id] = self._find_account(account_id)
+        return self._accounts[account_id]
+
+    @staticmethod
+    def _find_account(account_id: str) -> AdAccount:
+        """Actual implementation of find account"""
+        return AdAccount(f"act_{account_id}").api_get(fields=["timezone_name"])

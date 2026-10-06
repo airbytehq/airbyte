@@ -1,0 +1,72 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00Z" },
+      "stream_descriptor": { "name": "addresses" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00Z" },
+      "stream_descriptor": { "name": "charges" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00Z" },
+      "stream_descriptor": { "name": "customers" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00Z" },
+      "stream_descriptor": { "name": "discounts" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00Z" },
+      "stream_descriptor": { "name": "onetimes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00Z" },
+      "stream_descriptor": { "name": "orders" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00Z" },
+      "stream_descriptor": { "name": "subscriptions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created_at": "2050-05-18T00:00:00Z" },
+      "stream_descriptor": { "name": "events" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00Z" },
+      "stream_descriptor": { "name": "bundle_selections" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00Z" },
+      "stream_descriptor": { "name": "credit_adjustments" }
+    }
+  }
+]

@@ -1,0 +1,630 @@
+version: 5.14.0
+
+type: DeclarativeSource
+
+description: >-
+  GitBook connector  enables seamless data integration from GitBook into your
+  data pipelines. It efficiently extracts content, such as documentation and
+  pages, allowing teams to sync and analyze information across platforms.
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/user
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next', {}).get('page') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/orgs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next', {}).get('page') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    insights_traffic:
+      type: DeclarativeStream
+      name: insights_traffic
+      primary_key:
+        - timestamp
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/spaces/{{ config["space_id"] }}/insights/traffic
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - views
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next', {}).get('page') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/insights_traffic"
+    content:
+      type: DeclarativeStream
+      name: content
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/spaces/{{ config["space_id"] }}/content
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - pages
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next', {}).get('page') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/content"
+    org_members:
+      type: DeclarativeStream
+      name: org_members
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/orgs/{{ stream_partition.organization }}/members
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next', {}).get('page') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: organization
+              stream:
+                $ref: "#/definitions/streams/organizations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/org_members"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.gitbook.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"access_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/insights_traffic"
+  - $ref: "#/definitions/streams/content"
+  - $ref: "#/definitions/streams/org_members"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - access_token
+      - space_id
+    properties:
+      access_token:
+        type: string
+        description: >-
+          Personal access token for authenticating with the GitBook API. You can
+          view and manage your access tokens in the Developer settings of your
+          GitBook user account.
+        name: access_token
+        order: 0
+        title: Access Token
+        airbyte_secret: true
+      space_id:
+        type: string
+        order: 1
+        title: Space Id
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    users: true
+    organizations: true
+    insights_traffic: true
+    content: true
+    org_members: true
+  testedStreams:
+    users:
+      streamHash: 94aeda59e989c4a397bbb153b8e5326f16214f57
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations:
+      streamHash: 9ab2877e203852d0f3f72d1b43efdebe30b191e8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    insights_traffic:
+      streamHash: f592e43057580e07f97dd3533c7570c7ba8ef156
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    content:
+      hasRecords: true
+      streamHash: 57e08861335cfd51ba3a9253c80fd292611ca7ce
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    org_members:
+      hasRecords: true
+      streamHash: 2ca42bd9987373ad019bf5cb16bdab15213b33e2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://developer.gitbook.com/gitbook-api/overview
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      displayName:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      photoURL:
+        type:
+          - string
+          - "null"
+      urls:
+        type:
+          - object
+          - "null"
+        properties:
+          location:
+            type:
+              - string
+              - "null"
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      defaultRole:
+        type:
+          - string
+          - "null"
+      emailDomains:
+        type:
+          - array
+          - "null"
+      id:
+        type: string
+      inviteLinks:
+        type:
+          - boolean
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      plan:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      urls:
+        type:
+          - object
+          - "null"
+        properties:
+          app:
+            type:
+              - string
+              - "null"
+          location:
+            type:
+              - string
+              - "null"
+      useCase:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  insights_traffic:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      count:
+        type:
+          - number
+          - "null"
+      timestamp:
+        type: string
+    required:
+      - timestamp
+  content:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      cover:
+        type:
+          - object
+          - "null"
+        properties:
+          ref:
+            type:
+              - object
+              - "null"
+            properties:
+              kind:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          yPos:
+            type:
+              - number
+              - "null"
+      documentId:
+        type:
+          - string
+          - "null"
+      icon:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      kind:
+        type:
+          - string
+          - "null"
+      layout:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - boolean
+              - "null"
+          cover:
+            type:
+              - boolean
+              - "null"
+          coverSize:
+            type:
+              - string
+              - "null"
+          outline:
+            type:
+              - boolean
+              - "null"
+          pagination:
+            type:
+              - boolean
+              - "null"
+          tableOfContents:
+            type:
+              - boolean
+              - "null"
+          title:
+            type:
+              - boolean
+              - "null"
+      pages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            documentId:
+              type:
+                - string
+                - "null"
+            icon:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            kind:
+              type:
+                - string
+                - "null"
+            layout:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - boolean
+                    - "null"
+                cover:
+                  type:
+                    - boolean
+                    - "null"
+                coverSize:
+                  type:
+                    - string
+                    - "null"
+                outline:
+                  type:
+                    - boolean
+                    - "null"
+                pagination:
+                  type:
+                    - boolean
+                    - "null"
+                tableOfContents:
+                  type:
+                    - boolean
+                    - "null"
+                title:
+                  type:
+                    - boolean
+                    - "null"
+            pages:
+              type:
+                - array
+                - "null"
+            path:
+              type:
+                - string
+                - "null"
+            slug:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            urls:
+              type:
+                - object
+                - "null"
+              properties:
+                app:
+                  type:
+                    - string
+                    - "null"
+      path:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      urls:
+        type:
+          - object
+          - "null"
+        properties:
+          app:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  org_members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      disabled:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      joinedAt:
+        type:
+          - string
+          - "null"
+      lastSeenAt:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      spaces:
+        type:
+          - number
+          - "null"
+      sso:
+        type:
+          - boolean
+          - "null"
+      teams:
+        type:
+          - number
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          displayName:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          object:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+          urls:
+            type:
+              - object
+              - "null"
+            properties:
+              location:
+                type:
+                  - string
+                  - "null"
+    required:
+      - id

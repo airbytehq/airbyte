@@ -1,0 +1,11 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "totalNet": {
+      "$ref": "money.json"
+    },
+    "totalGross": {
+      "$ref": "money.json"
+    }
+  }
+}

@@ -1,0 +1,614 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+import concurrent.futures
+import logging
+import threading
+import time
+from typing import Any, Callable, List, Mapping, Optional, Tuple
+
+import requests  # type: ignore[import]
+from requests import adapters as request_adapters
+from requests.exceptions import RequestException  # type: ignore[import]
+
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, StreamDescriptor
+from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
+from airbyte_cdk.sources.streams.http import HttpClient
+from airbyte_cdk.utils import AirbyteTracedException
+
+from .exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING, TypeSalesforceException
+from .rate_limiting import SalesforceErrorHandler
+from .utils import filter_streams_by_criteria
+
+
+STRING_TYPES = [
+    "byte",
+    "combobox",
+    "complexvalue",
+    "datacategorygroupreference",
+    "email",
+    "encryptedstring",
+    "id",
+    "json",
+    "masterrecord",
+    "multipicklist",
+    "phone",
+    "picklist",
+    "reference",
+    "string",
+    "textarea",
+    "time",
+    "url",
+]
+NUMBER_TYPES = ["currency", "double", "long", "percent"]
+DATE_TYPES = ["date", "datetime"]
+LOOSE_TYPES = [
+    "anyType",
+    # A calculated field's type can be any of the supported
+    # formula data types (see https://developer.salesforce.com/docs/#i1435527)
+    "calculated",
+]
+
+# The following objects have certain WHERE clause restrictions so we exclude them.
+QUERY_RESTRICTED_SALESFORCE_OBJECTS = [
+    "Announcement",
+    "AppTabMember",
+    "CollaborationGroupRecord",
+    "ColorDefinition",
+    "ContentFolderItem",
+    "ContentFolderMember",
+    "DataStatistics",
+    "DatacloudDandBCompany",
+    "EntityParticle",
+    "FieldDefinition",
+    "FieldHistoryArchive",
+    "FlexQueueItem",
+    "FlowVariableView",
+    "FlowVersionView",
+    "IconDefinition",
+    "IdeaComment",
+    "NetworkUserHistoryRecent",
+    "OwnerChangeOptionInfo",
+    "PicklistValueInfo",
+    "PlatformAction",
+    "RelationshipDomain",
+    "RelationshipInfo",
+    "SearchLayout",
+    "SiteDetail",
+    "UserEntityAccess",
+    "UserFieldAccess",
+    "Vote",
+]
+
+# The following objects are not supported by the query method being used.
+QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS = [
+    "AIPredictionEvent",
+    "ActivityHistory",
+    "AggregateResult",
+    "ApiAnomalyEvent",
+    "ApiEventStream",
+    "AssetTokenEvent",
+    "AsyncOperationEvent",
+    "AsyncOperationStatus",
+    "AttachedContentDocument",
+    "AttachedContentNote",
+    "BatchApexErrorEvent",
+    "BulkApiResultEvent",
+    "CombinedAttachment",
+    "ConcurLongRunApexErrEvent",
+    "ContentBody",
+    "CredentialStuffingEvent",
+    "DataType",
+    "DatacloudAddress",
+    "EmailStatus",
+    "FeedLike",
+    "FeedSignal",
+    "FeedTrackedChange",
+    "FlowExecutionErrorEvent",
+    "FolderedContentDocument",
+    "LightningUriEventStream",
+    "ListViewChartInstance",
+    "ListViewEventStream",
+    "LoginAsEventStream",
+    "LoginEventStream",
+    "LogoutEventStream",
+    "LookedUpFromActivity",
+    "Name",
+    "NoteAndAttachment",
+    "OpenActivity",
+    "OrgLifecycleNotification",
+    "OutgoingEmail",
+    "OutgoingEmailRelation",
+    "OwnedContentDocument",
+    "PlatformStatusAlertEvent",
+    "ProcessExceptionEvent",
+    "ProcessInstanceHistory",
+    "QuoteTemplateRichTextData",
+    "RemoteKeyCalloutEvent",
+    "ReportAnomalyEvent",
+    "ReportEventStream",
+    "SessionHijackingEvent",
+    "UriEventStream",
+    "UserRecordAccess",
+]
+
+PARENT_SALESFORCE_OBJECTS = {
+    # parent_name - name of parent stream
+    # field - in each parent record, which is needed for stream slice
+    # schema_minimal - required for getting proper class name full_refresh/incremental, rest/bulk for parent stream
+    "ContentDocumentLink": {
+        "parent_name": "ContentDocument",
+        "field": "Id",
+        "schema_minimal": {
+            "properties": {"Id": {"type": ["string", "null"]}, "SystemModstamp": {"type": ["string", "null"], "format": "date-time"}}
+        },
+    }
+}
+
+# The following objects are not supported by the Bulk API. Listed objects are version specific.
+UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
+    "AcceptedEventRelation",
+    "AssetTokenEvent",
+    "Attachment",
+    "AttachedContentNote",
+    "CaseStatus",
+    "ContractStatus",
+    "DeclinedEventRelation",
+    "EventWhoRelation",
+    "FieldSecurityClassification",
+    "KnowledgeArticle",
+    "KnowledgeArticleVersion",
+    "KnowledgeArticleVersionHistory",
+    "KnowledgeArticleViewStat",
+    "KnowledgeArticleVoteStat",
+    "OrderStatus",
+    "PartnerRole",
+    "QuoteTemplateRichTextData",
+    "RecentlyViewed",
+    "ServiceAppointmentStatus",
+    "ShiftStatus",
+    "SolutionStatus",
+    "TaskPriority",
+    "TaskStatus",
+    "TaskWhoRelation",
+    "UndecidedEventRelation",
+    "WorkOrderLineItemStatus",
+    "WorkOrderStatus",
+    "UserRecordAccess",
+    "OwnedContentDocument",
+    "OpenActivity",
+    "NoteAndAttachment",
+    "Name",
+    "LookedUpFromActivity",
+    "FolderedContentDocument",
+    "ContractStatus",
+    "ContentFolderItem",
+    "CombinedAttachment",
+    "CaseTeamTemplateRecord",
+    "CaseTeamTemplateMember",
+    "CaseTeamTemplate",
+    "CaseTeamRole",
+    "CaseTeamMember",
+    "AttachedContentDocument",
+    "AggregateResult",
+    "ChannelProgramLevelShare",
+    "AccountBrandShare",
+    "AccountFeed",
+    "AssetFeed",
+]
+
+UNSUPPORTED_FILTERING_STREAMS = [
+    "ActivityFieldHistory",
+    "ApiEvent",
+    "BulkApiResultEventStore",
+    "ContentDocumentLink",
+    "EmbeddedServiceDetail",
+    "EmbeddedServiceLabel",
+    "FormulaFunction",
+    "FormulaFunctionAllowedType",
+    "FormulaFunctionCategory",
+    "IdentityProviderEventStore",
+    "IdentityVerificationEvent",
+    "LightningUriEvent",
+    "ListViewEvent",
+    "LoginAsEvent",
+    "LoginEvent",
+    "LogoutEvent",
+    "Publisher",
+    "RecordActionHistory",
+    "ReportEvent",
+    "TabDefinition",
+    "UriEvent",
+]
+
+UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
+
+#    When upgrading the API version, it must be changed in these locations as well:
+#    1. airbyte-integrations/connectors/source-salesforce/unit_tests/resource/http/response/job_response.json:
+#      {'apiVersion': 'v62.0'}
+#                      ^^^^^
+#
+#    2. airbyte-integrations/connectors/source-salesforce/integration_tests/expected_records.jsonl
+#      Streams:
+#          Account: {'data.attributes.url': '/services/data/v62.0/sobjects/Account/0014W000027f6V3QAI'}
+#                                                           ^^^^^
+#
+#          Asset: {'data.attributes.url': '/services/data/v62.0/sobjects/Asset/02i4W00000EkJsrQAF'}
+#                                                        ^^^^^
+API_VERSION = "v62.0"
+
+_TOKEN_REFRESH_INTERVAL_SECONDS = 1800  # Refresh Salesforce access token every 30 minutes (well before the default 2-hour session timeout)
+# After a failed proactive refresh, wait this long before the next attempt instead of retrying on every
+# request. _perform_login stamps _last_login_time only on success, so without a backoff a failed refresh
+# would leave the staleness check permanently satisfied and turn every subsequent request into a full
+# retrying login under the login lock (a login storm). This is short relative to the ~90-minute margin
+# between the proactive refresh and the default 2-hour session timeout, so retries stay frequent enough
+# to recover from a transient outage; force_refresh on INVALID_SESSION_ID remains the backstop for
+# genuine expiry.
+_REFRESH_FAILURE_BACKOFF_SECONDS = 300  # 5 minutes
+
+# When a session dies, every concurrent stream thread gets a 401 at once and queues on the login
+# lock; whoever enters first refreshes the token for everyone. A login that completed within this
+# window means the caller's failed request predates that login, so redeeming the grant again would
+# only burn another single-use rotation (under Refresh Token Rotation each redundant login widens
+# the window for stranding a rotated token).
+_LOGIN_DEDUP_SECONDS = 10
+
+logger = logging.getLogger("airbyte")
+
+
+class SalesforceTokenProvider(TokenProvider):
+    """Token provider that proactively refreshes the Salesforce access token.
+
+    The default InterpolatedStringTokenProvider captures the token as a static
+    string at initialization time and never refreshes it. For long-running Bulk
+    API syncs that exceed the Salesforce session timeout (default 2 hours), the
+    stale token causes INVALID_SESSION_ID errors.
+
+    This provider wraps the Salesforce API object and calls login() to obtain a
+    fresh token before the session is likely to expire.
+    """
+
+    def __init__(self, sf_api: "Salesforce") -> None:
+        self._sf_api = sf_api
+
+    def get_token(self) -> str:
+        # Timing and locking live on the shared Salesforce object so that, no matter how many
+        # per-stream providers/threads ask, at most one refresh happens per interval and every
+        # rotated refresh token is persisted (see Salesforce.login).
+        self._sf_api.refresh_access_token_if_stale()
+        return self._sf_api.access_token
+
+    @property
+    def credentials_permanently_failed(self) -> bool:
+        return self._sf_api.login_permanently_failed
+
+    def force_refresh(self) -> bool:
+        """Force an immediate token refresh, returning True if a token was obtained.
+
+        Called by SalesforceErrorHandler on INVALID_SESSION_ID. No-op once the
+        credentials have permanently failed, so rejected grants are not retried
+        from every stream.
+        """
+        if self._sf_api.login_permanently_failed:
+            return False
+        try:
+            logger.info("Forcing Salesforce OAuth token refresh due to INVALID_SESSION_ID")
+            self._sf_api.login()
+            return True
+        except Exception:
+            logger.error("Forced token refresh failed; subsequent requests will likely fail", exc_info=True)
+            return False
+
+
+class Salesforce:
+    logger = logging.getLogger("airbyte")
+    version = API_VERSION
+    parallel_tasks_size = 100
+    # https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm
+    # Request Size Limits
+    REQUEST_SIZE_LIMITS = 16_384
+
+    def __init__(
+        self,
+        refresh_token: str = None,
+        token: str = None,
+        client_id: str = None,
+        client_secret: str = None,
+        is_sandbox: bool = None,
+        start_date: str = None,
+        **kwargs: Any,
+    ) -> None:
+        self.refresh_token = refresh_token
+        self.token = token
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.access_token = None
+        self.instance_url = ""
+        self.session = requests.Session()
+        # Change the connection pool size. Default value is not enough for parallel tasks
+        adapter = request_adapters.HTTPAdapter(pool_connections=self.parallel_tasks_size, pool_maxsize=self.parallel_tasks_size)
+        self.session.mount("https://", adapter)
+        self._http_client = HttpClient("sf_api", self.logger, session=self.session, error_handler=SalesforceErrorHandler())
+
+        self.is_sandbox = is_sandbox in [True, "true"]
+        if self.is_sandbox:
+            self.logger.info("using SANDBOX of Salesforce")
+        self.start_date = start_date
+
+        # Refresh Token Rotation (RTR): every login() may return a new single-use refresh token that
+        # invalidates the previous one. login() is called at startup and again mid-sync (proactive
+        # refresh and on INVALID_SESSION_ID), from multiple concurrent stream threads that share this
+        # instance. The lock serializes those logins so concurrent refreshes cannot race and strand a
+        # rotated token, and the observer lets the source persist every rotation (not just the first).
+        self._login_lock = threading.Lock()
+        self._last_login_time: Optional[float] = None
+        self._login_permanently_failed = False
+        self._refresh_token_observer: Optional[Callable[[str], None]] = None
+
+    @property
+    def login_permanently_failed(self) -> bool:
+        """True once login has failed with a credential error; it cannot recover within this process."""
+        return self._login_permanently_failed
+
+    def set_refresh_token_observer(self, observer: Callable[[str], None]) -> None:
+        """Register a callback invoked with the new refresh token whenever login() rotates it."""
+        self._refresh_token_observer = observer
+
+    def _get_standard_headers(self) -> Mapping[str, str]:
+        return {"Authorization": "Bearer {}".format(self.access_token)}
+
+    def get_streams_black_list(self) -> List[str]:
+        return QUERY_RESTRICTED_SALESFORCE_OBJECTS + QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS
+
+    def filter_streams(self, stream_name: str) -> bool:
+        # REST and BULK API do not support all entities that end with `ChangeEvent`.
+        if stream_name.endswith("ChangeEvent") or stream_name in self.get_streams_black_list():
+            return False
+        return True
+
+    def get_validated_streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None) -> Mapping[str, Any]:
+        """Selects all validated streams with additional filtering:
+        1) skip all sobjects with negative value of the flag "queryable"
+        2) user can set search criterias of necessary streams
+        3) selection by catalog settings
+        """
+        stream_objects = {}
+        for stream_object in self.describe()["sobjects"]:
+            if stream_object["name"] in UNSUPPORTED_STREAMS:
+                self.logger.warning(f"Stream {stream_object['name']} can not be used without object ID therefore will be ignored.")
+                continue
+            if stream_object["queryable"]:
+                stream_objects[stream_object.pop("name")] = stream_object
+            else:
+                self.logger.warning(f"Stream {stream_object['name']} is not queryable and will be ignored.")
+
+        if catalog:
+            return {
+                configured_stream.stream.name: stream_objects[configured_stream.stream.name]
+                for configured_stream in catalog.streams
+                if configured_stream.stream.name in stream_objects
+            }
+
+        stream_names = list(stream_objects.keys())
+        if config.get("streams_criteria"):
+            filtered_stream_list = []
+            for stream_criteria in config["streams_criteria"]:
+                filtered_stream_list += filter_streams_by_criteria(
+                    streams_list=stream_names, search_word=stream_criteria["value"], search_criteria=stream_criteria["criteria"]
+                )
+            stream_names = list(set(filtered_stream_list))
+
+        validated_streams = [stream_name for stream_name in stream_names if self.filter_streams(stream_name)]
+        return {stream_name: sobject_options for stream_name, sobject_options in stream_objects.items() if stream_name in validated_streams}
+
+    def _make_request(self, http_method: str, url: str, headers: dict = None, body: dict = None) -> requests.models.Response:
+        _, resp = self._http_client.send_request(http_method, url, headers=headers, data=body, request_kwargs={})
+        return resp
+
+    def login(self):
+        with self._login_lock:
+            if self._login_permanently_failed:
+                # Re-checked under the lock: threads that raced past force_refresh's pre-check must
+                # not redeem a grant another thread just saw rejected (under Refresh Token Rotation,
+                # reusing a rotated-out token revokes the whole grant).
+                raise AirbyteTracedException(
+                    message=AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"],
+                    internal_message="Skipping Salesforce login: credentials already failed permanently in this process.",
+                    failure_type=FailureType.config_error,
+                )
+            if self._last_login_time is not None and time.monotonic() - self._last_login_time < _LOGIN_DEDUP_SECONDS:
+                return
+            try:
+                self._perform_login()
+            except AirbyteTracedException as e:
+                if e.failure_type == FailureType.config_error:
+                    # A rejected grant cannot recover within this process; stop redeeming.
+                    self._login_permanently_failed = True
+                raise
+
+    def refresh_access_token_if_stale(self) -> None:
+        """Proactively refresh the access token once it is older than the refresh interval.
+
+        Called from every stream/thread that shares this instance; the lock plus the re-check
+        inside it ensure at most one login happens per interval instead of one per caller.
+        """
+        if self._login_permanently_failed:
+            return
+        if self._last_login_time is None or time.monotonic() - self._last_login_time < _TOKEN_REFRESH_INTERVAL_SECONDS:
+            return
+        with self._login_lock:
+            if self._last_login_time is not None and time.monotonic() - self._last_login_time < _TOKEN_REFRESH_INTERVAL_SECONDS:
+                return
+            try:
+                logger.info("Refreshing Salesforce OAuth token (%.0fs since last login)", time.monotonic() - self._last_login_time)
+                self._perform_login()
+            except AirbyteTracedException as e:
+                if e.failure_type == FailureType.config_error:
+                    self._login_permanently_failed = True
+                    logger.warning(
+                        "Proactive token refresh failed with a credential error; disabling further refresh attempts",
+                        exc_info=True,
+                    )
+                    return
+                self._last_login_time = time.monotonic() - _TOKEN_REFRESH_INTERVAL_SECONDS + _REFRESH_FAILURE_BACKOFF_SECONDS
+                logger.warning(
+                    "Proactive token refresh failed; will use existing token and retry in ~%ds",
+                    _REFRESH_FAILURE_BACKOFF_SECONDS,
+                    exc_info=True,
+                )
+            except Exception:
+                # _perform_login stamps _last_login_time only on success, so on failure we back it off
+                # ourselves. Without this the staleness check would stay True and every following request
+                # would re-run a full retrying login under the lock. Pretend the last login was
+                # (_TOKEN_REFRESH_INTERVAL_SECONDS - _REFRESH_FAILURE_BACKOFF_SECONDS) ago so the next
+                # proactive attempt is allowed only after the backoff window.
+                self._last_login_time = time.monotonic() - _TOKEN_REFRESH_INTERVAL_SECONDS + _REFRESH_FAILURE_BACKOFF_SECONDS
+                logger.warning(
+                    "Proactive token refresh failed; will use existing token and retry in ~%ds",
+                    _REFRESH_FAILURE_BACKOFF_SECONDS,
+                    exc_info=True,
+                )
+
+    def _perform_login(self) -> None:
+        """Perform the refresh_token grant. Must be called while holding ``self._login_lock``."""
+        login_url = f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com/services/oauth2/token"
+        login_body = {
+            "grant_type": "refresh_token",
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "refresh_token": self.refresh_token,
+        }
+        resp = self._make_request("POST", login_url, body=login_body, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        auth = resp.json()
+        self.access_token = auth["access_token"]
+        self.instance_url = auth["instance_url"]
+        self._last_login_time = time.monotonic()
+        # Salesforce returns a new refresh token only when Refresh Token Rotation is enabled on the connected app.
+        # It is single-use and invalidates the previous one, so every rotation must be persisted, not just the first.
+        new_refresh_token = auth.get("refresh_token")
+        if new_refresh_token and new_refresh_token != self.refresh_token:
+            self.refresh_token = new_refresh_token
+            if self._refresh_token_observer:
+                self._refresh_token_observer(new_refresh_token)
+
+    def describe(self, sobject: str = None, sobject_options: Mapping[str, Any] = None) -> Mapping[str, Any]:
+        """Describes all objects or a specific object"""
+        headers = self._get_standard_headers()
+
+        endpoint = "sobjects" if not sobject else f"sobjects/{sobject}/describe"
+
+        url = f"{self.instance_url}/services/data/{self.version}/{endpoint}"
+        resp = self._make_request("GET", url, headers=headers)
+        if resp.status_code == 404 and sobject:
+            self.logger.error(f"not found a description for the sobject '{sobject}'. Sobject options: {sobject_options}")
+        resp_json: Mapping[str, Any] = resp.json()
+        return resp_json
+
+    def generate_schema(self, stream_name: str = None, stream_options: Mapping[str, Any] = None) -> Mapping[str, Any]:
+        response = self.describe(stream_name, stream_options)
+        schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
+        for field in response["fields"]:
+            schema["properties"][field["name"]] = self.field_to_property_schema(field)  # type: ignore[index]
+        return schema
+
+    def generate_schemas(self, stream_objects: Mapping[str, Any]) -> Mapping[str, Any]:
+        def load_schema(name: str, stream_options: Mapping[str, Any]) -> Tuple[str, Optional[Mapping[str, Any]], Optional[str]]:
+            try:
+                result = self.generate_schema(stream_name=name, stream_options=stream_options)
+            except RequestException as e:
+                return name, None, str(e)
+            return name, result, None
+
+        stream_names = list(stream_objects.keys())
+        # try to split all requests by chunks
+        stream_schemas = {}
+        for i in range(0, len(stream_names), self.parallel_tasks_size):
+            chunk_stream_names = stream_names[i : i + self.parallel_tasks_size]
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                for stream_name, schema, err in executor.map(
+                    lambda args: load_schema(*args), [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names]
+                ):
+                    if err:
+                        self.logger.error(f"Loading error of the {stream_name} schema: {err}")
+                        # Without schema information, the source can't determine the type of stream to instantiate and there might be issues
+                        # related to property chunking
+                        raise AirbyteTracedException(
+                            message=f"Schema could not be extracted for stream {stream_name}. Please retry later.",
+                            internal_message=str(err),
+                            failure_type=FailureType.system_error,
+                            stream_descriptor=StreamDescriptor(name=stream_name),
+                        )
+                    stream_schemas[stream_name] = schema
+        return stream_schemas
+
+    @staticmethod
+    def get_pk_and_replication_key(json_schema: Mapping[str, Any]) -> Tuple[Optional[str], Optional[str]]:
+        fields_list = json_schema.get("properties", {}).keys()
+
+        pk = "Id" if "Id" in fields_list else None
+        replication_key = None
+        if "SystemModstamp" in fields_list:
+            replication_key = "SystemModstamp"
+        elif "LastModifiedDate" in fields_list:
+            replication_key = "LastModifiedDate"
+        elif "CreatedDate" in fields_list:
+            replication_key = "CreatedDate"
+        elif "LoginTime" in fields_list:
+            replication_key = "LoginTime"
+
+        return pk, replication_key
+
+    @staticmethod
+    def field_to_property_schema(field_params: Mapping[str, Any]) -> Mapping[str, Any]:
+        sf_type = field_params["type"]
+        property_schema = {}
+
+        if sf_type in STRING_TYPES:
+            property_schema["type"] = ["string", "null"]
+        elif sf_type in DATE_TYPES:
+            property_schema = {
+                "type": ["string", "null"],
+                "format": "date-time" if sf_type == "datetime" else "date",  # type: ignore[dict-item]
+            }
+        elif sf_type in NUMBER_TYPES:
+            property_schema["type"] = ["number", "null"]
+        elif sf_type == "address":
+            property_schema = {
+                "type": ["object", "null"],
+                "properties": {  # type: ignore[dict-item]
+                    "street": {"type": ["null", "string"]},
+                    "state": {"type": ["null", "string"]},
+                    "postalCode": {"type": ["null", "string"]},
+                    "city": {"type": ["null", "string"]},
+                    "country": {"type": ["null", "string"]},
+                    "longitude": {"type": ["null", "number"]},
+                    "latitude": {"type": ["null", "number"]},
+                    "geocodeAccuracy": {"type": ["null", "string"]},
+                },
+            }
+        elif sf_type == "base64":
+            property_schema = {"type": ["string", "null"], "format": "base64"}  # type: ignore[dict-item]
+        elif sf_type == "int":
+            property_schema["type"] = ["integer", "null"]
+        elif sf_type == "boolean":
+            property_schema["type"] = ["boolean", "null"]
+        elif sf_type in LOOSE_TYPES:
+            """
+            LOOSE_TYPES can return data of completely different types (more than 99% of them are `strings`),
+            and in order to avoid conflicts in schemas and destinations, we cast this data to the `string` type.
+            """
+            property_schema["type"] = ["string", "null"]
+        elif sf_type == "location":
+            property_schema = {
+                "type": ["object", "null"],
+                "properties": {  # type: ignore[dict-item]
+                    "longitude": {"type": ["null", "number"]},
+                    "latitude": {"type": ["null", "number"]},
+                },
+            }
+        else:
+            raise TypeSalesforceException("Found unsupported type: {}".format(sf_type))
+
+        return property_schema

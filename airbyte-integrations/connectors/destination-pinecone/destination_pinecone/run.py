@@ -1,0 +1,15 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+#
+
+
+import sys
+
+from destination_pinecone import DestinationPinecone
+
+
+def run() -> None:
+    DestinationPinecone().run(sys.argv[1:])
+
+
+if __name__ == "__main__":
+    run()

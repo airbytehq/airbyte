@@ -1,0 +1,522 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "number"]
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "createdBy": {
+      "$ref": "created_by.json"
+    },
+    "lastModifiedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "lastModifiedBy": {
+      "$ref": "last_modified_by.json"
+    },
+    "completedAt": {
+      "type": ["null", "integer"],
+      "format": "date-time"
+    },
+    "orderNumber": {
+      "type": ["null", "string"]
+    },
+    "customerId": {
+      "type": ["null", "string"]
+    },
+    "customerEmail": {
+      "type": ["null", "string"]
+    },
+    "anonymousId": {
+      "type": ["null", "string"]
+    },
+    "store": {
+      "$ref": "key_reference.json"
+    },
+    "lineItems": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "productId": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "$ref": "localized_string.json"
+          },
+          "productSlug": {
+            "$ref": "localized_string.json"
+          },
+          "productType": {
+            "$ref": "reference.json"
+          },
+          "variant": {
+            "$ref": "product_variant.json"
+          },
+          "price": {
+            "$ref": "price.json"
+          },
+          "taxedPrice": {
+            "$ref": "taxed_item_price.json"
+          },
+          "totalPrice": {
+            "$ref": "money.json"
+          },
+          "quantity": {
+            "type": ["null", "number"]
+          },
+          "addedAt": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "state": {
+            "type": ["null", "array"],
+            "items": {
+              "$ref": "state.json"
+            }
+          },
+          "taxRate": {
+            "$ref": "taxrate.json"
+          },
+          "supplyChannel": {
+            "$ref": "reference.json"
+          },
+          "distributionChannel": {
+            "$ref": "reference.json"
+          },
+          "discountedPricePerQuantity": {
+            "$ref": "discounted_price_per_quantity.json"
+          },
+          "priceMode": {
+            "type": ["null", "string"]
+          },
+          "lineItemMode": {
+            "type": ["null", "string"]
+          },
+          "custom": {
+            "$ref": "custom.json"
+          },
+          "shippingDetails": {
+            "$ref": "shipping_details.json"
+          },
+          "lastModifiedAt": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "customLineItems": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "$ref": "localized_string.json"
+          },
+          "money": {
+            "$ref": "money.json"
+          },
+          "taxedPrice": {
+            "$ref": "taxed_item_price.json"
+          },
+          "totalPrice": {
+            "$ref": "money.json"
+          },
+          "slug": {
+            "type": ["null", "string"]
+          },
+          "quantity": {
+            "type": ["null", "number"]
+          },
+          "state": {
+            "type": ["null", "array"],
+            "items": {
+              "$ref": "state.json"
+            }
+          },
+          "taxCategory": {
+            "$ref": "reference.json"
+          },
+          "taxRate": {
+            "$ref": "taxrate.json"
+          },
+          "discountedPricePerQuantity": {
+            "type": ["null", "array"],
+            "items": {
+              "$ref": "discounted_price_per_quantity.json"
+            }
+          },
+          "custom": {
+            "$ref": "custom.json"
+          },
+          "shippingDetails": {
+            "$ref": "shipping_details.json"
+          }
+        }
+      }
+    },
+    "totalPrice": {
+      "$ref": "money.json"
+    },
+    "taxedPrice": {
+      "$ref": "taxed_price.json"
+    },
+    "shippingAddress": {
+      "$ref": "address.json"
+    },
+    "billingAddress": {
+      "$ref": "address.json"
+    },
+    "taxMode": {
+      "type": ["null", "string"]
+    },
+    "taxRoundingMode": {
+      "type": ["null", "string"]
+    },
+    "taxCalculationMode": {
+      "type": ["null", "string"]
+    },
+    "taxCalculationMode": {
+      "type": ["null", "string"]
+    },
+    "customerGroup": {
+      "$ref": "reference.json"
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "orderState": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "$ref": "reference.json"
+    },
+    "shipmentState": {
+      "type": ["null", "string"]
+    },
+    "paymentState": {
+      "type": ["null", "string"]
+    },
+    "shippingInfo": {
+      "type": ["null", "object"],
+      "properties": {
+        "shippingMethodName": {
+          "type": ["null", "string"]
+        },
+        "price": {
+          "$ref": "money.json"
+        },
+        "shippingRate": {
+          "type": ["null", "object"],
+          "properties": {
+            "price": {
+              "$ref": "money.json"
+            },
+            "freeAbove": {
+              "$ref": "money.json"
+            },
+            "tiers": {
+              "type": ["null", "array"]
+            },
+            "isMatching": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "taxedPrice": {
+          "$ref": "taxed_item_price.json"
+        },
+        "taxRate": {
+          "$ref": "taxrate.json"
+        },
+        "taxCategory": {
+          "$ref": "reference.json"
+        },
+        "shippingMethod": {
+          "$ref": "reference.json"
+        },
+        "deliveries": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "string"]
+              },
+              "createdAt": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "items": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "type": ["null", "string"]
+                    },
+                    "quantity": {
+                      "type": ["null", "number"]
+                    }
+                  }
+                }
+              },
+              "parcels": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "type": ["null", "string"]
+                    },
+                    "createdAt": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    },
+                    "measurements": {
+                      "type": ["null", "string"]
+                    },
+                    "trackingData": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "trackingId": {
+                          "type": ["null", "string"]
+                        },
+                        "carrier": {
+                          "type": ["null", "string"]
+                        },
+                        "provider": {
+                          "type": ["null", "string"]
+                        },
+                        "providerTransaction": {
+                          "type": ["null", "string"]
+                        },
+                        "isReturn": {
+                          "type": ["null", "boolean"]
+                        }
+                      }
+                    },
+                    "items": {
+                      "type": ["null", "array"],
+                      "items": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "id": {
+                            "type": ["null", "string"]
+                          },
+                          "quantity": {
+                            "type": ["null", "number"]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "address": {
+                "$ref": "address.json"
+              }
+            }
+          }
+        },
+        "discountedPrice": {
+          "type": ["null", "object"],
+          "properties": {
+            "value": {
+              "$ref": "money.json"
+            },
+            "includedDiscounts": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "discount": {
+                    "$ref": "reference.json"
+                  },
+                  "discountedAmount": {
+                    "$ref": "money.json"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "shippingMethodState": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "syncInfo": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "channel": {
+            "$ref": "reference.json"
+          },
+          "externalId": {
+            "type": ["null", "string"]
+          },
+          "syncedAt": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "returnInfo": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "items": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "type": {
+                  "type": ["null", "string"]
+                },
+                "quantity": {
+                  "type": ["null", "number"]
+                },
+                "lineItemId": {
+                  "type": ["null", "string"]
+                },
+                "comment": {
+                  "type": ["null", "string"]
+                },
+                "shipmentState": {
+                  "type": ["null", "string"]
+                },
+                "paymentState": {
+                  "type": ["null", "string"]
+                },
+                "lastModifiedAt": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "createdAt": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          "returnTrackingId": {
+            "type": ["null", "string"]
+          },
+          "returnDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "discountCodes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "discountCode": {
+            "$ref": "reference.json"
+          },
+          "state": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "refusedGifts": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "reference.json"
+      }
+    },
+    "lastMessageSequenceNumber": {
+      "type": ["null", "number"]
+    },
+    "cart": {
+      "$ref": "reference.json"
+    },
+    "custom": {
+      "$ref": "custom.json"
+    },
+    "paymentInfo": {
+      "type": ["null", "object"],
+      "properties": {
+        "payments": {
+          "type": ["null", "array"],
+          "items": {
+            "$ref": "reference.json"
+          }
+        }
+      }
+    },
+    "locale": {
+      "type": ["null", "string"]
+    },
+    "inventoryMode": {
+      "type": ["null", "string"]
+    },
+    "shippingRateInput": {
+      "$ref": "localized_string.json"
+    },
+    "origin": {
+      "type": ["null", "string"]
+    },
+    "directDiscounts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "shipping": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "shippingMode": {
+      "type": ["null", "string"]
+    },
+    "taxedShippingPrice": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "transactionFee": {
+      "type": ["null", "boolean"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "versionModifiedAt": {
+      "type": ["null", "string"]
+    },
+    "itemShippingAddresses": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "address.json"
+      }
+    }
+  }
+}

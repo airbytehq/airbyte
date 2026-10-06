@@ -1,0 +1,203 @@
+{
+  "data": [
+    {
+      "account_currency": "USD",
+      "account_id": "798085168510957",
+      "account_name": "Porsche Riverside",
+      "actions": [
+        {
+          "action_type": "page_engagement",
+          "value": "10",
+          "1d_click": "10",
+          "7d_click": "10",
+          "28d_click": "10"
+        },
+        {
+          "action_type": "post_engagement",
+          "value": "10",
+          "1d_click": "10",
+          "7d_click": "10",
+          "28d_click": "10"
+        }
+      ],
+      "ad_id": "23854695759200548",
+      "ad_name": "New - AIA - Advertised Offers - Cayenne",
+      "adset_id": "23854404706320548",
+      "adset_name": "New Cayenne",
+      "buying_type": "AUCTION",
+      "campaign_id": "23854404676180548",
+      "campaign_name": "zzzzzNew - AIA - Advertised Offers",
+      "clicks": "9",
+      "cost_per_action_type": [
+        {
+          "action_type": "link_click",
+          "value": "1.594444",
+          "1d_click": "1.594444",
+          "7d_click": "1.594444",
+          "28d_click": "1.594444"
+        },
+        {
+          "action_type": "post_engagement",
+          "value": "1.435",
+          "1d_click": "1.435",
+          "7d_click": "1.435",
+          "28d_click": "1.435"
+        },
+        {
+          "action_type": "page_engagement",
+          "value": "1.435",
+          "1d_click": "1.435",
+          "7d_click": "1.435",
+          "28d_click": "1.435"
+        }
+      ],
+      "cost_per_inline_link_click": "1.594444",
+      "cost_per_inline_post_engagement": "1.435",
+      "cost_per_outbound_click": [
+        {
+          "action_type": "outbound_click",
+          "value": "1.594444"
+        }
+      ],
+      "cpc": "1.594444",
+      "cpm": "77.567568",
+      "created_time": "2023-06-01",
+      "ctr": "4.864865",
+      "date_start": "2023-06-01",
+      "date_stop": "2023-06-01",
+      "impressions": "185",
+      "inline_link_click_ctr": "4.864865",
+      "inline_link_clicks": "9",
+      "inline_post_engagement": "10",
+      "objective": "PRODUCT_CATALOG_SALES",
+      "optimization_goal": "OFFSITE_CONVERSIONS",
+      "outbound_clicks": [
+        {
+          "action_type": "outbound_click",
+          "value": "9"
+        }
+      ],
+      "outbound_clicks_ctr": [
+        {
+          "action_type": "outbound_click",
+          "value": "4.864865"
+        }
+      ],
+      "spend": "14.35",
+      "updated_time": "2023-06-01",
+      "website_ctr": [
+        {
+          "action_type": "link_click",
+          "value": "4.864865"
+        }
+      ],
+      "product_id": "5983858725075630"
+    },
+    {
+      "account_currency": "USD",
+      "account_id": "798085168510957",
+      "account_name": "Porsche Riverside",
+      "actions": [
+        {
+          "action_type": "page_engagement",
+          "value": "4",
+          "1d_click": "4",
+          "7d_click": "4",
+          "28d_click": "4"
+        },
+        {
+          "action_type": "post_engagement",
+          "value": "4",
+          "1d_click": "4",
+          "7d_click": "4",
+          "28d_click": "4"
+        },
+        {
+          "action_type": "link_click",
+          "value": "4",
+          "1d_click": "4",
+          "7d_click": "4",
+          "28d_click": "4"
+        }
+      ],
+      "ad_id": "23854695759200548",
+      "ad_name": "New - AIA - Advertised Offers - Cayenne",
+      "adset_id": "23854404706320548",
+      "adset_name": "New Cayenne",
+      "buying_type": "AUCTION",
+      "campaign_id": "23854404676180548",
+      "campaign_name": "zzzzzNew - AIA - Advertised Offers",
+      "clicks": "7",
+      "cost_per_action_type": [
+        {
+          "action_type": "link_click",
+          "value": "2.1325",
+          "1d_click": "2.1325",
+          "7d_click": "2.1325",
+          "28d_click": "2.1325"
+        },
+        {
+          "action_type": "post_engagement",
+          "value": "2.1325",
+          "1d_click": "2.1325",
+          "7d_click": "2.1325",
+          "28d_click": "2.1325"
+        },
+        {
+          "action_type": "page_engagement",
+          "value": "2.1325",
+          "1d_click": "2.1325",
+          "7d_click": "2.1325",
+          "28d_click": "2.1325"
+        }
+      ],
+      "cost_per_inline_link_click": "2.1325",
+      "cost_per_inline_post_engagement": "2.1325",
+      "cost_per_outbound_click": [
+        {
+          "action_type": "outbound_click",
+          "value": "2.1325"
+        }
+      ],
+      "cpc": "1.218571",
+      "cpm": "49.883041",
+      "created_time": "2023-06-01",
+      "ctr": "4.093567",
+      "date_start": "2023-06-01",
+      "date_stop": "2023-06-01",
+      "impressions": "171",
+      "inline_link_click_ctr": "2.339181",
+      "inline_link_clicks": "4",
+      "inline_post_engagement": "4",
+      "objective": "PRODUCT_CATALOG_SALES",
+      "optimization_goal": "OFFSITE_CONVERSIONS",
+      "outbound_clicks": [
+        {
+          "action_type": "outbound_click",
+          "value": "4"
+        }
+      ],
+      "outbound_clicks_ctr": [
+        {
+          "action_type": "outbound_click",
+          "value": "2.339181"
+        }
+      ],
+      "spend": "8.53",
+      "updated_time": "2023-06-01",
+      "website_ctr": [
+        {
+          "action_type": "link_click",
+          "value": "2.339181"
+        }
+      ],
+      "product_id": "6023934044385671"
+    }
+  ],
+  "paging": {
+    "cursors": {
+      "before": "MAZDZD",
+      "after": "NzIZD"
+    }
+  }
+}

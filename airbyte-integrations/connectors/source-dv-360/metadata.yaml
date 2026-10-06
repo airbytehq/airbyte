@@ -1,0 +1,39 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 1356e1d9-977f-4057-ad4b-65f25329cf61
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-dv-360
+  githubIssueLabel: source-dv-360
+  icon: dv360.svg
+  license: ELv2
+  name: DV 360
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-dv-360
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dv-360
+  tags:
+    - language:python
+    - cdk:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: archived
+  externalDocumentationUrls:
+    - title: Display & Video 360 API
+      url: https://developers.google.com/display-video/api/reference/rest
+      type: api_reference
+    - title: DV360 authentication
+      url: https://developers.google.com/display-video/api/guides/authentication
+      type: authentication_guide
+    - title: DV360 rate limits
+      url: https://developers.google.com/display-video/api/guides/how-tos/quota
+      type: rate_limits
+metadataSpecVersion: "1.0"

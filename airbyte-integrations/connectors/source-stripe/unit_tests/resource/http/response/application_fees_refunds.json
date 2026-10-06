@@ -1,0 +1,17 @@
+{
+  "object": "list",
+  "url": "/v1/application_fees/fr_1MtJRpKbnvuxQXGuM6Ww0D24/refunds",
+  "has_more": false,
+  "data": [
+    {
+      "id": "fr_1MtJRpKbnvuxQXGuM6Ww0D24",
+      "object": "fee_refund",
+      "amount": 100,
+      "balance_transaction": null,
+      "created": 1680651573,
+      "currency": "usd",
+      "fee": "fee_1B73DOKbnvuxQXGuhY8Aw0TN",
+      "metadata": {}
+    }
+  ]
+}

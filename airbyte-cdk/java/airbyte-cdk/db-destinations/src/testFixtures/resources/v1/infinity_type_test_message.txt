@@ -1,0 +1,3 @@
+{"type": "RECORD", "record": {"stream": "infinity", "emitted_at": 1602637589100, "data": { "data" : "Infinity" }}}
+{"type": "RECORD", "record": {"stream": "infinity", "emitted_at": 1602637589200, "data": { "data" : "-Infinity" }}}
+{"type": "STATE", "state": { "data": {"start_date": "2022-02-14"}}}

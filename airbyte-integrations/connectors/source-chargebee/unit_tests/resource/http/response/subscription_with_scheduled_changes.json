@@ -1,0 +1,16 @@
+{
+  "subscription": {
+    "id": "sub_001",
+    "customer_id": "cust_001",
+    "plan_id": "plan_001",
+    "status": "active",
+    "current_term_start": 1705312800,
+    "current_term_end": 1707991200,
+    "created_at": 1705312800,
+    "updated_at": 1705312800,
+    "has_scheduled_changes": true,
+    "object": "subscription",
+    "cf_change_reason": "Upgrade",
+    "cf_scheduled_by": "Admin"
+  }
+}

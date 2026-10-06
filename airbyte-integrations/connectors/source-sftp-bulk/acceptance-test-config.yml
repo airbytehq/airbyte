@@ -1,0 +1,20 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-sftp-bulk:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "integration_tests/spec.json"
+        timeout_seconds: 60
+        backward_compatibility_tests_config:
+          disable_for_version: 0.3.2 # `start_date` format changed to format: date-time
+  connection:
+    bypass_reason: "This connector uses integration tests"
+  discovery:
+    bypass_reason: "This connector uses integration tests"
+  basic_read:
+    bypass_reason: "This connector uses integration tests"
+  full_refresh:
+    bypass_reason: "This connector uses integration tests"
+  incremental:
+    bypass_reason: "This connector uses integration tests"

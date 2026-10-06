@@ -1,0 +1,6862 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: >-
+  This Airbyte connector for Mode allows you to seamlessly sync data between
+  Mode and various destinations, enabling streamlined data analysis and
+  reporting. With this connector, users can extract reports, data models, and
+  other analytics from Mode into their preferred data warehouses or databases,
+  facilitating easier data integration, business intelligence, and advanced
+  analytics workflows. It supports incremental and full data syncs, providing
+  flexibility in data synchronization for Mode users.
+
+check:
+  type: CheckStream
+  stream_names:
+    - groups
+
+definitions:
+  streams:
+    definitions:
+      type: DeclarativeStream
+      name: definitions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /{{ config["workspace"] }}/definitions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - definitions
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/definitions"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      primary_key:
+        - token
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /{{ config["workspace"] }}/groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - groups
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    memberships:
+      type: DeclarativeStream
+      name: memberships
+      primary_key:
+        - member_username
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /{{ config["workspace"] }}/memberships
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - memberships
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/memberships"
+    spaces:
+      type: DeclarativeStream
+      name: spaces
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /{{ config["workspace"] }}/spaces
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - spaces
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/spaces"
+    space_memberships:
+      type: DeclarativeStream
+      name: space_memberships
+      primary_key:
+        - token
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /{{ config["workspace"] }}/spaces/{{ stream_partition.space_token
+            }}/memberships
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - space_memberships
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: token
+              partition_field: space_token
+              stream:
+                $ref: "#/definitions/streams/spaces"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/space_memberships"
+    groups_memberships:
+      type: DeclarativeStream
+      name: groups_memberships
+      primary_key:
+        - token
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /{{ config["workspace"] }}/groups/{{ stream_partition.group_token
+            }}/memberships
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - group_memberships
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: token
+              partition_field: group_token
+              stream:
+                $ref: "#/definitions/streams/groups"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups_memberships"
+    data_sources:
+      type: DeclarativeStream
+      name: data_sources
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /{{ config["workspace"] }}/data_sources
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - data_sources
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/data_sources"
+    reports:
+      type: DeclarativeStream
+      name: reports
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /{{ config['workspace'] }}/data_sources/{{
+            stream_partition.data_source_token }}/reports
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - reports
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: token
+              partition_field: data_source_token
+              stream:
+                $ref: "#/definitions/streams/data_sources"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reports"
+    report_runs:
+      type: DeclarativeStream
+      name: report_runs
+      primary_key:
+        - token
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            {{ config["workspace"] }}/reports/{{stream_partition.report_token
+            }}/runs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - report_runs
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: token
+              partition_field: report_token
+              stream:
+                $ref: "#/definitions/streams/reports"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/report_runs"
+    queries:
+      type: DeclarativeStream
+      name: queries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /{{ config["workspace"] }}/reports/{{ stream_partition.report_token
+            }}/queries
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - queries
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: token
+              partition_field: report_token
+              stream:
+                $ref: "#/definitions/streams/reports"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/queries"
+    query_runs:
+      type: DeclarativeStream
+      name: query_runs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /{{ config['workspace'] }}/reports/{{ stream_partition.report_token
+            }}/runs/{{ stream_partition.run_token }}/query_runs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - query_runs
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: token
+                partition_field: report_token
+                stream:
+                  $ref: "#/definitions/streams/reports"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: token
+                partition_field: run_token
+                stream:
+                  $ref: "#/definitions/streams/report_runs"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/query_runs"
+    charts:
+      type: DeclarativeStream
+      name: charts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /{{ config['workspace'] }}/reports/{{ stream_partition.report_token
+            }}/queries/{{ stream_partition.query_token }}/charts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - charts
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: token
+                partition_field: report_token
+                stream:
+                  $ref: "#/definitions/streams/reports"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: token
+                partition_field: query_token
+                stream:
+                  $ref: "#/definitions/streams/queries"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/charts"
+    report_filters:
+      type: DeclarativeStream
+      name: report_filters
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            {{ config["workspace"] }}/reports/{{stream_partition.report_token
+            }}/filters
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - report_filters
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: token
+              partition_field: report_token
+              stream:
+                $ref: "#/definitions/streams/reports"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/report_filters"
+    datasets:
+      type: DeclarativeStream
+      name: datasets
+      primary_key:
+        - token
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /{{ config["workspace"] }}/spaces/{{ stream_partition.space_token
+            }}/datasets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - reports
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: token
+              partition_field: space_token
+              stream:
+                $ref: "#/definitions/streams/spaces"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/datasets"
+    datasets_runs:
+      type: DeclarativeStream
+      name: datasets_runs
+      primary_key:
+        - token
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /{{ config["workspace"] }}/datasets/{{
+            stream_partition.dataset_token }}/runs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - report_runs
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: token
+              partition_field: dataset_token
+              stream:
+                $ref: "#/definitions/streams/datasets"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/datasets_runs"
+    field_descriptions:
+      type: DeclarativeStream
+      name: field_descriptions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /{{ config["workspace"] }}/datasets/{{
+            stream_partition.dataset_token }}/field_descriptions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - field_descriptions
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: token
+              partition_field: dataset_token
+              stream:
+                $ref: "#/definitions/streams/datasets"
+              incremental_dependency: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/field_descriptions"
+    report_schedules:
+      type: DeclarativeStream
+      name: report_schedules
+      primary_key:
+        - token
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /{{ config["workspace"] }}/reports/{{ stream_partition.report_token
+            }}/schedules
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - report_schedules
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: token
+              partition_field: report_token
+              stream:
+                $ref: "#/definitions/streams/reports"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/report_schedules"
+    reports_subscriptions:
+      type: DeclarativeStream
+      name: reports_subscriptions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /{{ config["workspace"] }}/reports/{{ stream_partition.report_token
+            }}/subscriptions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - report_subscriptions
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: token
+              partition_field: report_token
+              stream:
+                $ref: "#/definitions/streams/reports"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reports_subscriptions"
+    datasets_schedules:
+      type: DeclarativeStream
+      name: datasets_schedules
+      primary_key:
+        - token
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /{{ config["workspace"] }}/datasets/{{
+            stream_partition.dataset_token }}/schedules
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - report_schedules
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: token
+              partition_field: dataset_token
+              stream:
+                $ref: "#/definitions/streams/datasets"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/datasets_schedules"
+  base_requester:
+    type: HttpRequester
+    url_base: https://app.mode.com/api
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"api_secret\"] }}"
+      username: "{{ config[\"api_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/memberships"
+  - $ref: "#/definitions/streams/spaces"
+  - $ref: "#/definitions/streams/space_memberships"
+  - $ref: "#/definitions/streams/groups_memberships"
+  - $ref: "#/definitions/streams/data_sources"
+  - $ref: "#/definitions/streams/reports"
+  - $ref: "#/definitions/streams/report_runs"
+  - $ref: "#/definitions/streams/queries"
+  - $ref: "#/definitions/streams/query_runs"
+  - $ref: "#/definitions/streams/charts"
+  - $ref: "#/definitions/streams/report_filters"
+  - $ref: "#/definitions/streams/definitions"
+  - $ref: "#/definitions/streams/datasets"
+  - $ref: "#/definitions/streams/datasets_runs"
+  - $ref: "#/definitions/streams/field_descriptions"
+  - $ref: "#/definitions/streams/report_schedules"
+  - $ref: "#/definitions/streams/reports_subscriptions"
+  - $ref: "#/definitions/streams/datasets_schedules"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+      - api_secret
+      - workspace
+    properties:
+      api_token:
+        type: string
+        description: API token to use as the username for Basic Authentication.
+        name: api_token
+        order: 0
+        title: API Token
+        airbyte_secret: true
+      api_secret:
+        type: string
+        description: API secret to use as the password for Basic Authentication.
+        name: api_secret
+        order: 1
+        title: API Secret
+        airbyte_secret: true
+      workspace:
+        type: string
+        order: 2
+        title: workspace
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    definitions: true
+    groups: true
+    memberships: true
+    spaces: true
+    space_memberships: true
+    groups_memberships: true
+    data_sources: true
+    reports: false
+    report_runs: false
+    queries: false
+    query_runs: false
+    charts: false
+    report_filters: false
+    datasets: true
+    datasets_runs: false
+    field_descriptions: false
+    report_schedules: false
+    reports_subscriptions: false
+    datasets_schedules: false
+  testedStreams:
+    definitions:
+      hasRecords: true
+      streamHash: 257a1b8d2208cc1a90c0c196da23fb7e8591e6f9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    groups:
+      hasRecords: true
+      streamHash: da82213348d0a28e2f246d9ab2c9cbf99422c7a6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    memberships:
+      hasRecords: true
+      streamHash: b12a2126762881edaf7fe235a5f59b3c9b826c0b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    spaces:
+      hasRecords: true
+      streamHash: 2fa6a33a3a7ae80bb572985f8b17eac9618c12fe
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    space_memberships:
+      hasRecords: true
+      streamHash: d5022b863ce128cfa56748a90faca78cad995e83
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    groups_memberships:
+      hasRecords: true
+      streamHash: 3c663deae1d677146e628712cfe1c8a0a694e8a2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    data_sources:
+      streamHash: 6a0b7657514b4880361608930e869259821b5aa0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    reports:
+      streamHash: ba7246affb8e8ac5f3cd83d97aa89969170f0b1b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    report_runs:
+      streamHash: 3c55a3915461cc6448b1eaebb67b5fb3cb178962
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    queries:
+      streamHash: fdab33a88f3194c6cd02d34c63ce4ca3f38b3091
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    query_runs:
+      streamHash: 267beff2222cc7b875331b26ab55bf089aef626d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    charts:
+      streamHash: d9dcf8787d4bdbb4aea69ffab175a6484b36aea8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    report_filters:
+      streamHash: 08a953a4b2060bd109efaf31841ef62aa925d59d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    datasets:
+      hasRecords: true
+      streamHash: 250b24f4f2ab291e58d086e4993a8d00572f3f9c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    datasets_runs:
+      hasRecords: true
+      streamHash: 9a1a92b5d4fa876c446fe6c577d5c5c1a736e713
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    field_descriptions:
+      hasRecords: true
+      streamHash: 4726d1fafebec11fbe3384f4cc91d2a1e0ada33a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    report_schedules:
+      streamHash: a089a37fc33b4dd32f5a0b8ed8de00a6625fd897
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    reports_subscriptions:
+      hasRecords: true
+      streamHash: 6edc83e6bd82b69d6f6c53461880333f364f81a6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    datasets_schedules:
+      hasRecords: true
+      streamHash: 3bccd194d579baa74341fca2953d6bb2354a3532
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://mode.com/developer/api-reference/
+
+schemas:
+  definitions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _forms:
+        type:
+          - object
+          - "null"
+        properties:
+          destroy:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          edit:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  definition:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      description:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      data_source_id:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - number
+                              - "null"
+                      name:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      source:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          execute:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  definition:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      source:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                  limit:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - boolean
+                            - "null"
+                      value:
+                        type:
+                          - boolean
+                          - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          web_edit:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      data_source_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      last_saved_at:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      token:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          group_memberships:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          membership_by_id:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+              templated:
+                type:
+                  - boolean
+                  - "null"
+          memberships_preview:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          web:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      group_type:
+        type:
+          - string
+          - "null"
+      managed:
+        type:
+          - boolean
+          - "null"
+      member_count:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      spaces_count:
+        type:
+          - number
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      token:
+        type: string
+    required:
+      - token
+  memberships:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          groups:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          organization:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          web_self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          web_self_download_profile:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      activated_at:
+        type:
+          - string
+          - "null"
+      admin:
+        type:
+          - boolean
+          - "null"
+      member_token:
+        type:
+          - string
+          - "null"
+      member_username:
+        type: string
+      state:
+        type:
+          - string
+          - "null"
+    required:
+      - member_username
+  spaces:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _forms:
+        type:
+          - object
+          - "null"
+        properties:
+          create:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  space:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      description:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                      default_access_level:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - string
+                                - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      name:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                      space_type:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - string
+                                - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          detail:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          preview_space_memberships:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          reports:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          search_space_permissions:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          space_memberships:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          space_report_pins:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          web:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      default_access_level:
+        type:
+          - string
+          - "null"
+      free_default:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      restricted:
+        type:
+          - boolean
+          - "null"
+      space_type:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      token:
+        type:
+          - string
+          - "null"
+      viewable?:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  space_memberships:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _forms:
+        type:
+          - object
+          - "null"
+        properties:
+          destroy:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          member:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      email:
+        type:
+          - string
+          - "null"
+      member_id:
+        type:
+          - string
+          - "null"
+      member_token:
+        type:
+          - string
+          - "null"
+      member_type:
+        type:
+          - string
+          - "null"
+      token:
+        type: string
+    required:
+      - token
+  groups_memberships:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          member:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          user_group:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      member_token:
+        type:
+          - string
+          - "null"
+      token:
+        type: string
+    required:
+      - token
+  data_sources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _forms:
+        type:
+          - object
+          - "null"
+        properties:
+          edit:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              content_type:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  data_source:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      tables[]:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          description:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          columns[]:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              data_type:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  type:
+                                    type:
+                                      - string
+                                      - "null"
+                              is_nullable:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  type:
+                                    type:
+                                      - string
+                                      - "null"
+                                  options:
+                                    type:
+                                      - array
+                                      - "null"
+                                    items:
+                                      type:
+                                        - boolean
+                                        - "null"
+                                  value:
+                                    type:
+                                      - boolean
+                                      - "null"
+                              name:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  type:
+                                    type:
+                                      - string
+                                      - "null"
+                              primary_key:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  type:
+                                    type:
+                                      - string
+                                      - "null"
+                                  options:
+                                    type:
+                                      - array
+                                      - "null"
+                                    items:
+                                      type:
+                                        - boolean
+                                        - "null"
+                                  value:
+                                    type:
+                                      - boolean
+                                      - "null"
+                          name:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          schema:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          account:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          permissions:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          web:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          web_home:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      account_id:
+        type:
+          - number
+          - "null"
+      account_username:
+        type:
+          - string
+          - "null"
+      adapter:
+        type:
+          - string
+          - "null"
+      adapter_version:
+        type:
+          - string
+          - "null"
+      asleep:
+        type:
+          - boolean
+          - "null"
+      bridged:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      database:
+        type:
+          - string
+          - "null"
+      display_name:
+        type:
+          - string
+          - "null"
+      has_expensive_schema_updates:
+        type:
+          - boolean
+          - "null"
+      host:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      ldap:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      organization_plan_code:
+        type:
+          - string
+          - "null"
+      organization_token:
+        type:
+          - string
+          - "null"
+      port:
+        type:
+          - number
+          - "null"
+      provider:
+        type:
+          - string
+          - "null"
+      public:
+        type:
+          - boolean
+          - "null"
+      queryable:
+        type:
+          - boolean
+          - "null"
+      soft_deleted:
+        type:
+          - boolean
+          - "null"
+      ssl:
+        type:
+          - boolean
+          - "null"
+      token:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+      vendor:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  reports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      _forms:
+        type:
+          - object
+          - "null"
+        properties:
+          archive:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          batch_edit_filters:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  report:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      filters[]:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          options:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          token:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          clone:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  owner_id:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - number
+                          - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          destroy:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          edit:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  report:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      description:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      account_id:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - number
+                              - "null"
+                      color_mappings:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - object
+                              - "null"
+                      layout:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      name:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      published:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - boolean
+                              - "null"
+                      space_token:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          unarchive:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          update_settings:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  report:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      drill_anywhere_enabled:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - boolean
+                                - "null"
+                          value:
+                            type:
+                              - boolean
+                              - "null"
+                      full_width:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - boolean
+                                - "null"
+                          value:
+                            type:
+                              - boolean
+                              - "null"
+                      manual_run_disabled:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - boolean
+                                - "null"
+                          value:
+                            type:
+                              - boolean
+                              - "null"
+                      theme:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - array
+                                - "null"
+                              items:
+                                type:
+                                  - number
+                                  - string
+                                  - "null"
+                          value:
+                            type:
+                              - number
+                              - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          account:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          csv_export:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          dbt_metadata:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          last_run:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          last_successful_run:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          perspective_email_subscription_memberships:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          python_notebook:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          python_visualizations:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          queries:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_filters:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_index_web:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_pins:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_run:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+              templated:
+                type:
+                  - boolean
+                  - "null"
+          report_runs:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_schedules:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_subscriptions:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_theme:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          share:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          space:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          space_links:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          validate_email_subscriber:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+              templated:
+                type:
+                  - boolean
+                  - "null"
+          web:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          web_edit:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          web_report_runs:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      account_id:
+        type:
+          - number
+          - "null"
+      account_username:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      chart_count:
+        type:
+          - number
+          - "null"
+      color_mappings:
+        type:
+          - object
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      drill_anywhere_enabled:
+        type:
+          - boolean
+          - "null"
+      drilldowns_enabled:
+        type:
+          - boolean
+          - "null"
+      edited_at:
+        type:
+          - string
+          - "null"
+      expected_runtime:
+        type:
+          - number
+          - "null"
+      full_width:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      is_embedded:
+        type:
+          - boolean
+          - "null"
+      is_signed:
+        type:
+          - boolean
+          - "null"
+      last_run_at:
+        type:
+          - string
+          - "null"
+      last_saved_at:
+        type:
+          - string
+          - "null"
+      last_successful_run_token:
+        type:
+          - string
+          - "null"
+      last_successfully_run_at:
+        type:
+          - string
+          - "null"
+      layout:
+        type:
+          - string
+          - "null"
+      manual_run_disabled:
+        type:
+          - boolean
+          - "null"
+      max_query_count:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      public:
+        type:
+          - boolean
+          - "null"
+      query_count:
+        type:
+          - number
+          - "null"
+      query_preview:
+        type:
+          - string
+          - "null"
+      run_privately:
+        type:
+          - boolean
+          - "null"
+      runs_count:
+        type:
+          - number
+          - "null"
+      schedules_count:
+        type:
+          - number
+          - "null"
+      shared:
+        type:
+          - boolean
+          - "null"
+      space_token:
+        type:
+          - string
+          - "null"
+      theme_id:
+        type:
+          - number
+          - "null"
+      token:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      view_count:
+        type:
+          - number
+          - "null"
+      web_preview_image:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  report_runs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _forms:
+        type:
+          - object
+          - "null"
+        properties:
+          cancel:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          account:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          clone:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          content:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          embed:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          executed_by:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          latest_successful_report_run_api_url:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          pdf_export:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          preview:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          python_cell_runs:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          query_runs:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          share:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          web_clone:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      completed_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      form_fields:
+        type:
+          - array
+          - "null"
+      is_latest_report_run:
+        type:
+          - boolean
+          - "null"
+      is_latest_successful_report_run:
+        type:
+          - boolean
+          - "null"
+      parameters:
+        type:
+          - object
+          - "null"
+      python_state:
+        type:
+          - string
+          - "null"
+      report_has_failures_since_last_success:
+        type:
+          - boolean
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      token:
+        type: string
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - token
+  queries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _forms:
+        type:
+          - object
+          - "null"
+        properties:
+          destroy:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          edit:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              content_type:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  query:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      data_source_id:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - number
+                              - "null"
+                      name:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      raw_query:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          charts:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          new_chart:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          new_query_table:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          query_runs:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          query_tables:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_runs:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      data_source_id:
+        type:
+          - number
+          - "null"
+      explorations_count:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      last_run_id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      raw_query:
+        type:
+          - string
+          - "null"
+      report_imports_count:
+        type:
+          - number
+          - "null"
+      token:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  query_runs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _forms:
+        type:
+          - object
+          - "null"
+        properties:
+          cancel:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          edit:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  query_run:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      dataset:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          columns:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          content:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          count:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                      error:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          detail:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          message:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          executed_by:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          query:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          query_web:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_run:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_run_web:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          result:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          result_web:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          view:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      completed_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      data_source_id:
+        type:
+          - number
+          - "null"
+      data_source_token:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      limit:
+        type:
+          - boolean
+          - "null"
+      max_result_bytes:
+        type:
+          - number
+          - "null"
+      parameters:
+        type:
+          - object
+          - "null"
+      query_created_at:
+        type:
+          - string
+          - "null"
+      query_name:
+        type:
+          - string
+          - "null"
+      query_token:
+        type:
+          - string
+          - "null"
+      raw_source:
+        type:
+          - string
+          - "null"
+      rendered_source:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      token:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  charts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      _forms:
+        type:
+          - object
+          - "null"
+        properties:
+          create:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  visualization:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      color_palette_token:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                      view:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      view_vegas:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      view_version:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - string
+                                - "null"
+                          value:
+                            type:
+                              - number
+                              - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          destroy:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          edit:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  visualization:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      color_palette_token:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      view:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      view_vegas:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      view_version:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - string
+                                - "null"
+                          value:
+                            type:
+                              - number
+                              - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          color_palette:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          preview:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+              templated:
+                type:
+                  - boolean
+                  - "null"
+          report_run_viz_web:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+              templated:
+                type:
+                  - boolean
+                  - "null"
+          report_viz_web:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      color_palette_token:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      switch_view_token:
+        type:
+          - string
+          - "null"
+      token:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      view:
+        type:
+          - object
+          - "null"
+      view_vegas:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          caption:
+            type:
+              - object
+              - "null"
+            properties:
+              isHidden:
+                type:
+                  - boolean
+                  - "null"
+              isTitleHidden:
+                type:
+                  - boolean
+                  - "null"
+              position:
+                type:
+                  - string
+                  - "null"
+              text:
+                type:
+                  - string
+                  - "null"
+          chartType:
+            type:
+              - string
+              - "null"
+          encoding:
+            type:
+              - object
+              - "null"
+            properties:
+              column:
+                type:
+                  - array
+                  - "null"
+              filter:
+                type:
+                  - array
+                  - "null"
+              groups:
+                type:
+                  - array
+                  - "null"
+              marks:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  channel:
+                    type:
+                      - string
+                      - "null"
+                  properties:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          automatic:
+                            type:
+                              - boolean
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      angle:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          values:
+                            type:
+                              - array
+                              - "null"
+                      baseline:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          values:
+                            type:
+                              - array
+                              - "null"
+                      color:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          values:
+                            type:
+                              - array
+                              - "null"
+                      detail:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          values:
+                            type:
+                              - array
+                              - "null"
+                      label:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          values:
+                            type:
+                              - array
+                              - "null"
+                      options:
+                        type:
+                          - object
+                          - "null"
+                      size:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          values:
+                            type:
+                              - array
+                              - "null"
+                      text:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          values:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                formula:
+                                  type:
+                                    - string
+                                    - "null"
+                                id:
+                                  type:
+                                    - string
+                                    - "null"
+                                variable:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    type:
+                                      type:
+                                        - string
+                                        - "null"
+                      tooltip:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          values:
+                            type:
+                              - array
+                              - "null"
+                  series:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        field:
+                          type:
+                            - string
+                            - "null"
+                        properties:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            type:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                automatic:
+                                  type:
+                                    - boolean
+                                    - "null"
+                                value:
+                                  type:
+                                    - string
+                                    - "null"
+                            angle:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                values:
+                                  type:
+                                    - array
+                                    - "null"
+                            baseline:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                values:
+                                  type:
+                                    - array
+                                    - "null"
+                            color:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                values:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      formula:
+                                        type:
+                                          - string
+                                          - "null"
+                                      id:
+                                        type:
+                                          - string
+                                          - "null"
+                                      variable:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          type:
+                                            type:
+                                              - string
+                                              - "null"
+                            detail:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                values:
+                                  type:
+                                    - array
+                                    - "null"
+                            label:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                values:
+                                  type:
+                                    - array
+                                    - "null"
+                            options:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                Bar:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    type:
+                                      type:
+                                        - string
+                                        - "null"
+                                    showStackSum:
+                                      type:
+                                        - boolean
+                                        - "null"
+                                    transform:
+                                      type:
+                                        - string
+                                        - "null"
+                            size:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                values:
+                                  type:
+                                    - array
+                                    - "null"
+                            text:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                values:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      formula:
+                                        type:
+                                          - string
+                                          - "null"
+                                      id:
+                                        type:
+                                          - string
+                                          - "null"
+                                      variable:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          type:
+                                            type:
+                                              - string
+                                              - "null"
+                            tooltip:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                values:
+                                  type:
+                                    - array
+                                    - "null"
+              row:
+                type:
+                  - array
+                  - "null"
+              sorts:
+                type:
+                  - array
+                  - "null"
+              totals:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  grand:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      column:
+                        type:
+                          - boolean
+                          - "null"
+                      row:
+                        type:
+                          - boolean
+                          - "null"
+                  subtotal:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      column:
+                        type:
+                          - boolean
+                          - "null"
+                      row:
+                        type:
+                          - boolean
+                          - "null"
+              value:
+                type:
+                  - array
+                  - "null"
+              x:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    formula:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    variable:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+              x2:
+                type:
+                  - array
+                  - "null"
+              "y":
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    formula:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    variable:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+              y2:
+                type:
+                  - array
+                  - "null"
+          facetSizes:
+            type:
+              - object
+              - "null"
+          fieldColors:
+            type:
+              - object
+              - "null"
+            properties:
+              "@DIS_$NAMES":
+                type:
+                  - object
+                  - "null"
+                properties:
+                  colorPaletteToken:
+                    type:
+                      - string
+                      - "null"
+                  map:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      description:
+                        type:
+                          - number
+                          - "null"
+                  palette:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+          fieldFormats:
+            type:
+              - object
+              - "null"
+            properties:
+              "@CON_$VALUES":
+                type:
+                  - object
+                  - "null"
+                properties:
+                  axisFormat:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      binnedAxisLabel:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                      label:
+                        type:
+                          - object
+                          - "null"
+                      scale:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          default:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              colType:
+                                type:
+                                  - string
+                                  - "null"
+                              decimalStyle:
+                                type:
+                                  - string
+                                  - "null"
+                              displayUnit:
+                                type:
+                                  - string
+                                  - "null"
+                              grouping:
+                                type:
+                                  - number
+                                  - "null"
+                              separator:
+                                type:
+                                  - string
+                                  - "null"
+                              shortcutType:
+                                type:
+                                  - string
+                                  - "null"
+                          interpolation:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          range:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              isIndependent:
+                                type:
+                                  - boolean
+                                  - "null"
+                      title:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          show:
+                            type:
+                              - boolean
+                              - "null"
+                  baseFormat:
+                    type:
+                      - object
+                      - "null"
+                  headerFormat:
+                    type:
+                      - object
+                      - "null"
+                  legendFormat:
+                    type:
+                      - object
+                      - "null"
+                  paneFormat:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      default:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          colType:
+                            type:
+                              - string
+                              - "null"
+                          decimalStyle:
+                            type:
+                              - string
+                              - "null"
+                          displayUnit:
+                            type:
+                              - string
+                              - "null"
+                          grouping:
+                            type:
+                              - number
+                              - "null"
+                          separator:
+                            type:
+                              - string
+                              - "null"
+                          shortcutType:
+                            type:
+                              - string
+                              - "null"
+              "@CON_COUNT([description])":
+                type:
+                  - object
+                  - "null"
+                properties:
+                  axisFormat:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      binnedAxisLabel:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                      label:
+                        type:
+                          - object
+                          - "null"
+                      scale:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          default:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              colType:
+                                type:
+                                  - string
+                                  - "null"
+                              decimalStyle:
+                                type:
+                                  - string
+                                  - "null"
+                              displayUnit:
+                                type:
+                                  - string
+                                  - "null"
+                              grouping:
+                                type:
+                                  - number
+                                  - "null"
+                              separator:
+                                type:
+                                  - string
+                                  - "null"
+                              shortcutType:
+                                type:
+                                  - string
+                                  - "null"
+                          interpolation:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                          range:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              isIndependent:
+                                type:
+                                  - boolean
+                                  - "null"
+                      title:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          show:
+                            type:
+                              - boolean
+                              - "null"
+                  baseFormat:
+                    type:
+                      - object
+                      - "null"
+                  headerFormat:
+                    type:
+                      - object
+                      - "null"
+                  legendFormat:
+                    type:
+                      - object
+                      - "null"
+                  paneFormat:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      default:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          colType:
+                            type:
+                              - string
+                              - "null"
+                          decimalStyle:
+                            type:
+                              - string
+                              - "null"
+                          displayUnit:
+                            type:
+                              - string
+                              - "null"
+                          grouping:
+                            type:
+                              - number
+                              - "null"
+                          separator:
+                            type:
+                              - string
+                              - "null"
+                          shortcutType:
+                            type:
+                              - string
+                              - "null"
+              "@DIS_$NAMES":
+                type:
+                  - object
+                  - "null"
+                properties:
+                  axisFormat:
+                    type:
+                      - object
+                      - "null"
+                  baseFormat:
+                    type:
+                      - object
+                      - "null"
+                  headerFormat:
+                    type:
+                      - object
+                      - "null"
+                  legendFormat:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      position:
+                        type:
+                          - string
+                          - "null"
+                      show:
+                        type:
+                          - boolean
+                          - "null"
+                      showTitle:
+                        type:
+                          - boolean
+                          - "null"
+                  paneFormat:
+                    type:
+                      - object
+                      - "null"
+              "@DIS_[code]":
+                type:
+                  - object
+                  - "null"
+                properties:
+                  axisFormat:
+                    type:
+                      - object
+                      - "null"
+                  baseFormat:
+                    type:
+                      - object
+                      - "null"
+                  headerFormat:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      default:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          colType:
+                            type:
+                              - string
+                              - "null"
+                          horizontalAlignment:
+                            type:
+                              - string
+                              - "null"
+                      label:
+                        type:
+                          - object
+                          - "null"
+                      title:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          location:
+                            type:
+                              - string
+                              - "null"
+                          show:
+                            type:
+                              - boolean
+                              - "null"
+                  legendFormat:
+                    type:
+                      - object
+                      - "null"
+                  paneFormat:
+                    type:
+                      - object
+                      - "null"
+              "[id]":
+                type:
+                  - object
+                  - "null"
+                properties:
+                  axisFormat:
+                    type:
+                      - object
+                      - "null"
+                  headerFormat:
+                    type:
+                      - object
+                      - "null"
+                  legendFormat:
+                    type:
+                      - object
+                      - "null"
+                  paneFormat:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      default:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          colType:
+                            type:
+                              - string
+                              - "null"
+                          decimalStyle:
+                            type:
+                              - string
+                              - "null"
+                          displayUnit:
+                            type:
+                              - string
+                              - "null"
+                          grouping:
+                            type:
+                              - number
+                              - "null"
+                          horizontalAlignment:
+                            type:
+                              - string
+                              - "null"
+                          separator:
+                            type:
+                              - string
+                              - "null"
+              "[name]":
+                type:
+                  - object
+                  - "null"
+                properties:
+                  axisFormat:
+                    type:
+                      - object
+                      - "null"
+                  headerFormat:
+                    type:
+                      - object
+                      - "null"
+                  legendFormat:
+                    type:
+                      - object
+                      - "null"
+                  paneFormat:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      default:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          colType:
+                            type:
+                              - string
+                              - "null"
+                          horizontalAlignment:
+                            type:
+                              - string
+                              - "null"
+              "[primary_contact]":
+                type:
+                  - object
+                  - "null"
+                properties:
+                  axisFormat:
+                    type:
+                      - object
+                      - "null"
+                  headerFormat:
+                    type:
+                      - object
+                      - "null"
+                  legendFormat:
+                    type:
+                      - object
+                      - "null"
+                  paneFormat:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      default:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          colType:
+                            type:
+                              - string
+                              - "null"
+                          horizontalAlignment:
+                            type:
+                              - string
+                              - "null"
+              "[region_id]":
+                type:
+                  - object
+                  - "null"
+                properties:
+                  axisFormat:
+                    type:
+                      - object
+                      - "null"
+                  headerFormat:
+                    type:
+                      - object
+                      - "null"
+                  legendFormat:
+                    type:
+                      - object
+                      - "null"
+                  paneFormat:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      default:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          colType:
+                            type:
+                              - string
+                              - "null"
+                          decimalStyle:
+                            type:
+                              - string
+                              - "null"
+                          displayUnit:
+                            type:
+                              - string
+                              - "null"
+                          grouping:
+                            type:
+                              - number
+                              - "null"
+                          horizontalAlignment:
+                            type:
+                              - string
+                              - "null"
+                          separator:
+                            type:
+                              - string
+                              - "null"
+              "[sales_rep_id]":
+                type:
+                  - object
+                  - "null"
+                properties:
+                  axisFormat:
+                    type:
+                      - object
+                      - "null"
+                  headerFormat:
+                    type:
+                      - object
+                      - "null"
+                  legendFormat:
+                    type:
+                      - object
+                      - "null"
+                  paneFormat:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      default:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          colType:
+                            type:
+                              - string
+                              - "null"
+                          decimalStyle:
+                            type:
+                              - string
+                              - "null"
+                          displayUnit:
+                            type:
+                              - string
+                              - "null"
+                          grouping:
+                            type:
+                              - number
+                              - "null"
+                          horizontalAlignment:
+                            type:
+                              - string
+                              - "null"
+                          separator:
+                            type:
+                              - string
+                              - "null"
+          format:
+            type:
+              - object
+              - "null"
+            properties:
+              bigValue:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  primaryTrendFormat:
+                    type:
+                      - object
+                      - "null"
+                    properties: {}
+              colors:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  custom:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  map:
+                    type:
+                      - object
+                      - "null"
+                  theme:
+                    type:
+                      - string
+                      - "null"
+              drilldownEnabled:
+                type:
+                  - boolean
+                  - "null"
+              flatTable:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  columns:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        colType:
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          type:
+                            - string
+                            - "null"
+                  general:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      colGridlines:
+                        type:
+                          - boolean
+                          - "null"
+                      colorScheme:
+                        type:
+                          - string
+                          - "null"
+                      dataProfilingEnabled:
+                        type:
+                          - boolean
+                          - "null"
+                      density:
+                        type:
+                          - string
+                          - "null"
+                      pageSize:
+                        type:
+                          - number
+                          - "null"
+                      rowGridlines:
+                        type:
+                          - boolean
+                          - "null"
+                      rowNumbers:
+                        type:
+                          - boolean
+                          - "null"
+                      sizingStyle:
+                        type:
+                          - string
+                          - "null"
+              legend:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  baseFormat:
+                    type:
+                      - object
+                      - "null"
+                  enabled:
+                    type:
+                      - boolean
+                      - "null"
+                  position:
+                    type:
+                      - string
+                      - "null"
+                  titleEnabled:
+                    type:
+                      - boolean
+                      - "null"
+              nullToZero:
+                type:
+                  - boolean
+                  - "null"
+              pieLabelsNotPercentages:
+                type:
+                  - boolean
+                  - "null"
+              showValues:
+                type:
+                  - boolean
+                  - "null"
+              useMuzeRenderer:
+                type:
+                  - boolean
+                  - "null"
+              xAxis:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  baseFormat:
+                    type:
+                      - object
+                      - "null"
+                  compact:
+                    type:
+                      - boolean
+                      - "null"
+                  dateFormat:
+                    type:
+                      - string
+                      - "null"
+                  numberFormat:
+                    type:
+                      - object
+                      - "null"
+                    properties: {}
+                  numberRange:
+                    type:
+                      - object
+                      - "null"
+                    properties: {}
+                  showAxisLabels:
+                    type:
+                      - boolean
+                      - "null"
+                  titleEnabled:
+                    type:
+                      - boolean
+                      - "null"
+              y2Axis:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  baseFormat:
+                    type:
+                      - object
+                      - "null"
+                  numberFormat:
+                    type:
+                      - object
+                      - "null"
+                    properties: {}
+                  numberRange:
+                    type:
+                      - object
+                      - "null"
+                    properties: {}
+                  scaleType:
+                    type:
+                      - string
+                      - "null"
+                  titleEnabled:
+                    type:
+                      - boolean
+                      - "null"
+              yAxis:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  baseFormat:
+                    type:
+                      - object
+                      - "null"
+                  numberFormat:
+                    type:
+                      - object
+                      - "null"
+                    properties: {}
+                  numberRange:
+                    type:
+                      - object
+                      - "null"
+                    properties: {}
+                  scaleType:
+                    type:
+                      - string
+                      - "null"
+                  titleEnabled:
+                    type:
+                      - boolean
+                      - "null"
+                  valueFieldFormatMap:
+                    type:
+                      - object
+                      - "null"
+          isAutoUpdateDisabled:
+            type:
+              - boolean
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+      view_version:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  report_filters:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _forms:
+        type:
+          - object
+          - "null"
+        properties:
+          destroy:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          edit:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  report_filter:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      control_type:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      data_type:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      filter_type:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      formula:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      formula_type:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      hide_select_all:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - boolean
+                              - "null"
+                      name:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      options:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      show_relevant_values_only:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - boolean
+                                - "null"
+                          value:
+                            type:
+                              - boolean
+                              - "null"
+                      variable_type:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          edit_position:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  all:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      options:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - boolean
+                            - "null"
+                      value:
+                        type:
+                          - boolean
+                          - "null"
+                  report_filter:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      next_filter_token:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          report:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      control_type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      data_type:
+        type:
+          - string
+          - "null"
+      filter_type:
+        type:
+          - string
+          - "null"
+      formula:
+        type:
+          - string
+          - "null"
+      formula_type:
+        type:
+          - string
+          - "null"
+      hide_select_all:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      options:
+        type:
+          - object
+          - "null"
+        properties:
+          default:
+            type:
+              - object
+              - "null"
+            properties:
+              all:
+                type:
+                  - boolean
+                  - "null"
+              selectionMode:
+                type:
+                  - string
+                  - "null"
+              values:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+      report_id:
+        type:
+          - number
+          - "null"
+      row_order:
+        type:
+          - number
+          - "null"
+      show_relevant_values_only:
+        type:
+          - boolean
+          - "null"
+      token:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      variable_type:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  datasets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      _forms:
+        type:
+          - object
+          - "null"
+        properties:
+          destroy:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          edit:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  report:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      description:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      account_id:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - number
+                              - "null"
+                      name:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      space_token:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          update_settings:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  report:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      drill_anywhere_enabled:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - boolean
+                                - "null"
+                          value:
+                            type:
+                              - boolean
+                              - "null"
+                      manual_run_disabled:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - boolean
+                                - "null"
+                          value:
+                            type:
+                              - boolean
+                              - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          account:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          dataset_dependencies:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          last_run:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          last_successful_run:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          queries:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_index_web:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_pins:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_run:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+              templated:
+                type:
+                  - boolean
+                  - "null"
+          report_runs:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_schedules:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          space:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          space_links:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          web:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          web_edit:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      account_id:
+        type:
+          - number
+          - "null"
+      account_username:
+        type:
+          - string
+          - "null"
+      collection_name:
+        type:
+          - string
+          - "null"
+      collection_token:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      drilldowns_enabled:
+        type:
+          - boolean
+          - "null"
+      edited_at:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      is_sample:
+        type:
+          - boolean
+          - "null"
+      last_run_at:
+        type:
+          - string
+          - "null"
+      last_saved_at:
+        type:
+          - string
+          - "null"
+      last_successful_run_token:
+        type:
+          - string
+          - "null"
+      last_successfully_run_at:
+        type:
+          - string
+          - "null"
+      manual_run_disabled:
+        type:
+          - boolean
+          - "null"
+      max_query_count:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      public:
+        type:
+          - boolean
+          - "null"
+      query_count:
+        type:
+          - number
+          - "null"
+      query_preview:
+        type:
+          - string
+          - "null"
+      run_privately:
+        type:
+          - boolean
+          - "null"
+      runs_count:
+        type:
+          - number
+          - "null"
+      schedules_count:
+        type:
+          - number
+          - "null"
+      space_token:
+        type:
+          - string
+          - "null"
+      switch_view_token:
+        type:
+          - string
+          - "null"
+      token:
+        type: string
+      updated_at:
+        type:
+          - string
+          - "null"
+      view_count:
+        type:
+          - number
+          - "null"
+    required:
+      - token
+  datasets_runs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _forms:
+        type:
+          - object
+          - "null"
+        properties:
+          cancel:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          account:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          executed_by:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          latest_successful_report_run_api_url:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          query_runs:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          share:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      completed_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      is_latest_report_run:
+        type:
+          - boolean
+          - "null"
+      is_latest_successful_report_run:
+        type:
+          - boolean
+          - "null"
+      report_has_failures_since_last_success:
+        type:
+          - boolean
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      token:
+        type: string
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - token
+  field_descriptions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _forms:
+        type:
+          - object
+          - "null"
+        properties:
+          destroy:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          update:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  desc:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      name:
+        type:
+          - string
+          - "null"
+      token:
+        type: string
+    required:
+      - token
+  report_schedules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _forms:
+        type:
+          - object
+          - "null"
+        properties:
+          destroy:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          edit:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  report_schedule:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      cron:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          day_of_month:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              options:
+                                type:
+                                  - array
+                                  - "null"
+                                items:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - number
+                                      - string
+                                      - "null"
+                          day_of_week:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              options:
+                                type:
+                                  - array
+                                  - "null"
+                                items:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - number
+                                      - string
+                                      - "null"
+                          freq:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              options:
+                                type:
+                                  - array
+                                  - "null"
+                                items:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - string
+                                      - "null"
+                              value:
+                                type:
+                                  - string
+                                  - "null"
+                          hour:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              options:
+                                type:
+                                  - array
+                                  - "null"
+                                items:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - number
+                                      - string
+                                      - "null"
+                              value:
+                                type:
+                                  - number
+                                  - "null"
+                          minute:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              options:
+                                type:
+                                  - array
+                                  - "null"
+                                items:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - number
+                                      - string
+                                      - "null"
+                              value:
+                                type:
+                                  - number
+                                  - "null"
+                          time_zone:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              options:
+                                type:
+                                  - array
+                                  - "null"
+                                items:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - string
+                                      - "null"
+                              value:
+                                type:
+                                  - string
+                                  - "null"
+                      name:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      params:
+                        type:
+                          - object
+                          - "null"
+                      timeout:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - array
+                                - "null"
+                              items:
+                                type:
+                                  - number
+                                  - string
+                                  - "null"
+                          value:
+                            type:
+                              - number
+                              - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          account:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_runs:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_subscriptions:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_web:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      frequency:
+        type:
+          - string
+          - "null"
+      hour:
+        type:
+          - string
+          - "null"
+      last_scheduled_run:
+        type:
+          - string
+          - "null"
+      minute:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      next_scheduled_run:
+        type:
+          - string
+          - "null"
+      parameters:
+        type:
+          - object
+          - "null"
+      report_name:
+        type:
+          - string
+          - "null"
+      report_token:
+        type:
+          - string
+          - "null"
+      report_type:
+        type:
+          - string
+          - "null"
+      retry_count:
+        type:
+          - number
+          - "null"
+      retry_delay:
+        type:
+          - number
+          - "null"
+      retry_state:
+        type:
+          - string
+          - "null"
+      subscribed:
+        type:
+          - boolean
+          - "null"
+      subscriber_count:
+        type:
+          - number
+          - "null"
+      time_zone:
+        type:
+          - string
+          - "null"
+      timeout:
+        type:
+          - number
+          - "null"
+      token:
+        type: string
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - token
+  reports_subscriptions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _forms:
+        type:
+          - object
+          - "null"
+        properties:
+          destroy:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          edit:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  report_subscription:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      csv_attachments_enabled:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - boolean
+                                - "null"
+                      data_previews_enabled:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - boolean
+                                - "null"
+                      data_tables_enabled:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - boolean
+                                - "null"
+                      pdf_attachments_enabled:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - boolean
+                                - "null"
+                      report_links_enabled:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - boolean
+                                - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          email_subscription_memberships:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_schedule:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          slack_subscription_memberships:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      csv_attachments_enabled:
+        type:
+          - boolean
+          - "null"
+      data_previews_enabled:
+        type:
+          - boolean
+          - "null"
+      data_tables_enabled:
+        type:
+          - boolean
+          - "null"
+      email_subscriber_count:
+        type:
+          - number
+          - "null"
+      pdf_attachments_enabled:
+        type:
+          - boolean
+          - "null"
+      report_links_enabled:
+        type:
+          - boolean
+          - "null"
+  datasets_schedules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _forms:
+        type:
+          - object
+          - "null"
+        properties:
+          destroy:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+          edit:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - string
+                  - "null"
+              input:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  report_schedule:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      cron:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          day_of_month:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              options:
+                                type:
+                                  - array
+                                  - "null"
+                                items:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - number
+                                      - string
+                                      - "null"
+                          day_of_week:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              options:
+                                type:
+                                  - array
+                                  - "null"
+                                items:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - number
+                                      - string
+                                      - "null"
+                          freq:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              options:
+                                type:
+                                  - array
+                                  - "null"
+                                items:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - string
+                                      - "null"
+                              value:
+                                type:
+                                  - string
+                                  - "null"
+                          hour:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              options:
+                                type:
+                                  - array
+                                  - "null"
+                                items:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - number
+                                      - string
+                                      - "null"
+                              value:
+                                type:
+                                  - number
+                                  - "null"
+                          minute:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              options:
+                                type:
+                                  - array
+                                  - "null"
+                                items:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - number
+                                      - string
+                                      - "null"
+                              value:
+                                type:
+                                  - number
+                                  - "null"
+                          time_zone:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              options:
+                                type:
+                                  - array
+                                  - "null"
+                                items:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - string
+                                      - "null"
+                              value:
+                                type:
+                                  - string
+                                  - "null"
+                      name:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                      params:
+                        type:
+                          - object
+                          - "null"
+                      timeout:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          options:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - array
+                                - "null"
+                              items:
+                                type:
+                                  - number
+                                  - string
+                                  - "null"
+                          value:
+                            type:
+                              - number
+                              - "null"
+              method:
+                type:
+                  - string
+                  - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          account:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_runs:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_subscriptions:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          report_web:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      frequency:
+        type:
+          - string
+          - "null"
+      hour:
+        type:
+          - string
+          - "null"
+      last_scheduled_run:
+        type:
+          - string
+          - "null"
+      minute:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      next_scheduled_run:
+        type:
+          - string
+          - "null"
+      parameters:
+        type:
+          - object
+          - "null"
+      report_name:
+        type:
+          - string
+          - "null"
+      report_token:
+        type:
+          - string
+          - "null"
+      report_type:
+        type:
+          - string
+          - "null"
+      retry_count:
+        type:
+          - number
+          - "null"
+      retry_delay:
+        type:
+          - number
+          - "null"
+      retry_state:
+        type:
+          - string
+          - "null"
+      subscribed:
+        type:
+          - boolean
+          - "null"
+      subscriber_count:
+        type:
+          - number
+          - "null"
+      time_zone:
+        type:
+          - string
+          - "null"
+      timeout:
+        type:
+          - number
+          - "null"
+      token:
+        type: string
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - token

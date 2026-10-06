@@ -1,0 +1,2224 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - heart_rate
+definitions:
+  streams:
+    daily_activity:
+      type: DeclarativeStream
+      name: daily_activity
+      primary_key:
+        - timestamp
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.ouraring.com/v2/usercollection
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /daily_activity
+          http_method: GET
+          request_parameters:
+            end_date: >-
+              {{ config['end_datetime'].split('T')[0] if config['end_datetime']
+              else day_delta(0, format='%Y-%m-%dT%H:%M:%SZ') }}
+            start_date: >-
+              {{ config['start_datetime'].split('T')[0] if
+              config['start_datetime'] else day_delta(-1,
+              format='%Y-%m-%dT%H:%M:%SZ') }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['next_token'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: "http://json-schema.org/draft-07/schema#"
+          type: object
+          properties:
+            class_5_min:
+              type:
+                - string
+                - "null"
+            score:
+              type:
+                - number
+                - "null"
+            active_calories:
+              type:
+                - number
+                - "null"
+            average_met_minutes:
+              type:
+                - number
+                - "null"
+            contributors:
+              type: object
+              properties:
+                meet_daily_targets:
+                  type:
+                    - number
+                    - "null"
+                move_every_hour:
+                  type:
+                    - number
+                    - "null"
+                recovery_time:
+                  type:
+                    - number
+                    - "null"
+                stay_active:
+                  type:
+                    - number
+                    - "null"
+                training_frequency:
+                  type:
+                    - number
+                    - "null"
+                training_volume:
+                  type:
+                    - number
+                    - "null"
+            equivalent_walking_distance:
+              type:
+                - number
+                - "null"
+            high_activity_met_minutes:
+              type:
+                - number
+                - "null"
+            high_activity_time:
+              type:
+                - number
+                - "null"
+            inactivity_alerts:
+              type:
+                - number
+                - "null"
+            low_activity_met_minutes:
+              type:
+                - number
+                - "null"
+            low_activity_time:
+              type:
+                - number
+                - "null"
+            medium_activity_met_minutes:
+              type:
+                - number
+                - "null"
+            medium_activity_time:
+              type:
+                - number
+                - "null"
+            met:
+              type: object
+              properties:
+                interval:
+                  type:
+                    - number
+                    - "null"
+                items:
+                  type: array
+                  items:
+                    type:
+                      - number
+                      - "null"
+                timestamp:
+                  type:
+                    - string
+                    - "null"
+                  format: date-time
+            meters_to_target:
+              type:
+                - number
+                - "null"
+            non_wear_time:
+              type:
+                - number
+                - "null"
+            resting_time:
+              type:
+                - number
+                - "null"
+            sedentary_met_minutes:
+              type:
+                - number
+                - "null"
+            sedentary_time:
+              type:
+                - number
+                - "null"
+            steps:
+              type:
+                - number
+                - "null"
+            target_calories:
+              type:
+                - number
+                - "null"
+            target_meters:
+              type:
+                - number
+                - "null"
+            total_calories:
+              type:
+                - number
+                - "null"
+            day:
+              type:
+                - string
+                - "null"
+              format: date
+            timestamp:
+              type:
+                - string
+                - "null"
+              format: date-time
+          additionalProperties: true
+    daily_readiness:
+      type: DeclarativeStream
+      name: daily_readiness
+      primary_key:
+        - timestamp
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.ouraring.com/v2/usercollection
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /daily_readiness
+          http_method: GET
+          request_parameters:
+            end_date: >-
+              {{ config['end_datetime'].split('T')[0] if config['end_datetime']
+              else day_delta(0, format='%Y-%m-%dT%H:%M:%SZ') }}
+            start_date: >-
+              {{ config['start_datetime'].split('T')[0] if
+              config['start_datetime'] else day_delta(-1,
+              format='%Y-%m-%dT%H:%M:%SZ') }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['next_token'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: "http://json-schema.org/draft-07/schema#"
+          type: object
+          properties:
+            contributors:
+              type: object
+              properties:
+                activity_balance:
+                  type:
+                    - number
+                    - "null"
+                body_temperature:
+                  type:
+                    - number
+                    - "null"
+                hrv_balance:
+                  type:
+                    - number
+                    - "null"
+                previous_day_activity: {}
+                previous_night:
+                  type:
+                    - number
+                    - "null"
+                recovery_index:
+                  type:
+                    - number
+                    - "null"
+                resting_heart_rate:
+                  type:
+                    - number
+                    - "null"
+                sleep_balance:
+                  type:
+                    - number
+                    - "null"
+            day:
+              type:
+                - string
+                - "null"
+              format: date
+            score:
+              type:
+                - number
+                - "null"
+            temperature_deviation:
+              type:
+                - number
+                - "null"
+            temperature_trend_deviation:
+              type:
+                - number
+                - "null"
+            timestamp:
+              type:
+                - string
+                - "null"
+              format: date-time
+          additionalProperties: true
+    daily_sleep:
+      type: DeclarativeStream
+      name: daily_sleep
+      primary_key:
+        - timestamp
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.ouraring.com/v2/usercollection
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /daily_sleep
+          http_method: GET
+          request_parameters:
+            end_date: >-
+              {{ config['end_datetime'].split('T')[0] if config['end_datetime']
+              else day_delta(0, format='%Y-%m-%dT%H:%M:%SZ') }}
+            start_date: >-
+              {{ config['start_datetime'].split('T')[0] if
+              config['start_datetime'] else day_delta(-1,
+              format='%Y-%m-%dT%H:%M:%SZ') }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['next_token'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: "http://json-schema.org/draft-07/schema#"
+          type: object
+          properties:
+            contributors:
+              type: object
+              properties:
+                deep_sleep:
+                  type:
+                    - number
+                    - "null"
+                efficiency:
+                  type:
+                    - number
+                    - "null"
+                latency:
+                  type:
+                    - number
+                    - "null"
+                rem_sleep:
+                  type:
+                    - number
+                    - "null"
+                restfulness:
+                  type:
+                    - number
+                    - "null"
+                timing:
+                  type:
+                    - number
+                    - "null"
+                total_sleep:
+                  type:
+                    - number
+                    - "null"
+            day:
+              type:
+                - string
+                - "null"
+              format: date
+            score:
+              type:
+                - number
+                - "null"
+            timestamp:
+              type:
+                - string
+                - "null"
+              format: date-time
+          additionalProperties: true
+    heart_rate:
+      type: DeclarativeStream
+      name: heart_rate
+      primary_key:
+        - timestamp
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.ouraring.com/v2/usercollection
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /heartrate
+          http_method: GET
+          request_parameters:
+            end_datetime: >-
+              {{ config['end_datetime'] if config['end_datetime'] else
+              day_delta(0, format='%Y-%m-%d') }}
+            start_datetime: >-
+              {{ config['start_datetime'] if config['start_datetime'] else
+              day_delta(-1, format='%Y-%m-%d') }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['next_token'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: "http://json-schema.org/draft-07/schema#"
+          type: object
+          properties:
+            bpm:
+              type:
+                - number
+                - "null"
+            source:
+              type:
+                - string
+                - "null"
+            timestamp:
+              type:
+                - string
+                - "null"
+              format: date-time
+          additionalProperties: true
+    sessions:
+      type: DeclarativeStream
+      name: sessions
+      primary_key:
+        - start_datetime
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.ouraring.com/v2/usercollection
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /session
+          http_method: GET
+          request_parameters:
+            end_date: >-
+              {{ config['end_datetime'].split('T')[0] if config['end_datetime']
+              else day_delta(0, format='%Y-%m-%dT%H:%M:%SZ') }}
+            start_date: >-
+              {{ config['start_datetime'].split('T')[0] if
+              config['start_datetime'] else day_delta(-1,
+              format='%Y-%m-%dT%H:%M:%SZ') }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['next_token'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: "http://json-schema.org/draft-07/schema#"
+          type: object
+          properties:
+            day:
+              type:
+                - string
+                - "null"
+              format: date
+            start_datetime:
+              type:
+                - string
+                - "null"
+              format: date-time
+            end_datetime:
+              type:
+                - string
+                - "null"
+              format: date-time
+            type:
+              type:
+                - string
+                - "null"
+            heart_rate: {}
+            heart_rate_variability: {}
+            mood: {}
+            motion_count:
+              type: object
+              properties:
+                interval:
+                  type:
+                    - number
+                    - "null"
+                items:
+                  type: array
+                  items:
+                    type:
+                      - number
+                      - "null"
+                timestamp:
+                  type:
+                    - string
+                    - "null"
+                  format: date-time
+          additionalProperties: true
+    sleep_periods:
+      type: DeclarativeStream
+      name: sleep_periods
+      primary_key:
+        - bedtime_start
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.ouraring.com/v2/usercollection
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /sleep
+          http_method: GET
+          request_parameters:
+            end_date: >-
+              {{ config['end_datetime'].split('T')[0] if config['end_datetime']
+              else day_delta(0, format='%Y-%m-%dT%H:%M:%SZ') }}
+            start_date: >-
+              {{ config['start_datetime'].split('T')[0] if
+              config['start_datetime'] else day_delta(-1,
+              format='%Y-%m-%dT%H:%M:%SZ') }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['next_token'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: "http://json-schema.org/draft-07/schema#"
+          type: object
+          properties:
+            average_breath:
+              type:
+                - number
+                - "null"
+            average_heart_rate:
+              type:
+                - number
+                - "null"
+            average_hrv:
+              type:
+                - number
+                - "null"
+            awake_time:
+              type:
+                - number
+                - "null"
+            bedtime_end:
+              type:
+                - string
+                - "null"
+              format: date-time
+            bedtime_start:
+              type:
+                - string
+                - "null"
+              format: date-time
+            day:
+              type:
+                - string
+                - "null"
+              format: date
+            deep_sleep_duration:
+              type:
+                - number
+                - "null"
+            efficiency:
+              type:
+                - number
+                - "null"
+            heart_rate:
+              type: object
+              properties:
+                interval:
+                  type:
+                    - number
+                    - "null"
+                items:
+                  type: array
+                  items:
+                    type:
+                      - number
+                      - "null"
+                timestamp:
+                  type:
+                    - string
+                    - "null"
+                  format: date-time
+            hrv:
+              type: object
+              properties:
+                interval:
+                  type:
+                    - number
+                    - "null"
+                items:
+                  type: array
+                  items:
+                    type:
+                      - number
+                      - "null"
+                timestamp:
+                  type:
+                    - string
+                    - "null"
+                  format: date-time
+            latency:
+              type:
+                - number
+                - "null"
+            light_sleep_duration:
+              type:
+                - number
+                - "null"
+            low_battery_alert:
+              type: boolean
+            lowest_heart_rate:
+              type:
+                - number
+                - "null"
+            movement_30_sec:
+              type:
+                - string
+                - "null"
+            period:
+              type:
+                - number
+                - "null"
+            readiness_score_delta:
+              type:
+                - number
+                - "null"
+            rem_sleep_duration:
+              type:
+                - number
+                - "null"
+            restless_periods:
+              type:
+                - number
+                - "null"
+            sleep_phase_5_min:
+              type:
+                - string
+                - "null"
+            sleep_score_delta:
+              type:
+                - number
+                - "null"
+            time_in_bed:
+              type:
+                - number
+                - "null"
+            total_sleep_duration: {}
+            type:
+              type:
+                - string
+                - "null"
+          additionalProperties: true
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - timestamp
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.ouraring.com/v2/usercollection
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /tag
+          http_method: GET
+          request_parameters:
+            end_date: >-
+              {{ config['end_datetime'].split('T')[0] if config['end_datetime']
+              else day_delta(0, format='%Y-%m-%dT%H:%M:%SZ') }}
+            start_date: >-
+              {{ config['start_datetime'].split('T')[0] if
+              config['start_datetime'] else day_delta(-1,
+              format='%Y-%m-%dT%H:%M:%SZ') }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['next_token'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: "http://json-schema.org/draft-07/schema#"
+          type: object
+          properties:
+            day:
+              type:
+                - string
+                - "null"
+              format: date
+            text:
+              type:
+                - string
+                - "null"
+            timestamp:
+              type:
+                - string
+                - "null"
+              format: date-time
+            tags:
+              type: array
+              items:
+                type:
+                  - string
+                  - "null"
+          additionalProperties: true
+    workouts:
+      type: DeclarativeStream
+      name: workouts
+      primary_key:
+        - start_datetime
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.ouraring.com/v2/usercollection
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /workout
+          http_method: GET
+          request_parameters:
+            end_date: >-
+              {{ config['end_datetime'].split('T')[0] if config['end_datetime']
+              else day_delta(0, format='%Y-%m-%dT%H:%M:%SZ') }}
+            start_date: >-
+              {{ config['start_datetime'].split('T')[0] if
+              config['start_datetime'] else day_delta(-1,
+              format='%Y-%m-%dT%H:%M:%SZ') }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next_token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response['next_token'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: "http://json-schema.org/draft-07/schema#"
+          type: object
+          properties:
+            activity:
+              type:
+                - string
+                - "null"
+            calories:
+              type:
+                - number
+                - "null"
+            day:
+              type:
+                - string
+                - "null"
+              format: date
+            distance:
+              type:
+                - number
+                - "null"
+            end_datetime:
+              type:
+                - string
+                - "null"
+              format: date-time
+            intensity:
+              type:
+                - string
+                - "null"
+            label: {}
+            source:
+              type:
+                - string
+                - "null"
+            start_datetime:
+              type:
+                - string
+                - "null"
+              format: date-time
+          additionalProperties: true
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.ouraring.com/v2/usercollection
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+streams:
+  - type: DeclarativeStream
+    name: daily_activity
+    primary_key:
+      - timestamp
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ouraring.com/v2/usercollection
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /daily_activity
+        http_method: GET
+        request_parameters:
+          end_date: >-
+            {{ config['end_datetime'].split('T')[0] if config['end_datetime']
+            else day_delta(0, format='%Y-%m-%dT%H:%M:%SZ') }}
+          start_date: >-
+            {{ config['start_datetime'].split('T')[0] if
+            config['start_datetime'] else day_delta(-1,
+            format='%Y-%m-%dT%H:%M:%SZ') }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: next_token
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response['next_token'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: object
+        properties:
+          class_5_min:
+            type:
+              - string
+              - "null"
+          score:
+            type:
+              - number
+              - "null"
+          active_calories:
+            type:
+              - number
+              - "null"
+          average_met_minutes:
+            type:
+              - number
+              - "null"
+          contributors:
+            type: object
+            properties:
+              meet_daily_targets:
+                type:
+                  - number
+                  - "null"
+              move_every_hour:
+                type:
+                  - number
+                  - "null"
+              recovery_time:
+                type:
+                  - number
+                  - "null"
+              stay_active:
+                type:
+                  - number
+                  - "null"
+              training_frequency:
+                type:
+                  - number
+                  - "null"
+              training_volume:
+                type:
+                  - number
+                  - "null"
+          equivalent_walking_distance:
+            type:
+              - number
+              - "null"
+          high_activity_met_minutes:
+            type:
+              - number
+              - "null"
+          high_activity_time:
+            type:
+              - number
+              - "null"
+          inactivity_alerts:
+            type:
+              - number
+              - "null"
+          low_activity_met_minutes:
+            type:
+              - number
+              - "null"
+          low_activity_time:
+            type:
+              - number
+              - "null"
+          medium_activity_met_minutes:
+            type:
+              - number
+              - "null"
+          medium_activity_time:
+            type:
+              - number
+              - "null"
+          met:
+            type: object
+            properties:
+              interval:
+                type:
+                  - number
+                  - "null"
+              items:
+                type: array
+                items:
+                  type:
+                    - number
+                    - "null"
+              timestamp:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+          meters_to_target:
+            type:
+              - number
+              - "null"
+          non_wear_time:
+            type:
+              - number
+              - "null"
+          resting_time:
+            type:
+              - number
+              - "null"
+          sedentary_met_minutes:
+            type:
+              - number
+              - "null"
+          sedentary_time:
+            type:
+              - number
+              - "null"
+          steps:
+            type:
+              - number
+              - "null"
+          target_calories:
+            type:
+              - number
+              - "null"
+          target_meters:
+            type:
+              - number
+              - "null"
+          total_calories:
+            type:
+              - number
+              - "null"
+          day:
+            type:
+              - string
+              - "null"
+            format: date
+          timestamp:
+            type:
+              - string
+              - "null"
+            format: date-time
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: daily_readiness
+    primary_key:
+      - timestamp
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ouraring.com/v2/usercollection
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /daily_readiness
+        http_method: GET
+        request_parameters:
+          end_date: >-
+            {{ config['end_datetime'].split('T')[0] if config['end_datetime']
+            else day_delta(0, format='%Y-%m-%dT%H:%M:%SZ') }}
+          start_date: >-
+            {{ config['start_datetime'].split('T')[0] if
+            config['start_datetime'] else day_delta(-1,
+            format='%Y-%m-%dT%H:%M:%SZ') }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: next_token
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response['next_token'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: object
+        properties:
+          contributors:
+            type: object
+            properties:
+              activity_balance:
+                type:
+                  - number
+                  - "null"
+              body_temperature:
+                type:
+                  - number
+                  - "null"
+              hrv_balance:
+                type:
+                  - number
+                  - "null"
+              previous_day_activity: {}
+              previous_night:
+                type:
+                  - number
+                  - "null"
+              recovery_index:
+                type:
+                  - number
+                  - "null"
+              resting_heart_rate:
+                type:
+                  - number
+                  - "null"
+              sleep_balance:
+                type:
+                  - number
+                  - "null"
+          day:
+            type:
+              - string
+              - "null"
+            format: date
+          score:
+            type:
+              - number
+              - "null"
+          temperature_deviation:
+            type:
+              - number
+              - "null"
+          temperature_trend_deviation:
+            type:
+              - number
+              - "null"
+          timestamp:
+            type:
+              - string
+              - "null"
+            format: date-time
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: daily_sleep
+    primary_key:
+      - timestamp
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ouraring.com/v2/usercollection
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /daily_sleep
+        http_method: GET
+        request_parameters:
+          end_date: >-
+            {{ config['end_datetime'].split('T')[0] if config['end_datetime']
+            else day_delta(0, format='%Y-%m-%dT%H:%M:%SZ') }}
+          start_date: >-
+            {{ config['start_datetime'].split('T')[0] if
+            config['start_datetime'] else day_delta(-1,
+            format='%Y-%m-%dT%H:%M:%SZ') }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: next_token
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response['next_token'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: object
+        properties:
+          contributors:
+            type: object
+            properties:
+              deep_sleep:
+                type:
+                  - number
+                  - "null"
+              efficiency:
+                type:
+                  - number
+                  - "null"
+              latency:
+                type:
+                  - number
+                  - "null"
+              rem_sleep:
+                type:
+                  - number
+                  - "null"
+              restfulness:
+                type:
+                  - number
+                  - "null"
+              timing:
+                type:
+                  - number
+                  - "null"
+              total_sleep:
+                type:
+                  - number
+                  - "null"
+          day:
+            type:
+              - string
+              - "null"
+            format: date
+          score:
+            type:
+              - number
+              - "null"
+          timestamp:
+            type:
+              - string
+              - "null"
+            format: date-time
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: heart_rate
+    primary_key:
+      - timestamp
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ouraring.com/v2/usercollection
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /heartrate
+        http_method: GET
+        request_parameters:
+          end_datetime: >-
+            {{ config['end_datetime'] if config['end_datetime'] else
+            day_delta(0, format='%Y-%m-%d') }}
+          start_datetime: >-
+            {{ config['start_datetime'] if config['start_datetime'] else
+            day_delta(-1, format='%Y-%m-%d') }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: next_token
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response['next_token'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: object
+        properties:
+          bpm:
+            type:
+              - number
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+          timestamp:
+            type:
+              - string
+              - "null"
+            format: date-time
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: sessions
+    primary_key:
+      - start_datetime
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ouraring.com/v2/usercollection
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /session
+        http_method: GET
+        request_parameters:
+          end_date: >-
+            {{ config['end_datetime'].split('T')[0] if config['end_datetime']
+            else day_delta(0, format='%Y-%m-%dT%H:%M:%SZ') }}
+          start_date: >-
+            {{ config['start_datetime'].split('T')[0] if
+            config['start_datetime'] else day_delta(-1,
+            format='%Y-%m-%dT%H:%M:%SZ') }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: next_token
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response['next_token'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: object
+        properties:
+          day:
+            type:
+              - string
+              - "null"
+            format: date
+          start_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          end_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          type:
+            type:
+              - string
+              - "null"
+          heart_rate: {}
+          heart_rate_variability: {}
+          mood: {}
+          motion_count:
+            type: object
+            properties:
+              interval:
+                type:
+                  - number
+                  - "null"
+              items:
+                type: array
+                items:
+                  type:
+                    - number
+                    - "null"
+              timestamp:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: sleep_periods
+    primary_key:
+      - bedtime_start
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ouraring.com/v2/usercollection
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /sleep
+        http_method: GET
+        request_parameters:
+          end_date: >-
+            {{ config['end_datetime'].split('T')[0] if config['end_datetime']
+            else day_delta(0, format='%Y-%m-%dT%H:%M:%SZ') }}
+          start_date: >-
+            {{ config['start_datetime'].split('T')[0] if
+            config['start_datetime'] else day_delta(-1,
+            format='%Y-%m-%dT%H:%M:%SZ') }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: next_token
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response['next_token'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: object
+        properties:
+          average_breath:
+            type:
+              - number
+              - "null"
+          average_heart_rate:
+            type:
+              - number
+              - "null"
+          average_hrv:
+            type:
+              - number
+              - "null"
+          awake_time:
+            type:
+              - number
+              - "null"
+          bedtime_end:
+            type:
+              - string
+              - "null"
+            format: date-time
+          bedtime_start:
+            type:
+              - string
+              - "null"
+            format: date-time
+          day:
+            type:
+              - string
+              - "null"
+            format: date
+          deep_sleep_duration:
+            type:
+              - number
+              - "null"
+          efficiency:
+            type:
+              - number
+              - "null"
+          heart_rate:
+            type: object
+            properties:
+              interval:
+                type:
+                  - number
+                  - "null"
+              items:
+                type: array
+                items:
+                  type:
+                    - number
+                    - "null"
+              timestamp:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+          hrv:
+            type: object
+            properties:
+              interval:
+                type:
+                  - number
+                  - "null"
+              items:
+                type: array
+                items:
+                  type:
+                    - number
+                    - "null"
+              timestamp:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+          latency:
+            type:
+              - number
+              - "null"
+          light_sleep_duration:
+            type:
+              - number
+              - "null"
+          low_battery_alert:
+            type: boolean
+          lowest_heart_rate:
+            type:
+              - number
+              - "null"
+          movement_30_sec:
+            type:
+              - string
+              - "null"
+          period:
+            type:
+              - number
+              - "null"
+          readiness_score_delta:
+            type:
+              - number
+              - "null"
+          rem_sleep_duration:
+            type:
+              - number
+              - "null"
+          restless_periods:
+            type:
+              - number
+              - "null"
+          sleep_phase_5_min:
+            type:
+              - string
+              - "null"
+          sleep_score_delta:
+            type:
+              - number
+              - "null"
+          time_in_bed:
+            type:
+              - number
+              - "null"
+          total_sleep_duration: {}
+          type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: tags
+    primary_key:
+      - timestamp
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ouraring.com/v2/usercollection
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /tag
+        http_method: GET
+        request_parameters:
+          end_date: >-
+            {{ config['end_datetime'].split('T')[0] if config['end_datetime']
+            else day_delta(0, format='%Y-%m-%dT%H:%M:%SZ') }}
+          start_date: >-
+            {{ config['start_datetime'].split('T')[0] if
+            config['start_datetime'] else day_delta(-1,
+            format='%Y-%m-%dT%H:%M:%SZ') }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: next_token
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response['next_token'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: object
+        properties:
+          day:
+            type:
+              - string
+              - "null"
+            format: date
+          text:
+            type:
+              - string
+              - "null"
+          timestamp:
+            type:
+              - string
+              - "null"
+            format: date-time
+          tags:
+            type: array
+            items:
+              type:
+                - string
+                - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: workouts
+    primary_key:
+      - start_datetime
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ouraring.com/v2/usercollection
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /workout
+        http_method: GET
+        request_parameters:
+          end_date: >-
+            {{ config['end_datetime'].split('T')[0] if config['end_datetime']
+            else day_delta(0, format='%Y-%m-%dT%H:%M:%SZ') }}
+          start_date: >-
+            {{ config['start_datetime'].split('T')[0] if
+            config['start_datetime'] else day_delta(-1,
+            format='%Y-%m-%dT%H:%M:%SZ') }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: next_token
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response['next_token'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: object
+        properties:
+          activity:
+            type:
+              - string
+              - "null"
+          calories:
+            type:
+              - number
+              - "null"
+          day:
+            type:
+              - string
+              - "null"
+            format: date
+          distance:
+            type:
+              - number
+              - "null"
+          end_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+          intensity:
+            type:
+              - string
+              - "null"
+          label: {}
+          source:
+            type:
+              - string
+              - "null"
+          start_datetime:
+            type:
+              - string
+              - "null"
+            format: date-time
+        additionalProperties: true
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+        description: API Key
+      start_datetime:
+        type: string
+        order: 1
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: |
+          Start datetime to sync from. Default is current UTC datetime minus 1
+          day.
+      end_datetime:
+        type: string
+        order: 2
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: End datetime to sync until. Default is current UTC datetime.
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    daily_activity: false
+    daily_readiness: false
+    daily_sleep: false
+    heart_rate: false
+    sessions: false
+    sleep_periods: false
+    tags: false
+    workouts: false
+schemas:
+  daily_activity:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    properties:
+      class_5_min:
+        type:
+          - string
+          - "null"
+      score:
+        type:
+          - number
+          - "null"
+      active_calories:
+        type:
+          - number
+          - "null"
+      average_met_minutes:
+        type:
+          - number
+          - "null"
+      contributors:
+        type: object
+        properties:
+          meet_daily_targets:
+            type:
+              - number
+              - "null"
+          move_every_hour:
+            type:
+              - number
+              - "null"
+          recovery_time:
+            type:
+              - number
+              - "null"
+          stay_active:
+            type:
+              - number
+              - "null"
+          training_frequency:
+            type:
+              - number
+              - "null"
+          training_volume:
+            type:
+              - number
+              - "null"
+      equivalent_walking_distance:
+        type:
+          - number
+          - "null"
+      high_activity_met_minutes:
+        type:
+          - number
+          - "null"
+      high_activity_time:
+        type:
+          - number
+          - "null"
+      inactivity_alerts:
+        type:
+          - number
+          - "null"
+      low_activity_met_minutes:
+        type:
+          - number
+          - "null"
+      low_activity_time:
+        type:
+          - number
+          - "null"
+      medium_activity_met_minutes:
+        type:
+          - number
+          - "null"
+      medium_activity_time:
+        type:
+          - number
+          - "null"
+      met:
+        type: object
+        properties:
+          interval:
+            type:
+              - number
+              - "null"
+          items:
+            type: array
+            items:
+              type:
+                - number
+                - "null"
+          timestamp:
+            type:
+              - string
+              - "null"
+            format: date-time
+      meters_to_target:
+        type:
+          - number
+          - "null"
+      non_wear_time:
+        type:
+          - number
+          - "null"
+      resting_time:
+        type:
+          - number
+          - "null"
+      sedentary_met_minutes:
+        type:
+          - number
+          - "null"
+      sedentary_time:
+        type:
+          - number
+          - "null"
+      steps:
+        type:
+          - number
+          - "null"
+      target_calories:
+        type:
+          - number
+          - "null"
+      target_meters:
+        type:
+          - number
+          - "null"
+      total_calories:
+        type:
+          - number
+          - "null"
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      timestamp:
+        type:
+          - string
+          - "null"
+        format: date-time
+    additionalProperties: true
+  daily_readiness:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    properties:
+      contributors:
+        type: object
+        properties:
+          activity_balance:
+            type:
+              - number
+              - "null"
+          body_temperature:
+            type:
+              - number
+              - "null"
+          hrv_balance:
+            type:
+              - number
+              - "null"
+          previous_day_activity: {}
+          previous_night:
+            type:
+              - number
+              - "null"
+          recovery_index:
+            type:
+              - number
+              - "null"
+          resting_heart_rate:
+            type:
+              - number
+              - "null"
+          sleep_balance:
+            type:
+              - number
+              - "null"
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      score:
+        type:
+          - number
+          - "null"
+      temperature_deviation:
+        type:
+          - number
+          - "null"
+      temperature_trend_deviation:
+        type:
+          - number
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+        format: date-time
+    additionalProperties: true
+  daily_sleep:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    properties:
+      contributors:
+        type: object
+        properties:
+          deep_sleep:
+            type:
+              - number
+              - "null"
+          efficiency:
+            type:
+              - number
+              - "null"
+          latency:
+            type:
+              - number
+              - "null"
+          rem_sleep:
+            type:
+              - number
+              - "null"
+          restfulness:
+            type:
+              - number
+              - "null"
+          timing:
+            type:
+              - number
+              - "null"
+          total_sleep:
+            type:
+              - number
+              - "null"
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      score:
+        type:
+          - number
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+        format: date-time
+    additionalProperties: true
+  heart_rate:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    properties:
+      bpm:
+        type:
+          - number
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+        format: date-time
+    additionalProperties: true
+  sessions:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    properties:
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      start_datetime:
+        type:
+          - string
+          - "null"
+        format: date-time
+      end_datetime:
+        type:
+          - string
+          - "null"
+        format: date-time
+      type:
+        type:
+          - string
+          - "null"
+      heart_rate: {}
+      heart_rate_variability: {}
+      mood: {}
+      motion_count:
+        type: object
+        properties:
+          interval:
+            type:
+              - number
+              - "null"
+          items:
+            type: array
+            items:
+              type:
+                - number
+                - "null"
+          timestamp:
+            type:
+              - string
+              - "null"
+            format: date-time
+    additionalProperties: true
+  sleep_periods:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    properties:
+      average_breath:
+        type:
+          - number
+          - "null"
+      average_heart_rate:
+        type:
+          - number
+          - "null"
+      average_hrv:
+        type:
+          - number
+          - "null"
+      awake_time:
+        type:
+          - number
+          - "null"
+      bedtime_end:
+        type:
+          - string
+          - "null"
+        format: date-time
+      bedtime_start:
+        type:
+          - string
+          - "null"
+        format: date-time
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      deep_sleep_duration:
+        type:
+          - number
+          - "null"
+      efficiency:
+        type:
+          - number
+          - "null"
+      heart_rate:
+        type: object
+        properties:
+          interval:
+            type:
+              - number
+              - "null"
+          items:
+            type: array
+            items:
+              type:
+                - number
+                - "null"
+          timestamp:
+            type:
+              - string
+              - "null"
+            format: date-time
+      hrv:
+        type: object
+        properties:
+          interval:
+            type:
+              - number
+              - "null"
+          items:
+            type: array
+            items:
+              type:
+                - number
+                - "null"
+          timestamp:
+            type:
+              - string
+              - "null"
+            format: date-time
+      latency:
+        type:
+          - number
+          - "null"
+      light_sleep_duration:
+        type:
+          - number
+          - "null"
+      low_battery_alert:
+        type: boolean
+      lowest_heart_rate:
+        type:
+          - number
+          - "null"
+      movement_30_sec:
+        type:
+          - string
+          - "null"
+      period:
+        type:
+          - number
+          - "null"
+      readiness_score_delta:
+        type:
+          - number
+          - "null"
+      rem_sleep_duration:
+        type:
+          - number
+          - "null"
+      restless_periods:
+        type:
+          - number
+          - "null"
+      sleep_phase_5_min:
+        type:
+          - string
+          - "null"
+      sleep_score_delta:
+        type:
+          - number
+          - "null"
+      time_in_bed:
+        type:
+          - number
+          - "null"
+      total_sleep_duration: {}
+      type:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  tags:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    properties:
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      text:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+        format: date-time
+      tags:
+        type: array
+        items:
+          type:
+            - string
+            - "null"
+    additionalProperties: true
+  workouts:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    properties:
+      activity:
+        type:
+          - string
+          - "null"
+      calories:
+        type:
+          - number
+          - "null"
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      distance:
+        type:
+          - number
+          - "null"
+      end_datetime:
+        type:
+          - string
+          - "null"
+        format: date-time
+      intensity:
+        type:
+          - string
+          - "null"
+      label: {}
+      source:
+        type:
+          - string
+          - "null"
+      start_datetime:
+        type:
+          - string
+          - "null"
+        format: date-time
+    additionalProperties: true

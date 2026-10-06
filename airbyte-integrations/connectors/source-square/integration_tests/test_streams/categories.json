@@ -1,0 +1,46 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "categories",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "type": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "updated_at": {
+              "type": ["null", "string"]
+            },
+            "version": {
+              "type": ["null", "integer"]
+            },
+            "is_deleted": {
+              "type": ["null", "boolean"]
+            },
+            "present_at_all_locations": {
+              "type": ["null", "boolean"]
+            },
+            "category_data": {
+              "type": ["null", "object"],
+              "properties": {
+                "name": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: ccd3901d-edf3-4e58-900c-942d6990aa59
+  dockerImageTag: 0.3.22
+  dockerRepository: airbyte/source-qonto
+  githubIssueLabel: source-qonto
+  icon: qonto.svg
+  license: ELv2
+  name: Qonto My
+  releaseDate: "2023-10-19"
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/qonto
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  # Disabling acceptance tests for now
+  # They are not passing
+  # No Airbyte Cloud usage
+  # connectorTestSuitesOptions:
+  #   - suite: acceptanceTests
+  #     testSecrets:
+  #       - name: SECRET_SOURCE-QONTO__CREDS
+  #         fileName: config.json
+  #         secretStore:
+  #           type: GSM
+  #           alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-qonto
+  externalDocumentationUrls:
+    - title: Qonto API documentation
+      url: https://api-doc.qonto.com/
+      type: api_reference
+    - title: Qonto authentication
+      url: https://api-doc.qonto.com/#authentication
+      type: authentication_guide
+metadataSpecVersion: "1.0"

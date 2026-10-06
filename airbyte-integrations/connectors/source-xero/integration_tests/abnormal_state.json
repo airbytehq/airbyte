@@ -1,0 +1,156 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "bank_transactions"
+      },
+      "stream_state": {
+        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "contacts"
+      },
+      "stream_state": {
+        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "credit_notes"
+      },
+      "stream_state": {
+        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "invoices"
+      },
+      "stream_state": {
+        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "manual_journals"
+      },
+      "stream_state": {
+        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "overpayments"
+      },
+      "stream_state": {
+        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "prepayments"
+      },
+      "stream_state": {
+        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "purchase_orders"
+      },
+      "stream_state": {
+        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "accounts"
+      },
+      "stream_state": {
+        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "bank_transfers"
+      },
+      "stream_state": {
+        "CreatedDateUTC": "2099-01-01T00:00:00+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "employees"
+      },
+      "stream_state": {
+        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "items"
+      },
+      "stream_state": {
+        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "payments"
+      },
+      "stream_state": {
+        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "users"
+      },
+      "stream_state": {
+        "UpdatedDateUTC": "2099-01-01T00:00:00+00:00"
+      }
+    }
+  }
+]

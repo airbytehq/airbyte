@@ -1,0 +1,34 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "creation_time": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "last_modified": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "owner": {
+      "type": ["string", "null"]
+    },
+    "season_number": {
+      "type": ["integer", "null"]
+    },
+    "thumbnail": {
+      "type": ["string", "null"]
+    },
+    "title": {
+      "type": ["string", "null"]
+    },
+    "videos_count": {
+      "type": ["integer", "null"]
+    }
+  }
+}

@@ -1,0 +1,24 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "call_metrics"
+      },
+      "stream_state": {
+        "created_time": "2021-11-07 18:19:48.909179+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "calls"
+      },
+      "stream_state": {
+        "created_time": "2021-11-07 18:19:42.687520+00:00"
+      }
+    }
+  }
+]

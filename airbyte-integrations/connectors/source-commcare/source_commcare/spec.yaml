@@ -1,0 +1,38 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Commcare Source Spec
+  type: object
+  required:
+    - api_key
+    - app_id
+    - start_date
+  properties:
+    api_key:
+      type: string
+      title: API Key
+      description: >-
+        Commcare API Key
+      airbyte_secret: true
+      order: 0
+    project_space:
+      type: string
+      title: Project Space
+      description: >-
+        Project Space for commcare
+      order: 1
+    app_id:
+      type: string
+      title: Application ID
+      description: >-
+        The Application ID we are interested in
+      airbyte_secret: true
+      order: 2
+    start_date:
+      type: string
+      title: Start date for extracting records
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      default: "2022-10-01T00:00:00Z"
+      description: >-
+        UTC date and time in the format 2017-01-25T00:00:00Z. Only records after this date will be replicated.
+      order: 3

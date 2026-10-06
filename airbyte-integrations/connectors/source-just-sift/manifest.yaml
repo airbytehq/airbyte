@@ -1,0 +1,556 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: Airbyte connector for JustSift can help you sync data from the JustSift API
+
+check:
+  type: CheckStream
+  stream_names:
+    - peoples
+
+definitions:
+  streams:
+    peoples:
+      type: DeclarativeStream
+      name: peoples
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /search/people
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/peoples"
+    fields:
+      type: DeclarativeStream
+      name: fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /fields/person
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+            stop_condition: "{{ not response.get('links', {}).get('next') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/fields"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.justsift.com/v1
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/peoples"
+  - $ref: "#/definitions/streams/fields"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+    properties:
+      api_token:
+        type: string
+        description: >-
+          API token to use for accessing the Sift API. Obtain this token from
+          your Sift account administrator.
+        name: api_token
+        order: 0
+        title: API Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    peoples: true
+    fields: true
+  testedStreams:
+    peoples:
+      hasRecords: true
+      streamHash: 19539b43d2bdc7c3ad22753d721b5875de9e9ada
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    fields:
+      hasRecords: true
+      streamHash: 98b10d2b1a5de54e505d0b3230cc674ddd30c38e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://developers.justsift.com/
+
+schemas:
+  peoples:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      anniversaryDate:
+        type:
+          - string
+          - "null"
+      backgroundUrl:
+        type:
+          - string
+          - "null"
+      bio:
+        type:
+          - string
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      customPictureUrl:
+        type:
+          - string
+          - "null"
+      department:
+        type:
+          - string
+          - "null"
+      directReportCount:
+        type:
+          - number
+          - "null"
+      directoryId:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      education:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            classYear:
+              type:
+                - string
+                - "null"
+            concentrations:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            degreeType:
+              type:
+                - string
+                - "null"
+            fieldsOfStudy:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            minors:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            school:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+      email:
+        type:
+          - string
+          - "null"
+      experience:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            location:
+              type:
+                - string
+                - "null"
+            role:
+              type:
+                - string
+                - "null"
+            tenure:
+              type:
+                - object
+                - "null"
+              properties:
+                end:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    month:
+                      type:
+                        - number
+                        - "null"
+                    year:
+                      type:
+                        - number
+                        - "null"
+                start:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    month:
+                      type:
+                        - number
+                        - "null"
+                    year:
+                      type:
+                        - number
+                        - "null"
+            workplace:
+              type:
+                - object
+                - "null"
+              properties:
+                logoUrl:
+                  type:
+                    - string
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+      extension:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      hasNamePronunciation:
+        type:
+          - boolean
+          - "null"
+      hrbpName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      inclusivePronouns:
+        type:
+          - object
+          - "null"
+        properties:
+          code:
+            type:
+              - string
+              - "null"
+          isOther:
+            type:
+              - boolean
+              - "null"
+      interests:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      isTeamLeader:
+        type:
+          - boolean
+          - "null"
+      languages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            language:
+              type:
+                - string
+                - "null"
+            proficiency:
+              type:
+                - object
+                - "null"
+              properties:
+                level:
+                  type:
+                    - string
+                    - "null"
+                skills:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      messageAddress:
+        type:
+          - string
+          - "null"
+      officeCity:
+        type:
+          - string
+          - "null"
+      officeState:
+        type:
+          - string
+          - "null"
+      officeStreet:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      pictureUrl:
+        type:
+          - string
+          - "null"
+      reachOutToMeFor:
+        type:
+          - object
+          - "null"
+        properties:
+          cf_autocompleteTextCollection:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          cf_autocompleteTextCollection1:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          general:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          projects:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      reportingPath:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      skills:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            isFeatured:
+              type:
+                - boolean
+                - "null"
+            level:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      team:
+        type:
+          - string
+          - "null"
+      teamLeaderId:
+        type:
+          - string
+          - "null"
+      timezoneAndWorkHours:
+        type:
+          - object
+          - "null"
+        properties:
+          timezone:
+            type:
+              - string
+              - "null"
+          workHours:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                day:
+                  type:
+                    - number
+                    - "null"
+                endTime:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    hour:
+                      type:
+                        - number
+                        - "null"
+                    minute:
+                      type:
+                        - number
+                        - "null"
+                location:
+                  type:
+                    - string
+                    - "null"
+                startTime:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    hour:
+                      type:
+                        - number
+                        - "null"
+                    minute:
+                      type:
+                        - number
+                        - "null"
+      title:
+        type:
+          - string
+          - "null"
+      totalReportCount:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      filterable:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      objectKey:
+        type:
+          - string
+          - "null"
+      searchable:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id

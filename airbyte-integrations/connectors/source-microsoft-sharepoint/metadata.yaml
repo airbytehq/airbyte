@@ -1,0 +1,60 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+      - graph.microsoft.com
+      - login.microsoftonline.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-microsoft-sharepoint
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+  connectorSubtype: file
+  connectorType: source
+  definitionId: 59353119-f0f2-4e5a-a8ba-15d887bc34f6
+  dockerImageTag: 0.10.4
+  dockerRepository: airbyte/source-microsoft-sharepoint
+  githubIssueLabel: source-microsoft-sharepoint
+  icon: microsoft-sharepoint.svg
+  license: ELv2
+  maxSecondsBetweenMessages: 5400
+  name: Microsoft SharePoint
+  supportLevel: community
+  supportsFileTransfer: true
+  releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
+  releaseDate: 2024-02-02
+  documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-sharepoint
+  tags:
+    - language:python
+    - cdk:python-file-based
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-MICROSOFT-SHAREPOINTS_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: SharePoint REST API
+      url: https://learn.microsoft.com/en-us/sharepoint/dev/sp-add-ins/get-to-know-the-sharepoint-rest-service
+      type: api_reference
+    - title: SharePoint authentication
+      url: https://learn.microsoft.com/en-us/sharepoint/dev/sp-add-ins/authorization-and-authentication-of-sharepoint-add-ins
+      type: authentication_guide
+    - title: Microsoft 365 Status
+      url: https://status.office365.com/
+      type: status_page
+metadataSpecVersion: "1.0"

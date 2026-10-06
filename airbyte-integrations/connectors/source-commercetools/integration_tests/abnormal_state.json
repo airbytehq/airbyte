@@ -1,0 +1,17 @@
+{
+  "customers": {
+    "lastModifiedAt": "2080-08-29T18:09:09.178Z"
+  },
+  "orders": {
+    "lastModifiedAt": "2090-08-30T06:07:33.580Z"
+  },
+  "discount_codes": {
+    "lastModifiedAt": "2100-08-30T01:56:15.739Z"
+  },
+  "payments": {
+    "lastModifiedAt": "2121-08-30T05:07:38.446Z"
+  },
+  "products": {
+    "lastModifiedAt": "2221-08-30T02:07:53.255Z"
+  }
+}

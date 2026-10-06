@@ -1,0 +1,13 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "users"
+      },
+      "stream_state": {
+        "DATE_UPDATED_UTC": "2022-10-17 19:10:14"
+      }
+    }
+  }
+]

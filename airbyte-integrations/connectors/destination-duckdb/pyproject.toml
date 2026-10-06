@@ -1,0 +1,34 @@
+[tool.poetry]
+name = "destination-duckdb"
+version = "0.6.0"
+description = "Destination implementation for Duckdb."
+authors = ["Simon Späti, Airbyte"]
+license = "ELv2"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+airbyte-cdk = "^0.51.6"
+duckdb = ">=1.4.2,<2.0"
+pyarrow = "15.0.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+ruff = "^0.7.1"
+black = "^23.7.0"
+mypy = "^1.5.1"
+faker = "24.4.0"
+coverage = "^7.5.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
+[tool.poetry.scripts]
+destination-duckdb = "destination_duckdb.run:run"

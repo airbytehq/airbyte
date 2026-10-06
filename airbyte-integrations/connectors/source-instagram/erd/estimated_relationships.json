@@ -1,0 +1,55 @@
+{
+  "streams": [
+    {
+      "name": "media",
+      "relations": {
+        "business_account_id": "users.business_account_id",
+        "page_id": "users.page_id"
+      }
+    },
+    {
+      "name": "media_insights",
+      "relations": {
+        "business_account_id": "users.business_account_id",
+        "page_id": "users.page_id",
+        "id": "media.id"
+      }
+    },
+    {
+      "name": "users",
+      "relations": {}
+    },
+    {
+      "name": "user_lifetime_insights",
+      "relations": {
+        "business_account_id": "users.business_account_id",
+        "page_id": "users.page_id"
+      }
+    },
+    {
+      "name": "stories",
+      "relations": {
+        "business_account_id": "users.business_account_id",
+        "page_id": "users.page_id"
+      }
+    },
+    {
+      "name": "story_insights",
+      "relations": {
+        "business_account_id": "users.business_account_id",
+        "page_id": "users.page_id"
+      }
+    },
+    {
+      "name": "Api",
+      "relations": {}
+    },
+    {
+      "name": "user_insights",
+      "relations": {
+        "page_id": "users.page_id",
+        "business_account_id": "users.business_account_id"
+      }
+    }
+  ]
+}

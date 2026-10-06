@@ -1,0 +1,745 @@
+version: 7.0.4
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+    - teams
+    - calls
+    - call_metrics
+
+definitions:
+  linked:
+    HttpRequester:
+      url_base: https://{{ config['domain'] }}.freshcaller.com/api/v1
+      authenticator:
+        type: ApiKeyAuthenticator
+        header: X-Api-Auth
+        api_token: "{{ config['api_key'] }}"
+      request_headers:
+        Accept: application/json
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 1000
+          start_from_page: 1
+
+streams:
+  - type: DeclarativeStream
+    name: users
+    primary_key: id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base:
+          $ref: "#/definitions/linked/HttpRequester/url_base"
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        path: /users
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - users
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: https://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          teams:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+          status:
+            type:
+              - integer
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          language:
+            type:
+              - string
+              - "null"
+          confirmed:
+            type:
+              - boolean
+              - "null"
+          time_zone:
+            type:
+              - string
+              - "null"
+          preference:
+            type:
+              - integer
+              - "null"
+          last_call_time:
+            type:
+              - string
+              - "null"
+            format: date-time
+          last_seen_time:
+            type:
+              - string
+              - "null"
+            format: date-time
+          mobile_app_preference:
+            type:
+              - integer
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: teams
+    primary_key: id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base:
+          $ref: "#/definitions/linked/HttpRequester/url_base"
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        path: /teams
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - teams
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: https://json-schema.org/draft-07/schema#
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - integer
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          users:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+          omni_channel:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: calls
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base:
+          $ref: "#/definitions/linked/HttpRequester/url_base"
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        path: /calls
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - calls
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: https://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          direction:
+            type:
+              - string
+              - "null"
+          recording:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - integer
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              duration:
+                type:
+                  - number
+                  - "null"
+              duration_unit:
+                type:
+                  - string
+                  - "null"
+              transcription_url:
+                type:
+                  - string
+                  - "null"
+          call_notes:
+            type:
+              - string
+              - "null"
+          created_time:
+            type:
+              - string
+              - "null"
+            format: date-time
+          participants:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+                cost:
+                  type:
+                    - number
+                    - "null"
+                call_id:
+                  type:
+                    - integer
+                    - "null"
+                duration:
+                  type:
+                    - integer
+                    - "null"
+                caller_id:
+                  type:
+                    - integer
+                    - "null"
+                cost_unit:
+                  type:
+                    - string
+                    - "null"
+                call_status:
+                  type:
+                    - integer
+                    - "null"
+                caller_name:
+                  type:
+                    - string
+                    - "null"
+                created_time:
+                  type:
+                    - string
+                    - "null"
+                  format: date-time
+                updated_time:
+                  type:
+                    - string
+                    - "null"
+                  format: date-time
+                caller_number:
+                  type:
+                    - string
+                    - "null"
+                duration_unit:
+                  type:
+                    - string
+                    - "null"
+                enqueued_time:
+                  type:
+                    - string
+                    - "null"
+                participant_id:
+                  type:
+                    - integer
+                    - "null"
+                connection_type:
+                  type:
+                    - number
+                    - "null"
+                participant_type:
+                  type:
+                    - string
+                    - "null"
+          phone_number:
+            type:
+              - string
+              - "null"
+          root_call_id:
+            type:
+              - integer
+              - "null"
+          updated_time:
+            type:
+              - string
+              - "null"
+            format: date-time
+          bill_duration:
+            type:
+              - number
+              - "null"
+          parent_call_id:
+            type:
+              - integer
+              - "null"
+          assigned_ivr_id:
+            type:
+              - integer
+              - "null"
+          phone_number_id:
+            type:
+              - integer
+              - "null"
+          assigned_team_id:
+            type:
+              - integer
+              - "null"
+          assigned_agent_id:
+            type:
+              - integer
+              - "null"
+          assigned_ivr_name:
+            type:
+              - string
+              - "null"
+          assigned_team_name:
+            type:
+              - string
+              - "null"
+          bill_duration_unit:
+            type:
+              - string
+              - "null"
+          assigned_agent_name:
+            type:
+              - string
+              - "null"
+          recording_to_redact:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - integer
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              duration:
+                type:
+                  - number
+                  - "null"
+              duration_unit:
+                type:
+                  - string
+                  - "null"
+          integrated_resources:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                integration_name:
+                  type:
+                    - string
+                    - "null"
+          parallel_call_groups:
+            type:
+              - array
+              - "null"
+          assigned_call_queue_id:
+            type:
+              - integer
+              - "null"
+          assigned_call_queue_name:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1Y
+      cursor_field: created_time
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc() }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2022-01-01T00:00:00Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+      end_time_option:
+        type: RequestOption
+        field_name: by_time[to]
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: by_time[from]
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+  - type: DeclarativeStream
+    name: call_metrics
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base:
+          $ref: "#/definitions/linked/HttpRequester/url_base"
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        path: /call_metrics
+        request_parameters:
+          include: life_cycle
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - call_metrics
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: https://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          cost:
+            type:
+              - number
+              - "null"
+          csat:
+            type:
+              - object
+              - "null"
+            properties:
+              time:
+                type:
+                  - number
+                  - "null"
+              outcome:
+                type:
+                  - string
+                  - "null"
+              time_unit:
+                type:
+                  - string
+                  - "null"
+              transfer_made:
+                type:
+                  - boolean
+                  - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                default:
+                  type:
+                    - boolean
+                    - "null"
+          call_id:
+            type:
+              - integer
+              - "null"
+          ivr_time:
+            type:
+              - integer
+              - "null"
+          cost_unit:
+            type:
+              - string
+              - "null"
+          talk_time:
+            type:
+              - number
+              - "null"
+          life_cycle:
+            type:
+              - array
+              - "null"
+          created_time:
+            type:
+              - string
+              - "null"
+            format: date-time
+          updated_time:
+            type:
+              - string
+              - "null"
+            format: date-time
+          bill_duration:
+            type:
+              - number
+              - "null"
+          hold_duration:
+            type:
+              - number
+              - "null"
+          ivr_time_unit:
+            type:
+              - string
+              - "null"
+          call_work_time:
+            type:
+              - number
+              - "null"
+          talk_time_unit:
+            type:
+              - string
+              - "null"
+          answering_speed:
+            type:
+              - number
+              - "null"
+          bill_duration_unit:
+            type:
+              - string
+              - "null"
+          hold_duration_unit:
+            type:
+              - string
+              - "null"
+          recording_duration:
+            type:
+              - number
+              - "null"
+          total_ringing_time:
+            type:
+              - number
+              - "null"
+          call_work_time_unit:
+            type:
+              - string
+              - "null"
+          answering_speed_unit:
+            type:
+              - string
+              - "null"
+          recording_duration_unit:
+            type:
+              - string
+              - "null"
+          total_ringing_time_unit:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1Y
+      cursor_field: created_time
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc() }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2022-01-01T00:00:00Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+      end_time_option:
+        type: RequestOption
+        field_name: by_time[to]
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: by_time[from]
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+
+spec:
+  type: Spec
+  documentationUrl: https://docs.airbyte.com/integrations/sources/freshcaller
+  connection_specification:
+    type: object
+    title: Freshcaller Spec
+    $schema: https://json-schema.org/draft-07/schema#
+    required:
+      - domain
+      - api_key
+    properties:
+      domain:
+        type: string
+        description: Used to construct Base URL for the Freshcaller APIs
+        title: Domain for Freshcaller account
+        examples:
+          - snaptravel
+      api_key:
+        type: string
+        description: >-
+          Freshcaller API Key. See the docs for more information on how to
+          obtain this key.
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        description: >-
+          UTC date and time. Any data created after this date will be
+          replicated.
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2022-01-01T12:00:00Z"
+      sync_lag_minutes:
+        type: integer
+        description: >-
+          Lag in minutes for each sync, i.e., at time T, data for the time range
+          [prev_sync_time, T-30] will be fetched
+        title: Lag in minutes for each sync
+      requests_per_minute:
+        type: integer
+        description: >-
+          The number of requests per minute that this source allowed to use.
+          There is a rate limit of 50 requests per minute per app per account.
+        title: Requests per minute
+    additionalProperties: true
+
+metadata:
+  autoImportSchema: {}
+  testedStreams:
+    users:
+      streamHash: 969c97881531b32b0286795a1bfebd2e64a7ddb8
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams:
+      streamHash: 4a0a5560810e621d1a722833b45e2d7831296c75
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    calls:
+      streamHash: 5f68370f4dd8b15ea3148b2cee655ff017bf7e10
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    call_metrics:
+      streamHash: a7bb28b350f5c4db9ddc3eaa0e0866784cff639d
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1

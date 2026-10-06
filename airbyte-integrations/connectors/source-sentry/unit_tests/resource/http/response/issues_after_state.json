@@ -1,0 +1,41 @@
+[
+  {
+    "id": "issue003",
+    "title": "New error from Jan 18",
+    "status": "unresolved",
+    "count": "100",
+    "userCount": 30,
+    "project": {
+      "id": "proj123",
+      "name": "test-project"
+    },
+    "lastSeen": "2024-01-18T12:00:00Z",
+    "firstSeen": "2024-01-18T10:00:00Z"
+  },
+  {
+    "id": "issue002",
+    "title": "New error from Jan 16",
+    "status": "unresolved",
+    "count": "100",
+    "userCount": 30,
+    "project": {
+      "id": "proj123",
+      "name": "test-project"
+    },
+    "lastSeen": "2024-01-16T12:00:00Z",
+    "firstSeen": "2024-01-16T10:00:00Z"
+  },
+  {
+    "id": "issue001",
+    "title": "New error from Jan 15",
+    "status": "unresolved",
+    "count": "100",
+    "userCount": 30,
+    "project": {
+      "id": "proj123",
+      "name": "test-project"
+    },
+    "lastSeen": "2024-01-15T12:00:00Z",
+    "firstSeen": "2024-01-15T10:00:00Z"
+  }
+]

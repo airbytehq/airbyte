@@ -1,0 +1,9 @@
+{
+  "spreadsheet_id": "random_id",
+  "credentials": {
+    "auth_type": "Client",
+    "client_id": "CLIENT_ID",
+    "client_secret": "CLIENT_SECRET",
+    "refresh_token": "CLIENT_REFRESH_TOKEN"
+  }
+}

@@ -1,0 +1,22 @@
+plugins {
+    id 'airbyte-java-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.20.4'
+    features = ['db-sources']
+    useLocalCdk = false
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.e2e_test.TestingSources'
+}
+
+dependencies {
+    // random Json object generation from Json schema
+    // https://github.com/airbytehq/jsongenerator
+    implementation 'net.jimblackler.jsonschemafriend:core:0.12.4'
+    implementation group: 'com.github.airbytehq', name: 'jsongenerator', version: '1.0.2'
+}

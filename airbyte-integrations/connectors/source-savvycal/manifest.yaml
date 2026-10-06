@@ -1,0 +1,183 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: Sync your scheduled meetings and scheduling links from SavvyCal!
+
+check:
+  type: CheckStream
+  stream_names:
+    - events
+
+definitions:
+  streams:
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/events
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.metadata.after }}"
+            stop_condition: "{{ response.metadata.after is none }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - scheduler_name
+              value: '{{ record["scheduler"]["display_name"] }}'
+        - type: AddFields
+          fields:
+            - path:
+                - scheduler_email
+              value: '{{ record["scheduler"]["email"] }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    scheduling_links:
+      type: DeclarativeStream
+      name: scheduling_links
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/links
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.metadata.after }}"
+            stop_condition: "{{ response.metadata.after is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scheduling_links"
+    timezones:
+      type: DeclarativeStream
+      name: timezones
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/time_zones
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/timezones"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.savvycal.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_key"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/scheduling_links"
+  - $ref: "#/definitions/streams/timezones"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Go to SavvyCal → Settings → Developer → Personal Tokens and make a new
+          token. Then, copy the private key. https://savvycal.com/developers
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    events: false
+    scheduling_links: false
+    timezones: false
+  testedStreams:
+    events:
+      streamHash: 983fbfcd76c950fb5a2e529e77be8c8cb53153a6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    scheduling_links:
+      streamHash: 41c519374dbff290916742ae064487485e0043e3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    timezones:
+      streamHash: e0aa739a05ae7c75ffc6d8e624102c52241d9744
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://savvycal.com/docs/api/
+
+schemas:
+  events:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  scheduling_links:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  timezones:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}

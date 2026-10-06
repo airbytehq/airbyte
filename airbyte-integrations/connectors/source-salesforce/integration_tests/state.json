@@ -1,0 +1,2791 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dcQueue__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:54.874Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dc3ObjectMeta__Share" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:48.181Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "UserDefinedLabelAssignment" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:45.118Z",
+            "start": "2022-06-15T14:03:45.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dcGroup__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:53.511Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "UserDefinedLabelAssignmentShare" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:45.159Z",
+            "start": "2022-06-15T14:03:45.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "UserDefinedLabelShare" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:45.259Z",
+            "start": "2022-06-15T14:03:45.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "DecisionTableDatasetLink" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:21.318Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dc3Duplicate__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:46.009Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "UserDefinedLabel" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:44.790Z",
+            "start": "2022-06-15T14:03:45.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "DecisionMatrixDefinitionVersion" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:24.350Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dcIndex__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:53.947Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Invoice__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:10.041Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "MRRLog__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:19.095Z",
+            "start": "2022-09-09T14:03:32.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ServerOrder__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:10.019Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ContactHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:32.355Z",
+            "start": "2022-09-12T13:15:57.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dcJob__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:54.478Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ContextParamMap" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:34.457Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "TaskStatus" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:20.386Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dcTemp__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:57.468Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Profile" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:13.408Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "EngagementInterface" },
+      "stream_state": { "__ab_no_cursor_state_message": true }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ContentDocumentLink" },
+      "stream_state": { "__ab_no_cursor_state_message": true }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "BusinessProcessTypeDef" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:28.804Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "SatisfactionScore__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:21.143Z",
+            "start": "2022-04-15T23:26:47.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationMatrixRowHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:09.987Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationMatrixRowFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:33.354Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ShipmentAsset__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:15.265Z",
+            "start": "2022-05-06T03:52:21.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ContentDocument" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:35.688Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ExplainabilityMsgTemplate" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:07.918Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Slack_Channel__mdt" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:29.949Z",
+            "start": "2022-06-26T20:19:14.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationMatrixVersionHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:33.165Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Document" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:13.433Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationMatrixColumn" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:27.330Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "IntegrationProviderDef" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:12.160Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ExpressionSetVersion" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:35.828Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "EngagementTopicHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:19.054Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationProcedureStep" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:12.073Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "OpportunityTeamMember" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:11.382Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "AccountTeamMember" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:38.212Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "User" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:34.478Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "AccountHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:07.912Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__MatchGroup__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T09:16:55.274Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "DecisionTable" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:15.654Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ApplicationSubtypeDefinition" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:07.913Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationMatrixVersion" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:23.363Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ExpressionSetHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:35.499Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationProcedureFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:14.251Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ExplainabilityMsgTemplateLocalization" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:27.978Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ExpressionSetShare" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:38.408Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "RecordAlertDataSource" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:07.923Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationMatrixColumnHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:17.415Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "IntegrationProviderAttr" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:15.619Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "RecordAlertHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:07.919Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Case" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:29.322Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Task" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:19.441Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ExplainabilityActionVersion" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:22.247Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationProcedureShare" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:23.229Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationMatrixFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:17.077Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "MarketData__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:15.208Z",
+            "start": "2022-06-17T12:27:35.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Opportunity" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:12.342Z",
+            "start": "2022-09-12T08:10:45.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "LeadHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:15.475Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationMatrix" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:15.627Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "RecordAlertCategory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:07.914Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "AssetHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:39.972Z",
+            "start": "2022-08-26T13:42:59.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "DecisionMatrixDefinition" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:07.914Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "TimelineObjectDefinitionLocalization" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:21.536Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "DataKitDeploymentLog" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:14.857Z",
+            "start": "2022-07-04T15:23:18.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationProcedureVersionFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:17.896Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "OPSMapping__mdt" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:07.913Z",
+            "start": "2022-09-06T09:03:27.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ExpressionSetVersionHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:34.169Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Shipment__History" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:23.648Z",
+            "start": "2022-05-06T03:52:21.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Shipment__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:33.725Z",
+            "start": "2022-05-06T03:52:21.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__CapacityModel__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T09:16:56.989Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "OpportunityHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:35.746Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__MatchRule__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T09:16:38.540Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "AssetRelationshipHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:32.047Z",
+            "start": "2022-08-26T13:42:59.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "RecordAlertTemplate" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:19.803Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dcTelemetry__Share" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:55.005Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "LeadDailyMetric" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:37.317Z",
+            "start": "2022-05-22T17:25:39.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dcFrequent__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:52.522Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dcAudit__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:50.577Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dcLayout__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:54.698Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dcTrigger__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:58.125Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dcDiscard__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:52.073Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "j1be_slack__Slack_Bot_Token__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:58.406Z",
+            "start": "2022-05-06T03:52:21.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ContactMonthlyMetric" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:34.389Z",
+            "start": "2022-05-22T17:25:39.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dcTelemetry__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:57.390Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dcAnalytics__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:49.897Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dcAnalytics__Share" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:49.307Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dc3ObjectMeta__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:48.616Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "UserRole" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:45.646Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "MarketData__Share" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:39.083Z",
+            "start": "2022-06-07T10:37:50.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "FieldJourney__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:36.730Z",
+            "start": "2022-05-06T03:52:21.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "FieldJourney__Share" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:36.561Z",
+            "start": "2022-05-06T03:52:21.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dc3Log__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:46.439Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "AccountContactRole" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:34.369Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "UserLogin" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:45.428Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationMatrixHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:38.004Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "RecordAlertCategoryLocalization" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:38.188Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "dupcheck__dcDelta__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-06-18T22:55:51.127Z",
+            "start": "2022-06-12T12:41:53.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "EngagementInteraction" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:15.585Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "TimelineObjectDefinition" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:20.737Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Lead" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:25.961Z",
+            "start": "2022-09-12T10:40:04.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Contact" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:32.137Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Event" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:37.086Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "EngagementInteractionShare" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:07.915Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "EngagementAttendeeFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:12.192Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationMatrixShare" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:37.489Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ExpsSetObjectAliasFieldVw" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:35.412Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "EngagementTopicFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:17.404Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "OpportunityContactRole" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:31.550Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "OrgMetric" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:12.178Z",
+            "start": "2022-07-26T21:18:01.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationProcedureVariableHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:30.094Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "MRRLog__Share" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:09.999Z",
+            "start": "2022-09-09T14:03:32.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "DecisionTableParameter" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:30.097Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "MRRLog__History" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:31.347Z",
+            "start": "2022-09-09T14:03:32.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "OpportunityFieldHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:37.122Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Shipment__Feed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:39.173Z",
+            "start": "2022-09-02T09:34:51.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Survey" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:14.955Z",
+            "start": "2022-04-12T22:24:30.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationMatrixRow" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:07.921Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "DecisionTblDatasetParameter" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:17.068Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "EngagementAttendeeHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:24.541Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationProcedureHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:32.196Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "DataKitDeploymentLogShare" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:18.375Z",
+            "start": "2022-07-04T15:23:18.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Server__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:21.574Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CaseHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:27.970Z",
+            "start": "2022-06-28T12:14:57.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__MatchGroupCapacityModel__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T08:17:59.539Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__CapacityModel__Share" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T09:16:40.690Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationProcedureStepFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:30.105Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CaseStatus" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:39.104Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ExpressionSetDefinitionVersion" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:30.329Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ExpressionSetDefinition" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:19.219Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__AssigneeCredit__Share" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T09:16:36.182Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__MatchGroup__Share" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T08:17:51.932Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__AssigneeWorkingHours__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T08:17:48.005Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "RecordAlertShare" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:37.381Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__MatchRuleField__Share" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T09:16:36.174Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationProcedureVersionHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:39.548Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ExpressionSetVersionFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:26.460Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "OrgMetricScanSummary" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:39.625Z",
+            "start": "2022-07-26T21:18:01.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__AssigneeCredit__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T09:16:43.575Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__AssigneeWorkingHours__Share" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T09:16:39.056Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationProcedureVariableFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:27.897Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalcProcStepRelationshipHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:07.917Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ExpressionSetObjectAlias" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:31.941Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "AssetRelationship" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:10.009Z",
+            "start": "2022-08-26T13:42:59.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "EngagementInteractionFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:28.287Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "OpportunityStage" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:18.413Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalcProcStepRelationship" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:17.671Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationProcedureVariable" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:26.400Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__MatchRuleField__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T09:16:52.246Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "AssetShare" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:11.599Z",
+            "start": "2022-08-26T13:42:59.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationProcedureStepHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:10.088Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "EngagementAttendee" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:07.929Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "j1be_slack__Slack_Channel__mdt" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:32.950Z",
+            "start": "2022-06-25T20:15:39.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Shipment__Share" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:33.337Z",
+            "start": "2022-05-06T03:52:21.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ExpressionSetFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:39.581Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "PermissionSet" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:27.424Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Account" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:11.341Z",
+            "start": "2022-06-20T23:11:47.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Subscription__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:15.392Z",
+            "start": "2022-07-30T13:05:30.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Subscription__History" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:30.590Z",
+            "start": "2022-08-27T17:46:13.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CaseAsset__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:12.066Z",
+            "start": "2022-05-06T03:52:21.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "AccountContactRelation" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:10.000Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__Assignee__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T09:17:08.141Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__MatchLog__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T08:17:57.462Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "OpportunityLineItem" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:18.064Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "EngagementTopic" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:27.122Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ExplainabilityActionDef" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:15.918Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__CapacityModelCriteria__c" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T09:16:36.178Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "EngagementInteractionHistory" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:27.858Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "OrgMetricScanResult" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:19.442Z",
+            "start": "2022-07-26T21:18:01.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "AssetRelationshipFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:25.340Z",
+            "start": "2022-08-26T13:42:59.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__MatchLog__Share" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T09:16:49.098Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "AssetFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:29.487Z",
+            "start": "2022-08-26T13:42:59.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "RecordAlert" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:30.144Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "srrlite__SRR_Object__mdt" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-11T09:16:36.173Z",
+            "start": "2022-07-09T17:32:31.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "RecordType" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:21.850Z",
+            "start": "2022-04-18T08:30:44.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ExpressionSet" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:35.271Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationMatrixColumnFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:10.228Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalcProcStepRelationshipFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:35.455Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "RecordAlertFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:07.925Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationMatrixVersionFeed" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:25.426Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "Asset" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:22.451Z",
+            "start": "2022-08-26T13:42:59.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationProcedure" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:19.385Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CalculationProcedureVersion" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:07.922Z",
+            "start": "2022-06-21T18:12:28.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CaseContactRole" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:35.351Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "CaseTeamMember" },
+      "stream_state": {
+        "slices": [
+          {
+            "end": "2024-09-21T15:38:34.957Z",
+            "start": "2022-04-11T13:22:24.000Z"
+          }
+        ],
+        "state_type": "date-range"
+      }
+    }
+  }
+]

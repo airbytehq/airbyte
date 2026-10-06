@@ -1,0 +1,74 @@
+version: 6.60.5
+
+type: DeclarativeSource
+
+description: Data on the curve token tvl
+
+check:
+  type: CheckStream
+  stream_names:
+    - Defillama
+
+streams:
+  - type: DeclarativeStream
+    name: Defillama
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: https://api.llama.fi/protocol/curve-finance
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - chainTvls
+            - Plume Mainnet
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          tvl:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                date:
+                  type:
+                    - number
+                    - "null"
+                totalLiquidityUSD:
+                  type:
+                    - number
+                    - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    properties: {}
+
+metadata:
+  testedStreams:
+    stream_0:
+      streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
+    Defillama:
+      isStale: false
+      hasRecords: true
+      streamHash: a0f0a321ad0ebe07e60e2b1242837785edfd33e2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    Defillama: true

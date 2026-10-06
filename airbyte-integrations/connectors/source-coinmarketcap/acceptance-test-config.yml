@@ -1,0 +1,41 @@
+connector_image: airbyte/source-coinmarketcap:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams: []
+        timeout_seconds: 1800
+  incremental:
+    bypass_reason: "This connector does not implement incremental sync"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 1800
+        ignored_fields:
+          categories:
+            - name: "avg_price_change"
+            - name: "market_cap"
+            - name: "market_cap_change"
+            - name: "volume"
+            - name: "volume_change"
+          listing:
+            - name: "cmc_rank"
+            - name: "last_updated"
+            - name: "self_reported_circulating_supply"
+            - name: "self_reported_market_cap"
+            - name: "tvl_ratio"
+            - name: "quote"

@@ -1,0 +1,19 @@
+{
+  "base_uri": "https://api.harvestapp.com/api/v2",
+  "full_domain": "test-company.harvestapp.com",
+  "name": "Test Company",
+  "is_active": true,
+  "week_start_day": "Monday",
+  "wants_timestamp_timers": false,
+  "time_format": "hours_minutes",
+  "plan_type": "simple-v4",
+  "clock": "12h",
+  "decimal_symbol": ".",
+  "thousands_separator": ",",
+  "color_scheme": "blue",
+  "weekly_capacity": 144000,
+  "expense_feature": true,
+  "invoice_feature": true,
+  "estimate_feature": true,
+  "approval_feature": false
+}

@@ -1,0 +1,13 @@
+[
+  {
+    "id": 1,
+    "name": "Administrator",
+    "description": "Full access to all features",
+    "enabled": true,
+    "permissions": {
+      "manage_agents": true,
+      "manage_departments": true
+    },
+    "member_count": 5
+  }
+]

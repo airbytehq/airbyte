@@ -1,0 +1,39 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 3dc3037c-5ce8-4661-adc2-f7a9e3c5ece5
+  dockerImageTag: 0.1.3
+  dockerRepository: airbyte/source-zuora
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zuora
+  githubIssueLabel: source-zuora
+  icon: zuora.svg
+  license: ELv2
+  name: Zuora
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zuora
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  supportLevel: archived
+  tags:
+    - language:python
+    - cdk:python
+  externalDocumentationUrls:
+    - title: Zuora REST API
+      url: https://www.zuora.com/developer/api-references/api/overview/
+      type: api_reference
+    - title: Zuora authentication
+      url: https://www.zuora.com/developer/api-references/api/overview/#section/Authentication
+      type: authentication_guide
+    - title: Zuora rate limits
+      url: https://knowledgecenter.zuora.com/BB_Introducing_Z_Business/Policies/Concurrent_Request_Limits
+      type: rate_limits
+metadataSpecVersion: "1.0"

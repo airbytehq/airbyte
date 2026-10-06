@@ -1,0 +1,20 @@
+{"type": "RECORD", "record": {"stream": "stream_1", "emitted_at": 1602637589000, "data": { "id" : "1"}}}
+{"type": "RECORD", "record": {"stream": "stream_1", "emitted_at": 1602637589000, "data": { "id" : "2", "str": "test2"}}}
+{"type": "RECORD", "record": {"stream": "stream_1", "emitted_at": 1602637589000, "data": { "id" : "3", "str": "test3", "num": 3 }}}
+{"type": "RECORD", "record": {"stream": "stream_1", "emitted_at": 1602637589000, "data": { "id" : "4", "str": "test4", "num": 4, "list": ["test4"] }}}
+{"type": "RECORD", "record": {"stream": "stream_1", "emitted_at": 1602637589000, "data": { "id" : "5", "str": "test5", "num": 5, "list": ["test5"], "dict": {"key": "value5"} }}}
+{"type": "RECORD", "record": {"stream": "stream_1", "emitted_at": 1602637589000, "data": { "id" : "6", "str": "test6", "num": 6, "list": ["test6"], "dict": {"key": "value6"}, "double_list": [["test_double_list6"]] }}}
+{"type": "RECORD", "record": {"stream": "stream_1", "emitted_at": 1602637589000, "data": { "id" : "7", "str": "test7", "num": 7, "list": ["test7"], "dict": {"key": "value7"}, "double_list": [["test_double_list7"]], "other": "other" }}}
+{"type": "RECORD", "record": {"stream": "stream_2", "emitted_at": 1602637589000, "data": { "id" : "1"}}}
+{"type": "RECORD", "record": {"stream": "stream_2", "emitted_at": 1602637589000, "data": { "id" : "2", "str": "test2" }}}
+{"type": "RECORD", "record": {"stream": "stream_2", "emitted_at": 1602637589000, "data": { "id" : "3", "str": "test3", "num": 333 }}}
+{"type": "RECORD", "record": {"stream": "stream_2", "emitted_at": 1602637589000, "data": { "id" : "4", "str": "test4", "num": 444, "list": ["test4"]}}}
+{"type": "RECORD", "record": {"stream": "stream_2", "emitted_at": 1602637589000, "data": { "id" : "5", "str": "test5", "num": 555, "list": ["test5"], "dict": {"key": "value5"} }}}
+{"type": "RECORD", "record": {"stream": "stream_2", "emitted_at": 1602637589000, "data": { "id" : "6", "str": "test6", "num": 666, "list": ["test6"], "dict": {"key": "value6"}, "double_list": [["test_double_list6"]] }}}
+{"type": "RECORD", "record": {"stream": "stream_3", "emitted_at": 1602637589000, "data": { "id" : "1"}}}
+{"type": "RECORD", "record": {"stream": "stream_3", "emitted_at": 1602637589000, "data": { "id" : "2", "str": "test2" }}}
+{"type": "RECORD", "record": {"stream": "stream_3", "emitted_at": 1602637589000, "data": { "id" : "3", "str": "test3", "num": 333 }}}
+{"type": "RECORD", "record": {"stream": "stream_3", "emitted_at": 1602637589000, "data": { "id" : "4", "str": "test4", "num": 444, "list": ["test4"]}}}
+{"type": "RECORD", "record": {"stream": "stream_3", "emitted_at": 1602637589000, "data": { "id" : "5", "str": "test5", "num": 555, "list": ["test5"], "dict": {"key": "value5"} }}}
+{"type": "RECORD", "record": {"stream": "stream_3", "emitted_at": 1602637589000, "data": { "id" : "6", "str": "test6", "num": 666, "list": ["test6"], "dict": {"key": "value6"}, "double_list": [["test_double_list6"]] }}}
+{"type": "STATE", "state": { "data": {"start_date": "2022-04-15"}}}

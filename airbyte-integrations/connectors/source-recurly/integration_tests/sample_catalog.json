@@ -1,0 +1,102 @@
+{
+  "streams": [
+    {
+      "name": "accounts",
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": false,
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "parent_account_id": {
+            "type": "string"
+          },
+          "bill_to": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "cc_emails": {
+            "type": "string"
+          },
+          "preferred_locale": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "company": {
+            "type": "string"
+          },
+          "vat_number": {
+            "type": "string"
+          },
+          "tax_exempt": {
+            "type": "boolean"
+          },
+          "exemption_certificate": {
+            "type": "string"
+          },
+          "address": {
+            "type": "object"
+          },
+          "billing_info": {
+            "type": "object"
+          },
+          "shipping_addresses": {
+            "type": "array"
+          },
+          "custom_fields": {
+            "type": "array"
+          },
+          "has_live_subscription": {
+            "type": "boolean"
+          },
+          "has_active_subscription": {
+            "type": "boolean"
+          },
+          "has_future_subscription": {
+            "type": "boolean"
+          },
+          "has_canceled_subscription": {
+            "type": "boolean"
+          },
+          "has_paused_subscription": {
+            "type": "boolean"
+          },
+          "has_past_due_invoice": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "deleted_at": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  ]
+}

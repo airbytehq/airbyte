@@ -1,0 +1,126 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "accepts_marketing": {
+      "type": ["null", "integer"]
+    },
+    "analytics_data": {
+      "type": ["null", "object"]
+    },
+    "billing_address1": {
+      "type": ["null", "string"]
+    },
+    "billing_address2": {
+      "type": ["null", "string"]
+    },
+    "billing_city": {
+      "type": ["null", "string"]
+    },
+    "billing_company": {
+      "type": ["null", "string"]
+    },
+    "billing_country": {
+      "type": ["null", "string"]
+    },
+    "billing_first_name": {
+      "type": ["null", "string"]
+    },
+    "billing_last_name": {
+      "type": ["null", "string"]
+    },
+    "billing_phone": {
+      "type": ["null", "string"]
+    },
+    "billing_province": {
+      "type": ["null", "string"]
+    },
+    "billing_zip": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "first_charge_processed_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "first_name": {
+      "type": ["null", "string"]
+    },
+    "has_card_error_in_dunning": {
+      "type": ["null", "boolean"]
+    },
+    "has_valid_payment_method": {
+      "type": ["null", "boolean"]
+    },
+    "hash": {
+      "type": ["null", "string"]
+    },
+    "last_name": {
+      "type": ["null", "string"]
+    },
+    "number_active_subscriptions": {
+      "type": ["null", "integer"]
+    },
+    "number_subscriptions": {
+      "type": ["null", "integer"]
+    },
+    "processor_type": {
+      "type": ["null", "string"]
+    },
+    "reason_payment_method_not_valid": {
+      "type": ["null", "string"]
+    },
+    "shopify_customer_id": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "stripe_customer_token": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "apply_credit_to_next_recurring_charge": {
+      "type": ["null", "boolean"]
+    },
+    "apply_credit_to_next_checkout_charge": {
+      "type": ["null", "boolean"]
+    },
+    "external_customer_id": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "ecommerce": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "has_payment_method_in_dunning": {
+      "type": ["null", "boolean"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "subscriptions_active_count": {
+      "type": ["null", "integer"]
+    },
+    "subscriptions_total_count": {
+      "type": ["null", "integer"]
+    },
+    "tax_exempt": {
+      "type": ["null", "boolean"]
+    }
+  }
+}
