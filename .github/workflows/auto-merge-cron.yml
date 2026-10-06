@@ -98,20 +98,6 @@ jobs:
           private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
 
       # ---------- Validation ----------
-      # Playbook-eval PRs must never merge, even if labeled `auto-merge`.
-      - name: Checkout eval-artifact check
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          sparse-checkout: .github/actions/hydra-eval-artifact-check
-          token: ${{ steps.get-hoard-token.outputs.token }}
-
-      - name: Block eval artifacts
-        uses: ./.github/actions/hydra-eval-artifact-check
-        with:
-          pr: ${{ matrix.pr.number }}
-          github-token: ${{ steps.get-hoard-token.outputs.token }}
-          fail-on-eval: "true"
-
       - name: Check PR is still open
         id: check-open
         env:

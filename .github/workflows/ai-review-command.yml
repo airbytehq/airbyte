@@ -72,30 +72,14 @@ jobs:
           echo "node-id=$NODE_ID" | tee -a $GITHUB_OUTPUT
           echo "support-bot-assigned=$SUPPORT_BOT_ASSIGNED" | tee -a $GITHUB_OUTPUT
 
-      # The review itself still runs on playbook-eval PRs (useful when
-      # debugging an eval); only the auto-ready below is skipped.
-      - name: Check for eval artifact
-        id: eval-check
-        uses: ./.github/actions/hydra-eval-artifact-check
-        with:
-          pr: ${{ inputs.pr }}
-          github-token: ${{ steps.get-app-token.outputs.token }}
-
-      - name: Keep PR in draft -- eval artifact
-        if: steps.pr-details.outputs.is-draft == 'true' && steps.eval-check.outputs.is-eval == 'true'
-        env:
-          EVAL_REASON: ${{ steps.eval-check.outputs.reason }}
-        run: |
-          echo "Skipping auto-ready: eval artifact ($EVAL_REASON). Reviewing the PR as-is."
-
       - name: Keep PR in draft -- 'airbyte-support-bot' not assigned
-        if: steps.pr-details.outputs.is-draft == 'true' && steps.eval-check.outputs.is-eval != 'true' && steps.pr-details.outputs.support-bot-assigned != 'true'
+        if: steps.pr-details.outputs.is-draft == 'true' && steps.pr-details.outputs.support-bot-assigned != 'true'
         run: |
           echo "PR is a draft and 'airbyte-support-bot' is not assigned; leaving draft status to the author."
           echo "Reviewing the PR as-is. Assign 'airbyte-support-bot' to let the hands-free pipeline advance it."
 
       - name: Mark PR as ready for review
-        if: steps.pr-details.outputs.is-draft == 'true' && steps.eval-check.outputs.is-eval != 'true' && steps.pr-details.outputs.support-bot-assigned == 'true'
+        if: steps.pr-details.outputs.is-draft == 'true' && steps.pr-details.outputs.support-bot-assigned == 'true'
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           NODE_ID: ${{ steps.pr-details.outputs.node-id }}

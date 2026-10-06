@@ -126,21 +126,6 @@ jobs:
       # ---------- Cheap deterministic guards ----------
       # Anything needing judgment is left to the playbook; these only avoid
       # spending a Devin session on PRs the pipeline would never touch.
-      - name: Checkout eval-artifact check
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          sparse-checkout: .github/actions/hydra-eval-artifact-check
-          token: ${{ steps.get-app-token.outputs.token }}
-
-      # Playbook-eval PRs must never be advanced, on any trigger. Checked
-      # before the hyd-chain inheritance below, which writes labels.
-      - name: Check for eval artifact
-        id: eval-check
-        uses: ./.github/actions/hydra-eval-artifact-check
-        with:
-          pr: ${{ steps.marker.outputs.pr }}
-          github-token: ${{ steps.get-app-token.outputs.token }}
-
       - name: Check PR eligibility
         id: eligibility
         env:
@@ -149,7 +134,6 @@ jobs:
           MARKER_HEAD_SHA: ${{ steps.marker.outputs.head_sha }}
           EVENT_NAME: ${{ github.event_name }}
           VAR_DRY_RUN: ${{ vars.HYDRA_HANDOFF_DRY_RUN }}
-          EVAL_REASON: ${{ steps.eval-check.outputs.reason }}
         run: |
           set -euo pipefail
           PR_JSON=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
@@ -166,7 +150,6 @@ jobs:
           [[ -z "$SKIP" && "$IS_FORK" == "true" ]] && SKIP="community (fork) PR"
           [[ -z "$SKIP" && ",$LABELS," == *",community,"* ]] && SKIP="community label"
           [[ -z "$SKIP" && ",$LABELS," == *",hyd-pause,"* ]] && SKIP="hyd-pause label"
-          [[ -z "$SKIP" && -n "$EVAL_REASON" ]] && SKIP="eval artifact ($EVAL_REASON)"
 
           # A Devin-authored /ai-fix PR inherits hyd-chain from a
           # Resolves-linked oncall issue that already carries it

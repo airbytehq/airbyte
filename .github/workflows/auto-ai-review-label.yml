@@ -4,7 +4,6 @@
 #   2. PR marked ready for review    -> call AI review if label is already set.
 # Draft PRs are skipped on `labeled` to avoid a double-dispatch: ai-review-command.yml
 # marks drafts as ready, which would re-trigger this workflow via `ready_for_review`.
-# Playbook-eval PRs are skipped: their eval harness starts reviews itself.
 name: Auto AI Review on Label
 
 on:
@@ -19,36 +18,10 @@ permissions:
   pull-requests: write
 
 jobs:
-  eval-check:
+  dispatch-ai-review:
     if: |
       (github.event.action == 'labeled' && github.event.label.name == 'auto-ai-review' && github.event.pull_request.draft != true) ||
       (github.event.action == 'ready_for_review' && contains(github.event.pull_request.labels.*.name, 'auto-ai-review'))
-    runs-on: ubuntu-24.04
-    outputs:
-      is-eval: ${{ steps.eval-check.outputs.is-eval }}
-    steps:
-      - name: Checkout eval-artifact check
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          sparse-checkout: .github/actions/hydra-eval-artifact-check
-
-      - name: Check for eval artifact
-        id: eval-check
-        uses: ./.github/actions/hydra-eval-artifact-check
-        with:
-          pr: ${{ github.event.pull_request.number }}
-          github-token: ${{ github.token }}
-
-      - name: Skip notice
-        if: steps.eval-check.outputs.is-eval == 'true'
-        env:
-          EVAL_REASON: ${{ steps.eval-check.outputs.reason }}
-        run: |
-          echo "Skipping auto AI review: eval artifact ($EVAL_REASON)"
-
-  dispatch-ai-review:
-    needs: eval-check
-    if: needs.eval-check.outputs.is-eval == 'false'
     uses: ./.github/workflows/ai-review-command.yml
     with:
       pr: "${{ github.event.pull_request.number }}"
