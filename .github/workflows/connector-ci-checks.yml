@@ -307,7 +307,10 @@ jobs:
 
           # These should be included as dev dependencies in the connector, but
           # for many connectors they are undeclared:
-          uv tool install ruff
+          # Keep ruff pinned to the ruff-pre-commit rev in .pre-commit-config.yaml so
+          # `poe format-check` agrees with the required Format Check. Newer ruff
+          # formats f-strings differently and rejects code that pre-commit accepts.
+          uv tool install ruff==0.8.3
           uv tool install pytest
           uv tool install mypy
 
@@ -461,7 +464,10 @@ jobs:
 
           # These should be included as dev dependencies in the connector, but
           # for many connectors they are undeclared:
-          uv tool install ruff
+          # Keep ruff pinned to the ruff-pre-commit rev in .pre-commit-config.yaml so
+          # `poe format-check` agrees with the required Format Check. Newer ruff
+          # formats f-strings differently and rejects code that pre-commit accepts.
+          uv tool install ruff==0.8.3
           uv tool install pytest
           uv tool install mypy
 
