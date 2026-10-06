@@ -49,4 +49,12 @@ data:
     - title: AWS Service Health Dashboard
       url: https://health.aws.amazon.com/health/status
       type: status_page
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"
