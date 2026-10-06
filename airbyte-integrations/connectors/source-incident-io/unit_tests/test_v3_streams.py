@@ -216,6 +216,26 @@ def test_incremental_sends_state_as_a_date_and_keeps_full_timestamp(stream_name,
     assert final_state.get("updated_at") == "2026-09-20T08:00:00Z" or "updated_at" in str(final_state)
 
 
+@pytest.mark.parametrize(
+    ("stream_name", "path", "records_field"),
+    [
+        ("incidents", "/v2/incidents", "incidents"),
+        ("actions", "/v3/actions", "actions"),
+    ],
+)
+def test_full_refresh_without_start_date_reads_everything(stream_name, path, records_field):
+    """The cursor window is applied in full refresh too, so the default start must predate all
+    incident.io data. A relative default (for example two years back) silently dropped 2023 records on
+    an existing full-refresh connection."""
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}{path}", json={records_field: [{"id": "r-1"}], "pagination_meta": {}})
+        _read_stream(stream_name)
+        requests_made = mocker.request_history
+
+    assert requests_made
+    assert all(request.qs["updated_at[gte]"] == ["2020-01-01"] for request in requests_made)
+
+
 def test_missing_scope_is_a_config_error_naming_the_scope():
     """A 403 is a configuration problem the user can fix; the message carries the scope the API names."""
     body = {

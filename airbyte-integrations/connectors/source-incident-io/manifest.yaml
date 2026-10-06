@@ -565,7 +565,9 @@ definitions:
   updated_at_cursor:
     # The API's updated_at filter accepts dates only (yyyy-mm-dd, see CONTRIBUTING.md), so the
     # streams send the slice start as a date and re-read the current day on every sync. State keeps
-    # the full timestamp.
+    # the full timestamp. The window also applies to full-refresh syncs, so the default start must
+    # predate all incident.io data: a recent default would silently drop old records for existing
+    # full-refresh connections.
     type: DatetimeBasedCursor
     cursor_field: updated_at
     cursor_datetime_formats:
@@ -574,7 +576,7 @@ definitions:
     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     start_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config.get('start_date') or (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime: "{{ config.get('start_date') or '2020-01-01T00:00:00Z' }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
 streams:
@@ -630,7 +632,7 @@ spec:
       start_date:
         type: string
         title: Start Date
-        description: "Only sync records updated on or after this UTC date for the incremental streams (incidents, alerts, escalations, actions, follow-ups). Defaults to two years before the first sync."
+        description: "Only sync records updated on or after this UTC date for the incremental streams (incidents, alerts, escalations, actions, follow-ups). Leave empty to sync everything."
         format: date-time
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         examples:

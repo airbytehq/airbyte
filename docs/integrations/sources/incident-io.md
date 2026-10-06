@@ -31,7 +31,7 @@ Incremental streams filter by date, because the Incident.io API accepts a date r
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key. API key to use. Find it at https://app.incident.io/settings/api-keys | |
-| `start_date` | `string` | Start Date. Only sync records updated on or after this UTC date for the incremental streams. | Two years before the first sync |
+| `start_date` | `string` | Start Date. Only sync records updated on or after this UTC date for the incremental streams. Leave empty to sync everything. | 2020-01-01T00:00:00Z |
 
 ## Streams
 

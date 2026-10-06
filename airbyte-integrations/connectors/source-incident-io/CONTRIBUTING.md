@@ -30,6 +30,12 @@ and do not enable client-side filtering: the day-level overlap is what prevents 
 Record timestamps come back as `%Y-%m-%dT%H:%M:%S.%fZ`; older reports (airbytehq/alpha-beta-issues
 #1769, #2926) show `%Y-%m-%dT%H:%M:%SZ` as well, so both are listed in `cursor_datetime_formats`.
 
+**The cursor window applies to full-refresh syncs too.** A declarative stream with a
+`DatetimeBasedCursor` sends `updated_at[gte]` whatever the sync mode, so the default `start_date` has
+to predate all incident.io data. It is `2020-01-01` (the product launched in 2021). A regression run
+with a two-year default lost every 2023 record on an existing full-refresh connection; do not make the
+default relative to "now".
+
 ## Page sizes
 
 Each paginated stream uses the vendor's documented maximum `page_size` (`incidents` 500,

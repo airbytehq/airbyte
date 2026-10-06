@@ -4,10 +4,7 @@
       "stream": {
         "name": "actions",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -16,9 +13,7 @@
       "stream": {
         "name": "catalog_types",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -27,9 +22,7 @@
       "stream": {
         "name": "custom_fields",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -38,10 +31,7 @@
       "stream": {
         "name": "follow-ups",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -50,9 +40,7 @@
       "stream": {
         "name": "incident_roles",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -61,9 +49,7 @@
       "stream": {
         "name": "incident_timestamps",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -72,9 +58,7 @@
       "stream": {
         "name": "incident_updates",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -83,9 +67,7 @@
       "stream": {
         "name": "incident_statuses",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -94,9 +76,7 @@
       "stream": {
         "name": "workflows",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -105,9 +85,7 @@
       "stream": {
         "name": "users",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -116,9 +94,7 @@
       "stream": {
         "name": "severities",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -127,9 +103,7 @@
       "stream": {
         "name": "schedules",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -138,10 +112,7 @@
       "stream": {
         "name": "incidents",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -150,10 +121,7 @@
       "stream": {
         "name": "alerts",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -162,10 +130,7 @@
       "stream": {
         "name": "escalations",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
