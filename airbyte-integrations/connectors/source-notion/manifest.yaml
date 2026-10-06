@@ -45,6 +45,39 @@ definitions:
       type: DpathExtractor
       field_path:
         - results
+  # Pivot the properties map into a list of {name, value} objects
+  properties_to_name_value_list:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - properties
+        value: >-
+          {%- set properties_list = [] -%}
+          {%- for name, property in (record.get('properties') or {}).items() -%}
+          {%- set _ = properties_list.append({'name': name, 'value': property}) -%}
+          {%- endfor -%}
+          {{ properties_list }}
+  # Move bot.owner[<owner type>] to bot.owner.info when it is set
+  bot_owner_to_info:
+    type: AddFields
+    condition: >-
+      {%- set owner = (record.get('bot') or {}).get('owner') or {} -%}
+      {{ true if owner.get('type') and owner.get(owner.get('type')) else false }}
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - bot
+          - owner
+        value: >-
+          {%- set owner = (record.get('bot') or {}).get('owner') or {} -%}
+          {%- set owner_type = owner.get('type') -%}
+          {%- set new_owner = {} -%}
+          {%- for key, item in owner.items() if key != owner_type -%}
+          {%- set _ = new_owner.update({key: item}) -%}
+          {%- endfor -%}
+          {%- set _ = new_owner.update({'info': owner.get(owner_type)}) -%}
+          {{ new_owner }}
   request_parameter_paginator:
     type: DefaultPaginator
     page_token_option:
@@ -122,8 +155,7 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/client_side_incremental_sync"
     transformations:
-      - type: CustomTransformation
-        class_name: source_declarative_manifest.components.NotionPropertiesTransformation
+      - $ref: "#/definitions/properties_to_name_value_list"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -163,8 +195,7 @@ streams:
         $ref: "#/definitions/request_parameter_paginator"
       partition_router: []
     transformations:
-      - type: CustomTransformation
-        class_name: source_declarative_manifest.components.NotionUserTransformation
+      - $ref: "#/definitions/bot_owner_to_info"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -189,8 +220,7 @@ streams:
     incremental_sync:
       $ref: "#/definitions/client_side_incremental_sync"
     transformations:
-      - type: CustomTransformation
-        class_name: source_declarative_manifest.components.NotionPropertiesTransformation
+      - $ref: "#/definitions/properties_to_name_value_list"
     schema_loader:
       type: InlineSchemaLoader
       schema:
