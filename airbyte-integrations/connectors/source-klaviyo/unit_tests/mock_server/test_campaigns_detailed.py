@@ -124,6 +124,105 @@ class TestCampaignsDetailedStream(TestCase):
         assert record["attributes"]["name"] == "Test Campaign"
 
     @HttpMocker()
+    def test_send_strategy_and_campaign_messages_use_revision_2026_01_15_shape(self, http_mocker: HttpMocker):
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
+        messages_url = "https://a.klaviyo.com/api/campaigns/campaign_001/campaign-messages"
+
+        for campaign_type in ["sms", "email"]:
+            for archived in ["true", "false"]:
+                filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+0000),less-or-equal(updated_at,2024-06-01T12:00:00+0000),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
+                records = []
+                if (campaign_type, archived) == ("email", "false"):
+                    records = [
+                        {
+                            "type": "campaign",
+                            "id": "campaign_001",
+                            "attributes": {
+                                "name": "Static send",
+                                "status": "Sent",
+                                "archived": False,
+                                "send_strategy": {
+                                    "method": "static",
+                                    "datetime": "2024-05-31T10:00:00+00:00",
+                                    "options": {"is_local": False},
+                                },
+                                "created_at": "2024-05-31T09:00:00+00:00",
+                                "updated_at": "2024-05-31T12:30:00+00:00",
+                            },
+                            "relationships": {
+                                "campaign-messages": {
+                                    "data": [{"type": "campaign-message", "id": "msg_001"}],
+                                    "links": {"related": messages_url},
+                                }
+                            },
+                        }
+                    ]
+                http_mocker.get(
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
+                    .with_query_params({"filter": filter_value, "sort": "updated_at"})
+                    .build(),
+                    HttpResponse(
+                        body=json.dumps({"data": records, "links": {"self": "https://a.klaviyo.com/api/campaigns", "next": None}}),
+                        status_code=200,
+                    ),
+                )
+
+        http_mocker.get(
+            KlaviyoRequestBuilder.campaign_recipient_estimations_endpoint(_API_KEY, "campaign_001").build(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": {
+                            "type": "campaign-recipient-estimation",
+                            "id": "campaign_001",
+                            "attributes": {"estimated_recipient_count": 1000},
+                        }
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+        http_mocker.get(
+            KlaviyoRequestBuilder.from_url(messages_url, _API_KEY).build(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": [
+                            {
+                                "type": "campaign-message",
+                                "id": "msg_001",
+                                "attributes": {
+                                    "definition": {
+                                        "channel": "email",
+                                        "label": "Welcome",
+                                        "content": {"subject": "Welcome!", "preview_text": "Thanks for joining"},
+                                    },
+                                    "send_times": [],
+                                    "created_at": "2024-05-31T09:00:00+00:00",
+                                    "updated_at": "2024-05-31T12:30:00+00:00",
+                                },
+                            }
+                        ]
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1
+        record = output.records[0].record.data
+        send_strategy = record["attributes"]["send_strategy"]
+        assert send_strategy["datetime"] == "2024-05-31T10:00:00+00:00"
+        assert send_strategy["options"]["is_local"] is False
+        message = record["campaign_messages"][0]["attributes"]
+        assert message["definition"]["channel"] == "email"
+        assert message["definition"]["content"]["subject"] == "Welcome!"
+
+    @HttpMocker()
     def test_pagination_multiple_pages(self, http_mocker: HttpMocker):
         """
         Test that connector fetches all pages when pagination is present.
