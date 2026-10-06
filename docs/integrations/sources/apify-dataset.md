@@ -76,6 +76,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                 | Subject                                                                         |
 | :------ | :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 2.2.62 | 2026-10-06 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Replace the custom `item_collection` record extractor with built-in declarative transformations; record output is unchanged |
 | 2.2.61 | 2026-10-06 | [87770](https://github.com/airbytehq/airbyte/pull/87770) | Update dependencies |
 | 2.2.60 | 2026-09-29 | [87064](https://github.com/airbytehq/airbyte/pull/87064) | Update dependencies |
 | 2.2.59 | 2026-09-22 | [86526](https://github.com/airbytehq/airbyte/pull/86526) | Update dependencies |
