@@ -295,7 +295,7 @@ Stripe accounts whose default API version is older than `2019-12-03` receive inv
 From version 6.0.23, incremental syncs write `il_...` IDs. Rows written by earlier versions aren't removed automatically, so until you clean them up, affected line items can appear twice: once under the legacy ID and once under the `il_...` ID. To check whether you're affected, run a query like this against your destination:
 
 ```sql
-SELECT COUNT(*) FROM <your_schema>.invoice_line_items WHERE id NOT LIKE 'il\_%';
+SELECT COUNT(*) FROM <your_schema>.invoice_line_items WHERE SUBSTR(id, 1, 3) <> 'il_';
 ```
 
 If the count is greater than zero, upgrade to 6.0.23 or later, then [refresh the `invoice_line_items` stream and remove records](/platform/operator-guides/refreshes). A refreshed stream is rebuilt from the Invoices endpoints rather than from the 30-day Events API window, so no history is lost, except rows that marked deleted draft invoices (`is_deleted` is `true`), which aren't recreated. Refreshing and retaining records doesn't remove the legacy rows, because they have a different primary key.
