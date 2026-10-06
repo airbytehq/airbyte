@@ -1,17 +1,51 @@
 # Scryfall
-For Magic The Gathering fans. Here is a simple data source for all the cards and sets!
 
-## Configuration
+This connector syncs Magic: The Gathering card, set, and card symbol data from the [Scryfall API](https://scryfall.com/docs/api).
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
+## Prerequisites
 
-## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| cards | id | DefaultPaginator | ✅ |  ❌  |
-| sets | id | No pagination | ✅ |  ❌  |
-| symbols | symbol | DefaultPaginator | ✅ |  ❌  |
+None. The Scryfall API is public and doesn't require an account or API key.
+
+## Setup guide
+
+This connector has no configuration options. Create a Scryfall source in Airbyte, give it a name, and select **Set up source**.
+
+## Supported sync modes
+
+This connector supports [Full Refresh](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes) syncs only. It doesn't support incremental syncs.
+
+## Supported streams
+
+| Stream | Scryfall endpoint | Primary key | Description |
+| ------ | ----------------- | ----------- | ----------- |
+| `cards` | [`GET /cards/search`](https://scryfall.com/docs/api/cards/search) | `id` | Cards returned by a search for `*`. See [Cards stream coverage](#cards-stream-coverage). |
+| `sets` | [`GET /sets`](https://scryfall.com/docs/api/sets/all) | `id` | All sets on Scryfall. |
+| `symbols` | [`GET /symbology`](https://scryfall.com/docs/api/card-symbols/all) | `symbol` | All card symbols, such as mana and tap symbols. |
+
+### Cards stream coverage
+
+The `cards` stream runs a Scryfall full-text search with the query `*` and Scryfall's default search options. Because of those defaults, the stream doesn't contain every card object in Scryfall's database:
+
+- Reprints are rolled up, so you get one printing of each unique card rather than every printing.
+- Only English cards are included.
+- Extras, such as tokens and planes, are excluded.
+- Rare card variations are excluded.
+
+The connector doesn't expose options to change this behavior. If you need every printing in every language, use Scryfall's [bulk data files](https://scryfall.com/docs/api/bulk-data) instead.
+
+## Limitations
+
+### Rate limits
+
+Scryfall enforces [hard rate limits](https://scryfall.com/docs/api/rate-limits): 2 requests per second for `/cards/search`, and 10 requests per second for other endpoints. The search endpoint returns 175 cards per page, so a full sync of the `cards` stream takes roughly 200 requests. If Scryfall responds with HTTP 429, the connector retries the request with backoff.
+
+### Sync frequency
+
+Scryfall only updates card prices once per day, and gameplay data such as card names and Oracle text changes less often. Syncing more than once a day doesn't return new prices.
+
+## Troubleshooting
+
+Scryfall requires every request to include a `User-Agent` and `Accept` header, and it rejects requests that use a default HTTP library user agent with HTTP 400. Versions of this connector before 0.0.66 don't send these headers, so connection checks and syncs fail. If you see HTTP 400 errors, upgrade to version 0.0.66 or later.
 
 ## IP allow list
 
@@ -24,6 +58,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.67 | 2026-10-06 | [88025](https://github.com/airbytehq/airbyte/pull/88025) | Update dependencies |
+| 0.0.66 | 2026-10-03 | [87644](https://github.com/airbytehq/airbyte/pull/87644) | Send a custom User-Agent (Scryfall rejects default HTTP-library agents with 400) |
 | 0.0.65 | 2026-09-29 | [87339](https://github.com/airbytehq/airbyte/pull/87339) | Update dependencies |
 | 0.0.64 | 2026-09-22 | [86781](https://github.com/airbytehq/airbyte/pull/86781) | Update dependencies |
 | 0.0.63 | 2026-09-15 | [86218](https://github.com/airbytehq/airbyte/pull/86218) | Update dependencies |
