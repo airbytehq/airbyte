@@ -59,7 +59,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "This release corrects four stream schemas. `applications.archiveReason` changes from a string to an object, and `job_postings.publishedDate` changes from a date-time to a date. `application_criteria_evaluations` gains a primary key of `application_id` and `id`, and drops the never-populated `assessmentType`, `criterionName`, and `jobId` columns. `interviews` drops twelve never-populated scheduled-interview columns. Users must refresh the schema of the affected streams after upgrading, and data-lake destinations must recreate the affected tables. See the migration guide for details."
+        message: "Version 2.0.0 corrects four stream schemas to match the Ashby API. `applications.archiveReason` changes from a string to an object, and `job_postings.publishedDate` changes from a date-time to a date. `application_criteria_evaluations` gains a primary key of `application_id` and `id` and drops the always-null `assessmentType`, `criterionName`, and `jobId` columns. `interviews` drops twelve always-null scheduled-interview columns; use `interview_schedules` for that data. Connections that don't sync these four streams are unaffected. After upgrading, refresh the source schema. If an S3 Data Lake or Iceberg sync then fails with a schema-evolution error, drop the affected tables and refresh those streams. See https://docs.airbyte.com/integrations/sources/ashby-migrations#upgrading-to-200."
         upgradeDeadline: "2026-11-09"
         deadlineAction: "auto_upgrade"
         scopedImpact:

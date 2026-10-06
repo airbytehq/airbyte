@@ -136,6 +136,10 @@ The connector retries HTTP 429 and 5xx responses before failing.
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
+## Upgrading to 2.0.0
+
+Version 2.0.0 corrects four stream schemas to match the Ashby API. `applications.archiveReason` becomes an object, `job_postings.publishedDate` becomes a date, `application_criteria_evaluations` gains a primary key of `application_id` and `id`, and fields Ashby never returns are removed from `interviews` and `application_criteria_evaluations`. Refresh the source schema after upgrading. If an S3 Data Lake or Iceberg sync then fails with a schema-evolution error, drop the affected tables and refresh those streams. For the full list of changes, downstream query updates, and the upgrade steps, see the [Ashby migration guide](/integrations/sources/ashby-migrations#upgrading-to-200).
+
 ## Upgrading to 1.0.0
 
 Version 1.0.0 declares element schemas for array columns that the connector previously left untyped. On data-lake destinations such as S3 Data Lake and Iceberg, those columns change type, so syncs can fail with a schema evolution error. Refresh the affected streams first, and drop and recreate the affected destination tables only if a sync still fails. For the full list of affected columns and the upgrade steps, see the [Ashby migration guide](/integrations/sources/ashby-migrations).
