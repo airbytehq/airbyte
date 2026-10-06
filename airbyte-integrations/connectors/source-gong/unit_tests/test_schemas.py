@@ -3,7 +3,6 @@
 import pytest
 import yaml
 from jsonschema import Draft7Validator
-
 from unit_tests._helpers import _MANIFEST_PATH
 
 
