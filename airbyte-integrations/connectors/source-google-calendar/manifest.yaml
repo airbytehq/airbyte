@@ -183,64 +183,26 @@ definitions:
         schema:
           $ref: "#/schemas/calendars"
     events:
-      type: DeclarativeStream
+      type: StateDelegatingStream
       name: events
-      primary_key:
-        - id
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%fZ"
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('start_date') or day_delta(-730, format='%Y-%m-%dT%H:%M:%S.%fZ'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: calendars/{{ stream_partition.calendar_id | urlencode }}/events
-          http_method: GET
-          request_parameters:
-            showDeleted: "true"
-            maxResults: "2500"
-            singleEvents: "false"
-            # Google rejects updatedMin older than ~30 days (410). Only a cursor/start_date
-            # newer than 28 days is sent; otherwise the parameter is dropped and the calendar is re-read.
-            updatedMin: "{{ stream_slice['start_time'] if stream_slice['start_time'] > day_delta(-28, format='%Y-%m-%dT%H:%M:%S.%fZ') else '' }}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - items
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: pageToken
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('nextPageToken') }}"
-            stop_condition: "{{ response.get('nextPageToken') is not defined }}"
-        partition_router:
-          $ref: "#/definitions/calendar_partition_router"
-      state_migrations:
-        - type: LegacyToPerPartitionStateMigration
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - calendar_id
-              value: "{{ stream_partition.calendar_id }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/events"
+      # Google rejects updatedMin older than ~30 days (410). With no saved cursor, or one older
+      # than 28 days, the full-refresh stream re-reads the calendar (bounded only by a recent
+      # start_date) and the stale state is cleared first; otherwise the incremental stream
+      # sends updatedMin from the saved cursor.
+      api_retention_period: P28D
+      full_refresh_stream:
+        $ref: "#/definitions/events_stream_base"
+      incremental_stream:
+        $ref: "#/definitions/events_stream_base"
+        retriever:
+          $ref: "#/definitions/events_stream_base/retriever"
+          requester:
+            $ref: "#/definitions/events_stream_base/retriever/requester"
+            request_parameters:
+              showDeleted: "true"
+              maxResults: "2500"
+              singleEvents: "false"
+              updatedMin: "{{ stream_slice['start_time'] }}"
     acl:
       type: DeclarativeStream
       name: acl
@@ -371,6 +333,64 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/freebusy"
+  events_stream_base:
+    type: DeclarativeStream
+    name: events
+    primary_key:
+      - id
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date') or day_delta(-730, format='%Y-%m-%dT%H:%M:%S.%fZ'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: calendars/{{ stream_partition.calendar_id | urlencode }}/events
+        http_method: GET
+        request_parameters:
+          showDeleted: "true"
+          maxResults: "2500"
+          singleEvents: "false"
+          # First sync (no saved cursor): honour a start_date within Google's ~30-day window.
+          updatedMin: "{{ stream_slice['start_time'] if config.get('start_date') and stream_slice['start_time'] > day_delta(-28, format='%Y-%m-%dT%H:%M:%S.%fZ') else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: pageToken
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.get('nextPageToken') }}"
+          stop_condition: "{{ response.get('nextPageToken') is not defined }}"
+      partition_router:
+        $ref: "#/definitions/calendar_partition_router"
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - calendar_id
+            value: "{{ stream_partition.calendar_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/events"
   calendar_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:

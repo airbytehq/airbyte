@@ -4,10 +4,13 @@
 
 """Mock-server tests for the `events` stream: updatedMin bounding and error handling.
 
-Google rejects `updatedMin` bounds older than ~30 days with a 410, so the manifest
-drops the parameter whenever the effective start (saved cursor or `start_date`) is
-older than 28 days. These tests pin the exact request parameters per case and the
-failure classification of 403/410 responses.
+Google rejects `updatedMin` bounds older than ~30 days with a 410, so `events` is a
+`StateDelegatingStream` with `api_retention_period: P28D`: with no saved cursor, or one
+older than 28 days, the full-refresh stream re-reads the calendar (sending `updatedMin`
+only for a `start_date` within 28 days, clearing the stale state first); otherwise the
+incremental stream sends `updatedMin` from the saved cursor.
+These tests pin the exact request parameters per case and the failure classification
+of 403/410 responses.
 """
 
 import json
@@ -89,6 +92,26 @@ def _days_ago(n: int) -> str:
     return (datetime.now(timezone.utc) - timedelta(days=n)).strftime(_DATETIME_FORMAT)
 
 
+def _partition_state(cursor: str):
+    """Per-partition stream state: the global cursor lives under "state" so the
+    StateDelegatingStream's retention check can read it."""
+    return (
+        StateBuilder()
+        .with_stream_state(
+            "events",
+            {
+                "states": [{"partition": {"calendar_id": "primary"}, "cursor": {"updated": cursor}}],
+                "state": {"updated": cursor},
+            },
+        )
+        .build()
+    )
+
+
+def _stream_state(state_message) -> Mapping[str, Any]:
+    return json.loads(json.dumps(state_message.state.stream.stream_state, default=lambda o: o.__dict__))
+
+
 def _error_trace(output):
     assert output.errors, "expected the sync to emit an error trace message"
     return output.errors[0].trace.error
@@ -121,7 +144,7 @@ def test_incremental_no_state_no_start_date_sends_no_updated_min():
 
 def test_incremental_fresh_state_sends_updated_min():
     cursor = _days_ago(2)
-    state = StateBuilder().with_stream_state("events", {"updated": cursor}).build()
+    state = _partition_state(cursor)
     with HttpMocker() as http_mocker:
         request = _events_request(updated_min=cursor)
         http_mocker.get(request, _items_response(_RECORD))
@@ -132,8 +155,8 @@ def test_incremental_fresh_state_sends_updated_min():
         http_mocker.assert_number_of_calls(request, 1)
 
 
-def test_incremental_stale_state_drops_updated_min():
-    state = StateBuilder().with_stream_state("events", {"updated": _days_ago(60)}).build()
+def test_incremental_stale_state_drops_updated_min_and_resets_state():
+    state = _partition_state(_days_ago(60))
     with HttpMocker() as http_mocker:
         request = _events_request()
         http_mocker.get(request, _items_response(_RECORD))
@@ -142,6 +165,24 @@ def test_incremental_stale_state_drops_updated_min():
 
         assert output.errors == []
         assert len(output.records) == 1
+        http_mocker.assert_number_of_calls(request, 1)
+        emitted_states = [_stream_state(message) for message in output.state_messages]
+        assert emitted_states[0] == {}, "the stale cursor is cleared before the full re-read"
+        assert _RECORD["updated"] in emitted_states[-1].get("state", {}).get("updated", "")
+
+
+def test_incremental_fresh_start_date_sends_updated_min():
+    start_date = _days_ago(7)
+    with HttpMocker() as http_mocker:
+        request = _events_request(updated_min=start_date)
+        http_mocker.get(request, _items_response(_RECORD))
+        http_mocker.post(_TOKEN_REQUEST, _TOKEN_RESPONSE)
+        _mock_parent_partitions(http_mocker)
+        config = _config(start_date=start_date)
+
+        output = read(get_source(config), config, _catalog(SyncMode.incremental))
+
+        assert output.errors == []
         http_mocker.assert_number_of_calls(request, 1)
 
 
@@ -185,7 +226,7 @@ def test_plain_403_fails_as_config_error():
 
 def test_410_fails_as_config_error_with_remediation():
     cursor = _days_ago(2)
-    state = StateBuilder().with_stream_state("events", {"updated": cursor}).build()
+    state = _partition_state(cursor)
     with HttpMocker() as http_mocker:
         http_mocker.get(
             _events_request(updated_min=cursor),
@@ -206,7 +247,7 @@ def test_cancelled_record_is_emitted_and_does_not_move_cursor():
     cancelled = {"id": "x", "status": "cancelled"}
     record = {"id": "e1", "updated": _days_ago(1)}
     cursor = _days_ago(5)
-    cursor_state = StateBuilder().with_stream_state("events", {"updated": cursor}).build()
+    cursor_state = _partition_state(cursor)
     with HttpMocker() as http_mocker:
         request = _events_request(updated_min=cursor)
         http_mocker.get(request, _items_response(cancelled, record))
@@ -218,5 +259,4 @@ def test_cancelled_record_is_emitted_and_does_not_move_cursor():
 
         assert output.errors == []
         assert len(output.records) == 2
-        emitted_state = json.dumps(output.state_messages[-1].state.stream.stream_state, default=lambda o: o.__dict__)
-        assert record["updated"] in emitted_state
+        assert record["updated"] in _stream_state(output.state_messages[-1])["state"]["updated"]
