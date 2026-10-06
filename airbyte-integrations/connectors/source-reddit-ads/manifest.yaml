@@ -32,7 +32,7 @@ definitions:
             - refresh_token
         token_refresh_endpoint: https://www.reddit.com/api/v1/access_token
         refresh_request_headers:
-          User-Agent: "{{ config['user_agent'] }}"
+          User-Agent: "{{ config.get('user_agent') or 'airbyte:source-reddit-ads:v1' }}"
           Content-Type: application/x-www-form-urlencoded
           Authorization: >-
             Basic {{ (config['client_id'] ~ ':' ~ config['client_secret']) |
@@ -760,7 +760,6 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - client_id
-      - user_agent
       - ad_account_id
       - client_secret
       - refresh_token
@@ -799,9 +798,9 @@ spec:
       user_agent:
         type: string
         description: >-
-          A unique and descriptive user agent string in the format:
-          platform:app_id:version (by /u/yourusername). Required for all
-          requests.
+          Optional. A unique and descriptive user agent string in the format:
+          platform:app_id:version (by /u/yourusername). If empty, the connector
+          uses an Airbyte user agent.
         order: 1
         title: User Agent
         airbyte_secret: true
@@ -826,6 +825,47 @@ spec:
         title: OAuth Refresh Token
         airbyte_secret: true
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: >-
+          https://www.reddit.com/api/v1/authorize?client_id={{client_id_value}}&response_type=code&state={{state_value}}&redirect_uri={{redirect_uri_value}}&duration=permanent&scope=adsread
+        access_token_url: https://www.reddit.com/api/v1/access_token
+        access_token_headers:
+          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
+          Content-Type: application/x-www-form-urlencoded
+          Accept: application/json
+          User-Agent: "airbyte:source-reddit-ads:v1"
+        access_token_params:
+          grant_type: authorization_code
+          code: "{{ auth_code_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - refresh_token
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config: [refresh_token]
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id: {type: string}
+          client_secret: {type: string}
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config: [client_id]
+          client_secret:
+            type: string
+            path_in_connector_config: [client_secret]
 
 metadata:
   assist:

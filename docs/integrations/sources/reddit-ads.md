@@ -11,6 +11,8 @@ The Reddit Ads source syncs campaigns, ads, and daily campaign performance metri
 
 ## Set up the Reddit Ads source
 
+**Airbyte Cloud:** select **Authenticate your Reddit account** and sign in as a Reddit user with access to the ad account you want to sync, then enter the ad account ID ([Step 3](#step-3-find-your-ad-account-id)). Steps 1 and 2 (creating a developer app and getting a refresh token manually) are only needed for Airbyte Open Source (self-managed).
+
 ### Step 1: Create a developer app
 
 1. In [Reddit Ads Manager](https://ads.reddit.com), open your business's **Developer Applications** page.
@@ -55,7 +57,7 @@ In [Reddit Ads Manager](https://ads.reddit.com), open **Business Manager** > **A
 
 Enter the client ID, client secret, refresh token, and ad account ID, then set the remaining fields:
 
-- **User Agent**: Reddit requires a descriptive user agent on every request, in the format `platform:app_id:version (by /u/username)`. For example, `airbyte:reddit-ads-sync:v1.0 (by /u/your-username)`. Reddit heavily throttles default user agents such as `Python/urllib` or `Java`.
+- **User Agent**: Optional. A descriptive user agent in the format `platform:app_id:version (by /u/username)`. For example, `airbyte:reddit-ads-sync:v1.0 (by /u/your-username)`. If you leave it empty, the connector sends an Airbyte user agent. Reddit heavily throttles default user agents such as `Python/urllib` or `Java`.
 - **Start Date**: Optional. The earliest data to sync, in RFC 3339 format with a UTC offset, such as `2024-05-11T00:00:00Z`. It applies to all three streams: it's the earliest `modified_at` for `ad` and `campaign`, and the earliest report date for `campaign_report`. If you leave it empty, all three streams start 24 months before the current sync.
 - **Number of Concurrent Workers**: Optional. The number of requests the connector runs in parallel, from 1 to 10. The default is 3. Higher values can speed up syncs, but they make Reddit rate limiting more likely.
 
@@ -112,7 +114,7 @@ The connector reuses an access token until it expires, then refreshes it. If a r
 |-------|------|-------------|---------------|
 | `client_id` | `string` | OAuth Client ID.  |  |
 | `start_time` | `string` | Optional UTC start date applied to all three streams, in YYYY-MM-DDTHH:MM:SSZ format. A value earlier than 24 months ago is clamped for `campaign_report`, because Reddit only serves report data for the last 24 months. | 24 months before the current date |
-| `user_agent` | `string` | User Agent. A unique and descriptive user agent string in the format: platform:app_id:version (by /u/yourusername). Required for all requests. |  |
+| `user_agent` | `string` | Optional. User Agent. A unique and descriptive user agent string in the format: platform:app_id:version (by /u/yourusername). If empty, the connector uses an Airbyte user agent. | airbyte:source-reddit-ads:v1 |
 | `ad_account_id` | `string` | The Reddit Ads account ID to sync, shown in Reddit Ads Manager, for example a2_abc123. |  |
 | `client_secret` | `string` | OAuth Client Secret.  |  |
 | `refresh_token` | `string` | OAuth Refresh Token.  |  |
@@ -136,6 +138,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.2 | 2026-10-06 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add OAuth (Authenticate with Reddit) for Airbyte Cloud; make User Agent optional |
 | 0.1.1 | 2026-10-06 | [88015](https://github.com/airbytehq/airbyte/pull/88015) | Update dependencies |
 | 0.1.0 | 2026-10-05 | [87043](https://github.com/airbytehq/airbyte/pull/87043) | Show actionable errors for rejected refresh tokens or client credentials, invalid ad account IDs, and 400/403/404 responses, add a client-side API budget and configurable concurrency, add suggested streams, make spec titles human-readable, and add unit tests |
 | 0.0.12 | 2026-09-29 | [87338](https://github.com/airbytehq/airbyte/pull/87338) | Update dependencies |
