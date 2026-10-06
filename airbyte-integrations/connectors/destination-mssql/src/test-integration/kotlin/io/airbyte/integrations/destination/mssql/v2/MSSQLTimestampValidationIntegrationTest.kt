@@ -28,8 +28,9 @@ import org.junit.jupiter.api.Test
 
 /**
  * Integration test that verifies the full round-trip through [MSSQLQueryBuilder.populateStatement]
- * when a pre-1753 timestamp is sent. The [LIMITS.validateTimestamp] function should nullify the
- * value and `setAsNullValue` should set the parameter to SQL NULL, allowing the INSERT to succeed.
+ * when a pre-1753 timestamp is sent. The [MSSQLValueCoercer.validateTimestamp] function should
+ * nullify the value and `setAsNullValue` should set the parameter to SQL NULL, allowing the INSERT
+ * to succeed.
  */
 class MSSQLTimestampValidationIntegrationTest {
 

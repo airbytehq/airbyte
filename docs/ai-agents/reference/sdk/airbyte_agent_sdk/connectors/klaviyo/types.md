@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.klaviyo.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.klaviyo.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsAnyCondition"></a>
@@ -106,10 +106,24 @@ Classes
     `updated_at: Any`
     :   The type of the None singleton.
 
+<a id="CampaignsArrayContainsCondition"></a>
+
+`CampaignsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignsContainsCondition"></a>
 
 `CampaignsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -118,6 +132,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CampaignsEndswithCondition"></a>
+
+`CampaignsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.klaviyo.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
 <a id="CampaignsEqCondition"></a>
@@ -255,20 +283,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.klaviyo.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
-<a id="CampaignsLikeCondition"></a>
-
-`CampaignsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.klaviyo.types.CampaignsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CampaignsListParams"></a>
 
 `CampaignsListParams(*args, **kwargs)`
@@ -347,7 +361,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.klaviyo.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.klaviyo.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CampaignsOrCondition"></a>
@@ -369,7 +383,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.klaviyo.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.klaviyo.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsSearchFilter"></a>
@@ -412,7 +426,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.klaviyo.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.klaviyo.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.klaviyo.types.CampaignsSortFilter]`
@@ -447,10 +461,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="CampaignsStartswithCondition"></a>
+
+`CampaignsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.klaviyo.types.CampaignsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignsStringFilter"></a>
 
 `CampaignsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -495,7 +523,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesInCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesInCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EmailTemplatesAnyCondition"></a>
@@ -546,10 +574,24 @@ Classes
     `updated: Any`
     :   The type of the None singleton.
 
+<a id="EmailTemplatesArrayContainsCondition"></a>
+
+`EmailTemplatesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="EmailTemplatesContainsCondition"></a>
 
 `EmailTemplatesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -558,6 +600,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="EmailTemplatesEndswithCondition"></a>
+
+`EmailTemplatesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesStringFilter`
     :   The type of the None singleton.
 
 <a id="EmailTemplatesEqCondition"></a>
@@ -692,20 +748,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesStringFilter`
     :   The type of the None singleton.
 
-<a id="EmailTemplatesLikeCondition"></a>
-
-`EmailTemplatesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesStringFilter`
-    :   The type of the None singleton.
-
 <a id="EmailTemplatesListParams"></a>
 
 `EmailTemplatesListParams(*args, **kwargs)`
@@ -784,7 +826,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesInCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesInCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAnyCondition`
     :   The type of the None singleton.
 
 <a id="EmailTemplatesOrCondition"></a>
@@ -806,7 +848,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesInCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesInCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EmailTemplatesSearchFilter"></a>
@@ -846,7 +888,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesInCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesInCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesSortFilter]`
@@ -878,10 +920,24 @@ Classes
     `updated: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="EmailTemplatesStartswithCondition"></a>
+
+`EmailTemplatesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.klaviyo.types.EmailTemplatesStringFilter`
+    :   The type of the None singleton.
+
 <a id="EmailTemplatesStringFilter"></a>
 
 `EmailTemplatesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -923,7 +979,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.klaviyo.types.EventsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.klaviyo.types.EventsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EventsAnyCondition"></a>
@@ -977,10 +1033,24 @@ Classes
     `type_: Any`
     :   The type of the None singleton.
 
+<a id="EventsArrayContainsCondition"></a>
+
+`EventsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.klaviyo.types.EventsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="EventsContainsCondition"></a>
 
 `EventsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -989,6 +1059,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.klaviyo.types.EventsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="EventsEndswithCondition"></a>
+
+`EventsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.klaviyo.types.EventsStringFilter`
     :   The type of the None singleton.
 
 <a id="EventsEqCondition"></a>
@@ -1112,20 +1196,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.klaviyo.types.EventsStringFilter`
     :   The type of the None singleton.
 
-<a id="EventsLikeCondition"></a>
-
-`EventsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.klaviyo.types.EventsStringFilter`
-    :   The type of the None singleton.
-
 <a id="EventsListParams"></a>
 
 `EventsListParams(*args, **kwargs)`
@@ -1207,7 +1277,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.klaviyo.types.EventsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.klaviyo.types.EventsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsAnyCondition`
     :   The type of the None singleton.
 
 <a id="EventsOrCondition"></a>
@@ -1229,7 +1299,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.klaviyo.types.EventsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.klaviyo.types.EventsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EventsSearchFilter"></a>
@@ -1272,7 +1342,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.klaviyo.types.EventsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.klaviyo.types.EventsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.EventsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.klaviyo.types.EventsSortFilter]`
@@ -1307,10 +1377,24 @@ Classes
     `type_: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="EventsStartswithCondition"></a>
+
+`EventsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.klaviyo.types.EventsStringFilter`
+    :   The type of the None singleton.
+
 <a id="EventsStringFilter"></a>
 
 `EventsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1355,7 +1439,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.klaviyo.types.FlowsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.klaviyo.types.FlowsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="FlowsAnyCondition"></a>
@@ -1409,10 +1493,24 @@ Classes
     `updated: Any`
     :   The type of the None singleton.
 
+<a id="FlowsArrayContainsCondition"></a>
+
+`FlowsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.klaviyo.types.FlowsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="FlowsContainsCondition"></a>
 
 `FlowsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1421,6 +1519,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.klaviyo.types.FlowsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="FlowsEndswithCondition"></a>
+
+`FlowsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.klaviyo.types.FlowsStringFilter`
     :   The type of the None singleton.
 
 <a id="FlowsEqCondition"></a>
@@ -1558,20 +1670,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.klaviyo.types.FlowsStringFilter`
     :   The type of the None singleton.
 
-<a id="FlowsLikeCondition"></a>
-
-`FlowsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.klaviyo.types.FlowsStringFilter`
-    :   The type of the None singleton.
-
 <a id="FlowsListParams"></a>
 
 `FlowsListParams(*args, **kwargs)`
@@ -1650,7 +1748,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.klaviyo.types.FlowsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.klaviyo.types.FlowsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsAnyCondition`
     :   The type of the None singleton.
 
 <a id="FlowsOrCondition"></a>
@@ -1672,7 +1770,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.klaviyo.types.FlowsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.klaviyo.types.FlowsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="FlowsSearchFilter"></a>
@@ -1715,7 +1813,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.klaviyo.types.FlowsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.klaviyo.types.FlowsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.FlowsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.klaviyo.types.FlowsSortFilter]`
@@ -1750,10 +1848,24 @@ Classes
     `updated: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="FlowsStartswithCondition"></a>
+
+`FlowsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.klaviyo.types.FlowsStringFilter`
+    :   The type of the None singleton.
+
 <a id="FlowsStringFilter"></a>
 
 `FlowsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1798,7 +1910,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.klaviyo.types.ListsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.klaviyo.types.ListsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ListsAnyCondition"></a>
@@ -1852,10 +1964,24 @@ Classes
     `updated: Any`
     :   The type of the None singleton.
 
+<a id="ListsArrayContainsCondition"></a>
+
+`ListsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.klaviyo.types.ListsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ListsContainsCondition"></a>
 
 `ListsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1864,6 +1990,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.klaviyo.types.ListsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ListsEndswithCondition"></a>
+
+`ListsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.klaviyo.types.ListsStringFilter`
     :   The type of the None singleton.
 
 <a id="ListsEqCondition"></a>
@@ -2001,20 +2141,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.klaviyo.types.ListsStringFilter`
     :   The type of the None singleton.
 
-<a id="ListsLikeCondition"></a>
-
-`ListsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.klaviyo.types.ListsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ListsListParams"></a>
 
 `ListsListParams(*args, **kwargs)`
@@ -2093,7 +2219,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.klaviyo.types.ListsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.klaviyo.types.ListsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ListsOrCondition"></a>
@@ -2115,7 +2241,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.klaviyo.types.ListsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.klaviyo.types.ListsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ListsSearchFilter"></a>
@@ -2158,7 +2284,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.klaviyo.types.ListsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.klaviyo.types.ListsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.ListsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.klaviyo.types.ListsSortFilter]`
@@ -2193,10 +2319,24 @@ Classes
     `updated: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="ListsStartswithCondition"></a>
+
+`ListsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.klaviyo.types.ListsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ListsStringFilter"></a>
 
 `ListsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2241,7 +2381,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.klaviyo.types.MetricsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.klaviyo.types.MetricsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetricsAnyCondition"></a>
@@ -2295,10 +2435,24 @@ Classes
     `updated: Any`
     :   The type of the None singleton.
 
+<a id="MetricsArrayContainsCondition"></a>
+
+`MetricsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.klaviyo.types.MetricsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="MetricsContainsCondition"></a>
 
 `MetricsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2307,6 +2461,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.klaviyo.types.MetricsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetricsEndswithCondition"></a>
+
+`MetricsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.klaviyo.types.MetricsStringFilter`
     :   The type of the None singleton.
 
 <a id="MetricsEqCondition"></a>
@@ -2444,20 +2612,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.klaviyo.types.MetricsStringFilter`
     :   The type of the None singleton.
 
-<a id="MetricsLikeCondition"></a>
-
-`MetricsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.klaviyo.types.MetricsStringFilter`
-    :   The type of the None singleton.
-
 <a id="MetricsListParams"></a>
 
 `MetricsListParams(*args, **kwargs)`
@@ -2536,7 +2690,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.klaviyo.types.MetricsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.klaviyo.types.MetricsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsAnyCondition`
     :   The type of the None singleton.
 
 <a id="MetricsOrCondition"></a>
@@ -2558,7 +2712,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.klaviyo.types.MetricsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.klaviyo.types.MetricsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetricsSearchFilter"></a>
@@ -2601,7 +2755,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.klaviyo.types.MetricsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.klaviyo.types.MetricsEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsInCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.MetricsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.klaviyo.types.MetricsSortFilter]`
@@ -2636,10 +2790,24 @@ Classes
     `updated: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="MetricsStartswithCondition"></a>
+
+`MetricsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.klaviyo.types.MetricsStringFilter`
+    :   The type of the None singleton.
+
 <a id="MetricsStringFilter"></a>
 
 `MetricsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2684,7 +2852,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.klaviyo.types.ProfilesEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesInCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.klaviyo.types.ProfilesEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesInCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProfilesAnyCondition"></a>
@@ -2741,10 +2909,24 @@ Classes
     `updated: Any`
     :   The type of the None singleton.
 
+<a id="ProfilesArrayContainsCondition"></a>
+
+`ProfilesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ProfilesContainsCondition"></a>
 
 `ProfilesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2753,6 +2935,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProfilesEndswithCondition"></a>
+
+`ProfilesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.klaviyo.types.ProfilesStringFilter`
     :   The type of the None singleton.
 
 <a id="ProfilesEqCondition"></a>
@@ -2893,20 +3089,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.klaviyo.types.ProfilesStringFilter`
     :   The type of the None singleton.
 
-<a id="ProfilesLikeCondition"></a>
-
-`ProfilesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.klaviyo.types.ProfilesStringFilter`
-    :   The type of the None singleton.
-
 <a id="ProfilesListParams"></a>
 
 `ProfilesListParams(*args, **kwargs)`
@@ -2985,7 +3167,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.klaviyo.types.ProfilesEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesInCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.klaviyo.types.ProfilesEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesInCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProfilesOrCondition"></a>
@@ -3007,7 +3189,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.klaviyo.types.ProfilesEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesInCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.klaviyo.types.ProfilesEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesInCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProfilesSearchFilter"></a>
@@ -3053,7 +3235,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.klaviyo.types.ProfilesEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesInCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLikeCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.klaviyo.types.ProfilesEqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesNeqCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesGtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesGteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLtCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesLteCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesInCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesStartswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesEndswithCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesFuzzyCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesKeywordCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesArrayContainsCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesNotCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAndCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesOrCondition | airbyte_agent_sdk.connectors.klaviyo.types.ProfilesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.klaviyo.types.ProfilesSortFilter]`
@@ -3091,10 +3273,24 @@ Classes
     `updated: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="ProfilesStartswithCondition"></a>
+
+`ProfilesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.klaviyo.types.ProfilesStringFilter`
+    :   The type of the None singleton.
+
 <a id="ProfilesStringFilter"></a>
 
 `ProfilesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

@@ -1,0 +1,1455 @@
+version: 7.17.1
+
+type: DeclarativeSource
+
+description: >-
+  Designed for organizations on the Claude Platform, this API provides
+  programmatic access to daily aggregated usage metrics.
+
+check:
+  type: CheckStream
+  stream_names:
+    - summaries
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: ApiKeyAuthenticator
+        api_token: "{{ config['api_key'] }}"
+        inject_into:
+          type: RequestOption
+          field_name: x-api-key
+          inject_into: header
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 3
+        response_filters:
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 401
+              - 429
+              - 500
+              - 502
+              - 503
+              - 504
+        backoff_strategies:
+          - type: ConstantBackoffStrategy
+            backoff_time_in_seconds: 10
+      request_headers:
+        accept: application/json
+        anthropic-version: "2023-06-01"
+    CursorPaginator:
+      type: DefaultPaginator
+      page_size_option:
+        type: RequestOption
+        field_name: limit
+        inject_into: request_parameter
+      page_token_option:
+        type: RequestOption
+        field_name: page
+        inject_into: request_parameter
+      pagination_strategy:
+        type: CursorPagination
+        page_size: 1000
+        cursor_value: "{{ response.get('next_page') }}"
+        stop_condition: "{{ not response.get('next_page') }}"
+    AnalyticsEndDatetime:
+      type: MinMaxDatetime
+      datetime: >-
+        {{ config.get('end_date') or (today_utc() -
+        duration('P3D')).strftime('%Y-%m-%d') }}
+      max_datetime: "{{ (today_utc() - duration('P3D')).strftime('%Y-%m-%d') }}"
+      min_datetime: "2026-01-01"
+      datetime_format: "%Y-%m-%d"
+      max_datetime_format: "%Y-%m-%d"
+      min_datetime_format: "%Y-%m-%d"
+    DailyBucketPaginator:
+      type: DefaultPaginator
+      page_size_option:
+        type: RequestOption
+        field_name: limit
+        inject_into: request_parameter
+      page_token_option:
+        type: RequestOption
+        field_name: page
+        inject_into: request_parameter
+      pagination_strategy:
+        type: CursorPagination
+        page_size: 31
+        cursor_value: "{{ response.get('next_page') }}"
+        stop_condition: "{{ not response.get('next_page') }}"
+    AnalyticsStartDatetime:
+      type: MinMaxDatetime
+      datetime: >-
+        {{ config.get('start_date') or (today_utc() -
+        duration('P7D')).strftime('%Y-%m-%d') }}
+      max_datetime: "{{ (today_utc() - duration('P3D')).strftime('%Y-%m-%d') }}"
+      min_datetime: "2026-01-01"
+      datetime_format: "%Y-%m-%d"
+      max_datetime_format: "%Y-%m-%d"
+      min_datetime_format: "%Y-%m-%d"
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: "{{ response.get('next_page') }}"
+          stop_condition: "{{ not response.get('next_page') }}"
+
+streams:
+  - type: DeclarativeStream
+    name: users
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: "{{ response.get('next_page') }}"
+          stop_condition: "{{ not response.get('next_page') }}"
+      requester:
+        type: HttpRequester
+        url: https://api.anthropic.com/v1/organizations/analytics/users
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: x-api-key
+            inject_into: header
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 401
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+              error_message_contains: ""
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 10
+        request_headers:
+          accept: application/json
+          anthropic-version: "2023-06-01"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - user_id
+      - date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        required:
+          - user_id
+          - date
+        properties:
+          date:
+            type: string
+          user:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          user_id:
+            type: string
+          chat_metrics:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          cowork_metrics:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          design_metrics:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          office_metrics:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          web_search_count:
+            type:
+              - number
+              - "null"
+          claude_code_metrics:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - user_id
+            value: "{{ record.get('user', {}).get('id') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config.get('end_date') or (today_utc() -
+          duration('P3D')).strftime('%Y-%m-%d') }}
+        max_datetime: "{{ (today_utc() - duration('P3D')).strftime('%Y-%m-%d') }}"
+        min_datetime: "2026-01-01"
+        datetime_format: "%Y-%m-%d"
+        max_datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config.get('start_date') or (today_utc() -
+          duration('P7D')).strftime('%Y-%m-%d') }}
+        max_datetime: "{{ (today_utc() - duration('P3D')).strftime('%Y-%m-%d') }}"
+        min_datetime: "2026-01-01"
+        datetime_format: "%Y-%m-%d"
+        max_datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_time_option:
+        type: RequestOption
+        field_name: date
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: chat_projects
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: "{{ response.get('next_page') }}"
+          stop_condition: "{{ not response.get('next_page') }}"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.anthropic.com/v1/organizations/analytics/apps/chat/projects
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: x-api-key
+            inject_into: header
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 401
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 10
+        request_headers:
+          accept: application/json
+          anthropic-version: "2023-06-01"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - project_id
+      - date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        required:
+          - date
+        properties:
+          date:
+            type: string
+          created_at:
+            type:
+              - string
+              - "null"
+          created_by:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          project_id:
+            type:
+              - string
+              - "null"
+          project_name:
+            type:
+              - string
+              - "null"
+          message_count:
+            type:
+              - number
+              - "null"
+          distinct_user_count:
+            type:
+              - number
+              - "null"
+          distinct_conversation_count:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config.get('end_date') or (today_utc() -
+          duration('P3D')).strftime('%Y-%m-%d') }}
+        max_datetime: "{{ (today_utc() - duration('P3D')).strftime('%Y-%m-%d') }}"
+        min_datetime: "2026-01-01"
+        datetime_format: "%Y-%m-%d"
+        max_datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config.get('start_date') or (today_utc() -
+          duration('P7D')).strftime('%Y-%m-%d') }}
+        max_datetime: "{{ (today_utc() - duration('P3D')).strftime('%Y-%m-%d') }}"
+        min_datetime: "2026-01-01"
+        datetime_format: "%Y-%m-%d"
+        max_datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_time_option:
+        type: RequestOption
+        field_name: date
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: skills
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: "{{ response.get('next_page') }}"
+          stop_condition: "{{ not response.get('next_page') }}"
+      requester:
+        type: HttpRequester
+        url: https://api.anthropic.com/v1/organizations/analytics/skills
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: x-api-key
+            inject_into: header
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 401
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 10
+        request_headers:
+          accept: application/json
+          anthropic-version: "2023-06-01"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - skill_name
+      - date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        required:
+          - date
+          - skill_name
+        properties:
+          date:
+            type: string
+          skill_name:
+            type: string
+          chat_metrics:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          cowork_metrics:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          office_metrics:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          claude_code_metrics:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          distinct_user_count:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config.get('end_date') or (today_utc() -
+          duration('P3D')).strftime('%Y-%m-%d') }}
+        max_datetime: "{{ (today_utc() - duration('P3D')).strftime('%Y-%m-%d') }}"
+        min_datetime: "2026-01-01"
+        datetime_format: "%Y-%m-%d"
+        max_datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config.get('start_date') or (today_utc() -
+          duration('P7D')).strftime('%Y-%m-%d') }}
+        max_datetime: "{{ (today_utc() - duration('P3D')).strftime('%Y-%m-%d') }}"
+        min_datetime: "2026-01-01"
+        datetime_format: "%Y-%m-%d"
+        max_datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_time_option:
+        type: RequestOption
+        field_name: date
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: connectors
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: "{{ response.get('next_page') }}"
+          stop_condition: "{{ not response.get('next_page') }}"
+      requester:
+        type: HttpRequester
+        url: https://api.anthropic.com/v1/organizations/analytics/connectors
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: x-api-key
+            inject_into: header
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 401
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 10
+        request_headers:
+          accept: application/json
+          anthropic-version: "2023-06-01"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - connector_name
+      - date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        required:
+          - date
+          - connector_name
+        properties:
+          date:
+            type: string
+          chat_metrics:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          connector_name:
+            type: string
+          cowork_metrics:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          office_metrics:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          claude_code_metrics:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          distinct_user_count:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config.get('end_date') or (today_utc() -
+          duration('P3D')).strftime('%Y-%m-%d') }}
+        max_datetime: "{{ (today_utc() - duration('P3D')).strftime('%Y-%m-%d') }}"
+        min_datetime: "2026-01-01"
+        datetime_format: "%Y-%m-%d"
+        max_datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config.get('start_date') or (today_utc() -
+          duration('P7D')).strftime('%Y-%m-%d') }}
+        max_datetime: "{{ (today_utc() - duration('P3D')).strftime('%Y-%m-%d') }}"
+        min_datetime: "2026-01-01"
+        datetime_format: "%Y-%m-%d"
+        max_datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_time_option:
+        type: RequestOption
+        field_name: date
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: summaries
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api.anthropic.com/v1/organizations/analytics/summaries
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: x-api-key
+            inject_into: header
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 401
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 10
+        request_headers:
+          accept: application/json
+          anthropic-version: "2023-06-01"
+        request_parameters:
+          ending_date: >-
+            {{ format_datetime(str_to_datetime(stream_interval.start_time) +
+            duration('P1D'), '%Y-%m-%d') }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - summaries
+    primary_key:
+      - starting_date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        required:
+          - starting_date
+        properties:
+          ending_at:
+            type: string
+          ending_date:
+            type:
+              - string
+              - "null"
+          starting_at:
+            type: string
+          starting_date:
+            type: string
+          assigned_seat_count:
+            type:
+              - number
+              - "null"
+          daily_adoption_rate:
+            type:
+              - number
+              - "null"
+          pending_invite_count:
+            type:
+              - number
+              - "null"
+          weekly_adoption_rate:
+            type:
+              - number
+              - "null"
+          monthly_adoption_rate:
+            type:
+              - number
+              - "null"
+          daily_active_user_count:
+            type:
+              - number
+              - "null"
+          weekly_active_user_count:
+            type:
+              - number
+              - "null"
+          monthly_active_user_count:
+            type:
+              - number
+              - "null"
+          cowork_daily_active_user_count:
+            type:
+              - number
+              - "null"
+          cowork_weekly_active_user_count:
+            type:
+              - number
+              - "null"
+          cowork_monthly_active_user_count:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - starting_date
+            value: "{{ format_datetime(record['starting_at'], '%Y-%m-%d') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - ending_date
+            value: "{{ format_datetime(record['ending_at'], '%Y-%m-%d') }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: starting_date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config.get('end_date') or (today_utc() -
+          duration('P3D')).strftime('%Y-%m-%d') }}
+        max_datetime: "{{ (today_utc() - duration('P3D')).strftime('%Y-%m-%d') }}"
+        min_datetime: "2026-01-01"
+        datetime_format: "%Y-%m-%d"
+        max_datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config.get('start_date') or (today_utc() -
+          duration('P7D')).strftime('%Y-%m-%d') }}
+        max_datetime: "{{ (today_utc() - duration('P3D')).strftime('%Y-%m-%d') }}"
+        min_datetime: "2026-01-01"
+        datetime_format: "%Y-%m-%d"
+        max_datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_time_option:
+        type: RequestOption
+        field_name: starting_date
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: user_usage_report
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: "{{ response.get('next_page') }}"
+          stop_condition: "{{ not response.get('next_page') }}"
+      requester:
+        type: HttpRequester
+        url: https://api.anthropic.com/v1/organizations/analytics/user_usage_report
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: x-api-key
+            inject_into: header
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 401
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 10
+        request_headers:
+          accept: application/json
+          anthropic-version: "2023-06-01"
+        request_parameters:
+          group_by[]: "{{ [\"product\", \"model\"] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - date
+      - actor_user_id
+      - product
+      - model
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        required:
+          - date
+          - actor_user_id
+          - product
+          - model
+        properties:
+          date:
+            type: string
+          actor:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          model:
+            type: string
+          product:
+            type: string
+          requests:
+            type:
+              - number
+              - "null"
+          total_tokens:
+            type:
+              - number
+              - "null"
+          actor_user_id:
+            type: string
+          output_tokens:
+            type:
+              - number
+              - "null"
+          cache_creation:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          server_tool_use:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          uncached_input_tokens:
+            type:
+              - number
+              - "null"
+          cache_read_input_tokens:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - actor_user_id
+            value: "{{ record.get('actor', {}).get('user_id') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['end_date'] or today_utc().strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config.get('start_date') or (today_utc() -
+          duration('P7D')).strftime('%Y-%m-%d') }}
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_time_option:
+        type: RequestOption
+        field_name: ending_at
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: starting_at
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+        - "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: user_cost_report
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: "{{ response.get('next_page') }}"
+          stop_condition: "{{ not response.get('next_page') }}"
+      requester:
+        type: HttpRequester
+        url: https://api.anthropic.com/v1/organizations/analytics/user_cost_report
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: x-api-key
+            inject_into: header
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 401
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 10
+        request_headers:
+          accept: application/json
+          anthropic-version: "2023-06-01"
+        request_parameters:
+          group_by[]: "{{ [\"product\", \"model\", \"cost_type\"] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - date
+      - actor_user_id
+      - product
+      - model
+      - cost_type
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        required:
+          - date
+          - actor_user_id
+          - product
+          - model
+          - cost_type
+        properties:
+          date:
+            type: string
+          actor:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          model:
+            type: string
+          amount:
+            type:
+              - string
+              - "null"
+          product:
+            type: string
+          cost_type:
+            type: string
+          actor_user_id:
+            type: string
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - actor_user_id
+            value: "{{ record.get('actor', {}).get('user_id') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['end_date'] or today_utc().strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config.get('start_date') or (today_utc() -
+          duration('P7D')).strftime('%Y-%m-%d') }}
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_time_option:
+        type: RequestOption
+        field_name: ending_at
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: starting_at
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+        - "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: usage_report
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 31
+          cursor_value: "{{ response.get('next_page') }}"
+          stop_condition: "{{ not response.get('next_page') }}"
+      requester:
+        type: HttpRequester
+        url: https://api.anthropic.com/v1/organizations/analytics/usage_report
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: x-api-key
+            inject_into: header
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 401
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 10
+        request_headers:
+          accept: application/json
+          anthropic-version: "2023-06-01"
+        request_parameters:
+          group_by[]: "{{ [\"product\", \"model\"] }}"
+          bucket_width: 1d
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - starting_at
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        required:
+          - starting_at
+        properties:
+          results:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              additionalProperties: true
+          ending_at:
+            type:
+              - string
+              - "null"
+          starting_at:
+            type: string
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P7D
+      cursor_field: starting_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['end_date'] or today_utc().strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config.get('start_date') or (today_utc() -
+          duration('P7D')).strftime('%Y-%m-%d') }}
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_time_option:
+        type: RequestOption
+        field_name: ending_at
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: starting_at
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+        - "%Y-%m-%dT%H:%M:%SZ"
+  - type: DeclarativeStream
+    name: cost_report
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 31
+          cursor_value: "{{ response.get('next_page') }}"
+          stop_condition: "{{ not response.get('next_page') }}"
+      requester:
+        type: HttpRequester
+        url: https://api.anthropic.com/v1/organizations/analytics/cost_report
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: x-api-key
+            inject_into: header
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 401
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 10
+        request_headers:
+          accept: application/json
+          anthropic-version: "2023-06-01"
+        request_parameters:
+          group_by[]: "{{ [\"product\", \"model\", \"cost_type\"] }}"
+          bucket_width: 1d
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - starting_at
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        required:
+          - starting_at
+        properties:
+          results:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              additionalProperties: true
+          ending_at:
+            type:
+              - string
+              - "null"
+          starting_at:
+            type: string
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P7D
+      cursor_field: starting_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['end_date'] or today_utc().strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config.get('start_date') or (today_utc() -
+          duration('P7D')).strftime('%Y-%m-%d') }}
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_time_option:
+        type: RequestOption
+        field_name: ending_at
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: starting_at
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+        - "%Y-%m-%dT%H:%M:%SZ"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: Claude organization-level Analytics API key (read:analytics scope)
+        order: 2
+        title: API Key
+        airbyte_secret: true
+      end_date:
+        type: string
+        description: >-
+          Optional end date override in YYYY-MM-DD format (capped at 3 days ago
+          UTC for engagement streams; cost/usage default to today UTC)
+        order: 1
+        title: End Date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      start_date:
+        type: string
+        description: Start date for data extraction in YYYY-MM-DD format
+        order: 0
+        title: Start Date
+        default: "2026-01-01"
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    users: false
+    skills: false
+    summaries: false
+    connectors: false
+    cost_report: false
+    usage_report: false
+    chat_projects: false
+    user_cost_report: false
+    user_usage_report: false
+  testedStreams:
+    users:
+      streamHash: f12565ba61aeb2d6c3aff811fc1658d5f3ff22d8
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    chat_projects:
+      streamHash: 1de511a2d7f1d5095a4844706353784de689a595
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    skills:
+      streamHash: 50819fd68f906d1d314681da6956994fae01a0e9
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    connectors:
+      streamHash: d85aa19ed261dd4438921a1c26fce99c7ff58cb3
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    summaries:
+      streamHash: a2c1d604b9e81804beced034b78537d840daa91d
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    user_usage_report:
+      streamHash: 5177952390a7f248aa9128246772f7838f836f0c
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    user_cost_report:
+      streamHash: 9b4978922d1ad53cfe3a3b6f16a2a93ff1aa1fd7
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    usage_report:
+      streamHash: 9e2ef2a966ae10da6816b3b10449152c84d7d88d
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    cost_report:
+      streamHash: 6d23b1eb616162e4c2ccd5343c02de5735134b56
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true

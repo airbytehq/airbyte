@@ -93,7 +93,6 @@ data object XminIncrementalConfiguration : IncrementalConfiguration
 
 data class CdcIncrementalConfiguration(
     val initialLoadTimeout: Duration,
-    val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
     val shutdownTimeout: Duration,
     val replicationSlot: String,
     val publication: String,
@@ -104,11 +103,6 @@ data class CdcIncrementalConfiguration(
 //  initial waiting time in seconds
 //  size of the queue
 ) : IncrementalConfiguration
-
-enum class InvalidCdcCursorPositionBehavior {
-    FAIL_SYNC,
-    RESET_SYNC,
-}
 
 @Singleton
 class PostgresSourceConfigurationFactory
@@ -233,12 +227,6 @@ constructor(
                 val initialLoadTimeout: Duration =
                 // TODO: Default value is duplicated here and in ConfigurationSpecification
                 Duration.ofHours(incrementalSpec.initialLoadTimeoutHours?.toLong() ?: 8)
-                val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior =
-                    if (incrementalSpec.invalidCdcCursorPositionBehavior == "Fail sync") {
-                        InvalidCdcCursorPositionBehavior.FAIL_SYNC
-                    } else {
-                        InvalidCdcCursorPositionBehavior.RESET_SYNC
-                    }
                 val initialWaitingDuration =
                 // TODO: Default value is duplicated here and in ConfigurationSpecification
                 Duration.ofSeconds(incrementalSpec.initialWaitingSeconds?.toLong() ?: 1200)
@@ -247,7 +235,6 @@ constructor(
                 Duration.ofSeconds(incrementalSpec.debeziumShutdownTimeoutSeconds?.toLong() ?: 60)
                 CdcIncrementalConfiguration(
                     initialLoadTimeout = initialLoadTimeout,
-                    invalidCdcCursorPositionBehavior = invalidCdcCursorPositionBehavior,
                     shutdownTimeout = shutdownTimeout,
                     replicationSlot = incrementalSpec.replicationSlot,
                     publication = incrementalSpec.publication,

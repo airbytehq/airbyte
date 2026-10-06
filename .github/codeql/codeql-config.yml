@@ -1,0 +1,20 @@
+name: "Airbyte CodeQL config"
+
+queries:
+  - uses: security-and-quality
+
+# Compiled languages are scoped by their build steps. These filters primarily
+# reduce interpreted-language indexing of tests and local build outputs.
+paths-ignore:
+  - "**/.gradle/**"
+  - "**/.venv/**"
+  - "**/build/**"
+  - "**/integration_tests/**"
+  - "**/node_modules/**"
+  - "**/src/test/**"
+  - "**/src/testFixtures/**"
+  - "**/src/integrationTest/**"
+  - "**/src/test-integration/**"
+  - "**/test/**"
+  - "**/tests/**"
+  - "**/unit_tests/**"

@@ -94,6 +94,23 @@ The following streams have known failures when running against test/sandbox cred
 |--------|---------------|
 | GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE | `RequestedFromDate 2023-09-30T00:00:00.000Z is more than 90 days old` (400 InvalidInput) |
 
+## 7. Report Streams Must Declare Their Own `dataStartTime`/`dataEndTime`
+
+A report stream's `creation_requester` inherits the shared requester through `$ref`, but writing a
+sibling `request_body_json` replaces the inherited one outright rather than merging into it. A stream
+that sets only `reportType` therefore calls `createReport` with no date range at all, even though its
+records are still labelled with the slice's date.
+
+Daily report streams also need that window anchored to the slice's calendar day, because slice bounds
+drift off midnight whenever a sync ends mid-day and Amazon rounds an off-midnight window outward to
+every calendar day it spans. The cursor value emitted by `AddFields` must be day-aligned to match.
+
+**Why this matters:** the failure is silent — syncs succeed and return records, they are just
+attributed to a date the report did not cover. The full-refresh snapshot and forecast streams
+(`GET_VENDOR_INVENTORY_REPORT`, `GET_VENDOR_FORECASTING_FRESH_REPORT`,
+`GET_VENDOR_FORECASTING_RETAIL_REPORT`) are the deliberate exception — they have no cursor and send
+no window on purpose.
+
 ## Incremental Stream Considerations
 
 The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 8 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
