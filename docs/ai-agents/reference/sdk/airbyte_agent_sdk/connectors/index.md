@@ -58,3 +58,4 @@ Sub-modules
 * [airbyte_agent_sdk.connectors.zendesk_chat](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_chat)
 * [airbyte_agent_sdk.connectors.zendesk_support](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_support)
 * [airbyte_agent_sdk.connectors.zendesk_talk](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_talk)
+* [airbyte_agent_sdk.connectors.zoho_crm](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zoho_crm)

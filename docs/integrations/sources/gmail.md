@@ -151,6 +151,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.19 | 2026-10-06 | [87854](https://github.com/airbytehq/airbyte/pull/87854) | Update dependencies |
+| 0.1.18 | 2026-09-29 | [87179](https://github.com/airbytehq/airbyte/pull/87179) | Update dependencies |
 | 0.1.17 | 2026-09-22 | [86632](https://github.com/airbytehq/airbyte/pull/86632) | Update dependencies |
 | 0.1.16 | 2026-09-15 | [86066](https://github.com/airbytehq/airbyte/pull/86066) | Update dependencies |
 | 0.1.15 | 2026-09-11 | [85800](https://github.com/airbytehq/airbyte/pull/85800) | Fix config migration copying empty or incomplete legacy OAuth fields into nested `credentials` |

@@ -1,5 +1,17 @@
 # Airbyte Agents release notes
 
+## October 1, 2026
+
+Connectors
+
+- Your agents can now filter Twilio conferences by status, such as completed, in progress, or not yet started. Twilio now returns only in-progress conferences unless a status is specified, so this lets your agents keep finding past conference calls. This update is also available in the SDK.
+
+## September 22, 2026
+
+Connectors
+
+- The Zoho CRM connector is available again. Your agents can read your leads, contacts, accounts, deals, campaigns, tasks, events, calls, products, quotes, invoices, and notes, and can search them by their attributes, such as deal stage, amount, or lead source. Connect it with your Zoho account from any Zoho data center region, and it's also available in the SDK. This connector is read-only, so your agents can't create or update records.
+
 ## September 18, 2026
 
 Connectors

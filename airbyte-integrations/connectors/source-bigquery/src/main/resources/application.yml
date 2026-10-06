@@ -1,0 +1,130 @@
+airbyte:
+  connector:
+    data-channel:
+      medium: ${DATA_CHANNEL_MEDIUM:STDIO}
+      format: ${DATA_CHANNEL_FORMAT:JSONL}
+      socket-paths: ${DATA_CHANNEL_SOCKET_PATHS}
+    output:
+      buffer-byte-size-threshold-for-flush: 8192
+    extract:
+      bigquery:
+        # Storage Read API read path (readapi package): base tables in full refresh are read
+        # through the connector's own partitions, one per read stream, in parallel up to
+        # max_db_connections and independently of the jdbc.mode below.
+        # Target logical bytes per read stream: a table is split into ceil(bytes / target) read
+        # streams (at least the concurrency, at most max-read-streams; the API caps at 1,000).
+        # Every completed read stream advances the checkpoint, so smaller read streams mean less
+        # work redone after a failure. 8 GiB.
+        read-stream-target-bytes: 8589934592
+        max-read-streams: 1000
+        # Arrow buffer compression requested from the API: NONE, LZ4_FRAME or ZSTD. Compression
+        # trades connector CPU for network bytes (LZ4 ~5x, ZSTD ~9x on typical event data). ZSTD
+        # (zstd-jni, native) measured faster and cheaper than LZ4_FRAME (commons-compress, pure
+        # Java): 5.22M rows at concurrency 4 in 29 s uncompressed, 21 s LZ4 at 265% CPU, 17 s ZSTD
+        # at 96% CPU.
+        arrow-buffer-compression: ZSTD
+        # A ReadRows call that delivers nothing for this long is failed; the next attempt resumes
+        # the read stream at its checkpointed offset instead of hanging on a dead connection.
+        read-rows-idle-timeout-seconds: 600
+      jdbc:
+        # This key only governs the extract-jdbc factory, which handles the feeds the Read API path
+        # declines: views, external/materialized/snapshot tables, incremental deltas, legacy state,
+        # the emulator (whose Storage Read API is too partial), and everything when the Read API is
+        # off or not permitted. For those, `concurrent` reads splittable partitions as bounded ranges
+        # (WHERE pk > ? AND pk <= ?, no ORDER BY) and unsplittable ones as one query, whereas
+        # `sequential` would issue `ORDER BY pk LIMIT n` chunks, which on BigQuery are a full scan
+        # plus a single-worker sort per chunk (measured 836 s for 98,884 rows of a 515 GiB table)
+        # and never grow past one fetch size. This connector's own concurrent creator
+        # (BigQueryConcurrentPartitionsCreator, @Primary) replaces the toolkit's skewed TABLESAMPLE
+        # split: a base table with a single quantile-friendly primary key is split into balanced key
+        # ranges whose boundaries come from APPROX_QUANTILES over the key column (see
+        # extract.bigquery.fallback-partition-target-bytes). Trade-off on BigQuery: each bounded
+        # range still scans the whole table unless it is clustered or partitioned on the key.
+        mode: concurrent
+        with-sampling: true
+        table-sample-size: 1024
+        throughput-bytes-per-second: 10000000
+        min-fetch-size: 10
+        default-fetch-size: 1000
+        max-fetch-size: 10000000
+        memory-capacity-ratio: 0.6
+        estimated-record-overhead-bytes: 16
+        estimated-field-overhead-bytes: 16
+        # A BigQuery dataset is the stream namespace; the project is the JDBC catalog.
+        namespace-kind: SCHEMA
+        # The BigQuery JDBC driver has no pseudo-columns.
+        include-pseudo-columns: false
+    check:
+      jdbc:
+        queries:
+          # BigQuery rejects `SELECT 1 WHERE FALSE` ("Query without FROM clause cannot have a
+          # WHERE clause"); this returns zero rows, which is what JdbcCheckQueries expects.
+          - >-
+            SELECT 1 FROM UNNEST([1]) WHERE FALSE
+    exception-classifiers:
+      regex:
+        # Rules are applied in order to a Throwable's message and to the messages of its causes.
+        rules:
+          - pattern: "(?i).*Access Denied.*"
+            input-example: >-
+              com.google.cloud.bigquery.BigQueryException: Access Denied: Project my-project: User does not have
+              bigquery.datasets.get permission in project my-project.
+            error: config
+          - pattern: "(?i).*bigquery\\.readsessions\\.(create|getData).*"
+            # The Storage Read API (readapi package, or the JDBC driver's EnableHighThroughputAPI)
+            # without the BigQuery Read Session User role. Normally caught by the availability
+            # probe at the start of the READ, which falls back to the query API.
+            input-example: >-
+              com.google.api.gax.rpc.PermissionDeniedException: io.grpc.StatusRuntimeException: PERMISSION_DENIED:
+              request failed: the user does not have 'bigquery.readsessions.create' permission for 'projects/my-project'
+            output: >-
+              The service account is not allowed to use the BigQuery Storage Read API. Grant it the BigQuery Read
+              Session User role (bigquery.readsessions.create, bigquery.readsessions.getData) on the project that runs
+              the jobs, or disable 'use_storage_read_api'.
+            error: config
+          - pattern: "(?i).*PERMISSION_DENIED.*"
+            input-example: >-
+              com.google.cloud.bigquery.BigQueryException: PERMISSION_DENIED: Caller does not have required permission
+              to use project my-project.
+            error: config
+          - pattern: "(?i).*Not found: (Dataset|Table|Project).*"
+            # Captured from the real service on 2026-09-14 (check with an unknown dataset_id).
+            input-example: >-
+              com.google.cloud.bigquery.BigQueryException: Not found: Dataset my-project:missing_dataset
+            error: config
+          - pattern: "(?i).*Project .* is not found.*"
+            # Captured from the real service on 2026-09-14 (check with an unknown project_id).
+            input-example: >-
+              com.google.cloud.bigquery.BigQueryException: Project my-project is not found. Make sure it references
+              valid GCP project that hasn't been deleted.; Project id: my-project
+            error: config
+          - pattern: "(?i).*Cannot parse .* as CloudRegion.*"
+            # Google's JDBC driver 1.4.0 fails like this when the project it runs the jobs in (its
+            # ProjectId: 'job_project_id', or 'project_id' when unset) does not exist or is not
+            # accessible with the service account. Captured from the real service on 2026-09-17.
+            input-example: >-
+              com.google.cloud.bigquery.exception.BigQueryJdbcRuntimeException: BigQueryException during runQuery
+              Cannot parse  as CloudRegion.
+            output: >-
+              The project that runs the query jobs ('job_project_id', or 'project_id' when it is not set)
+              was not found, or the service account cannot access it.
+            error: config
+          - pattern: "(?i).*No valid credentials provided.*"
+            # The JDBC driver's message when the private key cannot be parsed (captured 2026-09-14).
+            input-example: >-
+              com.google.cloud.bigquery.exception.BigQueryJdbcRuntimeException: No valid credentials provided.
+            error: config
+          - pattern: "(?i).*invalid_grant.*"
+            input-example: >-
+              java.io.IOException: Error getting access token for service account: 400 Bad Request
+              POST https://oauth2.googleapis.com/token {"error":"invalid_grant","error_description":"Invalid JWT Signature."}
+            error: config
+          - pattern: "(?i).*Invalid project ID.*"
+            input-example: >-
+              com.google.cloud.bigquery.BigQueryException: Invalid project ID 'my project'. Project IDs must contain
+              6-63 lowercase letters, digits, or dashes.
+            error: config
+          - pattern: "(?i).*(UnknownHostException|Connection refused|Connect timed out|Read timed out).*"
+            input-example: >-
+              java.net.UnknownHostException: bigquery.googleapis.com
+            error: transient

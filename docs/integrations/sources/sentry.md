@@ -117,6 +117,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.13 | 2026-10-06 | [88017](https://github.com/airbytehq/airbyte/pull/88017) | Update dependencies |
+| 1.0.12 | 2026-09-29 | [87328](https://github.com/airbytehq/airbyte/pull/87328) | Update dependencies |
 | 1.0.11 | 2026-09-22 | [86799](https://github.com/airbytehq/airbyte/pull/86799) | Update dependencies |
 | 1.0.10 | 2026-09-16 | [78108](https://github.com/airbytehq/airbyte/pull/78108) | Improve Sentry configuration validation and 404 error messaging. |
 | 1.0.9 | 2026-09-15 | [86225](https://github.com/airbytehq/airbyte/pull/86225) | Update dependencies |

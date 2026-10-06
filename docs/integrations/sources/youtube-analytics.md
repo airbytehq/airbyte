@@ -112,6 +112,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
+| 1.4.4 | 2026-10-06 | [88106](https://github.com/airbytehq/airbyte/pull/88106) | Update dependencies |
+| 1.4.3 | 2026-09-29 | [87431](https://github.com/airbytehq/airbyte/pull/87431) | Update dependencies |
 | 1.4.2 | 2026-09-22 | [86879](https://github.com/airbytehq/airbyte/pull/86879) | Update dependencies |
 | 1.4.1 | 2026-09-15 | [86309](https://github.com/airbytehq/airbyte/pull/86309) | Update dependencies |
 | 1.4.0 | 2026-09-09 | [85335](https://github.com/airbytehq/airbyte/pull/85335) | Restore incremental syncs for report streams: only newly created report files are requested and downloaded instead of re-downloading every retained report on each sync. Reports that YouTube re-issues with corrected data are now picked up, where previously they were silently skipped. Existing connections are migrated automatically; no action is required. |
