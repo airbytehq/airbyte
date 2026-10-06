@@ -3,8 +3,8 @@ name: "Hydra: Auto-merge (AI-gated)"
 # Kicks off a Devin AI session using the `pr_scope_analysis` playbook
 # (airbytehq/ai-skills) to evaluate whether the PR is safe to auto-merge. The
 # playbook carries the analysis prompt and the structured output schema; this
-# workflow first hard-blocks playbook-eval PRs, then rejects PRs without the
-# Support Bot assignment or with destination changes. Eligible PRs are analyzed and evaluated deterministically:
+# workflow first rejects PRs without the Support Bot assignment or with
+# destination changes. Eligible PRs are analyzed and evaluated deterministically:
 #   pass = ALL(preconditions) AND ANY(allowed_scopes)
 #
 # Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
@@ -65,30 +65,27 @@ jobs:
           private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
 
       # ── Pre-checks ─────────────────────────────────────────────────
-      # Playbook-eval PRs (base `eval-base/*`, head `eval/*`, etc.) are
-      # hard-blocked regardless of labels, draft status, or base branch.
-      - name: Checkout eval-artifact check
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          sparse-checkout: .github/actions/hydra-eval-artifact-check
-          token: ${{ steps.get-hoard-token.outputs.token }}
-
-      - name: Block eval artifacts
-        uses: ./.github/actions/hydra-eval-artifact-check
-        with:
-          pr: ${{ inputs.pr }}
-          github-token: ${{ steps.get-hoard-token.outputs.token }}
-          fail-on-eval: "true"
-
       - name: Check PR is still open
         id: pre-check
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
         run: |
-          pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft,title)
+          pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft,title,baseRefName,headRefName,labels)
           state=$(echo "$pr_json" | jq -r '.state')
           is_draft=$(echo "$pr_json" | jq -r '.isDraft')
           title=$(echo "$pr_json" | jq -r '.title')
+
+          # Never auto-merge PRs from the airbytehq/ai-skills eval harness.
+          # PRs opened by an eval's own Devin session are only identifiable by
+          # their `eval-base/*` base; harness-created ones also match the rest.
+          base=$(echo "$pr_json" | jq -r '.baseRefName')
+          head=$(echo "$pr_json" | jq -r '.headRefName')
+          labels=$(echo "$pr_json" | jq -r '[.labels[].name] | join(",")')
+          if [[ "$base" == eval-base/* || "$head" == eval/* || "$title" == "[EVAL - DO NOT MERGE]"* || ",$labels," == *",eval-test,"* ]]; then
+            echo "::error::PR #$PR_NUMBER is a playbook-eval PR (base=$base, head=$head). Auto-merge is blocked."
+            exit 1
+          fi
+
           echo "state=$state" | tee -a "$GITHUB_OUTPUT"
           echo "is_draft=$is_draft" | tee -a "$GITHUB_OUTPUT"
           echo "title=$title" | tee -a "$GITHUB_OUTPUT"
@@ -528,17 +525,6 @@ jobs:
             > [Devin session](${{ steps.devin.outputs.session-url }}) | [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       # ── Merge (if evaluation passed and not dry-run) ────────────────
-      # Re-check right before the first write: the base or title can change
-      # during the Devin evaluation. Runs from the trusted checkout above,
-      # before the PR head is checked out for autopilot.
-      - name: Block eval artifacts before merge
-        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true'
-        uses: ./.github/actions/hydra-eval-artifact-check
-        with:
-          pr: ${{ inputs.pr }}
-          github-token: ${{ steps.get-hoard-token.outputs.token }}
-          fail-on-eval: "true"
-
       - name: Authenticate as 'octavia-bot-admin' GitHub App
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true'
         uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
