@@ -14,6 +14,7 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
+import io.airbyte.integrations.destination.snowflake.auth.WorkloadIdentityProvider
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
 
@@ -26,8 +27,8 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonProperty("host")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 0, "examples":["accountname.us-east-2.aws.snowflakecomputing.com", "accountname.snowflakecomputing.com"], "pattern": "^(http(s)?:\\/\\/)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.(snowflakecomputing\\.com|localstack\\.cloud))$",
-        "pattern_descriptor": "{account_name}.snowflakecomputing.com or {accountname}.{aws_location}.aws.snowflakecomputing.com"}"""
+            """{"group": "connection", "order": 0, "examples":["accountname.us-east-2.aws.snowflakecomputing.com", "accountname.snowflakecomputing.com", "accountname.snowflakecomputing.cn", "accountname.snowflakecomputing.mil"], "pattern": "^(http(s)?:\\/\\/)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.(snowflakecomputing\\.(com|cn|mil)|localstack\\.cloud))$",
+        "pattern_descriptor": "A Snowflake account hostname ending in .snowflakecomputing.com, .snowflakecomputing.cn, or .snowflakecomputing.mil"}"""
     )
     val host: String = ""
 
@@ -165,6 +166,10 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     JsonSubTypes.Type(
         value = UsernamePasswordAuthSpecification::class,
         name = "Username and Password"
+    ),
+    JsonSubTypes.Type(
+        value = WorkloadIdentityAuthSpecification::class,
+        name = "Workload Identity Federation"
     )
 )
 sealed class CredentialsSpecification(
@@ -174,6 +179,7 @@ sealed class CredentialsSpecification(
     enum class Type(@get:JsonValue val authTypeName: String) {
         PRIVATE_KEY("Key Pair Authentication"),
         USERNAME_PASSWORD("Username and Password"),
+        WORKLOAD_IDENTITY("Workload Identity Federation"),
     }
 }
 
@@ -196,9 +202,40 @@ class KeyPairAuthSpecification(
     val privateKeyPassword: String? = null
 ) : CredentialsSpecification(Type.PRIVATE_KEY)
 
+@JsonSchemaTitle("Workload Identity Federation")
+@JsonSchemaDescription(
+    "Authenticate using the destination workload's identity without storing a password or private key. Requires an identity-enabled connector runtime and a Snowflake service user configured for workload identity federation."
+)
+class WorkloadIdentityAuthSpecification(
+    @get:JsonSchemaTitle("Workload Identity Provider")
+    @get:JsonPropertyDescription(
+        "Use OIDC for projected Kubernetes service-account tokens (including AKS). AWS, AZURE, and GCP use the native identity sources supported by the Snowflake JDBC driver. AZURE uses managed identity metadata endpoints, not AKS federated token exchange."
+    )
+    @get:JsonProperty("workload_identity_provider", required = true)
+    @get:JsonSchemaInject(json = """{"order": 0}""")
+    val workloadIdentityProvider: WorkloadIdentityProvider? = null,
+    @get:JsonSchemaTitle("OIDC Token File Path")
+    @get:JsonPropertyDescription(
+        "Required for OIDC only. Absolute path inside the destination connector container to a rotating JWT file. The file is read for every new physical connection. Mount the projected volume without subPath; do not paste a token into the connector configuration."
+    )
+    @get:JsonProperty("token_file_path")
+    @get:JsonSchemaInject(
+        json =
+            """{"order": 1, "examples": ["/var/run/secrets/snowflake/token"], "pattern": "^/.*"}"""
+    )
+    val tokenFilePath: String? = null,
+    @get:JsonSchemaTitle("Microsoft Entra Resource")
+    @get:JsonPropertyDescription(
+        "Optional for AZURE only. Resource requested from the managed identity endpoint. Leave unset to use the Snowflake JDBC driver's default Snowflake resource."
+    )
+    @get:JsonProperty("entra_resource")
+    @get:JsonSchemaInject(json = """{"order": 2}""")
+    val entraResource: String? = null,
+) : CredentialsSpecification(Type.WORKLOAD_IDENTITY)
+
 @JsonSchemaTitle("Username and Password (Deprecated)")
 @JsonSchemaDescription(
-    "Deprecated: Username and password authentication is deprecated as of version 5.0.0 and will be removed in a future release. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. Switch to key pair authentication instead. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake-migrations\">migration guide</a> for details."
+    "Deprecated: Username and password authentication is deprecated as of version 5.0.0 and will be removed in a future release. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. Switch to key pair authentication or workload identity federation instead. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake-migrations\">migration guide</a> for details."
 )
 class UsernamePasswordAuthSpecification(
     @get:JsonSchemaTitle("Password")
