@@ -43,6 +43,8 @@ Account-API
 
 ### Optional configuration
 
+`Start Date` sets the UTC date and time (`YYYY-MM-DDTHH:MM:SSZ`) from which the `messages` and `bounces` streams are replicated, in both full refresh and incremental mode. It defaults to 365 days ago, Postmark's maximum message retention period.
+
 `Slice Window (Minutes)` controls the time-window size for the `messages` and `bounces` streams. It defaults to 1440 minutes (one day); if a sync fails because a window exceeded Postmark's 10,000-record limit, lower it (for example, to 60).
 
 ## Supported sync modes
@@ -68,6 +70,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.1 | 2026-10-06 | [87518](https://github.com/airbytehq/airbyte/pull/87518) | Fix an empty time window at the November DST change, stop emitting records twice at window boundaries, and align retries with the CDK backoff limit |
 | 0.3.0 | 2026-10-01 | [87518](https://github.com/airbytehq/airbyte/pull/87518) | Fix pagination that re-read the same page of records indefinitely; add incremental sync, an optional start date, and a configurable time window for the messages and bounces streams |
 | 0.2.10 | 2025-02-15 | [53947](https://github.com/airbytehq/airbyte/pull/53947) | Update dependencies |
 | 0.2.9 | 2025-02-08 | [53462](https://github.com/airbytehq/airbyte/pull/53462) | Update dependencies |

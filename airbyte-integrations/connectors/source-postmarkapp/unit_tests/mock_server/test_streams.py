@@ -130,6 +130,59 @@ class TestPostmarkStreams(TestCase):
                 http_mocker.assert_number_of_calls(request, 1)
 
     @HttpMocker()
+    def test_hourly_windows_cover_the_ambiguous_hour_at_dst_fall_back(self, http_mocker):
+        config = ConfigBuilder().with_start_date("2025-11-02T04:00:00Z").with_slice_window_minutes(60).build()
+        before_fall_back = _message_request("2025-11-02T00:00:00", "2025-11-02T01:00:00")
+        # 05:00-06:00Z (EDT) and 06:00-07:00Z (EST) are both 01:00-02:00 Eastern; the last window ends at now - 5m (07:00Z).
+        ambiguous_hour_edt = _message_request("2025-11-02T01:00:00", "2025-11-02T02:00:00")
+        ambiguous_hour_est = _message_request("2025-11-02T01:00:00", "2025-11-02T02:00:01")
+        edt_record = {"MessageID": "edt", "ReceivedAt": "2025-11-02T01:30:00.0000000-04:00"}
+        est_record = {"MessageID": "est", "ReceivedAt": "2025-11-02T01:30:00.0000000-05:00"}
+        http_mocker.get(before_fall_back, _page("Messages", [], total_count=0))
+        http_mocker.get(ambiguous_hour_edt, _page("Messages", [edt_record, est_record], total_count=2))
+        http_mocker.get(ambiguous_hour_est, _page("Messages", [edt_record, est_record], total_count=2))
+
+        with freezegun.freeze_time("2025-11-02T07:05:00Z"):
+            output = _read_stream(_MESSAGES, SyncMode.incremental, config)
+
+        assert output.errors == []
+        assert sorted(record.record.data["MessageID"] for record in output.records) == ["edt", "est"]
+        http_mocker.assert_number_of_calls(before_fall_back, 1)
+        http_mocker.assert_number_of_calls(ambiguous_hour_edt, 1)
+        http_mocker.assert_number_of_calls(ambiguous_hour_est, 1)
+
+    @HttpMocker()
+    def test_record_on_window_boundary_is_emitted_once(self, http_mocker):
+        config = ConfigBuilder().with_start_date("2025-01-02T00:00:00Z").with_slice_window_minutes(60).build()
+        first_window = _message_request("2025-01-01T19:00:00", "2025-01-01T20:00:00")
+        second_window = _message_request("2025-01-01T20:00:00", "2025-01-01T21:00:01")
+        last_second = {"MessageID": "last-second", "ReceivedAt": "2025-01-01T19:59:59.5000000-05:00"}
+        boundary = {"MessageID": "boundary", "ReceivedAt": "2025-01-01T20:00:00.0000000-05:00"}
+        http_mocker.get(first_window, _page("Messages", [boundary, last_second], total_count=2))
+        http_mocker.get(second_window, _page("Messages", [boundary], total_count=1))
+
+        with freezegun.freeze_time("2025-01-02T02:05:00Z"):
+            output = _read_stream(_MESSAGES, SyncMode.incremental, config)
+
+        assert output.errors == []
+        assert sorted(record.record.data["MessageID"] for record in output.records) == ["boundary", "last-second"]
+        http_mocker.assert_number_of_calls(first_window, 1)
+        http_mocker.assert_number_of_calls(second_window, 1)
+
+    @HttpMocker()
+    def test_messages_incremental_resumes_from_state_written_with_record_offset(self, http_mocker):
+        config = ConfigBuilder().build()
+        request = _message_request("2025-01-02T06:30:00", "2025-01-02T06:55:01")
+        http_mocker.get(request, _page("Messages", [], total_count=0))
+        # The connector checkpoints ReceivedAt in Postmark's own offset, e.g. -0500 rather than +0000.
+        state = StateBuilder().with_stream_state(_MESSAGES, {"ReceivedAt": "2025-01-02T06:30:00-0500"}).build()
+
+        output = _read_stream(_MESSAGES, SyncMode.incremental, config, state)
+
+        assert output.errors == []
+        http_mocker.assert_number_of_calls(request, 1)
+
+    @HttpMocker()
     def test_messages_use_default_daily_windows(self, http_mocker):
         config = ConfigBuilder().with_start_date("2025-01-01T00:00:00Z").build()
         expected_windows = [

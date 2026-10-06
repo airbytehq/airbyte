@@ -51,13 +51,16 @@ definitions:
     cursor_granularity: PT1S
   windowed_request_parameters:
     # Postmark filters use US Eastern wall time; this conversion is DST-aware.
+    # todate picks its offset from end_time (still inside the window) and adds the 1s granularity after converting,
+    # so a window ending at the November fall-back maps to 01:00-02:00 instead of an empty 01:00-01:00 range.
     fromdate: >-
       {% set d = str_to_datetime(stream_interval.start_time) %}{% set m = d.replace(month=3, day=1, hour=7, minute=0, second=0, microsecond=0) %}{% set s = m + duration('P' ~ ((6 - m.weekday()) % 7 + 7) ~ 'D') %}{% set n = d.replace(month=11, day=1, hour=6, minute=0, second=0, microsecond=0) %}{% set e = n + duration('P' ~ ((6 - n.weekday()) % 7) ~ 'D') %}{{ format_datetime(d - duration('PT4H' if s <= d < e else 'PT5H'), '%Y-%m-%dT%H:%M:%S') }}
     todate: >-
-      {% set d = str_to_datetime(stream_interval.end_time) + duration('PT1S') %}{% set m = d.replace(month=3, day=1, hour=7, minute=0, second=0, microsecond=0) %}{% set s = m + duration('P' ~ ((6 - m.weekday()) % 7 + 7) ~ 'D') %}{% set n = d.replace(month=11, day=1, hour=6, minute=0, second=0, microsecond=0) %}{% set e = n + duration('P' ~ ((6 - n.weekday()) % 7) ~ 'D') %}{{ format_datetime(d - duration('PT4H' if s <= d < e else 'PT5H'), '%Y-%m-%dT%H:%M:%S') }}
+      {% set d = str_to_datetime(stream_interval.end_time) %}{% set m = d.replace(month=3, day=1, hour=7, minute=0, second=0, microsecond=0) %}{% set s = m + duration('P' ~ ((6 - m.weekday()) % 7 + 7) ~ 'D') %}{% set n = d.replace(month=11, day=1, hour=6, minute=0, second=0, microsecond=0) %}{% set e = n + duration('P' ~ ((6 - n.weekday()) % 7) ~ 'D') %}{{ format_datetime(d - duration('PT4H' if s <= d < e else 'PT5H') + duration('PT1S'), '%Y-%m-%dT%H:%M:%S') }}
   error_handler:
     type: DefaultErrorHandler
-    max_retries: 10
+    # Backoff is 5 * 2^attempt (10s, 20s, ...); the CDK caps total backoff at 600s, so more than 5 retries is never reached.
+    max_retries: 5
     backoff_strategies:
       - type: ExponentialBackoffStrategy
         factor: 5
@@ -71,10 +74,6 @@ definitions:
         action: FAIL
         http_codes: [422]
         error_message: "Postmark rejected the request: {{ response.Message }}"
-      - type: HttpResponseFilter
-        action: RATE_LIMITED
-        http_codes: [429]
-        error_message: "Postmark rate limit exceeded."
   streams:
     deliverystats:
       type: DeclarativeStream
@@ -167,6 +166,10 @@ definitions:
             type: DpathExtractor
             field_path:
               - Messages
+          record_filter:
+            type: RecordFilter
+            # Adjacent windows share their boundary second (fromdate and todate are both inclusive); keep each record only in the window containing it.
+            condition: "{{ str_to_datetime(stream_slice.start_time) <= str_to_datetime(record.ReceivedAt) < str_to_datetime(stream_slice.end_time) + duration('PT1S') }}"
         paginator:
           $ref: "#/definitions/offset_paginator"
       schema_loader:
@@ -195,6 +198,10 @@ definitions:
             type: DpathExtractor
             field_path:
               - Bounces
+          record_filter:
+            type: RecordFilter
+            # Adjacent windows share their boundary second (fromdate and todate are both inclusive); keep each record only in the window containing it.
+            condition: "{{ str_to_datetime(stream_slice.start_time) <= str_to_datetime(record.BouncedAt) < str_to_datetime(stream_slice.end_time) + duration('PT1S') }}"
         paginator:
           $ref: "#/definitions/offset_paginator"
       schema_loader:
