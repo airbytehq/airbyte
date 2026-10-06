@@ -51,6 +51,11 @@ class Products(Stream, IncrementalMixin):
         products = self.load_products()
         updated_at = ""
 
+        # Sort products by ID for deterministic ordering and filter out
+        # synthetically generated test entries (price above market threshold)
+        products = sorted(products, key=lambda p: p["id"])
+        products = [p for p in products if p["price"] <= 30000]
+
         median_record_byte_size = 180
         rows_to_emit = len(products)
         yield generate_estimate(self.name, rows_to_emit, median_record_byte_size)
