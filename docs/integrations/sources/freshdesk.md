@@ -90,7 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
-| 3.3.7 | 2026-10-06 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Use declarative Retry-After and exponential backoff for `ticket_activities` retries (no change to retry timing) |
+| 3.3.7 | 2026-10-06 | [88132](https://github.com/airbytehq/airbyte/pull/88132) | Use declarative Retry-After and exponential backoff for `ticket_activities` retries |
 | 3.3.6 | 2026-10-06 | [87870](https://github.com/airbytehq/airbyte/pull/87870) | Update dependencies |
 | 3.3.5 | 2026-09-30 | [86643](https://github.com/airbytehq/airbyte/pull/86643) | Fix the `ticket_activities` stream reading zero records when the Freshdesk export endpoint returns a list of exports, stop dropping records that fall outside the UTC day slice, and fail the sync instead of returning no records when an export has no download URL |
 | 3.3.4 | 2026-09-29 | [87146](https://github.com/airbytehq/airbyte/pull/87146) | Update dependencies |
