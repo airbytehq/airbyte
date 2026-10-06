@@ -179,6 +179,7 @@ def test_full_refresh_filters_records_older_than_two_years_client_side():
         request = _events_request()
         http_mocker.get(request, _items_response(old_record, _RECORD, cancelled))
         http_mocker.post(_TOKEN_REQUEST, _TOKEN_RESPONSE)
+        _mock_parent_partitions(http_mocker)
 
         output = read(get_source(_config()), _config(), _catalog(SyncMode.incremental))
 
@@ -194,6 +195,7 @@ def test_full_refresh_filters_records_older_than_start_date_client_side():
         request = _events_request()
         http_mocker.get(request, _items_response(older, newer))
         http_mocker.post(_TOKEN_REQUEST, _TOKEN_RESPONSE)
+        _mock_parent_partitions(http_mocker)
         config = _config(start_date=start_date)
 
         output = read(get_source(config), config, _catalog(SyncMode.incremental))
