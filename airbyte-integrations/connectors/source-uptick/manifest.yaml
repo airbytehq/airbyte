@@ -2194,7 +2194,7 @@ streams:
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[LineItem]: id,invoice,created,updated,description,created,index,account_code,quantity,unit_price,gst,total,taxcode,taxrate
+          fields[LineItem]: id,invoice,created,updated,description,created,index,account_code,quantity,unit_price,gst,total,taxcode,taxrate,product
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2260,6 +2260,10 @@ streams:
               - string
               - "null"
             airbyte_type: decimal
+          product_id:
+            type:
+              - integer
+              - "null"
     transformations:
       - type: DpathFlattenFields
         field_path:
@@ -2271,6 +2275,12 @@ streams:
               - invoice_id
             value:
               '{{ record["relationships"]["invoice"]["data"]["id"] if record["relationships"].get("invoice",
+              {}).get("data") else "None" }}'
+          - type: AddedFieldDefinition
+            path:
+              - product_id
+            value:
+              '{{ record["relationships"]["product"]["data"]["id"] if record["relationships"].get("product",
               {}).get("data") else "None" }}'
   - type: DeclarativeStream
     name: users
