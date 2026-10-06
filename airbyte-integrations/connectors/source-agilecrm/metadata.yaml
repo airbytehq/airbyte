@@ -13,7 +13,7 @@ data:
       enabled: false
       packageName: airbyte-source-agilecrm
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.32.0@sha256:0fd296fcebe643f973e64cb55dab3c7443d00496897ebd2b682b29332a660780
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.33.0@sha256:3343cc05b79b9a3c07fa90152bd5348da7154b44f63521857bd2a745883d85cd
   connectorSubtype: api
   connectorType: source
   definitionId: 7bdf5aaa-3dad-4ed0-9cec-4858454f3e18
