@@ -20,7 +20,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 34f697bc-b989-4eda-b06f-d0f39b88825b
-  dockerImageTag: 0.5.0
+  dockerImageTag: 0.6.0
   dockerRepository: airbyte/source-customer-io
   githubIssueLabel: source-customer-io
   icon: customer-io.svg
@@ -34,6 +34,9 @@ data:
       - campaigns
       - campaigns_actions
       - newsletters
+      - broadcasts
+      - segments
+      - transactional_messages
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/customer-io
   tags:
