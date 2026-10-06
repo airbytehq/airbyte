@@ -219,7 +219,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                              | Subject                                                              |
+| Version | Date | Pull Request | Subject |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------- |
 | 0.4.0 | 2026-10-06 | [86997](https://github.com/airbytehq/airbyte/pull/86997) | Rebuild on the Bulk CDK: parallel scan segments on Airbyte Cloud, resumable full refresh and incremental syncs, speed mode, exact numbers, integer cursors, temporary credentials and IAM role assumption. Role-based authentication is removed, see [Changes in 0.4.0](#changes-in-040) |
 | 0.3.11 | 2025-07-11 | [62916](https://github.com/airbytehq/airbyte/pull/62916) | Add gradle docker plugins |
@@ -236,10 +236,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.3.0 | 2024-04-30 | [37530](https://github.com/airbytehq/airbyte/pull/37530) | Allow role based access |
 | 0.2.3 | 2024-02-14 | [35232](https://github.com/airbytehq/airbyte/pull/35232) | Adopt CDK 0.20.4 |
 | 0.2.2 | 2024-02-01 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
-| 0.2.1   | 2024-01-05 | [33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region                                    |
-| 0.2.0   | 2023-12-19 | [33485](https://github.com/airbytehq/airbyte/pull/33485)  | Remove LEGACY state                                                  |
-| 0.1.2   | 2023-02-27 | [20172](https://github.com/airbytehq/airbyte/pull/20172)  | Fix reserved words in projection expression & make them configurable |
-| 0.1.1   | 2023-02-10 | [22682](https://github.com/airbytehq/airbyte/pull/22682)  | Fix build                                                            |
-| 0.1.0   | 2022-11-14 | [18750](https://github.com/airbytehq/airbyte/pull/18750)  | Initial version                                                      |
+| 0.2.1 | 2024-01-05 | [33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region |
+| 0.2.0 | 2023-12-19 | [33485](https://github.com/airbytehq/airbyte/pull/33485) | Remove LEGACY state |
+| 0.1.2 | 2023-02-27 | [20172](https://github.com/airbytehq/airbyte/pull/20172) | Fix reserved words in projection expression & make them configurable |
+| 0.1.1 | 2023-02-10 | [22682](https://github.com/airbytehq/airbyte/pull/22682) | Fix build |
+| 0.1.0 | 2022-11-14 | [18750](https://github.com/airbytehq/airbyte/pull/18750) | Initial version |
 
 </details>
