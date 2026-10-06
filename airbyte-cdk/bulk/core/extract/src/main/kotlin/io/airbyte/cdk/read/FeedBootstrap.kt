@@ -232,6 +232,11 @@ sealed class FeedBootstrap<T : Feed>(
             recordData: NativeRecordPayload,
             changes: Map<EmittedField, FieldValueChange>?
         ) {
+            // toProtobuf only overwrites the slots of the fields present in recordData, and the
+            // builder is reused from one record to the next: reset every slot to its default first,
+            // otherwise a field absent from this record keeps the previous record's value. The same
+            // goes for the meta changes set by acceptWithChanges on the previous record.
+            defaultRecordData.clearData().addAllData(defaultDataValues).clearMeta()
             if (changes.isNullOrEmpty()) {
                 acceptWithoutChanges(
                     recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder)
@@ -293,7 +298,8 @@ sealed class FeedBootstrap<T : Feed>(
         private val defaultRecordData: AirbyteRecordMessageProtobuf.Builder =
             AirbyteRecordMessageProtobuf.newBuilder()
                 .setStreamName(stream.name)
-                .setStreamNamespace(stream.namespace)
+                // Protobuf builders reject null; a source without namespaces leaves it unset.
+                .also { builder -> stream.namespace?.let { builder.setStreamNamespace(it) } }
                 .setEmittedAtMs(socketProtobufOutputConsumer.recordEmittedAt.toEpochMilli())
                 .also { builder ->
                     socketProtobufOutputConsumer.additionalProperties["partition_id"]?.let {
@@ -339,6 +345,14 @@ sealed class FeedBootstrap<T : Feed>(
                             )
                         }
                 }
+
+        /**
+         * The data slots of [defaultRecordData] as built above (null, or the decorating meta field
+         * values): [accept] restores them before every record because [toProtobuf] mutates the
+         * builder in place and only sets the slots of the fields present in the payload.
+         */
+        private val defaultDataValues: List<AirbyteValueProtobuf> =
+            defaultRecordData.dataList.toList()
 
         val reusedMessageWithoutChanges: AirbyteMessageProtobuf.Builder =
             AirbyteMessageProtobuf.newBuilder()
