@@ -6,8 +6,9 @@
 
 Google rejects `updatedMin` bounds older than ~30 days with a 410, so `events` is a
 `StateDelegatingStream` with `api_retention_period: P28D`: with no saved cursor, or one
-older than 28 days, the full-refresh stream re-reads the calendar without `updatedMin`
-(clearing the stale state first); otherwise the incremental stream sends `updatedMin`.
+older than 28 days, the full-refresh stream re-reads the calendar (sending `updatedMin`
+only for a `start_date` within 28 days, clearing the stale state first); otherwise the
+incremental stream sends `updatedMin` from the saved cursor.
 These tests pin the exact request parameters per case and the failure classification
 of 403/410 responses.
 """
@@ -142,6 +143,20 @@ def test_incremental_stale_state_drops_updated_min_and_resets_state():
         emitted_states = [_stream_state(message) for message in output.state_messages]
         assert emitted_states[0] == {}, "the stale cursor is cleared before the full re-read"
         assert _RECORD["updated"] in emitted_states[-1].get("updated", "")
+
+
+def test_incremental_fresh_start_date_sends_updated_min():
+    start_date = _days_ago(7)
+    with HttpMocker() as http_mocker:
+        request = _events_request(updated_min=start_date)
+        http_mocker.get(request, _items_response(_RECORD))
+        http_mocker.post(_TOKEN_REQUEST, _TOKEN_RESPONSE)
+        config = _config(start_date=start_date)
+
+        output = read(get_source(config), config, _catalog(SyncMode.incremental))
+
+        assert output.errors == []
+        http_mocker.assert_number_of_calls(request, 1)
 
 
 def test_incremental_stale_start_date_drops_updated_min():

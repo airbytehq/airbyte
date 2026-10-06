@@ -129,8 +129,9 @@ definitions:
       type: StateDelegatingStream
       name: events
       # Google rejects updatedMin older than ~30 days (410). With no saved cursor, or one older
-      # than 28 days, the full-refresh stream re-reads the calendar without updatedMin and the
-      # stale state is cleared first; otherwise the incremental stream sends updatedMin.
+      # than 28 days, the full-refresh stream re-reads the calendar (bounded only by a recent
+      # start_date) and the stale state is cleared first; otherwise the incremental stream
+      # sends updatedMin from the saved cursor.
       api_retention_period: P28D
       full_refresh_stream:
         $ref: "#/definitions/events_stream_base"
@@ -171,6 +172,8 @@ definitions:
           showDeleted: "true"
           maxResults: "2500"
           singleEvents: "false"
+          # First sync (no saved cursor): honour a start_date within Google's ~30-day window.
+          updatedMin: "{{ stream_slice['start_time'] if config.get('start_date') and stream_slice['start_time'] > day_delta(-28, format='%Y-%m-%dT%H:%M:%S.%fZ') else '' }}"
       record_selector:
         type: RecordSelector
         extractor:
