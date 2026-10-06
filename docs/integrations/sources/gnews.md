@@ -44,6 +44,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                          |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------- |
+| 0.2.24 | 2026-10-06 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Replace custom backoff component with declarative backoff and show a clear error when the GNews daily quota is exceeded |
 | 0.2.23 | 2025-05-24 | [60638](https://github.com/airbytehq/airbyte/pull/60638) | Update dependencies |
 | 0.2.22 | 2025-05-10 | [59267](https://github.com/airbytehq/airbyte/pull/59267) | Update dependencies |
 | 0.2.21 | 2025-04-26 | [58763](https://github.com/airbytehq/airbyte/pull/58763) | Update dependencies |
