@@ -4,10 +4,12 @@
 
 """Mock-server tests for the `events` stream: updatedMin bounding and error handling.
 
-Google rejects `updatedMin` bounds older than ~30 days with a 410, so the manifest
-drops the parameter whenever the effective start (saved cursor or `start_date`) is
-older than 28 days. These tests pin the exact request parameters per case and the
-failure classification of 403/410 responses.
+Google rejects `updatedMin` bounds older than ~30 days with a 410, so `events` is a
+`StateDelegatingStream` with `api_retention_period: P28D`: with no saved cursor, or one
+older than 28 days, the full-refresh stream re-reads the calendar without `updatedMin`
+(clearing the stale state first); otherwise the incremental stream sends `updatedMin`.
+These tests pin the exact request parameters per case and the failure classification
+of 403/410 responses.
 """
 
 import json
@@ -80,6 +82,10 @@ def _days_ago(n: int) -> str:
     return (datetime.now(timezone.utc) - timedelta(days=n)).strftime(_DATETIME_FORMAT)
 
 
+def _stream_state(state_message) -> Mapping[str, Any]:
+    return json.loads(json.dumps(state_message.state.stream.stream_state, default=lambda o: o.__dict__))
+
+
 def _error_trace(output):
     assert output.errors, "expected the sync to emit an error trace message"
     return output.errors[0].trace.error
@@ -122,7 +128,7 @@ def test_incremental_fresh_state_sends_updated_min():
         http_mocker.assert_number_of_calls(request, 1)
 
 
-def test_incremental_stale_state_drops_updated_min():
+def test_incremental_stale_state_drops_updated_min_and_resets_state():
     state = StateBuilder().with_stream_state("events", {"updated": _days_ago(60)}).build()
     with HttpMocker() as http_mocker:
         request = _events_request()
@@ -133,6 +139,9 @@ def test_incremental_stale_state_drops_updated_min():
         assert output.errors == []
         assert len(output.records) == 1
         http_mocker.assert_number_of_calls(request, 1)
+        emitted_states = [_stream_state(message) for message in output.state_messages]
+        assert emitted_states[0] == {}, "the stale cursor is cleared before the full re-read"
+        assert _RECORD["updated"] in emitted_states[-1].get("updated", "")
 
 
 def test_incremental_stale_start_date_drops_updated_min():
@@ -205,5 +214,4 @@ def test_cancelled_record_is_emitted_and_does_not_move_cursor():
 
         assert output.errors == []
         assert len(output.records) == 2
-        emitted_state = json.dumps(output.state_messages[-1].state.stream.stream_state, default=lambda o: o.__dict__)
-        assert record["updated"] in emitted_state
+        assert record["updated"] in _stream_state(output.state_messages[-1])["updated"]
