@@ -1446,6 +1446,8 @@ definitions:
       retriever:
         type: CustomRetriever
         class_name: source_declarative_manifest.components.TicketActivitiesRetriever
+        backoff_strategy:
+          $ref: "#/definitions/ticket_activities_backoff_strategies"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: performed_at
@@ -1520,6 +1522,11 @@ definitions:
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config.get('api_key')}}"
+  ticket_activities_backoff_strategies:
+    - type: WaitTimeFromHeader
+      header: Retry-After
+    - type: ExponentialBackoffStrategy
+      factor: 1
 
 streams:
   - $ref: "#/definitions/streams/agents"
