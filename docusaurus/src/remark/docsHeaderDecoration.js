@@ -4,7 +4,25 @@ const { parseCDKVersion } = require("../scripts/connector_registry");
 const {
   getDefaultDataWorkersForSource,
 } = require("../scripts/data-worker-consumption");
+const { discoverAgentConnectorSlugs } = require("../plugins/agentConnectors");
 const visit = require("unist-util-visit").visit;
+
+const AGENT_DESTINATIONS = ["bigquery", "snowflake"];
+
+let agentSourceSlugs = null;
+
+const isAgentConnector = (dockerRepository) => {
+  const match = /^airbyte\/(source|destination)-(.+)$/.exec(
+    dockerRepository ?? "",
+  );
+  if (!match) return false;
+  const [, connectorType, slug] = match;
+  if (connectorType === "destination") return AGENT_DESTINATIONS.includes(slug);
+  if (agentSourceSlugs === null) {
+    agentSourceSlugs = discoverAgentConnectorSlugs();
+  }
+  return agentSourceSlugs.includes(slug);
+};
 
 /**
  * Convert a boolean to a string
@@ -68,6 +86,9 @@ const plugin = () => {
           defaultDataWorkers,
           lastUpdated,
           definitionId: registryEntry.definitionId,
+          isAgent: boolToBoolString(
+            isAgentConnector(registryEntry.dockerRepository),
+          ),
         };
 
         firstHeading = false;

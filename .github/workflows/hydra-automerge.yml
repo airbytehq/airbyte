@@ -329,7 +329,7 @@ jobs:
           && steps.validate-paths.outputs.auto_merge_eligible == 'true'
           && steps.verify-checks.outputs.ready == 'true'
         id: devin
-        uses: aaronsteers/devin-action@main
+        uses: airbytehq/devin-action@main
         with:
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-hoard-token.outputs.token }}
@@ -344,6 +344,7 @@ jobs:
           tags: |
             auto-merge-eval
             hyd-ready
+            airbyte-pr-${{ inputs.pr }}
           prompt-text: |
             Analyze this pull request and classify it by filling out the structured output schema:
             https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}
@@ -390,8 +391,9 @@ jobs:
           dep_bump=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.dependency_version_bump.pass')
           metadata_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.metadata_only_change.pass')
           new_streams=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.net_new_stream_addition.pass')
+          error_classification=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.error_classification_change.pass')
 
-          if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" || "$new_streams" == "true" ]]; then
+          if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" || "$new_streams" == "true" || "$error_classification" == "true" ]]; then
             scope_pass="true"
           else
             scope_pass="false"
@@ -457,7 +459,7 @@ jobs:
             echo ""
             scope_matched=false
             has_scope_row=false
-            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change net_new_stream_addition; do
+            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change net_new_stream_addition error_classification_change; do
               pass=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.pass")
               if [[ "$pass" == "true" ]]; then
                 if [[ "$has_scope_row" == "false" ]]; then
@@ -471,7 +473,7 @@ jobs:
               fi
             done
             if [[ "$scope_matched" == "false" ]]; then
-              echo ":x: This PR falls outside the low-risk change types that qualify for auto-merge (docs-only, comment-only, dependency version bump, metadata-only, net-new stream addition). A human reviewer needs to approve and merge it."
+              echo ":x: This PR falls outside the low-risk change types that qualify for auto-merge (docs-only, comment-only, dependency version bump, metadata-only, net-new stream addition, error classification). A human reviewer needs to approve and merge it."
             fi
             if [[ -n "$footer_note" ]]; then
               echo ""
