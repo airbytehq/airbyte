@@ -244,8 +244,10 @@ definitions:
               action: RATE_LIMITED
             - type: HttpResponseFilter
               # 403 usageLimits errors that do not clear within the sync (project or user quota).
-              # Gated on the body's status so a 429 with the same reason still goes to RATE_LIMITED.
-              predicate: "{{ response.get('error', {}).get('code') == 403 and ('quotaExceeded' in response.get('error', {}) | string or 'dailyLimitExceeded' in response.get('error', {}) | string) }}"
+              # Excludes the body's 429 status so a 429 with the same reason still goes to RATE_LIMITED; a string
+              # or missing code is tolerated. http_codes would OR with the predicate and catch every 403, and the
+              # CDK's `string` filter wraps non-strings in triple quotes, so the code is compared as int or str.
+              predicate: "{{ response.get('error', {}).get('code') not in (429, '429') and ('quotaExceeded' in response.get('error', {}) | string or 'dailyLimitExceeded' in response.get('error', {}) | string) }}"
               action: FAIL
               failure_type: transient_error
               error_message: "The Google Calendar API quota for this project or user is exhausted. The sync will succeed once the quota resets; no configuration change is needed."

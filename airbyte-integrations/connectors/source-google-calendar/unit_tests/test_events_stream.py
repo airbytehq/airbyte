@@ -77,8 +77,13 @@ def _items_response(*records, next_page_token: Optional[str] = None) -> HttpResp
     return HttpResponse(json.dumps(body))
 
 
-def _error_response(status_code: int, reason: Optional[str] = None, message: str = "error") -> HttpResponse:
-    error: dict = {"code": status_code, "message": message}
+def _error_response(status_code: int, reason: Optional[str] = None, message: str = "error", body_code: Any = "status") -> HttpResponse:
+    # body_code overrides the `code` field of the error body ("status" mirrors status_code, None omits it).
+    error: dict = {"message": message}
+    if body_code == "status":
+        error["code"] = status_code
+    elif body_code is not None:
+        error["code"] = body_code
     if reason:
         error["errors"] = [{"reason": reason, "domain": "usageLimits"}]
     return HttpResponse(json.dumps({"error": error}), status_code=status_code)
@@ -172,8 +177,10 @@ def test_incremental_state_just_inside_retention_sends_updated_min():
         http_mocker.assert_number_of_calls(request, 1)
 
 
-def test_incremental_state_just_past_retention_drops_updated_min_and_resets_state():
-    state = StateBuilder().with_stream_state("events", {"updated": _days_ago(29)}).build()
+@pytest.mark.parametrize("age_days", [28.5, 29], ids=["28.5d", "29d"])
+def test_incremental_state_just_past_retention_drops_updated_min_and_resets_state(age_days):
+    # Google's cut-off is 29 days; a cursor past 28 must not be sent right at the limit.
+    state = StateBuilder().with_stream_state("events", {"updated": _days_ago(age_days)}).build()
     with HttpMocker() as http_mocker:
         request = _events_request()
         http_mocker.get(request, _items_response(_RECORD))
@@ -185,20 +192,6 @@ def test_incremental_state_just_past_retention_drops_updated_min_and_resets_stat
         emitted_states = [_stream_state(message) for message in output.state_messages]
         assert emitted_states[0] == {}, "the stale cursor is cleared before the full re-read"
         assert _RECORD["updated"] in emitted_states[-1]["updated"]
-        http_mocker.assert_number_of_calls(request, 1)
-
-
-def test_incremental_state_between_28_and_29_days_resets_state():
-    # Google's cut-off is 29 days; a cursor past 28 must not be sent right at the limit.
-    state = StateBuilder().with_stream_state("events", {"updated": _days_ago(28.5)}).build()
-    with HttpMocker() as http_mocker:
-        request = _events_request()
-        http_mocker.get(request, _items_response(_RECORD))
-
-        output = _read_events(http_mocker, SyncMode.incremental, state=state)
-
-        assert output.errors == []
-        assert _stream_state(output.state_messages[0]) == {}
         http_mocker.assert_number_of_calls(request, 1)
 
 
@@ -247,7 +240,7 @@ def test_start_date_guard_boundary(age_days, sends_updated_min):
 
 
 @pytest.mark.parametrize("age_days, sends_updated_min", [(7, True), (60, False)], ids=["recent", "old"])
-def test_full_refresh_with_start_date_bounds_every_sync(age_days, sends_updated_min):
+def test_full_refresh_with_start_date_bounds_the_sync(age_days, sends_updated_min):
     start_date = _days_ago(age_days)
     older = {"id": "older", "updated": _days_ago(age_days + 30)}
     newer = {"id": "newer", "updated": _days_ago(1)}
@@ -425,17 +418,31 @@ def test_server_error_retries_then_succeeds(status_code):
 
 
 @pytest.mark.parametrize(
-    "response, failure_type, message_fragment",
+    "response, failure_type, message_fragments",
     [
-        (_error_response(401, message="Invalid Credentials"), FailureType.config_error, "rejected the OAuth credentials"),
-        (_error_response(403, message="Forbidden"), FailureType.config_error, "lacks access to the configured calendar"),
-        (_error_response(403, "quotaExceeded"), FailureType.transient_error, "quota for this project or user is exhausted"),
-        (_error_response(403, "dailyLimitExceeded"), FailureType.transient_error, "quota for this project or user is exhausted"),
-        (_error_response(404, message="Not Found"), FailureType.config_error, '"Calendar Id" was not found'),
+        (
+            _error_response(401, message="Invalid Credentials"),
+            FailureType.config_error,
+            ("rejected the OAuth credentials", "Re-authorize the connector"),
+        ),
+        (_error_response(403, message="Forbidden"), FailureType.config_error, ("lacks access to the configured calendar",)),
+        (_error_response(403, "quotaExceeded"), FailureType.transient_error, ("quota for this project or user is exhausted",)),
+        (_error_response(403, "dailyLimitExceeded"), FailureType.transient_error, ("quota for this project or user is exhausted",)),
+        (
+            _error_response(403, "quotaExceeded", body_code="403"),
+            FailureType.transient_error,
+            ("quota for this project or user is exhausted",),
+        ),
+        (
+            _error_response(403, "quotaExceeded", body_code=None),
+            FailureType.transient_error,
+            ("quota for this project or user is exhausted",),
+        ),
+        (_error_response(404, message="Not Found"), FailureType.config_error, ('"Calendar Id" was not found', "or use 'primary'")),
     ],
-    ids=["401", "403-plain", "403-quotaExceeded", "403-dailyLimitExceeded", "404"],
+    ids=["401", "403-plain", "403-quotaExceeded", "403-dailyLimitExceeded", "403-quota-string-code", "403-quota-no-code", "404"],
 )
-def test_non_retryable_errors_are_classified(response, failure_type, message_fragment):
+def test_non_retryable_errors_are_classified(response, failure_type, message_fragments):
     with HttpMocker() as http_mocker:
         request = _events_request()
         http_mocker.get(request, response)
@@ -444,7 +451,8 @@ def test_non_retryable_errors_are_classified(response, failure_type, message_fra
 
         error = _error_trace(output)
         assert error.failure_type == failure_type
-        assert message_fragment in error.message
+        for fragment in message_fragments:
+            assert fragment in error.message
         http_mocker.assert_number_of_calls(request, 1)
 
 
