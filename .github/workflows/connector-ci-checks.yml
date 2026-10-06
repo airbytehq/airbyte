@@ -307,10 +307,15 @@ jobs:
 
           # These should be included as dev dependencies in the connector, but
           # for many connectors they are undeclared:
-          # Keep ruff pinned to the ruff-pre-commit rev in .pre-commit-config.yaml so
-          # `poe format-check` agrees with the required Format Check. Newer ruff
-          # formats f-strings differently and rejects code that pre-commit accepts.
-          uv tool install ruff==0.8.3
+          # Install ruff at the ruff-pre-commit rev from .pre-commit-config.yaml so
+          # `poe format-check` agrees with the required Format Check. Formatter
+          # output differs between ruff versions, so the two must not drift.
+          RUFF_VERSION=$(uv run --no-project --with pyyaml python3 -c '
+          import yaml
+          repos = yaml.safe_load(open(".pre-commit-config.yaml"))["repos"]
+          print(next(r["rev"] for r in repos if r["repo"].endswith("/ruff-pre-commit")).lstrip("v"))
+          ')
+          uv tool install "ruff==${RUFF_VERSION}"
           uv tool install pytest
           uv tool install mypy
 
@@ -464,10 +469,15 @@ jobs:
 
           # These should be included as dev dependencies in the connector, but
           # for many connectors they are undeclared:
-          # Keep ruff pinned to the ruff-pre-commit rev in .pre-commit-config.yaml so
-          # `poe format-check` agrees with the required Format Check. Newer ruff
-          # formats f-strings differently and rejects code that pre-commit accepts.
-          uv tool install ruff==0.8.3
+          # Install ruff at the ruff-pre-commit rev from .pre-commit-config.yaml so
+          # `poe format-check` agrees with the required Format Check. Formatter
+          # output differs between ruff versions, so the two must not drift.
+          RUFF_VERSION=$(uv run --no-project --with pyyaml python3 -c '
+          import yaml
+          repos = yaml.safe_load(open(".pre-commit-config.yaml"))["repos"]
+          print(next(r["rev"] for r in repos if r["repo"].endswith("/ruff-pre-commit")).lstrip("v"))
+          ')
+          uv tool install "ruff==${RUFF_VERSION}"
           uv tool install pytest
           uv tool install mypy
 
