@@ -12,10 +12,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
 import jakarta.inject.Singleton
 
-/**
- * The object which is mapped to the MongoDB source configuration JSON. Unknown properties are
- * ignored. Use [MongoDbSourceConfiguration] instead wherever possible.
- */
+/** The config JSON POJO (unknown properties ignored); prefer [MongoDbSourceConfiguration]. */
 @JsonSchemaTitle("MongoDb Source Spec")
 @JsonSchemaInject(
     json =
@@ -103,9 +100,8 @@ class MongoDbSourceConfigurationSpecification : ConfigurationSpecification() {
 }
 
 /**
- * The `database_config` oneOf. Both variants carry the same connection properties; the Atlas
- * variant additionally requires credentials. The `cluster_type` discriminator is synthesized by
- * Jackson from the `@JsonSubTypes` names (rendered as a single-value `enum` with a `default`).
+ * The `database_config` oneOf; the Atlas variant additionally requires credentials. Jackson
+ * synthesizes the `cluster_type` discriminator from the `@JsonSubTypes` names.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = DatabaseConfigSpecification.CLUSTER_TYPE)
 @JsonSubTypes(

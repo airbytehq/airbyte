@@ -17,9 +17,9 @@ import io.airbyte.cdk.read.generatePartitionId
 typealias RecordAcceptor = (NativeRecordPayload, Map<EmittedField, FieldValueChange>?) -> Unit
 
 /**
- * Shared lifecycle of the snapshot and CDC readers: acquires a DB-connection slot (plus an output
- * socket on the socket channel), builds the [OutputMessageRouter] that routes records to STDIO or
- * the socket data channel, and releases both. Subclasses implement `run()` and `checkpoint()`.
+ * Shared reader lifecycle: acquire a DB-connection slot (and an output socket on the socket
+ * channel), build the [OutputMessageRouter], release both. Subclasses implement `run()` and
+ * `checkpoint()`.
  */
 abstract class MongoDbPartitionReaderBase(
     protected val sharedState: MongoDbSharedState,

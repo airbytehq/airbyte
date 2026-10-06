@@ -4,11 +4,7 @@ package io.airbyte.integrations.source.mongodbv3.read
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionsCreator
 
-/**
- * Plans a feed as exactly one partition: a snapshot reader for a `Stream` feed, or the
- * change-stream reader for the `Global` feed. Splitting a collection into concurrent partitions is
- * a later optimization; v1 reads one partition per feed.
- */
+/** Plans a feed as exactly one partition (splitting a collection is a later optimization). */
 class MongoDbPartitionsCreator(
     private val sharedState: MongoDbSharedState,
     private val makeReader: () -> PartitionReader,

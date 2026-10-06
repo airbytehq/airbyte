@@ -41,13 +41,9 @@ import org.bson.conversions.Bson
 private val log = KotlinLogging.logger {}
 
 /**
- * Reads the change stream for the `Global` feed with the driver's `watch()`.
- * - **Cold start** (no prior state): captures the current resume token and emits nothing. The
- * `Global` feed runs before the snapshot `Stream` feeds, so the token predates the snapshot and the
- * next sync replays any changes made during it.
- * - **Warm start**: resumes from the saved token, drains the available changes (`tryNext()` until
- * null) — insert/update/replace as upserts, delete with `_ab_cdc_deleted_at` — and checkpoints the
- * new token.
+ * Reads the change stream for the `Global` feed. Cold start: capture the current resume token and
+ * emit nothing (the `Global` feed runs before the snapshots, so the next sync replays changes made
+ * during them). Warm start: drain the available changes and checkpoint the new token.
  */
 class MongoDbCdcPartitionReader(
     sharedState: MongoDbSharedState,
@@ -88,8 +84,8 @@ class MongoDbCdcPartitionReader(
                     )
                 InvalidCdcCursorPositionBehavior.RESYNC_DATA -> {
                     log.warn(e) { "Saved resume token is not valid; resetting state to re-sync." }
-                    // Clears the CDC token and every incremental stream's snapshot state, so the
-                    // Stream feeds (planned after this Global feed) re-snapshot from scratch.
+                    // Clears the token and every incremental snapshot state: re-snapshot from
+                    // scratch.
                     feedBootstrap.resetAll()
                     drain(resumeAfter = null)
                 }
@@ -98,10 +94,8 @@ class MongoDbCdcPartitionReader(
     }
 
     /**
-     * Opens the change stream and, on a **cold start** ([resumeAfter] null), polls once to
-     * establish the current position without emitting; on a **warm start**, resumes after the token
-     * and emits every available change. Either way the cursor's final position becomes the new
-     * resume token. A stale/invalid [resumeAfter] fails here, on open or on the first poll.
+     * Cold start ([resumeAfter] null): one poll to establish the position, nothing emitted. Warm
+     * start: emit every available change. The cursor's final position is the new resume token.
      */
     private suspend fun drain(resumeAfter: BsonDocument?) {
         val changeStream: ChangeStreamIterable<Document> =
@@ -113,7 +107,7 @@ class MongoDbCdcPartitionReader(
             } else {
                 while (true) {
                     currentCoroutineContext().ensureActive()
-                    emit(cursor.tryNext() ?: break)
+                    if (emit(cursor.tryNext() ?: break)) numRecords++
                 }
             }
             resumeToken = cursor.resumeToken
@@ -125,12 +119,9 @@ class MongoDbCdcPartitionReader(
     }
 
     /**
-     * Whether the failure means the saved resume token can no longer be resumed from. Covers the
-     * production case — `ChangeStreamHistoryLost` (286): the oplog rolled past the token — plus
-     * `ChangeStreamFatalError` (280), `InvalidResumeToken` (260), the server's token parse errors
-     * (`FailedToParse` 9, empty token 40649, KeyString format 50811), and the driver's own
-     * [MongoChangeStreamException]. Note the server *accepts* any well-formed token, even one for a
-     * nonsensical cluster time, and simply resumes from the start of the oplog.
+     * Whether the saved token can no longer be resumed from (oplog rolled past it, or the server
+     * rejected it). The server *accepts* any well-formed token, even for a nonsensical cluster
+     * time, so only a rejected token is detectable.
      */
     private fun isInvalidResumeToken(e: Throwable): Boolean =
         generateSequence(e) { it.cause }
@@ -140,31 +131,32 @@ class MongoDbCdcPartitionReader(
                         it.errorCode in INVALID_RESUME_TOKEN_ERROR_CODES)
             }
 
-    private fun emit(event: ChangeStreamDocument<Document>) {
-        val namespace = event.namespace ?: return
+    /** Emits [event] as a record; false for an unselected collection or non-data change. */
+    private fun emit(event: ChangeStreamDocument<Document>): Boolean {
+        val namespace = event.namespace ?: return false
         val streamId =
             StreamIdentifier.from(
                 StreamDescriptor()
                     .withName(namespace.collectionName)
                     .withNamespace(namespace.databaseName),
             )
-        val accept: RecordAcceptor = recordAcceptorFor(streamId) ?: return
-        val converter: MongoDbRecordConverter = convertersByStream[streamId] ?: return
+        val accept: RecordAcceptor = recordAcceptorFor(streamId) ?: return false
+        val converter: MongoDbRecordConverter = convertersByStream[streamId] ?: return false
         val changedAt: String = clusterTime(event)
         val payload: NativeRecordPayload =
             when (event.operationType) {
                 OperationType.INSERT,
                 OperationType.UPDATE,
                 OperationType.REPLACE ->
-                    converter.changePayload(event.fullDocument ?: return, deletedAt = null)
+                    converter.changePayload(event.fullDocument ?: return false, deletedAt = null)
                 OperationType.DELETE ->
                     converter.changePayload(toDocument(event.documentKey), deletedAt = changedAt)
-                else -> return
+                else -> return false
             }
         payload[CommonMetaField.CDC_UPDATED_AT.id] =
             FieldValueEncoder(Jsons.textNode(changedAt), MongoStringValueCodec)
         accept(payload, null)
-        numRecords++
+        return true
     }
 
     private fun fullDocumentMode(): FullDocument =
@@ -199,10 +191,7 @@ class MongoDbCdcPartitionReader(
         )
 
     companion object {
-        /**
-         * ChangeStreamHistoryLost, ChangeStreamFatalError, InvalidResumeToken, FailedToParse, empty
-         * resume token, KeyString format error.
-         */
+        /** HistoryLost, FatalError, InvalidResumeToken, FailedToParse, empty, bad KeyString. */
         val INVALID_RESUME_TOKEN_ERROR_CODES: Set<Int> = setOf(286, 280, 260, 9, 40649, 50811)
     }
 }

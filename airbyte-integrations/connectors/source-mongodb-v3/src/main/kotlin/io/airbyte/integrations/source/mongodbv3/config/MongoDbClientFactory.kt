@@ -22,8 +22,7 @@ object MongoDbClientFactory {
         if (connectionString.readPreference == null) {
             settings.readPreference(ReadPreference.secondaryPreferred())
         }
-        // Atlas always requires TLS; self-managed clusters honour the connection string
-        // (`tls=true`).
+        // Atlas requires TLS; self-managed clusters honour the connection string (`tls=true`).
         if (configuration.clusterType == MongoDbClusterType.ATLAS_REPLICA_SET) {
             settings.applyToSslSettings { it.enabled(true) }
         }

@@ -19,10 +19,7 @@ import jakarta.inject.Singleton
 import java.time.OffsetDateTime
 import java.util.concurrent.atomic.AtomicLong
 
-/**
- * Adds the `_ab_cdc_*` meta fields to every stream schema and record. Incremental syncs are
- * CDC-only, so every stream carries them regardless of its configured sync mode.
- */
+/** Adds the `_ab_cdc_*` meta fields to every stream and record (incremental is CDC-only). */
 @Singleton
 class MongoDbMetaFieldDecorator : MetaFieldDecorator {
 
@@ -35,10 +32,7 @@ class MongoDbMetaFieldDecorator : MetaFieldDecorator {
             MongoDbMetaField.CDC_CURSOR,
         )
 
-    /**
-     * Cursor for records read outside the change stream: `emittedAt` epoch seconds times 10^8 plus
-     * a counter starting at 1, shared by all streams of the sync.
-     */
+    /** Cursor for non-change-stream records: `emittedAt` epoch seconds × 10^8 + shared counter. */
     private val cursorBase = AtomicLong(0L)
     private val cursorCounter = AtomicLong(1L)
 

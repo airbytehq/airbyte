@@ -33,9 +33,8 @@ enum class MongoDbIdType {
 }
 
 /**
- * Per-collection snapshot checkpoint: `{"id": "<last _id>", "status": ..., "idType": ...,
- * "binarySubType": 0}`. [id] is the string form of the last emitted `_id` (UUID text for a
- * subtype-4 [Binary], Base64 for other binaries).
+ * Per-collection snapshot checkpoint `{"id", "status", "idType", "binarySubType"}`; [id] is the
+ * last emitted `_id` as text (UUID for a subtype-4 [Binary], Base64 for other binaries).
  */
 data class MongoDbStreamStateValue(
     @JsonProperty("id") val id: String?,
@@ -45,10 +44,7 @@ data class MongoDbStreamStateValue(
 ) {
     fun toOpaqueStateValue(): OpaqueStateValue = Jsons.valueToTree(this)
 
-    /**
-     * The checkpointed `_id` reconstructed as its native BSON type, for a `_id > lastSeen` resume
-     * query. Returns null when there is no checkpoint yet (fresh read).
-     */
+    /** The checkpointed `_id` as its native BSON type for the resume filter; null if none. */
     fun resumeIdValue(): Any? =
         id?.let {
             when (idType) {
@@ -69,10 +65,7 @@ data class MongoDbStreamStateValue(
         fun fromOpaqueStateValueOrNull(state: OpaqueStateValue?): MongoDbStreamStateValue? =
             state?.let { runCatching { fromOpaqueStateValue(it) }.getOrNull() }
 
-        /**
-         * Checkpoint for the last `_id` emitted (null if none). A document `_id` is stored as
-         * extended JSON so it round-trips losslessly; other types fall back to `toString()`.
-         */
+        /** Checkpoint for the last `_id` (null if none); a document `_id` is extended JSON. */
         fun fromLastId(lastId: Any?, status: MongoDbSnapshotStatus): MongoDbStreamStateValue =
             when (lastId) {
                 is ObjectId ->

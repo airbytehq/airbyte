@@ -30,9 +30,7 @@ interface SpecEnum {
     val specValue: String
 }
 
-/**
- * Resolves a spec string to an entry of [E], or throws a [ConfigErrorException] naming [property].
- */
+/** Resolves a spec string to an entry of [E]; throws a config error naming [property] otherwise. */
 inline fun <reified E> parseSpecEnum(property: String, value: String): E where
 E : Enum<E>,
 E : SpecEnum =
@@ -112,11 +110,7 @@ constructor(
 
     private val log = KotlinLogging.logger {}
 
-    /**
-     * The default `make` wraps every exception, [ConfigErrorException] included, in a generic
-     * "Failed to build ConnectorConfiguration."; let the user-facing messages below through
-     * unchanged.
-     */
+    /** Lets the user-facing [ConfigErrorException]s below through instead of the generic wrap. */
     override fun make(spec: Spec): MongoDbSourceConfiguration =
         try {
             makeWithoutExceptionHandling(spec)
@@ -195,9 +189,7 @@ constructor(
         /** Placeholder that Atlas puts in copy-pasted connection strings. */
         const val CREDENTIALS_PLACEHOLDER = "<username>:<password>@"
 
-        /**
-         * Trims whitespace, drops stray quotes and the Atlas `<username>:<password>@` placeholder.
-         */
+        /** Trims whitespace, stray quotes and the Atlas `<username>:<password>@` placeholder. */
         fun sanitizeConnectionString(raw: String): String =
             raw.trim().replace("\"", "").replace(CREDENTIALS_PLACEHOLDER, "")
 

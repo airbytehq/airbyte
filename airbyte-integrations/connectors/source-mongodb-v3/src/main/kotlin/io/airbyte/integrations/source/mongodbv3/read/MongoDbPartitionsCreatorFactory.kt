@@ -28,12 +28,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 private val log = KotlinLogging.logger {}
 
 /**
- * Plans a READ into partitions: one snapshot partition per `Stream` feed — none if its snapshot is
- * already `COMPLETE`, finished in this READ, or yielded to CDC (WASS) — and one
- * [MongoDbCdcPartitionReader] for the `Global` feed. Completion is tracked in memory
- * (`MongoDbSharedState.completedSnapshots`) because the CDK re-asks after every round and a
- * full-refresh stream's terminal status is not `COMPLETE`. Two guards run first and raise config
- * errors: [validateSchemaMode] and [validateSyncModeAgainstState].
+ * Plans a READ: one snapshot partition per `Stream` feed (none once `COMPLETE`, finished in this
+ * READ, or yielded to CDC) and one [MongoDbCdcPartitionReader] for the `Global` feed. Completion is
+ * tracked in memory because the CDK re-asks after every round and a full-refresh stream's terminal
+ * status is not `COMPLETE`. [validateSchemaMode] and [validateSyncModeAgainstState] run first.
  */
 @Singleton
 class MongoDbPartitionsCreatorFactory(
@@ -91,9 +89,9 @@ class MongoDbPartitionsCreatorFactory(
     }
 
     /**
-     * `schema_enforced` must agree between the configuration, the configured catalog (a schemaless
-     * catalog has exactly `_id` + `data` per stream) and the saved CDC state. Toggling it without a
-     * reset would emit records in one shape into a destination expecting the other.
+     * `schema_enforced` must agree between configuration, catalog (schemaless = exactly `_id` +
+     * `data`) and saved state, or records of one shape would land in a destination expecting the
+     * other.
      */
     private fun validateSchemaMode(feedBootstrap: FeedBootstrap<*>) {
         val streams: List<Stream> = feedBootstrap.feeds.filterIsInstance<Stream>()
@@ -122,11 +120,7 @@ class MongoDbPartitionsCreatorFactory(
     private fun isSchemalessStream(stream: Stream): Boolean =
         schemaFieldTypesOf(stream).keys == setOf(ID_FIELD, DATA_FIELD)
 
-    /**
-     * A stream's saved snapshot status must be one its configured sync mode can produce:
-     * `INCREMENTAL` ↔ `IN_PROGRESS`/`COMPLETE`, `FULL_REFRESH` ↔ `FULL_REFRESH`. Anything else
-     * means the sync mode was changed without a reset.
-     */
+    /** The saved snapshot status must be one the configured sync mode can produce. */
     private fun validateSyncModeAgainstState(feedBootstrap: StreamFeedBootstrap) {
         val stream: Stream = feedBootstrap.feed
         val saved: MongoDbSnapshotStatus =

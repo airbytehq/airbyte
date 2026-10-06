@@ -21,15 +21,10 @@ import org.bson.Document
 private val log = KotlinLogging.logger {}
 
 /**
- * Reads a collection ordered by `_id` ascending and emits every document as a record.
- *
- * Resumable: it starts after the `_id` recorded in the feed's current state (`_id > lastSeen`), and
- * checkpoints the last `_id` it read. If it reads the collection to the end it checkpoints the
- * terminal status (`COMPLETE` for an incremental snapshot, `FULL_REFRESH` for a full refresh) and
- * marks the stream complete for this READ; otherwise (cut short by the `checkpointTargetInterval`
- * timeout, the WASS budget, or the `max-records-per-run` test hook) it checkpoints
- * `IN_PROGRESS`/`FULL_REFRESH` so the next round continues. Splitting a collection into concurrent
- * `_id` ranges is a later optimization.
+ * Reads a collection ordered by `_id`, resuming after the checkpointed `_id`. Reaching the end
+ * checkpoints the terminal status (`COMPLETE` / `FULL_REFRESH`) and marks the stream complete for
+ * this READ; being cut short (timeout, WASS budget, `max-records-per-run`) checkpoints
+ * `IN_PROGRESS` / `FULL_REFRESH` so the next round continues.
  */
 class MongoDbSnapshotPartitionReader(
     private val streamState: MongoDbStreamState,
@@ -71,9 +66,8 @@ class MongoDbSnapshotPartitionReader(
     }
 
     /**
-     * Ordered `_id` scan resuming after [startId]. Under `schema_enforced` only the catalog's
-     * fields are projected so documents' extra fields never cross the wire (the record consumer
-     * would drop them anyway); schemaless mode needs the whole document for its `data` field.
+     * Ordered `_id` scan after [startId]. Under `schema_enforced` only the catalog's fields are
+     * projected (extra fields would be dropped anyway); schemaless needs the whole document.
      */
     private fun query(startId: Any?): FindIterable<Document> {
         val collection =
@@ -90,19 +84,15 @@ class MongoDbSnapshotPartitionReader(
     private fun reachedRecordLimit(): Boolean = sharedState.maxRecordsPerRun in 1..numRecords
 
     /**
-     * WASS: an incremental snapshot yields once past the shared snapshot deadline, but only after
-     * emitting at least one record so it always makes forward progress. Full-refresh streams never
-     * yield (there is no change stream to drain, and the destination expects the whole snapshot).
+     * WASS: an incremental snapshot yields past the deadline, but only after at least one record so
+     * it always progresses. Full refresh never yields (no change stream to drain).
      */
     private fun shouldYieldToCdc(): Boolean =
         !streamState.isFullRefresh &&
             numRecords > 0 &&
             Instant.now().isAfter(sharedState.snapshotDeadline)
 
-    /**
-     * The `_id` to resume after, or null for a fresh read (no usable state, or one already
-     * complete).
-     */
+    /** The `_id` to resume after; null for a fresh read (no usable state, or already complete). */
     private fun resumeFromId(): Any? =
         MongoDbStreamStateValue.fromOpaqueStateValueOrNull(
                 streamState.streamFeedBootstrap.currentState

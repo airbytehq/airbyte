@@ -15,11 +15,9 @@ import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 
 /**
- * Builds the [AirbyteStream] of a collection: `FULL_REFRESH` and `INCREMENTAL` (change stream), a
- * source-defined `_ab_cdc_cursor` cursor, `_id` as primary key, resumable, with the `_ab_cdc_*`
- * meta fields. The JSON schema is built here rather than with
- * [AirbyteStreamFactory.createAirbyteStream] because the per-type schemas (`{"type":"array"}`
- * without `items`, plain `{"type":"object"}`) have no exact [io.airbyte.cdk.data.AirbyteSchemaType]
+ * Builds a collection's [AirbyteStream]: both sync modes, source-defined `_ab_cdc_cursor`, `_id`
+ * primary key, resumable, with the `_ab_cdc_*` meta fields. The JSON schema is hand-built because
+ * `{"type":"array"}` (no `items`) and plain `{"type":"object"}` have no `AirbyteSchemaType`
  * equivalent.
  */
 @Singleton

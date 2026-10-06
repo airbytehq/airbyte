@@ -31,25 +31,18 @@ import org.bson.conversions.Bson
 private val log = KotlinLogging.logger {}
 
 /**
- * MongoDB implementation of [MetadataQuerier]: namespaces are the configured databases, streams are
- * the collections (views included) the credentials may read, and fields come from sampling
- * documents.
+ * [MetadataQuerier] for MongoDB: namespaces are the configured databases, streams the readable
+ * collections (views included), fields come from sampling documents.
  */
 class MongoDbSourceMetadataQuerier(
     val configuration: MongoDbSourceConfiguration,
     val client: MongoClient,
-    /**
-     * When true, [fields] returns an empty list without sampling: CHECK only calls it to probe that
-     * a stream is queryable, and sampling `discover_sample_size` documents there would be slow.
-     */
+    /** CHECK only probes that a stream is queryable, so skip the (slow) sampling in [fields]. */
     private val skipFieldDiscovery: Boolean = false,
     /**
-     * When set (READ only), [fields] is served from this configured catalog instead of by sampling.
-     * Required, not an optimization: at READ start `StateManagerFactory.toStream()` compares the
-     * catalog's `json_schema` against [fields] and drops the whole stream on any missing or
-     * differently-typed property (aborting the READ, since `global = true`). A fresh random sample
-     * can legitimately miss a rare field or re-type a mixed-type one, so only the catalog itself is
-     * guaranteed to pass.
+     * READ only: serve [fields] from the configured catalog. The CDK validates the catalog against
+     * [fields] and drops a stream (aborting the READ) on any missing or re-typed property, which a
+     * fresh random sample can legitimately produce; only the catalog itself is guaranteed to pass.
      */
     private val readModeCatalog: ConfiguredAirbyteCatalog? = null,
 ) : MetadataQuerier {
@@ -63,11 +56,9 @@ class MongoDbSourceMetadataQuerier(
     override fun streamNamespaces(): List<String> = configuration.databases
 
     /**
-     * The collections of [streamNamespace], sorted. During `check`, once the **last** configured
-     * database has also turned out empty, this names the unreadable databases instead of letting
-     * the CDK report a generic "Discovered zero tables." (`CheckOperation` stops at the first
-     * readable stream, so reaching the last database with nothing found means none had any.)
-     * `discover` and `read` are unaffected: an empty catalog, and `StreamNotFound` respectively.
+     * The collections of [streamNamespace], sorted. During `check`, if the last configured database
+     * is also empty, name the unreadable databases instead of the CDK's generic "Discovered zero
+     * tables." (`CheckOperation` stops at the first readable stream, so none had any.)
      */
     override fun streamNames(streamNamespace: String?): List<StreamIdentifier> {
         if (streamNamespace == null) {
@@ -111,9 +102,8 @@ class MongoDbSourceMetadataQuerier(
     }
 
     /**
-     * Fields of the collection, discovered by sampling its documents; empty for an empty
-     * collection, which DISCOVER then omits. DISCOVER calls this once per stream, so the first call
-     * for a namespace samples all of its collections in parallel and caches the results.
+     * Fields discovered by sampling; empty for an empty collection (which DISCOVER omits). The
+     * first call for a namespace samples all of its collections in parallel and caches the results.
      */
     override fun fields(streamID: StreamIdentifier): List<EmittedField> {
         if (skipFieldDiscovery) {
@@ -131,11 +121,7 @@ class MongoDbSourceMetadataQuerier(
         return fieldsByStream.computeIfAbsent(streamID, ::discoverFields)
     }
 
-    /**
-     * Reconstructs a stream's fields from the configured catalog's JSON schema, dropping the
-     * `_ab_*` meta fields (the CDK adds those back). A stream absent from the catalog yields no
-     * fields.
-     */
+    /** A stream's fields from the configured catalog's JSON schema, minus `_ab_*` meta fields. */
     private fun fieldsFromConfiguredCatalog(
         streamID: StreamIdentifier,
         catalog: ConfiguredAirbyteCatalog,
@@ -178,8 +164,7 @@ class MongoDbSourceMetadataQuerier(
     }
 
     /**
-     * Discovers the top-level field names and BSON types present in a random sample of
-     * `discover_sample_size` documents:
+     * Top-level field names and BSON types in a random sample of `discover_sample_size` documents:
      * ```
      * [ {$sample: {size: N}},
      *   {$project: {fields: {$arrayToObject: {$map: {input: {$objectToArray: "$$ROOT"}, as: "each",
@@ -187,8 +172,7 @@ class MongoDbSourceMetadataQuerier(
      *   {$unwind: "$fields"},
      *   {$group: {_id: "$fields"}} ]
      * ```
-     * Each result is one distinct document shape (field name -> BSON type name); when a field
-     * appears with several types, the first shape returned by the server wins.
+     * Each result is one distinct document shape; for a field with several types, the first wins.
      */
     private fun sampleFieldTypes(
         collection: MongoCollection<Document>
@@ -247,10 +231,7 @@ class MongoDbSourceMetadataQuerier(
         return fieldTypes
     }
 
-    /**
-     * Runs [pipeline] within the `discover_timeout_seconds` budget; errors (timeouts included) are
-     * logged and whatever was collected is kept.
-     */
+    /** Runs [pipeline] within `discover_timeout_seconds`; on any error, keep what was read. */
     private fun sample(
         collection: MongoCollection<Document>,
         pipeline: List<Bson>,
@@ -278,10 +259,8 @@ class MongoDbSourceMetadataQuerier(
         listOf(listOf(ID_FIELD))
 
     /**
-     * Change streams need an oplog: a standalone `mongod` has none, so it can never sync and fails
-     * here with a clear message. A sharded cluster reached through `mongos` (`SHARDED`) and a
-     * load-balanced deployment (`LOAD_BALANCED`, e.g. Atlas Serverless) do support change streams
-     * and pass; any other non-replica-set type is reported but not rejected.
+     * A standalone `mongod` has no oplog, so it can never sync: fail now with a clear message.
+     * `SHARDED` (via `mongos`) and `LOAD_BALANCED` support change streams and pass.
      */
     override fun extraChecks() {
         when (val clusterType: ClusterType = client.clusterDescription.type) {
@@ -312,9 +291,7 @@ class MongoDbSourceMetadataQuerier(
         /** Present at READ time; empty for spec/check/discover. */
         private val configuredCatalog: ConfiguredAirbyteCatalog? = null,
     ) : MetadataQuerier.Factory<MongoDbSourceConfiguration> {
-        /**
-         * The [MongoDbSourceConfiguration] is deliberately not injected in order to support tests.
-         */
+        /** The configuration is not injected so tests can pass their own. */
         override fun session(config: MongoDbSourceConfiguration): MetadataQuerier =
             MongoDbSourceMetadataQuerier(
                 config,

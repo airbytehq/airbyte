@@ -24,13 +24,10 @@ import org.bson.types.ObjectId
 import org.bson.types.Symbol
 
 /**
- * Converts a BSON [Document] into a [NativeRecordPayload] (`fieldName -> encoder`) that the CDK
- * serializes to JSONL or protobuf: `ObjectId` as hex, `Date` with milliseconds, `Binary` as Base64,
- * regex as `(options)pattern`, `CodeWithScope` as an object, `MinKey`/`MaxKey` omitted.
- *
- * With [schemaFieldTypes] (the READ path) the payload carries **every** schema field — `null` when
- * absent — in the codec of its declared type, so protobuf encodes each value correctly. Without it
- * (unit tests) only the document's own fields are emitted, in a passthrough codec.
+ * Converts a BSON [Document] into a [NativeRecordPayload]: `ObjectId` as hex, `Date` with millis,
+ * `Binary` as Base64, regex as `(options)pattern`, `CodeWithScope` as an object, `MinKey`/`MaxKey`
+ * omitted. With [schemaFieldTypes] (READ) every schema field is emitted — `null` when absent — in
+ * its declared type's codec; without it, only the document's own fields in a passthrough codec.
  */
 class MongoDbRecordConverter(
     private val schemaEnforced: Boolean,
@@ -38,10 +35,8 @@ class MongoDbRecordConverter(
 ) {
 
     /**
-     * Builds a payload for a change-stream event. For inserts/updates/replaces [document] is the
-     * full document and [deletedAt] is null; for deletes [document] is the `{_id}` key and
-     * [deletedAt] is the change's cluster time, which overrides the `_ab_cdc_deleted_at` the record
-     * consumer would otherwise set to null.
+     * Payload for a change event: the full document for insert/update/replace, or the `{_id}` key
+     * plus [deletedAt] (overriding the consumer's null `_ab_cdc_deleted_at`) for a delete.
      */
     fun changePayload(document: Document, deletedAt: String?): NativeRecordPayload {
         val payload: NativeRecordPayload = toPayloadWithId(document).first
@@ -77,8 +72,8 @@ class MongoDbRecordConverter(
                 for ((name: String, type: MongoDbFieldType) in schemaFieldTypes) {
                     val base: String? = transformSourceField(name)
                     if (base != null) {
-                        // `<field>_aibyte_transform`: the stringified value of `<field>`, which
-                        // itself is nulled.
+                        // `<field>_aibyte_transform`: stringified `<field>`, which itself is
+                        // nulled.
                         val value: JsonNode? =
                             if (document.containsKey(base)) toJsonNode(document[base]) else null
                         payload[name] =
@@ -101,10 +96,9 @@ class MongoDbRecordConverter(
     }
 
     /**
-     * Destinations coerce primitive type mismatches themselves, but a non-array value in a field
-     * declared `array` would become `null` downstream, so any value **present** in the document (a
-     * BSON `null` included, giving `[null]`) is wrapped in a one-element array; an absent field
-     * stays `null`.
+     * A non-array value in a field declared `array` would become `null` downstream, so a value
+     * **present** in the document (a BSON `null` included → `[null]`) is wrapped in a one-element
+     * array.
      */
     private fun coerceToSchema(
         node: JsonNode?,
@@ -118,10 +112,8 @@ class MongoDbRecordConverter(
         }
 
     /**
-     * The field a `<field>_aibyte_transform` catalog property derives from, or null if [name] is
-     * not one. An escape hatch for destinations that cannot take a field's native type: the user
-     * adds the suffixed `string` property to the catalog and receives the field's value
-     * JSON-stringified.
+     * The field a `<field>_aibyte_transform` catalog property derives from, or null. Adding the
+     * suffixed `string` property to the catalog yields the field's value JSON-stringified.
      */
     private fun transformSourceField(name: String): String? =
         name.removeSuffix(TRANSFORM_SUFFIX).takeIf { it != name && it.isNotEmpty() }
@@ -186,9 +178,7 @@ class MongoDbRecordConverter(
         return "%s.%03dZ".format(secondsPart, if (millis < 0) millis + 1000 else millis)
     }
 
-    /**
-     * Formats the raw 64-bit `BsonTimestamp` value as if it were epoch millis (kept for parity).
-     */
+    /** Formats the raw 64-bit `BsonTimestamp` value as if it were epoch millis (for parity). */
     private fun formatBsonTimestamp(timestamp: org.bson.BsonTimestamp): String =
         Instant.ofEpochMilli(timestamp.value).toString()
 

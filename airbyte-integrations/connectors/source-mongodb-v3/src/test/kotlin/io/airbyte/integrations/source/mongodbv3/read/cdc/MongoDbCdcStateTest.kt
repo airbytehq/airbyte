@@ -83,19 +83,39 @@ class MongoDbCdcStateTest {
     }
 
     @Test
-    fun testLegacyMissingSchemaEnforcedDefaultsToTrue() {
-        val parsed = MongoDbCdcState.fromOpaqueStateValue(Jsons.readTree("""{"state": null}"""))!!
-        Assertions.assertTrue(parsed.schemaEnforced)
-    }
-
-    @Test
-    fun testLegacyOffsetWithoutTokenFailsLoudly() {
-        val corrupt =
-            Jsons.readTree(
-                """{"state": {"[\"x\",{}]": "{\"sec\":1,\"ord\":1}"}, "schema_enforced": true}""",
+    fun testMigrationFailsOnEveryUnexpectedShape() {
+        // Each expected key is checked; nothing is assumed, and nothing silently cold-starts.
+        val cases =
+            listOf(
+                // schema_enforced missing / not a boolean
+                """{"state": null}""",
+                """{"state": null, "schema_enforced": "yes"}""",
+                // state is not a one-entry offset map
+                """{"state": "not-a-map", "schema_enforced": true}""",
+                """{"state": {}, "schema_enforced": true}""",
+                """{"state": {"a": "{}", "b": "{}"}, "schema_enforced": true}""",
+                // the offset value is not a JSON string / not valid JSON
+                """{"state": {"k": 42}, "schema_enforced": true}""",
+                """{"state": {"k": "not json"}, "schema_enforced": true}""",
+                // the offset has no textual resume_token
+                """{"state": {"k": "{\"sec\":1,\"ord\":1}"}, "schema_enforced": true}""",
+                """{"state": {"k": "{\"resume_token\":7}"}, "schema_enforced": true}""",
+                // the token is neither hex nor base64 BSON
+                """{"state": {"k": "{\"resume_token\":\"not*valid\"}"}, "schema_enforced": true}""",
             )
-        Assertions.assertThrows(ConfigErrorException::class.java) {
-            MongoDbCdcState.fromOpaqueStateValue(corrupt)
+        for (case in cases) {
+            val e =
+                Assertions.assertThrows(
+                    ConfigErrorException::class.java,
+                    { MongoDbCdcState.fromOpaqueStateValue(Jsons.readTree(case)) },
+                    case
+                )
+            Assertions.assertTrue(
+                e.message!!.startsWith(
+                    "Failed to migrate to the new connector version state protocol"
+                ),
+                e.message,
+            )
         }
     }
 

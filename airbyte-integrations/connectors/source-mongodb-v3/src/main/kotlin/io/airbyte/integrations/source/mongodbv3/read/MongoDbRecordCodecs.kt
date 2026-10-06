@@ -8,10 +8,7 @@ import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mongodbv3.discover.MongoDbFieldType
 
-/**
- * The declared [MongoDbFieldType] of each non-meta field of a stream, keyed by field id. Drives the
- * record converter so protobuf output encodes each value to its declared type.
- */
+/** The declared [MongoDbFieldType] of each non-meta field of a stream, by field id. */
 fun schemaFieldTypesOf(stream: Stream): Map<String, MongoDbFieldType> =
     stream.schema
         .filterNot { it.id.startsWith(MetaField.META_PREFIX) }
@@ -19,16 +16,9 @@ fun schemaFieldTypesOf(stream: Stream): Map<String, MongoDbFieldType> =
         .toMap()
 
 /**
- * Record-value codecs for the MongoDB source. Each carries a pre-built [JsonNode] straight through
- * on the JSONL channel (`encode`/`decode` are the identity), but converts it to the Java value the
- * schema-driven **protobuf** encoder expects for the field's `airbyteSchemaType` (
- * [valueForProtobufEncoding]).
- *
- * MongoDB is schemaless, so a value's actual BSON type may not match the field's discovered type
- * (the type is only a hint from sampling). On the protobuf channel a value that cannot be coerced
- * to the declared type is emitted as `null` rather than crashing the sync; on the JSONL channel the
- * raw value always flows and the destination coerces it. See `databases/mongodb/README.md`, Stage
- * 4.
+ * Record-value codecs: pass a pre-built [JsonNode] through on the JSONL channel, but coerce it to
+ * the Java type the schema-driven protobuf encoder expects for the field's `airbyteSchemaType`. A
+ * value that cannot be coerced (the discovered type is only a sampling hint) is nulled on protobuf.
  */
 sealed class MongoDbValueCodec : ProtobufAwareCustomConnectorJsonCodec<JsonNode> {
     final override fun encode(decoded: JsonNode): JsonNode = decoded
@@ -41,9 +31,7 @@ object MongoStringValueCodec : MongoDbValueCodec() {
     override fun valueForProtobufEncoding(v: JsonNode): Any? = if (v.isNull) null else v.asText()
 }
 
-/**
- * For `{"type":"number"}` fields: only a JSON number coerces; anything else is nulled on protobuf.
- */
+/** `{"type":"number"}`: only a JSON number coerces; anything else is nulled on protobuf. */
 object MongoNumberValueCodec : MongoDbValueCodec() {
     override fun valueForProtobufEncoding(v: JsonNode): Any? =
         if (v.isNumber) v.decimalValue() else null
@@ -56,9 +44,8 @@ object MongoBooleanValueCodec : MongoDbValueCodec() {
 }
 
 /**
- * For `{"type":"object"}` / `{"type":"array"}` (JSONB) fields, and the schemaless `data` field:
- * serialize the node to a JSON string, which the protobuf JSON encoder accepts. Plain string form
- * (not `toString()`) keeps decimals unexponentiated, matching the JSONL channel.
+ * `{"type":"object"}` / `{"type":"array"}` and the schemaless `data` field: serialize to a JSON
+ * string (via `Jsons`, which keeps decimals unexponentiated like the JSONL channel).
  */
 object MongoJsonbValueCodec : MongoDbValueCodec() {
     override fun valueForProtobufEncoding(v: JsonNode): Any? =

@@ -12,12 +12,10 @@ import org.bson.BsonString
 import org.bson.RawBsonDocument
 
 /**
- * State of the `Global` (change-stream) feed: the resume token and the `schema_enforced` flag it
- * was captured under. Two persisted shapes are read, only the first is written:
- * - **Native:** `{"resumeToken": {"_data": "<hex>"}, "schemaEnforced": true}`.
- * - **Debezium offset:** `{"state": <offset map>, "schema_enforced": true}`, where the offset map
- * has one entry whose value is a JSON string `{"sec": ..., "ord": ..., "resume_token": "<token>"}`
- * and the token is either the hex `_data` string or the base64-encoded BSON of the token document.
+ * `Global` (change-stream) feed state: the resume token and the `schema_enforced` it was captured
+ * under. Written as `{"resumeToken": {"_data": ..}, "schemaEnforced": ..}`; also read from the
+ * Debezium offset shape `{"state": {<key>: "{\"sec\":..,\"ord\":..,\"resume_token\":..}"},
+ * "schema_enforced": ..}`.
  */
 data class MongoDbCdcState(
     @JsonProperty("resumeToken") val resumeToken: JsonNode?,
@@ -49,40 +47,70 @@ data class MongoDbCdcState(
             }
 
         /**
-         * Reads the Debezium-offset shape. A null `state` means no CDC position yet (cold start); a
-         * non-null offset map without a resume token is corrupt, so it fails loudly rather than
-         * silently cold-starting and replaying the oplog. A missing `schema_enforced` means true.
+         * Migrates the Debezium-offset shape, checking every expected key; a mismatch fails the
+         * sync rather than cold-starting (which would replay the oplog). A JSON-null `state` means
+         * no position yet (persisted after a full-refresh-only sync) and cold-starts.
          */
         private fun fromDebeziumOffset(persisted: JsonNode): MongoDbCdcState {
-            val schemaEnforced: Boolean = persisted[DEBEZIUM_SCHEMA_ENFORCED]?.asBoolean() ?: true
-            val offsets: JsonNode = persisted[DEBEZIUM_STATE]
-            if (offsets == null || offsets.isNull) {
-                return MongoDbCdcState(resumeToken = null, schemaEnforced = schemaEnforced)
+            val schemaEnforced: JsonNode? = persisted[DEBEZIUM_SCHEMA_ENFORCED]
+            migrationRequires(schemaEnforced?.isBoolean == true) {
+                "'$DEBEZIUM_SCHEMA_ENFORCED' must be a boolean, got $schemaEnforced"
             }
-            val resumeTokenData: String =
-                offsets
-                    .elements()
-                    .asSequence()
-                    .filter { it.isTextual }
-                    .mapNotNull { runCatching { Jsons.readTree(it.asText()) }.getOrNull() }
-                    .firstNotNullOfOrNull { it[DEBEZIUM_RESUME_TOKEN]?.asText() }
-                    ?: throw ConfigErrorException(
-                        "The saved CDC state is a Debezium offset without " +
-                            "a resume token and cannot be resumed from. Please reset the connection.",
-                    )
-            return of(resumeTokenFromOffsetValue(resumeTokenData), schemaEnforced)
+            val offsets: JsonNode = persisted[DEBEZIUM_STATE]
+            if (offsets.isNull) {
+                return MongoDbCdcState(
+                    resumeToken = null,
+                    schemaEnforced = schemaEnforced!!.asBoolean()
+                )
+            }
+            migrationRequires(offsets.isObject && offsets.size() == 1) {
+                "'$DEBEZIUM_STATE' must be an offset map with exactly one entry, got $offsets"
+            }
+            val offsetValue: JsonNode = offsets.elements().next()
+            migrationRequires(offsetValue.isTextual) {
+                "the offset value must be a JSON string, got $offsetValue"
+            }
+            val offset: JsonNode =
+                runCatching { Jsons.readTree(offsetValue.asText()) }
+                    .getOrElse {
+                        migrationFailure(
+                            "the offset value is not valid JSON: ${offsetValue.asText()}",
+                            it
+                        )
+                    }
+            val token: JsonNode? = offset[DEBEZIUM_RESUME_TOKEN]
+            migrationRequires(token?.isTextual == true) {
+                "the offset has no textual '$DEBEZIUM_RESUME_TOKEN', got $offset"
+            }
+            return of(migrateDebeziumResumeToken(token!!.asText()), schemaEnforced!!.asBoolean())
         }
 
-        /**
-         * The resume token in a Debezium offset: the hex `_data` string (Debezium 2.x) or the
-         * base64-encoded BSON of the whole token document (Debezium 3.x).
-         */
-        private fun resumeTokenFromOffsetValue(value: String): BsonDocument =
+        /** The offset's token: hex `_data` (Debezium 2.x) or base64 BSON document (3.x). */
+        private fun migrateDebeziumResumeToken(value: String): BsonDocument =
             if (HEX_RESUME_TOKEN_DATA.matches(value)) {
                 BsonDocument("_data", BsonString(value))
             } else {
-                RawBsonDocument(Base64.getDecoder().decode(value))
+                runCatching {
+                        RawBsonDocument(Base64.getDecoder().decode(value)).also { it.toJson() }
+                    }
+                    .getOrElse {
+                        migrationFailure(
+                            "'$DEBEZIUM_RESUME_TOKEN' is neither hex nor base64 BSON: $value",
+                            it
+                        )
+                    }
             }
+
+        private inline fun migrationRequires(condition: Boolean, detail: () -> String) {
+            if (!condition) migrationFailure(detail())
+        }
+
+        private fun migrationFailure(detail: String, cause: Throwable? = null): Nothing =
+            throw ConfigErrorException(
+                "Failed to migrate to the new connector version state protocol: $detail. " +
+                    "Reset the connection to start from a fresh snapshot.",
+                cause,
+            )
 
         private val HEX_RESUME_TOKEN_DATA = Regex("^[0-9A-Fa-f]+$")
     }

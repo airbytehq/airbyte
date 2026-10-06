@@ -19,10 +19,9 @@ import io.airbyte.integrations.source.mongodbv3.read.MongoNumberValueCodec
 import io.airbyte.integrations.source.mongodbv3.read.MongoStringValueCodec
 
 /**
- * [FieldType]s of the top-level fields of a document. DISCOVER samples documents, records each
- * field's BSON type name (`$type`) and maps it with [fromBsonTypeName]. Documents in one collection
- * may hold different BSON types under the same field name, so the discovered type is only a hint:
- * record values are converted based on their actual BSON type.
+ * [FieldType]s of a document's top-level fields, discovered by sampling (`$type`). A field may hold
+ * different BSON types across documents, so the type is a hint: values convert by their actual
+ * type.
  */
 enum class MongoDbFieldType(
     override val airbyteSchemaType: AirbyteSchemaType,
@@ -51,9 +50,9 @@ enum class MongoDbFieldType(
 
     companion object {
         /**
-         * Maps a `$type` BSON type name to a field type. Note `$type` reports booleans as `bool`,
-         * not `boolean`, so they are discovered as [STRING] like every other unlisted type
-         * (`objectId`, `date`, `timestamp`, `binData`, `regex`, ...).
+         * Maps a `$type` name to a field type. `$type` says `bool`, not `boolean`, so booleans are
+         * discovered as [STRING] like every other unlisted type (`objectId`, `date`, `binData`,
+         * ...).
          */
         fun fromBsonTypeName(bsonTypeName: String): MongoDbFieldType =
             when (bsonTypeName) {
@@ -69,12 +68,7 @@ enum class MongoDbFieldType(
                 else -> STRING
             }
 
-        /**
-         * Recovers the field type from a catalog property's JSON schema (`{"type": ...}`), the
-         * inverse of [jsonSchema]. Used at READ time to serve [fields]
-         * [MongoDbSourceMetadataQuerier] from the configured catalog rather than re-sampling
-         * documents.
-         */
+        /** The inverse of [jsonSchema]: the field type of a catalog property's `{"type": ...}`. */
         fun fromJsonSchema(property: JsonNode): MongoDbFieldType =
             when (property["type"]?.asText()) {
                 "boolean" -> BOOLEAN
@@ -89,10 +83,7 @@ enum class MongoDbFieldType(
 
 private fun jsonSchemaOf(type: String): ObjectNode = Jsons.objectNode().put("type", type)
 
-/**
- * [MetaField]s specific to the MongoDB source, in addition to
- * [io.airbyte.cdk.discover.CommonMetaField].
- */
+/** MongoDB-specific [MetaField]s, in addition to [io.airbyte.cdk.discover.CommonMetaField]. */
 enum class MongoDbMetaField(
     override val type: FieldType,
 ) : MetaField {

@@ -16,27 +16,18 @@ import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * Holds the state shared by all partition creators and readers of a READ: the configuration, a
- * single long-lived [MongoClient], and the CDK's resource semaphores. Mirrors `DataGenSharedState`.
- */
+/** State shared by a READ's creators and readers: config, one [MongoClient], CDK resources. */
 @Singleton
 class MongoDbSharedState(
     val configuration: MongoDbSourceConfiguration,
     private val concurrencyResource: ConcurrencyResource,
     private val resourceAcquirer: ResourceAcquirer,
-    /**
-     * Test hook: cap the records a snapshot partition reads per `run()` so mid-collection resume
-     * can be exercised without waiting for the `checkpointTargetInterval` timeout. `0` means
-     * unlimited.
-     */
+    /** Test hook: records per snapshot `run()` before checkpointing (`0` = unlimited). */
     @Value("\${airbyte.connector.extract.mongodb.max-records-per-run:0}")
     val maxRecordsPerRun: Long = 0,
     /**
-     * Test hook: override the WASS snapshot time budget (see [snapshotDeadline]) in milliseconds so
-     * the yield behaviour can be exercised quickly. `0` means use [MongoDbSourceConfiguration]'s
-     * `maxSnapshotReadDuration`; a negative value puts the deadline in the past so an incremental
-     * snapshot yields right after its first record.
+     * Test hook: the WASS budget in ms (`0` = `maxSnapshotReadDuration`; negative = already
+     * expired, so an incremental snapshot yields after its first record).
      */
     @Value("\${airbyte.connector.extract.mongodb.max-snapshot-duration-ms:0}")
     private val maxSnapshotDurationMsOverride: Long = 0,
@@ -44,22 +35,13 @@ class MongoDbSharedState(
     /** One client for the whole READ; MongoDB pools connections internally. */
     val client: MongoClient by lazy { MongoDbClientFactory.create(configuration) }
 
-    /**
-     * Snapshot streams that finished reading in this READ, so the factory stops re-planning them.
-     */
+    /** Snapshot streams that finished in this READ, so the factory stops re-planning them. */
     val completedSnapshots: MutableSet<StreamIdentifier> = ConcurrentHashMap.newKeySet()
 
-    /**
-     * Incremental snapshot streams that hit the WASS snapshot time budget in this READ and yielded
-     * so the next sync's change-stream read can advance the resume token before the snapshot
-     * resumes.
-     */
+    /** Incremental snapshots that hit the WASS budget and yielded so the next sync drains CDC. */
     val snapshotYielded: MutableSet<StreamIdentifier> = ConcurrentHashMap.newKeySet()
 
-    /**
-     * The wall-clock instant after which an incremental snapshot should yield to CDC (WASS). Fixed
-     * on first access for the whole READ; effectively unlimited when no cap is configured.
-     */
+    /** When an incremental snapshot yields to CDC (WASS); fixed on first access for the READ. */
     val snapshotDeadline: Instant by lazy {
         val budget: Duration =
             when {
