@@ -23,8 +23,9 @@ _UNAUTHORIZED_MESSAGE = (
     "restricts API access by IP address, add the Airbyte IP addresses to the allowlist."
 )
 _FORBIDDEN_MESSAGE = (
-    "Customer.io denied access to this App API key. If your account restricts API access "
-    "by IP address, add the Airbyte IP addresses to the allowlist."
+    "Customer.io denied this App API key access to the requested data. Use an App API key "
+    "whose scope includes this data, and if your account restricts API access by IP address, "
+    "add the Airbyte IP addresses to the allowlist."
 )
 _PRIOR_CURSOR = 1701390800  # 2023-12-01T00:33:20Z
 _START_DATE, _START_EPOCH = "2023-12-01T00:00:00Z", 1701388800  # _PRIOR_CURSOR - 2000, inside the lookback

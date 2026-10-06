@@ -33,8 +33,9 @@ definitions:
           action: FAIL
           failure_type: config_error
           error_message: >-
-            Customer.io denied access to this App API key. If your account restricts API access
-            by IP address, add the Airbyte IP addresses to the allowlist.
+            Customer.io denied this App API key access to the requested data. Use an App API key
+            whose scope includes this data, and if your account restricts API access by IP address,
+            add the Airbyte IP addresses to the allowlist.
 streams:
   - type: DeclarativeStream
     name: campaigns

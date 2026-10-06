@@ -13,7 +13,7 @@ Every requester, including the `campaigns` parent copy inside the `campaigns_act
 | Status | Action | Failure type | Meaning |
 | --- | --- | --- | --- |
 | 401 | FAIL | `config_error` | Invalid key, a Track API key, the wrong Region, or an IP address outside the allowlist; the message names each fix |
-| 403 | FAIL | `config_error` | Access denied; the message points to the IP allowlist |
+| 403 | FAIL | `config_error` | Access denied: a key whose scope excludes the data, or an IP address outside the allowlist; the message names both |
 | 429 | RATE_LIMITED | `transient_error` | Over the 10 requests per second limit; retried |
 | 500, 502, 503, 504 | RETRY | `transient_error` | Temporary server error; retried |
 | 404 on `listCampaignActions` | IGNORE | - | The automation was deleted after the automation list was read; its actions are skipped |
@@ -24,7 +24,7 @@ Retries wait for `Retry-After`, or fall back to `ExponentialBackoffStrategy` wit
 
 The [OpenAPI spec](https://docs.customer.io/files/journeys-app.json) documents 200 and 429 for [`listCampaigns`](https://docs.customer.io/integrations/api/app/tag/automations/listcampaigns/), 200, 400, 404 and 429 for [`listCampaignActions`](https://docs.customer.io/integrations/api/app/tag/automations/listcampaignactions/), and only 200 for [`listNewsletters`](https://docs.customer.io/integrations/api/app/tag/newsletters/listnewsletters/). A 429 carries `Retry-After` ([API rate limits](https://docs.customer.io/integrations/api/customerio-apis/#api-rate-limits)); the spec's header description adds that it is absent when a daily quota is hit, which is when the exponential backoff applies. `components.responses.Unauthorized` describes 401 as a missing or invalid API key.
 
-**Why this matters:** Keep the filters on `base_requester` so every requester inherits them; `$ref` merging is key-level, so a per-stream `error_handler` replaces the shared one and loses the messages and the backoff. Customer.io does not document which status a blocked IP address gets ([IP allowlist](https://docs.customer.io/accounts/settings/managing-credentials/#restrict-api-access-by-ip-address)), so both messages mention the allowlist. In the `campaigns_actions` composite, the 404 handler repeats `max_retries: 30` because the composite reads `max_retries` from its first handler, and the shared handler stays last because the composite returns the last handler's FAIL, which keeps the 401 and 403 messages.
+**Why this matters:** Keep the filters on `base_requester` so every requester inherits them; `$ref` merging is key-level, so a per-stream `error_handler` replaces the shared one and loses the messages and the backoff. Customer.io does not document which status a blocked IP address gets ([IP allowlist](https://docs.customer.io/accounts/settings/managing-credentials/#restrict-api-access-by-ip-address)), so both messages mention the allowlist. App API keys are created "with a defined scope" (`components.securitySchemes.Bearer-Auth` in the [OpenAPI spec](https://docs.customer.io/files/journeys-app.json)), so the 403 message also names the key's scope. In the `campaigns_actions` composite, the 404 handler repeats `max_retries: 30` because the composite reads `max_retries` from its first handler, and the shared handler stays last because the composite returns the last handler's FAIL, which keeps the 401 and 403 messages.
 
 ## 3. One Shared Request Budget and Three Workers
 
