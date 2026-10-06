@@ -75,7 +75,7 @@ definitions:
         $parameters:
           rfc2822_field: end_time
     $parameters:
-      rfc2822_regex: '^((Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} [+-]\d{4})$'
+      rfc2822_regex: '(?i)^((Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} ([+-]\d{2}:?\d{2}|Z))$'
   base_stream:
     type: DeclarativeStream
     transformations:
