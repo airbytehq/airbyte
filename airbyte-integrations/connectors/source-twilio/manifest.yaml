@@ -33,8 +33,53 @@ definitions:
             - 404
           error_message: >-
             Skipping this slice—data may be available in later slices or for other accounts/subaccounts.
+  # Twilio returns some datetimes as RFC2822 ("Fri, 11 Dec 2020 04:28:40 +0000"); rewrite those to UTC ISO8601.
+  # Covers every `format: date-time` field name used by the stream schemas; values that are not RFC2822 pass through.
+  rfc2822_datetime_fields_to_utc:
+    type: AddFields
+    condition: "{{ value != '' }}"
+    fields:
+      - type: AddedFieldDefinition
+        path: [date_created]
+        value: "{{ format_datetime(format_datetime(record[parameters.rfc2822_field], '%s', '%a, %d %b %Y %H:%M:%S %z') | int, '%Y-%m-%dT%H:%M:%SZ') if record.get(parameters.rfc2822_field) is string and record[parameters.rfc2822_field] | regex_search(parameters.rfc2822_regex) else '' }}"
+        $parameters:
+          rfc2822_field: date_created
+      - type: AddedFieldDefinition
+        path: [date_updated]
+        value: "{{ format_datetime(format_datetime(record[parameters.rfc2822_field], '%s', '%a, %d %b %Y %H:%M:%S %z') | int, '%Y-%m-%dT%H:%M:%SZ') if record.get(parameters.rfc2822_field) is string and record[parameters.rfc2822_field] | regex_search(parameters.rfc2822_regex) else '' }}"
+        $parameters:
+          rfc2822_field: date_updated
+      - type: AddedFieldDefinition
+        path: [date_generated]
+        value: "{{ format_datetime(format_datetime(record[parameters.rfc2822_field], '%s', '%a, %d %b %Y %H:%M:%S %z') | int, '%Y-%m-%dT%H:%M:%SZ') if record.get(parameters.rfc2822_field) is string and record[parameters.rfc2822_field] | regex_search(parameters.rfc2822_regex) else '' }}"
+        $parameters:
+          rfc2822_field: date_generated
+      - type: AddedFieldDefinition
+        path: [date_sent]
+        value: "{{ format_datetime(format_datetime(record[parameters.rfc2822_field], '%s', '%a, %d %b %Y %H:%M:%S %z') | int, '%Y-%m-%dT%H:%M:%SZ') if record.get(parameters.rfc2822_field) is string and record[parameters.rfc2822_field] | regex_search(parameters.rfc2822_regex) else '' }}"
+        $parameters:
+          rfc2822_field: date_sent
+      - type: AddedFieldDefinition
+        path: [date_fired]
+        value: "{{ format_datetime(format_datetime(record[parameters.rfc2822_field], '%s', '%a, %d %b %Y %H:%M:%S %z') | int, '%Y-%m-%dT%H:%M:%SZ') if record.get(parameters.rfc2822_field) is string and record[parameters.rfc2822_field] | regex_search(parameters.rfc2822_regex) else '' }}"
+        $parameters:
+          rfc2822_field: date_fired
+      - type: AddedFieldDefinition
+        path: [start_time]
+        value: "{{ format_datetime(format_datetime(record[parameters.rfc2822_field], '%s', '%a, %d %b %Y %H:%M:%S %z') | int, '%Y-%m-%dT%H:%M:%SZ') if record.get(parameters.rfc2822_field) is string and record[parameters.rfc2822_field] | regex_search(parameters.rfc2822_regex) else '' }}"
+        $parameters:
+          rfc2822_field: start_time
+      - type: AddedFieldDefinition
+        path: [end_time]
+        value: "{{ format_datetime(format_datetime(record[parameters.rfc2822_field], '%s', '%a, %d %b %Y %H:%M:%S %z') | int, '%Y-%m-%dT%H:%M:%SZ') if record.get(parameters.rfc2822_field) is string and record[parameters.rfc2822_field] | regex_search(parameters.rfc2822_regex) else '' }}"
+        $parameters:
+          rfc2822_field: end_time
+    $parameters:
+      rfc2822_regex: '^((Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} [+-]\d{4})$'
   base_stream:
     type: DeclarativeStream
+    transformations:
+      - $ref: "#/definitions/rfc2822_datetime_fields_to_utc"
     primary_key:
       - sid
     retriever:
@@ -48,9 +93,7 @@ definitions:
           type: DpathExtractor
           field_path:
             - "{{ parameters.get('data_field') or parameters['name'] }}"
-        schema_normalization:
-          type: CustomSchemaNormalization
-          class_name: source_declarative_manifest.components.TwilioDateTimeTypeTransformer
+        schema_normalization: Default
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -147,6 +190,7 @@ definitions:
                     type: RecordFilter
                     condition: "{{ parameters.get('subresource_uri_key') or parameters.get('data_field') or parameters['name'] in record.get('subresource_uris', {}) }}"
               transformations:
+                - $ref: "#/definitions/rfc2822_datetime_fields_to_utc"
                 - type: AddFields
                   fields:
                     - type: AddedFieldDefinition
@@ -455,9 +499,7 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["participants"]
-        schema_normalization:
-          type: CustomSchemaNormalization
-          class_name: source_declarative_manifest.components.TwilioDateTimeTypeTransformer
+        schema_normalization: Default
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -475,6 +517,7 @@ definitions:
 
   conversation_messages_stream:
     $ref: "#/definitions/base_stream"
+    transformations: []
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       record_selector:
@@ -482,9 +525,7 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["messages"]
-        schema_normalization:
-          type: CustomSchemaNormalization
-          class_name: source_declarative_manifest.components.TwilioDateTimeTypeTransformer
+        schema_normalization: Default
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -608,6 +649,7 @@ definitions:
                     type: RecordFilter
                     condition: "{{ parameters['subresource_uri_subkey'] in record.get('subresource_uris', {}) and record.get('num_media', '0') != '0' }}"
               transformations:
+                - $ref: "#/definitions/rfc2822_datetime_fields_to_utc"
                 - type: AddFields
                   fields:
                     - type: AddedFieldDefinition
@@ -727,6 +769,7 @@ definitions:
 
   step_stream:
     $ref: "#/definitions/base_stream"
+    transformations: []
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       record_selector:
@@ -734,9 +777,7 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["steps"]
-        schema_normalization:
-          type: CustomSchemaNormalization
-          class_name: source_declarative_manifest.components.TwilioDateTimeTypeTransformer
+        schema_normalization: Default
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -819,6 +860,7 @@ definitions:
 
   user_conversations_stream:
     $ref: "#/definitions/base_stream"
+    transformations: []
     primary_key:
       - account_sid
     retriever:
@@ -828,9 +870,7 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["conversations"]
-        schema_normalization:
-          type: CustomSchemaNormalization
-          class_name: source_declarative_manifest.components.TwilioDateTimeTypeTransformer
+        schema_normalization: Default
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -848,6 +888,8 @@ definitions:
 
   users_stream:
     $ref: "#/definitions/base_stream"
+    # date fields have no format: date-time, so skip the RFC2822 rewrite
+    transformations: []
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -858,6 +900,7 @@ definitions:
 
   verify_services_stream:
     $ref: "#/definitions/base_stream"
+    transformations: []
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:

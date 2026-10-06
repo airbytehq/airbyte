@@ -138,24 +138,66 @@ class TestTwilioStream:
         assert sleep_mock.called
         sleep_mock.assert_any_call(pytest.approx(6.5))
 
-    def test_transform_function(self, requests_mock):
-        accounts_json = {
-            "accounts": [
-                {
-                    "sid": "AC123",
-                    "date_created": "2022-01-01T00:00:00Z",
-                    "date_updated": "Fri, 11 Dec 2020 04:28:40 +0000",
-                    "subresource_uris": {"addresses": "/2010-04-01/Accounts/AC123/Addresses.json"},
-                }
-            ]
-        }
-        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
+    @pytest.mark.parametrize(
+        "date_updated,expected",
+        [
+            ("Fri, 11 Dec 2020 04:28:40 +0000", "2020-12-11T04:28:40Z"),
+            ("Fri, 11 Dec 2020 04:28:40 -0500", "2020-12-11T09:28:40Z"),
+            ("Sat, 1 Jan 2022 23:59:59 +0200", "2022-01-01T21:59:59Z"),
+            ("2022-01-01T00:00:00Z", "2022-01-01T00:00:00Z"),
+            (None, None),
+            ("", ""),
+            ("Foo, bar", "Foo, bar"),
+        ],
+    )
+    def test_datetime_fields_are_normalized(self, date_updated, expected, requests_mock):
+        requests_mock.get(
+            f"{BASE}/Accounts.json",
+            json={
+                "accounts": [
+                    {
+                        "sid": "AC123",
+                        "date_updated": date_updated,
+                        "subresource_uris": {"calls": "/2010-04-01/Accounts/AC123/Calls.json"},
+                    }
+                ]
+            },
+            status_code=200,
+        )
 
         records = read_from_stream(TEST_CONFIG, "accounts", SyncMode.full_refresh).records
 
         assert len(records) == 1
-        assert records[0].record.data["date_created"] == "2022-01-01T00:00:00Z"
-        assert records[0].record.data["date_updated"] == "2020-12-11T04:28:40Z"
+        assert records[0].record.data.get("date_updated") == expected
+        assert "date_created" not in records[0].record.data
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_default_schema_normalization_casts_numeric_fields(self, requests_mock):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Calls.json",
+            json={"calls": [{"sid": "CA123", "price": "1.25"}]},
+            status_code=200,
+        )
+
+        config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
+        records = read_from_stream(config, "calls", SyncMode.full_refresh).records
+
+        assert len(records) == 1
+        assert records[0].record.data["price"] == 1.25
+        assert not isinstance(records[0].record.data["price"], str)
+
+    def test_users_stream_skips_rfc2822_rewrite(self, requests_mock):
+        requests_mock.get(
+            "https://conversations.twilio.com/v1/Users",
+            json={"users": [{"sid": "US123", "date_created": "Fri, 11 Dec 2020 04:28:40 +0000"}]},
+            status_code=200,
+        )
+
+        records = read_from_stream(TEST_CONFIG, "users", SyncMode.full_refresh).records
+
+        assert len(records) == 1
+        assert records[0].record.data["date_created"] == "Fri, 11 Dec 2020 04:28:40 +0000"
 
 
 class TestIncrementalTwilioStream:
@@ -172,6 +214,109 @@ class TestIncrementalTwilioStream:
 
         records = read_from_stream({**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}, "calls", SyncMode.full_refresh).records
         assert len(records) == 1
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "stream_name,path,record_field,record_date,expected_date,cursor_value,lower_key,lower_value,upper_key,upper_value",
+        [
+            (
+                "messages",
+                "/Accounts/AC123/Messages.json",
+                "date_sent",
+                "Tue, 15 Nov 2022 04:28:40 +0200",
+                "2022-11-15T02:28:40Z",
+                "2022-11-15 02:28:40Z",
+                "DateSent>",
+                "2022-11-15 00:00:00Z",
+                "DateSent<",
+                "2022-11-16 12:03:11Z",
+            ),
+            (
+                "calls",
+                "/Accounts/AC123/Calls.json",
+                "end_time",
+                "Tue, 15 Nov 2022 04:28:40 -0500",
+                "2022-11-15T09:28:40Z",
+                "2022-11-15",
+                "EndTime>",
+                "2022-11-15",
+                "EndTime<",
+                "2022-11-16",
+            ),
+        ],
+    )
+    def test_rfc2822_datetime_advances_incremental_cursor(
+        self,
+        stream_name,
+        path,
+        record_field,
+        record_date,
+        expected_date,
+        cursor_value,
+        lower_key,
+        lower_value,
+        upper_key,
+        upper_value,
+        requests_mock,
+    ):
+        requests_mock.get(f"{BASE}/Accounts.json?PageSize=1000", json=ACCOUNTS_JSON, status_code=200)
+        body_key = stream_name
+        expected_url = f"{BASE}{path}?{urlencode({'PageSize': 1000, lower_key: lower_value, upper_key: upper_value})}"
+        child_matcher = requests_mock.get(
+            expected_url,
+            json={body_key: [{"sid": f"{stream_name.upper()}123", record_field: record_date}]},
+            status_code=200,
+        )
+
+        config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
+        output = read_from_stream(config, stream_name, SyncMode.incremental)
+
+        assert child_matcher.call_count == 1
+        assert [request.url for request in requests_mock.request_history if request.url.startswith(f"{BASE}{path}")] == [expected_url]
+        assert len(output.records) == 1
+        assert output.records[0].record.data[record_field] == expected_date
+        partition_cursor = output.most_recent_state.stream_state.__dict__["states"][0]["cursor"][record_field]
+        assert partition_cursor == cursor_value
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_messages_replays_from_legacy_per_partition_cursor(self, requests_mock):
+        requests_mock.get(f"{BASE}/Accounts.json?PageSize=1000", json=ACCOUNTS_JSON, status_code=200)
+        saved_cursor = "2022-11-15 00:00:00Z"
+        expected_url = (
+            f"{BASE}/Accounts/AC123/Messages.json?"
+            f"{urlencode({'PageSize': 1000, 'DateSent>': saved_cursor, 'DateSent<': '2022-11-16 12:03:11Z'})}"
+        )
+        child_matcher = requests_mock.get(
+            expected_url,
+            json={"messages": [{"sid": "SM123", "date_sent": "Tue, 15 Nov 2022 10:28:40 +0000"}]},
+            status_code=200,
+        )
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "messages",
+                {
+                    "states": [
+                        {
+                            "partition": {"parent_slice": {}, "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "cursor": {"date_sent": saved_cursor},
+                        }
+                    ],
+                    "state": {"date_sent": saved_cursor},
+                    "use_global_cursor": False,
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream({**TEST_CONFIG, "start_date": "2022-11-01T00:00:00Z"}, "messages", SyncMode.incremental, state)
+
+        assert child_matcher.call_count == 1
+        assert [request.url for request in requests_mock.request_history if "/Messages.json" in request.url] == [expected_url]
+        assert len(output.records) == 1
+        assert output.records[0].record.data["date_sent"] == "2022-11-15T10:28:40Z"
+        partition_cursor = output.most_recent_state.stream_state.__dict__["states"][0]["cursor"]["date_sent"]
+        assert partition_cursor == "2022-11-15 10:28:40Z"
 
     @freeze_time("2022-11-16 12:03:11+00:00")
     @pytest.mark.parametrize(
@@ -758,6 +903,48 @@ class TestTwilioNestedStream:
         # Assert we fetched media only for SM1
         assert media_matcher.called, "Media endpoint for SM1 was not called"
         assert len(records) == 1, f"Expected 1 media record (only from SM1), got {len(records)}"
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_message_media_normalizes_rfc2822_parent_and_media_dates(self, requests_mock):
+        requests_mock.get(
+            f"{BASE}/Accounts.json",
+            json={
+                "accounts": [
+                    {
+                        "sid": "AC123",
+                        "subresource_uris": {"messages": "/2010-04-01/Accounts/AC123/Messages.json"},
+                    }
+                ]
+            },
+            status_code=200,
+        )
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Messages.json",
+            json={
+                "messages": [
+                    {
+                        "sid": "SM123",
+                        "num_media": "1",
+                        "date_sent": "Tue, 15 Nov 2022 04:28:40 +0200",
+                        "subresource_uris": {"media": "/2010-04-01/Accounts/AC123/Messages/SM123/Media.json"},
+                    }
+                ]
+            },
+            status_code=200,
+        )
+        media_url = f"{BASE}/Accounts/AC123/Messages/SM123/Media.json"
+        media_matcher = requests_mock.get(
+            media_url,
+            json={"media_list": [{"sid": "ME123", "date_created": "Tue, 15 Nov 2022 04:30:00 -0500"}]},
+            status_code=200,
+        )
+
+        config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
+        records = read_from_stream(config, "message_media", SyncMode.full_refresh).records
+
+        assert media_matcher.call_count == 1
+        assert len(records) == 1
+        assert records[0].record.data["date_created"] == "2022-11-15T09:30:00Z"
 
     def test_services_stream_reads_from_conversations_api(self, requests_mock):
         """`services` must hit the Conversations API, not the deprecated Programmable Chat API.
