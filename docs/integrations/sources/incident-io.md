@@ -22,28 +22,32 @@ For more information about the API, see the [Incident.io API reference](https://
 The Incident.io source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
+- Incremental (`incidents`, `alerts`, `escalations`, `actions`, `follow-ups`, on `updated_at`)
+
+Incremental streams filter by date, because the Incident.io API accepts a date rather than a timestamp in its `updated_at` filter. Each sync re-reads the records updated since the start of the day the previous sync reached; the duplicates are removed by the destination's deduplication on the primary key.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key. API key to use. Find it at https://app.incident.io/settings/api-keys | |
+| `start_date` | `string` | Start Date. Only sync records updated on or after this UTC date for the incremental streams. | Two years before the first sync |
 
 ## Streams
 
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| actions | id | No pagination | ✅ | ❌ |
-| alerts | id | DefaultPaginator | ✅ | ❌ |
+| actions | id | DefaultPaginator | ✅ | ✅ |
+| alerts | id | DefaultPaginator | ✅ | ✅ |
 | catalog_types | id | No pagination | ✅ | ❌ |
 | custom_fields | id | No pagination | ✅ | ❌ |
-| escalations | id | DefaultPaginator | ✅ | ❌ |
-| follow-ups | id | No pagination | ✅ | ❌ |
+| escalations | id | DefaultPaginator | ✅ | ✅ |
+| follow-ups | id | DefaultPaginator | ✅ | ✅ |
 | incident_roles | id | No pagination | ✅ | ❌ |
 | incident_statuses | id | No pagination | ✅ | ❌ |
 | incident_timestamps | id | No pagination | ✅ | ❌ |
 | incident_updates | id | DefaultPaginator | ✅ | ❌ |
-| incidents | id | DefaultPaginator | ✅ | ❌ |
+| incidents | id | DefaultPaginator | ✅ | ✅ |
 | schedules | id | DefaultPaginator | ✅ | ❌ |
 | severities | id | No pagination | ✅ | ❌ |
 | users | id | DefaultPaginator | ✅ | ❌ |
@@ -64,6 +68,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.2.0 | 2026-10-06 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add incremental sync on `updated_at` for `incidents`, `alerts`, `escalations`, `actions` and `follow-ups`; handle API errors with actionable messages; respect the rate limit with a budget and `Retry-After` backoff; use the vendor's maximum page sizes; include deactivated users; declare 34 fields the API already returns; move the connection check to `incidents`; run the standard tests against the real API |
 | 0.1.43 | 2026-10-06 | [85916](https://github.com/airbytehq/airbyte/pull/85916) | Migrate `actions` and `follow-ups` streams to the paginated `/v3` endpoints ahead of the `/v2` deprecation, querying each `incident_mode` so records from all incident modes are still synced |
 | 0.1.42 | 2026-10-06 | [87912](https://github.com/airbytehq/airbyte/pull/87912) | Update dependencies |
 | 0.1.41 | 2026-09-29 | [87212](https://github.com/airbytehq/airbyte/pull/87212) | Update dependencies |
@@ -134,7 +139,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.0.6 | 2024-12-28 | [50648](https://github.com/airbytehq/airbyte/pull/50648) | Update dependencies |
 | 0.0.5 | 2024-12-21 | [50137](https://github.com/airbytehq/airbyte/pull/50137) | Update dependencies |
 | 0.0.4 | 2024-12-14 | [49218](https://github.com/airbytehq/airbyte/pull/49218) | Update dependencies |
-| 0.0.3 | 2024-12-11 | [48989](https://github.com/airbytehq/airbyte/pull/48989) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.0.3 | 2024-12-11 | [48989](https://github.com/airbytehq/airbyte/pull/48989) | Use a rootless Docker image (requires Airbyte 0.64 or later) |
 | 0.0.2 | 2024-11-04 | [47842](https://github.com/airbytehq/airbyte/pull/47842) | Update dependencies |
 | 0.0.1 | 2024-10-03 | | Initial release by [@aazam-gh](https://github.com/aazam-gh) via Connector Builder |
 

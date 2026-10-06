@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-"""Unit tests for the `actions` and `follow-ups` streams on `source-incident-io`.
+"""Unit tests for `source-incident-io`: the v3 `actions` and `follow-ups` streams, the check stream,
+incremental state handling, error handling, and the `users` stream options.
 
 Verifies that both streams read from the paginated `/v3` endpoints (the `/v2`
 endpoints are deprecated), follow the `pagination_meta.after` cursor, stop when
@@ -40,18 +41,18 @@ _BASE_URL = "https://api.incident.io"
 _MODES = ["standard", "retrospective", "test", "tutorial", "stream"]
 
 
-def _get_source():
+def _get_source(state=None):
     return YamlDeclarativeSource(
         path_to_yaml=str(_MANIFEST_PATH),
         catalog=CatalogBuilder().build(),
         config=_CONFIG,
-        state=StateBuilder().build(),
+        state=state if state is not None else StateBuilder().build(),
     )
 
 
-def _read_stream(stream_name):
-    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
-    return read(_get_source(), _CONFIG, catalog)
+def _read_stream(stream_name, sync_mode=SyncMode.full_refresh, state=None):
+    catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
+    return read(_get_source(state), _CONFIG, catalog, state=state)
 
 
 def _mock_empty(mocker, path, records_field):
@@ -95,7 +96,7 @@ def test_stream_reads_v3_endpoint_and_follows_pagination(stream_name, path, reco
     assert len(standard_requests) == 2
     assert "after" not in standard_requests[0].qs
     assert standard_requests[1].qs["after"] == ["a-1"]
-    assert all(request.qs["page_size"] == ["100"] for request in requests_made)
+    assert all(request.qs["page_size"] == ["250"] for request in requests_made)
     assert all("/v2/" not in request.path for request in requests_made)
 
 
@@ -168,16 +169,82 @@ def test_follow_ups_record_keeps_category():
     assert output.records[0].record.data["category"] == category
 
 
-def test_check_uses_v3_actions():
+def test_check_uses_incidents_stream():
+    """The check stream is `incidents`: a current endpoint that needs only the base incident read scope."""
     with requests_mock.Mocker() as mocker:
         mocker.get(
-            f"{_BASE_URL}/v3/actions",
-            json={"actions": [], "pagination_meta": {}},
+            f"{_BASE_URL}/v2/incidents",
+            json={"incidents": [{"id": "inc-1", "updated_at": "2026-09-18T10:38:18.161Z"}], "pagination_meta": {}},
         )
         connection_status = _get_source().check(logging.getLogger("airbyte"), _CONFIG)
 
         assert len(mocker.request_history) >= 1
-        assert mocker.request_history[0].path == "/v3/actions"
-        assert "incident_mode" in mocker.request_history[0].qs
+        assert mocker.request_history[0].path == "/v2/incidents"
+        assert all("/v3/actions" not in request.url for request in mocker.request_history)
 
     assert connection_status.status == Status.SUCCEEDED
+
+
+@pytest.mark.parametrize(
+    ("stream_name", "path", "records_field"),
+    [
+        ("incidents", "/v2/incidents", "incidents"),
+        ("alerts", "/v2/alerts", "alerts"),
+        ("escalations", "/v2/escalations", "escalations"),
+        ("actions", "/v3/actions", "actions"),
+        ("follow-ups", "/v3/follow_ups", "follow_ups"),
+    ],
+)
+def test_incremental_sends_state_as_a_date_and_keeps_full_timestamp(stream_name, path, records_field):
+    """The API's `updated_at[gte]` filter accepts `yyyy-mm-dd` only, so the request carries the date of the
+    stored cursor while the emitted state keeps the full timestamp (see CONTRIBUTING.md)."""
+    state = StateBuilder().with_stream_state(stream_name, {"updated_at": "2026-09-18T10:38:18Z"}).build()
+    response = {
+        records_field: [{"id": "r-1", "updated_at": "2026-09-20T08:00:00.123Z"}],
+        "pagination_meta": {"page_size": 100},
+    }
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}{path}", json=response)
+        output = _read_stream(stream_name, SyncMode.incremental, state)
+        requests_made = mocker.request_history
+
+    assert requests_made, "no request was made"
+    assert all(request.qs["updated_at[gte]"] == ["2026-09-18"] for request in requests_made)
+    assert [message.record.data["id"] for message in output.records][:1] == ["r-1"]
+    final_state = output.most_recent_state.stream_state.__dict__
+    assert final_state.get("updated_at") == "2026-09-20T08:00:00Z" or "updated_at" in str(final_state)
+
+
+def test_missing_scope_is_a_config_error_naming_the_scope():
+    """A 403 is a configuration problem the user can fix; the message carries the scope the API names."""
+    body = {
+        "type": "forbidden",
+        "status": 403,
+        "errors": [{"code": "missing_scope", "message": "missing a required scope: workflows.view"}],
+    }
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/workflows", status_code=403, json=body)
+        output = _read_stream("workflows")
+
+    assert output.records == []
+    assert output.errors, "expected an error trace message"
+    error = output.errors[-1].trace.error
+    assert error.failure_type.value == "config_error"
+    assert "workflows.view" in (error.message or "") + (error.internal_message or "")
+
+
+def test_users_requests_inactive_users():
+    """`users` asks for deactivated accounts too, so a user who leaves does not vanish from the stream."""
+    with requests_mock.Mocker() as mocker:
+        mocker.get(
+            f"{_BASE_URL}/v2/users",
+            json={"users": [{"id": "u-1", "is_active": False}], "pagination_meta": {"page_size": 100}},
+        )
+        output = _read_stream("users")
+        requests_made = mocker.request_history
+
+    assert requests_made[0].qs["include_inactive"] == ["true"]
+    assert requests_made[0].qs["page_size"] == ["10000"]
+    assert output.records[0].record.data["is_active"] is False

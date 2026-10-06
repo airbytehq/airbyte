@@ -16,7 +16,7 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - actions
+    - incidents
 
 definitions:
   streams:
@@ -31,6 +31,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v3/actions
           http_method: GET
+          request_parameters:
+            updated_at[gte]: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%dT%H:%M:%SZ') }}"
         partition_router:
           type: ListPartitionRouter
           cursor_field: incident_mode
@@ -62,9 +64,11 @@ definitions:
             field_name: page_size
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: 250
             cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
             stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -122,6 +126,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v3/follow_ups
           http_method: GET
+          request_parameters:
+            updated_at[gte]: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%dT%H:%M:%SZ') }}"
         partition_router:
           type: ListPartitionRouter
           cursor_field: incident_mode
@@ -153,9 +159,11 @@ definitions:
             field_name: page_size
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: 250
             cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
             stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -231,7 +239,7 @@ definitions:
             field_name: page_size
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: 250
             cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
             stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
       schema_loader:
@@ -291,6 +299,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v2/users
           http_method: GET
+          request_parameters:
+            include_inactive: "true"
         record_selector:
           type: RecordSelector
           extractor:
@@ -309,7 +319,7 @@ definitions:
             field_name: page_size
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: 10000
             cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
             stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
       schema_loader:
@@ -384,6 +394,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v2/incidents
           http_method: GET
+          request_parameters:
+            updated_at[gte]: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%dT%H:%M:%SZ') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -402,9 +414,11 @@ definitions:
             field_name: page_size
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: 500
             cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
             stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -420,6 +434,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v2/alerts
           http_method: GET
+          request_parameters:
+            updated_at[gte]: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%dT%H:%M:%SZ') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -441,6 +457,8 @@ definitions:
             page_size: 50
             cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
             stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -456,6 +474,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v2/escalations
           http_method: GET
+          request_parameters:
+            updated_at[gte]: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%dT%H:%M:%SZ') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -474,9 +494,11 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 25
+            page_size: 50
             cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
             stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      incremental_sync:
+        $ref: "#/definitions/updated_at_cursor"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -487,6 +509,73 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          max_retries: 5
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: retry-after
+              max_waiting_time_in_seconds: 600
+            - type: ExponentialBackoffStrategy
+              factor: 5
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 401
+              error_message: "The API key is invalid or has been revoked. Create a new key in incident.io under Settings > API keys and update the connector configuration."
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 403
+              error_message: "The API key lacks a permission this stream needs: {{ response.get('errors', [{}])[0].get('message', 'see the incident.io error response') }}. Grant it in incident.io under Settings > API keys, or deselect the stream."
+            - type: HttpResponseFilter
+              action: RATE_LIMITED
+              failure_type: transient_error
+              http_codes:
+                - 429
+              error_message: "incident.io rate limit reached (1,200 requests per minute per API key). Retrying after the Retry-After interval."
+            - type: HttpResponseFilter
+              action: RETRY
+              failure_type: transient_error
+              http_codes:
+                - 408
+                - 500
+                - 502
+                - 503
+                - 504
+              error_message: "incident.io returned a transient error. Retrying."
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: system_error
+              http_codes:
+                - 400
+                - 404
+                - 405
+                - 406
+                - 409
+                - 412
+                - 413
+                - 422
+              error_message: "incident.io rejected the request: {{ response.get('errors', [{}])[0].get('message', 'see the incident.io error response') }}"
+  updated_at_cursor:
+    # The API's updated_at filter accepts dates only (yyyy-mm-dd, see CONTRIBUTING.md), so the
+    # streams send the slice start as a date and re-read the current day on every sync. State keeps
+    # the full timestamp.
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date') or (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
 streams:
   - $ref: "#/definitions/streams/actions"
@@ -505,6 +594,24 @@ streams:
   - $ref: "#/definitions/streams/alerts"
   - $ref: "#/definitions/streams/escalations"
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 4
+  max_concurrency: 10
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1200
+          interval: PT1M
+      matchers: []
+  ratelimit_reset_header: x-ratelimit-reset
+  ratelimit_remaining_header: x-ratelimit-remaining
+  status_codes_for_ratelimit_hit:
+    - 429
+
 spec:
   type: Spec
   connection_specification:
@@ -520,6 +627,15 @@ spec:
         title: API Key
         airbyte_secret: true
         order: 0
+      start_date:
+        type: string
+        title: Start Date
+        description: "Only sync records updated on or after this UTC date for the incremental streams (incidents, alerts, escalations, actions, follow-ups). Defaults to two years before the first sync."
+        format: date-time
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+          - "2024-01-01T00:00:00Z"
+        order: 1
     additionalProperties: true
 
 metadata:
@@ -647,6 +763,79 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      completed_at:
+        type:
+          - string
+          - "null"
+      creator:
+        type:
+          - object
+          - "null"
+        properties:
+          alert:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              title:
+                type:
+                  - string
+                  - "null"
+          api_key:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              email:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              role:
+                type:
+                  - string
+                  - "null"
+              slack_user_id:
+                type:
+                  - string
+                  - "null"
+          workflow:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
       description:
         type:
           - string
@@ -701,6 +890,14 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      dynamic_resource_parameter:
+        type:
+          - string
+          - "null"
+      source_repo_url:
+        type:
+          - string
+          - "null"
       description:
         type:
           - string
@@ -816,6 +1013,14 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      catalog_type_id:
+        type:
+          - string
+          - "null"
+      group_by_catalog_attribute_id:
+        type:
+          - string
+          - "null"
       description:
         type:
           - string
@@ -845,6 +1050,100 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      assignee_team:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      completed_at:
+        type:
+          - string
+          - "null"
+      creator:
+        type:
+          - object
+          - "null"
+        properties:
+          alert:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              title:
+                type:
+                  - string
+                  - "null"
+          api_key:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              email:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              role:
+                type:
+                  - string
+                  - "null"
+              slack_user_id:
+                type:
+                  - string
+                  - "null"
+          workflow:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+      labels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       description:
         type:
           - string
@@ -1020,6 +1319,10 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      merged_into_incident_id:
+        type:
+          - string
+          - "null"
       created_at:
         type:
           - string
@@ -1165,6 +1468,14 @@ schemas:
     type: object
     $schema: http://json-schema.org/schema#
     properties:
+      include_private_escalations:
+        type:
+          - boolean
+          - "null"
+      private_incident_scope:
+        type:
+          - string
+          - "null"
       version:
         type:
           - number
@@ -1340,6 +1651,23 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      is_active:
+        type:
+          - boolean
+          - "null"
+      seats:
+        type:
+          - object
+          - "null"
+        properties:
+          on_call:
+            type:
+              - string
+              - "null"
+          response:
+            type:
+              - string
+              - "null"
       base_role:
         type:
           - object
@@ -1418,6 +1746,18 @@ schemas:
     type: object
     $schema: http://json-schema.org/schema#
     properties:
+      permalink:
+        type:
+          - string
+          - "null"
+      team_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       annotations:
         type:
           - object
@@ -1533,6 +1873,38 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      call_url:
+        type:
+          - string
+          - "null"
+      last_activity_at:
+        type:
+          - string
+          - "null"
+      postmortem_document_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      postmortem_document_url:
+        type:
+          - string
+          - "null"
+      slack_channel_url:
+        type:
+          - string
+          - "null"
+      team_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       created_at:
         type:
           - string
@@ -1905,6 +2277,31 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      alert_group_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
       description:
         type:
           - string
@@ -2010,6 +2407,10 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - string
+          - "null"
       created_at:
         type:
           - string
