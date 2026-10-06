@@ -6,11 +6,11 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 
 | Input | Type | Description | Default Value |
 | ----- | ---- | ----------- | ------------- |
-| `client_id` | `string` | OAuth 2.0 client ID. | |
-| `client_secret` | `string` | OAuth 2.0 client secret. | |
-| `client_refresh_token_2` | `string` | OAuth refresh token. | |
-| `calendarid` | `string` | Calendar Id. | |
-| `start_date` | `string` | Only sync `events` modified on or after this date (incremental cursor start). Must be within roughly the last 30 days; older values are ignored and all events are read. | |
+| `client_id` | `string` | Client ID of the Google Cloud OAuth 2.0 application. | |
+| `client_secret` | `string` | Client secret of the OAuth 2.0 application. | |
+| `client_refresh_token_2` | `string` | Refresh token for the OAuth application with the Calendar API scope. | |
+| `calendarid` | `string` | Calendar Id (`primary` for the account's primary calendar). | |
+| `start_date` | `string` | Only sync `events` last modified on or after this date. Applies to the first sync in either sync mode and to every re-read after a reset; when unset, all events are read. See [Events sync behavior](#events-sync-behavior). | |
 | `num_workers` | `integer` | Number of concurrent workers. | 3 |
 
 ## Streams
@@ -22,6 +22,16 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 | calendarlist | id | DefaultPaginator | ✅ | ❌ |
 | calendars | id | DefaultPaginator | ✅ | ❌ |
 | events | id | DefaultPaginator | ✅ | ✅ |
+
+## Events sync behavior
+
+The `events` stream is incremental on the event's last modification time (`updated`), using the Google Calendar `updatedMin` filter.
+
+- **Cancelled events** are included (`showDeleted=true`) with `status: cancelled`, so deletions reach the destination. Filter `status != 'cancelled'` downstream if you only want live events.
+- **Recurring series** are returned as a single record (`singleEvents=false`); individual occurrences are not expanded. The record's `updated` is the last time the series was edited.
+- **`start_date`** limits the first sync, and every re-read after a reset, to events last modified on or after that date. Google applies the filter server-side only within the last 29 days; for an older date the connector downloads the calendar and drops older records itself. Because a recurring series counts as one event, a start date also drops series that have not been edited since that date, even if they still have upcoming occurrences. Leave it unset to read everything.
+- **29-day window.** Google rejects `updatedMin` older than 29 days. The connector keeps the newest `updated` it has seen as its cursor; if that cursor is older than 28 days when a sync starts (for example, a calendar with no edits for a month, or a connection paused for a month) the connector clears the cursor and re-reads the whole calendar, then continues incrementally. A calendar that stays unedited re-reads on every sync until something changes.
+- **Recommended sync mode:** *Incremental | Append + Deduped* with `id` as the primary key. With plain *Append*, each re-read described above adds another copy of every event.
 
 ## IP allow list
 

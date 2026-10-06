@@ -128,17 +128,20 @@ definitions:
     events:
       type: StateDelegatingStream
       name: events
-      # Google rejects updatedMin older than ~30 days (410). With no saved cursor, or one older
-      # than 28 days, the full-refresh stream re-reads the calendar (sending updatedMin only for a
-      # recent start_date, and filtering older records client-side) after the stale state is
-      # cleared; otherwise the incremental stream sends updatedMin from the saved cursor.
+      # Google rejects updatedMin older than 29 days (410 updatedMinTooLongAgo, measured live);
+      # 28 keeps a day of margin. With no saved cursor, or one older than 28 days, the stale state
+      # is cleared and the full-refresh stream re-reads the calendar; otherwise the incremental
+      # stream sends updatedMin from the saved cursor.
       api_retention_period: P28D
       full_refresh_stream:
         $ref: "#/definitions/events_stream_base"
         incremental_sync:
           $ref: "#/definitions/events_stream_base/incremental_sync"
-          # The unbounded re-read cannot be limited server-side (Google rejects old updatedMin),
-          # so drop records older than start_date / two years client-side instead.
+          # A re-read cannot be bounded server-side past 29 days, so when start_date is set,
+          # records modified before it are dropped client-side. Without start_date the cursor
+          # starts at 2000-01-01 and nothing is dropped: recurring series are returned as one
+          # record whose `updated` is the last edit of the series, so a default floor would drop
+          # active series that have not been edited recently.
           is_client_side_incremental: true
       incremental_stream:
         $ref: "#/definitions/events_stream_base"
@@ -165,7 +168,7 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ format_datetime(config.get('start_date') or day_delta(-730, format='%Y-%m-%dT%H:%M:%S.%fZ'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime: "{{ format_datetime(config.get('start_date') or '2000-01-01T00:00:00Z', '%Y-%m-%dT%H:%M:%S.%fZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     retriever:
       type: SimpleRetriever
@@ -177,7 +180,7 @@ definitions:
           showDeleted: "true"
           maxResults: "2500"
           singleEvents: "false"
-          # First sync (no saved cursor): honour a start_date within Google's ~30-day window.
+          # First sync (no saved cursor): honour a start_date within Google's 29-day window.
           updatedMin: "{{ stream_slice['start_time'] if config.get('start_date') and stream_slice['start_time'] > day_delta(-28, format='%Y-%m-%dT%H:%M:%S.%fZ') else '' }}"
       record_selector:
         type: RecordSelector
@@ -234,6 +237,12 @@ definitions:
               predicate: "{{ 'rateLimitExceeded' in response.get('error', {}) | string or 'userRateLimitExceeded' in response.get('error', {}) | string }}"
               action: RATE_LIMITED
             - type: HttpResponseFilter
+              # 403 usageLimits errors that do not clear within the sync (project or user quota).
+              predicate: "{{ 'quotaExceeded' in response.get('error', {}) | string or 'dailyLimitExceeded' in response.get('error', {}) | string }}"
+              action: FAIL
+              failure_type: transient_error
+              error_message: "The Google Calendar API quota for this project or user is exhausted. The sync will succeed once the quota resets; no configuration change is needed."
+            - type: HttpResponseFilter
               http_codes:
                 - 403
               action: FAIL
@@ -250,7 +259,7 @@ definitions:
                 - 410
               action: FAIL
               failure_type: config_error
-              error_message: "Google Calendar only returns changes from roughly the last 30 days. Clear \"Start date\" or set it within that window, then reset the events stream."
+              error_message: "Google Calendar rejected the saved sync position of the events stream as older than 29 days. Reset the events stream to re-read the calendar."
             - type: HttpResponseFilter
               http_codes:
                 - 429
@@ -299,16 +308,19 @@ spec:
         type: string
         order: 0
         title: Client ID
+        description: The client ID of the Google Cloud OAuth 2.0 application used to access the Calendar API.
         airbyte_secret: true
       client_secret:
         type: string
         order: 1
         title: Client secret
+        description: The client secret of the Google Cloud OAuth 2.0 application.
         airbyte_secret: true
       client_refresh_token_2:
         type: string
         order: 2
         title: Refresh token
+        description: A refresh token obtained for the OAuth application with the Calendar API scope. It is exchanged for an access token at the start of every sync.
         airbyte_secret: true
       calendarid:
         type: string
@@ -320,7 +332,7 @@ spec:
         order: 4
         title: Start date
         format: date-time
-        description: Sync events modified on or after this date. When unset, the first sync fetches all events and later incremental syncs only fetch events updated since the saved cursor. Google only returns changes from roughly the last 30 days; an older date is ignored and all events are read.
+        description: Only sync events last modified on or after this date. Applies to the first sync in either sync mode and to every re-read after a reset; later incremental syncs fetch events modified since the saved cursor. When unset, all events are read. A recurring series counts as one event whose modification time is its last edit, so a start date also drops series that have not been edited since then. Google only filters server-side within the last 29 days; an older date is applied by the connector after download.
       num_workers:
         type: integer
         order: 5
