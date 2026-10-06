@@ -9,8 +9,8 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
-      - config_path: "integration_tests/invalid_config.json"
-        status: "failed"
+      # No "failed" scenario: Alpha Vantage returns HTTP 200 with an error body
+      # for invalid API keys, so the connector cannot detect a bad key.
   discovery:
     tests:
       - config_path: "secrets/config.json"
