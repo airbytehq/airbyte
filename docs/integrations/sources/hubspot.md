@@ -320,7 +320,7 @@ HubSpot calculated properties — formula fields, rollup summaries, and analytic
 
 To mitigate this, configure the **Property History Lookback Window** in the source settings. A value of `43200` (30 days) is a reasonable starting point. Because these streams use Append + Deduped sync mode, duplicate records from the lookback period are handled automatically.
 
-By default, these streams request history for every property on the object, which can generate many API requests and a large volume of records. To limit this, configure **Deals Property History Properties**, **Contacts Property History Properties**, or **Companies Property History Properties** with a list of property internal names (for example, `["dealstage"]`). Only history for the listed properties is then synced for the corresponding stream. If a list is empty or not set, history for all properties is synced.
+By default, these streams request history for every property on the object, which can generate many API requests and a large volume of records. To limit this, configure **Deals Property History Properties**, **Contacts Property History Properties**, or **Companies Property History Properties** with a list of property internal names (for example, `["dealstage"]`). Only history for the listed properties is then synced for the corresponding stream. See HubSpot's default [deal](https://knowledge.hubspot.com/properties/hubspots-default-deal-properties), [contact](https://knowledge.hubspot.com/properties/hubspots-default-contact-properties), and [company](https://knowledge.hubspot.com/properties/hubspot-crm-default-company-properties) properties for the internal names. If a list is empty or not set, history for all properties is synced.
 
 ### Notes on the `engagements` stream
 

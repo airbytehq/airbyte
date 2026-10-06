@@ -3111,7 +3111,8 @@ spec:
         description: >-
           Optional list of property internal names whose history to sync for the
           `deals_property_history` stream. If empty or not set, history for all
-          properties is synced.
+          properties is synced. See HubSpot's
+          <a href="https://knowledge.hubspot.com/properties/hubspots-default-deal-properties">default deals properties</a> for the internal names.
         examples:
           - ["dealstage"]
       contacts_property_history_properties:
@@ -3122,7 +3123,8 @@ spec:
         description: >-
           Optional list of property internal names whose history to sync for the
           `contacts_property_history` stream. If empty or not set, history for all
-          properties is synced.
+          properties is synced. See HubSpot's
+          <a href="https://knowledge.hubspot.com/properties/hubspots-default-contact-properties">default contacts properties</a> for the internal names.
         examples:
           - ["lifecyclestage"]
       companies_property_history_properties:
@@ -3133,7 +3135,8 @@ spec:
         description: >-
           Optional list of property internal names whose history to sync for the
           `companies_property_history` stream. If empty or not set, history for all
-          properties is synced.
+          properties is synced. See HubSpot's
+          <a href="https://knowledge.hubspot.com/properties/hubspot-crm-default-company-properties">default companies properties</a> for the internal names.
         examples:
           - ["lifecyclestage"]
       credentials:
