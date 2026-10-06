@@ -1,0 +1,723 @@
+version: 7.28.2
+
+type: DeclarativeSource
+
+description: >-
+  Asyntai is an AI chat agent for websites. This source copies the chats it
+  handles into your warehouse: every conversation, every message in it, the
+  visitors who left an email address or a phone number, and the support tickets
+  the agent raised.
+
+check:
+  type: CheckStream
+  stream_names:
+    - sessions
+
+streams:
+  - type: DeclarativeStream
+    name: sessions
+    primary_key:
+      - session_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://asyntai.com/api/v1
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 401
+              action: FAIL
+              error_message: >-
+                Asyntai refused the API key. Copy it again from Settings, then
+                API, in your Asyntai account.
+            - type: HttpResponseFilter
+              http_codes:
+                - 403
+              action: FAIL
+              error_message: >-
+                The Asyntai API needs the Starter plan or higher. Upgrade at
+                https://asyntai.com/pricing/ and try again.
+        path: /sessions/
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - sessions
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: before
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_record['last_message_at'] }}"
+          stop_condition: "{{ not response.get('sessions') }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: last_message_at
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] or '2020-01-01T00:00:00Z' }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: since
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          session_id:
+            type: string
+            description: Identifier of the conversation. Join the other streams on it.
+          source:
+            type:
+              - "null"
+              - string
+            description: Where the chat came from, for example widget or whatsapp.
+          message_count:
+            type:
+              - "null"
+              - integer
+            description: Number of messages in the conversation.
+          first_message:
+            type:
+              - "null"
+              - string
+            description: The first thing the visitor asked, cut to 100 characters.
+          first_message_at:
+            type:
+              - "null"
+              - string
+            description: Time of the first message.
+            format: date-time
+          last_message_at:
+            type:
+              - "null"
+              - string
+            description: Time of the last message. This is the incremental cursor.
+            format: date-time
+          first_response_time_ms:
+            type:
+              - "null"
+              - integer
+            description: >-
+              Reply latency of the first answer, in milliseconds. Use this for
+              first-response-time reporting. The question and the answer share
+              one timestamp, so subtracting them gives zero.
+          first_human_response_at:
+            type:
+              - "null"
+              - string
+            description: Time a human agent first replied, if one did.
+            format: date-time
+          started_at:
+            type:
+              - "null"
+              - string
+            description: When the widget session opened.
+            format: date-time
+          ended_at:
+            type:
+              - "null"
+              - string
+            description: When the widget session closed.
+            format: date-time
+          taken_over_at:
+            type:
+              - "null"
+              - string
+            description: When a human agent took the conversation over.
+            format: date-time
+          page_url:
+            type:
+              - "null"
+              - string
+            description: The page the visitor was on.
+          country:
+            type:
+              - "null"
+              - string
+            description: Country of the visitor.
+          website_domain:
+            type:
+              - "null"
+              - string
+            description: The website the conversation belongs to.
+          category:
+            type:
+              - "null"
+              - string
+            description: >-
+              Topic bucket from Chat Categories. Empty when the feature is off
+              for that website, or the daily job has not reached the
+              conversation yet.
+  - type: DeclarativeStream
+    name: messages
+    primary_key:
+      - session_id
+      - timestamp
+      - role
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://asyntai.com/api/v1
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 401
+              action: FAIL
+              error_message: >-
+                Asyntai refused the API key. Copy it again from Settings, then
+                API, in your Asyntai account.
+            - type: HttpResponseFilter
+              http_codes:
+                - 403
+              action: FAIL
+              error_message: >-
+                The Asyntai API needs the Starter plan or higher. Upgrade at
+                https://asyntai.com/pricing/ and try again.
+        path: /conversations/
+        request_parameters:
+          session_id: "{{ stream_partition.session_id }}"
+          limit: "100"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - messages
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              type: DeclarativeStream
+              name: sessions
+              primary_key:
+                - session_id
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  type: HttpRequester
+                  url_base: https://asyntai.com/api/v1
+                  http_method: GET
+                  authenticator:
+                    type: BearerAuthenticator
+                    api_token: "{{ config['api_key'] }}"
+                  error_handler:
+                    type: DefaultErrorHandler
+                    response_filters:
+                      - type: HttpResponseFilter
+                        http_codes:
+                          - 401
+                        action: FAIL
+                        error_message: >-
+                          Asyntai refused the API key. Copy it again from
+                          Settings, then API, in your Asyntai account.
+                      - type: HttpResponseFilter
+                        http_codes:
+                          - 403
+                        action: FAIL
+                        error_message: >-
+                          The Asyntai API needs the Starter plan or higher.
+                          Upgrade at https://asyntai.com/pricing/ and try again.
+                  path: /sessions/
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path:
+                      - sessions
+                paginator:
+                  type: DefaultPaginator
+                  page_size_option:
+                    type: RequestOption
+                    inject_into: request_parameter
+                    field_name: limit
+                  page_token_option:
+                    type: RequestOption
+                    inject_into: request_parameter
+                    field_name: before
+                  pagination_strategy:
+                    type: CursorPagination
+                    page_size: 100
+                    cursor_value: "{{ last_record['last_message_at'] }}"
+                    stop_condition: "{{ not response.get('sessions') }}"
+              incremental_sync:
+                type: DatetimeBasedCursor
+                cursor_field: last_message_at
+                datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+                cursor_datetime_formats:
+                  - "%Y-%m-%dT%H:%M:%S.%f%z"
+                  - "%Y-%m-%dT%H:%M:%S%z"
+                  - "%Y-%m-%dT%H:%M:%S.%fZ"
+                  - "%Y-%m-%dT%H:%M:%SZ"
+                start_datetime:
+                  type: MinMaxDatetime
+                  datetime: "{{ config['start_date'] or '2020-01-01T00:00:00Z' }}"
+                  datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+                start_time_option:
+                  type: RequestOption
+                  inject_into: request_parameter
+                  field_name: since
+              schema_loader:
+                type: InlineSchemaLoader
+                schema:
+                  type: object
+                  $schema: http://json-schema.org/schema#
+                  additionalProperties: true
+                  properties:
+                    session_id:
+                      type: string
+                      description: >-
+                        Identifier of the conversation. Join the other streams
+                        on it.
+                    source:
+                      type:
+                        - "null"
+                        - string
+                      description: >-
+                        Where the chat came from, for example widget or
+                        whatsapp.
+                    message_count:
+                      type:
+                        - "null"
+                        - integer
+                      description: Number of messages in the conversation.
+                    first_message:
+                      type:
+                        - "null"
+                        - string
+                      description: >-
+                        The first thing the visitor asked, cut to 100
+                        characters.
+                    first_message_at:
+                      type:
+                        - "null"
+                        - string
+                      description: Time of the first message.
+                      format: date-time
+                    last_message_at:
+                      type:
+                        - "null"
+                        - string
+                      description: >-
+                        Time of the last message. This is the incremental
+                        cursor.
+                      format: date-time
+                    first_response_time_ms:
+                      type:
+                        - "null"
+                        - integer
+                      description: >-
+                        Reply latency of the first answer, in milliseconds. Use
+                        this for first-response-time reporting. The question and
+                        the answer share one timestamp, so subtracting them
+                        gives zero.
+                    first_human_response_at:
+                      type:
+                        - "null"
+                        - string
+                      description: Time a human agent first replied, if one did.
+                      format: date-time
+                    started_at:
+                      type:
+                        - "null"
+                        - string
+                      description: When the widget session opened.
+                      format: date-time
+                    ended_at:
+                      type:
+                        - "null"
+                        - string
+                      description: When the widget session closed.
+                      format: date-time
+                    taken_over_at:
+                      type:
+                        - "null"
+                        - string
+                      description: When a human agent took the conversation over.
+                      format: date-time
+                    page_url:
+                      type:
+                        - "null"
+                        - string
+                      description: The page the visitor was on.
+                    country:
+                      type:
+                        - "null"
+                        - string
+                      description: Country of the visitor.
+                    website_domain:
+                      type:
+                        - "null"
+                        - string
+                      description: The website the conversation belongs to.
+                    category:
+                      type:
+                        - "null"
+                        - string
+                      description: >-
+                        Topic bucket from Chat Categories. Empty when the
+                        feature is off for that website, or the daily job has
+                        not reached the conversation yet.
+            parent_key: session_id
+            partition_field: session_id
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - session_id
+            value: "{{ stream_partition.session_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          session_id:
+            type: string
+            description: The conversation this message belongs to.
+          role:
+            type: string
+            description: Either user or assistant.
+          content:
+            type:
+              - "null"
+              - string
+            description: The text of the message.
+          timestamp:
+            type:
+              - "null"
+              - string
+            description: >-
+              When the exchange was saved. A question and its answer share one
+              timestamp.
+            format: date-time
+          sender_type:
+            type:
+              - "null"
+              - string
+            description: Who wrote an assistant message, ai or human.
+          agent_name:
+            type:
+              - "null"
+              - string
+            description: Name of the human agent, when a person wrote the message.
+          response_time_ms:
+            type:
+              - "null"
+              - integer
+            description: Reply latency of this answer, in milliseconds.
+  - type: DeclarativeStream
+    name: leads
+    primary_key:
+      - session_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://asyntai.com/api/v1
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 401
+              action: FAIL
+              error_message: >-
+                Asyntai refused the API key. Copy it again from Settings, then
+                API, in your Asyntai account.
+            - type: HttpResponseFilter
+              http_codes:
+                - 403
+              action: FAIL
+              error_message: >-
+                The Asyntai API needs the Starter plan or higher. Upgrade at
+                https://asyntai.com/pricing/ and try again.
+        path: /leads/
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - leads
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: before
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_record['started_at'] }}"
+          stop_condition: "{{ not response.get('leads') }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: started_at
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] or '2020-01-01T00:00:00Z' }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: since
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          session_id:
+            type: string
+            description: The conversation the visitor left their details in.
+          email:
+            type:
+              - "null"
+              - string
+            description: Email address the visitor gave.
+          phone:
+            type:
+              - "null"
+              - string
+            description: Phone number the visitor gave.
+          page_url:
+            type:
+              - "null"
+              - string
+            description: The page the visitor was on.
+          started_at:
+            type:
+              - "null"
+              - string
+            description: When the conversation started. This is the incremental cursor.
+            format: date-time
+  - type: DeclarativeStream
+    name: tickets
+    primary_key:
+      - ticket_number
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://asyntai.com/api/v1
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 401
+              action: FAIL
+              error_message: >-
+                Asyntai refused the API key. Copy it again from Settings, then
+                API, in your Asyntai account.
+            - type: HttpResponseFilter
+              http_codes:
+                - 403
+              action: FAIL
+              error_message: >-
+                The Asyntai API needs the Starter plan or higher. Upgrade at
+                https://asyntai.com/pricing/ and try again.
+        path: /tickets/
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - tickets
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: before
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ last_record['created_at'] }}"
+          stop_condition: "{{ not response.get('tickets') }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_at
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] or '2020-01-01T00:00:00Z' }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: since
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          ticket_number:
+            type: string
+            description: Identifier of the ticket, for example TKT-00001.
+          session_id:
+            type:
+              - "null"
+              - string
+            description: The conversation the ticket came from.
+          status:
+            type:
+              - "null"
+              - string
+            description: open, in_progress, resolved or closed.
+          priority:
+            type:
+              - "null"
+              - string
+            description: Priority of the ticket.
+          subject:
+            type:
+              - "null"
+              - string
+            description: Subject line of the ticket.
+          visitor_email:
+            type:
+              - "null"
+              - string
+            description: Email address of the visitor.
+          page_url:
+            type:
+              - "null"
+              - string
+            description: The page the visitor was on.
+          website_id:
+            type:
+              - "null"
+              - integer
+            description: The website the ticket belongs to.
+          channel:
+            type:
+              - "null"
+              - string
+            description: Where the ticket came from.
+          assigned_to:
+            type:
+              - "null"
+              - string
+            description: The agent the ticket is assigned to.
+          created_at:
+            type:
+              - "null"
+              - string
+            description: When the ticket was raised. This is the incremental cursor.
+            format: date-time
+          first_assigned_at:
+            type:
+              - "null"
+              - string
+            description: When the ticket was first assigned.
+            format: date-time
+          first_response_at:
+            type:
+              - "null"
+              - string
+            description: When an agent first replied.
+            format: date-time
+          resolved_at:
+            type:
+              - "null"
+              - string
+            description: When the ticket was resolved.
+            format: date-time
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Asyntai Source Spec
+    required:
+      - api_key
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your Asyntai API key. Sign in to Asyntai, open Settings, then API, and
+          copy the key. The API needs the Starter plan or higher.
+        title: API key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        description: >-
+          Only read chats, leads and tickets from this moment on. Leave it as it
+          is to read the whole history.
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2024-01-01T00:00:00Z"
+        default: "2020-01-01T00:00:00Z"
+        order: 1
+  documentation_url: https://docs.airbyte.com/integrations/sources/asyntai
