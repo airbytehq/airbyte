@@ -1,13 +1,12 @@
 import base64
 import json
-import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Dict, List, Mapping, Optional
 
 import yaml
 
-from airbyte_cdk import ConfiguredAirbyteCatalog, SyncMode, TState, YamlDeclarativeSource
+from airbyte_cdk import ConfiguredAirbyteCatalog, SyncMode, YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
@@ -29,8 +28,6 @@ _BASE_URL = "https://api.qualaroo.com/api/v1/"
 _START_DATE = "2021-03-01T00:00:00.000Z"
 _AUTHORIZATION = "Basic " + base64.b64encode(b"test_key:test_token").decode("ascii")
 
-sys.path.append(str(_SOURCE_FOLDER_PATH))
-
 
 def _config(survey_ids: Optional[List[str]] = None) -> Dict[str, Any]:
     return {
@@ -43,10 +40,6 @@ def _config(survey_ids: Optional[List[str]] = None) -> Dict[str, Any]:
 
 def _catalog(stream_name: str) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
-
-
-def _source(catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any], state: Optional[TState]) -> YamlDeclarativeSource:
-    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
 
 def _read(stream_name: str, config: Optional[Mapping[str, Any]] = None) -> EntrypointOutput:
