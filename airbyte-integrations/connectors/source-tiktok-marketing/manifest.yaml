@@ -26,7 +26,7 @@ definitions:
         - type: ConstantBackoffStrategy
           backoff_time_in_seconds: 60
       response_filters:
-        - predicate: "{{ response.get('code') == 40100 }}"
+        - predicate: "{{ response.get('code') in [40016, 40100, 40133] }}"
           action: RATE_LIMITED
           error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
         - predicate: "{{ response.get('code') == 60001 }}"
@@ -417,8 +417,9 @@ definitions:
 
   record_selector_for_hourly_reports_streams:
     $ref: "#/definitions/record_selector"
-  # Error handler for daily report streams. Surfaces error 40067 ("query too large")
-  # as a config_error so users are directed to reduce the Daily Reports Date Step setting.
+  # Error handler for daily report streams. Turns error 40067 ("query too large") into a
+  # request window split: the CDK halves the date window for the affected advertiser and
+  # reads each half, down to 1 day (see request_window_splitting on the retrievers below).
   # Only used by base_report_retriever and audience_base_report_retriever;
   # non-report streams keep the generic handler from the global requester.
   report_daily_error_handler:
@@ -428,7 +429,7 @@ definitions:
       - type: ConstantBackoffStrategy
         backoff_time_in_seconds: 60
     response_filters:
-      - predicate: "{{ response.get('code') == 40100 }}"
+      - predicate: "{{ response.get('code') in [40016, 40100, 40133] }}"
         action: RATE_LIMITED
         error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
       - predicate: "{{ response.get('code') == 60001 }}"
@@ -453,20 +454,27 @@ definitions:
         action: FAIL
         failure_type: config_error
         error_message: "Insufficient permissions for this endpoint (error 40001). Verify that the access token has the required scopes and re-authorize the API app. {{ response.get('message', '') }}"
+      # Predicate only, on purpose: HttpResponseFilter ORs its conditions, so adding http_codes
+      # here would split on every 200 response.
       - predicate: "{{ response.get('code') == 40067 }}"
-        action: FAIL
-        failure_type: config_error
-        error_message: "TikTok Marketing API query size limit exceeded (error 40067). Reduce the 'Daily Reports Date Step' in your connector settings to a smaller value (e.g., 7 or 1) and retry."
+        action: SPLIT_REQUEST_WINDOW
       - predicate: "{{ response.get('code') != 0 }}"
         action: FAIL
         error_message: "{{ response['message'] }}"
 
+  # Shared by the two daily report retrievers. Splitting stops at cursor_granularity (1 day);
+  # the failure_message is only shown when a single day is still too large.
+  report_daily_request_window_splitting:
+    type: RequestWindowSplitting
+    failure_message: "TikTok rejected this daily report as too large even for a single day (error 40067), so the connector cannot narrow it further. The affected advertiser and date are in the sync logs. Deselect the affected stream or use a coarser report (for example ad groups or campaigns instead of ads); turning off 'Include deleted data' can also reduce the request size."
+
   base_report_retriever:
     type: SimpleRetriever
+    request_window_splitting:
+      $ref: "#/definitions/report_daily_request_window_splitting"
     requester:
       $ref: "#/definitions/requester"
-      # Override error handler to surface error 40067 as a config_error
-      # with guidance to reduce the Daily Reports Date Step setting.
+      # Override error handler so error 40067 splits the date window instead of failing.
       error_handler:
         $ref: "#/definitions/report_daily_error_handler"
       request_parameters:
@@ -555,6 +563,7 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/report_daily_incremental_sync"
 
+  # No request_window_splitting here: hourly requests always cover one day, so halving the window would repeat the same request.
   base_report_hourly_retriever:
     type: SimpleRetriever
     requester:
@@ -1029,10 +1038,11 @@ definitions:
 
   audience_base_report_retriever:
     type: SimpleRetriever
+    request_window_splitting:
+      $ref: "#/definitions/report_daily_request_window_splitting"
     requester:
       $ref: "#/definitions/requester"
-      # Override error handler to surface error 40067 as a config_error
-      # with guidance to reduce the Daily Reports Date Step setting.
+      # Override error handler so error 40067 splits the date window instead of failing.
       error_handler:
         $ref: "#/definitions/report_daily_error_handler"
       request_parameters:
@@ -2267,7 +2277,7 @@ definitions:
             - type: ConstantBackoffStrategy
               backoff_time_in_seconds: 60
           response_filters:
-            - predicate: "{{ response.get('code') == 40100 }}"
+            - predicate: "{{ response.get('code') in [40016, 40100, 40133] }}"
               action: RATE_LIMITED
               error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
             # The pixel_instant_page_events and pixel_events_statistics streams iterate over all
@@ -2388,7 +2398,7 @@ definitions:
             - type: ConstantBackoffStrategy
               backoff_time_in_seconds: 60
           response_filters:
-            - predicate: "{{ response.get('code') == 40100 }}"
+            - predicate: "{{ response.get('code') in [40016, 40100, 40133] }}"
               action: RATE_LIMITED
               error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
             - predicate: "{{ response.get('code') == 40001 and 'Adv has no permission to operate on the Pixel' in response['message'] }}"
@@ -6181,10 +6191,13 @@ spec:
         title: Daily Reports Date Step
         description: >-
           The number of days per API request for daily report streams.
-          Use the default 30 for most accounts. If syncs fail with
-          TikTok API error 40067 ("query too large"), reduce this value
-          (e.g., 7 or 1). Smaller values make more API requests but avoid
-          query size limits for accounts with many ads.
+          Use the default 30 for most accounts. If TikTok rejects a request
+          as too large (error 40067), the connector automatically splits that
+          date range in half and retries, down to one day, so you no longer
+          need to lower this value for that. Smaller values make more API
+          requests from the start, but splitting restarts for every date
+          range, so accounts that often hit error 40067 sync faster with a
+          smaller value (for example, 7).
         default: 30
         examples: [30, 7, 1]
         minimum: 1
