@@ -196,7 +196,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                              | Subject                                                              |
+| Version | Date | Pull Request | Subject |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------- |
 | 0.4.1 | 2026-10-06 | [88146](https://github.com/airbytehq/airbyte/pull/88146) | Promote the connector to generally available and certified |
 | 0.4.0 | 2026-10-05 | [86997](https://github.com/airbytehq/airbyte/pull/86997) | Rebuild on the Bulk CDK: parallel scan segments on Airbyte Cloud, resumable full refresh and incremental syncs, speed mode, exact numbers, integer cursors, temporary credentials and IAM role assumption. Role based authentication is removed, see [Changes in 0.4.0](#changes-in-040) |
