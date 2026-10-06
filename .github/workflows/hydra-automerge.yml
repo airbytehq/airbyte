@@ -3,8 +3,8 @@ name: "Hydra: Auto-merge (AI-gated)"
 # Kicks off a Devin AI session using the `pr_scope_analysis` playbook
 # (airbytehq/ai-skills) to evaluate whether the PR is safe to auto-merge. The
 # playbook carries the analysis prompt and the structured output schema; this
-# workflow first rejects PRs without the Support Bot assignment or with
-# destination changes. Eligible PRs are analyzed and evaluated deterministically:
+# workflow first hard-blocks playbook-eval PRs, then rejects PRs without the
+# Support Bot assignment or with destination changes. Eligible PRs are analyzed and evaluated deterministically:
 #   pass = ALL(preconditions) AND ANY(allowed_scopes)
 #
 # Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
@@ -65,6 +65,21 @@ jobs:
           private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
 
       # ── Pre-checks ─────────────────────────────────────────────────
+      # Playbook-eval PRs (base `eval-base/*`, head `eval/*`, etc.) are
+      # hard-blocked regardless of labels, draft status, or base branch.
+      - name: Checkout eval-artifact check
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          sparse-checkout: .github/actions/hydra-eval-artifact-check
+          token: ${{ steps.get-hoard-token.outputs.token }}
+
+      - name: Block eval artifacts
+        uses: ./.github/actions/hydra-eval-artifact-check
+        with:
+          pr: ${{ inputs.pr }}
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          fail-on-eval: "true"
+
       - name: Check PR is still open
         id: pre-check
         env:
@@ -513,6 +528,17 @@ jobs:
             > [Devin session](${{ steps.devin.outputs.session-url }}) | [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       # ── Merge (if evaluation passed and not dry-run) ────────────────
+      # Re-check right before the first write: the base or title can change
+      # during the Devin evaluation. Runs from the trusted checkout above,
+      # before the PR head is checked out for autopilot.
+      - name: Block eval artifacts before merge
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true'
+        uses: ./.github/actions/hydra-eval-artifact-check
+        with:
+          pr: ${{ inputs.pr }}
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          fail-on-eval: "true"
+
       - name: Authenticate as 'octavia-bot-admin' GitHub App
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true'
         uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
