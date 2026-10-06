@@ -259,6 +259,7 @@ jobs:
           tags: |
             ai-oncall
             hydra-stage-handoff
+            airbyte-pr-${{ steps.marker.outputs.pr }}
           # devin-action interpolates prompt-text verbatim into a bash [[ ]] test and
           # an array literal, so the text must not contain double quotes, backticks,
           # or unescaped $ — they break the shell or get command-substituted.

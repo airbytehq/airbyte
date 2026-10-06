@@ -268,6 +268,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.54 | 2026-10-06 | [87974](https://github.com/airbytehq/airbyte/pull/87974) | Update dependencies |
+| 2.6.53 | 2026-09-29 | [87441](https://github.com/airbytehq/airbyte/pull/87441) | Keep the `list_disputes` start date inside PayPal's 180-day window to fix `INVALID_DATE_RANGE` 400 errors on first syncs |
 | 2.6.52 | 2026-09-29 | [86920](https://github.com/airbytehq/airbyte/pull/86920) | feat(source-paypal-transaction): adopt declarative request_window_red… |
 | 2.6.51 | 2026-09-29 | [87311](https://github.com/airbytehq/airbyte/pull/87311) | Update dependencies |
 | 2.6.51 | 2026-09-22 | [86920](https://github.com/airbytehq/airbyte/pull/86920) | Replace the `transactions` stream's custom `DateWindowSplittingRetriever`/`ResultSetTooLargeErrorHandler` components with the CDK's declarative `request_window_splitting` feature; the stream's failure type when a window is rejected even at its smallest split changes from `config_error` to `transient_error` |
