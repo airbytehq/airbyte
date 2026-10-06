@@ -139,7 +139,7 @@ Each report stream is available in two variants:
 For more information on time units, see the Amazon Ads documentation on [timeUnit and supported columns](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#timeunit-and-supported-columns).
 
 :::note
-Amazon rejects a report request that is identical to one it is still generating, for example when a sync attempt is retried after an earlier attempt already requested the report. When Amazon names the report it is still generating, the connector waits for that report and syncs it instead of failing.
+Amazon rejects a report request that duplicates one it is still generating, for example when a sync attempt is retried after an earlier attempt already requested the report. When the report Amazon names matches the request, the connector syncs that report instead of failing. Otherwise the connector waits and requests the report again.
 :::
 
 ### Sponsored Brands report types
@@ -226,7 +226,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 9.2.8 | 2026-10-06 | [87646](https://github.com/airbytehq/airbyte/pull/87646) | Reuse the existing report instead of failing the sync when Amazon rejects a report request as a duplicate (HTTP 425), and report a duplicate that names no report as a transient error instead of a config error |
+| 9.2.8 | 2026-10-06 | [87646](https://github.com/airbytehq/airbyte/pull/87646) | When Amazon rejects a report request as a duplicate (HTTP 425), reuse the report it names if that report matches the request, and otherwise wait and request the report again, reporting a duplicate that persists as a transient error instead of a config error |
 | 9.2.7 | 2026-10-06 | [87668](https://github.com/airbytehq/airbyte/pull/87668) | Skip profiles that return HTTP 401 Unauthorized on attribution report streams instead of failing the sync |
 | 9.2.6 | 2026-10-06 | [87739](https://github.com/airbytehq/airbyte/pull/87739) | Update dependencies |
 | 9.2.5 | 2026-09-29 | [87079](https://github.com/airbytehq/airbyte/pull/87079) | Update dependencies |
