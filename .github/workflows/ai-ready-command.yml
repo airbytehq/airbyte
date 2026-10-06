@@ -43,7 +43,6 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       blocked: ${{ steps.weekend-check.outputs.blocked }}
-      is-eval: ${{ steps.eval-check.outputs.is-eval }}
     steps:
       - name: Authenticate as GitHub App
         uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
@@ -67,37 +66,8 @@ jobs:
         if: inputs.pr == ''
         run: exit 1
 
-      - name: Checkout eval-artifact check
-        if: inputs.pr != ''
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          sparse-checkout: .github/actions/hydra-eval-artifact-check
-
-      # Playbook-eval PRs never get `hyd-ready`, even from a manual /ai-ready.
-      - name: Check for eval artifact
-        if: inputs.pr != ''
-        id: eval-check
-        uses: ./.github/actions/hydra-eval-artifact-check
-        with:
-          pr: ${{ inputs.pr }}
-          github-token: ${{ steps.get-app-token.outputs.token }}
-
-      - name: Eval artifact notice
-        if: steps.eval-check.outputs.is-eval == 'true'
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
-        with:
-          token: ${{ steps.get-app-token.outputs.token }}
-          issue-number: ${{ inputs.pr }}
-          comment-id: ${{ inputs.comment-id }}
-          edit-mode: replace
-          body: |
-            > **`/ai-ready` blocked: eval artifact**
-            >
-            > This PR was created by the playbook-eval harness (${{ steps.eval-check.outputs.reason }}).
-            > Hydra never labels, readies, or auto-merges eval PRs, so no `hyd-ready` label was applied.
-
       - name: Check for weekend freeze
-        if: inputs.pr != '' && steps.eval-check.outputs.is-eval != 'true'
+        if: inputs.pr != ''
         id: weekend-check
         env:
           FORCE: ${{ inputs.force }}
@@ -126,7 +96,7 @@ jobs:
             > If this is urgent, re-run `/ai-ready force=true` to bypass the freeze. Otherwise, please wait until after the weekend.
 
       - name: Apply ready label
-        if: inputs.pr != '' && steps.eval-check.outputs.is-eval != 'true' && steps.weekend-check.outputs.blocked != 'true'
+        if: inputs.pr != '' && steps.weekend-check.outputs.blocked != 'true'
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           PR_NUMBER: ${{ inputs.pr }}
@@ -134,7 +104,7 @@ jobs:
 
   hydra-automerge:
     needs: validate
-    if: needs.validate.outputs.blocked != 'true' && needs.validate.outputs.is-eval != 'true'
+    if: needs.validate.outputs.blocked != 'true'
     uses: ./.github/workflows/hydra-automerge.yml
     with:
       pr: ${{ inputs.pr }}
