@@ -156,6 +156,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 1.0.5 | 2026-10-06 | [88113](https://github.com/airbytehq/airbyte/pull/88113) | Update dependencies |
 | 1.0.4 | 2026-09-29 | [87429](https://github.com/airbytehq/airbyte/pull/87429) | Update dependencies |
 | 1.0.3 | 2026-09-22 | [86891](https://github.com/airbytehq/airbyte/pull/86891) | Update dependencies |
 | 1.0.2 | 2026-09-21 | [86466](https://github.com/airbytehq/airbyte/pull/86466) | Fix authentication failures (HTTP 401) on channels with many videos: refresh the access token and retry on 401, and shorten API budget windows so syncs no longer wait past the token lifetime |
