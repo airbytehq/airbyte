@@ -8,26 +8,26 @@ The Asana connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Tasks | [List](#tasks-list), [Create](#tasks-create), [Get](#tasks-get), [Update](#tasks-update), [Delete](#tasks-delete), [Context Store Search](#tasks-context-store-search), [Semantic Search](#tasks-semantic-search) |
+| Tasks | [List](#tasks-list), [Create](#tasks-create), [Get](#tasks-get), [Update](#tasks-update), [Delete](#tasks-delete), [Context Store Search](#tasks-context-store-search), [Context Store SQL Query](#tasks-context-store-sql-query), [Semantic Search](#tasks-semantic-search) |
 | Project Tasks | [List](#project-tasks-list) |
 | Workspace Task Search | [List](#workspace-task-search-list) |
-| Projects | [List](#projects-list), [Create](#projects-create), [Get](#projects-get), [Update](#projects-update), [Delete](#projects-delete), [Context Store Search](#projects-context-store-search), [Semantic Search](#projects-semantic-search) |
+| Projects | [List](#projects-list), [Create](#projects-create), [Get](#projects-get), [Update](#projects-update), [Delete](#projects-delete), [Context Store Search](#projects-context-store-search), [Context Store SQL Query](#projects-context-store-sql-query), [Semantic Search](#projects-semantic-search) |
 | Task Projects | [List](#task-projects-list) |
 | Team Projects | [List](#team-projects-list) |
 | Workspace Projects | [List](#workspace-projects-list) |
-| Workspaces | [List](#workspaces-list), [Get](#workspaces-get), [Context Store Search](#workspaces-context-store-search) |
-| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
+| Workspaces | [List](#workspaces-list), [Get](#workspaces-get), [Context Store Search](#workspaces-context-store-search), [Context Store SQL Query](#workspaces-context-store-sql-query) |
+| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search), [Context Store SQL Query](#users-context-store-sql-query) |
 | Workspace Users | [List](#workspace-users-list) |
 | Team Users | [List](#team-users-list) |
-| Teams | [Get](#teams-get), [Context Store Search](#teams-context-store-search), [Semantic Search](#teams-semantic-search) |
+| Teams | [Get](#teams-get), [Context Store Search](#teams-context-store-search), [Context Store SQL Query](#teams-context-store-sql-query), [Semantic Search](#teams-semantic-search) |
 | Workspace Teams | [List](#workspace-teams-list) |
 | User Teams | [List](#user-teams-list) |
-| Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download), [Context Store Search](#attachments-context-store-search) |
+| Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download), [Context Store Search](#attachments-context-store-search), [Context Store SQL Query](#attachments-context-store-sql-query) |
 | Workspace Tags | [List](#workspace-tags-list), [Create](#workspace-tags-create) |
-| Tags | [Get](#tags-get), [Update](#tags-update), [Delete](#tags-delete), [Context Store Search](#tags-context-store-search) |
+| Tags | [Get](#tags-get), [Update](#tags-update), [Delete](#tags-delete), [Context Store Search](#tags-context-store-search), [Context Store SQL Query](#tags-context-store-sql-query) |
 | Tag Tasks | [List](#tag-tasks-list) |
 | Project Sections | [List](#project-sections-list), [Create](#project-sections-create) |
-| Sections | [Get](#sections-get), [Update](#sections-update), [Delete](#sections-delete), [Context Store Search](#sections-context-store-search) |
+| Sections | [Get](#sections-get), [Update](#sections-update), [Delete](#sections-delete), [Context Store Search](#sections-context-store-search), [Context Store SQL Query](#sections-context-store-sql-query) |
 | Section Tasks | [List](#section-tasks-list), [Create](#section-tasks-create) |
 | Task Subtasks | [List](#task-subtasks-list) |
 | Task Dependencies | [List](#task-dependencies-list) |
@@ -529,6 +529,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].start_on` | `string` |  |
 | `data[].tags` | `array` |  |
 | `data[].workspace` | `object` |  |
+
+</details>
+
+### Tasks Context Store SQL Query
+
+Run a SQL query against tasks records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "tasks",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await asana.tasks.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tasks",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1345,6 +1408,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Projects Context Store SQL Query
+
+Run a SQL query against projects records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "projects",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await asana.projects.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "projects",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ### Projects Semantic Search
 
 Search projects records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
@@ -1873,6 +1999,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Workspaces Context Store SQL Query
+
+Run a SQL query against workspaces records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "workspaces",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await asana.workspaces.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "workspaces",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Users
 
 ### Users List
@@ -2090,6 +2279,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].photo` | `object` |  |
 | `data[].resource_type` | `string` |  |
 | `data[].workspaces` | `array` |  |
+
+</details>
+
+### Users Context Store SQL Query
+
+Run a SQL query against users records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "users",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await asana.users.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2393,6 +2645,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].organization` | `object` |  |
 | `data[].permalink_url` | `string` |  |
 | `data[].resource_type` | `string` |  |
+
+</details>
+
+### Teams Context Store SQL Query
+
+Run a SQL query against teams records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "teams",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await asana.teams.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "teams",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2929,6 +3244,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Attachments Context Store SQL Query
+
+Run a SQL query against attachments records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "attachments",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await asana.attachments.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "attachments",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Workspace Tags
 
 ### Workspace Tags List
@@ -3375,6 +3753,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].permalink_url` | `string` |  |
 | `data[].resource_type` | `string` |  |
 | `data[].workspace` | `object` |  |
+
+</details>
+
+### Tags Context Store SQL Query
+
+Run a SQL query against tags records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "tags",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await asana.tags.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tags",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -3882,6 +4323,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].name` | `string` |  |
 | `data[].project` | `object` |  |
 | `data[].resource_type` | `string` |  |
+
+</details>
+
+### Sections Context Store SQL Query
+
+Run a SQL query against sections records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "sections",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await asana.sections.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "sections",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
