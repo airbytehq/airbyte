@@ -288,7 +288,7 @@ class DynamoDbSourceConfigurationFactoryTest {
             """{"auth_type": "User", "access_key_id": "k", "secret_access_key": "s"}"""
         for (endpoint in
             listOf(
-                "http://bad host", // ignore-https-check
+                "http://bad host", // # ignore-https-check
                 "localhost:8000",
                 "ftp://host",
                 "dynamodb.us-east-1.amazonaws.com"
@@ -305,7 +305,7 @@ class DynamoDbSourceConfigurationFactoryTest {
         Assertions.assertEquals(
             "dynamodb-local" to 8000,
             DynamoDbSourceConfigurationFactory.hostAndPort(
-                URI.create("http://dynamodb-local:8000"), // ignore-https-check
+                URI.create("http://dynamodb-local:8000"), // # ignore-https-check
                 Region.US_EAST_1,
             ),
         )
