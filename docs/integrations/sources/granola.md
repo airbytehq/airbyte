@@ -164,6 +164,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.0.2 | 2026-10-06 | [87885](https://github.com/airbytehq/airbyte/pull/87885) | Update dependencies |
 | 1.0.1 | 2026-10-05 | [87682](https://github.com/airbytehq/airbyte/pull/87682) | Promote to certified |
 | 1.0.0 | 2026-10-02 | [87011](https://github.com/airbytehq/airbyte/pull/87011) | Sync notes incrementally on updated_at so edited notes are replicated. Append-mode `notes` connections get duplicates on the first sync; see the migration guide |
 | 0.3.5 | 2026-09-29 | [86915](https://github.com/airbytehq/airbyte/pull/86915) | Add Granola-specific messages for 401, 403, 429, and 5xx errors, add heartbeat timeout, suggest `notes` and `detailed_notes`, and fix icon dimensions |
