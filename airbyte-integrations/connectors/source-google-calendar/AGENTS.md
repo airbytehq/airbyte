@@ -26,7 +26,7 @@ A union `SubstreamPartitionRouter` (`definitions.calendar_partition_router`, `pa
 
 ## Incremental events
 
-`DatetimeBasedCursor` on `updated`, sent as `updatedMin`. The cursor `start_datetime` defaults to two years ago (`day_delta(-730)`) when `start_date` is unset, and `updatedMin` is only sent when `stream_slice['start_time']` is newer than `day_delta(-28)` — Google rejects bounds older than ~30 days with `410 updatedMinTooLongAgo`, so stale cursors and old configured `start_date` values drop the parameter and re-read the calendar instead of failing. `state_migrations: [LegacyToPerPartitionStateMigration]` converts pre-0.3.0 global state into per-partition state. `showDeleted=true` delivers deletions as `status: "cancelled"`. `syncToken` was rejected: opaque, non-datetime, and still requires full resync on 410.
+`events` is a `StateDelegatingStream` with `api_retention_period: P28D` over a shared `events_stream_base` (`DatetimeBasedCursor` on `updated`): a saved cursor (or no cursor — start defaults to two years ago, `day_delta(-730)`, when `start_date` is unset) older than 28 days clears the stale state and delegates to the full-refresh stream, which only sends `updatedMin` for a configured `start_date` inside the window; a fresh cursor delegates to the incremental stream which sends `updatedMin` directly. `state_migrations: [LegacyToPerPartitionStateMigration]` converts pre-0.3.0 global state into per-partition state. `showDeleted=true` delivers deletions as `status: "cancelled"`. `syncToken` was rejected: opaque, non-datetime, and still requires full resync on 410.
 
 ## Error handling
 
