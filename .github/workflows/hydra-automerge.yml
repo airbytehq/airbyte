@@ -344,6 +344,7 @@ jobs:
           tags: |
             auto-merge-eval
             hyd-ready
+            airbyte-pr-${{ inputs.pr }}
           prompt-text: |
             Analyze this pull request and classify it by filling out the structured output schema:
             https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}

@@ -97,6 +97,18 @@ class TestSourceTrackingLinks(TestCase):
         assert output.records == []
         assert any(message in error.trace.error.message for error in output.errors)
 
+    @HttpMocker()
+    def test_empty_results_completes_without_records_or_errors(self, http_mocker: HttpMocker):
+        """An account with no source tracking links reads zero records and no errors, as the sandbox org does."""
+        request = _request()
+        http_mocker.post(request, _page([], more_data_available=False))
+
+        output = _read()
+
+        assert output.records == []
+        assert output.errors == []
+        http_mocker.assert_number_of_calls(request, 1)
+
     def test_discover_declares_stream(self):
         """Discovery declares the stream with `id` primary key and full_refresh only."""
         config = ConfigBuilder().build()
