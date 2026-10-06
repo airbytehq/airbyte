@@ -280,6 +280,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.1 | 2026-10-06 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Fix Standard Inserts committing a partial batch to BigQuery when a sync fails or is cancelled. |
 | 3.2.0 | 2026-10-01 | [87631](https://github.com/airbytehq/airbyte/pull/87631) | Add optional Fusion S3 archiving for GCS Staging and Standard Inserts loads (off by default; enabled through environment configuration). |
 | 3.1.2 | 2026-09-09 |[85804](https://github.com/airbytehq/airbyte/pull/85804 | Update loading method UI: reorder to show GCS Staging (Recommended) first, improve descriptions for both loading methods. |
 | 3.1.1 | 2026-09-09 | [79178](https://github.com/airbytehq/airbyte/pull/79178) | Classify BigQuery custom quota exceeded errors as config errors instead of system errors. |
