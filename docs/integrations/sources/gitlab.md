@@ -186,6 +186,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 4.5.0 | 2026-10-02 | [87655](https://github.com/airbytehq/airbyte/pull/87655) | Add incremental sync support to the `pipelines_extended`, `jobs`, and `pipeline_trigger_jobs` streams |
+| 4.4.43 | 2026-10-06 | [87865](https://github.com/airbytehq/airbyte/pull/87865) | Update dependencies |
 | 4.4.42 | 2026-09-29 | [87138](https://github.com/airbytehq/airbyte/pull/87138) | Update dependencies |
 | 4.4.41 | 2026-09-24 | [86933](https://github.com/airbytehq/airbyte/pull/86933) | Include child pipelines in the `pipelines` stream (and therefore `pipelines_extended` and `jobs`) and add the `pipeline_trigger_jobs` stream |
 | 4.4.40 | 2026-09-22 | [86599](https://github.com/airbytehq/airbyte/pull/86599) | Update dependencies |

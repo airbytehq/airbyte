@@ -72,7 +72,9 @@ The Granola source connector supports the following streams:
 
 The `notes` stream retrieves meeting notes from your Granola workspace using the [`GET /v1/notes`](https://docs.granola.ai/api-reference/list-notes) endpoint. Each record includes the note ID, title, object type, owner name and email, and creation and last-update timestamps. The API may return additional fields beyond those listed here, and the connector captures them automatically.
 
-For incremental syncs, the connector uses `updated_at` as the cursor field and requests all notes updated since the stored cursor in a single `updated_after` query parameter — the API exposes no upper-bound filter, so the request is one unbounded window rather than stepped slices. The request starts one second before the stored cursor so notes updated in that same second aren't missed. A note edited after a sync is emitted again on the next incremental sync. In **Incremental | Append** mode, each edit adds a new row for the note, and the most recently updated note is repeated on each sync. Each record includes `created_at` and `updated_at` timestamps.
+For incremental syncs, the connector uses `updated_at` as the cursor field and passes the stored cursor in the `updated_after` query parameter. The API has no upper-bound filter for updates, so the connector reads every note updated since the cursor in a single request window. The window starts one second before the stored cursor so notes updated in that same second aren't missed. A note edited after a sync is emitted again on the next incremental sync. In **Incremental | Append** mode, each edit adds a new row for the note, and the most recently updated note is repeated on each sync.
+
+Because the read is a single window, the connector only saves the `notes` cursor after it finishes reading the stream. If a sync fails partway through `notes`, the next sync starts again from the last saved cursor, or from your start date if no cursor was saved.
 
 The API only returns notes that have a generated AI summary and transcript. Notes that are still being processed or were never summarized are excluded.
 
@@ -82,7 +84,7 @@ The Granola API doesn't return deleted notes or mark notes as deleted, so the co
 
 The `detailed_notes` stream retrieves each note from the `notes` stream with the [`GET /v1/notes/{note_id}`](https://docs.granola.ai/api-reference/get-note) endpoint. It includes the note metadata plus fields available only on the detail endpoint, including summaries, transcripts, attendees, calendar events, and folder membership.
 
-The connector always requests transcript data for this stream. Syncing `detailed_notes` can increase sync time and data volume for workspaces with many notes.
+The stream isn't incremental. On every sync it re-reads the full list of notes updated since your start date and requests each note's details again, so it makes one request for every note in that range. The connector always requests transcript data for this stream. Syncing `detailed_notes` can increase sync time and data volume for workspaces with many notes.
 
 The API returns a 404 for notes that don't have a generated AI summary and transcript. Because `detailed_notes` uses `notes` as its parent stream, it only requests detail records for notes returned by the list endpoint.
 
@@ -103,7 +105,7 @@ The set of notes the connector can read depends on the key you configure:
 | Key type | Data scope |
 | :--- | :--- |
 | **Personal API key** | The scopes selected when the key was created. **Personal notes** covers notes you own, notes shared directly with you, and notes in private folders shared with you. **Public notes** covers notes visible to everyone in the workspace, such as notes in the Team space. |
-| **Workspace API key** | Public notes in the workspace, plus notes in spaces where **Allow Granola API access** is turned on. Granola turns this setting on by default for new spaces, and administrators can change it in **Settings > Spaces**. If an administrator turned off **Allow public folders** for the workspace, the key can't read public notes. Private notes and folders that weren't shared this way are excluded. |
+| **Workspace API key** | Public notes in the workspace, plus notes in spaces where **Allow Granola API access** is turned on. Granola turns this setting on by default for new spaces. For an existing space, a workspace administrator can open the space, click **Integrations** in the space header, choose **Granola API**, and switch on **Allow access with a workspace API key**. Folders inherit this setting from their space. If an administrator turned off **Allow public folders** for the workspace, the key can't read public notes. Private notes and folders that weren't shared this way are excluded. |
 
 Notes in Granola are private by default, so a key with only **Public notes** access returns nothing until notes are placed in a folder that everyone in the workspace can see. If a sync returns no records, check the key's scopes first. For more information, refer to the [Granola API documentation](https://docs.granola.ai/help-center/sharing/integrations/granola-api).
 
@@ -138,7 +140,7 @@ Existing connections don't backfill the skipped notes on their own. After upgrad
 
 Starting with version 0.3.0, the connector skips a note in `detailed_notes` when Granola won't return its transcript inline. Earlier versions failed the whole sync in this situation. The connector logs each skip at INFO level rather than as a warning, so search the sync logs for `transcript is too large` to identify the affected notes.
 
-A skipped note still appears in `notes`, with its ID, title, owner, and creation time, and its transcript still appears in `note_transcripts`. Only the fields that come from the detail endpoint are unavailable for those notes: summaries, attendees, calendar events, and folder membership.
+A skipped note still appears in `notes`, with its ID, title, owner, and creation and update times, and its transcript still appears in `note_transcripts`. Only the fields that come from the detail endpoint are unavailable for those notes: summaries, attendees, calendar events, and folder membership.
 
 ## IP allow list
 
@@ -162,7 +164,9 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.0.0 | 2026-09-30 | [87011](https://github.com/airbytehq/airbyte/pull/87011) | Sync notes incrementally on updated_at so edited notes are replicated. Append-mode `notes` connections get duplicates on the first sync; see the migration guide |
+| 1.0.2 | 2026-10-06 | [87885](https://github.com/airbytehq/airbyte/pull/87885) | Update dependencies |
+| 1.0.1 | 2026-10-05 | [87682](https://github.com/airbytehq/airbyte/pull/87682) | Promote to certified |
+| 1.0.0 | 2026-10-02 | [87011](https://github.com/airbytehq/airbyte/pull/87011) | Sync notes incrementally on updated_at so edited notes are replicated. Append-mode `notes` connections get duplicates on the first sync; see the migration guide |
 | 0.3.5 | 2026-09-29 | [86915](https://github.com/airbytehq/airbyte/pull/86915) | Add Granola-specific messages for 401, 403, 429, and 5xx errors, add heartbeat timeout, suggest `notes` and `detailed_notes`, and fix icon dimensions |
 | 0.3.4 | 2026-09-29 | [87192](https://github.com/airbytehq/airbyte/pull/87192) | Update dependencies |
 | 0.3.3 | 2026-09-22 | [86667](https://github.com/airbytehq/airbyte/pull/86667) | Update dependencies |

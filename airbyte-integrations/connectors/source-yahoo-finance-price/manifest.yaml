@@ -16,42 +16,24 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: >-
-            {% if (next_page_token['next_page_token'] or 0) <
-            config['tickers'].split(',')|length %}/v8/finance/chart/{{
-            config['tickers'].split(',')[next_page_token['next_page_token'] or
-            0].strip() }}{% endif %}
+          path: /v8/finance/chart/{{ stream_partition.ticker.strip() }}
           http_method: GET
           request_parameters:
             range: "{{ config['range'] }}"
-            symbol: >-
-              {% if (next_page_token['next_page_token'] or 0) <
-              config['tickers'].split(',')|length %}{{
-              config['tickers'].split(',')[next_page_token['next_page_token'] or
-              0].strip() }}{% else %} finish {% endif %}
+            symbol: "{{ stream_partition.ticker.strip() }}"
             interval: "{{ config['interval'] }}"
           request_headers:
             Accept: application/json
             User-Agent: Mozilla/5.0 (X11; Linux x86_64)
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: SUCCESS
-                    http_codes:
-                      - 403
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          pagination_strategy:
-            type: PageIncrement
-            start_from_page: 0
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: ticker
+          values: "{{ config['tickers'].split(',') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
