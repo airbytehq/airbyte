@@ -25,14 +25,31 @@ const getRemarkPlugins = () => ({
 
 const plugins = getRemarkPlugins();
 
-// Import constants for Agent API sidebar generation
-const {
-  SPEC_CACHE_PATH,
-  API_SIDEBAR_PATH,
-} = require("./src/scripts/agent-engine-api/constants");
-
 const lightCodeTheme = prismThemes.github;
 const darkCodeTheme = prismThemes.dracula;
+
+const segmentWriteKey = process.env.SEGMENT_WRITE_KEY;
+
+const docsEditUrl = "https://github.com/airbytehq/airbyte/blob/master/docs";
+
+// Factory for the docs instances in `plugins` below; every instance shares the
+// plugin name, a content path derived from its route, the edit URL and the
+// default remark plugin pair, and overrides anything else via `options`.
+const docsPlugin = (
+  id: string,
+  routeBasePath: string,
+  options: Record<string, unknown> = {},
+) => [
+  "@docusaurus/plugin-content-docs",
+  {
+    id,
+    path: `../docs${routeBasePath}`,
+    routeBasePath,
+    editUrl: docsEditUrl,
+    remarkPlugins: [plugins.productInformation, plugins.addButtonToTitle],
+    ...options,
+  },
+];
 
 const config: Config = {
   future: {
@@ -88,7 +105,7 @@ const config: Config = {
         content: "plvcr4wcl9abmq0itvi63c",
       },
     },
-    ...(process.env.NODE_ENV === "production" && process.env.SEGMENT_WRITE_KEY
+    ...(process.env.NODE_ENV === "production" && segmentWriteKey
       ? [
           {
             tagName: "script",
@@ -96,8 +113,8 @@ const config: Config = {
               name: "segment-script",
             },
             innerHTML: `
-        !function(){var i="analytics",analytics=window[i]=window[i]||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","screen","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware","register"];analytics.factory=function(e){return function(){if(window[i].initialized)return window[i][e].apply(window[i],arguments);var n=Array.prototype.slice.call(arguments);if(["track","screen","alias","group","page","identify"].indexOf(e)>-1){var c=document.querySelector("link[rel='canonical']");n.push({__t:"bpc",c:c&&c.getAttribute("href")||void 0,p:location.pathname,u:location.href,s:location.search,t:document.title,r:document.referrer})}n.unshift(e);analytics.push(n);return analytics}};for(var n=0;n<analytics.methods.length;n++){var key=analytics.methods[n];analytics[key]=analytics.factory(key)}analytics.load=function(key,n){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-segment-analytics-key",i);t.src="https://cdn.segment.com/analytics.js/v1/" + key + "/analytics.min.js";var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r);analytics._loadOptions=n};analytics._writeKey="${process.env.SEGMENT_WRITE_KEY}";;analytics.SNIPPET_VERSION="5.2.0";
-        analytics.load("${process.env.SEGMENT_WRITE_KEY}");
+        !function(){var i="analytics",analytics=window[i]=window[i]||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","screen","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware","register"];analytics.factory=function(e){return function(){if(window[i].initialized)return window[i][e].apply(window[i],arguments);var n=Array.prototype.slice.call(arguments);if(["track","screen","alias","group","page","identify"].indexOf(e)>-1){var c=document.querySelector("link[rel='canonical']");n.push({__t:"bpc",c:c&&c.getAttribute("href")||void 0,p:location.pathname,u:location.href,s:location.search,t:document.title,r:document.referrer})}n.unshift(e);analytics.push(n);return analytics}};for(var n=0;n<analytics.methods.length;n++){var key=analytics.methods[n];analytics[key]=analytics.factory(key)}analytics.load=function(key,n){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-segment-analytics-key",i);t.src="https://cdn.segment.com/analytics.js/v1/" + key + "/analytics.min.js";var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r);analytics._loadOptions=n};analytics._writeKey="${segmentWriteKey}";;analytics.SNIPPET_VERSION="5.2.0";
+        analytics.load("${segmentWriteKey}");
         analytics.page();
       }}();`,
           },
@@ -137,143 +154,83 @@ const config: Config = {
       };
     },
     // This plugin controls "platform" docs (no longer versioned)
-    [
-      "@docusaurus/plugin-content-docs",
-      {
-        id: "platform",
-        path: "../docs/platform",
-        routeBasePath: "/platform",
-        sidebarPath: "./sidebar-platform.js",
-        editUrl:
-          "https://github.com/airbytehq/airbyte/blob/master/docs",
-        remarkPlugins: [
-          plugins.productInformation,
-          plugins.addButtonToTitle,
-        ],
-      },
-    ],
+    docsPlugin("platform", "/platform", {
+      sidebarPath: "./sidebar-platform.js",
+    }),
     // This plugin controls AI Agent Tools docs, which are not versioned
-    [
-      "@docusaurus/plugin-content-docs",
-      {
-        id: "ai-agents",
-        path: "../docs/ai-agents",
-        routeBasePath: "/ai-agents",
-        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
-        docItemComponent: "@theme/ApiItem", // Required for OpenAPI docs rendering
-        async sidebarItemsGenerator({ defaultSidebarItemsGenerator, ...args }) {
-          const sidebarItems = await defaultSidebarItemsGenerator(args);
+    docsPlugin("ai-agents", "/ai-agents", {
+      docItemComponent: "@theme/ApiItem", // Required for OpenAPI docs rendering
+      async sidebarItemsGenerator({ defaultSidebarItemsGenerator, ...args }) {
+        const sidebarItems = await defaultSidebarItemsGenerator(args);
 
-          // Load and filter the Agent API sidebar based on allowed tags
-          const agentEngineApiItems = loadAgentEngineApiSidebar();
+        // Load and filter the Agent API sidebar based on allowed tags
+        const agentEngineApiItems = loadAgentEngineApiSidebar();
 
-          // Replace the "api-reference" category with the filtered API items
-          const processedItems = replaceApiReferenceCategory(
-            sidebarItems,
-            agentEngineApiItems,
-          );
+        // Replace the "api-reference" category with the filtered API items
+        const processedItems = replaceApiReferenceCategory(
+          sidebarItems,
+          agentEngineApiItems,
+        );
 
-          // Wrap the autogenerated items in a non-collapsible top-level category
-          // linked to the instance's README. Without this, Docusaurus breadcrumbs
-          // jump straight from the site home to the active category and omit the
-          // instance home page, because `dirName: '.'` autogeneration produces a
-          // flat list of top-level items rather than a parent category. Our other
-          // multi-instance sidebars (e.g. sidebar-platform.js) use this same
-          // pattern, so this makes ai-agents breadcrumbs consistent with them.
-          // See https://github.com/facebook/docusaurus/issues/6953.
-          // Filter out the README (used as the category link) and
-          // standalone landing pages that should not appear in navigation.
-          const hiddenDocIds = new Set(["README", "slack-app"]);
-          const itemsWithoutReadme = processedItems.filter(
-            (item: any) =>
-              !(item.type === "doc" && hiddenDocIds.has(item.id)),
-          );
+        // Wrap the autogenerated items in a non-collapsible top-level category
+        // linked to the instance's README. Without this, Docusaurus breadcrumbs
+        // jump straight from the site home to the active category and omit the
+        // instance home page, because `dirName: '.'` autogeneration produces a
+        // flat list of top-level items rather than a parent category. Our other
+        // multi-instance sidebars (e.g. sidebar-platform.js) use this same
+        // pattern, so this makes ai-agents breadcrumbs consistent with them.
+        // See https://github.com/facebook/docusaurus/issues/6953.
+        // Filter out the README (used as the category link) and
+        // standalone landing pages that should not appear in navigation.
+        const hiddenDocIds = new Set(["README", "slack-app"]);
+        const itemsWithoutReadme = processedItems.filter(
+          (item: any) => !(item.type === "doc" && hiddenDocIds.has(item.id)),
+        );
 
-          return [
-            {
-              type: "category",
-              label: "Airbyte Agents",
-              collapsible: false,
-              link: { type: "doc", id: "README" },
-              items: itemsWithoutReadme,
-            },
-          ];
-        },
-        remarkPlugins: [
-          plugins.agentConnectorHeaderDecoration,
-          plugins.planInformation,
-          plugins.addButtonToTitle,
-          [plugins.npm2yarn, { sync: true }],
-          plugins.codeBlockTabs,
-        ],
+        return [
+          {
+            type: "category",
+            label: "Airbyte Agents",
+            collapsible: false,
+            link: { type: "doc", id: "README" },
+            items: itemsWithoutReadme,
+          },
+        ];
       },
-    ],
+      remarkPlugins: [
+        plugins.agentConnectorHeaderDecoration,
+        plugins.planInformation,
+        plugins.addButtonToTitle,
+        [plugins.npm2yarn, { sync: true }],
+        plugins.codeBlockTabs,
+      ],
+    }),
     // This plugin controls release notes, which are not versioned
-    [
-      "@docusaurus/plugin-content-docs",
-      {
-        id: "release_notes",
-        path: "../docs/release_notes",
-        routeBasePath: "/release_notes",
-        sidebarPath: "./sidebar-release_notes.js",
-        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
-        remarkPlugins: [
-          plugins.productInformation,
-          plugins.addButtonToTitle,
-        ],
-      },
-    ],
+    docsPlugin("release_notes", "/release_notes", {
+      sidebarPath: "./sidebar-release_notes.js",
+    }),
     // This plugin controls Connector docs, which are unversioned
-    [
-      "@docusaurus/plugin-content-docs",
-      {
-        id: "connectors",
-        path: "../docs/integrations",
-        routeBasePath: "/integrations",
-        sidebarPath: "./sidebar-connectors.js",
-        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
-        beforeDefaultRemarkPlugins: [
-          plugins.specDecoration,
-          plugins.connectorList,
-        ], // use before-default plugins so TOC rendering picks up inserted headings
-        remarkPlugins: [
-          plugins.docsHeaderDecoration,
-          plugins.enterpriseDocsHeaderInformation,
-          plugins.productInformation,
-          plugins.docMetaTags,
-        ],
-      },
-    ],
+    docsPlugin("connectors", "/integrations", {
+      sidebarPath: "./sidebar-connectors.js",
+      beforeDefaultRemarkPlugins: [
+        plugins.specDecoration,
+        plugins.connectorList,
+      ], // use before-default plugins so TOC rendering picks up inserted headings
+      remarkPlugins: [
+        plugins.docsHeaderDecoration,
+        plugins.enterpriseDocsHeaderInformation,
+        plugins.productInformation,
+        plugins.docMetaTags,
+      ],
+    }),
     // This plugin controls Developers docs, which are not versioned
-    [
-      "@docusaurus/plugin-content-docs",
-      {
-        id: "developers",
-        path: "../docs/developers",
-        routeBasePath: "/developers",
-        sidebarPath: "./sidebar-developers.js",
-        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
-        remarkPlugins: [
-          plugins.productInformation,
-          plugins.addButtonToTitle,
-        ],
-      },
-    ],
+    docsPlugin("developers", "/developers", {
+      sidebarPath: "./sidebar-developers.js",
+    }),
     // This plugin controls Community docs, which are not versioned
-    [
-      "@docusaurus/plugin-content-docs",
-      {
-        id: "community",
-        path: "../docs/community",
-        routeBasePath: "/community",
-        sidebarPath: "./sidebar-community.js",
-        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
-        remarkPlugins: [
-          plugins.productInformation,
-          plugins.addButtonToTitle,
-        ],
-      },
-    ],
+    docsPlugin("community", "/community", {
+      sidebarPath: "./sidebar-community.js",
+    }),
     [
       "docusaurus-plugin-openapi-docs",
       {
