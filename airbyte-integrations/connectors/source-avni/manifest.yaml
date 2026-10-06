@@ -42,15 +42,15 @@ definitions:
               type: RequestOption
               inject_into: body_json
               field_name: ClientId
-      error_handler:
-        type: DefaultErrorHandler
-        response_filters:
-        - type: HttpResponseFilter
-          action: FAIL
-          failure_type: config_error
-          http_codes:
-          - 400
-          error_message: 'Avni login failed: check your username and password.'
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            failure_type: config_error
+            http_codes:
+            - 400
+            error_message: 'Avni login failed: check your username and password.'
       session_token_path:
       - AuthenticationResult
       - IdToken
