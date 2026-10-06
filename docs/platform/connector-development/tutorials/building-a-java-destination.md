@@ -241,7 +241,7 @@ incoming data and how it should be written to the destination. Its "output" is t
 
 To implement the `write` Airbyte operation, implement the `getConsumer` method in your generated
 `<Name>Destination.java` file. Here are some example implementations from different destination
-conectors:
+connectors:
 
 - [BigQuery](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-bigquery/src/main/java/io/airbyte/integrations/destination/bigquery/BigQueryDestination.java#L188)
 - [Google Pubsub](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-pubsub/src/main/java/io/airbyte/integrations/destination/pubsub/PubsubDestination.java#L98)

@@ -40,7 +40,7 @@ The `test-base-image-build.sh` script can be used to build the base image.
 ./test-base-image-build.sh java
 ./test-base-image-build.sh java dev
 
-# These are identical, building the pyhton base image with the 'dev' tag:
+# These are identical, building the python base image with the 'dev' tag:
 ./test-base-image-build.sh python
 ./test-base-image-build.sh python dev
 ```

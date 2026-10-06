@@ -1,7 +1,7 @@
 # Thinkific Courses
 
 Thinkific is a leading platform for creating, marketing, and selling courses, digital products, communities and learning experiences.
-This connector retrives basic data information from courses.
+This connector retrieves basic data information from courses.
 
 ## Configuration
 

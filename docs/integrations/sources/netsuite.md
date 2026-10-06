@@ -41,7 +41,7 @@ This connector implements the [SuiteTalk REST Web Services](https://docs.oracle.
 5. Scroll down to **Manage Authentication** section
 6. Enable checkbox `TOKEN-BASED AUTHENTICATION`
 7. Scroll down to **SuiteTalk (Web Services)**
-8. Enable checkbox `REST WEB SERVISES`
+8. Enable checkbox `REST WEB SERVICES`
 9. Save the changes
 
 #### Step 2.3: Create Integration (obtain Consumer Key and Consumer Secret)

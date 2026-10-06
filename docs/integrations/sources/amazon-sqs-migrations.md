@@ -2,7 +2,7 @@
 
 ## Upgrading to 1.0.0
 
-The verison migrates the Amazon SQS connector to the low-code framework for greater maintainability. 
+The version migrates the Amazon SQS connector to the low-code framework for greater maintainability. 
 
 Changes regarding configuration of specs:
 - `access_key`, `secret_key`, `queue_url`, `region`, `target` are required for this connector to work

@@ -486,7 +486,7 @@ and the response of `/oauth/token` now includes a refresh token field.
   </details>
 
 #### Advanced Case: scopes should be provided as a query parameter
-Imagine that the OAuth flow is updated so that you need to mention the `scope` query parameter to get to the `consent screen` and verify / grant the access to the neccessary onces, before moving forward.
+Imagine that the OAuth flow is updated so that you need to mention the `scope` query parameter to get to the `consent screen` and verify / grant the access to the necessary ones, before moving forward.
 
   <details>
       <summary>Example Declarative OAuth Change</summary>
@@ -546,7 +546,7 @@ Imagine that the OAuth flow is updated so that you need to mention the `state` q
 
 
 ##### Example using an url-encoded / url-decoded `scope` parameter
-You can make the `scope` paramter `url-encoded` by specifying the `pipe` ( | ) + `urlencode` or `urldecode` in the target url.
+You can make the `scope` parameter `url-encoded` by specifying the `pipe` ( | ) + `urlencode` or `urldecode` in the target url.
 It would be pre-formatted and resolved into the `url-encoded` string before being replaced for the final resolved URL.
 
   <details>
@@ -795,7 +795,7 @@ code_value}}
 
 ### Available Template Variables PIPE methods
 
-You can apply the `in-variable` tranformations based on your use-case and use the following interpolation methods available:
+You can apply the `in-variable` transformations based on your use-case and use the following interpolation methods available:
 
 #### Most useful interpolation methods used for OAuth
 
@@ -860,7 +860,7 @@ You can apply the `in-variable` tranformations based on your use-case and use th
 | timeuntil       | Returns the time until a date.                 | `{{ date\|timeuntil }}`                            | `'in 2 days'`                                                                  |
 
 ### Common Use-Cases and Examples:
-The following section stands to describe common use-cases. Assuming that there are no overides provided over the `default` keys, the common specification parts (properties) like: `complete_oauth_server_input_specification` and `complete_oauth_server_output_specification` remain unchanged
+The following section stands to describe common use-cases. Assuming that there are no overrides provided over the `default` keys, the common specification parts (properties) like: `complete_oauth_server_input_specification` and `complete_oauth_server_output_specification` remain unchanged
 
   <details>
       <summary>Example Common Advanced Auth parts</summary>
@@ -1120,7 +1120,7 @@ oauth_config_specification:
   </details>
 
 #### Case D: OAuth Flow returns the `access_token` and the `refresh_token` is a `one-time-usage` key
-In this example we expect the `refresh_token` key expires alongside with the `access_token` and should be exhanged altogether, having the new pair of keys in response. The `token_expiry_date` is the property that holds the `date-time` value of when the `access_token` should be expired
+In this example we expect the `refresh_token` key expires alongside with the `access_token` and should be exchanged altogether, having the new pair of keys in response. The `token_expiry_date` is the property that holds the `date-time` value of when the `access_token` should be expired
 
   <details>
       <summary>Example Declarative OAuth Specification</summary>

@@ -38,7 +38,7 @@ The RD Station Marketing source connector supports the following [sync modes](ht
 
 ## Performance considerations
 
-Each endpoint has its own performance limitations, which also consider the account plan. For more informations, visit the page [API request limit](https://developers.rdstation.com/reference/limite-de-requisicoes-da-api?lng=en).
+Each endpoint has its own performance limitations, which also consider the account plan. For more information, visit the page [API request limit](https://developers.rdstation.com/reference/limite-de-requisicoes-da-api?lng=en).
 
 ## IP allow list
 

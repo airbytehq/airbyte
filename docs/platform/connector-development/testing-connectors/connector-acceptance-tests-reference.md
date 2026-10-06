@@ -477,7 +477,7 @@ data:
       - "*.hubspot.com"
 ```
 
-A list of dynamic hostnames or IP addresses which reference values from the connector's configuration. The variable names need to match the connector's config exactly. In this example, `subdomain` is a required option defined by the connector's SPEC response. It is also possible to refrence sub-fields with dot-notation, e.g. `networking_options.tunnel_host`.
+A list of dynamic hostnames or IP addresses which reference values from the connector's configuration. The variable names need to match the connector's config exactly. In this example, `subdomain` is a required option defined by the connector's SPEC response. It is also possible to reference sub-fields with dot-notation, e.g. `networking_options.tunnel_host`.
 
 ```yaml
 data:
