@@ -17,9 +17,9 @@ import org.junit.jupiter.api.Test
 import org.testcontainers.containers.MSSQLServerContainer
 
 /**
- * Runs the CDK's [AbstractCdcPartitionReaderTest] against SQL Server with [AsyncEmbeddedEngine] (Dbz 3.4.3).
- * Debezium properties, cold start offsets and positions come from
- * the production [MsSqlServerDebeziumOperations], the rest are from the abstract test.
+ * Runs the CDK's [AbstractCdcPartitionReaderTest] against SQL Server with [AsyncEmbeddedEngine]
+ * (Dbz 3.4.3). Debezium properties, cold start offsets and positions come from the production
+ * [MsSqlServerDebeziumOperations], the rest are from the abstract test.
  */
 class MsSqlServerCdcPartitionReaderTest :
     AbstractCdcPartitionReaderTest<MsSqlServerCdcPosition, MSSQLServerContainer<*>>(
@@ -29,7 +29,9 @@ class MsSqlServerCdcPartitionReaderTest :
 
     private val config: MsSqlServerSourceConfiguration by lazy {
         MsSqlServerSourceConfigurationFactory()
-            .make(MsSqlServerContainerFactory.config(container).also { it.setIncrementalValue(Cdc()) })
+            .make(
+                MsSqlServerContainerFactory.config(container).also { it.setIncrementalValue(Cdc()) }
+            )
     }
 
     private val productionOps: MsSqlServerDebeziumOperations by lazy {
@@ -67,7 +69,8 @@ class MsSqlServerCdcPartitionReaderTest :
     }
 
     // Multiple rows in one transaction: all rows share one commit LSN. The first row
-    // reaches the target position and triggers the close while Debezium is still delivering the rest.
+    // reaches the target position and triggers the close while Debezium is still delivering the
+    // rest.
     override fun MSSQLServerContainer<*>.insertMultipleInOneTransaction(n: Int) {
         writeAndAwaitCapture(
             changeRows = n,

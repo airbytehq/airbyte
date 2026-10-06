@@ -125,8 +125,10 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
                                     .withData(recordData.toJson())
                             )
                             if (shouldSlow) {
-                                // Delay here so that Dbz will paused while sending us records so we can
-                                // go to the logic after the engine stopped and events are still coming.
+                                // Delay here so that Dbz will paused while sending us records so we
+                                // can
+                                // go to the logic after the engine stopped and events are still
+                                // coming.
                                 Thread.sleep(1000)
                             }
                         }
@@ -219,13 +221,12 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
 
     @Test
     /**
-     * Insert multiple rows in a single transaction. The first row reaches the target and triggers the
-     * target-lsn close while the remaining rows are still being delivered, so they go through the shutdown path
-     * of [CdcPartitionReader.emitRecord]. Record writes are slowed down so that the close happens
-     * while a write is in progress.
+     * Insert multiple rows in a single transaction. The first row reaches the target and triggers
+     * the target-lsn close while the remaining rows are still being delivered, so they go through
+     * the shutdown path of [CdcPartitionReader.emitRecord]. Record writes are slowed down so that
+     * the close happens while a write is in progress.
      *
      * Checks that the STATE count matches the records written (asserted in [read]).
-     *
      */
     fun testRecordsCountAfterShutdown() {
         container.createStream()
@@ -351,7 +352,10 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
     data class Delete(override val id: Int, val ignore: Boolean = false) : Record
 
     open fun C.insertMultipleInOneTransaction(n: Int) {
-        Assumptions.assumeTrue(false, "insertMultipleInOneTransaction is not implemented for this database")
+        Assumptions.assumeTrue(
+            false,
+            "insertMultipleInOneTransaction is not implemented for this database"
+        )
     }
 
     abstract inner class AbstractCdcPartitionsCreatorDbzOps<T : PartiallyOrdered<T>> :

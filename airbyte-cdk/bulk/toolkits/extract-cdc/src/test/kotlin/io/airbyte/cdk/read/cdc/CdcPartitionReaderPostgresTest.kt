@@ -67,7 +67,8 @@ class CdcPartitionReaderPostgresTest :
             for (i in 1..n) {
                 it.execute("INSERT INTO tbl (v) VALUES ($i)")
             }
-            it.execute("COMMIT")}
+            it.execute("COMMIT")
+        }
     }
 
     override fun PostgreSQLContainer<*>.update135() {

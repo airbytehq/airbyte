@@ -81,9 +81,11 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
     private var watchdogJob: Job? = null
     @Volatile private var watchdogShouldStop = false
     // Parent Job of every record write made after the engine started shutting down (see emitRecord)
-    // limitedParallelism(1): one write at a time, in order (the record consumers aren't thread-safe)
+    // limitedParallelism(1): one write at a time, in order (the record consumers aren't
+    // thread-safe)
     private val shutdownWrites = Job()
-    private val shutdownScope = CoroutineScope(Dispatchers.IO.limitedParallelism(1) + shutdownWrites)
+    private val shutdownScope =
+        CoroutineScope(Dispatchers.IO.limitedParallelism(1) + shutdownWrites)
 
     private var partitionId: String = generatePartitionId(4)
 
@@ -197,16 +199,23 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
         }
 
         // The Dbz engine thread has ended, so no new shutdown-path writes can start:
-        // wait for the ones still running, so that checkpoint() reads a numEmittedRecords that includes them.
+        // wait for the ones still running, so that checkpoint() reads a numEmittedRecords that
+        // includes them.
         shutdownWrites.complete()
         val finished = withTimeoutOrNull(Duration.ofMinutes(5).toMillis()) { shutdownWrites.join() }
         if (finished == null) {
-            engineException.compareAndSet(null, TransientErrorException(
-                "Timed out waiting for in-flight CDC record writes after the Debezium engine shut down.")
+            engineException.compareAndSet(
+                null,
+                TransientErrorException(
+                    "Timed out waiting for in-flight CDC record writes after the Debezium engine shut down."
+                )
             )
         } else if (shutdownWrites.isCancelled) {
-            engineException.compareAndSet(null, TransientErrorException(
-                "A CDC record write failed while the Debezium engine was shutting down.")
+            engineException.compareAndSet(
+                null,
+                TransientErrorException(
+                    "A CDC record write failed while the Debezium engine was shutting down."
+                )
             )
         } else {
             log.info { "All in-flight shutdown-path record writes completed." }
@@ -371,16 +380,24 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
 
             // Emit the record at the end of the happy path.
             when (engineShuttingDown.get()) {
-                // While the engine is shutting down, the record is written as a child of shutdownWrites,
-                // off the Debezium thread so that engine.close() interrupting that thread can't cut a write
-                // in half. The Debezium thread then waits for the write (one record at a time, in order,
-                // with backpressure). If that wait is interrupted, run() still waits for the write before
+                // While the engine is shutting down, the record is written as a child of
+                // shutdownWrites,
+                // off the Debezium thread so that engine.close() interrupting that thread can't cut
+                // a write
+                // in half. The Debezium thread then waits for the write (one record at a time, in
+                // order,
+                // with backpressure). If that wait is interrupted, run() still waits for the write
+                // before
                 // checkpoint().
                 true -> {
-                    val writeShutDown = shutdownScope.launch {
-                        recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes)
-                        updateCounters(event, EventType.RECORD_EMITTED)
-                    }
+                    val writeShutDown =
+                        shutdownScope.launch {
+                            recordAcceptor.invoke(
+                                deserializedRecord.data,
+                                deserializedRecord.changes
+                            )
+                            updateCounters(event, EventType.RECORD_EMITTED)
+                        }
                     runBlocking { writeShutDown.join() }
                 }
                 // While the engine is running normally, we can emit records synchronously for
