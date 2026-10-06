@@ -68,6 +68,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.21 | 2026-10-06 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Replace custom authenticator with the built-in BasicHttpAuthenticator and upgrade to CDK v7. Credentials are now encoded as UTF-8 (RFC 7617) instead of Latin-1; ASCII credentials are unaffected. |
 | 0.3.20 | 2025-05-10 | [60050](https://github.com/airbytehq/airbyte/pull/60050) | Update dependencies |
 | 0.3.19 | 2025-05-03 | [59385](https://github.com/airbytehq/airbyte/pull/59385) | Update dependencies |
 | 0.3.18 | 2025-04-26 | [58315](https://github.com/airbytehq/airbyte/pull/58315) | Update dependencies |
