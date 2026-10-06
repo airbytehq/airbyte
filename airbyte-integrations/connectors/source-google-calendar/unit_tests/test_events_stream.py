@@ -47,7 +47,7 @@ _BASE_PARAMS = {"showDeleted": "true", "maxResults": "2500", "singleEvents": "fa
 _DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
-def _days_ago(n: int) -> str:
+def _days_ago(n: float) -> str:
     return (datetime.now(timezone.utc) - timedelta(days=n)).strftime(_DATETIME_FORMAT)
 
 
@@ -188,6 +188,20 @@ def test_incremental_state_just_past_retention_drops_updated_min_and_resets_stat
         http_mocker.assert_number_of_calls(request, 1)
 
 
+def test_incremental_state_between_28_and_29_days_resets_state():
+    # Google's cut-off is 29 days; a cursor past 28 must not be sent right at the limit.
+    state = StateBuilder().with_stream_state("events", {"updated": _days_ago(28.5)}).build()
+    with HttpMocker() as http_mocker:
+        request = _events_request()
+        http_mocker.get(request, _items_response(_RECORD))
+
+        output = _read_events(http_mocker, SyncMode.incremental, state=state)
+
+        assert output.errors == []
+        assert _stream_state(output.state_messages[0]) == {}
+        http_mocker.assert_number_of_calls(request, 1)
+
+
 def test_incremental_stale_state_drops_updated_min_and_resets_state():
     state = StateBuilder().with_stream_state("events", {"updated": _days_ago(60)}).build()
     with HttpMocker() as http_mocker:
@@ -214,6 +228,37 @@ def test_incremental_fresh_start_date_sends_updated_min():
 
         assert output.errors == []
         assert _record_ids(output) == ["recent"]
+        http_mocker.assert_number_of_calls(request, 1)
+
+
+@pytest.mark.parametrize("age_days, sends_updated_min", [(27.5, True), (28.5, False), (35, False)], ids=["27.5d", "28.5d", "35d"])
+def test_start_date_guard_boundary(age_days, sends_updated_min):
+    start_date = _days_ago(age_days)
+    recent = {"id": "recent", "updated": _days_ago(1)}
+    with HttpMocker() as http_mocker:
+        request = _events_request(updated_min=start_date if sends_updated_min else None)
+        http_mocker.get(request, _items_response(recent))
+
+        output = _read_events(http_mocker, SyncMode.incremental, config=_config(start_date=start_date))
+
+        assert output.errors == []
+        assert _record_ids(output) == ["recent"]
+        http_mocker.assert_number_of_calls(request, 1)
+
+
+@pytest.mark.parametrize("age_days, sends_updated_min", [(7, True), (60, False)], ids=["recent", "old"])
+def test_full_refresh_with_start_date_bounds_every_sync(age_days, sends_updated_min):
+    start_date = _days_ago(age_days)
+    older = {"id": "older", "updated": _days_ago(age_days + 30)}
+    newer = {"id": "newer", "updated": _days_ago(1)}
+    with HttpMocker() as http_mocker:
+        request = _events_request(updated_min=start_date if sends_updated_min else None)
+        http_mocker.get(request, _items_response(older, newer))
+
+        output = _read_events(http_mocker, SyncMode.full_refresh, config=_config(start_date=start_date))
+
+        assert output.errors == []
+        assert _record_ids(output) == ["newer"]
         http_mocker.assert_number_of_calls(request, 1)
 
 
@@ -263,6 +308,29 @@ def test_old_start_date_drops_records_modified_before_it_client_side():
 
         assert output.errors == []
         assert _record_ids(output) == ["newer", "gone"]
+
+
+def test_seconds_precision_updated_is_parsed_and_kept():
+    seconds_only = {"id": "s", "updated": (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")}
+    with HttpMocker() as http_mocker:
+        http_mocker.get(_events_request(), _items_response(seconds_only))
+
+        output = _read_events(http_mocker, SyncMode.incremental, config=_config(start_date=_days_ago(60)))
+
+        assert output.errors == []
+        assert _record_ids(output) == ["s"]
+        assert seconds_only["updated"][:19] in _stream_state(output.state_messages[-1])["updated"]
+
+
+def test_record_updated_slightly_in_the_future_is_kept():
+    skewed = {"id": "skewed", "updated": (datetime.now(timezone.utc) + timedelta(minutes=5)).strftime(_DATETIME_FORMAT)}
+    with HttpMocker() as http_mocker:
+        http_mocker.get(_events_request(), _items_response(skewed))
+
+        output = _read_events(http_mocker, SyncMode.full_refresh)
+
+        assert output.errors == []
+        assert _record_ids(output) == ["skewed"]
 
 
 def test_incremental_branch_does_not_filter_client_side():
@@ -329,11 +397,12 @@ def test_rate_limit_403_retries_then_succeeds():
         http_mocker.assert_number_of_calls(request, 2)
 
 
-def test_429_retries_then_succeeds(monkeypatch):
+@pytest.mark.parametrize("reason", [None, "rateLimitExceeded", "quotaExceeded"], ids=["no-reason", "rateLimitExceeded", "quotaExceeded"])
+def test_429_retries_then_succeeds(monkeypatch, reason):
     monkeypatch.setattr(HttpAPIBudget, "update_from_response", lambda self, request, response: None)
     with HttpMocker() as http_mocker:
         request = _events_request()
-        http_mocker.get(request, [_error_response(429, "rateLimitExceeded"), _items_response(_RECORD)])
+        http_mocker.get(request, [_error_response(429, reason), _items_response(_RECORD)])
 
         output = _read_events(http_mocker, SyncMode.incremental)
 

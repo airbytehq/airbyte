@@ -139,9 +139,11 @@ definitions:
           $ref: "#/definitions/events_stream_base/incremental_sync"
           # A re-read cannot be bounded server-side past 29 days, so when start_date is set,
           # records modified before it are dropped client-side. Without start_date the cursor
-          # starts at 2000-01-01 and nothing is dropped: recurring series are returned as one
-          # record whose `updated` is the last edit of the series, so a default floor would drop
-          # active series that have not been edited recently.
+          # starts at 2000-01-01, so no record older than that is dropped: recurring series are
+          # returned as one record whose `updated` is the last edit of the series, so a default
+          # floor would drop active series that have not been edited recently. The filter's upper
+          # bound is end_datetime (tomorrow), so clock skew between the worker and Google cannot
+          # drop a record edited moments before the sync.
           is_client_side_incremental: true
       incremental_stream:
         $ref: "#/definitions/events_stream_base"
@@ -169,6 +171,10 @@ definitions:
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ format_datetime(config.get('start_date') or '2000-01-01T00:00:00Z', '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ day_delta(1, format='%Y-%m-%dT%H:%M:%S.%fZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     retriever:
       type: SimpleRetriever
@@ -232,13 +238,14 @@ definitions:
                 - 401
               action: FAIL
               failure_type: config_error
-              error_message: "Google rejected the OAuth credentials for the Calendar API."
+              error_message: "Google rejected the OAuth credentials for the Calendar API. Re-authorize the connector or generate a new refresh token for the configured client."
             - type: HttpResponseFilter
               predicate: "{{ 'rateLimitExceeded' in response.get('error', {}) | string or 'userRateLimitExceeded' in response.get('error', {}) | string }}"
               action: RATE_LIMITED
             - type: HttpResponseFilter
               # 403 usageLimits errors that do not clear within the sync (project or user quota).
-              predicate: "{{ 'quotaExceeded' in response.get('error', {}) | string or 'dailyLimitExceeded' in response.get('error', {}) | string }}"
+              # Gated on the body's status so a 429 with the same reason still goes to RATE_LIMITED.
+              predicate: "{{ response.get('error', {}).get('code') == 403 and ('quotaExceeded' in response.get('error', {}) | string or 'dailyLimitExceeded' in response.get('error', {}) | string) }}"
               action: FAIL
               failure_type: transient_error
               error_message: "The Google Calendar API quota for this project or user is exhausted. The sync will succeed once the quota resets; no configuration change is needed."
@@ -253,7 +260,7 @@ definitions:
                 - 404
               action: FAIL
               failure_type: config_error
-              error_message: "The calendar configured in \"Calendar Id\" was not found by the Google Calendar API."
+              error_message: "The calendar configured in \"Calendar Id\" was not found by the Google Calendar API. Check the ID in the calendar's settings, or use 'primary'."
             - type: HttpResponseFilter
               http_codes:
                 - 410
@@ -332,7 +339,7 @@ spec:
         order: 4
         title: Start date
         format: date-time
-        description: Only sync events last modified on or after this date. Applies to the first sync in either sync mode and to every re-read after a reset; later incremental syncs fetch events modified since the saved cursor. When unset, all events are read. A recurring series counts as one event whose modification time is its last edit, so a start date also drops series that have not been edited since then. Google only filters server-side within the last 29 days; an older date is applied by the connector after download.
+        description: Only sync events last modified on or after this date. Applies to every Full Refresh sync, to the first Incremental sync, and to any full re-read (after a reset, or when the saved cursor is older than 28 days); other incremental syncs fetch events modified since the saved cursor. When unset, all events are read. A recurring series counts as one event whose modification time is its last edit, so a start date also drops series that have not been edited since then. Google only filters server-side within the last 29 days; an older date is applied by the connector after download.
       num_workers:
         type: integer
         order: 5

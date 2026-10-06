@@ -11,15 +11,15 @@ acceptance_tests:
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
-  discovery:
-    tests:
-      - config_path: "secrets/config.json"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
   # The CDK standard-test runner used in CI reads only the spec, connection and basic_read
   # sections; the blocks below are kept for the legacy CAT runner and local runs.
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
   incremental:
     tests:
       - config_path: "secrets/config.json"

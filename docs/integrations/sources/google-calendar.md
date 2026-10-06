@@ -10,7 +10,7 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 | `client_secret` | `string` | Client secret of the OAuth 2.0 application. | |
 | `client_refresh_token_2` | `string` | Refresh token for the OAuth application with the Calendar API scope. | |
 | `calendarid` | `string` | Calendar Id (`primary` for the account's primary calendar). | |
-| `start_date` | `string` | Only sync `events` last modified on or after this date. Applies to the first sync in either sync mode and to every re-read after a reset; when unset, all events are read. See [Events sync behavior](#events-sync-behavior). | |
+| `start_date` | `string` | Only sync `events` last modified on or after this date. Applies to every Full Refresh sync, to the first Incremental sync, and to any full re-read; when unset, all events are read. See [Events sync behavior](#events-sync-behavior). | |
 | `num_workers` | `integer` | Number of concurrent workers. | 3 |
 
 ## Streams
@@ -29,8 +29,8 @@ The `events` stream is incremental on the event's last modification time (`updat
 
 - **Cancelled events** are included (`showDeleted=true`) with `status: cancelled`, so deletions reach the destination. Filter `status != 'cancelled'` downstream if you only want live events.
 - **Recurring series** are returned as a single record (`singleEvents=false`); individual occurrences are not expanded. The record's `updated` is the last time the series was edited.
-- **`start_date`** limits the first sync, and every re-read after a reset, to events last modified on or after that date. Google applies the filter server-side only within the last 29 days; for an older date the connector downloads the calendar and drops older records itself. Because a recurring series counts as one event, a start date also drops series that have not been edited since that date, even if they still have upcoming occurrences. Leave it unset to read everything.
-- **29-day window.** Google rejects `updatedMin` older than 29 days. The connector keeps the newest `updated` it has seen as its cursor; if that cursor is older than 28 days when a sync starts (for example, a calendar with no edits for a month, or a connection paused for a month) the connector clears the cursor and re-reads the whole calendar, then continues incrementally. A calendar that stays unedited re-reads on every sync until something changes.
+- **`start_date`** limits every Full Refresh sync, the first Incremental sync, and any full re-read (after a reset, or when the saved cursor is older than 28 days) to events last modified on or after that date. Google applies the filter server-side only within the last 29 days; for an older date the connector downloads the calendar and drops older records itself. Because a recurring series counts as one event, a start date also drops series that have not been edited since that date, even if they still have upcoming occurrences. Leave it unset to read everything.
+- **29-day window.** Google rejects `updatedMin` older than 29 days. The connector keeps the newest `updated` it has seen as its cursor; if that cursor is older than 28 days when a sync starts (for example, a calendar with no edits for a month, or a connection paused for a month) the connector clears the cursor and re-reads the whole calendar (or everything since `start_date`), then continues incrementally. A calendar that stays unedited re-reads on every sync until something changes.
 - **Recommended sync mode:** *Incremental | Append + Deduped* with `id` as the primary key. With plain *Append*, each re-read described above adds another copy of every event.
 
 ## IP allow list
@@ -44,7 +44,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
-| 0.1.0 | 2026-10-05 | [86468](https://github.com/airbytehq/airbyte/pull/86468) | Add error handling, API budget, concurrency, incremental `events` (now includes cancelled events via `showDeleted=true`), and enable acceptance tests |
+| 0.1.0 | 2026-10-06 | [86468](https://github.com/airbytehq/airbyte/pull/86468) | Add error handling, API budget, concurrency, incremental `events` (now includes cancelled events via `showDeleted=true`) with a `calendar_id` column and an optional `start_date`, and enable acceptance tests |
 | 0.0.55 | 2026-10-06 | [87901](https://github.com/airbytehq/airbyte/pull/87901) | Update dependencies |
 | 0.0.54 | 2026-09-29 | [87194](https://github.com/airbytehq/airbyte/pull/87194) | Update dependencies |
 | 0.0.53 | 2026-09-22 | [86679](https://github.com/airbytehq/airbyte/pull/86679) | Update dependencies |
