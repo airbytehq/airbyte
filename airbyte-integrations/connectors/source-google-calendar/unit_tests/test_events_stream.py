@@ -7,8 +7,9 @@
 Google rejects `updatedMin` bounds older than ~30 days with a 410, so `events` is a
 `StateDelegatingStream` with `api_retention_period: P28D`: with no saved cursor, or one
 older than 28 days, the full-refresh stream re-reads the calendar (sending `updatedMin`
-only for a `start_date` within 28 days, clearing the stale state first); otherwise the
-incremental stream sends `updatedMin` from the saved cursor.
+only for a `start_date` within 28 days, dropping records older than `start_date` / two
+years client-side, clearing the stale state first); otherwise the incremental stream
+sends `updatedMin` from the saved cursor and relies on the server-side filter.
 These tests pin the exact request parameters per case and the failure classification
 of 403/410 responses.
 """
@@ -169,6 +170,38 @@ def test_incremental_stale_state_drops_updated_min_and_resets_state():
         emitted_states = [_stream_state(message) for message in output.state_messages]
         assert emitted_states[0] == {}, "the stale cursor is cleared before the full re-read"
         assert _RECORD["updated"] in emitted_states[-1].get("state", {}).get("updated", "")
+
+
+def test_full_refresh_filters_records_older_than_two_years_client_side():
+    old_record = {"id": "old", "updated": _days_ago(3 * 365)}
+    cancelled = {"id": "gone", "status": "cancelled"}
+    with HttpMocker() as http_mocker:
+        request = _events_request()
+        http_mocker.get(request, _items_response(old_record, _RECORD, cancelled))
+        http_mocker.post(_TOKEN_REQUEST, _TOKEN_RESPONSE)
+        _mock_parent_partitions(http_mocker)
+
+        output = read(get_source(_config()), _config(), _catalog(SyncMode.incremental))
+
+        assert output.errors == []
+        assert [record.record.data["id"] for record in output.records] == ["e1", "gone"]
+
+
+def test_full_refresh_filters_records_older_than_start_date_client_side():
+    start_date = _days_ago(60)
+    older = {"id": "older", "updated": _days_ago(90)}
+    newer = {"id": "newer", "updated": _days_ago(30)}
+    with HttpMocker() as http_mocker:
+        request = _events_request()
+        http_mocker.get(request, _items_response(older, newer))
+        http_mocker.post(_TOKEN_REQUEST, _TOKEN_RESPONSE)
+        _mock_parent_partitions(http_mocker)
+        config = _config(start_date=start_date)
+
+        output = read(get_source(config), config, _catalog(SyncMode.incremental))
+
+        assert output.errors == []
+        assert [record.record.data["id"] for record in output.records] == ["newer"]
 
 
 def test_incremental_fresh_start_date_sends_updated_min():
