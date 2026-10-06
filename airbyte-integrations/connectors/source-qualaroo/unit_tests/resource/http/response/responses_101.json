@@ -26,10 +26,7 @@
       "1006": {
         "question_id": 1006,
         "answer": {
-          "nested": [
-            "item",
-            8
-          ]
+          "nested": ["item", 8]
         }
       }
     }
