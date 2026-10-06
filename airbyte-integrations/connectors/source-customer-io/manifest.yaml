@@ -718,6 +718,374 @@ streams:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/collections"
+  - type: DeclarativeStream
+    name: messages
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /messages
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "messages"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: "{{ response.next }}"
+          stop_condition: "{{ not response.next }}"
+        page_token_option:
+          type: RequestOption
+          field_name: start
+          inject_into: request_parameter
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+    # start_ts/end_ts filter on creation time and one request covers at most 6 months, so read 30-day windows.
+    # Both bounds are inclusive, also when equal (live), so windows ending 1 s before the next one leave no gap.
+    # Metrics fill in after creation, so every sync re-reads messages_lookback_days (default 30) before the cursor.
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      cursor_datetime_formats:
+        - "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
+        datetime_format: "%s"
+        # A Start Date before 1970 would send negative start times, and year 0001 overflows the window math.
+        min_datetime: "0"
+        max_datetime: "{{ now_utc().timestamp() | int }}"
+      start_time_option:
+        type: RequestOption
+        field_name: start_ts
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: end_ts
+        inject_into: request_parameter
+      step: P30D
+      cursor_granularity: PT1S
+      lookback_window: "P{{ config['messages_lookback_days'] if config.get('messages_lookback_days') is not none else 30 }}D"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/messages"
+  - type: DeclarativeStream
+    name: activities
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /activities
+        http_method: GET
+        request_parameters:
+          # deleted defaults to false ("If true, return results for deleted people"). deleted=true returned the same
+          # 25 activities as the default request (live, 2026-10-06), so it does not narrow the list.
+          deleted: "true"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "activities"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.next }}"
+          # last_page_size counts only activities inside the cursor window: from the Start Date, or the saved
+          # cursor minus the lookback, to the current time. Activities come newest first (live), so the first
+          # page with none ends the read, unless its last activity is dated after now: the whole page is then
+          # future-dated, and the next page can still hold activities in the window. An empty page ends it too.
+          stop_condition: "{{ not response.next or not response.activities or (last_page_size == 0 and response.activities[-1].timestamp < now_utc().timestamp()) }}"
+        page_token_option:
+          type: RequestOption
+          field_name: start
+          inject_into: request_parameter
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: timestamp
+      datetime_format: "%s"
+      cursor_datetime_formats:
+        - "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
+        datetime_format: "%s"
+        # A Start Date before 1970 would send negative start times, and year 0001 overflows the window math.
+        min_datetime: "0"
+        max_datetime: "{{ now_utc().timestamp() | int }}"
+      lookback_window: PT1H
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/activities"
+  - type: DeclarativeStream
+    name: people
+    primary_key:
+      - cio_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /customers/attributes
+        http_method: POST
+        request_parameters:
+          id_type: cio_id
+        # A grouped slice holds a list of up to 100 cio_ids. The API omits ids that no longer exist (live, a group of only
+        # unknown ids returned 200), so a 404 here is not a deleted group: it fails the sync like any other request.
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            ids: "{{ stream_partition.cio_id }}"
+      # The spec wraps each item in `customer`; live items carry the person's fields directly (2026-10-07).
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "customers"
+      partition_router:
+        type: GroupingPartitionRouter
+        group_size: 100
+        # The search pages with a cursor, so each person is listed once. Deduplication would keep
+        # every cio_id of the sync in memory (about 95 MB per million people).
+        deduplicate: false
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: cio_id
+              partition_field: cio_id
+              stream:
+                type: DeclarativeStream
+                name: people_search
+                primary_key:
+                  - cio_id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    path: /customers
+                    http_method: POST
+                    # Every person has a cio_id that cannot be removed, so this matches the whole workspace.
+                    # The "and" form follows the getPeopleFilter example in the spec.
+                    request_body:
+                      type: RequestBodyJsonObject
+                      value:
+                        filter:
+                          and:
+                            - attribute:
+                                field: cio_id
+                                operator: exists
+                  # Not `ids`: those are empty strings for people without an id.
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - "identifiers"
+                  paginator:
+                    type: DefaultPaginator
+                    pagination_strategy:
+                      type: CursorPagination
+                      page_size: 1000
+                      cursor_value: "{{ response.next }}"
+                      stop_condition: "{{ not response.next }}"
+                    page_token_option:
+                      type: RequestOption
+                      field_name: start
+                      inject_into: request_parameter
+                    page_size_option:
+                      type: RequestOption
+                      field_name: limit
+                      inject_into: request_parameter
+                # Never emitted; without a loader the CDK logs "Could not find schema" on every read.
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type: object
+    transformations:
+      # The spec documents cio_id in identifiers and in attributes, but its examples show only attributes,
+      # and record['identifiers']['cio_id'] fails the sync when identifiers is absent. value_type keeps ids
+      # like 30000001 or 30e00001 strings (without it: the number 30000001 and 300.0); the trailing ''
+      # avoids the string "None".
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - cio_id
+            value: "{{ (record.get('identifiers') or {}).get('cio_id') or (record.get('attributes') or {}).get('cio_id') or '' }}"
+            value_type: string
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/people"
+  - type: DeclarativeStream
+    name: segment_memberships
+    primary_key:
+      - segment_id
+      - cio_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /segments/{{ stream_partition.segment_id }}/membership
+        http_method: GET
+        error_handler:
+          $ref: "#/definitions/substream_error_handler"
+      # identifiers, not ids: ids has no cio_id and holds "" for a member without an id.
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "identifiers"
+      # limit 30000 is the documented maximum. next is an opaque position token ("MDo2MQ==" is "0:61" after
+      # 5 members). Only an empty next ends a segment: an empty page that still carries a token is not proven last.
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 30000
+          cursor_value: "{{ response.next }}"
+          stop_condition: "{{ not response.next }}"
+        page_token_option:
+          type: RequestOption
+          field_name: start
+          inject_into: request_parameter
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: segment_id
+            # Inline parent without incremental_sync: a client-side cursor here would drop
+            # segments updated before start_date, and their members would never be read.
+            stream:
+              type: DeclarativeStream
+              name: segments
+              primary_key:
+                - id
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: /segments
+                  http_method: GET
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path:
+                      - "segments"
+              schema_loader:
+                type: InlineSchemaLoader
+                schema:
+                  $ref: "#/schemas/segments"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - segment_id
+            value: "{{ stream_partition.segment_id }}"
+            value_type: integer
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/segment_memberships"
+  - type: DeclarativeStream
+    name: esp_suppressions
+    primary_key:
+      - suppression_type
+      - domain
+      - email
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /esp/suppression/{{ stream_partition.suppression_type }}
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "suppressions"
+      # The response has no next token or total: a page shorter than limit ends the list,
+      # and an empty list arrives as suppressions: null (0 records).
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 1000
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+      # Each type is read once per configured sending domain. Without domains the list falls back to [""]:
+      # an empty list would cross to zero partitions, and ListPartitionRouter does not send an empty value,
+      # so each type is read once without the domain parameter.
+      partition_router:
+        - type: ListPartitionRouter
+          cursor_field: suppression_type
+          values:
+            - bounces
+            - blocks
+            - spam_reports
+            - invalid_emails
+        - type: ListPartitionRouter
+          cursor_field: domain
+          values: "{{ config.get('esp_suppression_domains') or [''] }}"
+          request_option:
+            type: RequestOption
+            field_name: domain
+            inject_into: request_parameter
+    # Suppression records carry no type or domain, so both come from the partition.
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - suppression_type
+            value: "{{ stream_partition.suppression_type }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - domain
+            value: "{{ stream_partition.domain }}"
+            value_type: string
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/esp_suppressions"
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 3
@@ -762,14 +1130,46 @@ spec:
         type: string
         title: Start Date
         description: >-
-          Only sync records last updated at or after this UTC date and time, in the format
-          YYYY-MM-DDTHH:MM:SSZ. Leave blank to sync all records.
+          Only sync records created or last updated at or after this UTC date and time, in the format
+          YYYY-MM-DDTHH:MM:SSZ: creation time for messages, event time for activities. Streams that
+          support only full refresh, such as newsletter variants, people, segment memberships and ESP
+          suppressions, sync every record.
+          Leave blank to sync all records.
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         pattern_descriptor: YYYY-MM-DDTHH:MM:SSZ
         examples:
           - "2023-01-01T00:00:00Z"
         order: 2
+      messages_lookback_days:
+        type: integer
+        title: Messages Lookback Window (Days)
+        description: >-
+          How many days before the last synced message each incremental sync of the messages stream reads
+          again, so that opens, clicks, conversions, bounces and unsubscribes recorded after a message was sent
+          reach the destination. Customer.io can record a conversion up to 90 days after a message is sent,
+          opened or clicked, and records opens and clicks for up to 6 months. A longer window keeps these
+          metrics more complete, but every sync then requests one page per 1,000 messages sent in the window.
+          Enter 1 to 180 days. Defaults to 30.
+        default: 30
+        minimum: 1
+        maximum: 180
+        order: 3
+      esp_suppression_domains:
+        type: array
+        title: Sending Domains for ESP Suppressions
+        description: >-
+          The domains you send email from, in lowercase, for example mail.example.com. Customer.io lists them
+          under Settings > Workspace Settings > Email. The esp_suppressions stream reads each suppression list
+          once per domain and records the domain on every row. Customer.io suppresses an address on the domain
+          where it bounced or was reported as spam, so if you send from more than one domain, enter them all.
+          Leave empty to read each list once without a domain filter; the domain column is then empty. Not
+          needed if you send through your own SMTP server.
+        items:
+          type: string
+          pattern: ^[a-z0-9-]+(\.[a-z0-9-]+)+$
+        uniqueItems: true
+        order: 4
     additionalProperties: true
 metadata:
   autoImportSchema:
@@ -789,6 +1189,11 @@ metadata:
     reporting_webhooks: false
     snippets: false
     collections: false
+    messages: false
+    activities: false
+    people: false
+    segment_memberships: false
+    esp_suppressions: false
 schemas:
   campaigns:
     type: object
@@ -1922,3 +2327,291 @@ schemas:
         type:
           - "null"
           - integer
+  messages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      "type":
+        type:
+          - "null"
+          - string
+      action_id:
+        type:
+          - "null"
+          - integer
+      broadcast_id:
+        type:
+          - "null"
+          - integer
+      campaign_id:
+        type:
+          - "null"
+          - integer
+      content_id:
+        type:
+          - "null"
+          - integer
+      created:
+        type:
+          - "null"
+          - integer
+      customer_id:
+        type:
+          - "null"
+          - string
+      customer_identifiers:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          cio_id:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+      deduplicate_id:
+        type:
+          - "null"
+          - string
+      failure_message:
+        type:
+          - "null"
+          - string
+      forgotten:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - string
+      message_template_id:
+        type:
+          - "null"
+          - integer
+      # Keys vary by channel and grow over time (attempted, replied, secondary:delivered): declare none.
+      metrics:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      msg_template_id:
+        type:
+          - "null"
+          - integer
+      newsletter_id:
+        type:
+          - "null"
+          - integer
+      parent_action_id:
+        type:
+          - "null"
+          - integer
+      recipient:
+        type:
+          - "null"
+          - string
+      subject:
+        type:
+          - "null"
+          - string
+      transactional_message_id:
+        type:
+          - "null"
+          - integer
+      trigger_event_id:
+        type:
+          - "null"
+          - string
+  activities:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      "type":
+        type:
+          - "null"
+          - string
+      customer_id:
+        type:
+          - "null"
+          - string
+      customer_identifiers:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          cio_id:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+      # Keys depend on the activity type (delivery metrics, event properties, attribute changes): declare none.
+      data:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      delivery_id:
+        type:
+          - "null"
+          - string
+      delivery_type:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      timestamp:
+        type:
+          - "null"
+          - integer
+      url:
+        type:
+          - "null"
+          - string
+  people:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      attributes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      cio_id:
+        type:
+          - "null"
+          - string
+      devices:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            attributes:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+            id:
+              type:
+                - "null"
+                - string
+            last_used:
+              type:
+                - "null"
+                - integer
+            platform:
+              type:
+                - "null"
+                - string
+      id:
+        type:
+          - "null"
+          - string
+      identifiers:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          cio_id:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+      timestamps:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      unsubscribed:
+        type:
+          - "null"
+          - boolean
+  segment_memberships:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      cio_id:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      segment_id:
+        type:
+          - "null"
+          - integer
+  esp_suppressions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created:
+        type:
+          - "null"
+          - integer
+      domain:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      reason:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      suppression_type:
+        type:
+          - "null"
+          - string
