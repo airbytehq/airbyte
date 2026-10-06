@@ -1,8 +1,10 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-"""Unit tests for the 401/403 messages, `Retry-After` backoff, the `campaigns_actions` 404 skip, the Start Date cap at now and the one-hour lookback."""
+"""Unit tests for the trimmed App API key, the 401/403 messages, `Retry-After` backoff, 30 retries, the 10 requests per second
+`api_budget`, the `campaigns_actions` 404 skip, the Start Date cap at now and the one-hour lookback."""
 
 import logging
+import time
 from unittest import mock
 
 import pytest
@@ -149,9 +151,9 @@ def _incremental_ids(stream_name: str, records: list, config: dict = _BASE_CONFI
 
 @pytest.mark.parametrize("stream_name", ["campaigns", "newsletters", "campaigns_actions"])
 def test_lookback_reemits_records_updated_within_one_hour_below_state(stream_name):
-    """A record edited 30 minutes below the saved cursor is emitted again; one 4000 s below is not."""
+    """A record exactly one hour below the saved cursor is emitted again; one second older is not."""
     build = _RECORD[stream_name]
-    assert _incremental_ids(stream_name, [build(1, _PRIOR_CURSOR - 1800), build(2, _PRIOR_CURSOR - 4000)]) == [1]
+    assert _incremental_ids(stream_name, [build(1, _PRIOR_CURSOR - 3600), build(2, _PRIOR_CURSOR - 3601)]) == [1]
 
 
 @pytest.mark.parametrize("stream_name", ["campaigns", "newsletters", "campaigns_actions"])
@@ -222,3 +224,65 @@ def test_campaigns_actions_child_request_keeps_30_retries():
 
     assert sorted(record.record.data["id"] for record in output.records) == [101, 201]
     assert not output.errors
+
+
+def test_lookback_applies_to_a_campaign_missing_from_state():
+    """A campaign missing from the state (a new or duplicated automation) starts one hour below the stream-wide cursor."""
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "campaigns_actions",
+            {
+                "use_global_cursor": False,
+                "states": [{"partition": {"parent_id": 8, "parent_slice": {}}, "cursor": {"updated": str(_PRIOR_CURSOR)}}],
+                "state": {"updated": str(_PRIOR_CURSOR)},
+            },
+        )
+        .build()
+    )
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_API}/campaigns", json={"campaigns": [_campaign(7, _PRIOR_CURSOR)]})
+        mocker.get(
+            f"{_API}/campaigns/7/actions",
+            json={"actions": [_action(1, 7, _PRIOR_CURSOR - 3600), _action(2, 7, _PRIOR_CURSOR - 3601)], "next": None},
+        )
+        output = _read("campaigns_actions", _BASE_CONFIG, SyncMode.incremental, state)
+
+    assert [record.record.data["id"] for record in output.records] == [1]
+
+
+@pytest.mark.parametrize("stream_name", ["campaigns", "newsletters"])
+def test_shared_handler_keeps_30_retries(stream_name):
+    """`base_requester` allows 30 retries, so six 503s in a row still end in records (the default allows 5)."""
+    responses = [{"status_code": 503, "json": _errors(503, "unavailable")}] * 6
+    responses.append({"status_code": 200, "json": {stream_name: [_RECORD[stream_name](1, _PRIOR_CURSOR)], "next": None}})
+    with requests_mock.Mocker() as mocker, mock.patch("airbyte_cdk.sources.streams.http.rate_limiting.time"):
+        mocker.get(f"{_API}/{stream_name}", responses)
+        output = _read(stream_name, _BASE_CONFIG)
+
+    assert [record.record.data["id"] for record in output.records] == [1]
+    assert output.get_stream_statuses(stream_name)[-1] == AirbyteStreamStatus.COMPLETE
+
+
+@pytest.mark.parametrize("region, host", [("US", "api.customer.io"), ("EU", "api-eu.customer.io")])
+def test_api_budget_holds_the_eleventh_request_of_a_second(region, host):
+    """One 10 requests per second policy covers the parent and child requests on either Region host."""
+    with requests_mock.Mocker() as mocker, mock.patch("airbyte_cdk.sources.streams.call_rate.time", wraps=time) as budget_time:
+        mocker.get(f"https://{host}/v1/campaigns", json={"campaigns": [_campaign(i, _PRIOR_CURSOR) for i in range(1, 11)]})
+        for i in range(1, 11):
+            mocker.get(f"https://{host}/v1/campaigns/{i}/actions", json={"actions": [_action(100 + i, i, _PRIOR_CURSOR)], "next": None})
+        output = _read("campaigns_actions", {**_BASE_CONFIG, "region": region})
+
+    assert len(output.records) == 10
+    assert mocker.call_count == 11
+    assert budget_time.sleep.called, "expected the api_budget to hold the 11th request"
+
+
+def test_pasted_key_with_whitespace_is_trimmed():
+    """A key pasted with surrounding whitespace or a trailing newline is sent trimmed."""
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_API}/campaigns", json={"campaigns": [_campaign(1, _PRIOR_CURSOR)]})
+        output = _read("campaigns", {"app_api_key": " test-api-key\n"})
+
+    assert [record.record.data["id"] for record in output.records] == [1]
+    assert mocker.request_history[0].headers["Authorization"] == "Bearer test-api-key"
