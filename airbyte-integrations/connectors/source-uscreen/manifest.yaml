@@ -1,0 +1,1942 @@
+version: 7.23.7
+
+type: DeclarativeSource
+
+description: >-
+  Extracts customers, subscriptions, access records, groups, invoices, offers,
+  content and user/content view analytics from the Uscreen Publisher API.
+
+check:
+  type: CheckStream
+  stream_names:
+    - customers
+
+definitions:
+  streams:
+    customers:
+      type: DeclarativeStream
+      name: customers
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.UscreenHttpRequester
+          url: https://www.uscreen.io/publisher_api/v1/customers
+          use_cache: true
+          authenticator:
+            $ref: "#/definitions/linked/CustomRequester/authenticator"
+          error_handler:
+            $ref: "#/definitions/linked/CustomRequester/error_handler"
+          request_headers:
+            $ref: "#/definitions/linked/CustomRequester/request_headers"
+          request_parameters:
+            $ref: "#/definitions/linked/CustomRequester/request_parameters"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+              description: Uscreen system ID
+            name:
+              type:
+                - "null"
+                - string
+              description: Customer full name
+            tags:
+              type:
+                - "null"
+                - array
+              items:
+                type: string
+            email:
+              type:
+                - "null"
+                - string
+              description: Customer email
+            origin:
+              type:
+                - "null"
+                - string
+            referrer:
+              type:
+                - "null"
+                - string
+            legacy_id:
+              type:
+                - "null"
+                - string
+            avatar_url:
+              type:
+                - "null"
+                - string
+            created_at:
+              type:
+                - "null"
+                - integer
+              description: Date when record was created
+            subscriber:
+              type:
+                - "null"
+                - boolean
+              description: Customer active subscription status flag
+            utm_params:
+              type:
+                - "null"
+                - object
+              properties:
+                utm_term:
+                  type:
+                    - "null"
+                    - string
+                utm_medium:
+                  type:
+                    - "null"
+                    - string
+                utm_source:
+                  type:
+                    - "null"
+                    - string
+                utm_content:
+                  type:
+                    - "null"
+                    - string
+                utm_campaign:
+                  type:
+                    - "null"
+                    - string
+              additionalProperties: true
+            custom_fields:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+            subscribed_topic_ids:
+              type:
+                - "null"
+                - array
+              items:
+                type: integer
+            opted_in_for_news_and_updates:
+              type:
+                - "null"
+                - boolean
+            opted_in_for_community_updates:
+              type:
+                - "null"
+                - boolean
+          additionalProperties: true
+    customer_accesses:
+      type: DeclarativeStream
+      name: customer_accesses
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.UscreenHttpRequester
+          url: >-
+            https://www.uscreen.io/publisher_api/v1/customers/{{
+            stream_partition['customer_id'] }}/accesses
+          authenticator:
+            $ref: "#/definitions/linked/CustomRequester/authenticator"
+          error_handler:
+            $ref: "#/definitions/linked/CustomRequester/error_handler"
+          request_headers:
+            $ref: "#/definitions/linked/CustomRequester/request_headers"
+          request_parameters:
+            $ref: "#/definitions/linked/CustomRequester/request_parameters"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/customers"
+              parent_key: id
+              partition_field: customer_id
+      primary_key:
+        - customer_id
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            origin:
+              type:
+                - "null"
+                - string
+            created_at:
+              type:
+                - "null"
+                - integer
+            product_id:
+              type:
+                - "null"
+                - integer
+            canceled_at:
+              type:
+                - "null"
+                - integer
+            customer_id:
+              type:
+                - "null"
+                - integer
+              description: Parent customer ID
+            product_type:
+              type:
+                - "null"
+                - string
+            perform_action_at:
+              type:
+                - "null"
+                - integer
+            with_manual_billing:
+              type:
+                - "null"
+                - boolean
+          additionalProperties: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - customer_id
+              value: "{{ stream_partition['customer_id'] }}"
+              value_type: integer
+    customer_subscriptions:
+      type: DeclarativeStream
+      name: customer_subscriptions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.UscreenHttpRequester
+          url: >-
+            https://www.uscreen.io/publisher_api/v1/customers/{{
+            stream_partition['customer_id'] }}/subscription
+          authenticator:
+            $ref: "#/definitions/linked/CustomRequester/authenticator"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 204
+                  - 404
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Uscreen rejected the API key. Check that the Publisher API key
+                  is valid and has access to this store.
+          request_headers:
+            $ref: "#/definitions/linked/CustomRequester/request_headers"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/customers"
+              parent_key: id
+              partition_field: customer_id
+      primary_key:
+        - customer_id
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            price:
+              type:
+                - "null"
+                - integer
+            trial:
+              type:
+                - "null"
+                - boolean
+            origin:
+              type:
+                - "null"
+                - string
+            currency:
+              type:
+                - "null"
+                - string
+            duration:
+              type:
+                - "null"
+                - integer
+            platform:
+              type:
+                - "null"
+                - string
+            pauses_at:
+              type:
+                - "null"
+                - integer
+            cover_fees:
+              type:
+                - "null"
+                - boolean
+            created_at:
+              type:
+                - "null"
+                - integer
+            product_id:
+              type:
+                - "null"
+                - integer
+            resumes_at:
+              type:
+                - "null"
+                - integer
+            canceled_at:
+              type:
+                - "null"
+                - integer
+            customer_id:
+              type:
+                - "null"
+                - integer
+              description: Parent customer ID
+            covered_fees:
+              type:
+                - "null"
+                - integer
+            product_type:
+              type:
+                - "null"
+                - string
+            trial_period:
+              type:
+                - "null"
+                - integer
+            perform_action_at:
+              type:
+                - "null"
+                - integer
+            with_manual_billing:
+              type:
+                - "null"
+                - boolean
+          additionalProperties: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - customer_id
+              value: "{{ stream_partition['customer_id'] }}"
+              value_type: integer
+    email_topics:
+      type: DeclarativeStream
+      name: email_topics
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.UscreenHttpRequester
+          url: https://www.uscreen.io/publisher_api/v1/email_topics
+          authenticator:
+            $ref: "#/definitions/linked/CustomRequester/authenticator"
+          error_handler:
+            $ref: "#/definitions/linked/CustomRequester/error_handler"
+          request_headers:
+            $ref: "#/definitions/linked/CustomRequester/request_headers"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            description:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            kind:
+              type:
+                - "null"
+                - string
+            title:
+              type:
+                - "null"
+                - string
+            system:
+              type:
+                - "null"
+                - boolean
+          additionalProperties: true
+    groups:
+      type: DeclarativeStream
+      name: groups
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.UscreenHttpRequester
+          url: https://www.uscreen.io/publisher_api/v1/groups
+          use_cache: true
+          authenticator:
+            $ref: "#/definitions/linked/CustomRequester/authenticator"
+          error_handler:
+            $ref: "#/definitions/linked/CustomRequester/error_handler"
+          request_headers:
+            $ref: "#/definitions/linked/CustomRequester/request_headers"
+          request_parameters:
+            $ref: "#/definitions/linked/CustomRequester/request_parameters"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+            status:
+              type:
+                - "null"
+                - string
+            plan_id:
+              type:
+                - "null"
+                - integer
+            created_at:
+              type:
+                - "null"
+                - integer
+            plan_title:
+              type:
+                - "null"
+                - string
+            updated_at:
+              type:
+                - "null"
+                - integer
+            used_seats:
+              type:
+                - "null"
+                - integer
+            billing_email:
+              type:
+                - "null"
+                - string
+            number_of_seats:
+              type:
+                - "null"
+                - integer
+            perform_action_at:
+              type:
+                - "null"
+                - integer
+          additionalProperties: true
+    group_members:
+      type: DeclarativeStream
+      name: group_members
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.UscreenHttpRequester
+          url: >-
+            https://www.uscreen.io/publisher_api/v1/groups/{{
+            stream_partition['group_id'] }}/members
+          authenticator:
+            $ref: "#/definitions/linked/CustomRequester/authenticator"
+          error_handler:
+            $ref: "#/definitions/linked/CustomRequester/error_handler"
+          request_headers:
+            $ref: "#/definitions/linked/CustomRequester/request_headers"
+          request_parameters:
+            $ref: "#/definitions/linked/CustomRequester/request_parameters"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/groups"
+              parent_key: id
+              partition_field: group_id
+      primary_key:
+        - group_id
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+            role:
+              type:
+                - "null"
+                - string
+            email:
+              type:
+                - "null"
+                - string
+            group_id:
+              type:
+                - "null"
+                - integer
+              description: Parent group ID
+            joined_on:
+              type:
+                - "null"
+                - integer
+          additionalProperties: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - group_id
+              value: "{{ stream_partition['group_id'] }}"
+              value_type: integer
+    invoices:
+      type: DeclarativeStream
+      name: invoices
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.UscreenHttpRequester
+          url: https://www.uscreen.io/publisher_api/v1/invoices
+          authenticator:
+            $ref: "#/definitions/linked/CustomRequester/authenticator"
+          error_handler:
+            $ref: "#/definitions/linked/CustomRequester/error_handler"
+          request_headers:
+            $ref: "#/definitions/linked/CustomRequester/request_headers"
+          request_parameters:
+            $ref: "#/definitions/linked/CustomRequester/request_parameters"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            taxes:
+              type:
+                - "null"
+                - array
+              items:
+                type: object
+                properties:
+                  description:
+                    type:
+                      - "null"
+                      - string
+                  state:
+                    type:
+                      - "null"
+                      - string
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+                  tax_type:
+                    type:
+                      - "null"
+                      - string
+                  inclusive:
+                    type:
+                      - "null"
+                      - boolean
+                  percentage:
+                    type:
+                      - "null"
+                      - number
+                  country_code:
+                    type:
+                      - "null"
+                      - string
+                  display_name:
+                    type:
+                      - "null"
+                      - string
+                  jurisdiction:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+            trial:
+              type:
+                - "null"
+                - boolean
+            amount:
+              type:
+                - "null"
+                - integer
+            coupon:
+              type:
+                - "null"
+                - string
+            origin:
+              type:
+                - "null"
+                - string
+            status:
+              type:
+                - "null"
+                - string
+            paid_at:
+              type:
+                - "null"
+                - integer
+            user_id:
+              type:
+                - "null"
+                - integer
+            currency:
+              type:
+                - "null"
+                - string
+            discount:
+              type:
+                - "null"
+                - integer
+            created_at:
+              type:
+                - "null"
+                - integer
+            product_id:
+              type:
+                - "null"
+                - integer
+            updated_at:
+              type:
+                - "null"
+                - integer
+            gift_amount:
+              type:
+                - "null"
+                - integer
+            product_type:
+              type:
+                - "null"
+                - string
+            original_price:
+              type:
+                - "null"
+                - integer
+            localized_amount:
+              type:
+                - "null"
+                - integer
+            localized_currency:
+              type:
+                - "null"
+                - string
+            localized_discount:
+              type:
+                - "null"
+                - integer
+            localized_gift_amount:
+              type:
+                - "null"
+                - integer
+            localized_original_price:
+              type:
+                - "null"
+                - integer
+          additionalProperties: true
+    offers:
+      type: DeclarativeStream
+      name: offers
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.UscreenHttpRequester
+          url: https://www.uscreen.io/publisher_api/v1/offers
+          authenticator:
+            $ref: "#/definitions/linked/CustomRequester/authenticator"
+          error_handler:
+            $ref: "#/definitions/linked/CustomRequester/error_handler"
+          request_headers:
+            $ref: "#/definitions/linked/CustomRequester/request_headers"
+          request_parameters:
+            $ref: "#/definitions/linked/CustomRequester/request_parameters"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            description:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            url:
+              type:
+                - "null"
+                - string
+            title:
+              type:
+                - "null"
+                - string
+            private:
+              type:
+                - "null"
+                - boolean
+            created_at:
+              type:
+                - "null"
+                - integer
+            price_cents:
+              type:
+                - "null"
+                - integer
+            main_image_url:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+    contents:
+      type: DeclarativeStream
+      name: contents
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.UscreenHttpRequester
+          url: https://www.uscreen.io/publisher_api/v1/contents
+          use_cache: true
+          authenticator:
+            $ref: "#/definitions/linked/CustomRequester/authenticator"
+          error_handler:
+            $ref: "#/definitions/linked/CustomRequester/error_handler"
+          request_headers:
+            $ref: "#/definitions/linked/CustomRequester/request_headers"
+          request_parameters: >-
+            {{ {'include': 'author', 'from': config.get('start_date'), 'to':
+            config.get('end_date')} if config.get('start_date') and
+            config.get('end_date') else {'include': 'author', 'from':
+            config.get('start_date')} if config.get('start_date') else
+            {'include': 'author', 'to': config.get('end_date')} if
+            config.get('end_date') else {'include': 'author'} }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            description:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            free:
+              type:
+                - "null"
+                - boolean
+            tags:
+              type:
+                - "null"
+                - array
+              items:
+                type: string
+            title:
+              type:
+                - "null"
+                - string
+            author:
+              type:
+                - "null"
+                - object
+              properties:
+                description:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - integer
+                image:
+                  type:
+                    - "null"
+                    - string
+                title:
+                  type:
+                    - "null"
+                    - string
+                permalink:
+                  type:
+                    - "null"
+                    - string
+              additionalProperties: true
+            duration:
+              type:
+                - "null"
+                - integer
+            legacy_id:
+              type:
+                - "null"
+                - string
+            permalink:
+              type:
+                - "null"
+                - string
+            categories:
+              type:
+                - "null"
+                - array
+              items:
+                type: object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - integer
+                  title:
+                    type:
+                      - "null"
+                      - string
+                  public:
+                    type:
+                      - "null"
+                      - boolean
+                  legacy_id:
+                    type:
+                      - "null"
+                      - string
+                  permalink:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+            created_at:
+              type:
+                - "null"
+                - integer
+            meta_title:
+              type:
+                - "null"
+                - string
+            release_at:
+              type:
+                - "null"
+                - integer
+            trailer_id:
+              type:
+                - "null"
+                - integer
+            event_state:
+              type:
+                - "null"
+                - string
+            price_cents:
+              type:
+                - "null"
+                - integer
+            video_count:
+              type:
+                - "null"
+                - integer
+            content_type:
+              type:
+                - "null"
+                - string
+            downloadable:
+              type:
+                - "null"
+                - boolean
+            published_at:
+              type:
+                - "null"
+                - integer
+            release_stage:
+              type:
+                - "null"
+                - string
+            rental_period:
+              type:
+                - "null"
+                - string
+            main_poster_url:
+              type:
+                - "null"
+                - string
+            meta_description:
+              type:
+                - "null"
+                - string
+            blocked_countries:
+              type:
+                - "null"
+                - array
+              items:
+                type: string
+            event_launch_date:
+              type:
+                - "null"
+                - integer
+            short_description:
+              type:
+                - "null"
+                - string
+            square_poster_url:
+              type:
+                - "null"
+                - string
+            rental_price_cents:
+              type:
+                - "null"
+                - integer
+            subscription_plans:
+              type:
+                - "null"
+                - array
+              items:
+                type: object
+                properties:
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  description:
+                    type:
+                      - "null"
+                      - string
+                  id:
+                    type:
+                      - "null"
+                      - integer
+                  url:
+                    type:
+                      - "null"
+                      - string
+                  title:
+                    type:
+                      - "null"
+                      - string
+                  private:
+                    type:
+                      - "null"
+                      - boolean
+                  created_at:
+                    type:
+                      - "null"
+                      - integer
+                  price_cents:
+                    type:
+                      - "null"
+                      - integer
+                  main_image_url:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+            part_of_subscription:
+              type:
+                - "null"
+                - boolean
+            secondary_poster_url:
+              type:
+                - "null"
+                - string
+            featured_category_image_url:
+              type:
+                - "null"
+                - string
+            preregistration_screen_text:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+    content_playlist_items:
+      type: DeclarativeStream
+      name: content_playlist_items
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.UscreenHttpRequester
+          url: >-
+            https://www.uscreen.io/publisher_api/v1/contents/{{
+            stream_partition['content_id'] }}/playlist_items
+          authenticator:
+            $ref: "#/definitions/linked/CustomRequester/authenticator"
+          error_handler:
+            $ref: "#/definitions/linked/CustomRequester/error_handler"
+          request_headers:
+            $ref: "#/definitions/linked/CustomRequester/request_headers"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/contents"
+              parent_key: id
+              partition_field: content_id
+      primary_key:
+        - content_id
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            free:
+              type:
+                - "null"
+                - boolean
+            title:
+              type:
+                - "null"
+                - string
+            content_id:
+              type:
+                - "null"
+                - integer
+              description: Parent content ID
+            created_at:
+              type:
+                - "null"
+                - integer
+            chapter_type:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - content_id
+              value: "{{ stream_partition['content_id'] }}"
+              value_type: integer
+    user_views:
+      type: DeclarativeStream
+      name: user_views
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ headers.get('link', {}).get('next', {}).get('url', '') |
+              regex_search('[?&]page=([^&]+)') }}
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.UscreenHttpRequester
+          url: https://www.uscreen.io/publisher_api/v1/analytics/videos/views
+          authenticator:
+            $ref: "#/definitions/linked/CustomRequester/authenticator"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 204
+                  - 404
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Uscreen rejected the API key. Check that the Publisher API key
+                  is valid and has access to this store.
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 422
+                failure_type: config_error
+                error_message: >-
+                  Uscreen rejected an analytics filter or date range. Check the
+                  optional From/To dates.
+          request_headers:
+            $ref: "#/definitions/linked/CustomRequester/request_headers"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: GroupingPartitionRouter
+          group_size: 1
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                stream:
+                  $ref: "#/definitions/streams/views_summary"
+                parent_key: user_id
+                partition_field: user_id
+      primary_key:
+        - user_id
+        - video_id
+        - view_start
+        - view_end
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            os:
+              type:
+                - "null"
+                - string
+            browser:
+              type:
+                - "null"
+                - string
+            user_id:
+              type:
+                - "null"
+                - integer
+            duration:
+              type:
+                - "null"
+                - integer
+            platform:
+              type:
+                - "null"
+                - string
+            video_id:
+              type:
+                - "null"
+                - integer
+            view_end:
+              type:
+                - "null"
+                - integer
+            author_id:
+              type:
+                - "null"
+                - string
+            user_name:
+              type:
+                - "null"
+                - string
+            content_id:
+              type:
+                - "null"
+                - integer
+            view_start:
+              type:
+                - "null"
+                - integer
+            author_name:
+              type:
+                - "null"
+                - string
+            content_type:
+              type:
+                - "null"
+                - string
+            country_code:
+              type:
+                - "null"
+                - string
+            content_title:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+    content_views:
+      type: DeclarativeStream
+      name: content_views
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ headers.get('link', {}).get('next', {}).get('url', '') |
+              regex_search('[?&]page=([^&]+)') }}
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.UscreenHttpRequester
+          url: https://www.uscreen.io/publisher_api/v1/analytics/videos/views
+          authenticator:
+            $ref: "#/definitions/linked/CustomRequester/authenticator"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 404
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Uscreen rejected the API key. Check that the Publisher API key
+                  is valid and has access to this store.
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 422
+                failure_type: config_error
+                error_message: >-
+                  Uscreen rejected an analytics filter or date range. Check the
+                  optional From/To dates.
+          request_headers:
+            $ref: "#/definitions/linked/CustomRequester/request_headers"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/contents"
+              parent_key: id
+              partition_field: content_id
+      primary_key:
+        - user_id
+        - content_id
+        - video_id
+        - view_start
+        - view_end
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            os:
+              type:
+                - "null"
+                - string
+            browser:
+              type:
+                - "null"
+                - string
+            user_id:
+              type:
+                - "null"
+                - integer
+            duration:
+              type:
+                - "null"
+                - integer
+            platform:
+              type:
+                - "null"
+                - string
+            video_id:
+              type:
+                - "null"
+                - integer
+            view_end:
+              type:
+                - "null"
+                - integer
+            author_id:
+              type:
+                - "null"
+                - string
+            user_name:
+              type:
+                - "null"
+                - string
+            content_id:
+              type:
+                - "null"
+                - integer
+            view_start:
+              type:
+                - "null"
+                - integer
+            author_name:
+              type:
+                - "null"
+                - string
+            content_type:
+              type:
+                - "null"
+                - string
+            country_code:
+              type:
+                - "null"
+                - string
+            content_title:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+    views_summary:
+      type: DeclarativeStream
+      name: views_summary
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ headers.get('link', {}).get('next', {}).get('url', '') |
+              regex_search('[?&]page=([^&]+)') }}
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.UscreenHttpRequester
+          url: >-
+            https://www.uscreen.io/publisher_api/v1/analytics/videos/views/summary
+          authenticator:
+            $ref: "#/definitions/linked/CustomRequester/authenticator"
+          error_handler:
+            $ref: "#/definitions/linked/CustomRequester/error_handler"
+          request_headers:
+            $ref: "#/definitions/linked/CustomRequester/request_headers"
+          request_parameters:
+            $ref: "#/definitions/linked/CustomRequester/request_parameters"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+            record_expander:
+              type: RecordExpander
+              remain_original_record: true
+              expand_records_from_field:
+                - data
+      primary_key:
+        - user_id
+        - video_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            user_id:
+              type:
+                - "null"
+                - integer
+            video_id:
+              type:
+                - "null"
+                - integer
+            period_to:
+              type:
+                - "null"
+                - string
+              format: date-time
+            view_count:
+              type:
+                - "null"
+                - integer
+            period_from:
+              type:
+                - "null"
+                - string
+              format: date-time
+            total_watch_time:
+              type:
+                - "null"
+                - integer
+          additionalProperties: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - period_from
+              value: "{{ record['original_record']['period'].get('from') }}"
+            - type: AddedFieldDefinition
+              path:
+                - period_to
+              value: "{{ record['original_record']['period'].get('to') }}"
+        - type: RemoveFields
+          field_pointers:
+            - - original_record
+    user_total_watch_time:
+      type: DeclarativeStream
+      name: user_total_watch_time
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.UscreenHttpRequester
+          url: >-
+            https://www.uscreen.io/publisher_api/v1/analytics/videos/views/total_watch_time
+          authenticator:
+            $ref: "#/definitions/linked/CustomRequester/authenticator"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 404
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Uscreen rejected the API key. Check that the Publisher API key
+                  is valid and has access to this store.
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 422
+                failure_type: config_error
+                error_message: >-
+                  Uscreen rejected an analytics filter or date range. Check the
+                  optional From/To dates.
+          request_headers:
+            $ref: "#/definitions/linked/CustomRequester/request_headers"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/customers"
+              parent_key: id
+              partition_field: user_id
+      primary_key:
+        - user_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            user_id:
+              type:
+                - "null"
+                - integer
+              description: Customer ID used for this watch-time total
+            total_watch_time:
+              type:
+                - "null"
+                - integer
+              description: Total watch time in seconds
+          additionalProperties: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - user_id
+              value: "{{ stream_partition['user_id'] }}"
+              value_type: integer
+    content_total_watch_time:
+      type: DeclarativeStream
+      name: content_total_watch_time
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.UscreenHttpRequester
+          url: >-
+            https://www.uscreen.io/publisher_api/v1/analytics/videos/views/total_watch_time
+          authenticator:
+            $ref: "#/definitions/linked/CustomRequester/authenticator"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 404
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Uscreen rejected the API key. Check that the Publisher API key
+                  is valid and has access to this store.
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 422
+                failure_type: config_error
+                error_message: >-
+                  Uscreen rejected an analytics filter or date range. Check the
+                  optional From/To dates.
+          request_headers:
+            $ref: "#/definitions/linked/CustomRequester/request_headers"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/contents"
+              parent_key: id
+              partition_field: content_id
+      primary_key:
+        - content_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            content_id:
+              type:
+                - "null"
+                - integer
+              description: Content ID used for this watch-time total
+            total_watch_time:
+              type:
+                - "null"
+                - integer
+              description: Total watch time in seconds
+          additionalProperties: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - content_id
+              value: "{{ stream_partition['content_id'] }}"
+              value_type: integer
+  linked:
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: >-
+            {{ headers.get('link', {}).get('next', {}).get('url', '') |
+            regex_search('[?&]page=([^&]+)') }}
+    CustomRequester:
+      authenticator:
+        type: ApiKeyAuthenticator
+        api_token: "{{ config['api_key'] }}"
+        inject_into:
+          type: RequestOption
+          field_name: Authorization
+          inject_into: header
+      request_headers:
+        Accept: application/json
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            http_codes:
+              - 401
+              - 403
+            failure_type: config_error
+            error_message: >-
+              Uscreen rejected the API key. Check that the Publisher API key is
+              valid and has access to this store.
+          - type: HttpResponseFilter
+            action: FAIL
+            http_codes:
+              - 422
+            failure_type: config_error
+            error_message: >-
+              Uscreen rejected a request parameter or date range. Check the
+              optional From/To dates.
+      request_parameters: >-
+        {{ {'from': config.get('start_date'), 'to': config.get('end_date')} if
+        config.get('start_date') and config.get('end_date') else {'from':
+        config.get('start_date')} if config.get('start_date') else {'to':
+        config.get('end_date')} if config.get('end_date') else {} }}
+
+streams:
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/customer_accesses"
+  - $ref: "#/definitions/streams/customer_subscriptions"
+  - $ref: "#/definitions/streams/email_topics"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/group_members"
+  - $ref: "#/definitions/streams/invoices"
+  - $ref: "#/definitions/streams/offers"
+  - $ref: "#/definitions/streams/contents"
+  - $ref: "#/definitions/streams/content_playlist_items"
+  - $ref: "#/definitions/streams/user_views"
+  - $ref: "#/definitions/streams/content_views"
+  - $ref: "#/definitions/streams/views_summary"
+  - $ref: "#/definitions/streams/user_total_watch_time"
+  - $ref: "#/definitions/streams/content_total_watch_time"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    title: Uscreen Source Spec
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - general_rate_limit_calls
+    properties:
+      api_key:
+        type: string
+        description: Uscreen Publisher API authorization key.
+        order: 0
+        title: API Key
+        minLength: 1
+        airbyte_secret: true
+      end_date:
+        type: string
+        description: >-
+          Optional shared upper bound in RFC 3339 format. It is sent only to
+          endpoints that support a `to` query parameter. When blank, `to` is
+          omitted entirely. Uscreen analytics then uses its documented default
+          of the current time.
+        order: 3
+        title: To Date
+        format: date-time
+        pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$
+        examples:
+          - "2026-09-03T00:00:00Z"
+      start_date:
+        type: string
+        description: >-
+          Optional shared lower bound in RFC 3339 format. It is sent only to
+          endpoints that support a `from` query parameter. When blank, `from` is
+          omitted entirely. Uscreen analytics then uses its documented default
+          of 12 months ago.
+        order: 2
+        title: From Date
+        format: date-time
+        pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$
+        examples:
+          - "2026-01-01T00:00:00Z"
+      general_rate_limit_calls:
+        type: integer
+        description: >-
+          Maximum number of Publisher API calls in each rolling one-minute
+          window. Keep this at or below the quota assigned by Uscreen.
+        order: 1
+        title: General Rate Limit Calls per Minute
+        default: 100
+        minimum: 1
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://help.uscreen.tv/en/articles/4576093-uscreen-api
+  testedStreams:
+    groups:
+      isStale: false
+      hasRecords: true
+      streamHash: ef069de9d08942aa8b36b5bf3c1c1b0f437e656e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    offers:
+      isStale: false
+      hasRecords: true
+      streamHash: 9cbf4257954b5d6eab69c26b8a92c70b4eb5a8c4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contents:
+      isStale: false
+      hasRecords: true
+      streamHash: 6013170c9bc1458794788325a81c3876d51924d0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    invoices:
+      isStale: false
+      hasRecords: true
+      streamHash: 2589576dcbb6718721bc51bafda7c0ccb6cb134f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customers:
+      isStale: false
+      hasRecords: true
+      streamHash: 5c384c65ecd07adbf467559d9fdb7a9a8d68aac6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    user_views:
+      isStale: false
+      hasRecords: true
+      streamHash: 300595480eaadb4d11fb9e2b5635969d7b91449f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    email_topics:
+      isStale: false
+      hasRecords: true
+      streamHash: 42c21681c1895301da3667e0c4fe4a807346d275
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    content_views:
+      isStale: false
+      hasRecords: true
+      streamHash: d6f3b9a65d73e92cca48af7ea8df98c88c087d45
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    group_members:
+      isStale: false
+      hasRecords: true
+      streamHash: 2b8ff53cb6bf5bbefa3d12c7f0f26e867dd05a82
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    views_summary:
+      isStale: false
+      hasRecords: true
+      streamHash: 7dd6da460bfaeb1ee24b013b3f4e732dc86f47e4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customer_accesses:
+      isStale: false
+      hasRecords: true
+      streamHash: 4d2bfd0f63f692506a94f9383b5d2e114c5c07d4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    user_total_watch_time:
+      isStale: false
+      hasRecords: true
+      streamHash: 42df15d836b0dbd6b6ecb595b26cf618e632f3e9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    content_playlist_items:
+      isStale: false
+      hasRecords: true
+      streamHash: 25abd14aa6909d37697cd56d2fd8e874fb419f89
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customer_subscriptions:
+      isStale: false
+      hasRecords: true
+      streamHash: a0e944358e93a810c4b0580ee9f25c72bd35a167
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    content_total_watch_time:
+      isStale: false
+      hasRecords: true
+      streamHash: 5078c94438a125bb47da544a425bb393eaca0b75
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    groups: false
+    offers: false
+    contents: false
+    invoices: false
+    customers: false
+    user_views: false
+    email_topics: false
+    content_views: false
+    group_members: false
+    views_summary: false
+    customer_accesses: false
+    user_total_watch_time: false
+    content_playlist_items: false
+    customer_subscriptions: false
+    content_total_watch_time: false
+  applied_migrations:
+    - migration: HttpRequesterUrlBaseToUrl
+      to_version: "*"
+      migrated_at: "2026-09-03T05:03:53.902362+00:00"
+      from_version: 7.28.3
+    - migration: HttpRequesterPathToUrl
+      to_version: "*"
+      migrated_at: "2026-09-03T05:03:53.903867+00:00"
+      from_version: 7.28.3
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: "{{ config['general_rate_limit_calls'] }}"
+          interval: PT1M
+      matchers:
+        - url_path_pattern: ^/publisher_api/v1(?:/|$)
+  status_codes_for_ratelimit_hit:
+    - 429
