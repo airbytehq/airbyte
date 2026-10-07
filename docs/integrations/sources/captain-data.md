@@ -85,7 +85,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                            | Subject                                     |
 | :------ |:-----------| :------------------------------------------------------ |:--------------------------------------------|
-| 0.2.26 | 2026-10-07 | [<n>](https://github.com/airbytehq/airbyte/pull/<n>) | Archive connector: Captain Data sunset the v3 API on 2026-01-09; all endpoints return 404 |
+| 0.2.26 | 2026-10-07 | [88177](https://github.com/airbytehq/airbyte/pull/88177) | Archive connector: Captain Data sunset the v3 API on 2026-01-09; all endpoints return 404 |
 | 0.2.25 | 2026-06-02 | [78635](https://github.com/airbytehq/airbyte/pull/78635) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [59884](https://github.com/airbytehq/airbyte/pull/59884) | Update dependencies |
 | 0.2.23 | 2025-05-03 | [59321](https://github.com/airbytehq/airbyte/pull/59321) | Update dependencies |
