@@ -361,13 +361,21 @@ def test_403_without_a_vendor_message_is_still_a_config_error(body):
     [
         (
             401,
-            {"type": "authentication_error", "status": 401, "errors": [{"code": "access_token_invalid", "message": "Access token is not valid"}]},
+            {
+                "type": "authentication_error",
+                "status": 401,
+                "errors": [{"code": "access_token_invalid", "message": "Access token is not valid"}],
+            },
             "config_error",
             "The API key is invalid or has been revoked. Create a new key in incident.io under Settings > API keys and update the connector configuration.",
         ),
         (
             422,
-            {"type": "validation_error", "status": 422, "errors": [{"code": "invalid_value", "message": "Filter field date_range must provide a date in the format yyyy-mm-dd"}]},
+            {
+                "type": "validation_error",
+                "status": 422,
+                "errors": [{"code": "invalid_value", "message": "Filter field date_range must provide a date in the format yyyy-mm-dd"}],
+            },
             "system_error",
             "incident.io rejected the request: Filter field date_range must provide a date in the format yyyy-mm-dd",
         ),
