@@ -35,7 +35,8 @@ data:
           `course_id` field), and removes the `screen_types` stream. All users must re-enter
           their credentials; users syncing `screen_types` must deselect that stream. See the
           [migration guide](https://docs.airbyte.com/integrations/sources/coassemble-migrations#upgrading-to-010).
-        upgradeDeadline: "2026-10-07"
+        upgradeDeadline: "2026-10-21"
+        deadlineAction: disable
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/coassemble
