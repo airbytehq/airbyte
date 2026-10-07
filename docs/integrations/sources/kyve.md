@@ -33,7 +33,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject                                              |
 | :------ | :--------- | :----------- | :--------------------------------------------------- |
-| 0.2.54 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Skip hash verification for bundles without a `data_hash` instead of failing with `AssertionError`; raise a descriptive error on hash mismatch |
+| 0.2.54 | 2026-10-07 | [88269](https://github.com/airbytehq/airbyte/pull/88269) | Skip hash verification for bundles without a `data_hash` instead of failing with `AssertionError`; raise a descriptive error on hash mismatch |
 | 0.2.53 | 2026-10-07 | [88168](https://github.com/airbytehq/airbyte/pull/88168) | Format unit test data with the repository ruff version |
 | 0.2.52 | 2025-10-14 | [68066](https://github.com/airbytehq/airbyte/pull/68066) | Update dependencies |
 | 0.2.51 | 2025-10-07 | [67529](https://github.com/airbytehq/airbyte/pull/67529) | Update dependencies |
