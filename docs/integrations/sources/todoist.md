@@ -54,7 +54,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
-| 0.4.0 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | 🚨 Migrate from the retired Todoist REST API v2 (HTTP 410) to Todoist API v1: new base URL, cursor pagination, new `tasks` and `projects` schemas |
+| 0.4.0 | 2026-10-07 | [88183](https://github.com/airbytehq/airbyte/pull/88183) | 🚨 Migrate from the retired Todoist REST API v2 (HTTP 410) to Todoist API v1: new base URL, cursor pagination, new `tasks` and `projects` schemas |
 | 0.3.43 | 2026-02-03 | [72753](https://github.com/airbytehq/airbyte/pull/72753) | Update dependencies |
 | 0.3.42 | 2026-01-20 | [72017](https://github.com/airbytehq/airbyte/pull/72017) | Update dependencies |
 | 0.3.41 | 2026-01-14 | [71417](https://github.com/airbytehq/airbyte/pull/71417) | Update dependencies |
