@@ -37,7 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.57 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Use `user_organizations` as the check stream and pass the required `organizationId` to the `tags` endpoint |
+| 0.0.57 | 2026-10-07 | [88318](https://github.com/airbytehq/airbyte/pull/88318) | Use `user_organizations` as the check stream and pass the required `organizationId` to the `tags` endpoint |
 | 0.0.56 | 2026-10-06 | [87820](https://github.com/airbytehq/airbyte/pull/87820) | Update dependencies |
 | 0.0.55 | 2026-09-29 | [87121](https://github.com/airbytehq/airbyte/pull/87121) | Update dependencies |
 | 0.0.54 | 2026-09-22 | [86567](https://github.com/airbytehq/airbyte/pull/86567) | Update dependencies |
