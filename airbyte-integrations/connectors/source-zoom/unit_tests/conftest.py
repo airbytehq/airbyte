@@ -1,7 +1,6 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import os
-import sys
 from pathlib import Path
 
 from pytest import fixture
@@ -26,10 +25,6 @@ def _get_manifest_folder() -> Path:
 
 _SOURCE_FOLDER_PATH = _get_manifest_folder()
 _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
-
-# The CDK resolves `source_declarative_manifest.components` to the connector's components.py
-# only when the connector directory is importable.
-sys.path.append(str(_SOURCE_FOLDER_PATH))
 
 
 def get_source(config, state=None) -> YamlDeclarativeSource:

@@ -11,15 +11,24 @@ definitions:
       Authorization: "Basic {{ (config['client_id'] ~ ':' ~ config['client_secret']) | base64encode }}"
     refresh_request_body:
       account_id: "{{ config['account_id'] }}"
-    refresh_token_error_status_codes: [400, 401]
+    refresh_token_error_status_codes: [400, 401, 404]
     refresh_token_error_key: error
     refresh_token_error_values:
       - invalid_client
       - invalid_request
+      - unsupported_grant_type
+  zoom_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        predicate: "{{ response.code == 124 }}"
+        action: REFRESH_TOKEN_THEN_RETRY
+        error_message: "Zoom rejected the access token (code 124: '{{ response.message }}'); refreshing the token and retrying the request."
   requester:
     url_base: "https://api.zoom.us/v2"
     http_method: "GET"
     authenticator: "#/definitions/authenticator"
+    error_handler: "#/definitions/zoom_error_handler"
   zoom_paginator:
     type: DefaultPaginator
     pagination_strategy:
@@ -39,12 +48,14 @@ definitions:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator: "#/definitions/authenticator"
+      error_handler: "#/definitions/zoom_error_handler"
   users_stream:
     retriever:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator: "#/definitions/authenticator"
+        error_handler: "#/definitions/zoom_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -200,7 +211,7 @@ definitions:
               action: IGNORE
               error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
               type: HttpResponseFilter
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -229,6 +240,7 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator: "#/definitions/authenticator"
+                error_handler: "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -386,7 +398,7 @@ definitions:
               action: IGNORE
               error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
               type: HttpResponseFilter
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -412,7 +424,7 @@ definitions:
                       action: IGNORE
                       error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                       type: HttpResponseFilter
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -441,6 +453,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -1218,7 +1231,7 @@ definitions:
               type: HttpResponseFilter
             - predicate: "{{ response.code == 300 }}"
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -1257,7 +1270,7 @@ definitions:
                       action: IGNORE
                       error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                       type: HttpResponseFilter
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -1286,6 +1299,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -1561,7 +1575,7 @@ definitions:
             - http_codes:
               - 400
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -1588,7 +1602,7 @@ definitions:
                       action: IGNORE
                       error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                       type: HttpResponseFilter
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -1617,6 +1631,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -1902,7 +1917,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -1929,7 +1944,7 @@ definitions:
                       action: IGNORE
                       error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                       type: HttpResponseFilter
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -1958,6 +1973,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -2181,7 +2197,7 @@ definitions:
             - http_codes:
               - 400
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -2207,7 +2223,7 @@ definitions:
                       action: IGNORE
                       error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                       type: HttpResponseFilter
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -2236,6 +2252,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -2456,7 +2473,7 @@ definitions:
             - http_codes:
               - 400
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -2485,6 +2502,7 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator: "#/definitions/authenticator"
+                error_handler: "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -2642,7 +2660,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -2667,7 +2685,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -2696,6 +2714,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -3251,7 +3270,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -3277,7 +3296,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -3306,6 +3325,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -3517,7 +3537,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -3555,7 +3575,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -3584,6 +3604,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -3856,7 +3877,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -3894,7 +3915,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -3923,6 +3944,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -4195,7 +4217,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -4221,7 +4243,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -4250,6 +4272,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -4534,7 +4557,7 @@ definitions:
             - http_codes:
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -4560,7 +4583,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -4589,6 +4612,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -4800,7 +4824,7 @@ definitions:
             - http_codes:
               - 400
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -4825,7 +4849,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -4854,6 +4878,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -5078,7 +5103,7 @@ definitions:
             - http_codes:
               - 400
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -5104,7 +5129,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -5133,6 +5158,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -5328,7 +5354,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -5354,7 +5380,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -5383,6 +5409,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -5583,7 +5610,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -5609,7 +5636,7 @@ definitions:
                       action: IGNORE
                       error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                       type: HttpResponseFilter
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -5638,6 +5665,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -5893,7 +5921,7 @@ definitions:
               - 400
               - 404
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -5932,7 +5960,7 @@ definitions:
                       action: IGNORE
                       error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                       type: HttpResponseFilter
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -5961,6 +5989,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -6199,7 +6228,7 @@ definitions:
             - http_codes:
               - 400
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: NoPagination
       record_selector:
@@ -6224,7 +6253,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -6253,6 +6282,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -6513,7 +6543,7 @@ definitions:
             - http_codes:
               - 400
               action: IGNORE
-          - type: DefaultErrorHandler
+          - "#/definitions/zoom_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -6551,7 +6581,7 @@ definitions:
                     - http_codes:
                       - 400
                       action: IGNORE
-                  - type: DefaultErrorHandler
+                  - "#/definitions/zoom_error_handler"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -6580,6 +6610,7 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator: "#/definitions/authenticator"
+                        error_handler: "#/definitions/zoom_error_handler"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -6789,6 +6820,7 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator: "#/definitions/authenticator"
+      error_handler: "#/definitions/zoom_error_handler"
       type: HttpRequester
       path: "/users"
     paginator:
@@ -6951,7 +6983,7 @@ streams:
             action: IGNORE
             error_message: "Zoom returned code 3001 ('{{ response.message }}'): the meeting or webinar no longer exists or has no report data; skipping this resource."
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -6979,7 +7011,7 @@ streams:
                     action: IGNORE
                     error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -7011,6 +7043,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -7806,7 +7839,7 @@ streams:
           - predicate: "{{ response.code == 300 }}"
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -7848,7 +7881,7 @@ streams:
                     action: IGNORE
                     error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -7880,6 +7913,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -8174,7 +8208,7 @@ streams:
             - 400
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -8203,7 +8237,7 @@ streams:
                     action: IGNORE
                     error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -8235,6 +8269,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -8539,7 +8574,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -8568,7 +8603,7 @@ streams:
                     action: IGNORE
                     error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -8600,6 +8635,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -8841,7 +8877,7 @@ streams:
             - 400
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -8869,7 +8905,7 @@ streams:
                     action: IGNORE
                     error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -8901,6 +8937,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -9140,7 +9177,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -9168,7 +9205,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -9200,6 +9237,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -9773,7 +9811,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -9802,7 +9840,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -9834,6 +9872,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -10063,7 +10102,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -10105,7 +10144,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -10137,6 +10176,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -10427,7 +10467,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -10469,7 +10509,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -10501,6 +10541,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -10792,7 +10833,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -10821,7 +10862,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -10853,6 +10894,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -11155,7 +11197,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -11184,7 +11226,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -11216,6 +11258,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -11445,7 +11488,7 @@ streams:
             - 400
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -11473,7 +11516,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -11505,6 +11548,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -11747,7 +11791,7 @@ streams:
             - 400
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -11776,7 +11820,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -11808,6 +11852,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -12022,7 +12067,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -12051,7 +12096,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -12083,6 +12128,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -12301,7 +12347,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -12329,7 +12375,7 @@ streams:
                     action: IGNORE
                     error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -12361,6 +12407,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -12634,7 +12681,7 @@ streams:
             - 404
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -12676,7 +12723,7 @@ streams:
                     action: IGNORE
                     error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -12708,6 +12755,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -12965,7 +13013,7 @@ streams:
             - 400
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -12993,7 +13041,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -13025,6 +13073,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -13303,7 +13352,7 @@ streams:
             - 400
             action: IGNORE
             type: HttpResponseFilter
-        - type: DefaultErrorHandler
+        - "#/definitions/zoom_error_handler"
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -13345,7 +13394,7 @@ streams:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
-                - type: DefaultErrorHandler
+                - "#/definitions/zoom_error_handler"
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -13377,6 +13426,7 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator: "#/definitions/authenticator"
+                      error_handler: "#/definitions/zoom_error_handler"
                       type: HttpRequester
                       path: "/users"
                     paginator:
