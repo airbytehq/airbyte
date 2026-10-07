@@ -37,7 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.0.62 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Surface Breezy HR authentication/authorization errors (400/401/403) as config errors instead of silently ignoring them; document how to obtain the API Key and Company ID |
+| 0.0.62 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88238) | Surface Breezy HR authentication/authorization errors (400/401/403) as config errors instead of silently ignoring them; document how to obtain the API Key and Company ID |
 | 0.0.61 | 2026-10-06 | [87762](https://github.com/airbytehq/airbyte/pull/87762) | Update dependencies |
 | 0.0.60 | 2026-09-29 | [87089](https://github.com/airbytehq/airbyte/pull/87089) | Update dependencies |
 | 0.0.59 | 2026-09-22 | [86550](https://github.com/airbytehq/airbyte/pull/86550) | Update dependencies |
