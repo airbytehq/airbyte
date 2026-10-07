@@ -14,6 +14,9 @@ check:
 definitions:
   linked:
     HttpRequester:
+      # One login request serves both auth options. `SelectiveAuthenticator` cannot hold a
+      # `SessionTokenAuthenticator` (the CDK does not pass it the `name` argument it requires), and the
+      # CDK's `OAuthAuthenticator` would drop the Ramp `error_v2` detail from token errors.
       authenticator:
         type: SessionTokenAuthenticator
         login_requester:
@@ -22,18 +25,23 @@ definitions:
           http_method: POST
           authenticator:
             type: BasicHttpAuthenticator
-            username: "{{ config['client_id'] }}"
-            password: "{{ config['client_secret'] }}"
+            username: "{{ config['credentials']['client_id'] }}"
+            password: "{{ config['credentials']['client_secret'] }}"
           request_body:
             type: RequestBodyUrlEncodedForm
             value:
-              grant_type: client_credentials
-              # One token for every stream's scope. Ramp grants the subset the app has and silently drops the
-              # rest, so a missing scope only fails its own stream (403 DEVELOPER_7100), never the login.
-              scope: >-
-                transactions:read cards:read reimbursements:read users:read departments:read locations:read
+              grant_type: "{{ 'refresh_token' if config['credentials']['auth_type'] == 'oauth2.0' else 'client_credentials' }}"
+              # Each grant needs one more field, so its key is interpolated too: OAuth sends `refresh_token`,
+              # client credentials send `scope`. Ramp does not rotate refresh tokens: a refresh returns only a
+              # new access token, so the token from the consent flow is reused until it expires or is revoked.
+              # The scope list is one token for every stream's scope. Ramp grants the subset the app has and
+              # silently drops the rest, so a missing scope only fails its own stream (403 DEVELOPER_7100),
+              # never the login. Keep it in sync with `scope` in `spec.advanced_auth`.
+              "{{ 'refresh_token' if config['credentials']['auth_type'] == 'oauth2.0' else 'scope' }}": >-
+                {{ config['credentials']['refresh_token'] if config['credentials']['auth_type'] == 'oauth2.0'
+                else 'transactions:read cards:read reimbursements:read users:read departments:read locations:read
                 entities:read business:read funds:read spend_programs:read bills:read vendors:read
-                receipts:read merchants:read purchase_orders:read
+                receipts:read merchants:read purchase_orders:read' }}
           error_handler:
             type: DefaultErrorHandler
             max_retries: 5
@@ -47,13 +55,18 @@ definitions:
                 # Ramp does not fail the token call for a scope the app lacks: it drops the scope and the
                 # data call later returns 403 DEVELOPER_7100, handled by the shared error handler.
                 error_message: >-
-                  Ramp rejected the client ID or client secret ({{ (response.get('error_v2') or {}).get('message')
+                  {% if config['credentials']['auth_type'] == 'oauth2.0' %}Ramp rejected the connector's OAuth
+                  authorization ({{ (response.get('error_v2') or {}).get('message') or response.get('error_description')
+                  or response.get('error') or 'no details' }}). Re-authenticate the source as a Ramp Admin or Business
+                  Owner.{% else %}Ramp rejected the client ID or client secret ({{ (response.get('error_v2') or {}).get('message')
                   or response.get('error_description') or response.get('error') or 'no details' }}).
                   Copy both again from Ramp > Company > Developer > your app, and check the app uses the
-                  Client Credentials grant.
+                  Client Credentials grant.{% endif %}
         session_token_path:
           - access_token
-        expiration_duration: PT240H
+        # OAuth access tokens last 1 hour by default; client-credentials tokens last 10 days, so they are
+        # simply re-issued more often than needed.
+        expiration_duration: PT50M
         request_authentication:
           type: Bearer
       error_handler:
@@ -70,23 +83,26 @@ definitions:
             action: FAIL
             failure_type: config_error
             error_message: >-
-              Your Ramp app is not allowed to read this data ({{ (response.get('error_v2') or {}).get('message') }}).
-              In Ramp, open Company > Developer > your app, grant the missing read scope, then re-test the
-              source.{{ parameters.get('access_note', '') }}
+              The connector is not allowed to read this data from Ramp ({{ (response.get('error_v2') or {}).get('message') }}).
+              If you authenticated with OAuth, re-authenticate the source as a Ramp Admin or Business Owner. If you
+              use client credentials, open Ramp > Company > Developer > your app and grant the missing read scope.
+              Then re-test the source.{{ parameters.get('access_note', '') }}
           - type: HttpResponseFilter
             predicate: "{{ (response.get('error_v2') or {}).get('error_code') == 'DEVELOPER_7002' }}"
             action: FAIL
             failure_type: config_error
             error_message: >-
-              Ramp no longer accepts this connector's access token. Check that the Ramp app still exists and
-              its client secret has not been rotated, then re-test the source.
+              Ramp no longer accepts this connector's access token. If you authenticated with OAuth, re-authenticate
+              the source. If you use client credentials, check that the Ramp app still exists and its client secret
+              has not been rotated. Then re-test the source.
           - type: HttpResponseFilter
             http_codes:
               - 401
             action: FAIL
             failure_type: config_error
             error_message: >-
-              Ramp rejected the connector's credentials. Re-enter the client ID and client secret from
+              Ramp rejected the connector's credentials. If you authenticated with OAuth, re-authenticate the
+              source. If you use client credentials, re-enter the client ID and client secret from
               Ramp > Company > Developer > your app.
           - type: HttpResponseFilter
             http_codes:
@@ -94,8 +110,10 @@ definitions:
             action: FAIL
             failure_type: config_error
             error_message: >-
-              Ramp denied access to this data. In Ramp, open Company > Developer > your app and check it has the
-              {{ parameters.get('required_scope', 'required read') }} scope, then re-test the
+              Ramp denied access to this data. The connector needs the
+              {{ parameters.get('required_scope', 'required read') }} scope. If you authenticated with OAuth,
+              re-authenticate the source as a Ramp Admin or Business Owner. If you use client credentials, grant
+              that scope to your app in Ramp > Company > Developer. Then re-test the
               source.{{ parameters.get('access_note', '') }}
       request_headers:
         Content-Type: application/json
@@ -2356,24 +2374,80 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - client_id
-      - client_secret
+      - credentials
     properties:
-      client_id:
-        type: string
-        description: >-
-          Client ID of the Ramp developer app (Ramp > Company > Developer). The app needs the Client
-          Credentials grant and the scopes `transactions:read`, `cards:read` and `reimbursements:read`. Every
-          other stream needs its own read scope, such as `users:read` or `bills:read`, granted only if you sync it.
-        title: Ramp Client ID
-        airbyte_secret: true
+      credentials:
+        title: Authentication
+        type: object
         order: 0
-      client_secret:
-        type: string
-        description: Your Ramp API client secret.
-        title: Ramp Client Secret
-        airbyte_secret: true
-        order: 1
+        oneOf:
+          - title: OAuth
+            description: >-
+              Click Authenticate and approve access in Ramp. Only a Ramp Admin or Business Owner can approve it.
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+                order: 0
+              client_id:
+                type: string
+                title: OAuth Client ID
+                description: Client ID of the Ramp app used for OAuth.
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: string
+                title: OAuth Client Secret
+                description: Client secret of the Ramp app used for OAuth.
+                airbyte_secret: true
+                order: 2
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: Refresh token from the Ramp consent flow. Filled in when you authenticate.
+                airbyte_secret: true
+                order: 3
+              access_token:
+                type: string
+                title: Access Token
+                description: Access token from the Ramp consent flow. Filled in when you authenticate.
+                airbyte_secret: true
+                order: 4
+          - title: Client Credentials
+            description: >-
+              Use the client ID and secret of a Ramp developer app you created in Ramp > Company > Developer.
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+            properties:
+              auth_type:
+                type: string
+                const: client_credentials
+                order: 0
+              client_id:
+                type: string
+                title: Ramp Client ID
+                description: >-
+                  Client ID of the Ramp developer app (Ramp > Company > Developer). The app needs the Client
+                  Credentials grant and the scopes `transactions:read`, `cards:read` and `reimbursements:read`.
+                  Every other stream needs its own read scope, such as `users:read` or `bills:read`, granted only
+                  if you sync it.
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: string
+                title: Ramp Client Secret
+                description: Client secret of the same Ramp developer app.
+                airbyte_secret: true
+                order: 2
       start_date:
         type: string
         description: >-
@@ -2385,7 +2459,7 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?Z$
         examples:
           - "2024-01-01T00:00:00Z"
-        order: 2
+        order: 1
       api_url:
         type: string
         description: >-
@@ -2396,8 +2470,106 @@ spec:
         default: https://api.ramp.com
         pattern: ^https://
         airbyte_hidden: true
-        order: 3
+        order: 2
     additionalProperties: true
+  # The consent and token URLs are Ramp production. Ramp sandbox apps are separate apps on demo.ramp.com,
+  # so the OAuth branch is tested there with a refresh token obtained by hand and `api_url` set to the
+  # sandbox API.
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: >-
+          https://app.ramp.com/v1/authorize?response_type=code&client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&state={{state_value}}&{{scopes_param}}
+        # Every stream's read scope. Unlike the client-credentials login, consent fails with `invalid_scope` if
+        # the Airbyte app lacks any of them. Keep in sync with the client-credentials scope list in the login
+        # request (`definitions.linked`).
+        scope: >-
+          transactions:read cards:read reimbursements:read users:read departments:read locations:read
+          entities:read business:read funds:read spend_programs:read bills:read vendors:read
+          receipts:read merchants:read purchase_orders:read
+        access_token_url: https://api.ramp.com/developer/v1/token
+        access_token_headers:
+          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
+          Content-Type: application/x-www-form-urlencoded
+        access_token_params:
+          grant_type: authorization_code
+          code: "{{ auth_code_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - access_token
+          - refresh_token
+      complete_oauth_output_specification:
+        required:
+          - refresh_token
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        required:
+          - client_id
+          - client_secret
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        required:
+          - client_id
+          - client_secret
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: >-
+          Moves the flat client credentials of configs created before OAuth support into the client-credentials
+          branch of `credentials`.
+          OLD: {"client_id": ..., "client_secret": ...}
+          NEW: {"credentials": {"auth_type": "client_credentials", "client_id": ..., "client_secret": ...}}
+        transformations:
+          # The condition is evaluated before each field is added, so `auth_type` goes last: it is the field
+          # whose absence marks a config as not yet migrated.
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "client_id"]
+                value: "{{ config['client_id'] }}"
+              - type: AddedFieldDefinition
+                path: ["credentials", "client_secret"]
+                value: "{{ config['client_secret'] }}"
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: client_credentials
+            condition: "{{ config.get('client_id') and not config.get('credentials', {}).get('auth_type') }}"
+          - type: ConfigRemoveFields
+            field_pointers:
+              - ["client_id"]
+              - ["client_secret"]
+            condition: "{{ config.get('credentials', {}).get('auth_type') }}"
 
 # Ramp allows 200 requests per 10-second rolling window per IP; keep some headroom.
 api_budget:
