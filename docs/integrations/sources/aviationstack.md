@@ -35,7 +35,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.45 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Halve request volume (page size 50 → 100) and fail fast with a clear `config_error` when the Aviationstack request quota is exhausted (HTTP 429) |
+| 0.0.45 | 2026-10-07 | [88226](https://github.com/airbytehq/airbyte/pull/88226) | Halve request volume (page size 50 → 100) and fail fast with a clear `config_error` when the Aviationstack request quota is exhausted (HTTP 429) |
 | 0.0.44 | 2026-10-06 | [87757](https://github.com/airbytehq/airbyte/pull/87757) | Update dependencies |
 | 0.0.43 | 2026-09-29 | [87069](https://github.com/airbytehq/airbyte/pull/87069) | Update dependencies |
 | 0.0.42 | 2026-09-22 | [86521](https://github.com/airbytehq/airbyte/pull/86521) | Update dependencies |
