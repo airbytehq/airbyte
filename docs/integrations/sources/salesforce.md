@@ -257,6 +257,12 @@ Salesforce access tokens expire after a configurable session timeout, which defa
 
 If you still encounter `INVALID_SESSION_ID` errors, verify that the connector is running version 2.7.20 or later.
 
+### Session expiry during REST pagination
+
+Streams that cannot use the Bulk API, for example objects containing compound fields such as addresses, are read through the REST `queryAll` endpoint and paginated with `nextRecordsUrl`. Prior to connector version 2.9.3, these REST streams authenticated with the access token captured when the stream was created, so they could neither refresh it nor pick up a token refreshed by another stream. When that session ended mid-sync, for example after the proactive refresh described above with Refresh Token Rotation enabled, the REST stream kept retrying with the dead token until the sync failed with `Exhausted available request attempts ... Salesforce session expired or invalid`.
+
+Starting in version 2.9.3, REST streams read the access token that is current at each request and retry, so they pick up a refresh made by any stream. They don't trigger the 30-minute refresh themselves: if their session ends, the `INVALID_SESSION_ID` response forces a token refresh before the retry. Salesforce keeps query results available to the same user across sessions, so the retried `nextRecordsUrl` continues where the stream stopped. If Salesforce rejects the refresh, the sync fails right away with a configuration error asking you to re-authenticate, instead of exhausting its retries.
+
 ### Refresh Token Rotation (RTR)
 
 Salesforce's [Refresh Token Rotation](https://help.salesforce.com/s/articleView?id=xcloud.shr_security_enable_refresh_token_rotation.htm&language=en_US&type=5) makes refresh tokens **single-use**: each `refresh_token` exchange returns a new refresh token and **immediately invalidates the previous one** — there is no grace period or overlap window. Starting in version 2.8.0, the connector captures the rotated token on every token exchange (initial login and the mid-sync refreshes described above) and persists it back to the connection configuration, so syncs continue to work with RTR enabled.
@@ -322,6 +328,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.3 | 2026-10-03 | [87665](https://github.com/airbytehq/airbyte/pull/87665) | Let REST streams use the refreshed access token, so a session invalidated mid-pagination no longer fails the sync, and mask rotated refresh tokens in logs |
 | 2.9.2 | 2026-09-10 | [85166](https://github.com/airbytehq/airbyte/pull/85166) | Report a Salesforce field that no longer exists or is not accessible to the authenticated user as a configuration error naming the stream and field, instead of a system error containing the raw Salesforce response |
 | 2.9.1 | 2026-08-27 | [85057](https://github.com/airbytehq/airbyte/pull/85057) | Send PKCE `code_challenge`/`code_challenge_method=S256` on the consent URL and `code_verifier` on the token exchange, so OAuth works in orgs that require PKCE |
 | 2.9.0 | 2026-08-25 | [82722](https://github.com/airbytehq/airbyte/pull/82722) | Add an optional end date for bounded incremental syncs |
