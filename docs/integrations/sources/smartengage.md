@@ -1,5 +1,17 @@
 # SmartEngage
 
+:::warning
+
+## Deprecation Notice
+
+The SmartEngage source connector has been archived and is no longer available in Airbyte Cloud or the OSS connector registry. The SmartEngage API (`https://api.smartengage.com`) and the vendor's website and API documentation are offline (Cloudflare `521: Web server is down` on every endpoint), so the connector can no longer sync data. No Airbyte user has had a successful sync with this connector since telemetry began.
+
+### Recommended Actions
+
+If you still need to sync data from SmartEngage and the vendor restores its API, consider building a [custom connector](https://docs.airbyte.com/connector-development/) with the Connector Builder.
+
+:::
+
 ## Sync overview
 
 This source can sync data from the [SmartEngage API](https://smartengage.com/docs/#smartengage-api). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
@@ -35,6 +47,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.43 | 2026-10-07 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Archive connector: SmartEngage API and vendor site are offline (Cloudflare 521); zero successful syncs since 2025-05 |
 | 0.2.42 | 2026-06-30 | [81258](https://github.com/airbytehq/airbyte/pull/81258) | Update dependencies |
 | 0.2.41 | 2026-06-23 | [80630](https://github.com/airbytehq/airbyte/pull/80630) | Update dependencies |
 | 0.2.40 | 2026-06-16 | [80027](https://github.com/airbytehq/airbyte/pull/80027) | Update dependencies |
