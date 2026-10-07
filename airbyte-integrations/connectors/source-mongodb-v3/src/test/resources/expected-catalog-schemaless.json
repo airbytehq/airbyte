@@ -1,160 +1,94 @@
 {
   "streams": [
     {
-      "default_cursor_field": [
-        "_ab_cdc_cursor"
-      ],
-      "is_resumable": true,
-      "json_schema": {
-        "properties": {
-          "_ab_cdc_cursor": {
-            "airbyte_type": "integer",
-            "type": "number"
-          },
-          "_ab_cdc_deleted_at": {
-            "type": "string"
-          },
-          "_ab_cdc_updated_at": {
-            "type": "string"
-          },
-          "_id": {
-            "type": "number"
-          },
-          "data": {
-            "type": "object"
-          }
-        },
-        "type": "object"
-      },
       "name": "int_id",
-      "namespace": "test_db",
-      "source_defined_cursor": true,
-      "source_defined_primary_key": [
-        [
-          "_id"
-        ]
-      ],
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ]
-    },
-    {
-      "default_cursor_field": [
-        "_ab_cdc_cursor"
-      ],
-      "is_resumable": true,
       "json_schema": {
+        "type": "object",
         "properties": {
-          "_ab_cdc_cursor": {
-            "airbyte_type": "integer",
+          "_id": {
             "type": "number"
           },
-          "_ab_cdc_deleted_at": {
-            "type": "string"
+          "data": {
+            "type": "object"
           },
           "_ab_cdc_updated_at": {
             "type": "string"
           },
-          "_id": {
+          "_ab_cdc_deleted_at": {
             "type": "string"
           },
-          "data": {
-            "type": "object"
+          "_ab_cdc_cursor": {
+            "airbyte_type": "integer",
+            "type": "number"
           }
-        },
-        "type": "object"
+        }
       },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["_ab_cdc_cursor"],
+      "source_defined_primary_key": [["_id"]],
+      "namespace": "test_db",
+      "is_resumable": true
+    },
+    {
       "name": "people",
-      "namespace": "test_db",
-      "source_defined_cursor": true,
-      "source_defined_primary_key": [
-        [
-          "_id"
-        ]
-      ],
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ]
-    },
-    {
-      "default_cursor_field": [
-        "_ab_cdc_cursor"
-      ],
-      "is_resumable": true,
       "json_schema": {
+        "type": "object",
         "properties": {
-          "_ab_cdc_cursor": {
-            "airbyte_type": "integer",
-            "type": "number"
-          },
-          "_ab_cdc_deleted_at": {
-            "type": "string"
-          },
-          "_ab_cdc_updated_at": {
-            "type": "string"
-          },
           "_id": {
             "type": "string"
           },
           "data": {
             "type": "object"
-          }
-        },
-        "type": "object"
-      },
-      "name": "people_view",
-      "namespace": "test_db",
-      "source_defined_cursor": true,
-      "source_defined_primary_key": [
-        [
-          "_id"
-        ]
-      ],
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ]
-    },
-    {
-      "default_cursor_field": [
-        "_ab_cdc_cursor"
-      ],
-      "is_resumable": true,
-      "json_schema": {
-        "properties": {
-          "_ab_cdc_cursor": {
-            "airbyte_type": "integer",
-            "type": "number"
-          },
-          "_ab_cdc_deleted_at": {
-            "type": "string"
           },
           "_ab_cdc_updated_at": {
             "type": "string"
           },
-          "_id": {
+          "_ab_cdc_deleted_at": {
             "type": "string"
           },
-          "data": {
-            "type": "object"
+          "_ab_cdc_cursor": {
+            "airbyte_type": "integer",
+            "type": "number"
           }
-        },
-        "type": "object"
+        }
       },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["_ab_cdc_cursor"],
+      "source_defined_primary_key": [["_id"]],
+      "namespace": "test_db",
+      "is_resumable": true
+    },
+    {
       "name": "string_id",
-      "namespace": "test_db",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object"
+          },
+          "_ab_cdc_updated_at": {
+            "type": "string"
+          },
+          "_ab_cdc_deleted_at": {
+            "type": "string"
+          },
+          "_ab_cdc_cursor": {
+            "airbyte_type": "integer",
+            "type": "number"
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
-      "source_defined_primary_key": [
-        [
-          "_id"
-        ]
-      ],
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ]
+      "default_cursor_field": ["_ab_cdc_cursor"],
+      "source_defined_primary_key": [["_id"]],
+      "namespace": "test_db",
+      "is_resumable": true
     }
   ]
 }

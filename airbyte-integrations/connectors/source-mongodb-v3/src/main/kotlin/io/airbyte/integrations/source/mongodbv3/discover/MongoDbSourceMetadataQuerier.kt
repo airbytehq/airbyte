@@ -32,7 +32,7 @@ private val log = KotlinLogging.logger {}
 
 /**
  * [MetadataQuerier] for MongoDB: namespaces are the configured databases, streams the readable
- * collections (views included), fields come from sampling documents.
+ * collections (not views), fields come from sampling documents.
  */
 class MongoDbSourceMetadataQuerier(
     val configuration: MongoDbSourceConfiguration,
@@ -85,12 +85,13 @@ class MongoDbSourceMetadataQuerier(
         }
     }
 
-    /** Names of the collections (views included) in [databaseName] the credentials may read. */
+    /** Names of the collections (not views) in [databaseName] the credentials may read. */
     fun authorizedCollections(databaseName: String): Set<String> {
         val command =
             Document("listCollections", 1)
                 .append("authorizedCollections", true)
                 .append("nameOnly", true)
+                .append("filter", Document("type", "collection"))
         val result: BsonDocument =
             client.getDatabase(databaseName).runCommand(command).toBsonDocument()
         return result
@@ -209,13 +210,13 @@ class MongoDbSourceMetadataQuerier(
         return fieldTypes
     }
 
-    /** Schemaless mode only needs the type of `_id`, which every document has: sample one. */
+    /** Schemaless mode only needs the type of `_id`; the first sampled type wins. */
     private fun sampleIdFieldType(
         collection: MongoCollection<Document>
     ): Map<String, MongoDbFieldType> {
         val pipeline: List<Bson> =
             listOf(
-                Aggregates.sample(1),
+                Aggregates.sample(configuration.discoverSampleSize),
                 Aggregates.project(
                     Projections.fields(
                         Projections.excludeId(),
@@ -225,8 +226,10 @@ class MongoDbSourceMetadataQuerier(
             )
         val fieldTypes = LinkedHashMap<String, MongoDbFieldType>()
         sample(collection, pipeline) { document: Document ->
-            fieldTypes[ID_FIELD] =
-                MongoDbFieldType.fromBsonTypeName(document.getString(ID_TYPE_FIELD))
+            fieldTypes.putIfAbsent(
+                ID_FIELD,
+                MongoDbFieldType.fromBsonTypeName(document.getString(ID_TYPE_FIELD)),
+            )
         }
         return fieldTypes
     }

@@ -13,6 +13,7 @@ import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.integrations.source.mongodbv3.MongoDbTestConfigs
 import io.airbyte.integrations.source.mongodbv3.config.MongoDbSourceConfigurationSpecification
 import io.airbyte.protocol.models.v0.AirbyteCatalog
+import java.io.File
 import java.math.BigDecimal
 import java.util.Date
 import java.util.UUID
@@ -36,13 +37,30 @@ import org.testcontainers.containers.MongoDBContainer
 import org.testcontainers.utility.DockerImageName
 
 /**
- * Runs DISCOVER against a seeded replica set and compares the catalog with the one the legacy
- * `airbyte/source-mongodb-v2` image produced for the same data (`expected-catalog-*.json`).
- *
- * The seed covers every BSON type, an empty collection (omitted from the catalog), a view
- * (included), a `system.*` collection (omitted), several `_id` types and a second database.
+ * Runs DISCOVER against a seeded replica set and compares the catalog with
+ * `expected-catalog-*.json`. The seed covers every BSON type, an empty collection (omitted), a view
+ * (omitted), a `system.*` collection (omitted), several `_id` types and a second database. Set
+ * `MONGODB_REGENERATE_FIXTURES=true` to rewrite the fixtures from the actual output.
  */
 class MongoDbSourceDiscoverTest {
+
+    /**
+     * `listCollections` is filtered to `type: collection` server-side, so views are not streams.
+     */
+    @Test
+    fun testDiscoverExcludesViews() {
+        val catalog: AirbyteCatalog =
+            CliRunner.source(
+                    "discover",
+                    MongoDbTestConfigs.config(replicaSet.connectionString, listOf(TEST_DB)),
+                )
+                .run()
+                .catalogs()
+                .first()
+        val names: Set<String> = catalog.streams.map { it.name }.toSet()
+        Assertions.assertFalse("people_view" in names, "views must not be discovered: $names")
+        Assertions.assertTrue("people" in names, "the view's source collection is: $names")
+    }
 
     @Test
     fun testDiscoverSchemaEnforced() {
@@ -92,6 +110,11 @@ class MongoDbSourceDiscoverTest {
         val catalogs: List<AirbyteCatalog> = CliRunner.source("discover", config).run().catalogs()
         Assertions.assertEquals(1, catalogs.size)
         val actual: JsonNode = normalize(Jsons.valueToTree(catalogs.first()))
+        if (System.getenv(REGENERATE_FIXTURES_ENV) == "true") {
+            File("src/test/resources/$expectedCatalogResource")
+                .writeText(Jsons.writerWithDefaultPrettyPrinter().writeValueAsString(actual) + "\n")
+            return
+        }
         Assertions.assertEquals(
             expected,
             actual,
@@ -100,8 +123,7 @@ class MongoDbSourceDiscoverTest {
     }
 
     /**
-     * Stream order is not significant (the legacy connector emitted streams in `HashSet` order) and
-     * neither is JSON object key order, which [JsonNode.equals] already ignores.
+     * Sorts streams by name; order is not significant (key order is ignored by [JsonNode.equals]).
      */
     private fun normalize(catalog: JsonNode): JsonNode {
         val streams: ArrayNode = catalog["streams"] as ArrayNode
@@ -113,6 +135,7 @@ class MongoDbSourceDiscoverTest {
     }
 
     companion object {
+        const val REGENERATE_FIXTURES_ENV = "MONGODB_REGENERATE_FIXTURES"
         const val TEST_DB = "test_db"
         const val OTHER_DB = "other_db"
 
@@ -131,7 +154,10 @@ class MongoDbSourceDiscoverTest {
             replicaSet.stop()
         }
 
-        /** Same data as the legacy parity harness (`seed.js`), so the expected catalogs apply. */
+        /**
+         * Every BSON type, several `_id` types, an empty collection, a view, a `system.*`
+         * collection.
+         */
         fun seed(client: MongoClient) {
             val testDb: MongoDatabase = client.getDatabase(TEST_DB)
             testDb

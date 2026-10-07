@@ -65,17 +65,23 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
   matches the legacy one for every case, including "no authorized collections": the querier
   throws v2's message naming the unreadable databases from the last `streamNames()` call during
   `check`, before the CDK would fall back to its generic "Discovered zero tables.".
-- `discover` parity: `src/test/resources/expected-catalog-*.json` are the `CATALOG` objects the
-  legacy image produced for the seed data of `MongoDbSourceDiscoverTest` (every BSON type, `_id` of
-  ObjectId/int/string, an empty collection, a view, a `system.*` collection, two databases), and the
-  test asserts JSON equality after sorting streams by name (the legacy connector emits streams in
-  hash order). Legacy quirks are reproduced on purpose: booleans, dates, timestamps, ObjectIds and
-  binary data are all declared as `string`; ints/longs/doubles/decimals as `number`; arrays as
-  `{"type":"array"}` without `items`; empty collections are omitted; views are included; every
-  stream advertises `default_cursor_field: ["_ab_cdc_cursor"]` and `is_resumable: true`. A field
-  seen with several BSON types takes the type of whichever document shape the server returns first,
-  in both connectors. To diff the Docker images, run `discover` for both on the parity replica set
-  and compare the `CATALOG` lines with streams sorted (scripts in the skill's
+- `discover` parity: `src/test/resources/expected-catalog-*.json` started as the `CATALOG` objects
+  the legacy image produced for the seed data of `MongoDbSourceDiscoverTest` (every BSON type, `_id`
+  of ObjectId/int/string, an empty collection, a view, a `system.*` collection, two databases), and
+  the test asserts JSON equality after sorting streams by name (the legacy connector emits streams
+  in hash order). Most legacy quirks are reproduced on purpose: dates, timestamps, ObjectIds and
+  binary data are declared as `string`; ints/longs/doubles/decimals as `number`; arrays as
+  `{"type":"array"}` without `items`; empty collections are omitted; every stream advertises
+  `default_cursor_field: ["_ab_cdc_cursor"]` and `is_resumable: true`. A field seen with several
+  BSON types takes the type of whichever document shape the server returns first, in both
+  connectors. Two legacy bugs are fixed rather than reproduced, so the fixtures differ from the
+  legacy output there: booleans are declared as `boolean` (`$type` reports `bool`, which the legacy
+  mapping never matched, so it fell through to `string` while the records carried real booleans),
+  and views are not streams (the legacy `listCollections` filter `{type: "collection"}` was
+  appended to the command *result* instead of the command, so it never reached the server). Set
+  `MONGODB_REGENERATE_FIXTURES=true` when running `MongoDbSourceDiscoverTest` to rewrite the
+  fixtures from the actual output. To diff the Docker images, run `discover` for both on the parity
+  replica set and compare the `CATALOG` lines with streams sorted (scripts in the skill's
   `databases/mongodb/parity/`).
 - `check` does not sample documents (the legacy `check` only ran `listCollections`);
   `MongoDbSourceMetadataQuerier.Factory` reads `airbyte.connector.operation` and returns no fields

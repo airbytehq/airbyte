@@ -21,8 +21,7 @@ class MongoDbFieldTypeTest {
         "binData, STRING",
         "undefined, STRING",
         "objectId, STRING",
-        "bool, STRING", // legacy quirk: only the never-reported name `boolean` maps to BOOLEAN
-        "boolean, BOOLEAN",
+        "bool, BOOLEAN",
         "date, STRING",
         "null, NULL",
         "regex, STRING",

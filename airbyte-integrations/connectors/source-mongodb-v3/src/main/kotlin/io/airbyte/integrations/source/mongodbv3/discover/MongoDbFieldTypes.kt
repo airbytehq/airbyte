@@ -50,13 +50,13 @@ enum class MongoDbFieldType(
 
     companion object {
         /**
-         * Maps a `$type` name to a field type. `$type` says `bool`, not `boolean`, so booleans are
-         * discovered as [STRING] like every other unlisted type (`objectId`, `date`, `binData`,
-         * ...).
+         * Maps a `$type` name to a field type. Unlisted types (`objectId`, `date`, `timestamp`,
+         * `binData`, `regex`, ...) are discovered as [STRING], which is how their values are
+         * emitted.
          */
         fun fromBsonTypeName(bsonTypeName: String): MongoDbFieldType =
             when (bsonTypeName) {
-                "boolean" -> BOOLEAN
+                "bool" -> BOOLEAN
                 "int",
                 "long",
                 "double",
