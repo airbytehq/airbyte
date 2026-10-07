@@ -5,11 +5,14 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.util.Jsons
 import java.util.Base64
+import java.util.Date
 import org.bson.BsonDocument
+import org.bson.BsonTimestamp
 import org.bson.Document
 import org.bson.json.JsonMode
 import org.bson.json.JsonWriterSettings
 import org.bson.types.Binary
+import org.bson.types.Decimal128
 import org.bson.types.ObjectId
 
 /** Snapshot phase of a collection. */
@@ -30,11 +33,17 @@ enum class MongoDbIdType {
     LONG,
     BINARY,
     OBJECT,
+    DOUBLE,
+    DECIMAL,
+    DATE,
+    TIMESTAMP,
 }
 
 /**
  * Per-collection snapshot checkpoint `{"id", "status", "idType", "binarySubType"}`; [id] is the
- * last emitted `_id` as text (UUID for a subtype-4 [Binary], Base64 for other binaries).
+ * last emitted `_id` as text: hex for an ObjectId, UUID for a subtype-4 [Binary] and Base64 for
+ * other binaries, extended JSON for a document, epoch milliseconds for a date, the 64-bit value for
+ * a timestamp, and the number's own text otherwise.
  */
 data class MongoDbStreamStateValue(
     @JsonProperty("id") val id: String?,
@@ -54,6 +63,10 @@ data class MongoDbStreamStateValue(
                 MongoDbIdType.STRING -> it
                 MongoDbIdType.BINARY -> reconstructBinary(it, binarySubType)
                 MongoDbIdType.OBJECT -> BsonDocument.parse(it)
+                MongoDbIdType.DOUBLE -> it.toDouble()
+                MongoDbIdType.DECIMAL -> Decimal128.parse(it)
+                MongoDbIdType.DATE -> Date(it.toLong())
+                MongoDbIdType.TIMESTAMP -> BsonTimestamp(it.toLong())
             }
         }
 
@@ -72,6 +85,18 @@ data class MongoDbStreamStateValue(
                     MongoDbStreamStateValue(lastId.toHexString(), status, MongoDbIdType.OBJECT_ID)
                 is Int -> MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.INT)
                 is Long -> MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.LONG)
+                is Double ->
+                    MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.DOUBLE)
+                is Decimal128 ->
+                    MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.DECIMAL)
+                is Date ->
+                    MongoDbStreamStateValue(lastId.time.toString(), status, MongoDbIdType.DATE)
+                is BsonTimestamp ->
+                    MongoDbStreamStateValue(
+                        lastId.value.toString(),
+                        status,
+                        MongoDbIdType.TIMESTAMP
+                    )
                 is Binary ->
                     MongoDbStreamStateValue(
                         id = binaryIdToString(lastId),

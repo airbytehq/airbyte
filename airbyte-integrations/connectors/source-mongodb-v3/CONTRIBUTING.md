@@ -108,15 +108,28 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
   decimal (v2 went through `doubleValue()` and lost precision), and `Date` is always formatted in
   UTC (v2 used a `SimpleDateFormat` in the JVM default zone with a literal `Z`, only correct
   because the image runs in UTC).
-  It **resumes** from the checkpointed `_id` (`_id > lastSeen`), respects the
-  `checkpointTargetInterval` timeout, and completes via `MongoDbSharedState.completedSnapshots`. The
-  per-collection checkpoint is the legacy `MongoDbStreamStateValue` shape
-  (`{id, status, idType, binarySubType}`): `COMPLETE` for an incremental stream once its snapshot
-  finishes, `FULL_REFRESH` for a full-refresh stream. Supported `_id` types are ObjectId, string,
-  int, long, binary and — since v2 2.1.0 — a **document** (`idType: OBJECT`, stored as extended
-  JSON and parsed back with `BsonDocument.parse` for the resume filter); any other `_id` type is a
-  config error rather than a lossy `toString()`. At READ time the metadata querier serves
-  `fields()` from the configured catalog rather than re-sampling.
+  It **resumes** from the checkpointed `_id`, respects the `checkpointTargetInterval` timeout, and
+  completes via `MongoDbSharedState.completedSnapshots`. The per-collection checkpoint is the legacy
+  `MongoDbStreamStateValue` shape (`{id, status, idType, binarySubType}`): `COMPLETE` for an
+  incremental stream once its snapshot finishes, `FULL_REFRESH` for a full-refresh stream. `idType`
+  keeps v2's values — `OBJECT_ID`, `STRING`, `INT`, `LONG`, `BINARY` (UUID text for subtype 4,
+  Base64 otherwise) and, since v2 2.1.0, `OBJECT` (a document `_id` as extended JSON) — and adds
+  `DOUBLE` and `DECIMAL` (the number's own text, `Decimal128.parse` is exact), `DATE` (epoch
+  milliseconds) and `TIMESTAMP` (the 64-bit value), so those `_id`s resume as their native BSON
+  type (`MongoDbStreamStateValueTest` round-trips every type, NaN/-0.0/±Infinity included). Any
+  other `_id` type (boolean, ...) checkpoints as its text with `idType: STRING`; the resume then
+  re-reads at most that type's documents, never skips any.
+
+  The resume filter is `{$expr: {$gt: ["$_id", {$literal: <checkpoint>}]}}`, **not**
+  `{_id: {$gt: ...}}`: a query-operator `$gt` is type-bracketed and only matches `_id`s of the
+  checkpoint's own BSON type, so a collection mixing e.g. integer and string `_id`s would lose every
+  string after a checkpoint on the last integer (v2 only warned about mixed `_id` types). `$expr`
+  compares across types in BSON sort order — the same order the `_id` scan uses — and still seeks
+  the `_id` index with bounds `(checkpoint, MaxKey]` (verified with `explain` on MongoDB 7.0:
+  `docsExamined` equals the number of matching documents for every supported type). Index use for
+  `$expr` comparisons needs MongoDB 5.0+; older servers would scan. Tests:
+  `testTypedIdCollectionsResumeMidSnapshot`, `testMixedIdTypesResumeAcrossTypeBrackets`. At READ
+  time the metadata querier serves `fields()` from the configured catalog rather than re-sampling.
 - **CDC** (`MongoDbCdcPartitionReader`, the `Global` feed): reads the replica-set change stream with
   the native driver `watch()` — **not Debezium**. Cold start captures a resume token before the
   snapshot; warm start drains available changes (insert/update/replace as upserts, delete with

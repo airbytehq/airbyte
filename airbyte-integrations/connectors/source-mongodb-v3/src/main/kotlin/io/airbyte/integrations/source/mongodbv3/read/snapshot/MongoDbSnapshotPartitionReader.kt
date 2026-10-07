@@ -17,6 +17,7 @@ import java.time.Instant
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import org.bson.Document
+import org.bson.conversions.Bson
 
 private val log = KotlinLogging.logger {}
 
@@ -73,12 +74,20 @@ class MongoDbSnapshotPartitionReader(
         val collection =
             sharedState.client.getDatabase(stream.namespace!!).getCollection(stream.name)
         val find: FindIterable<Document> = collection.find()
-        startId?.let { find.filter(Filters.gt(ID_FIELD, it)) }
+        startId?.let { find.filter(resumeFilter(it)) }
         if (sharedState.configuration.schemaEnforced) {
             find.projection(Projections.include(schemaFieldTypesOf(stream).keys.toList()))
         }
         return find.sort(Sorts.ascending(ID_FIELD))
     }
+
+    /**
+     * `$expr` compares across BSON types in sort order, so the resume continues into the next `_id`
+     * type where a type-bracketed `$gt` would stop; the `_id` index is still used (bounds
+     * `(startId, MaxKey]`).
+     */
+    private fun resumeFilter(startId: Any): Bson =
+        Filters.expr(Document("\$gt", listOf("\$$ID_FIELD", Document("\$literal", startId))))
 
     /** Test hook: stop after `max-records-per-run` records so resume can be exercised quickly. */
     private fun reachedRecordLimit(): Boolean = sharedState.maxRecordsPerRun in 1..numRecords

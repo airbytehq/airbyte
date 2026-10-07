@@ -29,6 +29,8 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.protocol.models.v0.SyncMode
 import java.math.BigDecimal
+import java.util.Date
+import org.bson.BsonTimestamp
 import org.bson.Document
 import org.bson.types.Decimal128
 import org.bson.types.ObjectId
@@ -224,6 +226,110 @@ class MongoDbSourceReadTest {
         val state: MongoDbStreamStateValue = lastStreamStateFor(result, DOC_ID)
         Assertions.assertEquals(MongoDbIdType.OBJECT, state.idType)
         Assertions.assertTrue(state.id!!.contains("\"seq\""), state.id)
+    }
+
+    /**
+     * Every dedicated `_id` encoding checkpoints mid-collection and resumes without loss or
+     * repeats.
+     */
+    @Test
+    fun testTypedIdCollectionsResumeMidSnapshot() {
+        val collections: Map<String, Pair<List<Any>, MongoDbIdType>> =
+            mapOf(
+                DOUBLE_ID to Pair(listOf(1.5, 2.5, 3.5), MongoDbIdType.DOUBLE),
+                DECIMAL_ID to
+                    Pair(
+                        listOf("1.10", "2.20", "3.30").map(Decimal128::parse),
+                        MongoDbIdType.DECIMAL
+                    ),
+                DATE_ID to
+                    Pair(
+                        listOf(1_700_000_000_000L, 1_700_000_001_000L, 1_700_000_002_000L)
+                            .map(::Date),
+                        MongoDbIdType.DATE,
+                    ),
+                TIMESTAMP_ID to
+                    Pair(
+                        listOf(
+                            BsonTimestamp(1_700_000_000, 1),
+                            BsonTimestamp(1_700_000_000, 2),
+                            BsonTimestamp(1_700_000_001, 1),
+                        ),
+                        MongoDbIdType.TIMESTAMP,
+                    ),
+            )
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            collections.forEach { (name, idsAndType) ->
+                val coll = client.getDatabase(TEST_DB).getCollection(name)
+                coll.drop()
+                coll.insertMany(
+                    idsAndType.first.mapIndexed { i, id -> Document("_id", id).append("v", i + 1) }
+                )
+            }
+        }
+        System.setProperty(MAX_RECORDS_PROPERTY, "2")
+        val result: BufferingOutputConsumer =
+            try {
+                read(
+                    configuredCatalog(
+                        SyncMode.FULL_REFRESH,
+                        DestinationSyncMode.OVERWRITE,
+                        collections.keys,
+                        includeEmpty = false,
+                    ),
+                )
+            } finally {
+                System.clearProperty(MAX_RECORDS_PROPERTY)
+            }
+        collections.forEach { (name, idsAndType) ->
+            val (ids, idType) = idsAndType
+            val records = result.records().filter { it.stream == name }
+            Assertions.assertEquals(listOf(1, 2, 3), records.map { it.data["v"].asInt() }, name)
+            // The first checkpoint is the second `_id`: the third record came from the resumed
+            // query.
+            val checkpoints: List<MongoDbStreamStateValue> = allStreamStatesFor(result, name)
+            Assertions.assertEquals(idType, checkpoints.first().idType, name)
+            Assertions.assertEquals(ids[1], checkpoints.first().resumeIdValue(), name)
+            Assertions.assertEquals(ids[2], checkpoints.last().resumeIdValue(), name)
+        }
+    }
+
+    /**
+     * `_id` values of several BSON types: each checkpoint lands on the last value of one type and
+     * the resume must continue into the next type (BSON sort order), which a type-bracketed `$gt`
+     * would skip.
+     */
+    @Test
+    fun testMixedIdTypesResumeAcrossTypeBrackets() {
+        val ids: List<Any> =
+            listOf(1, 2, "a", "b", Date(1_700_000_000_000L), Date(1_700_000_001_000L))
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            val coll = client.getDatabase(TEST_DB).getCollection(MIXED_ID)
+            coll.drop()
+            coll.insertMany(ids.mapIndexed { i, id -> Document("_id", id).append("v", i + 1) })
+        }
+        System.setProperty(MAX_RECORDS_PROPERTY, "2")
+        val result: BufferingOutputConsumer =
+            try {
+                read(
+                    configuredCatalog(
+                        SyncMode.FULL_REFRESH,
+                        DestinationSyncMode.OVERWRITE,
+                        setOf(MIXED_ID),
+                        includeEmpty = false,
+                    ),
+                )
+            } finally {
+                System.clearProperty(MAX_RECORDS_PROPERTY)
+            }
+        val records = result.records().filter { it.stream == MIXED_ID }
+        Assertions.assertEquals((1..6).toList(), records.map { it.data["v"].asInt() })
+        val checkpoints: List<MongoDbStreamStateValue> = allStreamStatesFor(result, MIXED_ID)
+        Assertions.assertEquals(
+            listOf(MongoDbIdType.INT, MongoDbIdType.STRING, MongoDbIdType.DATE),
+            checkpoints.map { it.idType }.distinct(),
+        )
+        Assertions.assertEquals(ids.last(), checkpoints.last().resumeIdValue())
     }
 
     @Test
@@ -533,6 +639,27 @@ class MongoDbSourceReadTest {
         return MongoDbStreamStateValue.fromOpaqueStateValue(streamState.streamState)
     }
 
+    /** All snapshot checkpoints emitted for a stream, in order, to observe resume progress. */
+    private fun allStreamStatesFor(
+        result: BufferingOutputConsumer,
+        stream: String,
+    ): List<MongoDbStreamStateValue> =
+        result
+            .states()
+            .flatMap { message ->
+                when {
+                    message.global != null -> message.global.streamStates
+                    message.stream != null -> listOf(message.stream)
+                    else -> emptyList()
+                }
+            }
+            .filter { it.streamDescriptor.name == stream }
+            .filter { it.streamState != null && !it.streamState.isNull }
+            .mapNotNull {
+                runCatching { MongoDbStreamStateValue.fromOpaqueStateValue(it.streamState) }
+                    .getOrNull()
+            }
+
     /**
      * All snapshot-checkpoint `_id`s emitted for a stream, in order, to observe resume progress.
      */
@@ -563,6 +690,11 @@ class MongoDbSourceReadTest {
         const val CDC = "cdc_coll"
         const val LEGACY_CDC = "legacy_cdc_coll"
         const val DOC_ID = "doc_id_coll"
+        const val DOUBLE_ID = "double_id_coll"
+        const val DECIMAL_ID = "decimal_id_coll"
+        const val DATE_ID = "date_id_coll"
+        const val TIMESTAMP_ID = "timestamp_id_coll"
+        const val MIXED_ID = "mixed_id_coll"
         /**
          * A `_data` the server rejects (`FailedToParse`, not a hex string). Note that any
          * *well-formed* token is accepted and resumed from the oplog start, so a rejected token is
