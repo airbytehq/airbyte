@@ -28,7 +28,8 @@ data:
     breakingChanges:
       0.4.0:
         message: "This release adds Airbyte-managed OAuth credential fields and validates activity permissions during setup. Reauthorize with activity:read_all if your token lacks access, and use your latest refresh token. See the migration guide; no stream reset is required."
-        upgradeDeadline: "2026-10-07"
+        upgradeDeadline: "2026-10-21"
+        deadlineAction: "auto_upgrade"
   remoteRegistries:
     pypi:
       enabled: false

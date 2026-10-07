@@ -14,6 +14,8 @@ The connection check now validates access to both athlete stats and activities. 
 
 All Strava sources use the updated credential configuration. Sources whose tokens lack `activity:read_all` will now fail setup instead of failing later during a sync. Existing valid credentials remain usable. Stream schemas and incremental state are unchanged; no stream reset is required.
 
+Upgrade by October 21, 2026. Remaining sources will be automatically upgraded after that deadline.
+
 ### Upgrade steps
 
 1. Upgrade the connector to version 0.4.0.
