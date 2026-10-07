@@ -40,7 +40,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.66 | 2026-10-07 | [<n>](https://github.com/airbytehq/airbyte/pull/<n>) | Send `audit` stream `from`/`to` filters as epoch milliseconds as required by the Codefresh API |
+| 0.0.66 | 2026-10-07 | [88302](https://github.com/airbytehq/airbyte/pull/88302) | Send `audit` stream `from`/`to` filters as epoch milliseconds as required by the Codefresh API |
 | 0.0.65 | 2026-10-06 | [87793](https://github.com/airbytehq/airbyte/pull/87793) | Update dependencies |
 | 0.0.64 | 2026-09-29 | [87135](https://github.com/airbytehq/airbyte/pull/87135) | Update dependencies |
 | 0.0.63 | 2026-09-22 | [86588](https://github.com/airbytehq/airbyte/pull/86588) | Update dependencies |
