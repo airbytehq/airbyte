@@ -41,6 +41,9 @@ The following fields are required fields for the connector to work:
 - (optional) `search_query`: A search query to filter the results by. For more
   information on constructing a search query, see the
   [News API documentation](https://newsapi.org/docs/endpoints/everything).
+  Note: the `everything` stream requires at least one of `search_query`,
+  `sources` or `domains` to be set; otherwise the News API rejects the request.
+  If you only want top headlines, deselect the `everything` stream.
 - (optional) `search_in`: Fields to search in. Possible values are `title`,
   `description` and `content`.
 - (optional) `sources`: Sources to search in. For a list of sources, see the
@@ -65,6 +68,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                  |
 |:--------|:-----------| :------------------------------------------------------- | :--------------------------------------- |
+| 0.2.24 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix connection check failing with `Bad request` when `search_query`/`sources`/`domains` are unset; surface News API plan/parameter errors as config errors instead of silently ignoring them |
 | 0.2.23 | 2025-05-24 | [60578](https://github.com/airbytehq/airbyte/pull/60578) | Update dependencies |
 | 0.2.22 | 2025-05-10 | [59468](https://github.com/airbytehq/airbyte/pull/59468) | Update dependencies |
 | 0.2.21 | 2025-04-27 | [58520](https://github.com/airbytehq/airbyte/pull/58520) | Update dependencies |

@@ -3,7 +3,6 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - everything
     - top_headlines
 definitions:
   streams:
@@ -43,12 +42,18 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
-                    http_codes:
-                      - 426
-                    error_message_contains: requested too many results
+                    predicate: "{{ response.get('code') == 'maximumResultsReached' }}"
                     error_message: >-
                       Number of requests exceeded. Please upgrade your plan to
                       get more number of requests per sync.
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    failure_type: config_error
+                    http_codes:
+                      - 400
+                      - 426
+                    error_message: >-
+                      News API rejected the `everything` request: {{ response.get('message') }}{{ ' This stream requires at least one of `search_query`, `sources` or `domains` to be set in the source configuration; set one of them or deselect the stream.' if response.get('code') == 'parametersMissing' else '' }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -145,12 +150,18 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
-                    http_codes:
-                      - 426
-                    error_message_contains: requested too many results
+                    predicate: "{{ response.get('code') == 'maximumResultsReached' }}"
                     error_message: >-
                       Number of requests exceeded. Please upgrade your plan to
                       get more number of requests per sync.
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    failure_type: config_error
+                    http_codes:
+                      - 400
+                      - 426
+                    error_message: >-
+                      News API rejected the `top_headlines` request: {{ response.get('message') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -251,12 +262,18 @@ streams:
               response_filters:
                 - type: HttpResponseFilter
                   action: IGNORE
-                  http_codes:
-                    - 426
-                  error_message_contains: requested too many results
+                  predicate: "{{ response.get('code') == 'maximumResultsReached' }}"
                   error_message: >-
                     Number of requests exceeded. Please upgrade your plan to
                     get more number of requests per sync.
+                - type: HttpResponseFilter
+                  action: FAIL
+                  failure_type: config_error
+                  http_codes:
+                    - 400
+                    - 426
+                  error_message: >-
+                    News API rejected the `everything` request: {{ response.get('message') }}{{ ' This stream requires at least one of `search_query`, `sources` or `domains` to be set in the source configuration; set one of them or deselect the stream.' if response.get('code') == 'parametersMissing' else '' }}
       record_selector:
         type: RecordSelector
         extractor:
@@ -348,12 +365,18 @@ streams:
               response_filters:
                 - type: HttpResponseFilter
                   action: IGNORE
-                  http_codes:
-                    - 426
-                  error_message_contains: requested too many results
+                  predicate: "{{ response.get('code') == 'maximumResultsReached' }}"
                   error_message: >-
                     Number of requests exceeded. Please upgrade your plan to
                     get more number of requests per sync.
+                - type: HttpResponseFilter
+                  action: FAIL
+                  failure_type: config_error
+                  http_codes:
+                    - 400
+                    - 426
+                  error_message: >-
+                    News API rejected the `top_headlines` request: {{ response.get('message') }}
       record_selector:
         type: RecordSelector
         extractor:
