@@ -13,8 +13,15 @@ from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import M
 CONNECTOR_DIR = Path(__file__).resolve().parents[1]
 
 
-@pytest.mark.parametrize("region, host", [("nl", "data.castoredc.com"), ("uk", "uk.castoredc.com"), ("us", "us.castoredc.com")])
-def test_regional_api_and_oauth_hosts(region, host):
+@pytest.mark.parametrize(
+    "region, host",
+    [
+        pytest.param("nl", "data.castoredc.com", id="netherlands"),
+        pytest.param("uk", "uk.castoredc.com", id="united-kingdom"),
+        pytest.param("us", "us.castoredc.com", id="united-states"),
+    ],
+)
+def test_regional_api_and_oauth_hosts(region: str, host: str) -> None:
     manifest = yaml.safe_load((CONNECTOR_DIR / "manifest.yaml").read_text())
     metadata = yaml.safe_load((CONNECTOR_DIR / "metadata.yaml").read_text())
     requester = ModelToComponentFactory().create_component(
@@ -33,7 +40,7 @@ def test_regional_api_and_oauth_hosts(region, host):
         assert urlparse(url).hostname in metadata["data"]["allowedHosts"]["hosts"]
 
 
-def test_region_configuration_remains_compatible():
+def test_region_configuration_remains_compatible() -> None:
     manifest = yaml.safe_load((CONNECTOR_DIR / "manifest.yaml").read_text())
     region = manifest["spec"]["connection_specification"]["properties"]["url_region"]
 
