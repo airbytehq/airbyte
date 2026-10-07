@@ -53,7 +53,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.70 | 2026-10-07 | [<n>](https://github.com/airbytehq/airbyte/pull/<n>) | Surface FreshBooks `invalid_grant` refresh-token rejections as a config error instead of a bare `400 Bad Request`; document single-use refresh tokens |
+| 0.0.70 | 2026-10-07 | [88196](https://github.com/airbytehq/airbyte/pull/88196) | Surface FreshBooks `invalid_grant` refresh-token rejections as a config error instead of a bare `400 Bad Request`; document single-use refresh tokens |
 | 0.0.69 | 2026-10-06 | [87842](https://github.com/airbytehq/airbyte/pull/87842) | Update dependencies |
 | 0.0.68 | 2026-09-29 | [87153](https://github.com/airbytehq/airbyte/pull/87153) | Update dependencies |
 | 0.0.67 | 2026-09-22 | [86609](https://github.com/airbytehq/airbyte/pull/86609) | Update dependencies |
