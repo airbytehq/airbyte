@@ -156,6 +156,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 1.0.6 | 2026-10-06 | [87637](https://github.com/airbytehq/airbyte/pull/87637) | Enumerate channel videos through the uploads playlist to remove the search endpoint's 500-video cap. |
 | 1.0.5 | 2026-10-06 | [88113](https://github.com/airbytehq/airbyte/pull/88113) | Update dependencies |
 | 1.0.4 | 2026-09-29 | [87429](https://github.com/airbytehq/airbyte/pull/87429) | Update dependencies |
 | 1.0.3 | 2026-09-22 | [86891](https://github.com/airbytehq/airbyte/pull/86891) | Update dependencies |
