@@ -27,8 +27,7 @@ definitions:
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 1
+              - $ref: "#/definitions/rate_limit_error_handler"
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -55,6 +54,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v1/campaign/{{ stream_partition['cmp_id'] }}/creatives
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/rate_limit_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -88,8 +89,7 @@ definitions:
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 1
+              - $ref: "#/definitions/rate_limit_error_handler"
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -121,8 +121,7 @@ definitions:
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 1
+              - $ref: "#/definitions/rate_limit_error_handler"
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -146,7 +145,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 5
+            page_size: 100
             start_from_page: 1
             inject_on_first_request: true
         partition_router:
@@ -201,8 +200,7 @@ definitions:
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 1
+              - $ref: "#/definitions/rate_limit_error_handler"
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -226,6 +224,15 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config[\"access_token\"] }}"
+  rate_limit_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 10
+    backoff_strategies:
+      - type: WaitUntilTimeFromHeader
+        header: ratelimit-reset
+        min_wait: 5
+      - type: ExponentialBackoffStrategy
+        factor: 5
 
 streams:
   - $ref: "#/definitions/streams/campaigns"
