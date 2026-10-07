@@ -2,8 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+import os
+
 import jsonschema
 import pytest
+import source_faker
 from source_faker import SourceFaker
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
@@ -167,6 +171,37 @@ def test_read_products():
     assert estimate_row_count == 4
     assert record_rows_count == 100  # only 100 products, no matter the count
     assert state_rows_count in {1, 2}, "Expected 1 or 2 state messages per stream."
+
+
+def test_read_products_emits_full_catalog():
+    source = SourceFaker()
+    config = {"count": 1000, "seed": -1, "records_per_slice": 1000, "always_updated": True, "parallelism": 4}
+    stream_dict = {
+        "stream": {"name": "products", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["full_refresh"]},
+        "sync_mode": "full_refresh",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    iterator = source.read(logger, config, catalog, {})
+    records = [row.record.data for row in iterator if row.type is Type.RECORD]
+
+    with open(os.path.join(os.path.dirname(source_faker.__file__), "record_data", "products.json")) as products_file:
+        products_by_id = {product["id"]: product for product in json.load(products_file)}
+
+    assert sorted(record["id"] for record in records) == list(range(1, 101))
+    for record in records:
+        product_without_updated_at = {key: value for key, value in record.items() if key != "updated_at"}
+        assert product_without_updated_at == products_by_id[record["id"]]
+
+    product_100 = next(record for record in records if record["id"] == 100)
+    assert {key: value for key, value in product_100.items() if key != "updated_at"} == {
+        "id": 100,
+        "make": "Buick",
+        "model": "Somerset",
+        "year": 2023,
+        "price": 29981,
+        "created_at": "2024-04-08T18:07:20+00:00",
+    }
 
 
 def test_read_big_random_data():
