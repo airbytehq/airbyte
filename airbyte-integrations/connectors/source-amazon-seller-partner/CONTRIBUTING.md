@@ -111,6 +111,88 @@ attributed to a date the report did not cover. The full-refresh snapshot and for
 `GET_VENDOR_FORECASTING_RETAIL_REPORT`) are the deliberate exception — they have no cursor and send
 no window on purpose.
 
+## 8. Vendor retail analytics reports forward report options but supply no defaults
+
+Amazon documents `reportPeriod`, `distributorView`, and `sellingProgram` as required for the vendor sales and
+inventory reports, and `reportPeriod` for traffic and net pure product margin. Real-time inventory has no
+documented options.
+
+Because each of these streams declares its own `request_body_json`, which replaces rather than merges with
+the shared requester's body, configured options used to be validated and then silently dropped
+(issue #77617). Each stream's `request_body_json` now references the single `report_options_from_config`
+Jinja block that `creation_requester_with_report_options` also references, so the option matching rules
+exist in exactly one place. Each stream supplies only its `report_type` via `$parameters`.
+
+Do not add default values for these options. The right values are account-specific (`distributorView` is
+`MANUFACTURING` or `SOURCING` depending on how the vendor sells to Amazon; `sellingProgram` is `RETAIL`, `FRESH`
+or, for some reports, `BUSINESS`), so a hardcoded guess can return the wrong numbers with no error and no schema change to signal it.
+A missing option fails loudly instead: Amazon can reject a request that omits them, and on a live Vendor
+connection every vendor sales, inventory and traffic report went `FATAL` with "This report type requires the
+reportPeriod, distributorView, sellingProgram reportOption to be specified" until the user configured them. The
+block ends in `{{ opts if opts else None }}` so an unconfigured connection sends no `reportOptions` key at all and
+its request body is byte-identical to previous versions.
+
+## 9. Vendor retail analytics streams must hold back four days
+
+Amazon publishes the vendor retail analytics reports "72 hours after the close of the period" for the
+`DAY` reportPeriod
+(https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports).
+Requesting a day it has not published yet makes the report `FATAL` with "The report data for the requested
+date range is not yet available". That is a partial failure per slice, not a skip, so before 6.0.4 every
+sync failed on its newest day and a long-running connection hit the platform's 20-partial-failure limit while
+most of its data had loaded.
+
+The three vendor analytics cursors (Vendor Sales, Vendor Traffic, Net Pure Product Margin) therefore end at
+`now_utc() - duration('P4D')`. Four, not three: a slice for day D closes at D 23:59:59 and is published 72
+hours after *that*, so a three-day holdback is only safe for a sync that starts at midnight UTC. The cursor's
+end bound is exclusive, so the newest day actually requested is four to five days back depending on the time
+of day.
+
+An explicitly configured `replication_end_date` is used as-is with no holdback, matching the pre-migration
+Python connector where `availability_sla_days` only ever moved the "now" bound. `GET_VENDOR_INVENTORY_REPORT`
+has no cursor today; if it gains one it needs the same holdback, since Amazon publishes it on the same
+schedule. Do not apply the holdback to `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` (published five minutes after
+each hour closes) or to the seller `GET_SALES_AND_TRAFFIC_REPORT` streams, which Amazon publishes on a
+different schedule.
+
+A known limitation: the day-aligned window assumes `reportPeriod: DAY`. A connection that configures `WEEK`
+or `MONTH` gets a one-day window that contradicts the configured period, since Amazon expects Sunday- or
+month-aligned bounds for those. This is not handled.
+
+## 10. Settlement Reports Use `AsyncRetriever` Without Creating Anything
+
+`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` is the one report stream Amazon generates on its own —
+`createReport` is not allowed for it. It still uses `basic_async_retriever`, with the
+`creation_requester` overridden to a **GET** of `reports/2021-06-30/reports/{reportId}` for a report
+that `flat_file_settlement_v2_helper` already listed. Nothing is created; the async machinery is
+there for its `download_target_requester`, which resolves `reportDocumentId` to a pre-signed URL and
+downloads it in the same call.
+
+Three constraints that are easy to break:
+
+- **Do not move the document lookup into a parent stream.** Amazon signs the URL with
+  `X-Amz-Expires=300`. Resolving it in a `SubstreamPartitionRouter` parent minted the URL during
+  partition generation and consumed it during partition read, which blew the five-minute window on
+  any sizeable backfill (`getReportDocument` is budgeted at 1 request/minute, so 100 reports is ~100
+  minutes) and replayed the same dead URL on every retry.
+- **`getReports` pagination must send `nextToken` alone.** Reports 2021-06-30 returns `400
+  InvalidInput` if `nextToken` arrives with `reportTypes`, `pageSize`, `createdSince` or
+  `createdUntil` — unlike Orders v0, which ignores them. Suppressing all four takes two mechanisms:
+  `ignore_stream_slicer_parameters_on_paginated_requests` on the **SimpleRetriever** (the CDK ignores
+  it on the DeclarativeStream) covers the cursor's `createdSince`/`createdUntil`, and
+  `"{{ '' if next_page_token else ... }}"` in the requester's `request_parameters` covers
+  `reportTypes` and `pageSize`. The paginator's `page_size_option` cannot be used, because
+  `DefaultPaginator` injects it on paginated requests too. The response field is also `nextToken`
+  (lower camel case); `NextToken` is the Orders/Finances v0 spelling and resolves to an empty string
+  here, which silently stops pagination after the first page.
+- **The download requester must ignore 403.** If the URL expires anyway, S3 returns `403 Request has
+  expired` and the CDK cannot resolve a new one. `PresignedUrlDownloadRequester` handles this by
+  calling `getReportDocument` again for a fresh URL (up to two times), which only works because the
+  download requester's error handler maps 403 to `IGNORE` so the response reaches the component.
+
+**Why this matters:** each of these fails quietly or only at scale. The stream either emits 0 records
+with a successful sync, stops after one page of reports, or fails on large backfills with expired URLs.
+
 ## Incremental Stream Considerations
 
 The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 8 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.

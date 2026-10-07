@@ -182,7 +182,7 @@ that `flat_file_settlement_v2_helper` already listed. Nothing is created; the as
 there for its `download_target_requester`, which resolves `reportDocumentId` to a pre-signed URL and
 downloads it in the same call.
 
-Two constraints that are easy to break:
+Three constraints that are easy to break:
 
 - **Do not move the document lookup into a parent stream.** Amazon signs the URL with
   `X-Amz-Expires=300`. Resolving it in a `SubstreamPartitionRouter` parent minted the URL during
@@ -196,7 +196,16 @@ Two constraints that are easy to break:
   it on the DeclarativeStream) covers the cursor's `createdSince`/`createdUntil`, and
   `"{{ '' if next_page_token else ... }}"` in the requester's `request_parameters` covers
   `reportTypes` and `pageSize`. The paginator's `page_size_option` cannot be used, because
-  `DefaultPaginator` injects it on paginated requests too.
+  `DefaultPaginator` injects it on paginated requests too. The response field is also `nextToken`
+  (lower camel case); `NextToken` is the Orders/Finances v0 spelling and resolves to an empty string
+  here, which silently stops pagination after the first page.
+- **The download requester must ignore 403.** If the URL expires anyway, S3 returns `403 Request has
+  expired` and the CDK cannot resolve a new one. `PresignedUrlDownloadRequester` handles this by
+  calling `getReportDocument` again for a fresh URL (up to two times), which only works because the
+  download requester's error handler maps 403 to `IGNORE` so the response reaches the component.
+
+**Why this matters:** each of these fails quietly or only at scale. The stream either emits 0 records
+with a successful sync, stops after one page of reports, or fails on large backfills with expired URLs.
 
 ## Incremental Stream Considerations
 
