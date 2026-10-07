@@ -18,35 +18,31 @@ The connection test validates connectivity by reading the `users` stream, so the
 
 ## Setup guide
 
-## Set up Gong
+### Set up Gong
 
-You can authenticate to Gong using one of two methods: OAuth 2.0 or an API key.
-
-### For Airbyte Cloud
+You can authenticate to Gong using OAuth 2.0 or an API key.
 
 <!-- env:cloud -->
 
-- **OAuth 2.0 (recommended)**. Click **Authenticate your Gong account** to sign in through Gong's OAuth flow. This method handles token refresh automatically. You need a Gong account with technical administrator permissions to authorize the connection.
+- **OAuth 2.0 (recommended on Airbyte Cloud)**. Click **Authenticate your Gong account** to sign in through Gong's OAuth flow. This method handles token refresh automatically. You need a Gong account with technical administrator permissions to authorize the connection.
 
 <!-- /env:cloud -->
 
-- **API Key**. Alternatively, authenticate with an access key and access key secret, generated as described in the Open Source section below.
-
-### For Airbyte Open Source
-
 - **API Key**. Authenticate using an access key and access key secret. To generate credentials:
-  1. Log in to your Gong account as a technical administrator.
-  2. Navigate to **Company Settings** > **Ecosystem** > **API**.
-  3. Click **Create** to generate an access key and access key secret.
-  4. Copy both values immediately. The access key secret is only displayed once.
+  1. Log in to Gong as a technical administrator.
+  2. In the left sidebar, click **Admin center**.
+  3. On the **Settings** tab, click **API** under **Ecosystem**.
+  4. Click **+ Get API key** and enter a name for the key.
+  5. Optionally, set **TTL (days)** to make the key expire, and enter **Trusted IPs** to restrict where the key can be used from. If you set trusted IPs and use Airbyte Cloud, include the [Airbyte Cloud IP addresses](#ip-allow-list).
+  6. Click **Get API key**, then copy the access key and secret. Gong doesn't show the secret again after you close the dialog.
 
-  For more details, see the [Gong API documentation](https://help.gong.io/docs/receive-access-to-the-api).
+  For more details, see [Manage API keys](https://help.gong.io/docs/receive-access-to-the-api) in the Gong help center.
 
 ### Configure the connector
 
 <FieldAnchor field="start_date">
 
-- **Start Date** (optional). The date from which to fetch data, in ISO-8601 format (for example, `2024-01-01T00:00:00Z`). This applies to incremental streams. If not specified, the connector syncs all available data from the earliest recorded call; set a start date to limit how far back the initial sync reaches.
+- **Start Date** (optional). The date from which to fetch data, in the format `YYYY-MM-DDTHH:MM:SSZ` (for example, `2024-01-01T00:00:00Z`). This applies to incremental streams. If not specified, the connector syncs all available data from the earliest recorded call; set a start date to limit how far back the initial sync reaches. For web-conference calls recorded by Gong, this date is compared against the call's scheduled time; for other calls, against its actual start time.
 
 </FieldAnchor>
 
@@ -58,9 +54,10 @@ You can authenticate to Gong using one of two methods: OAuth 2.0 or an API key.
 
 <FieldAnchor field="lookback_window_days">
 
-- **Lookback Window (days)** (optional). Number of days to subtract from the saved state at the start of each incremental sync. The default is 0 (sync strictly forward). Set this if calls or scorecards are updated after they were first replicated and you want later syncs to pick up those changes.
+- **Lookback Window (days)** (optional). Number of days to subtract from the saved state at the start of each incremental sync. The default is 0 (sync strictly forward). Set this if calls or scorecards are updated after they were first replicated and you want later syncs to pick up those changes. The lookback never rewinds past your configured start date.
 
 </FieldAnchor>
+
 <HideInUI>
 
 ## Supported sync modes
@@ -70,7 +67,7 @@ The Gong source connector supports the following [sync modes](https://docs.airby
 - Full Refresh
 - Incremental
 
-## Supported Streams
+## Supported streams
 
 This source syncs the following streams:
 
@@ -100,9 +97,26 @@ The connector doesn't pace itself against the 10,000-calls-per-day quota, so a l
 
 The call transcripts stream is a substream of the calls stream. Starting with version 1.3.0, it batches up to 100 call IDs into each `POST /v2/calls/transcript` request instead of sending one request per call. This sharply reduces the request volume during large backfills, making it much less likely you'll hit Gong's rate limit or daily quota, though very large tenants can still approach these limits. Subsequent incremental syncs only fetch transcripts for new calls.
 
+When you exhaust the daily quota, Gong's `Retry-After` value can be several hours. The connector waits rather than failing, so a sync that looks idle may be waiting for the quota to reset. Starting with version 1.4.0, the sync reports a rate-limited status while it waits.
+
+## Troubleshooting
+
+### Unauthorized error during setup or sync
+
+Starting with version 1.4.0, the connector fails with a configuration error when Gong returns HTTP `401` or `403`, instead of retrying. Check that:
+
+- Your access key and secret, or your OAuth credentials, are valid. API keys created with a **TTL (days)** value stop working when they expire, and deleting a key in Gong revokes it immediately.
+- The credentials have every scope listed in [Prerequisites](#prerequisites), including `api:users:read`.
+- The Gong user who created the credentials still has API access.
+- If the API key has **Trusted IPs** set, the list includes the IP addresses Airbyte connects from. Gong rejects requests from other addresses with a `403` error.
+
+### A stream returns no records
+
+Gong returns the same "not found" response for an empty result and for a request made by a user who can't see the requested data. The connector treats both as an empty stream, so credentials created by a user with limited call visibility sync successfully but return fewer records than you expect. If a stream is unexpectedly empty, confirm that the credential owner can see the calls or scorecards in Gong, and that your start date isn't later than the data you expect.
+
 ## IP allow list
 
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list. This includes the **Trusted IPs** list on a Gong API key, if you set one.
 
 ## Changelog
 
@@ -111,12 +125,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 1.5.0 | 2026-10-05 | [87006](https://github.com/airbytehq/airbyte/pull/87006) | Fix `extensiveCalls` schema (`parties[].context`, `media`) and add missing `reviewMethod` and `conferencingProviders` fields |
+| 1.5.0 | 2026-10-07 | [87006](https://github.com/airbytehq/airbyte/pull/87006) | Fix `extensiveCalls` schema (`parties[].context`, `media`) and add missing `reviewMethod` and `conferencingProviders` fields |
 | 1.4.4 | 2026-10-06 | [87873](https://github.com/airbytehq/airbyte/pull/87873) | Update dependencies |
 | 1.4.3 | 2026-09-29 | [87189](https://github.com/airbytehq/airbyte/pull/87189) | Update dependencies |
 | 1.4.2 | 2026-09-22 | [86644](https://github.com/airbytehq/airbyte/pull/86644) | Update dependencies |
 | 1.4.1 | 2026-09-15 | [86067](https://github.com/airbytehq/airbyte/pull/86067) | Update dependencies |
-| 1.4.0 | 2026-08-30 | [85192](https://github.com/airbytehq/airbyte/pull/85192) | Promote connector to certified |
+| 1.4.0 | 2026-09-11 | [85192](https://github.com/airbytehq/airbyte/pull/85192) | Promote connector to certified |
 | 1.3.6 | 2026-09-08 | [85501](https://github.com/airbytehq/airbyte/pull/85501) | Update dependencies |
 | 1.3.5 | 2026-08-18 | [84600](https://github.com/airbytehq/airbyte/pull/84600) | Update dependencies |
 | 1.3.4 | 2026-08-11 | [83953](https://github.com/airbytehq/airbyte/pull/83953) | Update dependencies |
