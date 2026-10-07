@@ -248,7 +248,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                         |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------------- |
-| 0.1.10 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Archive connector: Fauna shut down its service on 2025-05-30 |
+| 0.1.10 | 2026-10-07 | [88305](https://github.com/airbytehq/airbyte/pull/88305) | Archive connector: Fauna shut down its service on 2025-05-30 |
 | 0.1.9 | 2025-05-10 | [59992](https://github.com/airbytehq/airbyte/pull/59992) | Update dependencies |
 | 0.1.8 | 2025-05-03 | [59430](https://github.com/airbytehq/airbyte/pull/59430) | Update dependencies |
 | 0.1.7 | 2025-04-26 | [58913](https://github.com/airbytehq/airbyte/pull/58913) | Update dependencies |
