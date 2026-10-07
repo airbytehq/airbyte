@@ -117,9 +117,7 @@ def _partition_state(cursor: str):
     """Stream state with one cursor for every calendar, under "state" where the
     StateDelegatingStream's retention check reads it."""
     return (
-        StateBuilder()
-        .with_stream_state("events", {"use_global_cursor": True, "state": {"updated": cursor}, "lookback_window": 0})
-        .build()
+        StateBuilder().with_stream_state("events", {"use_global_cursor": True, "state": {"updated": cursor}, "lookback_window": 0}).build()
     )
 
 
