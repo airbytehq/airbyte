@@ -4,6 +4,7 @@ package io.airbyte.cdk.jdbc
 import io.airbyte.cdk.h2.H2TestFixture
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 import java.sql.Connection
@@ -11,7 +12,9 @@ import java.sql.Date
 import java.sql.JDBCType
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.sql.SQLException
 import java.sql.Statement
+import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -305,19 +308,91 @@ class JdbcAccessorTest {
     @Test
     fun testTimestampAccessorZeroDateConvertedToNull() {
         val rs = mockk<ResultSet>()
-        every { rs.getString(1) } returns "0000-00-00 00:00:00"
         every { rs.wasNull() } returns false
         every { rs.getTimestamp(1) } returns null
         Assertions.assertNull(TimestampAccessor.get(rs, 1))
+        verify(exactly = 0) { rs.getString(any<Int>()) }
     }
 
     @Test
     fun testDateAccessorZeroDateConvertedToNull() {
         val rs = mockk<ResultSet>()
-        every { rs.getString(1) } returns "0000-00-00"
         every { rs.wasNull() } returns false
         every { rs.getDate(1) } returns null
         Assertions.assertNull(DateAccessor.get(rs, 1))
+        verify(exactly = 0) { rs.getString(any<Int>()) }
+    }
+
+    @Test
+    fun testOffsetDateTimeFieldTypeZeroDateConvertedToNull() {
+        val rs = mockk<ResultSet>()
+        every { rs.wasNull() } returns false
+        every { rs.getObject(1, OffsetDateTime::class.java) } returns null
+        Assertions.assertNull(OffsetDateTimeFieldType.jdbcGetter.get(rs, 1))
+        verify(exactly = 0) { rs.getString(any<Int>()) }
+    }
+
+    @Test
+    fun testDateAccessorReturnsNullWhenWasNull() {
+        val rs = mockk<ResultSet>()
+        every { rs.getDate(1) } returns Date(0)
+        every { rs.wasNull() } returns true
+        Assertions.assertNull(DateAccessor.get(rs, 1))
+    }
+
+    @Test
+    fun testTimestampAccessorReturnsNullWhenWasNull() {
+        val rs = mockk<ResultSet>()
+        every { rs.getTimestamp(1) } returns Timestamp(0)
+        every { rs.wasNull() } returns true
+        Assertions.assertNull(TimestampAccessor.get(rs, 1))
+    }
+
+    @Test
+    fun testOffsetDateTimeFieldTypeReturnsNullWhenWasNull() {
+        val rs = mockk<ResultSet>()
+        every { rs.getObject(1, OffsetDateTime::class.java) } returns
+            OffsetDateTime.of(2024, 3, 1, 1, 2, 3, 0, ZoneOffset.UTC)
+        every { rs.wasNull() } returns true
+        Assertions.assertNull(OffsetDateTimeFieldType.jdbcGetter.get(rs, 1))
+    }
+
+    @Test
+    fun testDateAccessorThrowsSQLExceptionForUnconvertibleValue() {
+        val rs = mockk<ResultSet>()
+        every { rs.getDate(1) } throws
+            SQLException("Value '2026-00-01' can not be represented as java.sql.Timestamp")
+        Assertions.assertThrows(SQLException::class.java) { DateAccessor.get(rs, 1) }
+    }
+
+    @Test
+    fun testTimestampAccessorThrowsSQLExceptionForUnconvertibleValue() {
+        val rs = mockk<ResultSet>()
+        every { rs.getTimestamp(1) } throws
+            SQLException("Value '2026-00-01' can not be represented as java.sql.Timestamp")
+        Assertions.assertThrows(SQLException::class.java) { TimestampAccessor.get(rs, 1) }
+    }
+
+    @Test
+    fun testOffsetDateTimeFieldTypeThrowsSQLExceptionForUnconvertibleValue() {
+        val rs = mockk<ResultSet>()
+        every { rs.getObject(1, OffsetDateTime::class.java) } throws
+            SQLException("Value '2026-00-01' can not be represented as java.sql.Timestamp")
+        Assertions.assertThrows(SQLException::class.java) {
+            OffsetDateTimeFieldType.jdbcGetter.get(rs, 1)
+        }
+    }
+
+    @Test
+    fun testTimestampAccessorDoesNotReadString() {
+        val rs = mockk<ResultSet>()
+        every { rs.getTimestamp(1) } returns Timestamp.valueOf("2024-03-01 01:02:03")
+        every { rs.wasNull() } returns false
+        Assertions.assertEquals(
+            LocalDateTime.of(2024, 3, 1, 1, 2, 3),
+            TimestampAccessor.get(rs, 1),
+        )
+        verify(exactly = 0) { rs.getString(any<Int>()) }
     }
 
     @Test
@@ -341,6 +416,19 @@ class JdbcAccessorTest {
             Assertions.assertEquals(LocalDateTime.of(1999, 11, 12, 11, 12, 13), select())
             updateToNull()
             Assertions.assertEquals(null, select())
+        }
+    }
+
+    @Test
+    fun testOffsetDateTimeFieldTypeGetter() {
+        columnName = "col_timestamp_tz"
+        OffsetDateTimeFieldType.jdbcGetter.run {
+            Assertions.assertEquals(
+                OffsetDateTime.of(2024, 3, 1, 1, 2, 3, 456000000, ZoneOffset.ofHours(-4)),
+                select(),
+            )
+            updateToNull()
+            Assertions.assertNull(select())
         }
     }
 
