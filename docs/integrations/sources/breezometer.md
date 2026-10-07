@@ -57,7 +57,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
-| 0.2.25 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Archive connector: BreezoMeter API was folded into Google Maps Platform after the Google acquisition; vendor docs/signup are gone and the Weather API endpoints no longer exist |
+| 0.2.25 | 2026-10-07 | [88295](https://github.com/airbytehq/airbyte/pull/88295) | Archive connector: BreezoMeter API was folded into Google Maps Platform after the Google acquisition; vendor docs/signup are gone and the Weather API endpoints no longer exist |
 | 0.2.24 | 2025-05-10 | [59868](https://github.com/airbytehq/airbyte/pull/59868) | Update dependencies |
 | 0.2.23 | 2025-05-03 | [59319](https://github.com/airbytehq/airbyte/pull/59319) | Update dependencies |
 | 0.2.22 | 2025-04-26 | [58734](https://github.com/airbytehq/airbyte/pull/58734) | Update dependencies |
