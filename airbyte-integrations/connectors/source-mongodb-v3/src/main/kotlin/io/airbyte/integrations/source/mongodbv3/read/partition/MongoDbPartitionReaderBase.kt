@@ -1,5 +1,5 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
-package io.airbyte.integrations.source.mongodbv3.read
+package io.airbyte.integrations.source.mongodbv3.read.partition
 
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.EmittedField
@@ -12,6 +12,7 @@ import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.Resource
 import io.airbyte.cdk.read.ResourceType
 import io.airbyte.cdk.read.generatePartitionId
+import io.airbyte.integrations.source.mongodbv3.read.record.MongoDbSharedState
 
 /** A function that emits one record for a stream. */
 typealias RecordAcceptor = (NativeRecordPayload, Map<EmittedField, FieldValueChange>?) -> Unit

@@ -11,12 +11,12 @@ import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.integrations.source.mongodbv3.read.MongoBooleanValueCodec
-import io.airbyte.integrations.source.mongodbv3.read.MongoDbValueCodec
-import io.airbyte.integrations.source.mongodbv3.read.MongoJsonbValueCodec
-import io.airbyte.integrations.source.mongodbv3.read.MongoNullValueCodec
-import io.airbyte.integrations.source.mongodbv3.read.MongoNumberValueCodec
-import io.airbyte.integrations.source.mongodbv3.read.MongoStringValueCodec
+import io.airbyte.integrations.source.mongodbv3.read.record.MongoBooleanValueCodec
+import io.airbyte.integrations.source.mongodbv3.read.record.MongoDbValueCodec
+import io.airbyte.integrations.source.mongodbv3.read.record.MongoJsonbValueCodec
+import io.airbyte.integrations.source.mongodbv3.read.record.MongoNullValueCodec
+import io.airbyte.integrations.source.mongodbv3.read.record.MongoNumberValueCodec
+import io.airbyte.integrations.source.mongodbv3.read.record.MongoStringValueCodec
 
 /**
  * [FieldType]s of a document's top-level fields, discovered by sampling (`$type`). A field may hold

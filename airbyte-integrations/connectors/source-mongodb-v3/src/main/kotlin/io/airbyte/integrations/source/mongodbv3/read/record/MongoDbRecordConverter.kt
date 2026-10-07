@@ -1,5 +1,5 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
-package io.airbyte.integrations.source.mongodbv3.read
+package io.airbyte.integrations.source.mongodbv3.read.record
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode

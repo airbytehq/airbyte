@@ -8,10 +8,10 @@ import com.mongodb.client.model.Sorts
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.Stream
 import io.airbyte.integrations.source.mongodbv3.discover.MongoDbSourceMetadataQuerier.Companion.ID_FIELD
-import io.airbyte.integrations.source.mongodbv3.read.MongoDbPartitionReaderBase
-import io.airbyte.integrations.source.mongodbv3.read.MongoDbRecordConverter
-import io.airbyte.integrations.source.mongodbv3.read.RecordAcceptor
-import io.airbyte.integrations.source.mongodbv3.read.schemaFieldTypesOf
+import io.airbyte.integrations.source.mongodbv3.read.partition.MongoDbPartitionReaderBase
+import io.airbyte.integrations.source.mongodbv3.read.partition.RecordAcceptor
+import io.airbyte.integrations.source.mongodbv3.read.record.MongoDbRecordConverter
+import io.airbyte.integrations.source.mongodbv3.read.record.schemaFieldTypesOf
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import kotlinx.coroutines.currentCoroutineContext

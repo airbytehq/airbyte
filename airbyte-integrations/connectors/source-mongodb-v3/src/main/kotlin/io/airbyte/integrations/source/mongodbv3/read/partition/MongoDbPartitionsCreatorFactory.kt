@@ -1,5 +1,5 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
-package io.airbyte.integrations.source.mongodbv3.read
+package io.airbyte.integrations.source.mongodbv3.read.partition
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
@@ -16,6 +16,8 @@ import io.airbyte.integrations.source.mongodbv3.discover.MongoDbSourceMetadataQu
 import io.airbyte.integrations.source.mongodbv3.discover.MongoDbSourceMetadataQuerier.Companion.ID_FIELD
 import io.airbyte.integrations.source.mongodbv3.read.cdc.MongoDbCdcPartitionReader
 import io.airbyte.integrations.source.mongodbv3.read.cdc.MongoDbCdcState
+import io.airbyte.integrations.source.mongodbv3.read.record.MongoDbSharedState
+import io.airbyte.integrations.source.mongodbv3.read.record.schemaFieldTypesOf
 import io.airbyte.integrations.source.mongodbv3.read.snapshot.MongoDbSnapshotPartitionReader
 import io.airbyte.integrations.source.mongodbv3.read.snapshot.MongoDbSnapshotStatus
 import io.airbyte.integrations.source.mongodbv3.read.snapshot.MongoDbStreamState

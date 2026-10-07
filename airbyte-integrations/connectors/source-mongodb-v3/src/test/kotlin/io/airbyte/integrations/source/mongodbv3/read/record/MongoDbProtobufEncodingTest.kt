@@ -1,5 +1,5 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
-package io.airbyte.integrations.source.mongodbv3.read
+package io.airbyte.integrations.source.mongodbv3.read.record
 
 import io.airbyte.cdk.discover.DataOrMetaField
 import io.airbyte.cdk.discover.EmittedField

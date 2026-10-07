@@ -4,7 +4,7 @@ package io.airbyte.integrations.source.mongodbv3.read.snapshot
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
-import io.airbyte.integrations.source.mongodbv3.read.MongoDbSharedState
+import io.airbyte.integrations.source.mongodbv3.read.record.MongoDbSharedState
 
 /** Per-stream read state: ties a [Stream] feed to the shared client and configuration. */
 class MongoDbStreamState(

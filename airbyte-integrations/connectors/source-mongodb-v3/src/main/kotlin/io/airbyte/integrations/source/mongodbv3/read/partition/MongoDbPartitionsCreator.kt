@@ -1,8 +1,9 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
-package io.airbyte.integrations.source.mongodbv3.read
+package io.airbyte.integrations.source.mongodbv3.read.partition
 
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionsCreator
+import io.airbyte.integrations.source.mongodbv3.read.record.MongoDbSharedState
 
 /** Plans a feed as exactly one partition (splitting a collection is a later optimization). */
 class MongoDbPartitionsCreator(
