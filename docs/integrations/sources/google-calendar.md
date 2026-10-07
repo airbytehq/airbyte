@@ -52,7 +52,7 @@ To authenticate with OAuth you need a **Client ID**, **Client Secret**, and **Re
 4. Enter a name for the connector.
 5. Under **Authentication**, choose **Authenticate via Google (OAuth)** and click **Authenticate your Google account** to authorize.
 6. (Optional) For **Calendar Id**, enter a specific calendar ID to sync only that calendar. The calendar does not need to appear in the account's calendar list; it is read directly. The value `primary` is accepted for the account's primary calendar. Leave empty to sync every calendar in the account's calendar list.
-7. (Optional) For **Start Date**, enter the earliest `updated` timestamp for incremental `events` syncs in the format `YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`. When unset, the first sync fetches all events; values older than roughly 30 days are ignored and all events are read.
+7. (Optional) For **Start Date**, enter the earliest `updated` timestamp for incremental `events` syncs in the format `YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`. When unset, the first sync fetches all events; Google applies it server-side only within the last 29 days; for an older date the connector reads the whole calendar and drops older events itself (see [Events sync behavior](#events-sync-behavior)).
 8. (Optional) For **Number of concurrent workers**, set the number of concurrent request workers (1–10, default 3).
 9. Click **Set up source** and wait for the tests to complete.
 
@@ -70,7 +70,7 @@ To authenticate with OAuth you need a **Client ID**, **Client Secret**, and **Re
    - **Authenticate via Google (OAuth):** sign in with Google using Airbyte's OAuth app (Cloud); enter the **Client ID**, **Client Secret**, and **Refresh Token** you obtained in Step 1.
    - **Authenticate with custom app (client ID / secret):** enter a refresh token issued by *your own* Google Cloud OAuth app with the `calendar.readonly` and `calendar.acls.readonly` scopes, plus that app's **Client ID** and **Client Secret**. Without `calendar.acls.readonly`, the `acl` stream is skipped (its 403 responses are ignored). Existing configurations with flat `client_id`/`client_secret`/`client_refresh_token_2` fields are migrated automatically to this option.
 6. (Optional) For **Calendar Id**, enter a specific calendar ID to sync only that calendar, or `primary` for the account's primary calendar. The calendar does not need to appear in the account's calendar list; it is read directly. Leave empty to sync all calendars.
-7. (Optional) For **Start Date**, enter the earliest `updated` timestamp for incremental `events` syncs (`YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`). When unset, the first sync fetches all events; values older than roughly 30 days are ignored and all events are read.
+7. (Optional) For **Start Date**, enter the earliest `updated` timestamp for incremental `events` syncs (`YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`). When unset, the first sync fetches all events; Google applies it server-side only within the last 29 days; for an older date the connector reads the whole calendar and drops older events itself (see [Events sync behavior](#events-sync-behavior)).
 8. (Optional) For **Number of concurrent workers**, set the number of concurrent request workers (1–10, default 3).
 9. Click **Set up source** and wait for the tests to complete.
 
@@ -101,7 +101,7 @@ The `events`, `acl`, and `freebusy` streams sync once per calendar. When **Calen
 | acl | calendar_id, id | DefaultPaginator | ✅ | ❌ |
 | freebusy | calendar_id, start, end | No pagination | ✅ | ❌ |
 
-Deleted events are replicated: cancelled events arrive with `status: "cancelled"` (`showDeleted=true`).
+Deleted events are replicated: cancelled events arrive with `status: "cancelled"` (`showDeleted=true`) and are stamped with an `updated` value so they replace the live row under Append + Deduped (see [Events sync behavior](#events-sync-behavior)).
 
 ## Limitations & troubleshooting
 
@@ -113,7 +113,7 @@ Expand to see details about Google Calendar connector limitations and troublesho
 ### Connector limitations
 
 - **API quota:** the Google Calendar API enforces per-user quotas (600 requests per minute per user per project; 10,000 per minute per project). The connector rate-limits itself to 500 requests/minute and retries rate-limit responses (403/429) automatically. See [Google's quota documentation](https://developers.google.com/calendar/api/guides/quota).
-- **Stale cursor:** Google only returns `events` changes from roughly the last 30 days. When the saved cursor or configured Start Date is older than that, the `updatedMin` bound is dropped and every event is re-read rather than failing with a `410` error. The 410 handler remains as a safety net (configuration error).
+- **Stale cursor:** Google rejects `updatedMin` older than 29 days. When the saved cursor is older than 21 days, the connector clears it and re-reads every event (bounded by Start Date when set) instead of failing. Should Google still return `410 updatedMinTooLongAgo`, it is treated as a transient error and the next attempt re-reads automatically; a `410` for a deleted calendar or `fullSyncRequired` is a configuration error.
 - **`acl` scope and ownership:** the `acl` stream requires the `calendar.acls.readonly` scope and can only read ACLs for calendars the authenticated account owns; ACLs of other calendars are skipped.
 - **`freebusy` is a point-in-time window:** each sync queries busy blocks from `Start Date` (or 30 days ago) through 45 days in the future. It is a snapshot, not a historical record.
 - **`settings.value` is always a string**, including for numeric-looking settings.
