@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 51766ab3-df25-4c8c-98a4-647440d0dfbb
-  dockerImageTag: 0.0.63
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-productive
   githubIssueLabel: source-productive
   icon: icon.svg
@@ -26,6 +26,19 @@ data:
   releaseDate: 2024-09-11
   releaseStage: alpha
   supportLevel: community
+  releases:
+    breakingChanges:
+      0.1.0:
+        message: >-
+          The retired project_assignments stream has been removed. Refresh your schema and select memberships instead.
+          The boards stream now reads folders and returns the resource type folders.
+          See https://docs.airbyte.com/integrations/sources/productive-migrations for migration steps.
+        upgradeDeadline: "2026-10-07"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - project_assignments
+              - boards
   documentationUrl: https://docs.airbyte.com/integrations/sources/productive
   tags:
     - language:manifest-only

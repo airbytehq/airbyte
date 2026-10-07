@@ -1,12 +1,17 @@
 # Productive
+
 This page contains the setup guide and reference information for the [Productive](https://app.productive.io/) source connector.
 
-## Documentation reference:
-Visit `https://developer.productive.io/index.html#top` for API documentation
+## Documentation reference
+
+Visit the [Productive API reference](https://developer.productive.io/reference) for API documentation.
 
 ## Authentication setup
+
 `Source-productive` uses api key authentication,
 Visit `https://app.productive.io/ORG_ID-UUID/settings/api-integrations` for getting your API Key and organization ID
+
+The connector sends the API key in the `X-Auth-Token` header and the organization ID in the `X-Organization-Id` header.
 
 ## Configuration
 
@@ -16,6 +21,11 @@ Visit `https://app.productive.io/ORG_ID-UUID/settings/api-integrations` for gett
 | `organization_id` | `string` | Organization ID. The organization ID which could be seen from `https://app.productive.io/xxxx-xxxx/settings/api-integrations` page |  |
 
 ## Streams
+
+Starting with version 0.1.0, the retired `project_assignments` stream is no longer available. Use `memberships` for project access data instead.
+The `boards` stream keeps its name but reads Productive's `folders` endpoint, whose records have `type: folders`.
+See the [migration guide](productive-migrations.md) before upgrading connections that use either stream.
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | activities | id | DefaultPaginator | ✅ |  ❌  |
@@ -54,7 +64,6 @@ Visit `https://app.productive.io/ORG_ID-UUID/settings/api-integrations` for gett
 | payments | id | DefaultPaginator | ✅ |  ❌  |
 | pipelines | id | DefaultPaginator | ✅ |  ❌  |
 | prices | id | DefaultPaginator | ✅ |  ❌  |
-| project_assignments | id | DefaultPaginator | ✅ |  ❌  |
 | projects | id | DefaultPaginator | ✅ |  ❌  |
 | rate_cards | id | DefaultPaginator | ✅ |  ❌  |
 | reports_booking-reports | id | DefaultPaginator | ✅ |  ❌  |
@@ -87,6 +96,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | -- | ---------------- |
+| 0.1.0 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Remove retired project assignments, read boards from folders, and fix organization header |
 | 0.0.63 | 2026-10-06 | [87985](https://github.com/airbytehq/airbyte/pull/87985) | Update dependencies |
 | 0.0.62 | 2026-09-29 | [87303](https://github.com/airbytehq/airbyte/pull/87303) | Update dependencies |
 | 0.0.61 | 2026-09-22 | [86746](https://github.com/airbytehq/airbyte/pull/86746) | Update dependencies |
