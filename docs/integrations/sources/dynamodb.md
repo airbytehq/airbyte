@@ -221,6 +221,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------- |
+| 0.4.1 | 2026-10-06 | [88146](https://github.com/airbytehq/airbyte/pull/88146) | Promote the connector to generally available and certified |
 | 0.4.0 | 2026-10-06 | [86997](https://github.com/airbytehq/airbyte/pull/86997) | Rebuild on the Bulk CDK: parallel scan segments on Airbyte Cloud, resumable full refresh and incremental syncs, speed mode, exact numbers, integer cursors, temporary credentials and IAM role assumption. Role-based authentication is removed, see [Changes in 0.4.0](#changes-in-040) |
 | 0.3.11 | 2025-07-11 | [62916](https://github.com/airbytehq/airbyte/pull/62916) | Add gradle docker plugins |
 | 0.3.10 | 2025-06-17 | [61601](https://github.com/airbytehq/airbyte/pull/61601) | fix(source-dynamodb): Replace ListNode with Iterator for lazyness #61600 |
