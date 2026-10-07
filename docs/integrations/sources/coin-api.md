@@ -19,7 +19,7 @@ This source is capable of syncing the following streams:
 | :---------------- | :-------------------- | :------------------------------------------------------ |
 | Full Refresh Sync | Yes                   |                                                         |
 | Incremental Sync  | No                    |                                                         |
-| API Environments  | Yes                   | Both sandbox and production environments are supported. |
+| API Environments  | Yes                   | Use `production`. The CoinAPI sandbox environment has been discontinued. |
 
 ### Performance considerations
 
@@ -39,7 +39,7 @@ may require a paid plan.
 The following fields are required fields for the connector to work:
 
 - `api_key`: Your CoinAPI API key.
-- `environment`: The environment to use. Can be either `sandbox` or `production`.
+- `environment`: The environment to use. Use `production` (default). The `sandbox` option is deprecated: CoinAPI discontinued `rest-sandbox.coinapi.io`, so syncs configured with `sandbox` fail with a DNS resolution error.
 - `symbol_id`: The symbol to pull data for.
 - `period`: The time interval to pull data for.
 - `start_date`: The start date to pull `history` data from.
@@ -57,6 +57,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                                                                     |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
+| 0.3.23 | 2026-10-07 | [<n>](https://github.com/airbytehq/airbyte/pull/<n>) | Default `environment` to `production`; mark discontinued CoinAPI sandbox as deprecated |
 | 0.3.22 | 2025-05-24 | [60417](https://github.com/airbytehq/airbyte/pull/60417) | Update dependencies |
 | 0.3.21 | 2025-05-10 | [60004](https://github.com/airbytehq/airbyte/pull/60004) | Update dependencies |
 | 0.3.20 | 2025-05-03 | [59429](https://github.com/airbytehq/airbyte/pull/59429) | Update dependencies |
