@@ -5,19 +5,18 @@ Coassemble is an online training tool that connects people with the information 
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `user_token` | `string` | User Token.  |  |
-| `user_id` | `string` | User ID.  |  |
+| `workspace_id` | `string` | Workspace ID. The ID of your Coassemble workspace, shown next to your API key in the Developer section of your workspace settings. |  |
+| `api_key` | `string` | API Key. Workspace API key generated in the Developer section of your Coassemble workspace settings. |  |
 
-See the [Coassemble API docs](https://developers.coassemble.com/get-started) for more information to get started and generate API credentials.
+Both values come from the Developer section of your Coassemble workspace (`Settings` → `Developer`, or the setup guide linked from the [Coassemble developer docs](https://developers.coassemble.com/)). The connector sends them as `Authorization: COASSEMBLE:<workspace_id>:<api_key>`. Legacy `User ID` / `User Token` credentials from the retired `COASSEMBLE-V1-SHA256` scheme are no longer accepted; see the [migration guide](coassemble-migrations.md) if you are upgrading from 0.0.x.
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | courses | id | DefaultPaginator | ✅ |  ❌  |
-| screen_types | - | NoPaginator | ✅ |  ❌  |
 | trackings | - | DefaultPaginator | ✅ |  ❌  |
 
-⚠️⚠️ Note: The `screen_types` and `trackings` streams are **Available on request only** as per the [API docs](https://developers.coassemble.com/get-started). Hence, enabling them without having them enabled on the API side would result in errors. ⚠️⚠️
+The `trackings` stream is read per course (`GET /api/v1/headless/trackings?id=<course id>`, as the API now requires a course `id`) and each record carries the parent `course_id`. Both endpoints require the Coassemble **Build** plan or above; see the [Coassemble API reference](https://developers.coassemble.com/api/courses).
 
 ## IP allow list
 
@@ -30,6 +29,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.0 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Switch to workspace API key authentication (`COASSEMBLE:<workspace_id>:<api_key>`), read `trackings` per course with 0-indexed pagination, remove the retired `screen_types` stream |
 | 0.0.66 | 2026-10-06 | [87794](https://github.com/airbytehq/airbyte/pull/87794) | Update dependencies |
 | 0.0.65 | 2026-09-29 | [87116](https://github.com/airbytehq/airbyte/pull/87116) | Update dependencies |
 | 0.0.64 | 2026-09-22 | [86569](https://github.com/airbytehq/airbyte/pull/86569) | Update dependencies |
