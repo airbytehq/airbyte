@@ -238,10 +238,18 @@ def test_full_refresh_without_start_date_reads_everything(stream_name, path, rec
 
 def test_missing_scope_is_a_config_error_naming_the_scope():
     """A 403 is a configuration problem the user can fix; the message carries the scope the API names."""
+    # Real body captured from the API on 2026-10-07 with a key lacking the scope (scope name swapped).
     body = {
-        "type": "forbidden",
+        "type": "resource_forbidden",
         "status": 403,
-        "errors": [{"code": "missing_scope", "message": "missing a required scope: workflows.view"}],
+        "request_id": "ZtsoWDj7",
+        "errors": [
+            {
+                "code": "missing_required_scope",
+                "message": "missing a required scope: workflows.view",
+                "metadata": {"scope": "workflows.view"},
+            }
+        ],
     }
 
     with requests_mock.Mocker() as mocker:
