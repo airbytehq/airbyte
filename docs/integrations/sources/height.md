@@ -51,7 +51,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | ---- | ---------------- |
-| 0.0.69 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Archive connector: Height shut down on September 24, 2025 and `api.height.app` is offline |
+| 0.0.69 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88315) | Archive connector: Height shut down on September 24, 2025 and `api.height.app` is offline |
 | 0.0.68 | 2026-10-06 | [87889](https://github.com/airbytehq/airbyte/pull/87889) | Update dependencies |
 | 0.0.67 | 2026-09-29 | [87215](https://github.com/airbytehq/airbyte/pull/87215) | Update dependencies |
 | 0.0.66 | 2026-09-22 | [86651](https://github.com/airbytehq/airbyte/pull/86651) | Update dependencies |
