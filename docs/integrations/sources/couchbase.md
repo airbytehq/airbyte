@@ -73,7 +73,9 @@ The Couchbase source connector supports the following [sync modes](https://docs.
 
 ## Supported Streams
 
-The Couchbase source connector will replicate all collections within the specified bucket as individual streams.
+The Couchbase source connector will replicate all collections within the specified bucket as individual streams. Collections in the Couchbase-managed `_system` scope are skipped.
+
+Each collection needs a primary index so it can be queried with SQL++. The connector attempts to create one (`CREATE PRIMARY INDEX IF NOT EXISTS ...`) during discovery; if the configured user lacks the privilege to manage indexes, create the primary index yourself before syncing, otherwise the sync fails with a "No primary index is available" error.
 
 ## Performance considerations
 
@@ -89,6 +91,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.1.10 | 2026-10-07 | [<n>](https://github.com/airbytehq/airbyte/pull/<n>) | Page documents by `META().id` instead of sorting whole collections in one query (fixes query timeouts / out-of-memory on large collections), raise a clear config error when the primary index is missing, skip the `_system` scope |
 | 0.1.9 | 2026-06-02 | [78669](https://github.com/airbytehq/airbyte/pull/78669) | Update dependencies |
 | 0.1.8 | 2025-05-24 | [60362](https://github.com/airbytehq/airbyte/pull/60362) | Update dependencies |
 | 0.1.7 | 2025-05-10 | [59945](https://github.com/airbytehq/airbyte/pull/59945) | Update dependencies |
