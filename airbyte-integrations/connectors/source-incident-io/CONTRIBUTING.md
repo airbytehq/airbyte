@@ -24,7 +24,7 @@ rejected with `422 Filter field date_range must provide a date in the format yyy
 against the live API on 2026-10-06). The shared `updated_at_cursor` therefore keeps the full timestamp
 in state but formats the slice start as `%Y-%m-%d` in `request_parameters`. Every sync re-reads the
 records updated since midnight UTC of the day the state points to; those are de-duplicated by primary
-key in the destination. Do not switch to `start_time_option` with a full-timestamp `datetime_format`,
+key when the destination sync mode is Append + Deduped (with plain Append they are kept). Do not switch to `start_time_option` with a full-timestamp `datetime_format`,
 and do not enable client-side filtering: the day-level overlap is what prevents gaps at the boundary.
 
 Record timestamps come back as `%Y-%m-%dT%H:%M:%S.%fZ`; older reports (airbytehq/alpha-beta-issues issues
@@ -48,10 +48,17 @@ to 25 if that field is ever added to the schema.
 
 ## Rate limits and errors
 
-The default limit is 1,200 requests per minute per API key. The manifest declares a matching
-`api_budget` and reads the `x-ratelimit-remaining` and `x-ratelimit-reset` headers; a `429` is retried
-after the `retry-after` header. `401` and `403` are configuration errors with actionable messages;
-`408`, `5xx` are retried; other `4xx` fail as system errors with the vendor's message.
+The API key allows 1,200 requests per minute, but `GET /v2/incidents` is bound at 60 per minute: its
+`x-ratelimit-limit` header reads `60, 1200;window=60, 60;window=60` while every other endpoint reads
+`1200, 1200;window=60` (checked live on 2026-10-07). The `api_budget` therefore has two policies, matched
+in order: 60/min for `/v2/incidents`, 1,200/min for everything else. It also reads
+`x-ratelimit-remaining` so a zero from the API drains the local bucket. `x-ratelimit-reset` is not
+declared on purpose: with a `MovingWindowCallRatePolicy` the CDK only syncs the bucket when no reset
+header is present. A `429` is retried after the `retry-after` header (the vendor says to prefer it).
+`401` and `403` are configuration errors with actionable messages; `408` and `5xx` are retried; other
+`4xx` fail as system errors with the vendor's message. The message templates read
+`(response.get('errors') or [{}])[0].get('message', ...)`: the `or` matters, an empty `errors` list
+would otherwise raise inside the error handler and turn a clear configuration error into a generic one.
 
 ## `users` includes deactivated accounts
 

@@ -1,4 +1,4 @@
-version: 5.8.1
+version: 7.33.0
 
 type: DeclarativeSource
 
@@ -532,16 +532,14 @@ definitions:
               failure_type: config_error
               http_codes:
                 - 403
-              error_message: "The API key lacks a permission this stream needs: {{ response.get('errors', [{}])[0].get('message', 'see the incident.io error response') }}. Grant it in incident.io under Settings > API keys, or deselect the stream."
+              error_message: "The API key lacks a permission this stream needs: {{ (response.get('errors') or [{}])[0].get('message', 'see the incident.io error response') }}. Grant it in incident.io under Settings > API keys, or deselect the stream."
             - type: HttpResponseFilter
               action: RATE_LIMITED
-              failure_type: transient_error
               http_codes:
                 - 429
-              error_message: "incident.io rate limit reached (1,200 requests per minute per API key). Retrying after the Retry-After interval."
+              error_message: "incident.io rate limit reached. Retrying after the Retry-After interval."
             - type: HttpResponseFilter
               action: RETRY
-              failure_type: transient_error
               http_codes:
                 - 408
                 - 500
@@ -561,7 +559,7 @@ definitions:
                 - 412
                 - 413
                 - 422
-              error_message: "incident.io rejected the request: {{ response.get('errors', [{}])[0].get('message', 'see the incident.io error response') }}"
+              error_message: "incident.io rejected the request: {{ (response.get('errors') or [{}])[0].get('message', 'see the incident.io error response') }}"
   updated_at_cursor:
     # The API's updated_at filter accepts dates only (yyyy-mm-dd, see CONTRIBUTING.md), so the
     # streams send the slice start as a date and re-read the current day on every sync. State keeps
@@ -601,15 +599,26 @@ concurrency_level:
   default_concurrency: 4
   max_concurrency: 10
 
+# The API key allows 1,200 requests per minute, but GET /v2/incidents is bound at 60 per minute
+# (x-ratelimit-limit on that endpoint reads "60, 1200;window=60, 60;window=60"; every other endpoint
+# reads "1200, ..."). Policies are matched in order, so the incidents policy comes first.
 api_budget:
   type: HTTPAPIBudget
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
+        - limit: 60
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://api.incident.io
+          url_path_pattern: ^/v2/incidents$
+    - type: MovingWindowCallRatePolicy
+      rates:
         - limit: 1200
           interval: PT1M
       matchers: []
-  ratelimit_reset_header: x-ratelimit-reset
   ratelimit_remaining_header: x-ratelimit-remaining
   status_codes_for_ratelimit_hit:
     - 429
@@ -632,9 +641,10 @@ spec:
       start_date:
         type: string
         title: Start Date
-        description: "Only sync records updated on or after this UTC date for the incremental streams (incidents, alerts, escalations, actions, follow-ups). Leave empty to sync everything."
+        description: "Only sync records updated on or after this UTC date for the incremental streams (incidents, alerts, escalations, actions, follow-ups). The default predates all incident.io data, so everything is synced."
         format: date-time
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        default: "2020-01-01T00:00:00Z"
         examples:
           - "2024-01-01T00:00:00Z"
         order: 1

@@ -24,14 +24,14 @@ The Incident.io source connector supports the following [sync modes](https://doc
 - Full Refresh
 - Incremental (`incidents`, `alerts`, `escalations`, `actions`, `follow-ups`, on `updated_at`)
 
-Incremental streams filter by date, because the Incident.io API accepts a date rather than a timestamp in its `updated_at` filter. Each sync re-reads the records updated since the start of the day the previous sync reached; the duplicates are removed by the destination's deduplication on the primary key.
+Incremental streams filter by date, because the Incident.io API accepts a date rather than a timestamp in its `updated_at` filter. Each sync re-reads the records updated since the start of the day the previous sync reached; with the Append + Deduped destination sync mode those repeats are removed by primary key, with plain Append they are kept.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key. API key to use. Find it at https://app.incident.io/settings/api-keys | |
-| `start_date` | `string` | Start Date. Only sync records updated on or after this UTC date for the incremental streams. Leave empty to sync everything. | 2020-01-01T00:00:00Z |
+| `start_date` | `string` | Start Date. Only sync records updated on or after this UTC date for the incremental streams. The default predates all incident.io data. | 2020-01-01T00:00:00Z |
 
 ## Streams
 
@@ -55,7 +55,7 @@ Incremental streams filter by date, because the Incident.io API accepts a date r
 
 ## Limitations and troubleshooting
 
-The Incident.io API has a default rate limit of 1,200 requests per minute per API key. If the connector encounters rate limiting, it retries with exponential backoff.
+The Incident.io API allows 1,200 requests per minute per API key, and the incidents endpoint has a lower limit of 60 requests per minute. The connector paces itself within both limits and, if the API still returns a rate-limit response, waits for the interval the API asks for before retrying.
 
 ## IP allow list
 
@@ -68,7 +68,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.2.0 | 2026-10-06 | [88150](https://github.com/airbytehq/airbyte/pull/88150) | Migrate `actions` and `follow-ups` to the paginated `/v3` endpoints ahead of the `/v2` removal on 2026-12-31, querying each `incident_mode` so the record set matches `/v2`; add incremental sync on `updated_at` for `incidents`, `alerts`, `escalations`, `actions` and `follow-ups`; handle API errors with actionable messages; respect the rate limit with a budget and `Retry-After` backoff; use the vendor's maximum page sizes; include deactivated users; declare 34 fields the API already returns; move the connection check to `incidents`; run the standard tests against the real API |
+| 0.2.0 | 2026-10-06 | [88150](https://github.com/airbytehq/airbyte/pull/88150) | Migrate `actions` and `follow-ups` to the paginated `/v3` endpoints ahead of the `/v2` removal on 2026-12-31, querying each `incident_mode` so the record set matches `/v2`; add incremental sync on `updated_at` for `incidents`, `alerts`, `escalations`, `actions` and `follow-ups`; handle API errors with actionable messages; respect the rate limit with a budget and `Retry-After` backoff; use the vendor's maximum page sizes; include deactivated users; declare 27 fields the API already returns; move the connection check to `incidents`; run the standard tests against the real API |
 | 0.1.42 | 2026-10-06 | [87912](https://github.com/airbytehq/airbyte/pull/87912) | Update dependencies |
 | 0.1.41 | 2026-09-29 | [87212](https://github.com/airbytehq/airbyte/pull/87212) | Update dependencies |
 | 0.1.40 | 2026-09-22 | [86668](https://github.com/airbytehq/airbyte/pull/86668) | Update dependencies |

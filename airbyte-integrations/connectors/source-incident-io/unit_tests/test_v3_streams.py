@@ -17,6 +17,7 @@ catch-all.
 
 import logging
 from pathlib import Path
+from unittest import mock
 
 import pytest
 import requests_mock
@@ -213,7 +214,75 @@ def test_incremental_sends_state_as_a_date_and_keeps_full_timestamp(stream_name,
     assert all(request.qs["updated_at[gte]"] == ["2026-09-18"] for request in requests_made)
     assert [message.record.data["id"] for message in output.records][:1] == ["r-1"]
     final_state = output.most_recent_state.stream_state.__dict__
-    assert final_state.get("updated_at") == "2026-09-20T08:00:00Z" or "updated_at" in str(final_state)
+    if stream_name in ("actions", "follow-ups"):
+        # One cursor per incident_mode plus a global fallback; every partition saw the same record.
+        assert final_state["state"] == {"updated_at": "2026-09-20T08:00:00Z"}
+        assert {s["partition"]["incident_mode"] for s in final_state["states"]} == set(_MODES)
+        assert all(s["cursor"] == {"updated_at": "2026-09-20T08:00:00Z"} for s in final_state["states"])
+    else:
+        assert final_state == {"updated_at": "2026-09-20T08:00:00Z"}
+
+
+@pytest.mark.parametrize(
+    ("stream_name", "path", "records_field"),
+    [
+        ("actions", "/v3/actions", "actions"),
+        ("follow-ups", "/v3/follow_ups", "follow_ups"),
+    ],
+)
+def test_per_partition_state_sets_each_mode_filter(stream_name, path, records_field):
+    """After the first 0.2.0 sync the state carries one cursor per incident_mode; each partition must resume
+    from its own date and the others from the global one."""
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            stream_name,
+            {
+                "use_global_cursor": False,
+                "state": {"updated_at": "2026-09-18T10:38:18Z"},
+                "states": [{"partition": {"incident_mode": "standard"}, "cursor": {"updated_at": "2026-09-19T00:00:00Z"}}],
+            },
+        )
+        .build()
+    )
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}{path}", json={records_field: [], "pagination_meta": {"page_size": 250}})
+        output = _read_stream(stream_name, SyncMode.incremental, state)
+        by_mode = {request.qs["incident_mode"][0]: request.qs["updated_at[gte]"] for request in mocker.request_history}
+
+    assert by_mode["standard"] == ["2026-09-19"]
+    assert all(by_mode[mode] == ["2026-09-18"] for mode in _MODES if mode != "standard")
+    final_state = output.most_recent_state.stream_state.__dict__
+    standard = next(s for s in final_state["states"] if s["partition"] == {"incident_mode": "standard"})
+    assert standard["cursor"] == {"updated_at": "2026-09-19T00:00:00Z"}
+
+
+def test_start_date_config_is_sent_as_a_date():
+    config = {**_CONFIG, "start_date": "2025-03-01T00:00:00Z"}
+    catalog = CatalogBuilder().with_stream("incidents", SyncMode.full_refresh).build()
+    source = YamlDeclarativeSource(path_to_yaml=str(_MANIFEST_PATH), catalog=catalog, config=config, state=StateBuilder().build())
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/incidents", json={"incidents": [], "pagination_meta": {}})
+        read(source, config, catalog)
+        assert mocker.request_history[0].qs["updated_at[gte]"] == ["2025-03-01"]
+
+
+@pytest.mark.parametrize(
+    ("stream_name", "path", "records_field", "expected"),
+    [
+        ("incidents", "/v2/incidents", "incidents", "250"),
+        ("incident_updates", "/v2/incident_updates", "incident_updates", "250"),
+        ("escalations", "/v2/escalations", "escalations", "50"),
+        ("alerts", "/v2/alerts", "alerts", "50"),
+        ("schedules", "/v2/schedules", "schedules", "100"),
+    ],
+)
+def test_page_sizes_match_what_the_api_serves(stream_name, path, records_field, expected):
+    """incidents is capped at 250 by the live API (spec says 500); schedules stays at 100 on purpose, see CONTRIBUTING.md."""
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}{path}", json={records_field: [], "pagination_meta": {}})
+        _read_stream(stream_name)
+        assert mocker.request_history[0].qs["page_size"] == [expected]
 
 
 @pytest.mark.parametrize(
@@ -257,10 +326,80 @@ def test_missing_scope_is_a_config_error_naming_the_scope():
         output = _read_stream("workflows")
 
     assert output.records == []
-    assert output.errors, "expected an error trace message"
-    error = output.errors[-1].trace.error
+    error = _stream_error(output, "workflows")
     assert error.failure_type.value == "config_error"
-    assert "workflows.view" in (error.message or "") + (error.internal_message or "")
+    assert error.message == (
+        "The API key lacks a permission this stream needs: missing a required scope: workflows.view. "
+        "Grant it in incident.io under Settings > API keys, or deselect the stream."
+    )
+
+
+def _stream_error(output, stream_name):
+    """The stream-level traced error, not the end-of-sync summary the concurrent source adds last."""
+    return next(
+        message.trace.error
+        for message in output.errors
+        if message.trace.error.stream_descriptor and message.trace.error.stream_descriptor.name == stream_name
+    )
+
+
+@pytest.mark.parametrize("body", [{"errors": []}, {"errors": None}, {}])
+def test_403_without_a_vendor_message_is_still_a_config_error(body):
+    """An empty or missing errors list must not break the message template (it used to raise UndefinedError
+    inside the error handler, turning a clear configuration error into a generic system error)."""
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/workflows", status_code=403, json=body)
+        output = _read_stream("workflows")
+
+    error = _stream_error(output, "workflows")
+    assert error.failure_type.value == "config_error"
+    assert error.message.startswith("The API key lacks a permission this stream needs: see the incident.io error response.")
+
+
+@pytest.mark.parametrize(
+    ("status", "body", "failure_type", "expected"),
+    [
+        (
+            401,
+            {"type": "authentication_error", "status": 401, "errors": [{"code": "access_token_invalid", "message": "Access token is not valid"}]},
+            "config_error",
+            "The API key is invalid or has been revoked. Create a new key in incident.io under Settings > API keys and update the connector configuration.",
+        ),
+        (
+            422,
+            {"type": "validation_error", "status": 422, "errors": [{"code": "invalid_value", "message": "Filter field date_range must provide a date in the format yyyy-mm-dd"}]},
+            "system_error",
+            "incident.io rejected the request: Filter field date_range must provide a date in the format yyyy-mm-dd",
+        ),
+    ],
+)
+def test_fail_responses_surface_the_manifest_messages(status, body, failure_type, expected):
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/incidents", status_code=status, json=body)
+        output = _read_stream("incidents")
+
+    error = _stream_error(output, "incidents")
+    assert error.failure_type.value == failure_type
+    assert error.message == expected
+
+
+def test_rate_limit_waits_for_retry_after_then_succeeds():
+    responses = [
+        {
+            "status_code": 429,
+            "headers": {"retry-after": "7", "x-ratelimit-remaining": "0"},
+            "json": {"type": "rate_limit_error", "status": 429, "errors": [{"code": "rate_limited", "message": "rate limited"}]},
+        },
+        {"status_code": 200, "json": {"incidents": [{"id": "i-1", "updated_at": "2026-09-20T08:00:00.123Z"}], "pagination_meta": {}}},
+    ]
+    with mock.patch("time.sleep") as sleep, requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/incidents", responses)
+        output = _read_stream("incidents")
+        assert len(mocker.request_history) == 2
+
+    assert output.errors == []
+    assert [message.record.data["id"] for message in output.records] == ["i-1"]
+    assert any(call.args and call.args[0] >= 7 for call in sleep.call_args_list)
 
 
 def test_users_requests_inactive_users():
