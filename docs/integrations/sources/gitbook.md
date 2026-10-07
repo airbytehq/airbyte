@@ -13,9 +13,14 @@ GitBook connector  enables seamless data integration from GitBook into your data
 |-------------|-------------|------------|---------------------|----------------------|
 | users |  | DefaultPaginator | ✅ |  ❌  |
 | organizations | id | DefaultPaginator | ✅ |  ❌  |
-| insights | timestamp | DefaultPaginator | ✅ |  ❌  |
 | content | id | DefaultPaginator | ✅ |  ❌  |
 | org_members | id | DefaultPaginator | ✅ |  ❌  |
+
+## Breaking changes
+
+### Upgrading to 0.1.0
+
+The `insights_traffic` stream was removed because GitBook removed the `GET /v1/spaces/{spaceId}/insights/traffic` endpoint from its API. Connections that have `insights_traffic` selected must deselect it before syncing again. See the [GitBook migration guide](/integrations/sources/gitbook-migrations) for details.
 
 ## IP allow list
 
@@ -28,6 +33,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Breaking: remove the `insights_traffic` stream; GitBook removed the `GET /v1/spaces/{spaceId}/insights/traffic` endpoint. See the [migration guide](/integrations/sources/gitbook-migrations). |
 | 0.0.64 | 2026-10-06 | [87825](https://github.com/airbytehq/airbyte/pull/87825) | Update dependencies |
 | 0.0.63 | 2026-09-29 | [87183](https://github.com/airbytehq/airbyte/pull/87183) | Update dependencies |
 | 0.0.62 | 2026-09-22 | [86624](https://github.com/airbytehq/airbyte/pull/86624) | Update dependencies |
