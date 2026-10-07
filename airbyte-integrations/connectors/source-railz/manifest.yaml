@@ -16,6 +16,16 @@ definitions:
       client_id: "{{ config.client_id }}"
       secret_key: "{{ config.secret_key }}"
       lifetime: "PT3600S"
+    error_handler:
+      # https://docs.railz.ai/reference/rate-limit: 1,000 requests/minute per team,
+      # 429 responses carry a Retry-After header (seconds)
+      type: DefaultErrorHandler
+      max_retries: 10
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+          factor: 5
   retriever:
     type: SimpleRetriever
     record_selector:
