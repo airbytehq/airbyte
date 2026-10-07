@@ -329,7 +329,11 @@ FROM ad_group
 
 Note that `segments.date` is automatically added to the `WHERE` clause if it's included in the `SELECT` clause. Custom queries that include `segments.date` sync incrementally on `segments.date` in 14-day date windows for each customer account, and re-read the number of days set in **Conversion Window** on each sync. Starting in connector version 6.0.0, these custom queries are limited to the same 37-month granular data retention window as built-in report streams; older report slices are skipped. See the [migration guide](/integrations/sources/google-ads-migrations) for upgrade guidance.
 
-Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains metrics fields in the select clause, it will not be executed against manager accounts.
+Google Ads doesn't allow [metrics](https://developers.google.com/google-ads/api/fields/v23/metrics) to be requested for a manager account. If the text of a custom query contains `metrics`, the connector runs it only against non-manager accounts. Otherwise, the connector runs it against every customer account it syncs, including manager accounts. Each custom query must be valid for every account it runs against. If Google Ads rejects a custom query with an HTTP 400 error for any account, the sync fails with a configuration error that names the stream and includes Google's error message. For example:
+
+```text
+Google Ads rejected the custom query for stream 'my_custom_stream': Unrecognized field in the query: 'asset_group_asset.performance_label'. Correct or remove the invalid field or clause in the custom query configuration.
+```
 
 Follow Google's guidance on [Selectability between segments and metrics](https://developers.google.com/google-ads/api/docs/reporting/segmentation#selectability_between_segments_and_metrics) when editing custom queries or default stream schemas (which will also be turned into GAQL queries by the connector). Fields like `segments.keyword.info.text`, `segments.keyword.info.match_type`, `segments.keyword.ad_group_criterion` in the `SELECT` clause tell the query to only get the rows of data that have keywords and remove any row that is not associated with a keyword. This is often unobvious and undesired behavior and can lead to missing data records. If you need this field in the stream, add a new stream instead of editing the existing ones.
 
@@ -407,7 +411,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.1.4       | 2026-10-06 | [88123](https://github.com/airbytehq/airbyte/pull/88123) | Report invalid custom GAQL queries as configuration errors that include the Google Ads error message. |
+| 6.1.4       | 2026-10-07 | [88123](https://github.com/airbytehq/airbyte/pull/88123) | Report invalid custom GAQL queries as configuration errors that include the Google Ads error message. |
 | 6.1.3       | 2026-10-05 | [87630](https://github.com/airbytehq/airbyte/pull/87630) | Split interrupted reports with the CDK's request window splitting (CDK 7.33.0); retry dropped criterion first syncs and mid-stream read timeouts instead of failing.   |
 | 6.1.2 | 2026-09-30 | [87026](https://github.com/airbytehq/airbyte/pull/87026) | Fix state migration discarding mid-sync per-partition checkpoints, which caused retries to restart incremental streams from the start date. |
 | 6.1.1 | 2026-08-26 | [85023](https://github.com/airbytehq/airbyte/pull/85023) | Fixed multi-byte UTF-8 characters being corrupted at chunk boundaries in large streamed responses. |
