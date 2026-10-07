@@ -51,7 +51,7 @@ bitnami/kubectl:1.28.9
 busybox:1.35
 busybox:latest
 curlimages/curl:8.1.1
-minio/minio:RELEASE.2023-11-20T22-40-07Z
+airbyte/minio:RELEASE.2023-11-20T22-40-07Z
 temporalio/auto-setup:1.23.0
 ```
 

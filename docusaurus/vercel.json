@@ -234,12 +234,22 @@
     },
     {
       "source": "/developers/mcp-servers/pyairbyte-mcp",
-      "destination": "/community/mcp-servers/replication-mcp",
+      "destination": "/platform/airbyte-mcp",
       "statusCode": 301
     },
     {
       "source": "/community/mcp-servers/pyairbyte-mcp",
-      "destination": "/community/mcp-servers/replication-mcp",
+      "destination": "/platform/airbyte-mcp",
+      "statusCode": 301
+    },
+    {
+      "source": "/community/mcp-servers/replication-mcp",
+      "destination": "/platform/airbyte-mcp",
+      "statusCode": 301
+    },
+    {
+      "source": "/community/mcp-servers/replication-mcp-advanced",
+      "destination": "/platform/airbyte-mcp",
       "statusCode": 301
     },
     {

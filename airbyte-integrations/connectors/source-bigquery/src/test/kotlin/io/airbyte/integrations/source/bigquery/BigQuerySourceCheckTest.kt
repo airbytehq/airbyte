@@ -1,0 +1,81 @@
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
+package io.airbyte.integrations.source.bigquery
+
+import io.airbyte.cdk.command.SyncsTestFixture
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
+
+/** Runs the CHECK operation against the BigQuery emulator. */
+class BigQuerySourceCheckTest {
+
+    @Test
+    fun testCheckSucceedsWithDataset() {
+        SyncsTestFixture.testCheck(
+            BigQueryEmulatorTestFixture.config(datasetId = BigQueryEmulatorTestFixture.DATASET)
+        )
+    }
+
+    @Test
+    fun testCheckSucceedsWithoutDataset() {
+        SyncsTestFixture.testCheck(BigQueryEmulatorTestFixture.config())
+    }
+
+    /**
+     * The optional properties: the emulator hosts a single project, so it is also the job project.
+     */
+    @Test
+    fun testCheckSucceedsWithJobProjectAndConcurrency() {
+        SyncsTestFixture.testCheck(
+            BigQueryEmulatorTestFixture.config(
+                datasetId = BigQueryEmulatorTestFixture.DATASET,
+                jobProjectId = BigQueryEmulatorTestFixture.PROJECT_ID,
+                maxDbConnections = 4,
+            )
+        )
+    }
+
+    @Test
+    fun testCheckFailsWithInvalidConcurrency() {
+        SyncsTestFixture.testCheck(
+            BigQueryEmulatorTestFixture.config(
+                datasetId = BigQueryEmulatorTestFixture.DATASET,
+                maxDbConnections = 0
+            ),
+            expectedFailure = "'max_db_connections' must be a positive integer",
+        )
+    }
+
+    @Test
+    fun testCheckFailsWithUnknownDataset() {
+        SyncsTestFixture.testCheck(
+            BigQueryEmulatorTestFixture.config(datasetId = "does_not_exist"),
+            expectedFailure = "(?i)not found",
+        )
+    }
+
+    @Test
+    fun testCheckFailsWithUnknownProject() {
+        SyncsTestFixture.testCheck(
+            BigQueryEmulatorTestFixture.config(projectId = "does-not-exist"),
+            expectedFailure = "(?i)not found",
+        )
+    }
+
+    @Test
+    fun testCheckFailsWithDatasetWithoutTables() {
+        SyncsTestFixture.testCheck(
+            BigQueryEmulatorTestFixture.config(
+                datasetId = BigQueryEmulatorTestFixture.EMPTY_DATASET
+            ),
+            expectedFailure = "Discovered zero tables",
+        )
+    }
+
+    companion object {
+        @JvmStatic
+        @BeforeAll
+        fun startEmulator() {
+            BigQueryEmulatorTestFixture.start()
+        }
+    }
+}

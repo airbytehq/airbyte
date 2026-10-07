@@ -97,6 +97,9 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.scryfall.com
+    request_headers:
+      User-Agent: Airbyte
+      Accept: application/json
 
 streams:
   - $ref: "#/definitions/streams/cards"

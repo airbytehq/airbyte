@@ -21,6 +21,10 @@ class LinkedInAdsRequestBuilder:
         return cls("/adAccounts")
 
     @classmethod
+    def organizations_endpoint(cls) -> "LinkedInAdsRequestBuilder":
+        return cls("/organizationAcls")
+
+    @classmethod
     def account_users_endpoint(cls, account_id: int) -> "LinkedInAdsRequestBuilder":
         builder = cls("/adAccountUsers")
         builder._query_params["q"] = "accounts"
@@ -66,6 +70,18 @@ class LinkedInAdsRequestBuilder:
         )
         builder._query_params_in_url = True
         return builder
+
+    @classmethod
+    def posts_endpoint(cls, post_urn: str) -> "LinkedInAdsRequestBuilder":
+        # GET /rest/posts/{urn} with the URN colons percent-encoded, mirroring the manifest's
+        # `posts/{{ stream_slice.get('post_urn') | replace(':', '%3A') }}` path.
+        return cls(f"/posts/{post_urn.replace(':', '%3A')}")
+
+    @classmethod
+    def video_endpoint(cls, video_urn: str) -> "LinkedInAdsRequestBuilder":
+        # GET /rest/videos/{urn} with the URN colons percent-encoded, mirroring the manifest's
+        # `videos/{{ stream_slice.get('video_urn') | replace(':', '%3A') }}` path.
+        return cls(f"/videos/{video_urn.replace(':', '%3A')}")
 
     @classmethod
     def ad_analytics_endpoint(cls) -> "LinkedInAdsRequestBuilder":
