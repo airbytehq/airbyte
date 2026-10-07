@@ -2,6 +2,13 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 6, 2026
+
+Platform
+
+- If your organization's paid Airbyte Cloud subscription has ended, you can still view your past usage on the Usage pages and your invoice history on the Billing page in Organization settings. Previously, the Usage pages showed no data and the Billing page was hidden once your subscription ended.
+- Airbyte Cloud free trials last 14 days. The sign-up page and the trial banner now show this trial length. Previously, they said 30 days.
+
 ## October 2, 2026
 
 Connections
