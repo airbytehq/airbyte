@@ -58,7 +58,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date              | Pull Request                                              | Subject                                         |
 |:--------|:------------------| :-------------------------------------------------------- | :---------------------------------------------- |
-| 0.1.7 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Archive connector for the discontinued GlassFlow serverless pipeline API |
+| 0.1.7 | 2026-10-07 | [88287](https://github.com/airbytehq/airbyte/pull/88287) | Archive connector for the discontinued GlassFlow serverless pipeline API |
 | 0.1.6 | 2025-05-03 | [59349](https://github.com/airbytehq/airbyte/pull/59349) | Update dependencies |
 | 0.1.5 | 2025-04-26 | [58697](https://github.com/airbytehq/airbyte/pull/58697) | Update dependencies |
 | 0.1.4 | 2025-04-19 | [58260](https://github.com/airbytehq/airbyte/pull/58260) | Update dependencies |
