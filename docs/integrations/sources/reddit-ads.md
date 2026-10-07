@@ -11,7 +11,7 @@ The Reddit Ads source syncs campaigns, ads, and daily campaign performance metri
 
 ## Set up the Reddit Ads source
 
-**Airbyte Cloud:** select **Authenticate your Reddit account** and sign in as a Reddit user with access to the ad account you want to sync, then enter the ad account ID ([Step 3](#step-3-find-your-ad-account-id)). Steps 1 and 2 (creating a developer app and getting a refresh token manually) are only needed for Airbyte Open Source (self-managed).
+The source offers two **Authentication** options. **Authenticate with Reddit** (the Airbyte Cloud default): select **Authenticate your Reddit account** and sign in as a Reddit user with access to the ad account you want to sync, then enter the ad account ID ([Step 3](#step-3-find-your-ad-account-id)). **Use your own Reddit app** (self-managed, or if you already have a developer app): follow Steps 1–2 and enter the client ID, client secret, and refresh token. Existing connections are migrated automatically to **Use your own Reddit app**, so they need no action.
 
 ### Step 1: Create a developer app
 
@@ -55,7 +55,7 @@ In [Reddit Ads Manager](https://ads.reddit.com), open **Business Manager** > **A
 
 ### Step 4: Configure the source in Airbyte
 
-Enter the client ID, client secret, refresh token, and ad account ID, then set the remaining fields:
+Enter the client ID, client secret, and refresh token under **Authentication** > **Use your own Reddit app**, plus the ad account ID, then set the remaining fields:
 
 - **User Agent**: Optional. A descriptive user agent in the format `platform:app_id:version (by /u/username)`. For example, `airbyte:reddit-ads-sync:v1.0 (by /u/your-username)`. If you leave it empty, the connector sends an Airbyte user agent. Reddit heavily throttles default user agents such as `Python/urllib` or `Java`.
 - **Start Date**: Optional. The earliest data to sync, in RFC 3339 format with a UTC offset, such as `2024-05-11T00:00:00Z`. It applies to all three streams: it's the earliest `modified_at` for `ad` and `campaign`, and the earliest report date for `campaign_report`. If you leave it empty, all three streams start 24 months before the current sync.
@@ -112,12 +112,13 @@ The connector reuses an access token until it expires, then refreshes it. If a r
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `client_id` | `string` | OAuth Client ID.  |  |
+| `credentials` | `object` | Authentication: `Authenticate with Reddit` (`auth_type: OAuth2.0`) or `Use your own Reddit app` (`auth_type: OwnApp`). |  |
+| `credentials.client_id` | `string` | OAuth Client ID. The client ID of your Reddit app. |  |
+| `credentials.client_secret` | `string` | OAuth Client Secret. The client secret of your Reddit app. |  |
+| `credentials.refresh_token` | `string` | OAuth Refresh Token. |  |
 | `start_time` | `string` | Optional UTC start date applied to all three streams, in YYYY-MM-DDTHH:MM:SSZ format. A value earlier than 24 months ago is clamped for `campaign_report`, because Reddit only serves report data for the last 24 months. | 24 months before the current date |
 | `user_agent` | `string` | Optional. User Agent. A unique and descriptive user agent string in the format: platform:app_id:version (by /u/yourusername). If empty, the connector uses an Airbyte user agent. | airbyte:source-reddit-ads:v1 |
 | `ad_account_id` | `string` | The Reddit Ads account ID to sync, shown in Reddit Ads Manager, for example a2_abc123. |  |
-| `client_secret` | `string` | OAuth Client Secret.  |  |
-| `refresh_token` | `string` | OAuth Refresh Token.  |  |
 | `num_workers` | `integer` | Number of concurrent workers. Higher values speed up syncs but increase the chance of Reddit rate limiting. | 3 |
 
 ## Streams
@@ -138,7 +139,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.2 | 2026-10-06 | [88145](https://github.com/airbytehq/airbyte/pull/88145) | Add OAuth (Authenticate with Reddit) for Airbyte Cloud; make User Agent optional |
+| 0.2.0 | 2026-10-06 | [88145](https://github.com/airbytehq/airbyte/pull/88145) | Add OAuth (Authenticate with Reddit) for Airbyte Cloud with automatic config migration to a credentials object; make User Agent optional |
 | 0.1.1 | 2026-10-06 | [88015](https://github.com/airbytehq/airbyte/pull/88015) | Update dependencies |
 | 0.1.0 | 2026-10-05 | [87043](https://github.com/airbytehq/airbyte/pull/87043) | Show actionable errors for rejected refresh tokens or client credentials, invalid ad account IDs, and 400/403/404 responses, add a client-side API budget and configurable concurrency, add suggested streams, make spec titles human-readable, and add unit tests |
 | 0.0.12 | 2026-09-29 | [87338](https://github.com/airbytehq/airbyte/pull/87338) | Update dependencies |
