@@ -61,7 +61,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.66 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Archive connector: built on the deprecated FMP legacy `/api/v3` API, zero successful syncs |
+| 0.0.66 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88333) | Archive connector: built on the deprecated FMP legacy `/api/v3` API, zero successful syncs |
 | 0.0.65 | 2026-10-06 | [87828](https://github.com/airbytehq/airbyte/pull/87828) | Update dependencies |
 | 0.0.64 | 2026-09-29 | [87140](https://github.com/airbytehq/airbyte/pull/87140) | Update dependencies |
 | 0.0.63 | 2026-09-22 | [86625](https://github.com/airbytehq/airbyte/pull/86625) | Update dependencies |
