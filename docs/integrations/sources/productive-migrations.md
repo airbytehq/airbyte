@@ -14,6 +14,8 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 Connections selecting `project_assignments` or `boards` must review this migration. The old endpoints return errors and prevent these streams from syncing.
 
+Complete the migration by October 21, 2026. Affected connections that have not upgraded by the deadline will be disabled rather than automatically upgraded, so you can review the stream changes before resuming syncs.
+
 ### Migration steps
 
 1. Before upgrading, preserve any historical `project_assignments` data needed by downstream consumers. Productive's memberships are a different resource; their IDs and attributes are not a drop-in replacement for project assignments.

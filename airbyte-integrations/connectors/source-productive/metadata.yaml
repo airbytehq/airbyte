@@ -33,7 +33,8 @@ data:
           The retired project_assignments stream has been removed. Refresh your schema and select memberships instead.
           The boards stream now reads folders and returns the resource type folders.
           See https://docs.airbyte.com/integrations/sources/productive-migrations for migration steps.
-        upgradeDeadline: "2026-10-07"
+        upgradeDeadline: "2026-10-21"
+        deadlineAction: disable
         scopedImpact:
           - scopeType: stream
             impactedScopes:
