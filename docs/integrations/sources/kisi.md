@@ -1,4 +1,9 @@
 # Kisi
+
+:::info
+Upgrading from 0.0.x? See the [migration guide](kisi-migrations.md) — the `user_export_reporters` stream was removed in 0.1.0.
+:::
+
 This is the setup for the Kisi source connector that ingests data from the Kisi API.
 
 Kisi's sturdy hardware and user-friendly software work in perfect harmony to enhance the security of your spaces. Remotely manage your locations, streamline operations, and stay compliant while enjoying mobile unlocks. https://www.getkisi.com/
@@ -19,7 +24,6 @@ You can learn more about the API key here https://api.kisi.io/docs#/
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | users | id | DefaultPaginator | ✅ |  ❌  |
-| user_export_reporters | id | DefaultPaginator | ✅ |  ❌  |
 | scheduled_reports | id | DefaultPaginator | ✅ |  ❌  |
 | role_assignments | id | DefaultPaginator | ✅ |  ❌  |
 | places | id | DefaultPaginator | ✅ |  ❌  |
@@ -43,6 +47,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-10-07 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Remove the `user_export_reporters` stream: Kisi removed the `GET /user_export_reporters` endpoint (HTTP 404) |
 | 0.0.73 | 2026-10-06 | [87913](https://github.com/airbytehq/airbyte/pull/87913) | Update dependencies |
 | 0.0.72 | 2026-09-29 | [87218](https://github.com/airbytehq/airbyte/pull/87218) | Update dependencies |
 | 0.0.71 | 2026-09-22 | [86685](https://github.com/airbytehq/airbyte/pull/86685) | Update dependencies |
