@@ -169,6 +169,33 @@ def test_read_products():
     assert state_rows_count in {1, 2}, "Expected 1 or 2 state messages per stream."
 
 
+def test_read_products_includes_full_catalog():
+    source = SourceFaker()
+    config = {"count": 1000, "seed": -1, "records_per_slice": 1000, "always_updated": True, "parallelism": 4}
+    stream_dict = {
+        "stream": {"name": "products", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["full_refresh"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    state = {}
+    iterator = source.read(logger, config, catalog, state)
+
+    records = []
+    estimates = []
+    for row in iterator:
+        if row.type is Type.RECORD:
+            records.append(row.record.data)
+        if row.type is Type.TRACE and row.trace.estimate:
+            estimates.append(row.trace.estimate.row_estimate)
+
+    assert sorted(record["id"] for record in records) == list(range(1, 101))
+    product_100 = next(record for record in records if record["id"] == 100)
+    assert product_100["make"] == "Buick"
+    assert product_100["model"] == "Somerset"
+    assert 100 in estimates
+
+
 def test_read_big_random_data():
     source = SourceFaker()
     config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
