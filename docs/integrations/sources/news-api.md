@@ -68,7 +68,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                  |
 |:--------|:-----------| :------------------------------------------------------- | :--------------------------------------- |
-| 0.2.24 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix connection check failing with `Bad request` when `search_query`/`sources`/`domains` are unset; surface News API plan/parameter errors as config errors instead of silently ignoring them |
+| 0.2.24 | 2026-10-07 | [88217](https://github.com/airbytehq/airbyte/pull/88217) | Fix connection check failing with `Bad request` when `search_query`/`sources`/`domains` are unset; surface News API plan/parameter errors as config errors instead of silently ignoring them |
 | 0.2.23 | 2025-05-24 | [60578](https://github.com/airbytehq/airbyte/pull/60578) | Update dependencies |
 | 0.2.22 | 2025-05-10 | [59468](https://github.com/airbytehq/airbyte/pull/59468) | Update dependencies |
 | 0.2.21 | 2025-04-27 | [58520](https://github.com/airbytehq/airbyte/pull/58520) | Update dependencies |
