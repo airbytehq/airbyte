@@ -35,7 +35,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.71 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Normalize `modified_at` cursor timestamps (Clarifai returns nanosecond precision) so incremental state advances |
+| 0.0.71 | 2026-10-07 | [88331](https://github.com/airbytehq/airbyte/pull/88331) | Normalize `modified_at` cursor timestamps (Clarifai returns nanosecond precision) so incremental state advances |
 | 0.0.70 | 2026-10-06 | [87785](https://github.com/airbytehq/airbyte/pull/87785) | Update dependencies |
 | 0.0.69 | 2026-09-29 | [87103](https://github.com/airbytehq/airbyte/pull/87103) | Update dependencies |
 | 0.0.68 | 2026-09-22 | [86557](https://github.com/airbytehq/airbyte/pull/86557) | Update dependencies |
