@@ -12,13 +12,13 @@ Say hello to the modern end-to-end podcasting platform. Simplecast remains the e
 |-------------|-------------|------------|---------------------|----------------------|
 | podcasts | id | DefaultPaginator | ✅ |  ❌  |
 | episodes | id | DefaultPaginator | ✅ |  ❌  |
-| analytics |  | DefaultPaginator | ✅ |  ❌  |
+| analytics |  | No pagination | ✅ |  ❌  |
 | analytics_downloads | id | No pagination | ✅ |  ❌  |
 | analytics_podcasts_listeners | id | No pagination | ✅ |  ❌  |
-| categories |  | DefaultPaginator | ✅ |  ❌  |
-| distribution_channels |  | DefaultPaginator | ✅ |  ❌  |
+| categories |  | No pagination | ✅ |  ❌  |
+| distribution_channels |  | No pagination | ✅ |  ❌  |
 | timezones | value | No pagination | ✅ |  ❌  |
-| analytics_episodes | id | No pagination | ✅ |  ❌  |
+| analytics_episodes | id | DefaultPaginator | ✅ |  ❌  |
 
 ## IP allow list
 
