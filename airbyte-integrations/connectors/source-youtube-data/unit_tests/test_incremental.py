@@ -30,7 +30,7 @@ _CONFIG = {
     "channel_ids": [_CHANNEL],
 }
 _BASE = "https://www.googleapis.com/youtube/v3"
-_UPLOADS_PARAMS = {"part": "snippet,contentDetails,status", "playlistId": _UPLOADS, "maxResults": "50", "key": "test-key"}
+_UPLOADS_PARAMS = {"part": "snippet,status", "playlistId": _UPLOADS, "maxResults": "50", "key": "test-key"}
 
 
 def _playlist_item(video_id: str, published_at: str, privacy: str) -> dict:
@@ -38,8 +38,12 @@ def _playlist_item(video_id: str, published_at: str, privacy: str) -> dict:
         "kind": "youtube#playlistItem",
         "etag": "e",
         "id": f"item-{video_id}",
-        "snippet": {"publishedAt": published_at, "channelId": _CHANNEL, "title": f"Title {video_id}"},
-        "contentDetails": {"videoId": video_id},
+        "snippet": {
+            "publishedAt": published_at,
+            "channelId": _CHANNEL,
+            "title": f"Title {video_id}",
+            "resourceId": {"kind": "youtube#video", "videoId": video_id},
+        },
         "status": {"privacyStatus": privacy},
     }
 
@@ -51,7 +55,14 @@ def _uploads_page(*items: dict, next_page_token: str = None) -> HttpResponse:
     return HttpResponse(body=json.dumps(body))
 
 
-def _read(stream: str, state=None):
+def _read(http_mocker: HttpMocker, stream: str, state=None):
+    if stream != "channel_comments":
+        # `videos` is a substream of `channels`: every read that goes through it first
+        # resolves the uploads playlist id. `channel_comments` partitions straight off config.
+        http_mocker.get(
+            HttpRequest(url=f"{_BASE}/channels", query_params="any query_parameters"),
+            HttpResponse(body=json.dumps({"items": [{"id": _CHANNEL, "contentDetails": {"relatedPlaylists": {"uploads": _UPLOADS}}}]})),
+        )
     catalog = CatalogBuilder().with_stream(stream, SyncMode.incremental).build()
     with mock.patch.object(time, "sleep"):
         return read(get_source(_CONFIG, catalog, state), config=_CONFIG, catalog=catalog, state=state)
@@ -69,7 +80,7 @@ class TestVideosStream(TestCase):
             ),
         )
 
-        output = _read("videos")
+        output = _read(http_mocker, "videos")
 
         assert output.errors == [], output.get_formatted_error_message()
         records = [r.record.data for r in output.records]
@@ -104,11 +115,18 @@ class TestVideosStream(TestCase):
             StateBuilder()
             .with_stream_state(
                 "videos",
-                {"states": [{"partition": {"channel_id": _CHANNEL}, "cursor": {"publishedAt": "2026-03-03T00:00:00Z"}}]},
+                {
+                    "states": [
+                        {
+                            "partition": {"parent_slice": {"channel_id": _CHANNEL}, "playlistId": _UPLOADS},
+                            "cursor": {"publishedAt": "2026-03-03T00:00:00Z"},
+                        }
+                    ]
+                },
             )
             .build()
         )
-        output = _read("videos", state)
+        output = _read(http_mocker, "videos", state)
 
         assert output.errors == [], output.get_formatted_error_message()
         # The cursor window is inclusive, so the boundary item is re-emitted (idempotent on
@@ -149,7 +167,7 @@ class TestBatchedVideoStreams(TestCase):
             ),
         )
 
-        output = _read("video")
+        output = _read(http_mocker, "video")
 
         assert output.errors == [], output.get_formatted_error_message()
         http_mocker.assert_number_of_calls(details, 1)
@@ -179,7 +197,7 @@ class TestBatchedVideoStreams(TestCase):
             ),
         )
 
-        output = _read("video_engagement")
+        output = _read(http_mocker, "video_engagement")
 
         assert output.errors == [], output.get_formatted_error_message()
         http_mocker.assert_number_of_calls(stats, 1)
@@ -225,7 +243,7 @@ class TestCommentStreams(TestCase):
             ),
         )
 
-        output = _read("channel_comments")
+        output = _read(http_mocker, "channel_comments")
 
         assert output.errors == [], output.get_formatted_error_message()
         record = output.records[0].record.data
@@ -248,7 +266,7 @@ class TestDailyQuota(TestCase):
             ),
         )
 
-        output = _read("videos")
+        output = _read(http_mocker, "videos")
 
         http_mocker.assert_number_of_calls(uploads, 1)
         assert output.errors, "exhausting the daily quota must fail the sync"

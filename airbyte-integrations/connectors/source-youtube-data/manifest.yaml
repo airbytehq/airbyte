@@ -125,6 +125,12 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channels"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uploadsPlaylistId
+              value: "{{ record.get('contentDetails', {}).get('relatedPlaylists', {}).get('uploads') }}"
     comments:
       type: DeclarativeStream
       name: comments
@@ -193,12 +199,9 @@ definitions:
           path: playlistItems
           http_method: GET
           request_parameters:
-            part: snippet,contentDetails,status
-            # A channel's uploads playlist is its channel id with the `UC` prefix
-            # swapped for `UU`. Unlike search.list it costs 1 quota unit (not 100),
-            # has no 500-result cap, and, when the OAuth user owns the channel,
-            # includes unlisted and private uploads.
-            playlistId: "{{ 'UU' + stream_partition.channel_id[2:] }}"
+            # The uploads playlist comes from the `channels` parent (contentDetails.relatedPlaylists.uploads).
+            # `status` adds privacyStatus, which is `unlisted`/`private` only when the OAuth user owns the channel.
+            part: snippet,status
         record_selector:
           type: RecordSelector
           extractor:
@@ -222,9 +225,17 @@ definitions:
             cursor_value: "{{ response.nextPageToken }}"
             stop_condition: "{{ not response.get('nextPageToken') }}"
         partition_router:
-          type: ListPartitionRouter
-          values: "{{ config.channel_ids }}"
-          cursor_field: channel_id
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: uploadsPlaylistId
+              request_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: playlistId
+              partition_field: playlistId
+              stream:
+                $ref: "#/definitions/streams/channels"
       # The uploads playlist lists newest first, so the data-feed cursor stops
       # paginating at the first item already seen in a previous sync.
       incremental_sync:
@@ -234,7 +245,7 @@ definitions:
           fields:
             - path:
                 - videoId
-              value: "{{ record.get('contentDetails', {}).get('videoId') }}"
+              value: "{{ record.get('snippet', {}).get('resourceId', {}).get('videoId') }}"
             - path:
                 - channelId
               value: "{{ record.get('snippet', {}).get('channelId') }}"
@@ -242,7 +253,7 @@ definitions:
                 - title
               value: "{{ record.get('snippet', {}).get('title') }}"
             - path:
-                # Time the upload was added to the playlist. Always present, unlike
+                # Time the upload was added to the channel. Always present, unlike
                 # contentDetails.videoPublishedAt, which private videos lack.
                 - publishedAt
               value: "{{ record.get('snippet', {}).get('publishedAt') }}"
@@ -250,15 +261,13 @@ definitions:
                 - privacyStatus
               value: "{{ record.get('status', {}).get('privacyStatus') }}"
             - path:
-                # Kept for compatibility with the pre-1.1.0 search.list record shape.
                 - kind
-              value: "youtube#video"
+              value: "{{ record.get('snippet', {}).get('resourceId', {}).get('kind') }}"
         - type: RemoveFields
           field_pointers:
             - ["etag"]
             - ["id"]
             - ["snippet"]
-            - ["contentDetails"]
             - ["status"]
       schema_loader:
         type: InlineSchemaLoader
@@ -688,7 +697,7 @@ api_budget:
           interval: PT1M
       matchers:
         - type: HttpRequestRegexMatcher
-          url_path_pattern: /(channels|videos|commentThreads|playlistItems)
+          url_path_pattern: /(channels|playlistItems|videos|commentThreads)
 
 metadata:
   autoImportSchema:

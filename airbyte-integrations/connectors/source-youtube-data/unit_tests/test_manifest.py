@@ -98,7 +98,7 @@ def test_api_budget_windows_bounded_below_token_lifetime():
 
     # Every endpoint the connector reads costs 1 unit and shares the documented
     # per-minute burst guard. search.list (100 units) is no longer used.
-    assert rate_by_pattern == {"/(channels|videos|commentThreads|playlistItems)": (100, "PT1M")}
+    assert rate_by_pattern == {"/(channels|playlistItems|videos|commentThreads)": (100, "PT1M")}
 
 
 def test_401_filter_uses_refresh_token_then_retry():
@@ -164,3 +164,273 @@ class Test401RefreshesTokenAndRetries(TestCase):
         http_mocker.assert_number_of_calls(token_request, 2)
         http_mocker.assert_number_of_calls(expired_token_request, 1)
         http_mocker.assert_number_of_calls(refreshed_token_request, 1)
+
+
+class TestVideosFromUploadsPlaylist(TestCase):
+    @HttpMocker()
+    def test_videos_and_children_use_paginated_uploads_playlist(self, http_mocker: HttpMocker):
+        http_mocker.post(
+            HttpRequest(url=_TOKEN_URL, body=_TOKEN_REQUEST_BODY),
+            HttpResponse(body=json.dumps({"access_token": "test-token", "expires_in": 3600})),
+        )
+        http_mocker.get(
+            HttpRequest(url=f"{_BASE}/channels", query_params="any query_parameters"),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "items": [
+                            {
+                                "id": "UC-test",
+                                "contentDetails": {"relatedPlaylists": {"uploads": "UU-test"}},
+                            }
+                        ]
+                    }
+                )
+            ),
+        )
+        first_playlist_request = HttpRequest(
+            url=f"{_BASE}/playlistItems",
+            query_params={"playlistId": "UU-test", "part": "snippet,status", "maxResults": "50"},
+        )
+        http_mocker.get(
+            first_playlist_request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "items": [
+                            {
+                                "snippet": {
+                                    "publishedAt": "2026-01-01T00:00:00Z",
+                                    "resourceId": {"kind": "youtube#video", "videoId": "video-1"},
+                                }
+                            }
+                        ],
+                        "nextPageToken": "page-2",
+                    }
+                )
+            ),
+        )
+        second_playlist_request = HttpRequest(
+            url=f"{_BASE}/playlistItems",
+            query_params={
+                "playlistId": "UU-test",
+                "part": "snippet,status",
+                "maxResults": "50",
+                "pageToken": "page-2",
+            },
+        )
+        http_mocker.get(
+            second_playlist_request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "items": [
+                            {
+                                "snippet": {
+                                    "publishedAt": "2026-01-01T00:00:00Z",
+                                    "resourceId": {"kind": "youtube#video", "videoId": "video-2"},
+                                }
+                            }
+                        ]
+                    }
+                )
+            ),
+        )
+        catalog = CatalogBuilder().with_stream("videos", SyncMode.full_refresh).build()
+        output = read(get_source(_CONFIG), config=_CONFIG, catalog=catalog)
+
+        assert output.errors == [], output.get_formatted_error_message()
+        video_ids = {record.record.data["videoId"] for record in output.records if record.record.stream == "videos"}
+        assert video_ids == {"video-1", "video-2"}
+        http_mocker.assert_number_of_calls(first_playlist_request, 1)
+        http_mocker.assert_number_of_calls(second_playlist_request, 1)
+
+
+class TestVideoChildrenFromUploadsPlaylist(TestCase):
+    @HttpMocker()
+    def test_video_child_receives_upload_playlist_video_id(self, http_mocker: HttpMocker):
+        http_mocker.post(
+            HttpRequest(url=_TOKEN_URL, body=_TOKEN_REQUEST_BODY),
+            HttpResponse(body=json.dumps({"access_token": "test-token", "expires_in": 3600})),
+        )
+        http_mocker.get(
+            HttpRequest(url=f"{_BASE}/channels", query_params="any query_parameters"),
+            HttpResponse(body=json.dumps({"items": [{"contentDetails": {"relatedPlaylists": {"uploads": "UU-test"}}}]})),
+        )
+        http_mocker.get(
+            HttpRequest(url=f"{_BASE}/playlistItems", query_params="any query_parameters"),
+            HttpResponse(
+                body=json.dumps({"items": [{"snippet": {"publishedAt": "2026-01-01T00:00:00Z", "resourceId": {"videoId": "video-1"}}}]})
+            ),
+        )
+        http_mocker.get(
+            HttpRequest(url=f"{_BASE}/videos", query_params="any query_parameters"),
+            HttpResponse(
+                body=json.dumps({"items": [{"id": "video-1", "snippet": {"title": "One", "publishedAt": "2026-01-01T00:00:00Z"}}]})
+            ),
+        )
+
+        catalog = CatalogBuilder().with_stream("video", SyncMode.full_refresh).build()
+        output = read(get_source(_CONFIG), config=_CONFIG, catalog=catalog)
+
+        assert output.errors == [], output.get_formatted_error_message()
+        assert [record.record.data["videoId"] for record in output.records] == ["video-1"]
+
+    @HttpMocker()
+    def test_deleted_video_returns_no_video_record_without_failing_sync(self, http_mocker: HttpMocker):
+        http_mocker.post(
+            HttpRequest(url=_TOKEN_URL, body=_TOKEN_REQUEST_BODY),
+            HttpResponse(body=json.dumps({"access_token": "test-token", "expires_in": 3600})),
+        )
+        http_mocker.get(
+            HttpRequest(url=f"{_BASE}/channels", query_params="any query_parameters"),
+            HttpResponse(body=json.dumps({"items": [{"contentDetails": {"relatedPlaylists": {"uploads": "UU-test"}}}]})),
+        )
+        playlist_request = HttpRequest(url=f"{_BASE}/playlistItems", query_params="any query_parameters")
+        http_mocker.get(
+            playlist_request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "items": [
+                            {"snippet": {"publishedAt": "2026-01-01T00:00:00Z", "resourceId": {"videoId": "video-ok"}}},
+                            {"snippet": {"publishedAt": "2026-01-01T00:00:00Z", "resourceId": {"videoId": "video-deleted"}}},
+                        ]
+                    }
+                )
+            ),
+        )
+        # Both ids go out in one batched videos.list request; YouTube omits deleted ids from `items`.
+        video_request = HttpRequest(
+            url=f"{_BASE}/videos",
+            query_params={"id": "video-ok,video-deleted", "part": "snippet,contentDetails,statistics,player,status"},
+        )
+        http_mocker.get(
+            video_request,
+            HttpResponse(
+                body=json.dumps({"items": [{"id": "video-ok", "snippet": {"title": "OK", "publishedAt": "2026-01-01T00:00:00Z"}}]})
+            ),
+        )
+
+        catalog = CatalogBuilder().with_stream("video", SyncMode.full_refresh).build()
+        output = read(get_source(_CONFIG), config=_CONFIG, catalog=catalog)
+
+        assert output.errors == [], output.get_formatted_error_message()
+        assert [record.record.data["videoId"] for record in output.records] == ["video-ok"]
+        http_mocker.assert_number_of_calls(playlist_request, 1)
+        http_mocker.assert_number_of_calls(video_request, 1)
+
+    @HttpMocker()
+    def test_deleted_video_comments_are_ignored_without_dropping_valid_comments(self, http_mocker: HttpMocker):
+        http_mocker.post(
+            HttpRequest(url=_TOKEN_URL, body=_TOKEN_REQUEST_BODY),
+            HttpResponse(body=json.dumps({"access_token": "test-token", "expires_in": 3600})),
+        )
+        http_mocker.get(
+            HttpRequest(url=f"{_BASE}/channels", query_params="any query_parameters"),
+            HttpResponse(body=json.dumps({"items": [{"contentDetails": {"relatedPlaylists": {"uploads": "UU-test"}}}]})),
+        )
+        playlist_request = HttpRequest(url=f"{_BASE}/playlistItems", query_params="any query_parameters")
+        http_mocker.get(
+            playlist_request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "items": [
+                            {"snippet": {"publishedAt": "2026-01-01T00:00:00Z", "resourceId": {"videoId": "video-ok"}}},
+                            {"snippet": {"publishedAt": "2026-01-01T00:00:00Z", "resourceId": {"videoId": "video-deleted"}}},
+                        ]
+                    }
+                )
+            ),
+        )
+        comments_ok_request = HttpRequest(
+            url=f"{_BASE}/commentThreads",
+            query_params={"part": "snippet,replies", "order": "time", "maxResults": "100", "videoId": "video-ok"},
+        )
+        http_mocker.get(
+            comments_ok_request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "items": [
+                            {
+                                "snippet": {
+                                    "videoId": "video-ok",
+                                    "topLevelComment": {"id": "comment-ok", "snippet": {"publishedAt": "2026-01-01T00:00:00Z"}},
+                                }
+                            }
+                        ]
+                    }
+                )
+            ),
+        )
+        comments_deleted_request = HttpRequest(
+            url=f"{_BASE}/commentThreads",
+            query_params={"part": "snippet,replies", "order": "time", "maxResults": "100", "videoId": "video-deleted"},
+        )
+        http_mocker.get(
+            comments_deleted_request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "error": {
+                            "code": 404,
+                            "message": "Video not found",
+                            "errors": [{"reason": "videoNotFound"}],
+                        }
+                    }
+                ),
+                status_code=404,
+            ),
+        )
+
+        catalog = CatalogBuilder().with_stream("comments", SyncMode.full_refresh).build()
+        output = read(get_source(_CONFIG), config=_CONFIG, catalog=catalog)
+
+        assert output.errors == [], output.get_formatted_error_message()
+        assert [record.record.data["videoId"] for record in output.records] == ["video-ok"]
+        assert [record.record.data["id"] for record in output.records] == ["comment-ok"]
+        http_mocker.assert_number_of_calls(playlist_request, 1)
+        http_mocker.assert_number_of_calls(comments_ok_request, 1)
+        http_mocker.assert_number_of_calls(comments_deleted_request, 1)
+
+    @HttpMocker()
+    def test_comments_child_receives_upload_playlist_video_id(self, http_mocker: HttpMocker):
+        http_mocker.post(
+            HttpRequest(url=_TOKEN_URL, body=_TOKEN_REQUEST_BODY),
+            HttpResponse(body=json.dumps({"access_token": "test-token", "expires_in": 3600})),
+        )
+        http_mocker.get(
+            HttpRequest(url=f"{_BASE}/channels", query_params="any query_parameters"),
+            HttpResponse(body=json.dumps({"items": [{"contentDetails": {"relatedPlaylists": {"uploads": "UU-test"}}}]})),
+        )
+        http_mocker.get(
+            HttpRequest(url=f"{_BASE}/playlistItems", query_params="any query_parameters"),
+            HttpResponse(
+                body=json.dumps({"items": [{"snippet": {"publishedAt": "2026-01-01T00:00:00Z", "resourceId": {"videoId": "video-1"}}}]})
+            ),
+        )
+        http_mocker.get(
+            HttpRequest(url=f"{_BASE}/commentThreads", query_params="any query_parameters"),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "items": [
+                            {
+                                "snippet": {
+                                    "topLevelComment": {"id": "comment-1", "snippet": {"publishedAt": "2026-01-01T00:00:00Z"}},
+                                    "videoId": "video-1",
+                                }
+                            }
+                        ]
+                    }
+                )
+            ),
+        )
+
+        catalog = CatalogBuilder().with_stream("comments", SyncMode.full_refresh).build()
+        output = read(get_source(_CONFIG), config=_CONFIG, catalog=catalog)
+
+        assert output.errors == [], output.get_formatted_error_message()
+        assert [record.record.data["videoId"] for record in output.records] == ["video-1"]
