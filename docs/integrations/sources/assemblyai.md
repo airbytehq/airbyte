@@ -40,7 +40,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 1.0.0 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Remove deprecated LeMUR stream; fix API-key authentication, transcript pagination, and cursor timestamp parsing |
+| 1.0.0 | 2026-10-07 | [88224](https://github.com/airbytehq/airbyte/pull/88224) | Remove deprecated LeMUR stream; fix API-key authentication, transcript pagination, and cursor timestamp parsing |
 | 0.0.44 | 2026-10-06 | [87774](https://github.com/airbytehq/airbyte/pull/87774) | Update dependencies |
 | 0.0.43 | 2026-09-29 | [87073](https://github.com/airbytehq/airbyte/pull/87073) | Update dependencies |
 | 0.0.42 | 2026-09-22 | [86514](https://github.com/airbytehq/airbyte/pull/86514) | Update dependencies |
