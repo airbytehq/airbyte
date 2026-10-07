@@ -1,5 +1,19 @@
 # SpaceX-API
 
+:::warning
+
+## Deprecation Notice
+
+The SpaceX-API source connector has been archived and is no longer available in Airbyte Cloud or Airbyte Open Source.
+
+The upstream community-run [r/SpaceX REST API](https://github.com/r-spacex/SpaceX-API) (`api.spacexdata.com`) was [wound down by its maintainer in October 2022](https://github.com/r-spacex/SpaceX-API/issues/1243), its GitHub repository was archived in August 2024, and since mid-2026 every endpoint returns Cloudflare origin errors (HTTP 521/522/525). As a result, this connector has had no successful syncs for over a year and cannot be fixed.
+
+### Recommended Actions
+
+The maintainer recommends migrating to the [Launch Library 2 API](https://thespacedevs.com/llapi) by The Space Devs, which covers the same launch, rocket and pad data. Users who still wish to sync SpaceX data are advised to build a custom connector against that API. For guidance, please visit our [Custom Connector documentation](https://docs.airbyte.com/connector-development/).
+
+:::
+
 This page contains the setup guide and reference information for the [SpaceX-API](https://github.com/r-spacex/SpaceX-API) source connector.
 
 ## Prerequisites
@@ -79,6 +93,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
+| 0.2.23 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Archive connector: upstream r/SpaceX API (api.spacexdata.com) is shut down |
 | 0.2.22 | 2025-05-10 | [60164](https://github.com/airbytehq/airbyte/pull/60164) | Update dependencies |
 | 0.2.21 | 2025-05-04 | [59612](https://github.com/airbytehq/airbyte/pull/59612) | Update dependencies |
 | 0.2.20 | 2025-04-27 | [59001](https://github.com/airbytehq/airbyte/pull/59001) | Update dependencies |
