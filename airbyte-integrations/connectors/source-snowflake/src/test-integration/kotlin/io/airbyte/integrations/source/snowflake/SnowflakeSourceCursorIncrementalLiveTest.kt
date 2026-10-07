@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 /**
@@ -31,6 +32,12 @@ import org.junit.jupiter.params.provider.MethodSource
  * the saved cursor are re-emitted (at-least-once); rows below it must not appear. Nanosecond
  * cursors are rounded up to microseconds, so a row between the true max and the rounded state value
  * is not re-emitted (`INC_TS_*` row 3).
+ *
+ * Every case runs twice: with the session `TIMEZONE` pinned to UTC and with the account default
+ * (America/Los_Angeles on the shared account). The second run uses a copy of the cursor table,
+ * because each run mutates its table. airbytehq/airbyte#83800: on 2.0.1 a plain `setTimestamp`
+ * bound on a TIMESTAMP_NTZ cursor was shifted by the session offset and the warm sync read 0 of 1
+ * new rows under the account default.
  */
 class SnowflakeSourceCursorIncrementalLiveTest : AbstractSnowflakeLiveTest() {
 
@@ -56,10 +63,25 @@ class SnowflakeSourceCursorIncrementalLiveTest : AbstractSnowflakeLiveTest() {
 
     private lateinit var catalog: AirbyteCatalog
 
+    /** `"UTC"` pins the session TIMEZONE, `null` keeps the account default. */
+    private val sessionTimezones: List<String?> = listOf("UTC", null)
+
+    private fun tableFor(case: CursorCase, sessionTimezone: String?): String =
+        if (sessionTimezone == null) "${case.table}_DEFAULT_TZ" else case.table
+
     @BeforeAll
-    fun discoverOnce() {
+    fun copyTablesAndDiscoverOnce() {
+        for (case in cases()) {
+            val source = "\"$database\".\"$schema\".\"${case.table}\""
+            val copy = "\"$database\".\"$schema\".\"${tableFor(case, null)}\""
+            execute(admin, "CREATE TABLE $copy LIKE $source")
+            execute(admin, "INSERT INTO $copy SELECT * FROM $source")
+        }
         catalog = discover(spec())
     }
+
+    fun casesPerSessionTimezone(): List<Arguments> =
+        cases().flatMap { case -> sessionTimezones.map { tz -> Arguments.of(case, tz) } }
 
     fun cases(): List<CursorCase> =
         listOf(
@@ -121,39 +143,33 @@ class SnowflakeSourceCursorIncrementalLiveTest : AbstractSnowflakeLiveTest() {
     private fun incremental(table: String): ConfiguredAirbyteCatalog =
         configured(catalog, listOf(table), SyncMode.INCREMENTAL, cursor = "CUR")
 
-    @ParameterizedTest
-    @MethodSource("cases")
-    fun coldThenWarmThenWarmAgain(case: CursorCase) {
-        val cold = read(spec(), incremental(case.table))
+    @ParameterizedTest(name = "{0}, session TIMEZONE {1}")
+    @MethodSource("casesPerSessionTimezone")
+    fun coldThenWarmThenWarmAgain(case: CursorCase, sessionTimezone: String?) {
+        val table = tableFor(case, sessionTimezone)
+        val spec = spec(sessionTimezone = sessionTimezone)
+        val cold = read(spec, incremental(table))
         cold.assertNoErrors()
-        assertEquals(listOf<Long>(1, 2, 3), ids(cold.recordsOf(case.table)))
-        val coldState = cold.lastStateOf(case.table)
+        assertEquals(listOf<Long>(1, 2, 3), ids(cold.recordsOf(table)))
+        val coldState = cold.lastStateOf(table)
         assertNotNull(coldState)
         assertEquals(cursorState(case.coldMax), coldState)
 
-        execute(admin, "INSERT INTO \"$database\".\"$schema\".\"${case.table}\" ${case.mutation}")
+        execute(admin, "INSERT INTO \"$database\".\"$schema\".\"$table\" ${case.mutation}")
 
         val warm =
-            read(
-                spec(),
-                incremental(case.table),
-                listOf(streamState(case.table, schema, coldState.toString()))
-            )
+            read(spec, incremental(table), listOf(streamState(table, schema, coldState.toString())))
         warm.assertNoErrors()
-        assertEquals(case.warmIds, ids(warm.recordsOf(case.table)))
-        val warmState = warm.lastStateOf(case.table)
+        assertEquals(case.warmIds, ids(warm.recordsOf(table)))
+        val warmState = warm.lastStateOf(table)
         assertEquals(cursorState(case.warmMax), warmState)
 
         // Nothing new: only the row equal to the saved cursor comes back, the state stays.
         val again =
-            read(
-                spec(),
-                incremental(case.table),
-                listOf(streamState(case.table, schema, warmState.toString()))
-            )
+            read(spec, incremental(table), listOf(streamState(table, schema, warmState.toString())))
         again.assertNoErrors()
-        assertEquals(case.warmAgainIds, ids(again.recordsOf(case.table)))
-        assertEquals(warmState, again.lastStateOf(case.table))
+        assertEquals(case.warmAgainIds, ids(again.recordsOf(table)))
+        assertEquals(warmState, again.lastStateOf(table))
     }
 
     @Test
@@ -166,41 +182,5 @@ class SnowflakeSourceCursorIncrementalLiveTest : AbstractSnowflakeLiveTest() {
         out.assertNoErrors()
         assertEquals(0, out.recordsOf("EMPTY_TABLE").size)
         assertEquals(0, out.statesOf("EMPTY_TABLE").size)
-    }
-
-    @Test
-    // airbytehq/airbyte#83800: with the account default TIMEZONE (America/Los_Angeles) a plain
-    // setTimestamp bound was shifted by the session offset and 0 of 1 new rows were read on 2.0.1.
-    fun ntzCursorWithAccountDefaultSessionTimezone() {
-        execute(
-            admin,
-            "CREATE TABLE \"$database\".\"$schema\".INC_TS_NTZ_DEFAULT_TZ LIKE \"$database\".\"$schema\".INC_TS_NTZ"
-        )
-        execute(
-            admin,
-            "INSERT INTO \"$database\".\"$schema\".INC_TS_NTZ_DEFAULT_TZ SELECT * FROM \"$database\".\"$schema\".INC_TS_NTZ WHERE ID <= 3"
-        )
-        val spec = spec(sessionTimezone = null)
-        val catalogWithNewTable = discover(spec)
-        val configured =
-            configured(
-                catalogWithNewTable,
-                listOf("INC_TS_NTZ_DEFAULT_TZ"),
-                SyncMode.INCREMENTAL,
-                cursor = "CUR"
-            )
-        val cold = read(spec, configured)
-        val coldState = cold.lastStateOf("INC_TS_NTZ_DEFAULT_TZ")!!
-        execute(
-            admin,
-            "INSERT INTO \"$database\".\"$schema\".INC_TS_NTZ_DEFAULT_TZ SELECT 6, '2026-01-02 05:00:00'::TIMESTAMP_NTZ(9), 'above'"
-        )
-        val warm =
-            read(
-                spec,
-                configured,
-                listOf(streamState("INC_TS_NTZ_DEFAULT_TZ", schema, coldState.toString()))
-            )
-        assertEquals(listOf<Long>(6), ids(warm.recordsOf("INC_TS_NTZ_DEFAULT_TZ")))
     }
 }

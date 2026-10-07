@@ -86,15 +86,29 @@ class SnowflakeSourceDiscoverLiveTest : AbstractSnowflakeLiveTest() {
             )
         }
         try {
-            val filtered = discover(SnowflakeLiveTestSupport.spec(schema = target))
-            assertEquals(listOf("T"), filtered.streams.map { it.name })
-            val stream = filtered.streams.single()
-            assertEquals(target, stream.namespace)
-            assertEquals(listOf(listOf("ID")), stream.sourceDefinedPrimaryKey)
-            assertEquals(
-                listOf("ID", "V"),
-                stream.jsonSchema["properties"].fieldNames().asSequence().sorted().toList(),
-            )
+            // Both discovery paths: LIMIT 0 probes (check_privileges on) and getColumns (off); the
+            // duplicate columns of #86998 were seen on the latter.
+            for (checkPrivileges in listOf(true, false)) {
+                val filtered =
+                    discover(
+                        SnowflakeLiveTestSupport.spec(
+                            schema = target,
+                            checkPrivileges = checkPrivileges
+                        )
+                    )
+                assertEquals(
+                    listOf("T"),
+                    filtered.streams.map { it.name },
+                    "check_privileges=$checkPrivileges"
+                )
+                val stream = filtered.streams.single()
+                assertEquals(target, stream.namespace)
+                assertEquals(listOf(listOf("ID")), stream.sourceDefinedPrimaryKey)
+                assertEquals(
+                    listOf("ID", "V"),
+                    stream.jsonSchema["properties"].fieldNames().asSequence().sorted().toList(),
+                )
+            }
         } finally {
             for (s in listOf(target, decoy)) {
                 execute(admin, "DROP SCHEMA IF EXISTS \"$database\".\"$s\" CASCADE")
