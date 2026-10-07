@@ -74,7 +74,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
 |:--------| :--------- | :-------------------------------------------------------- | :----------------------------------------------------------- |
-| 0.2.32 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Migrate from the retired Vectara API v1 (and per-customer Cognito OAuth endpoint) to API v2 / `auth.vectara.com` |
+| 0.2.32 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88339) | Migrate from the retired Vectara API v1 (and per-customer Cognito OAuth endpoint) to API v2 / `auth.vectara.com` |
 | 0.2.31 | 2024-11-25 | [48659](https://github.com/airbytehq/airbyte/pull/48659) | Update dependencies |
 | 0.2.30 | 2024-11-04 | [48222](https://github.com/airbytehq/airbyte/pull/48222) | Update dependencies |
 | 0.2.29 | 2024-10-29 | [47744](https://github.com/airbytehq/airbyte/pull/47744) | Update dependencies |
