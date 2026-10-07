@@ -56,6 +56,6 @@ Each page returned by `scrape` costs 1 credit. Each `search` request costs 2 cre
 
 | Version | Date       | Pull Request | Subject         |
 |---------|------------|--------------|-----------------|
-| 0.0.1   | 2026-10-07 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Initial release |
+| 0.0.1   | 2026-10-07 | [88172](https://github.com/airbytehq/airbyte/pull/88172) | Initial release |
 
 </details>
