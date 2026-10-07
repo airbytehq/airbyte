@@ -1,5 +1,15 @@
 # Height
 
+:::warning
+
+## Deprecation Notice
+
+The Height source connector is archived and is no longer available in the Airbyte Cloud or Open Source connector catalogs. Height announced on March 22, 2025 that it was winding down and the product, including its public API (`https://api.height.app`), went offline on September 24, 2025. Connections to `api.height.app` are now refused, so existing Height sources cannot sync data and there is no replacement API.
+
+Disable or delete any existing Height connections. If you exported your Height data to another tool before the shutdown, configure the connector for that tool instead.
+
+:::
+
 This page contains the setup guide and reference information for the Height source connector.
 
 ## Prerequisites
@@ -41,6 +51,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | ---- | ---------------- |
+| 0.0.69 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Archive connector: Height shut down on September 24, 2025 and `api.height.app` is offline |
 | 0.0.68 | 2026-10-06 | [87889](https://github.com/airbytehq/airbyte/pull/87889) | Update dependencies |
 | 0.0.67 | 2026-09-29 | [87215](https://github.com/airbytehq/airbyte/pull/87215) | Update dependencies |
 | 0.0.66 | 2026-09-22 | [86651](https://github.com/airbytehq/airbyte/pull/86651) | Update dependencies |
