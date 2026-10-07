@@ -10,6 +10,7 @@ This source retrieves historical and future TV scheduling data using the
 This source is capable of syncing the following streams:
 
 - `domestic`: episodes airing on TV networks in `domestic_schedule_country_code` for each day in the date range (`/schedule`).
+  The date range runs from `start_date` through `end_date` inclusive (`end_date` defaults to today).
 - `web`: episodes airing on web/streaming channels for each day in the date range (`/schedule/web`), optionally filtered by `web_schedule_country_code`.
 - `future`: all future episodes known to TVMaze, regardless of country or date range (`/schedule/full`). This stream is full refresh only.
 
@@ -55,7 +56,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject    |
 | :------ | :--------- | :------------------------------------------------------- | :--------- |
-| 0.2.26 | 2026-10-07 | [88260](https://github.com/airbytehq/airbyte/pull/88260) | Fix `country` filter never being sent, point `web` stream at `/schedule/web`, and make `future` a single full-refresh request instead of one full-schedule download per day |
+| 0.2.26 | 2026-10-07 | [88260](https://github.com/airbytehq/airbyte/pull/88260) | Fix `country` filter never being sent, point `web` stream at `/schedule/web`, include `end_date` (default: today) in the synced range, and make `future` a single full-refresh request instead of one full-schedule download per day |
 | 0.2.25 | 2025-05-25 | [60539](https://github.com/airbytehq/airbyte/pull/60539) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [60194](https://github.com/airbytehq/airbyte/pull/60194) | Update dependencies |
 | 0.2.23 | 2025-05-04 | [59574](https://github.com/airbytehq/airbyte/pull/59574) | Update dependencies |

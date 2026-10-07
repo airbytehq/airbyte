@@ -44,8 +44,9 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['end_date'] or today_utc() }}"
-          datetime_format: "%Y-%m-%d"
+          # End of the last day so `end_date` (default: today) is included in the sync.
+          datetime: "{{ config['end_date'] or today_utc() }}T23:59:59"
+          datetime_format: "%Y-%m-%dT%H:%M:%S"
         step: P1D
         cursor_granularity: P1D
       schema_loader:
@@ -330,8 +331,9 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['end_date'] or today_utc() }}"
-          datetime_format: "%Y-%m-%d"
+          # End of the last day so `end_date` (default: today) is included in the sync.
+          datetime: "{{ config['end_date'] or today_utc() }}T23:59:59"
+          datetime_format: "%Y-%m-%dT%H:%M:%S"
         step: P1D
         cursor_granularity: P1D
       schema_loader:
