@@ -32,7 +32,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.52 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Move to the documented Nebius Token Factory API host (`api.tokenfactory.nebius.com`), pass `limit` to the `files` stream, refresh docs links |
+| 0.0.52 | 2026-10-07 | [88306](https://github.com/airbytehq/airbyte/pull/88306) | Move to the documented Nebius Token Factory API host (`api.tokenfactory.nebius.com`), pass `limit` to the `files` stream, refresh docs links |
 | 0.0.51 | 2026-10-06 | [87951](https://github.com/airbytehq/airbyte/pull/87951) | Update dependencies |
 | 0.0.50 | 2026-09-29 | [87244](https://github.com/airbytehq/airbyte/pull/87244) | Update dependencies |
 | 0.0.49 | 2026-09-22 | [86715](https://github.com/airbytehq/airbyte/pull/86715) | Update dependencies |
