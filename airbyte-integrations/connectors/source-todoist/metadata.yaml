@@ -54,7 +54,13 @@ data:
   releases:
     breakingChanges:
       0.4.0:
-        upgradeDeadline: "2026-10-07"
+        upgradeDeadline: "2026-10-21"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - tasks
+              - projects
         message: >-
           Todoist shut down the REST API v2 that this connector used (every request now returns HTTP 410 "This endpoint is deprecated").
           Version 0.4.0 reads the `tasks` and `projects` streams from the Todoist API v1 (`https://api.todoist.com/api/v1`) instead.
