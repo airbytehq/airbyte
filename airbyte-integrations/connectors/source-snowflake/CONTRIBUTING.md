@@ -21,9 +21,14 @@ this for JSON files).
 `src/test-integration` holds tests that run the connector in-process against a real account. They
 read the first existing file of:
 
+- `secrets/config_key_pair.json` (`SECRET_SOURCE-SNOWFLAKE_KEY_PAIR__CREDS` in GSM, the one declared in
+  `metadata.yaml`; `poe fetch-secrets` or `uvx airbyte-internal-ops secrets fetch` from this directory)
 - `secrets/config.json` (local; the directory is gitignored)
-- `secrets/config_key_pair.json` (what CI fetches from GSM: `poe fetch-secrets` or
-  `uvx airbyte-internal-ops secrets fetch` from this directory)
+
+The key pair file comes first because the fetch writes *every* GSM secret labelled
+`connector:source-snowflake` (`config_key_pair.json`, `config.json`, `config_test.json`), and the
+legacy `config.json` secret is a password login that Snowflake now rejects with "Multi-factor
+authentication is required".
 
 The file has the shape of the connector spec, for example:
 

@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.protocol.models.v0.SyncMode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Files
 import java.nio.file.Path
 import java.sql.Connection
@@ -29,12 +30,15 @@ import org.junit.jupiter.api.Assumptions
 /**
  * Helpers for tests that run against a real Snowflake account.
  *
- * The connection comes from the first existing file among `secrets/config.json` and
- * `secrets/config_key_pair.json` (the latter is what CI fetches from GSM). Without either file
- * every live test is skipped through [assumeConfigured].
+ * The connection comes from the first existing file among `secrets/config_key_pair.json` and
+ * `secrets/config.json`. The key pair file wins because CI's `airbyte-ops secrets fetch` writes
+ * every GSM secret labelled `connector:source-snowflake`, and the legacy `config.json` secret holds
+ * password credentials of an MFA-enforced user. Without either file every live test is skipped
+ * through [assumeConfigured].
  */
 object SnowflakeLiveTestSupport {
-    private val candidateConfigs = listOf("secrets/config.json", "secrets/config_key_pair.json")
+    private val log = KotlinLogging.logger {}
+    private val candidateConfigs = listOf("secrets/config_key_pair.json", "secrets/config.json")
 
     val configPath: Path? =
         candidateConfigs.map { Path.of(it) }.firstOrNull { Files.isRegularFile(it) }
@@ -44,6 +48,7 @@ object SnowflakeLiveTestSupport {
             configPath != null,
             "no ${candidateConfigs.joinToString(" or ")}: skipping live Snowflake tests",
         )
+        log.info { "live Snowflake tests use $configPath" }
     }
 
     /**
