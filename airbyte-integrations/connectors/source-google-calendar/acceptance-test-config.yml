@@ -5,10 +5,10 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "manifest.yaml"
-        # The credentials spec was restructured under `credentials` in 0.3.0;
+        # The credentials spec was restructured under `credentials` in 1.1.0;
         # legacy flat configs are migrated at runtime by config_normalization_rules.
         backward_compatibility_tests_config:
-          disable_for_version: "0.3.0"
+          disable_for_version: "1.1.0"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -23,7 +23,7 @@ acceptance_tests:
           - name: "events"
             bypass_reason: "Test calendar has no events"
           - name: "acl"
-            bypass_reason: "Sandbox account owns no shared calendars; ACL returns no entries"
+            bypass_reason: "Sandbox refresh token lacks the calendar.acls.readonly scope until the OAuth scope change (#86469) lands"
           - name: "freebusy"
             bypass_reason: "Test calendar has no busy blocks in the query window"
   # The CDK standard-test runner used in CI reads only the spec, connection and basic_read

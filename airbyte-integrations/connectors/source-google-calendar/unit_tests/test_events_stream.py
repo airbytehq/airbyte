@@ -44,7 +44,6 @@ _TOKEN_REQUEST = HttpRequest(
 _TOKEN_RESPONSE = HttpResponse(json.dumps({"access_token": "at", "expires_in": 3600}))
 _EVENTS_URL = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
 _CALENDAR_URL = "https://www.googleapis.com/calendar/v3/calendars/primary"
-_CALENDAR_LIST_URL = "https://www.googleapis.com/calendar/v3/users/me/calendarList"
 _BASE_PARAMS = {"showDeleted": "true", "maxResults": "2500", "singleEvents": "false"}
 _DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
@@ -102,9 +101,8 @@ def _config(**overrides) -> Mapping[str, Any]:
 
 
 def _mock_parent_partitions(http_mocker: HttpMocker) -> None:
-    """Mock the union partition-router parents: the configured calendar and the calendar list."""
+    """Mock the partition parent: with `calendarid` set, only the configured calendar is read."""
     http_mocker.get(HttpRequest(_CALENDAR_URL), HttpResponse(json.dumps({"id": "primary"})))
-    http_mocker.get(HttpRequest(_CALENDAR_LIST_URL), HttpResponse(json.dumps({"items": []})))
 
 
 def _read_events(http_mocker: HttpMocker, sync_mode: SyncMode, state=None, config=None, expecting_exception=False):
@@ -116,17 +114,11 @@ def _read_events(http_mocker: HttpMocker, sync_mode: SyncMode, state=None, confi
 
 
 def _partition_state(cursor: str):
-    """Per-partition stream state: the global cursor lives under "state" so the
-    StateDelegatingStream's retention check can read it."""
+    """Stream state with one cursor for every calendar, under "state" where the
+    StateDelegatingStream's retention check reads it."""
     return (
         StateBuilder()
-        .with_stream_state(
-            "events",
-            {
-                "states": [{"partition": {"calendar_id": "primary"}, "cursor": {"updated": cursor}}],
-                "state": {"updated": cursor},
-            },
-        )
+        .with_stream_state("events", {"use_global_cursor": True, "state": {"updated": cursor}, "lookback_window": 0})
         .build()
     )
 
