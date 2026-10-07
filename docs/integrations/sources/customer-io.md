@@ -1,80 +1,185 @@
 # Customer.io
 
-## Overview
+This page contains the setup guide and reference information for the Customer.io source connector.
 
-This source provides access to the Customer.io API data.
+The connector reads a Customer.io workspace through the [App API](https://docs.customer.io/integrations/api/app/): automations and their actions, one-time sends and their variants, API-triggered broadcasts and their actions, transactional message templates, sender identities, segments and their usage, subscription topics, object types, workspaces, reporting webhooks, snippets and collections, plus message deliveries, the activity log, people, segment memberships and email suppression lists. Stream names follow the App API, where automations are `campaigns` and one-time sends are `newsletters`. `messages` holds deliveries, one per message sent to one person.
 
-### Output schema
+## Prerequisites
 
-Several output streams are available from this source:
+- A Customer.io account in which you are an Account Admin, or a Member with the account-level **Manage API credentials** permission, to create the key
+- An **App API Key** for the workspace you want to sync. Track API keys do not work.
+- The **Region** of your Customer.io account, US or EU
+- If your account restricts API access by IP address, the IP addresses Airbyte connects from on its allowlist
 
-- [Campaigns](https://customer.io/docs/api/#operation/listCampaigns) \(Incremental\)
-- [Campaign Actions](https://customer.io/docs/api/#operation/listCampaignActions) \(Incremental\)
-- [Newsletters](https://customer.io/docs/api/#operation/listNewsletters) \(Incremental\)
-- [Broadcasts](https://docs.customer.io/integrations/api/app/tag/broadcasts/listbroadcasts/) \(Incremental\)
-- [Broadcast Actions](https://docs.customer.io/integrations/api/app/tag/broadcasts/broadcastactions/) \(Incremental\)
-- [Newsletter Variants](https://docs.customer.io/integrations/api/app/tag/newsletter-variants/listnewslettervariants/) \(Full Refresh\)
-- [Transactional Messages](https://docs.customer.io/integrations/api/app/tag/transactional/listtransactional/) \(Incremental\): message templates, not deliveries
-- [Sender Identities](https://docs.customer.io/integrations/api/app/tag/sender-identities/listsenders/) \(Full Refresh\)
-- [Segments](https://docs.customer.io/integrations/api/app/tag/segments/listsegments/) \(Incremental\): archived segments are not included; a segment archived after an incremental sync keeps its last row in the destination
-- [Segment Usage](https://docs.customer.io/integrations/api/app/tag/segments/getsegmentdependencies/) \(Full Refresh\): one record per non-archived segment
-- [Subscription Topics](https://docs.customer.io/integrations/api/app/tag/subscription-center/gettopics/) \(Full Refresh\)
-- [Object Types](https://docs.customer.io/integrations/api/app/tag/objects/getobjecttypes/) \(Full Refresh\)
-- [Workspaces](https://docs.customer.io/integrations/api/app/tag/workspaces/listworkspaces/) \(Full Refresh\)
-- [Reporting Webhooks](https://docs.customer.io/integrations/api/app/tag/reporting-webhooks/listwebhooks/) \(Full Refresh\)
-- [Snippets](https://docs.customer.io/integrations/api/app/tag/snippets/listsnippets/) \(Incremental\)
-- [Collections](https://docs.customer.io/integrations/api/app/tag/collections/getcollections/) \(Full Refresh\)
-- [Messages](https://docs.customer.io/integrations/api/app/tag/messages/listmessages/) \(Incremental\): one record per delivery
-- [Activities](https://docs.customer.io/integrations/api/app/tag/activities/listactivities/) \(Incremental\): the last 30 days of activity only
-- [People](https://docs.customer.io/integrations/api/app/tag/customers/getpeoplefilter/) \(Full Refresh\): every profile, fetched with [List customers, attributes, and devices](https://docs.customer.io/integrations/api/app/tag/customers/getpeoplebyid/)
-- [Segment Memberships](https://docs.customer.io/integrations/api/app/tag/segments/getsegmentmembership/) \(Full Refresh\): one record per person per segment
-- [ESP Suppressions](https://docs.customer.io/integrations/api/app/tag/esp-suppression/getsuppressionbytype/) \(Full Refresh\)
+## Setup guide
 
-`reporting_webhooks` syncs each webhook's `endpoint` URL with any `username:password@` part removed; a token in the URL's path or query string is synced as Customer.io returns it ([reporting webhooks FAQ](https://docs.customer.io/integrations/data-out/connections/webhooks/#frequently-asked-questions)). New connections leave the stream unselected. Connections set to **Propagate all field and stream changes** add and sync it automatically after upgrading to 0.7.0; to stop syncing it, deselect the stream and clear its data from the destination.
+### Step 1: Set up Customer.io
+
+The connector authenticates with an App API key. Each key belongs to one workspace, and Customer.io shows it only once.
+
+1. Check that you can manage API credentials: you need to be an Account Admin, or a Member with the account-level **Manage API credentials** permission ([Manage your API credentials](https://docs.customer.io/accounts/settings/managing-credentials/)).
+2. In Customer.io, go to **Account Settings** > **API Credentials** ([Where can you find them?](https://docs.customer.io/accounts/settings/managing-credentials/#where-can-you-find-them)).
+3. Add an App API key: give it a name and select the workspace you want to sync ([Adding new credentials](https://docs.customer.io/accounts/settings/managing-credentials/#adding-new-credentials)). Track API keys send data into a workspace and do not work here ([Track API Keys vs App API Keys](https://docs.customer.io/accounts/settings/managing-credentials/#track-api-keys-vs-app-api-keys)). If you restrict the key's scope, make sure it includes the data you want to sync ([Authentication](https://docs.customer.io/integrations/api/app/#authentication)).
+4. Copy the key right away and store it somewhere safe: Customer.io shows App API keys only once ([App API Keys](https://docs.customer.io/accounts/settings/managing-credentials/#app-api-keys)).
+5. Find your account's region, US or EU. Account Admins see it under **Settings** > **Account Settings** > **Data and Privacy**; other roles do not, so ask an Account Admin ([How do I know what region my data is in?](https://docs.customer.io/accounts/settings/data-centers/#how-do-i-know-what-region-my-data-is-in)). A wrong region fails the connection test with a 401 error.
+6. If your account restricts API access by IP address, allow the addresses Airbyte connects from: the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) on Airbyte Cloud, or your deployment's public IP addresses on Self-Managed Airbyte. On the **Manage API Credentials** page, click **Add IP Address**, enter an address, select the workspace and click **Add IP Address**, once per address ([Restrict API access by IP Address](https://docs.customer.io/accounts/settings/managing-credentials/#restrict-api-access-by-ip-address)). Customer.io denies addresses missing from the list, even with a valid key.
+
+### Step 2: Set up the Customer.io connector in Airbyte
+
+1. In the Airbyte UI, go to **Sources** and click **+ New source**.
+2. Select **Customer.io** from the list.
+3. Enter a name for the source.
+4. Fill in the fields below, then click **Set up source**. **Region**, **Start Date** and the other optional fields are under **Optional fields**; accounts in the EU region must set **Region**.
+
+<FieldAnchor field="app_api_key">
+
+**App API Key**: The App API key you created in Step 1 for the workspace you want to sync ([App API Keys](https://docs.customer.io/accounts/settings/managing-credentials/#app-api-keys)). Airbyte sends it as a bearer token. Track API keys do not work.
+
+</FieldAnchor>
+
+<FieldAnchor field="region">
+
+**Region** (optional, required for EU accounts): The data center region of your Customer.io account, `US` (the default) or `EU`, which Account Admins see under **Settings** > **Account Settings** > **Data and Privacy**. The connector calls `https://api.customer.io/v1` or `https://api-eu.customer.io/v1`. Customer.io does not redirect App API requests to the other region, so a region that does not match your account fails with a 401 error ([Specifying your region in the API](https://docs.customer.io/accounts/settings/data-centers/#specifying-your-region-in-the-api)).
+
+</FieldAnchor>
+
+<FieldAnchor field="start_date">
+
+**Start Date** (optional): A UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2023-01-01T00:00:00Z`. Only records created or last updated at or after it are synced, in every stream that supports incremental sync and in Full Refresh mode too: automations, actions, one-time sends, broadcasts, transactional message templates, segments, snippets and collections by their last update, `messages` by creation time and `activities` by event time. Streams that support only full refresh, such as `newsletter_variants`, `people`, `segment_memberships` and `esp_suppressions`, sync every record. Leave it blank to sync all records. See [Incremental sync and Start Date](#incremental-sync-and-start-date).
+
+</FieldAnchor>
+
+<FieldAnchor field="messages_lookback_days">
+
+**Messages Lookback Window (Days)** (optional): How many days before the last synced message each incremental sync of `messages` reads again, so that opens, clicks, conversions, bounces and unsubscribes recorded after a message was sent reach the destination. Customer.io can record a conversion up to 90 days after a message is sent, opened or clicked ([conversions](https://docs.customer.io/messaging/send/automations/conversions/#how-it-works)), and records opens and clicks for up to 6 months ([delivery metrics](https://docs.customer.io/messaging/metrics/analytics/#delivery-metrics)). A longer window keeps these metrics more complete, but every sync then requests one page per 1,000 messages sent in the window. Enter 1 to 180 days. Defaults to 30.
+
+</FieldAnchor>
+
+<FieldAnchor field="esp_suppression_domains">
+
+**Sending Domains for ESP Suppressions** (optional): The domains you send email from, in lowercase, for example `mail.example.com`. Customer.io lists them under **Settings** > **Workspace Settings** > **Email**. `esp_suppressions` reads each suppression list of Customer.io's email service provider (ESP) once per domain and records the domain on every row. Customer.io suppresses an address on the domain where it bounced or was reported as spam ([suppressions across domains](https://docs.customer.io/messaging/channels/email/deliverability/esp-suppression/#sync-suppressions-across-domains)), so if you send from more than one domain, enter them all. Leave it empty to read each list once without a domain filter; the `domain` column is then empty. Not needed if you send through your own SMTP server.
+
+</FieldAnchor>
+
+When you click **Set up source**, Airbyte tests the connection by reading automations (`campaigns`). If the test fails with a 401 or 403 error, see [Troubleshooting](#troubleshooting).
+
+## Supported sync modes
+
+The Customer.io source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes):
+
+| Feature | Supported? |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental Sync | Yes |
+| Namespaces | No |
+
+Eleven streams support incremental sync; the other ten are full refresh only. No stream marks records deleted in Customer.io: see [Limitations & Troubleshooting](#limitations--troubleshooting).
+
+## Supported Streams
+
+New connections select the streams marked **Yes** under **Selected by default**; select the others when you need them.
+
+| Stream | Customer.io resource | Primary key | Cursor | Sync modes | Selected by default |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `campaigns` | [Automations](https://docs.customer.io/integrations/api/app/tag/automations/listcampaigns/) | `id` | `updated` | Full Refresh, Incremental | Yes |
+| `campaigns_actions` | [Automation actions](https://docs.customer.io/integrations/api/app/tag/automations/listcampaignactions/) | `id` | `updated`, per automation | Full Refresh, Incremental | Yes |
+| `newsletters` | [One-time sends](https://docs.customer.io/integrations/api/app/tag/newsletters/listnewsletters/) | `id` | `updated` | Full Refresh, Incremental | Yes |
+| `broadcasts` | [API-triggered broadcasts](https://docs.customer.io/integrations/api/app/tag/broadcasts/listbroadcasts/) | `id` | `updated` | Full Refresh, Incremental | Yes |
+| `broadcast_actions` | [Broadcast actions](https://docs.customer.io/integrations/api/app/tag/broadcasts/broadcastactions/) | `broadcast_id`, `id` | `updated`, per broadcast | Full Refresh, Incremental | No |
+| `newsletter_variants` | [One-time send variants](https://docs.customer.io/integrations/api/app/tag/newsletter-variants/listnewslettervariants/) | `newsletter_id`, `id` | None | Full Refresh | No |
+| `transactional_messages` | [Transactional messages](https://docs.customer.io/integrations/api/app/tag/transactional/listtransactional/): templates, not deliveries | `id` | `updated_at` | Full Refresh, Incremental | Yes |
+| `sender_identities` | [Sender identities](https://docs.customer.io/integrations/api/app/tag/sender-identities/listsenders/) | `id` | None | Full Refresh | No |
+| `segments` | [Segments](https://docs.customer.io/integrations/api/app/tag/segments/listsegments/) | `id` | `updated_at` | Full Refresh, Incremental | Yes |
+| `segment_usage` | [Segment dependencies](https://docs.customer.io/integrations/api/app/tag/segments/getsegmentdependencies/) | `segment_id` | None | Full Refresh | No |
+| `subscription_topics` | [Subscription topics](https://docs.customer.io/integrations/api/app/tag/subscription-center/gettopics/) | `id` | None | Full Refresh | No |
+| `object_types` | [Object types](https://docs.customer.io/integrations/api/app/tag/objects/getobjecttypes/) | `id` | None | Full Refresh | No |
+| `workspaces` | [Workspaces](https://docs.customer.io/integrations/api/app/tag/workspaces/listworkspaces/) | `id` | None | Full Refresh | No |
+| `reporting_webhooks` | [Reporting webhooks](https://docs.customer.io/integrations/api/app/tag/reporting-webhooks/listwebhooks/) | `id` | None | Full Refresh | No |
+| `snippets` | [Snippets](https://docs.customer.io/integrations/api/app/tag/snippets/listsnippets/) | `name` | `updated_at` | Full Refresh, Incremental | No |
+| `collections` | [Collections](https://docs.customer.io/integrations/api/app/tag/collections/getcollections/) | `id` | `updated_at` | Full Refresh, Incremental | No |
+| `messages` | [Messages](https://docs.customer.io/integrations/api/app/tag/messages/listmessages/): deliveries | `id` | `created` | Full Refresh, Incremental | No (personal data) |
+| `activities` | [Activities](https://docs.customer.io/integrations/api/app/tag/activities/listactivities/) | `id` | `timestamp` | Full Refresh, Incremental | No (personal data) |
+| `people` | [Customers](https://docs.customer.io/integrations/api/app/tag/customers/getpeoplefilter/) with their [attributes and devices](https://docs.customer.io/integrations/api/app/tag/customers/getpeoplebyid/) | `cio_id` | None | Full Refresh | No (personal data) |
+| `segment_memberships` | [Customers in a segment](https://docs.customer.io/integrations/api/app/tag/segments/getsegmentmembership/) | `segment_id`, `cio_id` | None | Full Refresh | No (personal data) |
+| `esp_suppressions` | [ESP-suppressed emails](https://docs.customer.io/integrations/api/app/tag/esp-suppression/getsuppressionbytype/) | `suppression_type`, `domain`, `email` | None | Full Refresh | No (personal data) |
+
+`reporting_webhooks` syncs each webhook's `endpoint` URL as Customer.io returns it. Customer.io documents basic authentication in the URL (`http://username:password@example.com`) as a way to secure a reporting webhook ([webhooks FAQ](https://docs.customer.io/integrations/data-out/connections/webhooks/#frequently-asked-questions)), so the URL can contain the receiving service's credentials. New connections leave the stream unselected; select it only if the destination may store them. A connection set up before 0.7.0 with **Propagate all field and stream changes** selects it on its own and syncs it in its first sync on 0.7.0 or later. To prevent that, switch the connection to **Propagate field changes only** before the upgrade; otherwise deselect the stream and delete its data from the destination.
 
 `workspaces` lists every workspace in the account with message counts for the current billing period and current people and object totals, cached by Customer.io for up to two hours. The records have no update time, so use Full Refresh | Overwrite for the latest counts, or Full Refresh | Append to keep one snapshot per sync.
 
-`collections` lists each collection's name, schema, row count and size, not its contents. It is full refresh only, so every sync has the current counts.
+`collections` lists each collection's name, schema, row count and size, not its contents.
 
 `messages` has one record per delivery, a message sent to one person, with the time each metric (delivered, opened, clicked, converted and more) was recorded. Syncs read deliveries in 30-day windows of creation time, one request per 1,000 deliveries, and Start Date applies to the creation time. Customer.io records opens and clicks for up to 6 months and conversions for up to 90 days, so each incremental sync reads the deliveries created in the last **Messages Lookback Window (Days)** again (default 30, up to 180): use Incremental | Append + Deduped. Raise the setting, or run a full refresh from time to time, for complete metrics; lower it to shorten syncs in high-volume workspaces. Records carry the recipient's address and identifiers, the subject line and per-person open and click times.
 
 `activities` is the workspace activity log, one record per event: message events such as sent, opened and clicked, tracked events, page and screen views, and attribute changes, including those of deleted people. Customer.io guarantees only the last 30 days, so sync at least every 30 days and use Incremental | Append + Deduped to keep older history. Expect several records per message sent; the first sync reads every retained activity, 100 per request. Incremental syncs skip events sent to Customer.io with a timestamp more than an hour before the newest activity already synced. If a page of 100 such older events comes before newer ones in Customer.io's list, the newer ones are skipped too. Records carry email addresses, your person IDs, IP addresses and user agents of opens and clicks, event and attribute values, and page URLs.
 
-`people` has one record per person with every profile attribute, identifier, subscription preference and device push token. Each sync reads every profile, one request per 1,000 people to find them and one per 100 to fetch them: 1,000,000 people take about 11,000 requests, at least 18 minutes at 10 requests per second. Start Date does not apply. Full Refresh | Overwrite mirrors the workspace; Append keeps deleted people.
+`people` has one record per person, keyed by `cio_id`, the ID Customer.io assigns to every person, with every profile attribute, identifier, subscription preference and device push token. Each sync reads every profile, one request per 1,000 people to find them and one per 100 to fetch them: 1,000,000 people take about 11,000 requests, at least 18 minutes at 10 requests per second. Start Date does not apply. Full Refresh | Overwrite mirrors the workspace; Append keeps deleted people.
 
 `segment_memberships` has one record per person per segment with the person's `cio_id`, ID and email address, so it holds the sum of all segment sizes, often several times the number of people, at up to 30,000 members per request. Membership has no timestamps, so use Full Refresh | Overwrite: Append adds a full copy on every sync. Members of a segment whose `state` is `build` can be out of date while Customer.io calculates them. Archived segments are not included.
 
-`esp_suppressions` has one record per address on each of Customer.io's email suppression lists (bounces, blocks, spam reports, invalid emails), with a reason that can repeat the address. Each sync makes one request per 1,000 addresses on each list, at least 4 (4 per configured domain). Lifted suppressions leave the list without a record, so use Full Refresh | Overwrite: Append adds a full copy on every sync. Customer.io suppresses an address on the sending domain where it bounced or was reported as spam, so if you send from more than one domain, enter them in **Sending Domains for ESP Suppressions**: each list is then read once per domain, and records carry their `domain`. A domain you do not send from returns no records. The lists can include addresses suppressed by other workspaces that send from the same domain. If you send through your own SMTP server, your email provider keeps the suppressions, so deselect the stream.
+`esp_suppressions` has one record per address on each of Customer.io's email suppression lists (bounces, blocks, spam reports, invalid emails), with a reason that can repeat the address. Each sync makes one request per 1,000 addresses on each list, at least 4 (4 per configured domain). Lifted suppressions leave the list without a record, so use Full Refresh | Overwrite: Append adds a full copy on every sync. Customer.io suppresses an address on the sending domain where it bounced or was reported as spam, so if you send from more than one domain, enter them in **Sending Domains for ESP Suppressions**: each list is then read once per domain, and records carry their `domain`. A mistyped or unknown domain returns no records instead of an error. The lists can include addresses suppressed by other workspaces that send from the same domain. If you send through your own SMTP server, your email provider keeps the suppressions, so deselect the stream.
 
-These five streams carry personal data and are not selected by default. Connections set to **Propagate all field and stream changes** add and sync them automatically after upgrading to 0.8.0; to stop syncing them, deselect the streams and clear their data from the destination. Incremental and Append syncs keep rows of people later deleted or suppressed in Customer.io, so handle erasure requests in the destination too. If these streams fail with a 403 error, check that the key can read this data and that the Airbyte IP addresses are on your allowlist, or deselect the streams.
+`messages`, `activities`, `people`, `segment_memberships` and `esp_suppressions` carry personal data and are not selected by default. A connection set up before 0.8.0 with **Propagate all field and stream changes** selects them on its own and syncs them in its first sync on 0.8.0 or later. To prevent that, switch the connection to **Propagate field changes only** before the upgrade; otherwise deselect the streams and delete their data from the destination. Incremental and Append syncs keep rows of people later deleted or suppressed in Customer.io, so handle erasure requests in the destination too. If these streams fail with a 403 error, check that the key can read this data and that the Airbyte IP addresses are on your allowlist, or deselect the streams.
 
-If there are more endpoints you'd like Faros AI to support, please [create an
-issue.](https://github.com/faros-ai/airbyte-connectors/issues/new)
+## Incremental sync and Start Date
 
-### Features
+Of the lists the connector reads, only deliveries can be filtered by time, so `messages` is the one stream Customer.io filters on the server. The other incremental streams use client-side cursors: each sync reads the full list (`activities` stops early, see below) and emits the records whose cursor (`updated`, `updated_at` or `timestamp`, in Unix seconds) is at or after the saved cursor minus one hour. The lists are not sorted by the cursor, so a record edited during a sync can fall behind the saved cursor; the one-hour lookback picks it up on the next sync. The lookback costs no extra requests, because every sync reads the full lists anyway; `activities` reads one more hour of activities. Records updated in the hour before the saved cursor are emitted again on every sync until a newer change moves the cursor, so use Incremental | Append + Deduped: Incremental | Append stores them as repeated rows. Both modes make the same requests for these streams: Incremental | Append + Deduped writes fewer rows, and Full Refresh | Overwrite also removes records deleted in Customer.io.
 
-| Feature           | Supported? |
-| :---------------- | :--------- |
-| Full Refresh Sync | Yes        |
-| Incremental Sync  | Yes        |
-| SSL connection    | Yes        |
-| Namespaces        | No         |
+`campaigns_actions` and `broadcast_actions` keep one cursor per automation or broadcast. They request the actions of every automation or broadcast, including those last updated before the Start Date, because a parent's update time does not change with its actions; the actions themselves are still filtered by the Start Date. The actions of an automation or broadcast added since the last sync start from the newest update time saved for the stream, less the previous sync's duration and the one-hour lookback, not from the Start Date. Actions that keep an older update time arrive only after they change. This can affect a duplicated automation: Customer.io does not document whether copied actions keep their update time.
+
+`messages` reads 30-day windows of creation time, and each incremental sync starts **Messages Lookback Window (Days)** before the newest `created` already synced, so metrics recorded after sending reach the destination. `activities` reads newest first and stops at the first page with no activity inside the cursor window, and Customer.io guarantees only the last 30 days of activity. The notes on both streams under [Supported Streams](#supported-streams) describe the trade-offs.
+
+Start Date applies to the streams that support incremental sync, in Full Refresh mode too: they skip records created or last updated before it, by creation time for `messages` and event time for `activities`. The ten full refresh streams ignore it and sync every record. A future Start Date passes the connection check, but until that date a sync emits only records changed while it runs. Leave it blank to sync all records.
 
 ### Performance considerations
 
-The Customer.io API is divided into three different hosts, each serving a
-different component of Customer.io. This source only uses the Beta API host,
-which enforces a rate limit of 10 requests per second. Please [create an
-issue](https://github.com/faros-ai/airbyte-connectors/issues/new) if you see any
-rate limit issues.
+Customer.io limits most App API endpoints to 10 requests per second per workspace ([Rate Limits](https://docs.customer.io/integrations/api/app/#rate-limits)), from one bucket that every App API call in the workspace without a separate limit draws from, writes included ([OpenAPI spec](https://docs.customer.io/files/journeys-app.json), `components.responses.InboxPreviewReadRateLimited`). The connector shares that bucket with your other App API traffic. It caps itself at 10 requests per rolling second across all streams and reads with three workers. When other traffic fills the bucket, Customer.io answers with 429 errors and the connector waits; see [Troubleshooting](#troubleshooting).
 
-## Getting started
+Request costs of the expensive streams:
 
-### Requirements
+- `campaigns_actions`, `broadcast_actions`, `newsletter_variants` and `segment_usage`: one request per automation, broadcast, one-time send or segment, plus one per extra page of actions. 1,000 one-time sends add about 100 seconds of `newsletter_variants` requests.
+- `messages`: one request per 1,000 deliveries, plus one per 30-day window. 10 million deliveries take about 10,000 requests on the first sync, and every incremental sync reads the lookback window again. With a blank Start Date, about 690 empty windows since 1970 add about 70 seconds to the first sync, and to every sync while the workspace has no deliveries.
+- `activities`: one request per 100 activities, one page after another: about 10,000 requests per million activities on the first sync. Incremental syncs read the new activities plus one page.
+- `people`: one request per 1,000 people plus one per 100: 1,000,000 people take about 11,000 requests, at least 18 minutes.
+- `segment_memberships`: one request per segment and per 30,000 members: 10 million memberships in 200 segments take at most about 735 requests.
+- `esp_suppressions`: one request per 1,000 addresses on each of the four suppression lists, at least 4, times the number of configured domains.
 
-- Customer.io App API Key
+Leave the streams you do not need unselected.
 
-Please follow the [their documentation for generating an App API Key](https://customer.io/docs/managing-credentials/).
+## Limitations & Troubleshooting
+
+### Connector limitations
+
+How the connector treats Customer.io HTTP errors:
+
+| HTTP status | Behavior |
+| :--- | :--- |
+| 401 | The sync fails with a configuration error: Customer.io rejected the key. See [Troubleshooting](#troubleshooting). |
+| 403 | The sync fails with a configuration error: Customer.io denied the key access to the data. See [Troubleshooting](#troubleshooting). |
+| 404 | On `campaigns_actions`, `broadcast_actions`, `newsletter_variants`, `segment_usage` and `segment_memberships`, the records of an automation, broadcast, one-time send or segment deleted during the sync are skipped. On other streams, the sync fails. |
+| 429 | Retried up to 30 times after the wait in the `Retry-After` header; with `Retry-After: 1`, that rides out about a minute of rate limiting. Customer.io leaves the header out when a daily quota is reached; the connector then backs off exponentially and fails the sync after about 17 minutes. |
+| 500, 502, 503, 504 | Retried with exponential backoff; the sync fails after about 17 minutes of errors. |
+
+- **Deletions**: Customer.io's lists leave deleted records out, so no stream marks a deletion. In Incremental and Append modes, a record deleted in Customer.io keeps its last version in the destination; Full Refresh | Overwrite mirrors the current state when Start Date is blank; with a Start Date it keeps only records last updated since then. `snippets` are keyed by `name`, and a snippet cannot be renamed, so a snippet copied to a new name arrives as a new record, and deleting the old one leaves its last version like any deleted record.
+- **Archived segments**: Customer.io leaves [archived segments](https://docs.customer.io/messaging/segmentation/segments/#archive-unarchive-a-segment) out of its segment list, so `segments`, `segment_usage` and `segment_memberships` skip them. A segment archived after an incremental sync keeps its last row in the destination. A segment can be archived while archived automations or sent one-time sends still use it, and that usage never reaches `segment_usage`.
+- **Deprecated fields**: Customer.io's [OpenAPI spec](https://docs.customer.io/files/journeys-app.json) marks `campaigns.type`, the trigger type ("Sunsetting on March 30, 2025"), and `campaigns.msg_templates` as deprecated, so they may arrive null or stop arriving. Do not build new reports on them.
+- **Field types that differ from the API reference**: `campaigns_actions.id` is a string, as Customer.io sends it, although the reference documents an integer, and `campaigns.actions[].id` is an integer, so cast one side to join them. `broadcast_actions.id` is cast to the documented integer. The `campaigns` fields `audience.person_filters`, `audience.relationship_filters`, `object_attribute_triggers` and `relationship_attribute_triggers` have no declared type: the reference types them as objects, but its examples show JSON strings. `messages` also carries `transactional_message_id` and `msg_template_id`, which the reference's response schema does not declare. Version 1.0.0 changed the declared types of `campaigns_actions.from_id` and `reply_to_id`, `newsletters.sent_at` and four ID and tag arrays; see the [migration guide](./customer-io-migrations.md).
+- **Joins**: `object_types.id` is a string, because Customer.io passes object type IDs as strings, while `campaigns.object_type_id` is an integer, so that join needs a cast.
+- **Variants**: `broadcast_actions` has one record per language variant of a message, all with the same `multi_language_branch_action_id`, and `newsletter_variants` one per language or A/B test of a one-time send, each with its own `id`.
+- **Hidden senders**: `sender_identities` includes hidden senders; use `hidden` to tell them apart.
+- **Collection counts**: Customer.io does not document whether replacing a collection's contents changes its `updated_at`. If it does not, incremental syncs keep the old `rows`, `bytes` and `schema`; Full Refresh | Overwrite always has the current values of the collections it syncs.
+- **Empty streams**: `subscription_topics` is empty until the workspace has subscription topics, and a non-empty stream does not mean the subscription center is enabled. `broadcasts` and `broadcast_actions` are empty without API-triggered broadcasts, and `activities` can be empty after 30 days without activity.
+- **Deliveries without content**: a `messages` record with `forgotten: true` is one whose content Customer.io did not keep, for example a transactional message sent with message retention disabled.
+- **Log warning**: `campaigns_actions` logs "Parent state handling is not supported for CartesianProductStreamSlicer." on every sync. It is harmless and needs no action.
+
+### Troubleshooting
+
+- **401 errors**: Customer.io rejected the key. Check that it is an App API key, not a Track API key, and that you copied all of it; Customer.io shows a key only once, so create a new one if you lost it. Check that **Region** matches your account (see [Step 1](#step-1-set-up-customerio)). If your account restricts API access by IP address, add the addresses Airbyte connects from to the allowlist ([Step 1](#step-1-set-up-customerio)): Customer.io does not document which error a blocked address gets, so both the 401 and the 403 messages mention it.
+- **403 errors**: Customer.io denied the key access to the data the stream reads, or the addresses Airbyte connects from are not on the allowlist. Use a key that can read the data, or deselect the stream.
+- **429 errors or slow syncs**: your other App API traffic shares the 10 requests per second. Schedule syncs when that traffic is low, sync less often, or deselect the expensive streams listed in [Performance considerations](#performance-considerations).
+- **5xx errors**: temporary Customer.io errors. If the sync fails after the retries, check [Customer.io Status](https://status.customerio.com/) and sync again later.
+- **Records missing from incremental streams**: streams that support incremental sync skip records last updated before the Start Date, `activities` skips events dated more than an hour before the newest activity already synced, and the actions of a new automation or broadcast start from the newest update time saved for the stream (see [Incremental sync and Start Date](#incremental-sync-and-start-date)). To read them, move the Start Date earlier or leave it blank, then clear the stream; the clear also removes the rows of records deleted in Customer.io and, in Append modes, earlier versions of each record. Do not clear `activities`: Customer.io guarantees only the last 30 days, so the clear permanently removes older activity from the destination.
+- **Repeated rows**: in Incremental | Append mode, records updated in the hour before the saved cursor arrive again on every sync, and `messages` repeats its lookback window. Use Incremental | Append + Deduped.
 
 ## IP allow list
 
