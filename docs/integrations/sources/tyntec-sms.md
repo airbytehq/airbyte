@@ -75,7 +75,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------ |
-| 0.3.0 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Remove the `contacts`, `phones` and `registrations` streams (tyntec BYON endpoints return 404) and use the `sms` stream for the connection check |
+| 0.3.0 | 2026-10-07 | [88337](https://github.com/airbytehq/airbyte/pull/88337) | Remove the `contacts`, `phones` and `registrations` streams (tyntec BYON endpoints return 404) and use the `sms` stream for the connection check |
 | 0.2.25 | 2026-06-02 | [79035](https://github.com/airbytehq/airbyte/pull/79035) | Update dependencies |
 | 0.2.24 | 2025-05-24 | [60738](https://github.com/airbytehq/airbyte/pull/60738) | Update dependencies |
 | 0.2.23 | 2025-05-10 | [59956](https://github.com/airbytehq/airbyte/pull/59956) | Update dependencies |
