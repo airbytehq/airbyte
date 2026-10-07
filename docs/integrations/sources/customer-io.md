@@ -87,7 +87,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                     |
 |:--------|:-----------| :------------------------------------------------------------- |:--------------------------------------------|
-| 0.8.0 | 2026-10-08 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add message, activity, people, segment membership and ESP suppression streams |
+| 0.8.0 | 2026-10-08 | [88158](https://github.com/airbytehq/airbyte/pull/88158) | Add message, activity, people, segment membership and ESP suppression streams |
 | 0.7.0 | 2026-10-08 | [88135](https://github.com/airbytehq/airbyte/pull/88135) | Add subscription topic, object type, workspace, reporting webhook, snippet and collection streams |
 | 0.6.0 | 2026-10-07 | [88130](https://github.com/airbytehq/airbyte/pull/88130) | Add broadcast, newsletter variant, transactional message, sender identity and segment streams |
 | 0.5.0 | 2026-10-07 | [88129](https://github.com/airbytehq/airbyte/pull/88129) | Add rate limiting, Retry-After retries, clearer authentication errors, a one-hour lookback, and missing fields |
