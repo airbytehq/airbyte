@@ -33,7 +33,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Breaking: remove the `insights_traffic` stream; GitBook removed the `GET /v1/spaces/{spaceId}/insights/traffic` endpoint. See the [migration guide](/integrations/sources/gitbook-migrations). |
+| 0.1.0 | 2026-10-07 | [88268](https://github.com/airbytehq/airbyte/pull/88268) | Breaking: remove the `insights_traffic` stream; GitBook removed the `GET /v1/spaces/{spaceId}/insights/traffic` endpoint. See the [migration guide](/integrations/sources/gitbook-migrations). |
 | 0.0.64 | 2026-10-06 | [87825](https://github.com/airbytehq/airbyte/pull/87825) | Update dependencies |
 | 0.0.63 | 2026-09-29 | [87183](https://github.com/airbytehq/airbyte/pull/87183) | Update dependencies |
 | 0.0.62 | 2026-09-22 | [86624](https://github.com/airbytehq/airbyte/pull/86624) | Update dependencies |
