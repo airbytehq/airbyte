@@ -45,7 +45,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.0.68 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix connection check failing with HTTP 429: check the `organizations` stream instead of `attendees`, throttle requests to Eventbrite's 2,000/hour limit, retry on `Retry-After`, raise `events` page size to 50 |
+| 0.0.68 | 2026-10-07 | [88232](https://github.com/airbytehq/airbyte/pull/88232) | Fix connection check failing with HTTP 429: check the `organizations` stream instead of `attendees`, throttle requests to Eventbrite's 2,000/hour limit, retry on `Retry-After`, raise `events` page size to 50 |
 | 0.0.67 | 2026-10-06 | [87856](https://github.com/airbytehq/airbyte/pull/87856) | Update dependencies |
 | 0.0.66 | 2026-09-29 | [87148](https://github.com/airbytehq/airbyte/pull/87148) | Update dependencies |
 | 0.0.65 | 2026-09-22 | [86601](https://github.com/airbytehq/airbyte/pull/86601) | Update dependencies |
