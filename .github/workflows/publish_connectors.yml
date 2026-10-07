@@ -82,6 +82,20 @@ on:
 
 env:
   RELEASE_IMMEDIATELY_PHRASE: Release immediately (bypasses automatic progressive rollout)
+  # `production` for real publishes (master push, or a `none`/`rc` release that is not a dry run);
+  # `gitops-prod` for prerelease and dry-run publishes.
+  SENTRY_ENVIRONMENT: >-
+    ${{
+      (
+        github.event_name == 'push'
+        || (
+          (inputs.with-semver-suffix == 'none' || inputs.with-semver-suffix == 'rc')
+          && inputs.dry-run != true
+        )
+      )
+      && 'production'
+      || 'gitops-prod'
+    }}
 
 jobs:
   publish_options:

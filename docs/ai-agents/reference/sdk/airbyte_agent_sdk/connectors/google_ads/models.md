@@ -1791,6 +1791,7 @@ Classes
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[AdGroupsSearchData]
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[CampaignLabelsSearchData]
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[CampaignsSearchData]
+    * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -2956,7 +2957,7 @@ Classes
     :   OAuth2 client secret from Google Cloud Console
 
     `developer_token: str`
-    :   Google Ads API developer token
+    :   Legacy Google Ads API developer token. Google sunset developer tokens on 2026-09-09 and now ignores this value; any non-empty string is accepted. Existing tokens keep working unchanged.
 
     `model_config`
     :   The type of the None singleton.

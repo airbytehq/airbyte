@@ -36,6 +36,9 @@ on:
         description: "The commit SHA of the current branch, used to report test results."
         value: ${{ jobs.generate-matrix.outputs.commit-sha }}
 
+env:
+  SENTRY_ENVIRONMENT: gitops-prod
+
 permissions:
   # Allow the workflow to read contents
   # and to read/write checks and PR comments.

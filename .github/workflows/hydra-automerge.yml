@@ -42,6 +42,9 @@ on:
 run-name: "Auto-merge eval for PR #${{ inputs.pr }}"
 
 # All repo operations use GitHub App tokens, not GITHUB_TOKEN.
+env:
+  SENTRY_ENVIRONMENT: gitops-prod
+
 permissions: {}
 
 jobs:
@@ -67,10 +70,22 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
         run: |
-          pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft,title)
+          pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft,title,baseRefName,headRefName,labels)
           state=$(echo "$pr_json" | jq -r '.state')
           is_draft=$(echo "$pr_json" | jq -r '.isDraft')
           title=$(echo "$pr_json" | jq -r '.title')
+
+          # Never auto-merge PRs from the airbytehq/ai-skills eval harness.
+          # PRs opened by an eval's own Devin session are only identifiable by
+          # their `eval-base/*` base; harness-created ones also match the rest.
+          base=$(echo "$pr_json" | jq -r '.baseRefName')
+          head=$(echo "$pr_json" | jq -r '.headRefName')
+          labels=$(echo "$pr_json" | jq -r '[.labels[].name] | join(",")')
+          if [[ "$base" == eval-base/* || "$head" == eval/* || "$title" == "[EVAL - DO NOT MERGE]"* || ",$labels," == *",eval-test,"* ]]; then
+            echo "::error::PR #$PR_NUMBER is a playbook-eval PR (base=$base, head=$head). Auto-merge is blocked."
+            exit 1
+          fi
+
           echo "state=$state" | tee -a "$GITHUB_OUTPUT"
           echo "is_draft=$is_draft" | tee -a "$GITHUB_OUTPUT"
           echo "title=$title" | tee -a "$GITHUB_OUTPUT"
@@ -326,7 +341,7 @@ jobs:
           && steps.validate-paths.outputs.auto_merge_eligible == 'true'
           && steps.verify-checks.outputs.ready == 'true'
         id: devin
-        uses: aaronsteers/devin-action@main
+        uses: airbytehq/devin-action@main
         with:
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-hoard-token.outputs.token }}
@@ -341,6 +356,7 @@ jobs:
           tags: |
             auto-merge-eval
             hyd-ready
+            airbyte-pr-${{ inputs.pr }}
           prompt-text: |
             Analyze this pull request and classify it by filling out the structured output schema:
             https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}
@@ -387,8 +403,9 @@ jobs:
           dep_bump=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.dependency_version_bump.pass')
           metadata_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.metadata_only_change.pass')
           new_streams=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.net_new_stream_addition.pass')
+          error_classification=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.error_classification_change.pass')
 
-          if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" || "$new_streams" == "true" ]]; then
+          if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" || "$new_streams" == "true" || "$error_classification" == "true" ]]; then
             scope_pass="true"
           else
             scope_pass="false"
@@ -454,7 +471,7 @@ jobs:
             echo ""
             scope_matched=false
             has_scope_row=false
-            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change net_new_stream_addition; do
+            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change net_new_stream_addition error_classification_change; do
               pass=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.pass")
               if [[ "$pass" == "true" ]]; then
                 if [[ "$has_scope_row" == "false" ]]; then
@@ -468,7 +485,7 @@ jobs:
               fi
             done
             if [[ "$scope_matched" == "false" ]]; then
-              echo ":x: No matching change scope detected."
+              echo ":x: This PR falls outside the low-risk change types that qualify for auto-merge (docs-only, comment-only, dependency version bump, metadata-only, net-new stream addition, error classification). A human reviewer needs to approve and merge it."
             fi
             if [[ -n "$footer_note" ]]; then
               echo ""

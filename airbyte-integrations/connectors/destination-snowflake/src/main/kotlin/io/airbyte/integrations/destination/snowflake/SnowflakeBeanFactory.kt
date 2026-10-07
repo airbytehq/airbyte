@@ -7,11 +7,15 @@ package io.airbyte.integrations.destination.snowflake
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.Operation
+import io.airbyte.cdk.fusion.FusionConfiguration
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
+import io.airbyte.integrations.destination.snowflake.copy.DisabledSnowflakeS3Copy
+import io.airbyte.integrations.destination.snowflake.copy.EnabledSnowflakeS3Copy
+import io.airbyte.integrations.destination.snowflake.copy.SnowflakeS3Copy
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -20,10 +24,10 @@ import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthCo
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRawRecordFormatter
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
-import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.File
 import java.io.PrintWriter
@@ -53,10 +57,30 @@ internal const val DATA_SOURCE_PROPERTY_TRACING = "tracing"
 internal const val DATA_SOURCE_PROPERTY_WAREHOUSE = "warehouse"
 internal const val JSON_FORMAT = "JSON"
 internal const val NETWORK_TIMEOUT_MINUTES: Long = 1L
-internal const val PRIVATE_KEY_FILE_NAME: String = "rsa_key.p8"
 
 @Factory
 class SnowflakeBeanFactory {
+
+    @Singleton
+    @Requires(property = Operation.PROPERTY, value = "write")
+    fun snowflakeS3Copy(
+        columnManager: io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager,
+        snowflakeConfiguration: SnowflakeConfiguration,
+        configuredCatalog: ConfiguredAirbyteCatalog,
+    ): SnowflakeS3Copy {
+        return FusionConfiguration.fromEnvironment(
+                System.getenv(),
+            )
+            ?.let {
+                EnabledSnowflakeS3Copy(
+                    it,
+                    columnManager,
+                    snowflakeConfiguration,
+                    configuredCatalog = configuredCatalog
+                )
+            }
+            ?: DisabledSnowflakeS3Copy
+    }
 
     @Singleton
     fun tempTableNameGenerator(
@@ -102,8 +126,6 @@ class SnowflakeBeanFactory {
     @Requires(property = Operation.PROPERTY, notEquals = "spec")
     fun snowflakeDataSource(
         snowflakeConfiguration: SnowflakeConfiguration,
-        @Named("snowflakePrivateKeyFileName")
-        snowflakePrivateKeyFileName: String = PRIVATE_KEY_FILE_NAME,
         @Value("\${airbyte.edition:COMMUNITY}") airbyteEdition: String,
     ): HikariDataSource {
         val snowflakeJdbcUrl =
@@ -125,7 +147,7 @@ class SnowflakeBeanFactory {
                 jdbcUrl = snowflakeJdbcUrl
                 when (snowflakeConfiguration.authType) {
                     is KeyPairAuthConfiguration -> {
-                        val privateKeyFile = File(snowflakePrivateKeyFileName)
+                        val privateKeyFile = File.createTempFile("rsa_key_", ".p8")
                         privateKeyFile.deleteOnExit()
                         privateKeyFile.writeText(
                             snowflakeConfiguration.authType.privateKey,
@@ -133,7 +155,7 @@ class SnowflakeBeanFactory {
                         )
                         addDataSourceProperty(
                             DATA_SOURCE_PROPERTY_PRIVATE_KEY_FILE,
-                            snowflakePrivateKeyFileName
+                            privateKeyFile.absolutePath
                         )
                         snowflakeConfiguration.authType.privateKeyPassword?.let { password ->
                             addDataSourceProperty(
@@ -190,10 +212,6 @@ class SnowflakeBeanFactory {
 
         return HikariDataSource(datasourceConfig)
     }
-
-    @Singleton
-    @Named("snowflakePrivateKeyFileName")
-    fun snowflakePrivateKeyFileName() = PRIVATE_KEY_FILE_NAME
 
     @Singleton
     fun snowflakeRecordFormatter(

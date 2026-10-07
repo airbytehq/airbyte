@@ -19,6 +19,8 @@ os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 @pytest.fixture(autouse=True)
 def time_sleep_mock(mocker):
     time_mock = mocker.patch("time.sleep", lambda x: None)
+    # `source_shopify.utils` binds `sleep` at import time (`from time import sleep`), patch that name too
+    mocker.patch("source_shopify.utils.sleep", lambda x: None)
     yield time_mock
 
 
@@ -228,6 +230,56 @@ def bulk_successful_response_with_errors():
 
 
 @pytest.fixture
+def bulk_response_with_auth_error():
+    return {
+        "data": {
+            "bulkOperationRunQuery": {
+                "userErrors": [],
+            },
+        },
+        "errors": "[API] Invalid API key or access token (unrecognized login or wrong password)",
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 10,
+                "actualQueryCost": 10,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 990,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+
+
+@pytest.fixture
+def bulk_response_with_auth_error_in_user_errors():
+    return {
+        "data": {
+            "bulkOperationRunQuery": {
+                "userErrors": [
+                    {
+                        "message": "Invalid API key or access token",
+                        "code": "INVALID",
+                    },
+                ],
+            },
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 10,
+                "actualQueryCost": 10,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 990,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+
+
+@pytest.fixture
 def bulk_successful_response_with_no_id():
     return {
         "data": {
@@ -374,6 +426,30 @@ def bulk_job_failed_with_partial_url_response():
                 "url": None,
                 "partialDataUrl": 'https://some_url?response-content-disposition=attachment;+filename="bulk-123456789.jsonl";+filename*=UTF-8'
                 "bulk-123456789.jsonl&response-content-type=application/jsonl",
+            }
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 1,
+                "actualQueryCost": 1,
+                "throttleStatus": {"maximumAvailable": 20000.0, "currentlyAvailable": 19999, "restoreRate": 1000.0},
+            }
+        },
+    }
+
+
+@pytest.fixture
+def bulk_job_failed_without_result_url_response():
+    return {
+        "data": {
+            "node": {
+                "id": "gid://shopify/BulkOperation/123",
+                "status": "FAILED",
+                "errorCode": "INTERNAL_SERVER_ERROR",
+                "objectCount": "432",
+                "fileSize": None,
+                "url": None,
+                "partialDataUrl": None,
             }
         },
         "extensions": {

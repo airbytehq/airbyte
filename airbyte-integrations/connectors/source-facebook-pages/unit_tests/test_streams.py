@@ -4,6 +4,7 @@
 
 import logging
 from pathlib import Path
+from unittest.mock import patch
 from urllib.parse import parse_qs, urlparse
 
 import pytest
@@ -19,6 +20,8 @@ from airbyte_cdk.models import (
     FailureType,
     SyncMode,
 )
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 
 
 CONFIG = {"page_id": "1", "access_token": "token"}
@@ -55,6 +58,11 @@ def _get_fields_from_request(request_history, target_url_path):
             if "fields" in params:
                 return params["fields"][0]
     return None
+
+
+def read_from_stream(config, stream: str, sync_mode, expecting_exception: bool = False) -> EntrypointOutput:
+    catalog = CatalogBuilder().with_stream(stream, sync_mode).build()
+    return read(SourceFacebookPages(catalog=catalog, config=config), config, catalog, expecting_exception=expecting_exception)
 
 
 @pytest.mark.parametrize(
@@ -119,6 +127,118 @@ def test_without_catalog_at_init_requests_all_fields():
         assert (
             len(requested_fields) > 3
         ), f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
+
+
+def test_facebook_bad_request_fails_without_retrying():
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        page_request = m.get(
+            PAGE_URL,
+            json={
+                "error": {
+                    "message": "(#200) Requires pages_read_engagement permission to manage the object",
+                    "type": "OAuthException",
+                    "code": 100,
+                }
+            },
+            status_code=400,
+        )
+
+        output = read_from_stream(CONFIG, "page", SyncMode.full_refresh, expecting_exception=True)
+
+        assert not output.records
+        assert page_request.call_count == 1
+        assert output.errors
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        formatted_error_message = output.get_formatted_error_message()
+        assert "Facebook API request contains invalid Page fields, metrics, or permissions." in formatted_error_message
+        assert "Facebook returned: (#200) Requires pages_read_engagement permission" in formatted_error_message
+        assert "pages_read_engagement" in output.errors[0].trace.error.internal_message
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        pytest.param({"message": "(#4) Application request limit reached", "type": "OAuthException", "code": 4}, id="rate_limit_code"),
+        pytest.param(
+            {"message": "An unexpected error has occurred.", "type": "OAuthException", "code": 100, "is_transient": True},
+            id="is_transient",
+        ),
+    ],
+)
+def test_facebook_transient_bad_request_is_retried(error):
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        page_request = m.get(
+            PAGE_URL,
+            [
+                {"json": {"error": error}, "status_code": 400},
+                {"json": {"id": "1", "name": "page"}, "status_code": 200},
+            ],
+        )
+
+        output = read_from_stream(CONFIG, "page", SyncMode.full_refresh)
+
+        assert page_request.call_count == 2
+        assert len(output.records) == 1
+        assert not output.errors
+
+
+def test_facebook_reduce_data_error_is_retried():
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        feed_request = m.get(
+            FEED_URL,
+            [
+                {
+                    "json": {
+                        "error": {
+                            "code": 1,
+                            "message": "Please reduce the amount of data you're asking for, then retry your request",
+                        }
+                    },
+                    "status_code": 500,
+                },
+                {
+                    "json": {
+                        "data": [{"id": "1_123", "message": "Hello", "created_time": "2024-01-01T00:00:00+0000"}],
+                        "paging": {},
+                    },
+                    "status_code": 200,
+                },
+            ],
+        )
+
+        output = read_from_stream(CONFIG, "post", SyncMode.full_refresh)
+
+        assert feed_request.call_count == 2
+        assert len(output.records) == 1
+        assert not output.errors
+
+
+def test_facebook_reduce_data_error_exhausts_retries_as_transient_error():
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        feed_request = m.get(
+            FEED_URL,
+            json={
+                "error": {
+                    "code": 1,
+                    "message": "Please reduce the amount of data you're asking for, then retry your request",
+                }
+            },
+            status_code=500,
+        )
+
+        with patch("time.sleep"):
+            output = read_from_stream(CONFIG, "post", SyncMode.full_refresh, expecting_exception=True)
+
+        assert feed_request.call_count == 6
+        assert not output.records
+        assert output.errors[0].trace.error.failure_type == FailureType.transient_error
+        formatted_error_message = output.get_formatted_error_message()
+        assert "Please reduce the amount of data" in formatted_error_message
+        assert "Page Size" in formatted_error_message
 
 
 def test_facebook_app_approval_error_is_config_error():
