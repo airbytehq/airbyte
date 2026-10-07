@@ -25,7 +25,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.0.69 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Declare typed record schemas (including primary key `id`) for all streams so typed destinations can create columns and deduplicate |
+| 0.0.69 | 2026-10-07 | [88186](https://github.com/airbytehq/airbyte/pull/88186) | Declare typed record schemas (including primary key `id`) for all streams so typed destinations can create columns and deduplicate |
 | 0.0.68 | 2026-10-06 | [88030](https://github.com/airbytehq/airbyte/pull/88030) | Update dependencies |
 | 0.0.67 | 2026-09-29 | [87355](https://github.com/airbytehq/airbyte/pull/87355) | Update dependencies |
 | 0.0.66 | 2026-09-22 | [86812](https://github.com/airbytehq/airbyte/pull/86812) | Update dependencies |
