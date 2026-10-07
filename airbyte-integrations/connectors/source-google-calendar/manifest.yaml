@@ -128,11 +128,13 @@ definitions:
     events:
       type: StateDelegatingStream
       name: events
-      # Google rejects updatedMin older than 29 days (410 updatedMinTooLongAgo, measured live);
-      # 28 keeps a day of margin. With no saved cursor, or one older than 28 days, the stale state
-      # is cleared and the full-refresh stream re-reads the calendar; otherwise the incremental
-      # stream sends updatedMin from the saved cursor.
-      api_retention_period: P28D
+      # Google rejects updatedMin older than 29 days (410 updatedMinTooLongAgo, measured live). The
+      # limit is undocumented and has been tighter in the past, so 21 days keeps a week of margin:
+      # a tighter limit would otherwise fail every sync whose cursor sits between the two values.
+      # With no saved cursor, or one older than 21 days, the stale state is cleared and the
+      # full-refresh stream re-reads the calendar; otherwise the incremental stream sends
+      # updatedMin from the saved cursor. Keep in step with the day_delta(-21) guard below.
+      api_retention_period: P21D
       full_refresh_stream:
         $ref: "#/definitions/events_stream_base"
         incremental_sync:
@@ -186,8 +188,8 @@ definitions:
           showDeleted: "true"
           maxResults: "2500"
           singleEvents: "false"
-          # First sync (no saved cursor): honour a start_date within Google's 29-day window.
-          updatedMin: "{{ stream_slice['start_time'] if config.get('start_date') and stream_slice['start_time'] > day_delta(-28, format='%Y-%m-%dT%H:%M:%S.%fZ') else '' }}"
+          # First sync (no saved cursor): honour a start_date within the retention margin (see api_retention_period).
+          updatedMin: "{{ stream_slice['start_time'] if config.get('start_date') and stream_slice['start_time'] > day_delta(-21, format='%Y-%m-%dT%H:%M:%S.%fZ') else '' }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -205,6 +207,18 @@ definitions:
           cursor_value: "{{ response.get('nextPageToken') }}"
           stop_condition: "{{ response.get('nextPageToken') is not defined }}"
     transformations:
+      # Cancelled events arrive as stubs without `updated`, the cursor. Destinations dedup on the
+      # cursor with NULLS LAST and only replace a row when the incoming cursor is non-null, so an
+      # unstamped stub would never retire the live row in Append + Deduped. Stamp it with the
+      # newest value it can safely carry: at least the slice start (the saved cursor), and at
+      # least one hour before now, so the cursor never moves past an edit the request could have
+      # missed while still out-dating every row the stub replaces.
+      - type: AddFields
+        condition: "{{ not record.get('updated') }}"
+        fields:
+          - path:
+              - updated
+            value: "{{ [stream_slice['start_time'], format_datetime(now_utc() - duration('PT1H'), '%Y-%m-%dT%H:%M:%S.%fZ')] | max }}"
       - type: AddFields
         fields:
           - path:
@@ -264,11 +278,22 @@ definitions:
               failure_type: config_error
               error_message: "The calendar configured in \"Calendar Id\" was not found by the Google Calendar API. Check the ID in the calendar's settings, or use 'primary'."
             - type: HttpResponseFilter
+              # 410 with reason `deleted` (calendar removed) or `fullSyncRequired` (only possible with
+              # syncToken, which this connector does not send): the user must act, not wait.
+              # The `string` filter JSON-encodes the body, so match the JSON form of the reason.
+              predicate: "{{ '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string or 'fullSyncRequired' in response.get('error', {}) | string }}"
+              action: FAIL
+              failure_type: config_error
+              error_message: "The calendar configured in \"Calendar Id\" no longer exists or requires a full re-sync. Check the ID, then reset the events stream."
+            - type: HttpResponseFilter
+              # 410 updatedMinTooLongAgo: Google's window moved under a cursor that was within our
+              # margin. Nothing in the configuration causes it; the next sync clears the stale cursor
+              # and re-reads, so classify as transient rather than blaming the user.
               http_codes:
                 - 410
               action: FAIL
-              failure_type: config_error
-              error_message: "Google Calendar rejected the saved sync position of the events stream as older than 29 days. Reset the events stream to re-read the calendar."
+              failure_type: transient_error
+              error_message: "Google Calendar rejected the saved sync position of the events stream as too old. The next sync re-reads the calendar automatically; reset the events stream to do it now."
             - type: HttpResponseFilter
               http_codes:
                 - 429
@@ -335,13 +360,13 @@ spec:
         type: string
         order: 3
         title: Calendar Id
-        description: The ID of the calendar to sync events from, found in the calendar's settings in Google Calendar. Use 'primary' for the primary calendar.
+        description: The ID of the calendar to sync events from, found in the calendar's settings in Google Calendar (for the primary calendar this is the account's email address). The alias 'primary' also works, but it is stored verbatim in the events' calendar_id column, so prefer the real ID when that column should join to calendarlist.
       start_date:
         type: string
         order: 4
         title: Start date
         format: date-time
-        description: Only sync events last modified on or after this date. Applies to every Full Refresh sync, to the first Incremental sync, and to any full re-read (after a reset, or when the saved cursor is older than 28 days); other incremental syncs fetch events modified since the saved cursor. When unset, all events are read. A recurring series counts as one event whose modification time is its last edit, so a start date also drops series that have not been edited since then. Google only filters server-side within the last 29 days; an older date is applied by the connector after download.
+        description: Only sync events last modified on or after this date. Applies to every Full Refresh sync, to the first Incremental sync, and to any full re-read (after a reset, or when the saved cursor is older than 21 days); other incremental syncs fetch events modified since the saved cursor. When unset, all events are read. A recurring series counts as one event whose modification time is its last edit, so a start date also drops series that have not been edited since then. Google only filters server-side within the last 29 days; an older date is applied by the connector after download.
       num_workers:
         type: integer
         order: 5

@@ -5,13 +5,15 @@
 """Mock-server tests for the `events` stream: updatedMin bounding, client-side filtering,
 pagination and error handling.
 
-Google rejects `updatedMin` bounds older than 29 days with a 410, so `events` is a
-`StateDelegatingStream` with `api_retention_period: P28D`: with no saved cursor, or one
-older than 28 days, the stale state is cleared and the full-refresh stream re-reads the
-calendar (sending `updatedMin` only for a `start_date` within 28 days, and dropping
-records older than `start_date` client-side); otherwise the incremental stream sends
-`updatedMin` from the saved cursor and relies on the server-side filter. These tests pin
-the exact request parameters per case and the failure classification of error responses.
+Google rejects `updatedMin` bounds older than 29 days with a 410 (undocumented, measured),
+so `events` is a `StateDelegatingStream` with `api_retention_period: P21D` for margin: with
+no saved cursor, or one older than 21 days, the stale state is cleared and the full-refresh
+stream re-reads the calendar (sending `updatedMin` only for a `start_date` within 21 days,
+and dropping records older than `start_date` client-side); otherwise the incremental stream
+sends `updatedMin` from the saved cursor and relies on the server-side filter. Cancelled
+stubs, which carry no `updated`, are stamped with max(slice start, now - 1h) so they win
+destination dedup. These tests pin the exact request parameters per case, the stub stamp,
+and the failure classification of error responses.
 """
 
 import json
@@ -164,7 +166,7 @@ def test_incremental_fresh_state_sends_updated_min():
 
 
 def test_incremental_state_just_inside_retention_sends_updated_min():
-    cursor = _days_ago(27)
+    cursor = _days_ago(20)
     state = StateBuilder().with_stream_state("events", {"updated": cursor}).build()
     with HttpMocker() as http_mocker:
         request = _events_request(updated_min=cursor)
@@ -177,9 +179,9 @@ def test_incremental_state_just_inside_retention_sends_updated_min():
         http_mocker.assert_number_of_calls(request, 1)
 
 
-@pytest.mark.parametrize("age_days", [28.5, 29], ids=["28.5d", "29d"])
+@pytest.mark.parametrize("age_days", [21.5, 22, 28], ids=["21.5d", "22d", "28d"])
 def test_incremental_state_just_past_retention_drops_updated_min_and_resets_state(age_days):
-    # Google's cut-off is 29 days; a cursor past 28 must not be sent right at the limit.
+    # Google's measured cut-off is 29 days; the connector keeps a week of margin at 21.
     state = StateBuilder().with_stream_state("events", {"updated": _days_ago(age_days)}).build()
     with HttpMocker() as http_mocker:
         request = _events_request()
@@ -224,7 +226,7 @@ def test_incremental_fresh_start_date_sends_updated_min():
         http_mocker.assert_number_of_calls(request, 1)
 
 
-@pytest.mark.parametrize("age_days, sends_updated_min", [(27.5, True), (28.5, False), (35, False)], ids=["27.5d", "28.5d", "35d"])
+@pytest.mark.parametrize("age_days, sends_updated_min", [(20.5, True), (21.5, False), (28, False), (35, False)], ids=["20.5d", "21.5d", "28d", "35d"])
 def test_start_date_guard_boundary(age_days, sends_updated_min):
     start_date = _days_ago(age_days)
     recent = {"id": "recent", "updated": _days_ago(1)}
@@ -360,7 +362,11 @@ def test_pagination_follows_next_page_token_and_adds_calendar_id():
         http_mocker.assert_number_of_calls(page_2, 1)
 
 
-def test_cancelled_record_is_emitted_and_does_not_move_cursor():
+def _parse(value: str) -> datetime:
+    return datetime.strptime(value, _DATETIME_FORMAT).replace(tzinfo=timezone.utc)
+
+
+def test_cancelled_stub_is_stamped_with_a_cursor_that_out_dates_live_rows():
     cancelled = {"id": "x", "status": "cancelled"}
     record = {"id": "e1", "updated": _days_ago(1)}
     cursor = _days_ago(5)
@@ -368,11 +374,45 @@ def test_cancelled_record_is_emitted_and_does_not_move_cursor():
     with HttpMocker() as http_mocker:
         http_mocker.get(_events_request(updated_min=cursor), _items_response(cancelled, record))
 
+        before = datetime.now(timezone.utc)
         output = _read_events(http_mocker, SyncMode.incremental, state=cursor_state)
 
         assert output.errors == []
         assert _record_ids(output) == ["x", "e1"]
-        assert record["updated"] in _stream_state(output.state_messages[-1])["updated"]
+        stub = output.records[0].record.data
+        stamp = _parse(stub["updated"])
+        assert timedelta(minutes=59) <= before - stamp <= timedelta(minutes=61), "stub is stamped one hour before the sync"
+        assert stamp > _parse(record["updated"]) > _parse(cursor)
+        assert _stream_state(output.state_messages[-1])["updated"] == stub["updated"], "the stamp becomes the cursor"
+
+
+def test_cancelled_stub_only_sync_moves_the_cursor_past_the_input_state():
+    cancelled = {"id": "gone", "status": "cancelled"}
+    cursor = _days_ago(2)
+    cursor_state = StateBuilder().with_stream_state("events", {"updated": cursor}).build()
+    with HttpMocker() as http_mocker:
+        http_mocker.get(_events_request(updated_min=cursor), _items_response(cancelled))
+
+        output = _read_events(http_mocker, SyncMode.incremental, state=cursor_state)
+
+        assert output.errors == []
+        stub = output.records[0].record.data
+        assert _parse(stub["updated"]) > _parse(cursor)
+        assert _stream_state(output.state_messages[-1])["updated"] == stub["updated"]
+
+
+def test_cancelled_stub_with_a_fresh_cursor_takes_the_cursor_not_the_clock():
+    cancelled = {"id": "gone", "status": "cancelled"}
+    cursor = (datetime.now(timezone.utc) - timedelta(minutes=30)).strftime(_DATETIME_FORMAT)
+    cursor_state = StateBuilder().with_stream_state("events", {"updated": cursor}).build()
+    with HttpMocker() as http_mocker:
+        http_mocker.get(_events_request(updated_min=cursor), _items_response(cancelled))
+
+        output = _read_events(http_mocker, SyncMode.incremental, state=cursor_state)
+
+        assert output.errors == []
+        assert output.records[0].record.data["updated"] == cursor
+        assert _stream_state(output.state_messages[-1])["updated"] == cursor
 
 
 # --- error handling ---------------------------------------------------------------------
@@ -456,7 +496,7 @@ def test_non_retryable_errors_are_classified(response, failure_type, message_fra
         http_mocker.assert_number_of_calls(request, 1)
 
 
-def test_410_fails_as_config_error_with_remediation():
+def test_410_updated_min_too_long_ago_is_transient():
     cursor = _days_ago(2)
     state = StateBuilder().with_stream_state("events", {"updated": cursor}).build()
     with HttpMocker() as http_mocker:
@@ -465,5 +505,17 @@ def test_410_fails_as_config_error_with_remediation():
         output = _read_events(http_mocker, SyncMode.incremental, state=state, expecting_exception=True)
 
         error = _error_trace(output)
+        assert error.failure_type == FailureType.transient_error
+        assert "re-reads the calendar automatically" in error.message
+
+
+@pytest.mark.parametrize("reason", ["deleted", "fullSyncRequired"])
+def test_410_deleted_or_full_sync_required_is_config_error(reason):
+    with HttpMocker() as http_mocker:
+        http_mocker.get(_events_request(), _error_response(410, reason, message="Resource has been deleted"))
+
+        output = _read_events(http_mocker, SyncMode.incremental, expecting_exception=True)
+
+        error = _error_trace(output)
         assert error.failure_type == FailureType.config_error
-        assert "Reset the events stream" in error.message
+        assert "no longer exists" in error.message and "reset the events stream" in error.message

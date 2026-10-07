@@ -9,7 +9,7 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 | `client_id` | `string` | Client ID of the Google Cloud OAuth 2.0 application. | |
 | `client_secret` | `string` | Client secret of the OAuth 2.0 application. | |
 | `client_refresh_token_2` | `string` | Refresh token for the OAuth application with the Calendar API scope. | |
-| `calendarid` | `string` | Calendar Id (`primary` for the account's primary calendar). | |
+| `calendarid` | `string` | Calendar Id. For the primary calendar this is the account's email address; the alias `primary` also works but is stored verbatim in `events.calendar_id`. | |
 | `start_date` | `string` | Only sync `events` last modified on or after this date. Applies to every Full Refresh sync, to the first Incremental sync, and to any full re-read; when unset, all events are read. See [Events sync behavior](#events-sync-behavior). | |
 | `num_workers` | `integer` | Number of concurrent workers. | 3 |
 
@@ -27,10 +27,11 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 
 The `events` stream is incremental on the event's last modification time (`updated`), using the Google Calendar `updatedMin` filter.
 
-- **Cancelled events** are included (`showDeleted=true`) with `status: cancelled`, so deletions reach the destination. Filter `status != 'cancelled'` downstream if you only want live events.
+- **Cancelled events** are included (`showDeleted=true`) with `status: cancelled`, so deletions reach the destination. Google returns them as stubs without a modification time, so the connector sets their `updated` itself (the saved cursor, or one hour before the sync, whichever is later) so that the cancelled row replaces the live one under *Append + Deduped*. Filter `status != 'cancelled'` downstream if you only want live events.
+- **`calendar_id`** holds the configured Calendar Id exactly as entered. With the alias `primary` it is a label, not the calendar's ID, and will not join to `calendarlist.id` / `calendars.id`; enter the real ID (the account's email address for the primary calendar) if you need that join.
 - **Recurring series** are returned as a single record (`singleEvents=false`); individual occurrences are not expanded. The record's `updated` is the last time the series was edited.
-- **`start_date`** limits every Full Refresh sync, the first Incremental sync, and any full re-read (after a reset, or when the saved cursor is older than 28 days) to events last modified on or after that date. Google applies the filter server-side only within the last 29 days; for an older date the connector downloads the calendar and drops older records itself. Because a recurring series counts as one event, a start date also drops series that have not been edited since that date, even if they still have upcoming occurrences. Leave it unset to read everything.
-- **29-day window.** Google rejects `updatedMin` older than 29 days. The connector keeps the newest `updated` it has seen as its cursor; if that cursor is older than 28 days when a sync starts (for example, a calendar with no edits for a month, or a connection paused for a month) the connector clears the cursor and re-reads the whole calendar (or everything since `start_date`), then continues incrementally. A calendar that stays unedited re-reads on every sync until something changes.
+- **`start_date`** limits every Full Refresh sync, the first Incremental sync, and any full re-read (after a reset, or when the saved cursor is older than 21 days) to events last modified on or after that date. Google applies the filter server-side only within the last 29 days; for an older date the connector downloads the calendar and drops older records itself. Because a recurring series counts as one event, a start date also drops series that have not been edited since that date, even if they still have upcoming occurrences. Leave it unset to read everything.
+- **29-day window.** Google rejects `updatedMin` older than 29 days (measured; the limit is undocumented and has been tighter in the past). The connector keeps the newest `updated` it has seen as its cursor; if that cursor is older than 21 days when a sync starts (for example, a calendar with no edits for three weeks, or a connection paused for three weeks) the connector clears the cursor and re-reads the whole calendar (or everything since `start_date`), then continues incrementally. A calendar whose only changes are deletions still advances its cursor (see cancelled events above); one with no changes at all re-reads on every sync until something changes.
 - **Recommended sync mode:** *Incremental | Append + Deduped* with `id` as the primary key. With plain *Append*, each re-read described above adds another copy of every event.
 
 ## IP allow list
