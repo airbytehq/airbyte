@@ -16,28 +16,28 @@ This is a breaking change because Todoist API v1 returns the records in a differ
 ### Field changes in `tasks`
 
 | REST API v2 field | API v1 field |
-| :---------------- | :----------- |
-| `is_completed`    | `checked` |
-| `comment_count`   | `note_count` |
-| `created_at`      | `added_at` |
-| `creator_id`      | `added_by_uid` |
-| `assignee_id`     | `responsible_uid` |
-| `assigner_id`     | `assigned_by_uid` |
-| `order`           | `child_order` |
+| :-- | :-- |
+| `is_completed` | `checked` |
+| `comment_count` | `note_count` |
+| `created_at` | `added_at` |
+| `creator_id` | `added_by_uid` |
+| `assignee_id` | `responsible_uid` |
+| `assigner_id` | `assigned_by_uid` |
+| `order` | `child_order` |
 | `duration` (string) | `duration` (object with `amount` and `unit`) |
-| `url`             | removed |
+| `url` | removed |
 
 New fields: `user_id`, `deadline`, `is_deleted`, `is_collapsed`, `completed_at`, `completed_by_uid`, `updated_at`, `order_key`, `day_order`, `completed_count`, `postponed_count`.
 
 ### Field changes in `projects`
 
-| REST API v2 field  | API v1 field |
-| :----------------- | :----------- |
+| REST API v2 field | API v1 field |
+| :-- | :-- |
 | `is_inbox_project` | `inbox_project` |
-| `order`            | `child_order` |
-| `comment_count`    | removed |
-| `is_team_inbox`    | removed |
-| `url`              | removed |
+| `order` | `child_order` |
+| `comment_count` | removed |
+| `is_team_inbox` | removed |
+| `url` | removed |
 
 New fields: `description`, `order_key`, `is_collapsed`, `is_archived`, `is_deleted`, `is_frozen`, `can_assign_tasks`, `can_comment`, `creator_uid`, `created_at`, `updated_at`, `default_order`, `default_order_key`, `public_key`, `access`, `role`, and, for workspace projects, `workspace_id`, `folder_id`, `status`, `collaborator_role_default`, `is_invite_only`, `is_link_sharing_enabled`, `is_pending_default_collaborator_invites`, `is_project_insights_enabled`.
 
