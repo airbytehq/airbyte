@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6b0d43cb-8d31-4f9f-9832-6e577aa80db4
-  dockerImageTag: 0.0.2
+  dockerImageTag: 0.0.3
   dockerRepository: airbyte/source-wasabi-stats-api
   githubIssueLabel: source-wasabi-stats-api
   icon: icon.svg
@@ -35,5 +35,5 @@ data:
     sl: 100
   externalDocumentationUrls:
     - title: Wasabi Stats API
-      url: https://docs.wasabi.com/docs/stats-api
+      url: https://docs.wasabi.com/apidocs/wasabi-stats-api
       type: api_reference
