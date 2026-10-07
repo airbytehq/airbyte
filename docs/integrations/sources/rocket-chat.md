@@ -15,8 +15,8 @@ This source can sync data from the [Rocket.chat API](https://developer.rocket.ch
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--_ | :--_ | :--\* |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :-------------------- | :---- |
 | Full Refresh Sync | Yes | |
 | Incremental Sync | No | |
 
@@ -45,6 +45,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------- |
+| 0.2.26 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix pagination: request 100 records per page instead of 1 for `teams`, `channels` and `users`; update base image |
 | 0.2.25 | 2025-05-10 | [60126](https://github.com/airbytehq/airbyte/pull/60126) | Update dependencies |
 | 0.2.24 | 2025-05-04 | [59590](https://github.com/airbytehq/airbyte/pull/59590) | Update dependencies |
 | 0.2.23 | 2025-04-27 | [59030](https://github.com/airbytehq/airbyte/pull/59030) | Update dependencies |
