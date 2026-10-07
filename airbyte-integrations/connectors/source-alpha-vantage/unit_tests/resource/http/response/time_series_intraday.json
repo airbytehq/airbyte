@@ -1,0 +1,33 @@
+{
+  "Meta Data": {
+    "1. Information": "Intraday (5min) open, high, low, close prices and volume",
+    "2. Symbol": "IBM",
+    "3. Last Refreshed": "2026-10-05 19:55:00",
+    "4. Interval": "5min",
+    "5. Output Size": "Compact",
+    "6. Time Zone": "US/Eastern"
+  },
+  "Time Series (5min)": {
+    "2026-10-05 19:55:00": {
+      "1. open": "221.4500",
+      "2. high": "221.4800",
+      "3. low": "221.4094",
+      "4. close": "221.4800",
+      "5. volume": "825"
+    },
+    "2026-10-05 19:50:00": {
+      "1. open": "221.4449",
+      "2. high": "221.4800",
+      "3. low": "221.4160",
+      "4. close": "221.4800",
+      "5. volume": "501"
+    },
+    "2026-10-05 19:45:00": {
+      "1. open": "221.4800",
+      "2. high": "221.4800",
+      "3. low": "221.3100",
+      "4. close": "221.4000",
+      "5. volume": "306"
+    }
+  }
+}
