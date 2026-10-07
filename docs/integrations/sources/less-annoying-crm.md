@@ -31,6 +31,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.66 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Add trailing slash to `url_base` so POST requests are not downgraded to GET by the API's `301 /v2 -> /v2/` redirect |
 | 0.0.65 | 2026-10-06 | [87928](https://github.com/airbytehq/airbyte/pull/87928) | Update dependencies |
 | 0.0.64 | 2026-09-29 | [87249](https://github.com/airbytehq/airbyte/pull/87249) | Update dependencies |
 | 0.0.63 | 2026-09-22 | [86713](https://github.com/airbytehq/airbyte/pull/86713) | Update dependencies |
