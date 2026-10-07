@@ -37,6 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.65 | 2026-10-07 | [88321](https://github.com/airbytehq/airbyte/pull/88321) | Fix OAuth token endpoint to follow the configured `region` (was hard-coded to `accounts.zoho.in`); use 1-based page-number pagination instead of offsets |
 | 0.0.64 | 2026-10-06 | [88097](https://github.com/airbytehq/airbyte/pull/88097) | Update dependencies |
 | 0.0.63 | 2026-09-29 | [87426](https://github.com/airbytehq/airbyte/pull/87426) | Update dependencies |
 | 0.0.62 | 2026-09-22 | [86880](https://github.com/airbytehq/airbyte/pull/86880) | Update dependencies |
