@@ -25,6 +25,8 @@ def test_invalid_url():
         ("file://test", "file://test"),
         ("wss://test", "wss://test"),
         ("wss:test", "wss://test"),
+        ("https://surrealdb.example.com/", "https://surrealdb.example.com"),
+        ("ws://localhost:8000/", "ws://localhost:8000"),
     ],
 )
 def test_normalize_url(input, expected):

@@ -81,7 +81,9 @@ def normalize_url(url: str) -> str:
     """
     Get a normalized version of the destination url.
     Translate rocksdb:NAME, surrealkv:NAME, and file:NAME to rocksdb://NAME, surrealkv://NAME, and file://NAME respectively.
+    Strip trailing slashes, which would otherwise produce an invalid `//rpc` endpoint for http(s) URLs.
     """
+    url = url.rstrip("/")
     if "://" not in url:
         components = url.split(":")
         if len(components) == 2:
