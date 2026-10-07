@@ -50,7 +50,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.25 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Archive connector: Mailjet has discontinued its SMS API |
+| 0.2.25 | 2026-10-07 | [88328](https://github.com/airbytehq/airbyte/pull/88328) | Archive connector: Mailjet has discontinued its SMS API |
 | 0.2.24 | 2025-05-24 | [60724](https://github.com/airbytehq/airbyte/pull/60724) | Update dependencies |
 | 0.2.23 | 2025-05-10 | [59911](https://github.com/airbytehq/airbyte/pull/59911) | Update dependencies |
 | 0.2.22 | 2025-05-03 | [59294](https://github.com/airbytehq/airbyte/pull/59294) | Update dependencies |
