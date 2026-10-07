@@ -55,7 +55,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject    |
 | :------ | :--------- | :------------------------------------------------------- | :--------- |
-| 0.2.26 | 2026-10-07 | [<n>](https://github.com/airbytehq/airbyte/pull/<n>) | Fix `country` filter never being sent, point `web` stream at `/schedule/web`, and make `future` a single full-refresh request instead of one full-schedule download per day |
+| 0.2.26 | 2026-10-07 | [88260](https://github.com/airbytehq/airbyte/pull/88260) | Fix `country` filter never being sent, point `web` stream at `/schedule/web`, and make `future` a single full-refresh request instead of one full-schedule download per day |
 | 0.2.25 | 2025-05-25 | [60539](https://github.com/airbytehq/airbyte/pull/60539) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [60194](https://github.com/airbytehq/airbyte/pull/60194) | Update dependencies |
 | 0.2.23 | 2025-05-04 | [59574](https://github.com/airbytehq/airbyte/pull/59574) | Update dependencies |
