@@ -97,6 +97,23 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 - [Profiles](https://developers.klaviyo.com/en/v2026-01-15/reference/get_profiles)
 - [Segments](https://developers.klaviyo.com/en/v2026-01-15/reference/get_segments)
 
+### Campaigns and Campaigns Detailed streams
+
+:::warning
+Connector version 3.1.0 moved to Klaviyo API revision `2026-01-15`, which changes the structure of two fields in the **Campaigns** and **Campaigns Detailed** streams. The same campaigns and campaign messages are returned with the same values, but some nested paths differ, so update any downstream queries or models that read the old paths and refresh the source schema after upgrading. Rows synced before the upgrade keep the old structure until you clear the stream.
+
+| Stream | Old path (revision `2024-10-15`) | New path (revision `2026-01-15`) |
+| :-- | :-- | :-- |
+| `campaigns`, `campaigns_detailed` | `attributes.send_strategy.options_static.datetime`, `attributes.send_strategy.options_throttled.datetime` | `attributes.send_strategy.datetime` |
+| `campaigns`, `campaigns_detailed` | `attributes.send_strategy.options_sto.date` | `attributes.send_strategy.date` |
+| `campaigns`, `campaigns_detailed` | `attributes.send_strategy.options_throttled.throttle_percentage` | `attributes.send_strategy.throttle_percentage` |
+| `campaigns`, `campaigns_detailed` | `attributes.send_strategy.options_static.is_local` | `attributes.send_strategy.options.is_local` |
+| `campaigns`, `campaigns_detailed` | `attributes.send_strategy.options_static.send_past_recipients_immediately` | `attributes.send_strategy.options.send_past_recipients_immediately` |
+| `campaigns_detailed` | `campaign_messages[].attributes.channel`, `label`, `content`, `render_options` | `campaign_messages[].attributes.definition.channel`, `label`, `content`, `render_options` |
+
+Klaviyo no longer generates a `label` for SMS campaign messages, so `campaign_messages[].attributes.definition.label` is `null` for them.
+:::
+
 ### Metrics stream
 
 The **Metrics** stream always syncs all metric definitions, regardless of the configured **Start Date**. Metric definitions are reference data needed to interpret other streams (for example, joining `relationships.data.metric.id` in `events` to a metric name), and the Klaviyo API does not support filtering metrics by date. On subsequent incremental syncs, only new and updated metric definitions are emitted. If older metric definitions are missing after upgrading from a previous connector version, clear/reset the `metrics` stream to backfill them.
