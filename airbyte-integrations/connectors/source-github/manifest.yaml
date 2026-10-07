@@ -538,6 +538,50 @@ definitions:
       - $ref: "#/definitions/forbidden_skip_filter"
       - $ref: "#/definitions/gone_fail_filter"
 
+  # Since July 2026 GitHub lists a repository's stargazers only to its admins and collaborators,
+  # and answers anyone else with 404 (or 403 for some token types). The generic skip messages blame
+  # a deleted repository or missing scopes, so `stargazers` gets its own filters naming the actual
+  # restriction. Same skip semantics; `stream_partition` is unreachable from `error_message`, so the
+  # text still cannot name the repository.
+  stargazers_restricted_not_found_skip_filter:
+    type: HttpResponseFilter
+    http_codes: [404]
+    action: IGNORE
+    error_message: >-
+      GitHub returned HTTP 404 for this repository's stargazers list. GitHub only lists stargazers
+      to repository admins and collaborators, so this is expected when the token is neither; it can
+      also mean the repository was deleted or renamed. Skipping it.
+
+  stargazers_restricted_forbidden_skip_filter:
+    type: HttpResponseFilter
+    http_codes: [403]
+    action: IGNORE
+    error_message: >-
+      GitHub denied access to this repository's stargazers list (HTTP 403). GitHub only lists
+      stargazers to repository admins and collaborators, so the token needs admin or collaborator
+      access to the repository (and SAML SSO authorization if the organization requires it).
+      Skipping it.
+
+  # `skip_inaccessible_error_handler` with the two stargazers filters above in place of the generic
+  # 404/403 ones. Keep the filter order identical to it: the rate-limit filters must stay ahead of
+  # the 403 IGNORE so a secondary-limit 403 is still retried.
+  stargazers_error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      $ref: "#/definitions/rate_limit_backoff_strategies"
+    response_filters:
+      - $ref: "#/definitions/success_filter"
+      - $ref: "#/definitions/retry_after_rate_limit_filter"
+      - $ref: "#/definitions/primary_rate_limit_filter"
+      - $ref: "#/definitions/secondary_rate_limit_filter"
+      - $ref: "#/definitions/exhausted_quota_filter"
+      - $ref: "#/definitions/unauthorized_fail_filter"
+      - $ref: "#/definitions/disabled_feature_skip_filter"
+      - $ref: "#/definitions/stargazers_restricted_not_found_skip_filter"
+      - $ref: "#/definitions/stargazers_restricted_forbidden_skip_filter"
+      - $ref: "#/definitions/empty_repository_skip_filter"
+      - $ref: "#/definitions/gone_fail_filter"
+
   page_link_paginator:
     type: DefaultPaginator
     page_token_option:
@@ -4254,6 +4298,8 @@ definitions:
       requester:
         $ref: "#/definitions/repository_scoped_requester"
         path: "repos/{{ stream_partition.repository }}/stargazers"
+        error_handler:
+          $ref: "#/definitions/stargazers_error_handler"
         request_headers:
           User-Agent: "PostmanRuntime/7.28.0"
           Accept: "application/vnd.github.v3.star+json"

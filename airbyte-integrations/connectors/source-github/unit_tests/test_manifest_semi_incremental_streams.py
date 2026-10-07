@@ -19,6 +19,7 @@ one this group actually hits — is re-asserted here.
 """
 
 import logging
+from unittest.mock import patch
 
 import pytest
 
@@ -548,6 +549,86 @@ def test_stargazers_promote_the_user_id(rate_limit_mock_response, requests_mock)
         {"starred_at": _AFTER_START, "user": {"id": 7, "login": "octocat"}, "repository": "docker/compose", "user_id": 7},
         {"starred_at": _LATER, "user": None, "repository": "docker/compose", "user_id": None},
     ]
+
+
+@pytest.mark.parametrize(
+    ("status_code", "body", "generic_message"),
+    [
+        (
+            404,
+            {
+                "message": "Not Found",
+                "documentation_url": "https://docs.github.com/rest/activity/starring#list-stargazers",
+                "status": "404",
+            },
+            "Syncing this stream isn't available",
+        ),
+        (
+            403,
+            {"message": "Resource not accessible by integration"},
+            "GitHub denied access to this repository or organization",
+        ),
+    ],
+)
+def test_stargazers_restricted_repository_is_skipped_with_access_message(
+    status_code, body, generic_message, rate_limit_mock_response, requests_mock, caplog
+):
+    config = _config("torvalds/linux", "docker/compose")
+    _mock_repository_resolution(requests_mock, *config["repositories"])
+    restricted_endpoint = requests_mock.get("https://api.github.com/repos/torvalds/linux/stargazers", status_code=status_code, json=body)
+    requests_mock.get(
+        "https://api.github.com/repos/docker/compose/stargazers",
+        json=[{"starred_at": _AFTER_START, "user": {"id": 7, "login": "octocat"}}],
+    )
+
+    with caplog.at_level(logging.INFO):
+        records, statuses, _, error = _read(config, "stargazers")
+
+    assert error is None
+    assert statuses[-1] == "COMPLETE"
+    assert [record["repository"] for record in records] == ["docker/compose"]
+    assert restricted_endpoint.call_count == 1
+    assert any("GitHub only lists stargazers to repository admins and collaborators" in message for message in caplog.messages)
+    assert all(generic_message not in message for message in caplog.messages)
+
+
+@patch("time.sleep")
+def test_stargazers_secondary_rate_limit_403_is_retried_not_skipped(sleep_mock, rate_limit_mock_response, requests_mock, caplog):
+    config = _config("docker/compose")
+    _mock_repository_resolution(requests_mock, "docker/compose")
+    endpoint = requests_mock.get(
+        "https://api.github.com/repos/docker/compose/stargazers",
+        [
+            {
+                "status_code": 403,
+                "headers": {"Retry-After": "120"},
+                "json": {"message": "You have exceeded a secondary rate limit"},
+            },
+            {"json": [{"starred_at": _AFTER_START, "user": {"id": 7, "login": "octocat"}}]},
+        ],
+    )
+
+    with caplog.at_level(logging.INFO):
+        records, _, _, error = _read(config, "stargazers")
+
+    assert error is None
+    assert [record["repository"] for record in records] == ["docker/compose"]
+    assert endpoint.call_count == 2
+    assert all("GitHub only lists stargazers" not in message for message in caplog.messages)
+
+
+@patch("time.sleep")
+def test_other_streams_keep_the_generic_404_message(sleep_mock, rate_limit_mock_response, requests_mock, caplog):
+    config = _config("docker/compose")
+    _mock_repository_resolution(requests_mock, "docker/compose")
+    requests_mock.get("https://api.github.com/repos/docker/compose/events", status_code=404, json={"message": "Not Found"})
+
+    with caplog.at_level(logging.INFO):
+        _, _, _, error = _read(config, "events")
+
+    assert error is None
+    assert any("Syncing this stream isn't available" in message for message in caplog.messages)
+    assert all("GitHub only lists stargazers" not in message for message in caplog.messages)
 
 
 def test_projects_disabled_repository_is_skipped(rate_limit_mock_response, requests_mock):

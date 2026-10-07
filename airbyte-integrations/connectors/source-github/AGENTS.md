@@ -117,6 +117,9 @@ Things worth knowing before touching either half:
   matches what the legacy `GithubStreamABC.read_records` did for it, and remember that 410 is absent from
   the CDK default mapping — an endpoint GitHub answers 410 on needs a filter or it burns five
   retries behind the 60s backoff floor before failing.
+- `stargazers` uses `stargazers_error_handler` — `skip_inaccessible_error_handler` with 404/403
+  filters naming GitHub's admin/collaborator restriction on the stargazers listing; keep its
+  filter list in step when changing `skip_inaccessible_error_handler`.
 - The 410 disabled-feature skip (`disabled_feature_skip_filter`, mirroring
   the legacy `is_gone_with_feature_disabled`) lives on
   `skip_inaccessible_error_handler` only, and its predicate must name the feature:
