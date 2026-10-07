@@ -25,6 +25,10 @@ This source is capable of syncing the following streams:
 The CoinGecko API has a rate limit of 10-50 requests per minute. The connector should not run into this
 under normal operation.
 
+Public (free) CoinGecko API users can only query historical data within the past 365 days. A `start_date`
+older than 365 days, or `days: max`, requires a [CoinGecko Pro API key](https://www.coingecko.com/en/api/pricing);
+without one the connector fails with a configuration error explaining the limit.
+
 CoinGecko also request that free users provide attribution when using CoinGecko data. Please read more about
 this [here](https://www.coingecko.com/en/branding).
 
@@ -42,8 +46,8 @@ The following fields are required fields for the connector to work:
 - `coin_id`: The ID of the coin to pull data for. This can be found via the `/coins/list` endpoint.
 - `vs_currency`: The currency to pull data for. This can be found via the `/simple/supported_vs_currencies` endpoint.
 - `days`: The number of days to pull `market_chart` data for.
-- `start_date`: The start date to pull `history` data from.
-- (optional) `end_date`: The end date to pull `history` data until.
+- `start_date`: The start date to pull `history` data from, in `YYYY-MM-DD` format (the legacy `DD-MM-YYYY` format is also accepted).
+- (optional) `end_date`: The end date to pull `history` data until, in `YYYY-MM-DD` format. Defaults to today.
 
 ## IP allow list
 
@@ -56,6 +60,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                       |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
+| 0.2.27 | 2026-10-07 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Accept `YYYY-MM-DD` dates from the UI date picker for `start_date`/`end_date`; surface CoinGecko's 365-day public-API limit as a clear config error |
 | 0.2.26 | 2025-05-24 | [60393](https://github.com/airbytehq/airbyte/pull/60393) | Update dependencies |
 | 0.2.25 | 2025-05-10 | [59918](https://github.com/airbytehq/airbyte/pull/59918) | Update dependencies |
 | 0.2.24 | 2025-05-03 | [59394](https://github.com/airbytehq/airbyte/pull/59394) | Update dependencies |
