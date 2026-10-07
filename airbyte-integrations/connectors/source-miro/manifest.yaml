@@ -301,6 +301,10 @@ spec:
         type: string
         order: 0
         title: API Key
+        description: >-
+          A Miro OAuth access token, not the app's Client ID or Client secret.
+          In Miro, create an app under Profile settings > Your apps, enable the
+          boards:read scope, then click "Install app and get OAuth token".
         airbyte_secret: true
     additionalProperties: true
 
