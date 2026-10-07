@@ -165,7 +165,7 @@ definitions:
         url_base: >-
           {{ 'https://' + config['host'] + '/api/public/v1/applications/' if
           config['host'] else 'https://api.airbyte.com/v1/applications/'
-          }}/token
+          }}token
         authenticator:
           type: NoAuth
         http_method: POST
