@@ -2,38 +2,41 @@
 This directory contains the manifest-only connector for `source-employment-hero`.
 
 ## Documentation reference:
-Visit `https://developer.employmenthero.com/api-references/#icon-book-open-introduction` for API documentation
+Visit `https://developer.employmenthero.com/api-references/introduction` for API documentation
 
 ## Authentication setup
-`Employement Hero` uses Bearer token authentication, since code granted OAuth is not directly supported right now, Visit your developer profile for getting your OAuth keys. Refer `https://secure.employmenthero.com/app/v2/organisations/xxxxx/developer_portal/api` for more details.
 
-## Getting your bearer token via postman
+Employment Hero's API only supports OAuth 2.0. Access tokens expire after **15 minutes**, so the connector authenticates with your OAuth application's **Client ID**, **Client Secret** and a long-lived **Refresh Token**, and exchanges the refresh token for a fresh access token on every sync (see the [Employment Hero authentication docs](https://developer.employmenthero.com/api-references/authentication)).
 
-You can make a POST request from Postman to exchange your OAuth credentials for an `access token` to make requests.
+:::note
+API access requires an Employment Hero **Platinum** subscription or above.
+:::
 
-First make an app to get the client ID and secret for authentication:
+### 1. Create an OAuth 2.0 application
 
-1. Go to developers portal Page:
-- Visit `https://secure.employmenthero.com/app/v2/organisations/xxxxx/developer_portal/api`, select `Add Application` and input an app name. Select the `scopes` and set the redirect URI as `https://oauth.pstmn.io/v1/callback`.
+1. Sign in to Employment Hero and open the **Developer Portal** (menu under your profile name, top right), or visit `https://secure.employmenthero.com/app/v2/organisations/<your-org-id>/developer_portal/api`.
+2. Select **Add Application**, give it a name, select the scopes you need and set the redirect URI to `https://oauth.pstmn.io/v1/callback` (if you will use Postman to obtain the refresh token).
+3. Copy the **Client ID** and **Client Secret**.
 
-2. Copy Your App Credentials:
- - After creating the app, you will see the Client ID and Client Secret.
- - Client ID: Copy this value as it will be your Client ID in Postman.
- - Client Secret: Copy this value as it will be your Client Secret in Postman.
+### 2. Obtain a refresh token (via Postman)
 
-3. Visit Postman via web or app and make a new request with following guidelines:
- - Open a new request - Goto Authorization tab - Select OAuth 2.0
- - Auth URL - `https://oauth.employmenthero.com/oauth2/authorize`
- - Access Token URL - `https://oauth.employmenthero.com/oauth2/token`
- - Set your client id and secret and leave scope and state as blank
+1. Open a new request in Postman, go to the **Authorization** tab and select **OAuth 2.0**.
+2. Set **Grant Type** to `Authorization Code (With PKCE)`. Employment Hero requires PKCE for all authorization flows since 2026-09-30.
+3. Set **Auth URL** to `https://oauth.employmenthero.com/oauth2/authorize` and **Access Token URL** to `https://oauth.employmenthero.com/oauth2/token`.
+4. Enter your Client ID and Client Secret, leave scope and state blank, then click **Get New Access Token** and approve the request in your browser.
+5. Postman displays the token response. Copy the `refresh_token` value (not the `access_token`, which expires after 15 minutes).
 
-Hit Get new Access token and approve via browser, Postman will collect a new `access_token` in the console response.
+### 3. Configure the source in Airbyte
+
+Enter the **Client ID**, **Client Secret** and **Refresh Token** in the source configuration.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
+| `client_id` | `string` | Client ID of the OAuth 2.0 application created in the Employment Hero Developer Portal. |  |
+| `client_secret` | `string` | Client Secret of the OAuth 2.0 application created in the Employment Hero Developer Portal. |  |
+| `refresh_token` | `string` | Refresh token obtained from the Employment Hero OAuth 2.0 authorization code flow. |  |
 | `organization_configids` | `array` | Organization ID. Organization ID which could be found as result of `organizations` stream to be used in other substreams |  |
 | `employees_configids` | `array` | Employees ID. Employees IDs in the given organisation found in `employees` stream for passing to sub-streams |  |
 
@@ -62,6 +65,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.1.0 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Replace static access-token auth with OAuth 2.0 refresh-token flow (access tokens expire after 15 minutes) |
 | 0.0.66 | 2026-10-06 | [87860](https://github.com/airbytehq/airbyte/pull/87860) | Update dependencies |
 | 0.0.65 | 2026-09-29 | [87167](https://github.com/airbytehq/airbyte/pull/87167) | Update dependencies |
 | 0.0.64 | 2026-09-22 | [86634](https://github.com/airbytehq/airbyte/pull/86634) | Update dependencies |
