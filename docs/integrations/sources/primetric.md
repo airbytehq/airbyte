@@ -64,7 +64,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
-| 1.1.40 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Surface invalid `client_id`/`client_secret` as a config error instead of an opaque 401 internal error |
+| 1.1.40 | 2026-10-07 | [88237](https://github.com/airbytehq/airbyte/pull/88237) | Surface invalid `client_id`/`client_secret` as a config error instead of an opaque 401 internal error |
 | 1.1.39 | 2025-12-18 | [70651](https://github.com/airbytehq/airbyte/pull/70651) | Update dependencies |
 | 1.1.38 | 2025-11-25 | [70001](https://github.com/airbytehq/airbyte/pull/70001) | Update dependencies |
 | 1.1.37 | 2025-11-18 | [69609](https://github.com/airbytehq/airbyte/pull/69609) | Update dependencies |
