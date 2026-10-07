@@ -16,9 +16,9 @@ This source is capable of syncing the following streams:
 
 ### Features
 
-| Feature           | Supported? \(Yes/No\) | Notes |
-| :---------------- | :-------------------- | :---- |
-| Full Refresh Sync | Yes                   |       |
+| Feature           | Supported? \(Yes/No\) | Notes                     |
+| :---------------- | :-------------------- | :------------------------ |
+| Full Refresh Sync | Yes                   |                           |
 | Incremental Sync  | Yes                   | `domestic` and `web` only |
 
 ### Performance considerations
