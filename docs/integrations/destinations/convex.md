@@ -62,7 +62,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 |:--------| :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
-| 0.2.19 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Preserve checkpoint IDs and fix namespaced overwrite and dedup setup |
+| 0.2.19 | 2026-10-07 | [88204](https://github.com/airbytehq/airbyte/pull/88204) | Preserve checkpoint IDs and fix namespaced overwrite and dedup setup |
 | 0.2.18 | 2025-05-10 | [59863](https://github.com/airbytehq/airbyte/pull/59863) | Update dependencies |
 | 0.2.17 | 2025-05-03 | [59357](https://github.com/airbytehq/airbyte/pull/59357) | Update dependencies |
 | 0.2.16 | 2025-04-26 | [58683](https://github.com/airbytehq/airbyte/pull/58683) | Update dependencies |
