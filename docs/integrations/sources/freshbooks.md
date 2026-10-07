@@ -16,6 +16,18 @@ FreshBooks connector  seamlessly syncs invoicing, expenses, and client data from
 
 Read [this](https://documenter.getpostman.com/view/3322108/S1ERwwza#intro) section carefully to get your Account Id and Business UUID.
 
+### Refresh tokens are single-use
+
+FreshBooks [refresh tokens are one-time-use](https://www.freshbooks.com/api/authentication): every call to the token endpoint invalidates the refresh token that was used and returns a new one. The connector persists the replacement token after each refresh, but a refresh token that has already been exchanged anywhere else (your own script, Postman, a previous connector setup attempt) is rejected by FreshBooks with `invalid_grant` and the connection fails with "Refresh token was rejected by the OAuth provider".
+
+To avoid burning the refresh token while the source is being created:
+
+1. Complete the OAuth authorization flow and exchange the authorization code **once**. Keep the full token response.
+2. Enter the returned `refresh_token` in **Refresh token**, the `access_token` in **Access token**, and the token expiry (`created_at + expires_in`, as an ISO 8601 date-time such as `2026-10-07T20:00:00Z`) in **Token expiry date**. While the access token is still valid the connection test uses it directly instead of consuming the refresh token.
+3. Do not reuse this refresh token anywhere else once the source has been created.
+
+If the connection test fails with `invalid_grant`, re-authorize the app in FreshBooks to obtain a fresh token pair and update the source with it.
+
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
@@ -41,6 +53,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.70 | 2026-10-07 | [<n>](https://github.com/airbytehq/airbyte/pull/<n>) | Surface FreshBooks `invalid_grant` refresh-token rejections as a config error instead of a bare `400 Bad Request`; document single-use refresh tokens |
 | 0.0.69 | 2026-10-06 | [87842](https://github.com/airbytehq/airbyte/pull/87842) | Update dependencies |
 | 0.0.68 | 2026-09-29 | [87153](https://github.com/airbytehq/airbyte/pull/87153) | Update dependencies |
 | 0.0.67 | 2026-09-22 | [86609](https://github.com/airbytehq/airbyte/pull/86609) | Update dependencies |
