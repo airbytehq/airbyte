@@ -37,7 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.0.3 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Return an actionable `config_error` on HTTP 401/403 (credentials lacking Stats API access), document key requirements, fix stale Wasabi docs links |
+| 0.0.3 | 2026-10-07 | [88189](https://github.com/airbytehq/airbyte/pull/88189) | Return an actionable `config_error` on HTTP 401/403 (credentials lacking Stats API access), bump base image to `source-declarative-manifest:7.33.0` (the pinned 5.17.0 image no longer builds), document key requirements, fix stale Wasabi docs links |
 | 0.0.2 | 2026-06-02 | [79045](https://github.com/airbytehq/airbyte/pull/79045) | Update dependencies |
 | 0.0.1 | 2024-10-25 | | Initial release by [@dainiussa](https://github.com/dainiussa) via Connector Builder |
 
