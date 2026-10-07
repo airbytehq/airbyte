@@ -28,6 +28,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
+from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -877,6 +878,80 @@ class ReportCreationRequester(HttpRequester):
         # We return the same structure so the polling_requester can use creation_response['reportId'].
         synthetic._content = json.dumps({"reportId": report["reportId"]}).encode("utf-8")
         return synthetic
+
+
+@dataclass
+class PresignedUrlDownloadRequester(HttpRequester):
+    """
+    Downloads a report document from its pre-signed S3 URL, minting a fresh URL when the current one is rejected.
+
+    Amazon signs report document URLs with `X-Amz-Expires=300`. Once that window has passed, S3 answers
+    `403 Request has expired`, and retrying the same URL can never succeed. The CDK resolves the URL once
+    per job and has no hook to resolve it again when the download fails, so this requester does it: on a
+    403 it calls `download_target_requester` (`getReportDocument`) for a new URL and downloads that one,
+    up to `max_url_refreshes` times.
+
+    The manifest must map 403 to IGNORE on this requester so the response reaches this code instead of
+    failing the request.
+    """
+
+    download_target_requester: Optional[HttpRequester] = None
+    max_url_refreshes: int = 2
+
+    def send_request(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        path: Optional[str] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> Optional[requests.Response]:
+        def download(current_slice: Optional[StreamSlice]) -> Optional[requests.Response]:
+            return super(PresignedUrlDownloadRequester, self).send_request(
+                stream_state=stream_state,
+                stream_slice=current_slice,
+                next_page_token=next_page_token,
+                path=path,
+                request_headers=request_headers,
+                request_params=request_params,
+                request_body_data=request_body_data,
+                request_body_json=request_body_json,
+                log_formatter=log_formatter,
+            )
+
+        response = download(stream_slice)
+        for _ in range(self.max_url_refreshes):
+            if response is None or response.status_code != requests.codes.forbidden:
+                return response
+            logger.info(f"Report document download for {self.name} was rejected with 403; requesting a fresh pre-signed URL.")
+            stream_slice = self._with_fresh_download_target(stream_state, stream_slice)
+            response = download(stream_slice)
+
+        if response is not None and response.status_code == requests.codes.forbidden:
+            raise AirbyteTracedException(
+                message="Failed to download a report document from Amazon: the pre-signed URL was rejected even after being refreshed.",
+                internal_message=f"Download for {self.name} returned 403 after {self.max_url_refreshes} URL refreshes: {response.text[:500]}",
+                failure_type=FailureType.system_error,
+            )
+        return response
+
+    def _with_fresh_download_target(
+        self, stream_state: Optional[Mapping[str, Any]], stream_slice: Optional[StreamSlice]
+    ) -> Optional[StreamSlice]:
+        if self.download_target_requester is None or stream_slice is None:
+            return stream_slice
+        document_response = self.download_target_requester.send_request(stream_state=stream_state, stream_slice=stream_slice)
+        if document_response is None:
+            return stream_slice
+        return StreamSlice(
+            partition=stream_slice.partition,
+            cursor_slice=stream_slice.cursor_slice,
+            extra_fields={**stream_slice.extra_fields, "download_target": document_response.json()["url"]},
+        )
 
 
 @dataclass

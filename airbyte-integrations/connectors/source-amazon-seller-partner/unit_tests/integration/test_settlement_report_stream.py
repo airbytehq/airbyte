@@ -138,6 +138,13 @@ def _download_response(compressed: bool = False) -> HttpResponse:
     return HttpResponse(body=body, status_code=HTTPStatus.OK)
 
 
+def _expired_url_response() -> HttpResponse:
+    return HttpResponse(
+        body="<Error><Code>AccessDenied</Code><Message>Request has expired</Message></Error>",
+        status_code=HTTPStatus.FORBIDDEN,
+    )
+
+
 def _mock_report_chain(
     http_mocker: HttpMocker,
     report_id: str,
@@ -361,3 +368,68 @@ def test_given_more_reports_than_one_page_when_read_then_next_token_is_the_only_
     for request in (second_page, third_page, second_document, second_download, third_document, third_download):
         http_mocker.assert_number_of_calls(request, 1)
     assert len(output.records) == 3 * _RECORDS_PER_DOCUMENT
+
+
+@freezegun.freeze_time(NOW.isoformat())
+@HttpMocker()
+def test_given_presigned_url_expired_once_when_read_then_url_reminted_and_records_emitted(http_mocker: HttpMocker) -> None:
+    """
+    If the pre-signed URL has expired by the time it is downloaded, S3 answers `403 Request has expired`.
+    Replaying the same URL can never succeed, so the connector must resolve a fresh URL through
+    `getReportDocument` and download that one instead.
+    """
+    http_mocker.clear_all_matchers()
+    mock_auth(http_mocker)
+    http_mocker.get(_list_reports_request(), _list_reports_response([_report(_DONE_REPORT_ID, "DONE", _DONE_REPORT_DOCUMENT_ID)]))
+    http_mocker.get(
+        RequestBuilder.check_report_status_endpoint(_DONE_REPORT_ID).build(),
+        build_response(_report(_DONE_REPORT_ID, "DONE", _DONE_REPORT_DOCUMENT_ID), status_code=HTTPStatus.OK),
+    )
+    document_request = RequestBuilder.get_document_download_url_endpoint(_DONE_REPORT_DOCUMENT_ID).build()
+    http_mocker.get(
+        document_request,
+        [
+            _document_response(_DONE_REPORT_DOCUMENT_ID, _DONE_DOWNLOAD_URL),
+            _document_response(_DONE_REPORT_DOCUMENT_ID, _SECOND_DONE_DOWNLOAD_URL),
+        ],
+    )
+    expired_download = RequestBuilder.download_document_endpoint(_DONE_DOWNLOAD_URL).build()
+    fresh_download = RequestBuilder.download_document_endpoint(_SECOND_DONE_DOWNLOAD_URL).build()
+    http_mocker.get(expired_download, _expired_url_response())
+    http_mocker.get(fresh_download, _download_response())
+
+    output = read_output(config_builder=_config(), stream_name=_STREAM_NAME, sync_mode=SyncMode.incremental)
+
+    assert len(output.errors) == 0
+    assert len(output.records) == _RECORDS_PER_DOCUMENT
+    http_mocker.assert_number_of_calls(document_request, 2)
+    http_mocker.assert_number_of_calls(expired_download, 1)
+    http_mocker.assert_number_of_calls(fresh_download, 1)
+
+
+@freezegun.freeze_time(NOW.isoformat())
+@HttpMocker()
+def test_given_presigned_url_always_rejected_when_read_then_stream_fails_without_emitting_error_body(http_mocker: HttpMocker) -> None:
+    """
+    Refreshing the URL is bounded. If S3 keeps rejecting fresh URLs, the stream must fail rather than loop
+    forever or hand the 403 error body to the CSV decoder as if it were report data.
+    """
+    http_mocker.clear_all_matchers()
+    mock_auth(http_mocker)
+    http_mocker.get(_list_reports_request(), _list_reports_response([_report(_DONE_REPORT_ID, "DONE", _DONE_REPORT_DOCUMENT_ID)]))
+    http_mocker.get(
+        RequestBuilder.check_report_status_endpoint(_DONE_REPORT_ID).build(),
+        build_response(_report(_DONE_REPORT_ID, "DONE", _DONE_REPORT_DOCUMENT_ID), status_code=HTTPStatus.OK),
+    )
+    document_request = RequestBuilder.get_document_download_url_endpoint(_DONE_REPORT_DOCUMENT_ID).build()
+    http_mocker.get(document_request, _document_response(_DONE_REPORT_DOCUMENT_ID, _DONE_DOWNLOAD_URL))
+    download_request = RequestBuilder.download_document_endpoint(_DONE_DOWNLOAD_URL).build()
+    http_mocker.get(download_request, _expired_url_response())
+
+    output = read_output(config_builder=_config(), stream_name=_STREAM_NAME, sync_mode=SyncMode.incremental, expecting_exception=True)
+
+    assert len(output.records) == 0
+    assert any("pre-signed URL was rejected" in error.trace.error.message for error in output.errors)
+    # The initial resolution plus two refreshes, each followed by a download attempt.
+    http_mocker.assert_number_of_calls(document_request, 3)
+    http_mocker.assert_number_of_calls(download_request, 3)

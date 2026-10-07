@@ -2867,7 +2867,8 @@ definitions:
       # it in a parent stream meant the URL was minted during partition generation and consumed much
       # later during partition read, so it expired (S3 403 "Request has expired") and every retry
       # replayed the same dead URL. AsyncHttpJobRepository.fetch_records sends the download target
-      # request immediately before the download, and re-mints it when a job is retried.
+      # request immediately before the download. If the URL has expired anyway, the CDK has no way to
+      # mint a new one, so PresignedUrlDownloadRequester re-resolves it on a 403 and downloads again.
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         partition_router:
@@ -2883,6 +2884,24 @@ definitions:
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/polling_requester"
           path: "reports/2021-06-30/reports/{{ stream_slice['reportId'] }}"
+        download_requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.PresignedUrlDownloadRequester
+          path: "{{ download_target }}"
+          url_base: "{{ config['endpoint'] }}"
+          http_method: GET
+          authenticator:
+            type: NoAuth
+          download_target_requester: "#/definitions/basic_async_retriever/download_target_requester"
+          # An expired pre-signed URL returns 403. Ignore it here so PresignedUrlDownloadRequester can
+          # mint a fresh URL instead of the request failing outright.
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 403
         record_selector:
           type: RecordSelector
           schema_normalization:

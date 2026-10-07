@@ -497,7 +497,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 6.0.6 | 2026-10-06 | [85912](https://github.com/airbytehq/airbyte/pull/85912) | Fix `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` returning 0 records: download each settlement report document instead of reading its metadata, follow `nextToken` when listing settlement reports (sending it as the only query parameter, as Amazon requires), and resolve the pre-signed document URL immediately before downloading it so it cannot expire |
+| 6.0.6 | 2026-10-06 | [85912](https://github.com/airbytehq/airbyte/pull/85912) | Fix `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` returning 0 records: download each settlement report document instead of reading its metadata, follow `nextToken` when listing settlement reports (sending it as the only query parameter, as Amazon requires), resolve the pre-signed document URL immediately before downloading it, and request a fresh URL if S3 rejects it as expired |
 | 6.0.5 | 2026-10-06 | [87776](https://github.com/airbytehq/airbyte/pull/87776) | Update dependencies |
 | 6.0.4 | 2026-09-29 | [86942](https://github.com/airbytehq/airbyte/pull/86942) | Stop requesting vendor retail analytics days Amazon has not published yet by holding the Vendor Sales, Vendor Traffic and Net Pure Product Margin cursors four days back |
 | 6.0.2 | 2026-09-29 | [87083](https://github.com/airbytehq/airbyte/pull/87083) | Update dependencies |
