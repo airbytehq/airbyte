@@ -92,7 +92,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                       |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
-| 0.1.1   | 2026-10-07 | [\#88161](https://github.com/airbytehq/airbyte/pull/88161) | Remove the empty `breakingChanges` list that fails metadata validation.                        |
+| 0.1.1   | 2026-10-07 | [\#88161](https://github.com/airbytehq/airbyte/pull/88161) | Fix the image entrypoint (add the missing `destination_surrealdb.run` module) and remove the empty `breakingChanges` list that fails metadata validation. |
 | 0.1.0   | 2025-05-09 | [\#59742](https://github.com/airbytehq/airbyte/pull/59742) | Added SurrealDB destination.                                                                       |
 
 </details>
