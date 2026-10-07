@@ -38,6 +38,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.54 | 2026-10-07 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Return a `config_error` with a clear message when SignNow rejects the API key (`invalid_token`, HTTP 400) instead of a generic bad-request system error |
 | 0.0.53 | 2026-10-06 | [88026](https://github.com/airbytehq/airbyte/pull/88026) | Update dependencies |
 | 0.0.52 | 2026-09-29 | [87326](https://github.com/airbytehq/airbyte/pull/87326) | Update dependencies |
 | 0.0.51 | 2026-09-22 | [86808](https://github.com/airbytehq/airbyte/pull/86808) | Update dependencies |
