@@ -6,7 +6,7 @@ These tests verify the manifest changes that address airbytehq/airbyte-internal-
 
 - `campaigns_actions` and `newsletters` paginate via `response.next` -> `start` query parameter
 - All three streams emit only records whose `updated` cursor is at-or-after `config['start_date']`
-  (client-side incremental sync), and `incremental` runs honor / advance state
+  (client-side incremental sync), and `incremental` runs re-read one hour below the prior state and advance it
 - The `region` config field switches `url_base` between `api.customer.io` (US) and
   `api-eu.customer.io` (EU)
 """
@@ -68,12 +68,12 @@ def _newsletter(newsletter_id: int, updated: int) -> dict:
     }
 
 
-def _read(stream_name: str, config: dict, sync_mode: SyncMode = SyncMode.full_refresh, state=None):
+def _read(stream_name: str, config: dict, sync_mode: SyncMode = SyncMode.full_refresh, state=None, expecting_exception: bool = False):
     """Run the connector against `stream_name` with the given `sync_mode` and optional state."""
     state = state if state is not None else []
     source = get_source(config=config, state=state)
     catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
-    return read(source, config, catalog, state)
+    return read(source, config, catalog, state, expecting_exception=expecting_exception)
 
 
 def _stream_state(stream_name: str, cursor_value) -> list:
@@ -245,12 +245,12 @@ def _latest_cursor_value(output, stream_name: str):
 
 
 def test_campaigns_incremental_filters_by_prior_state_and_emits_advanced_state():
-    """`campaigns` incremental: prior state filters older records and final state advances to newest `updated`."""
+    """`campaigns` incremental: records more than one hour below prior state are dropped; state advances to newest `updated`."""
     prior_cursor = 1700000010
 
     response = {
         "campaigns": [
-            _campaign(1, prior_cursor - 5),  # before prior state -> dropped
+            _campaign(1, prior_cursor - 4000),  # more than one hour below prior state -> dropped
             _campaign(2, prior_cursor),  # equal to prior state -> kept (inclusive)
             _campaign(3, prior_cursor + 100),  # newest -> kept and drives state
         ]
@@ -266,7 +266,7 @@ def test_campaigns_incremental_filters_by_prior_state_and_emits_advanced_state()
         )
 
     emitted_ids = sorted(record.record.data["id"] for record in output.records)
-    assert emitted_ids == [2, 3], f"expected records >= prior cursor, got {emitted_ids}"
+    assert emitted_ids == [2, 3], f"expected records no older than prior cursor - 1h, got {emitted_ids}"
 
     final_cursor = _latest_cursor_value(output, "campaigns")
     assert final_cursor is not None, "expected at least one state message for the campaigns stream"
@@ -276,12 +276,12 @@ def test_campaigns_incremental_filters_by_prior_state_and_emits_advanced_state()
 
 
 def test_newsletters_incremental_filters_by_prior_state_and_emits_advanced_state():
-    """`newsletters` incremental: prior state filters older records and final state advances to newest `updated`."""
+    """`newsletters` incremental: records more than one hour below prior state are dropped; state advances to newest `updated`."""
     prior_cursor = 1700000050
 
     response = {
         "newsletters": [
-            _newsletter(10, prior_cursor - 1),  # before -> dropped
+            _newsletter(10, prior_cursor - 4000),  # more than one hour below prior state -> dropped
             _newsletter(11, prior_cursor + 10),  # after -> kept
             _newsletter(12, prior_cursor + 50),  # newest -> kept and drives state
         ],
@@ -298,7 +298,7 @@ def test_newsletters_incremental_filters_by_prior_state_and_emits_advanced_state
         )
 
     emitted_ids = sorted(record.record.data["id"] for record in output.records)
-    assert emitted_ids == [11, 12], f"expected records strictly after prior cursor, got {emitted_ids}"
+    assert emitted_ids == [11, 12], f"expected records no older than prior cursor - 1h, got {emitted_ids}"
 
     final_cursor = _latest_cursor_value(output, "newsletters")
     assert final_cursor is not None, "expected at least one state message for the newsletters stream"
