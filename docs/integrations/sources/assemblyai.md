@@ -12,18 +12,19 @@ API Reference: https://www.assemblyai.com/docs/api-reference/overview
 ## Configuration
 
 | Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `api_key` | `string` | Your AssemblyAI API key, without a `Bearer` prefix. You can find it in the AssemblyAI dashboard at https://www.assemblyai.com/app/api-keys. |  |
-| `start_date` | `string` | Earliest transcript creation date to sync, in UTC (for example, `2026-01-01T00:00:00Z`). |  |
+| --- | --- | --- | --- |
+| `api_key` | `string` | Your AssemblyAI API key, without a `Bearer` prefix. You can find it in the AssemblyAI dashboard at https://www.assemblyai.com/app/api-keys. | |
+| `start_date` | `string` | Earliest transcript creation date to sync, in UTC (for example, `2026-01-01T00:00:00Z`). | |
 | `subtitle_format` | `string` | Legacy required setting retained for compatibility. The `transcript_subtitle` stream returns redacted audio metadata, not subtitle text, so this setting does not change its output. | srt |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| transcripts | id | DefaultPaginator | ✅ |  ✅  |
-| transcript_sentences | uuid | DefaultPaginator | ✅ |  ❌  |
-| paragraphs | uuid | DefaultPaginator | ✅ |  ❌  |
-| transcript_subtitle | uuid | DefaultPaginator | ✅ |  ❌  |
+| --- | --- | --- | --- | --- |
+| transcripts | id | DefaultPaginator | ✅ | ✅ |
+| transcript_sentences | uuid | DefaultPaginator | ✅ | ❌ |
+| paragraphs | uuid | DefaultPaginator | ✅ | ❌ |
+| transcript_subtitle | uuid | DefaultPaginator | ✅ | ❌ |
 
 The connector uses AssemblyAI's US API at `https://api.assemblyai.com`. Transcript listing returns the newest records first; the connector follows `page_details.prev_url` to read older pages. AssemblyAI limits transcript listing to the [last 90 days](https://www.assemblyai.com/docs/pre-recorded-audio/api-reference/transcripts/list).
 
@@ -38,8 +39,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date | Pull Request | Subject |
+| --- | --- | --- | --- |
 | 1.0.0 | 2026-10-07 | [88224](https://github.com/airbytehq/airbyte/pull/88224) | Remove deprecated LeMUR stream; fix API-key authentication, transcript pagination, and cursor timestamp parsing |
 | 0.0.44 | 2026-10-06 | [87774](https://github.com/airbytehq/airbyte/pull/87774) | Update dependencies |
 | 0.0.43 | 2026-09-29 | [87073](https://github.com/airbytehq/airbyte/pull/87073) | Update dependencies |
