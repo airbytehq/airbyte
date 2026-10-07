@@ -4,7 +4,7 @@
 
 Klaviyo retires API revision `2024-10-15` on 2026-10-15, so this release moves every stream to revision `2026-01-15`. Only the `campaigns` and `campaigns_detailed` streams change shape; all other streams keep the same schema.
 
-This upgrade does not break syncs or destinations. The same campaigns and campaign messages keep syncing, with the same record counts and the same values, and the `send_strategy` and `campaign_messages` columns keep their names and types. For that reason the connector upgrades automatically at the deadline instead of disabling connections. The breaking-change notice is for awareness: some values move to different nested paths inside those two columns, so anything downstream of the destination that reads the old paths (SQL models, dashboards, dbt tests) returns `null` for them after the upgrade until it is pointed at the new paths.
+This upgrade does not break syncs or destinations. The same campaigns and campaign messages keep syncing, with the same record counts and, except for SMS message labels (see below), the same values; the `attributes` and `campaign_messages` columns keep their names and types. For that reason the connector upgrades automatically at the deadline instead of disabling connections. The breaking-change notice is for awareness: some values move to different nested paths inside those two columns, so anything downstream of the destination that reads the old paths (SQL models, dashboards, dbt tests) returns `null` for them after the upgrade until it is pointed at the new paths.
 
 ### Who is affected
 
@@ -38,14 +38,14 @@ Each entry of `campaign_messages` now carries its channel-specific configuration
 
 `definition` also exposes mobile push message fields that the previous revision did not return (`content.title`, `content.dynamic_image`, `content.action_buttons`, `options.badge`, `options.on_open`, `options.play_sound`, `kv_pairs`, `notification_type`), and each message gains a `relationships.image` link. `created_at`, `updated_at`, `send_times` and the campaign and template relationships are unchanged.
 
-Klaviyo no longer generates a `label` for SMS campaign messages, so `campaign_messages[].attributes.definition.label` is `null` for them at this revision.
+Klaviyo no longer generates a `label` for SMS campaign messages, so `campaign_messages[].attributes.definition.label` is absent for them at this revision (`null` in typed destinations).
 
 ### Migration steps
 
 1. Upgrade the connector to version 4.0.0, or wait for the automatic upgrade on the deadline. Syncs continue either way.
 2. Update any downstream queries, models or dashboards that read `send_strategy.options_static`, `send_strategy.options_sto`, `send_strategy.options_throttled`, or the campaign message `channel`, `label`, `content` and `render_options` fields to the new paths above.
 3. In your connection, open the **Schema** tab and click **Refresh source schema**, then accept the changes for `campaigns` and `campaigns_detailed` so the new fields show up in typed destination columns.
-4. Optionally, clear `campaigns` and `campaigns_detailed`. Both streams are full refresh, so the next sync rewrites every row in the new shape. Without a clear, rows written before the upgrade keep the old paths in destinations that append rather than overwrite.
+4. Optionally, clear `campaigns` and `campaigns_detailed` so that rows written before the upgrade are rewritten in the new shape; without a clear they keep the old paths in destinations that append rather than overwrite. Before clearing, note that the connector only re-reads campaigns updated on or after your **Start Date** (the last year if Start Date is blank) and cannot re-read campaigns deleted in Klaviyo, so back up the tables or set Start Date earlier than your oldest campaign first.
 
 ## Upgrading to 3.0.0
 

@@ -100,7 +100,7 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 ### Campaigns and Campaigns Detailed streams
 
 :::warning
-Connector version 4.0.0 moved to Klaviyo API revision `2026-01-15`, which changes the structure of two fields in the **Campaigns** and **Campaigns Detailed** streams. Syncs and destinations are not affected: the same campaigns and campaign messages are returned with the same values, and the `send_strategy` and `campaign_messages` columns keep their names and types. Some nested paths inside them differ, so downstream queries, models or dashboards that read the old paths need to be updated, and you should refresh the source schema after upgrading so the new fields appear. Rows synced before the upgrade keep the old structure until you clear the stream. See the [migration guide](https://docs.airbyte.com/integrations/sources/klaviyo-migrations#upgrading-to-400) for details.
+Connector version 4.0.0 moved to Klaviyo API revision `2026-01-15`, which changes the structure of two fields in the **Campaigns** and **Campaigns Detailed** streams. Syncs and destinations are not affected: the same campaigns and campaign messages are returned, and except for SMS message labels (see below) the values are unchanged. Some nested paths inside `attributes.send_strategy` and `campaign_messages` differ, so downstream queries, models or dashboards that read the old paths need to be updated, and you should refresh the source schema after upgrading so the new fields appear. Rows synced before the upgrade keep the old structure. You don't need to clear the streams; if you do clear **Campaigns** or **Campaigns Detailed** to rewrite old rows, the connector only re-reads campaigns updated on or after your **Start Date** (the last year if Start Date is blank), and campaigns deleted in Klaviyo can't be re-read, so back up the tables or set Start Date earlier than your oldest campaign first. See the [migration guide](https://docs.airbyte.com/integrations/sources/klaviyo-migrations#upgrading-to-400) for details.
 
 | Stream | Old path (revision `2024-10-15`) | New path (revision `2026-01-15`) |
 | :-- | :-- | :-- |
@@ -111,7 +111,7 @@ Connector version 4.0.0 moved to Klaviyo API revision `2026-01-15`, which change
 | `campaigns`, `campaigns_detailed` | `attributes.send_strategy.options_static.send_past_recipients_immediately` | `attributes.send_strategy.options.send_past_recipients_immediately` |
 | `campaigns_detailed` | `campaign_messages[].attributes.channel`, `label`, `content`, `render_options` | `campaign_messages[].attributes.definition.channel`, `label`, `content`, `render_options` |
 
-Klaviyo no longer generates a `label` for SMS campaign messages, so `campaign_messages[].attributes.definition.label` is `null` for them.
+Klaviyo no longer generates a `label` for SMS campaign messages, so `campaign_messages[].attributes.definition.label` is absent for them (`null` in typed destinations).
 :::
 
 ### Metrics stream
