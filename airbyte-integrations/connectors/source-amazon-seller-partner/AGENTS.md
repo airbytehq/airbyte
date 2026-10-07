@@ -162,7 +162,7 @@ date range is not yet available". That is a partial failure per slice, not a ski
 sync failed on its newest day and a long-running connection hit the platform's 20-partial-failure limit while
 most of its data had loaded.
 
-The three vendor analytics cursors (Vendor Sales, Vendor Traffic, Net Pure Product Margin) therefore end at
+The vendor analytics cursors (Vendor Sales, Vendor Inventory, Vendor Traffic, Net Pure Product Margin) therefore end at
 `now_utc() - duration('P4D')`. Four, not three: a slice for day D closes at D 23:59:59 and is published 72
 hours after *that*, so a three-day holdback is only safe for a sync that starts at midnight UTC. The cursor's
 end bound is exclusive, so the newest day actually requested is four to five days back depending on the time
@@ -170,8 +170,8 @@ of day.
 
 An explicitly configured `replication_end_date` is used as-is with no holdback, matching the pre-migration
 Python connector where `availability_sla_days` only ever moved the "now" bound. `GET_VENDOR_INVENTORY_REPORT`
-has no cursor today; if it gains one it needs the same holdback, since Amazon publishes it on the same
-schedule. Do not apply the holdback to `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` (published five minutes after
+shares the holdback since 6.1.0, when it gained its daily cursor (section 7), because Amazon publishes it on the
+same schedule. Do not apply the holdback to `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` (published five minutes after
 each hour closes) or to the seller `GET_SALES_AND_TRAFFIC_REPORT` streams, which Amazon publishes on a
 different schedule.
 
