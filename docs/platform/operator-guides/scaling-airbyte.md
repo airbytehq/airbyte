@@ -18,6 +18,7 @@ Enterprise Flex is a better fit when your needs shift from moving data to runnin
 - You need to run jobs in multiple regions or clouds, or want multiple data planes in one region for availability.
 - You need governance: [SSO](../access-management/sso.md), [role-based access control](../access-management/rbac.md), [SCIM](../access-management/scim.md), and [audit logs](../access-management/audit-logs.md) that Core doesn't include.
 - You need capacity controls, so critical syncs run on time when the platform is busy.
+- You want a partner. Flex customers work with an Airbyte Solution Architect who helps you plan, support, and manage your deployment.
 
 You don't have to outgrow Core to choose Flex. Many teams move because they want those capabilities, or because they'd rather not operate a control plane. If none of them matter to you, Core remains a good choice. If you'd rather not run any infrastructure, use [Airbyte Cloud](https://airbyte.com/product/airbyte-cloud).
 
