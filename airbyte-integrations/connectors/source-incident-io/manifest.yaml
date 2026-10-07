@@ -414,7 +414,7 @@ definitions:
             field_name: page_size
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
+            page_size: 250
             cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
             stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
       incremental_sync:

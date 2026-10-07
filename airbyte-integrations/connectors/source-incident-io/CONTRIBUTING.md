@@ -38,9 +38,10 @@ default relative to "now".
 
 ## Page sizes
 
-Each paginated stream uses the vendor's documented maximum `page_size` (`incidents` 500,
-`incident_updates` 250, `users` 10000, `alerts` 50, `escalations` 50, `actions` and `follow-ups` 250)
-with one exception: `schedules` stays at 100 because the vendor documents that `next_shifts` is only
+Each paginated stream uses the vendor's documented maximum `page_size` (`incidents` 250,
+`incident_updates` 250, `users` 10000, `alerts` 50, `escalations` 50, `actions` and `follow-ups` 250).
+The OpenAPI spec allows `page_size` 500 for `/v2/incidents`, but the API caps it at 250 — a request
+for 500 comes back with `pagination_meta.page_size: 250`. The other exception: `schedules` stays at 100 because the vendor documents that `next_shifts` is only
 returned when `page_size` is 25 or lower, and the connector does not emit `next_shifts` today. Lower it
 to 25 if that field is ever added to the schema.
 
