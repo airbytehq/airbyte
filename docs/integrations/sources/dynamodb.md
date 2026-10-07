@@ -8,7 +8,7 @@ description: >-
 
 The DynamoDB source connector reads the tables of an Amazon DynamoDB account and region. It supports full refresh and incremental syncs, infers each table's schema by sampling its items, reads a table page by page with the `Scan` API, and saves its position after every round of pages so that a large table resumes after an interruption instead of starting over.
 
-Version 0.4.0 rebuilds the connector on Airbyte's Bulk CDK. It accepts the saved state of versions 0.3.x and any configuration that uses an access key and a region, so those connections keep syncing without a reset. A source that used the role based authentication of versions 0.3.x, or that has no region, must be edited. See [Changes in 0.4.0](#changes-in-040) for what changed and what to do.
+Version 0.4.0 rebuilds the connector on Airbyte's Bulk CDK. It accepts the saved state of versions 0.3.x and any configuration that uses an access key and a region, so those connections keep syncing without a reset. A source that used the role-based authentication of versions 0.3.x, or that has no region, fails until you edit it. See [Changes in 0.4.0](#changes-in-040) for what changed and what to do.
 
 ## Features
 
@@ -24,14 +24,14 @@ Version 0.4.0 rebuilds the connector on Airbyte's Bulk CDK. It accepts the saved
 | Checkpoints                         | Yes       | A state message after every round of scan pages, per scan segment                                                       |
 | Speed mode                          | Yes       | The connector supports the socket data channel with JSONL and protocol buffer serialization                             |
 
-The connector is read-only. It calls `ListTables`, `DescribeTable` and `Scan` and never writes to your tables.
+The connector is read-only. It calls `ListTables`, `DescribeTable`, and `Scan`, and never writes to your tables.
 
 ## Getting started
 
 ### Requirements
 
 - An AWS account with the DynamoDB tables to sync.
-- An IAM identity with the permissions listed below, and its access key. Credentials always come from the source configuration: the connector can't use an AWS profile, an instance role or environment variables of the machine it runs on.
+- An IAM identity with the permissions listed below, and its access key. Credentials always come from the source configuration: the connector can't use an AWS profile, an instance role, or environment variables of the machine it runs on.
 
 ### IAM permissions
 
@@ -44,14 +44,39 @@ Create a dedicated IAM user or role for Airbyte and grant it the following permi
 | `dynamodb:Scan`          | Each table to sync                         | Samples items during discovery and reads the data during a sync         |
 | `sts:AssumeRole`         | The role, with **Access Key and IAM Role** | Lets the access key's identity assume the role that reads the tables    |
 
+For example, this identity-based policy grants read access to two tables. Replace the region, account ID, and table names with your own.
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "dynamodb:ListTables",
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["dynamodb:DescribeTable", "dynamodb:Scan"],
+      "Resource": [
+        "arn:aws:dynamodb:us-east-1:123456789012:table/orders",
+        "arn:aws:dynamodb:us-east-1:123456789012:table/customers"
+      ]
+    }
+  ]
+}
+```
+
+With **Access Key and IAM Role**, attach this policy to the role, and give the IAM user that owns the access key permission to call `sts:AssumeRole` on that role.
+
 ### Authentication
 
 The connector offers two authentication methods. Both start from an access key.
 
-- **Access Key**: the access key ID and secret access key of an IAM user, or temporary credentials issued by AWS STS. For temporary credentials also fill in the **Session Token**. The connector signs every request with this key.
-- **Access Key and IAM Role**: an access key that is allowed to call `sts:AssumeRole` on an IAM role, plus the role's ARN and, when the role's trust policy requires one, the external ID. The connector assumes the role and reads the tables with the role's temporary credentials. Use this method for cross-account access or to keep the reading identity to a least-privilege role.
+- **Access Key**: the access key ID and secret access key of an IAM user, or temporary credentials issued by AWS STS. For temporary credentials, also fill in the **Session Token**. The connector signs every request with this key. To create an access key, see [Manage access keys for IAM users](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html).
+- **Access Key and IAM Role**: an access key that is allowed to call `sts:AssumeRole` on an IAM role, plus the role's ARN and, when the role's trust policy requires one, the external ID. The connector assumes the role and reads the tables with the role's temporary credentials. Use this method for cross-account access or to keep the reading identity to a least-privilege role. The role's trust policy must allow the access key's identity to assume it. See [Grant a user permissions to switch roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_permissions-to-switch.html).
 
-The role based authentication of versions 0.3.x, which took credentials from the environment the connector runs in, is not available. A saved configuration that uses it fails the connection test with a message that says so; edit it to use one of the two methods. **AWS Region** is required for the same reason.
+The role-based authentication of versions 0.3.x, which took credentials from the environment the connector runs in, isn't available. A saved configuration that uses it fails the connection test until you edit it to use one of the two methods. See [What to do after upgrading](#what-to-do-after-upgrading).
 
 ### Set up the DynamoDB source in Airbyte
 
@@ -106,8 +131,6 @@ Parallel scans and concurrent scans are an Airbyte Cloud feature. Self-managed A
 
 On Airbyte Cloud the connector reads a large table with a [parallel scan](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Scan.html), where DynamoDB divides the table into segments by hashing each item's partition key and the connector scans each segment on its own. The segments cost nothing to compute and consume the same read capacity as one sequential scan. The number of segments comes from the table size that `DescribeTable` reports, one segment per 64 MB, up to 128 segments per table, so a table under 64 MB is still read by a single scan. DynamoDB refreshes that size about every six hours, so a table loaded since the last refresh reports zero bytes; the connector then uses as many segments as **Max Concurrent Queries to Database**.
 
-The connector asks DynamoDB to compress its responses (`Accept-Encoding: gzip`). A scan page is 1 MB of DynamoDB JSON, and moving it over one connection is most of a page's latency, so compression makes every scan faster at no extra read cost; how much depends on how compressible the items are.
-
 **Max Concurrent Queries to Database** sets how many scans run at the same time across all tables. Left empty, Airbyte reads one table at a time on the standard data channel and one table per socket in speed mode. At 1 the segments of a table are read one after another and tables one after another, which is as fast as a single sequential scan. Raise it to read segments and tables in parallel; the speed-up is close to linear until the table's read capacity or the network is saturated. Each running scan holds one page of up to 1 MB in memory.
 
 Segments can be uneven. All items with the same partition key land in the same segment, so a table with few partition keys, or a few large item collections, has segments of different sizes; the larger ones just finish later.
@@ -155,7 +178,7 @@ Version 0.4.0 loads the access key configurations and the state of versions 0.3.
 
 - **Schemas use Airbyte's standard shapes.** Versions 0.3.x wrote `{"type": ["null", "string"]}` and `{"type": ["null", "integer"]}`; this connector writes `{"type": "string"}` and `{"type": "number", "airbyte_type": "integer"}`, like every other Airbyte database connector. A connection upgraded from 0.3.x keeps syncing with its saved catalog and shows a schema change on every column at its next schema refresh; the column types in the destination don't change.
 
-- **Credentials come from the configuration only.** Role based authentication, which used the credentials of the environment the connector ran in, is gone: a source configured without an access key fails the connection test with a message that says so. Temporary credentials with a session token and role assumption with `sts:AssumeRole` are new, **AWS Region** is required and **DynamoDB Endpoint** must be an `http` or `https` URL, which versions 0.3.x required in practice too.
+- **Credentials come from the configuration only.** Role-based authentication, which used the credentials of the environment the connector ran in, is gone: a source configured without an access key fails the connection test with a message that says so. Temporary credentials with a session token and role assumption with `sts:AssumeRole` are new, **AWS Region** is required and **DynamoDB Endpoint** must be an `http` or `https` URL, which versions 0.3.x required in practice too.
 - **Reserved attribute names need no configuration.** Every attribute is aliased in the scan expressions, so the **Reserved attribute names** field is ignored. Versions 0.3.x failed on any unlisted reserved word or special character and could never read a table that had both `field.name` and `field-name`.
 - **Large numbers are exact.** An `N` value that doesn't fit in 64 bits is read as an exact decimal; versions 0.3.x converted it to a floating point number and lost precision. Rows that versions 0.3.x already wrote keep their rounded value until the table is read in full again, and equality joins on such values may start or stop matching.
 - **Absent attributes are `null`.** An attribute that an item doesn't have is present in the record as `null`; versions 0.3.x left it out. Destinations that keep the record as JSON, such as object storage, now show the attribute as an explicit `null` key.
@@ -170,7 +193,7 @@ Version 0.4.0 loads the access key configurations and the state of versions 0.3.
 
 A source that uses an access key and has a region set needs no action: its connections keep syncing with their saved catalog, and incremental streams continue from their saved cursor value.
 
-1. If a source used role based authentication, edit it: choose **Access Key** and enter the access key of an IAM user or temporary credentials with a session token, or choose **Access Key and IAM Role** and enter an access key that may assume the role the connector should read with. See [IAM permissions](#iam-permissions) for what the identity needs. Until then the connection test and every sync of that source fail with a message that says so.
+1. If a source used role-based authentication, edit it: choose **Access Key** and enter the access key of an IAM user or temporary credentials with a session token, or choose **Access Key and IAM Role** and enter an access key that may assume the role the connector should read with. See [IAM permissions](#iam-permissions) for what the identity needs. Until then the connection test and every sync of that source fail with a message that says so.
 2. If **AWS Region** is empty, set it to the region of the tables.
 3. Refreshing the source schema of a connection is recommended but optional. It shows a schema change on every column, picks up the key attributes of tables that were empty, and leaves the column types in the destination as they are.
 4. Clearing a stream's data is optional and only worthwhile when its table has `N` values wider than 64 bits that versions 0.3.x wrote as rounded numbers. The next sync reads the whole table again.
@@ -199,25 +222,25 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------- |
 | 0.4.1 | 2026-10-06 | [88146](https://github.com/airbytehq/airbyte/pull/88146) | Promote the connector to generally available and certified |
-| 0.4.0 | 2026-10-05 | [86997](https://github.com/airbytehq/airbyte/pull/86997) | Rebuild on the Bulk CDK: parallel scan segments on Airbyte Cloud, resumable full refresh and incremental syncs, speed mode, exact numbers, integer cursors, temporary credentials and IAM role assumption. Role based authentication is removed, see [Changes in 0.4.0](#changes-in-040) |
-| 0.3.11 | 2025-07-10 | [62916](https://github.com/airbytehq/airbyte/pull/62916) | Add gradle docker plugins |
-| 0.3.10 | 2025-06-14 | [61601](https://github.com/airbytehq/airbyte/pull/61601) | fix(source-dynamodb): Replace ListNode with Iterator for lazyness #61600 |
+| 0.4.0 | 2026-10-06 | [86997](https://github.com/airbytehq/airbyte/pull/86997) | Rebuild on the Bulk CDK: parallel scan segments on Airbyte Cloud, resumable full refresh and incremental syncs, speed mode, exact numbers, integer cursors, temporary credentials and IAM role assumption. Role-based authentication is removed, see [Changes in 0.4.0](#changes-in-040) |
+| 0.3.11 | 2025-07-11 | [62916](https://github.com/airbytehq/airbyte/pull/62916) | Add gradle docker plugins |
+| 0.3.10 | 2025-06-17 | [61601](https://github.com/airbytehq/airbyte/pull/61601) | fix(source-dynamodb): Replace ListNode with Iterator for lazyness #61600 |
 | 0.3.9 | 2025-02-12 | [53202](https://github.com/airbytehq/airbyte/pull/53202) | fixed IRSA by adding STS to classpath of connector. |
-| 0.3.8 | 2025-01-10 | [51489](https://github.com/airbytehq/airbyte/pull/51489) | Use a non root base image |
-| 0.3.7 | 2024-12-18 | [49881](https://github.com/airbytehq/airbyte/pull/49881) | Use a base image: airbyte/java-connector-base:1.0.0 |
-| 0.3.6 | 2024-07-19 | [41936](https://github.com/airbytehq/airbyte/pull/41936) | Fix incorrect type check for incremental read |
+| 0.3.8 | 2025-01-13 | [51489](https://github.com/airbytehq/airbyte/pull/51489) | Use a non root base image |
+| 0.3.7 | 2024-12-19 | [49881](https://github.com/airbytehq/airbyte/pull/49881) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 0.3.6 | 2024-07-31 | [41936](https://github.com/airbytehq/airbyte/pull/41936) | Fix incorrect type check for incremental read |
 | 0.3.5 | 2024-07-23 | [42433](https://github.com/airbytehq/airbyte/pull/42433) | add PR number |
-| 0.3.4 | 2024-07-23 | [49881](https://github.com/airbytehq/airbyte/pull/49881) | fix primary key fetching |
-| 0.3.3 | 2024-07-22 | [49881](https://github.com/airbytehq/airbyte/pull/49881) | fix primary key fetching |
+| 0.3.4 | 2024-07-23 | [42433](https://github.com/airbytehq/airbyte/pull/42433) | fix primary key fetching |
+| 0.3.3 | 2024-07-22 | [42398](https://github.com/airbytehq/airbyte/pull/42398) | fix primary key fetching |
 | 0.3.2 | 2024-05-01 | [27045](https://github.com/airbytehq/airbyte/pull/27045) | Fix missing scan permissions |
 | 0.3.1 | 2024-05-01 | [31935](https://github.com/airbytehq/airbyte/pull/31935) | Fix list more than 100 tables |
-| 0.3.0 | 2024-04-24 | [37530](https://github.com/airbytehq/airbyte/pull/37530) | Allow role based access |
-| 0.2.3 | 2024-02-13 | [35232](https://github.com/airbytehq/airbyte/pull/35232) | Adopt CDK 0.20.4 |
-| 0.2.2 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
-| 0.2.1   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region                                    |
-| 0.2.0   | 18-12-2023 | https://github.com/airbytehq/airbyte/pull/33485           | Remove LEGACY state                                                  |
-| 0.1.2   | 01-19-2023 | https://github.com/airbytehq/airbyte/pull/20172           | Fix reserved words in projection expression & make them configurable |
-| 0.1.1   | 02-09-2023 | https://github.com/airbytehq/airbyte/pull/22682           | Fix build                                                            |
-| 0.1.0   | 11-14-2022 | https://github.com/airbytehq/airbyte/pull/18750           | Initial version                                                      |
+| 0.3.0 | 2024-04-30 | [37530](https://github.com/airbytehq/airbyte/pull/37530) | Allow role based access |
+| 0.2.3 | 2024-02-14 | [35232](https://github.com/airbytehq/airbyte/pull/35232) | Adopt CDK 0.20.4 |
+| 0.2.2 | 2024-02-01 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
+| 0.2.1 | 2024-01-05 | [33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region |
+| 0.2.0 | 2023-12-19 | [33485](https://github.com/airbytehq/airbyte/pull/33485) | Remove LEGACY state |
+| 0.1.2 | 2023-02-27 | [20172](https://github.com/airbytehq/airbyte/pull/20172) | Fix reserved words in projection expression & make them configurable |
+| 0.1.1 | 2023-02-10 | [22682](https://github.com/airbytehq/airbyte/pull/22682) | Fix build |
+| 0.1.0 | 2022-11-14 | [18750](https://github.com/airbytehq/airbyte/pull/18750) | Initial version |
 
 </details>
