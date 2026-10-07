@@ -24,7 +24,7 @@ class FileUploadError(APIError):
     """Raised when the server is unable to successfully upload the file."""
 
     def __str__(self) -> str:
-        return "File upload failed."
+        return str(self.args[0]) if self.args else "File upload failed."
 
 
 class DeepsetCloudApi:
