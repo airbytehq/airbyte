@@ -5,6 +5,7 @@ import com.mongodb.client.FindIterable
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Projections
 import com.mongodb.client.model.Sorts
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.Stream
 import io.airbyte.integrations.source.mongodbv3.discover.MongoDbSourceMetadataQuerier.Companion.ID_FIELD
@@ -43,6 +44,7 @@ class MongoDbSnapshotPartitionReader(
     override suspend fun run() {
         val emit: RecordAcceptor =
             checkNotNull(recordAcceptorFor(stream.id)) { "No record acceptor for ${stream.id}" }
+        requireSingleIdType()
         val startId: Any? = resumeFromId()
         lastId = startId
         log.info { "Reading ${stream.namespace}.${stream.name} after _id=$startId." }
@@ -71,23 +73,44 @@ class MongoDbSnapshotPartitionReader(
      * projected (extra fields would be dropped anyway); schemaless needs the whole document.
      */
     private fun query(startId: Any?): FindIterable<Document> {
-        val collection =
-            sharedState.client.getDatabase(stream.namespace!!).getCollection(stream.name)
-        val find: FindIterable<Document> = collection.find()
-        startId?.let { find.filter(resumeFilter(it)) }
+        val find: FindIterable<Document> = collection().find()
+        startId?.let { find.filter(Filters.gt(ID_FIELD, it)) }
         if (sharedState.configuration.schemaEnforced) {
             find.projection(Projections.include(schemaFieldTypesOf(stream).keys.toList()))
         }
         return find.sort(Sorts.ascending(ID_FIELD))
     }
 
+    private fun collection() =
+        sharedState.client.getDatabase(stream.namespace!!).getCollection(stream.name)
+
     /**
-     * `$expr` compares across BSON types in sort order, so the resume continues into the next `_id`
-     * type where a type-bracketed `$gt` would stop; the `_id` index is still used (bounds
-     * `(startId, MaxKey]`).
+     * The `_id` index orders values by BSON type before value, and the resume filter `_id > x` only
+     * matches `_id`s of x's type: a collection mixing types would lose every later type after a
+     * checkpoint. The smallest and largest `_id` sharing a type means every `_id` does (two index
+     * seeks). Numbers of any width are one type, as they are for the comparison.
      */
-    private fun resumeFilter(startId: Any): Bson =
-        Filters.expr(Document("\$gt", listOf("\$$ID_FIELD", Document("\$literal", startId))))
+    private fun requireSingleIdType() {
+        fun endpointIdType(sort: Bson): String =
+            MongoDbIdKind.of(
+                collection()
+                    .find()
+                    .projection(Projections.include(ID_FIELD))
+                    .sort(sort)
+                    .limit(1)
+                    .first()
+                    ?.get(ID_FIELD)
+            )
+        val first: String = endpointIdType(Sorts.ascending(ID_FIELD))
+        val last: String = endpointIdType(Sorts.descending(ID_FIELD))
+        if (first != last) {
+            throw ConfigErrorException(
+                "Collection ${stream.namespace}.${stream.name} has _id values of more than one " +
+                    "type ($first and $last). The _id type must be the same for every document " +
+                    "in a collection; make it consistent or exclude the collection from the sync.",
+            )
+        }
+    }
 
     /** Test hook: stop after `max-records-per-run` records so resume can be exercised quickly. */
     private fun reachedRecordLimit(): Boolean = sharedState.maxRecordsPerRun in 1..numRecords

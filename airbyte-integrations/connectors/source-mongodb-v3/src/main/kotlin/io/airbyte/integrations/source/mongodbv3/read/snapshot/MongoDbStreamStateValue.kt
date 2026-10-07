@@ -39,6 +39,27 @@ enum class MongoDbIdType {
     TIMESTAMP,
 }
 
+/** BSON type names (`$type` aliases) for grouping `_id` values; all numbers are `number`. */
+object MongoDbIdKind {
+    fun of(id: Any?): String =
+        when (id) {
+            null -> "null"
+            is Int,
+            is Long,
+            is Double,
+            is Decimal128 -> "number"
+            is String -> "string"
+            is Document,
+            is BsonDocument -> "object"
+            is Binary -> "binData"
+            is ObjectId -> "objectId"
+            is Boolean -> "bool"
+            is Date -> "date"
+            is BsonTimestamp -> "timestamp"
+            else -> id.javaClass.simpleName
+        }
+}
+
 /**
  * Per-collection snapshot checkpoint `{"id", "status", "idType", "binarySubType"}`; [id] is the
  * last emitted `_id` as text: hex for an ObjectId, UUID for a subtype-4 [Binary] and Base64 for

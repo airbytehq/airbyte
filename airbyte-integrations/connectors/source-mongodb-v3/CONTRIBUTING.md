@@ -117,18 +117,18 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
   `DOUBLE` and `DECIMAL` (the number's own text, `Decimal128.parse` is exact), `DATE` (epoch
   milliseconds) and `TIMESTAMP` (the 64-bit value), so those `_id`s resume as their native BSON
   type (`MongoDbStreamStateValueTest` round-trips every type, NaN/-0.0/±Infinity included). Any
-  other `_id` type (boolean, ...) checkpoints as its text with `idType: STRING`; the resume then
-  re-reads at most that type's documents, never skips any.
+  other `_id` type checkpoints as its text with `idType: STRING`.
 
-  The resume filter is `{$expr: {$gt: ["$_id", {$literal: <checkpoint>}]}}`, **not**
-  `{_id: {$gt: ...}}`: a query-operator `$gt` is type-bracketed and only matches `_id`s of the
-  checkpoint's own BSON type, so a collection mixing e.g. integer and string `_id`s would lose every
-  string after a checkpoint on the last integer (v2 only warned about mixed `_id` types). `$expr`
-  compares across types in BSON sort order — the same order the `_id` scan uses — and still seeks
-  the `_id` index with bounds `(checkpoint, MaxKey]` (verified with `explain` on MongoDB 7.0:
-  `docsExamined` equals the number of matching documents for every supported type). Index use for
-  `$expr` comparisons needs MongoDB 5.0+; older servers would scan. Tests:
-  `testTypedIdCollectionsResumeMidSnapshot`, `testMixedIdTypesResumeAcrossTypeBrackets`. At READ
+  **The `_id` type must be the same for every document in a collection.** The resume filter is a
+  plain `{_id: {$gt: <checkpoint>}}`, which MongoDB type-brackets: it only matches `_id`s of the
+  checkpoint's own BSON type, so a collection mixing e.g. integer and string `_id`s would silently
+  lose every string after a checkpoint on the last integer (v2 only warned about mixed `_id`
+  types). Rather than a cross-type filter, the reader checks before every read that the
+  collection is single-typed and fails with a config error naming the types otherwise
+  (`testMixedIdTypesFailTheSync`). The check is exact and costs two index-only seeks: the `_id`
+  index orders by BSON type before value, so if the smallest and largest `_id` share a type, every
+  `_id` does. Numbers of any width (`int`, `long`, `double`, `decimal`) count as one type, as they
+  do for the comparison — drivers routinely mix them (`testNumericIdWidthsAreOneType`). At READ
   time the metadata querier serves `fields()` from the configured catalog rather than re-sampling.
 - **CDC** (`MongoDbCdcPartitionReader`, the `Global` feed): reads the replica-set change stream with
   the native driver `watch()` — **not Debezium**. Cold start captures a resume token before the

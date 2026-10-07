@@ -294,17 +294,12 @@ class MongoDbSourceReadTest {
         }
     }
 
-    /**
-     * `_id` values of several BSON types: each checkpoint lands on the last value of one type and
-     * the resume must continue into the next type (BSON sort order), which a type-bracketed `$gt`
-     * would skip.
-     */
+    /** Numbers of any width are one `_id` type: the comparison and the resume treat them alike. */
     @Test
-    fun testMixedIdTypesResumeAcrossTypeBrackets() {
-        val ids: List<Any> =
-            listOf(1, 2, "a", "b", Date(1_700_000_000_000L), Date(1_700_000_001_000L))
+    fun testNumericIdWidthsAreOneType() {
+        val ids: List<Any> = listOf(1, 2.5, 5_000_000_000L, Decimal128.parse("7000000000.5"))
         MongoClients.create(replicaSet.connectionString).use { client ->
-            val coll = client.getDatabase(TEST_DB).getCollection(MIXED_ID)
+            val coll = client.getDatabase(TEST_DB).getCollection(NUMERIC_ID)
             coll.drop()
             coll.insertMany(ids.mapIndexed { i, id -> Document("_id", id).append("v", i + 1) })
         }
@@ -315,21 +310,42 @@ class MongoDbSourceReadTest {
                     configuredCatalog(
                         SyncMode.FULL_REFRESH,
                         DestinationSyncMode.OVERWRITE,
-                        setOf(MIXED_ID),
+                        setOf(NUMERIC_ID),
                         includeEmpty = false,
                     ),
                 )
             } finally {
                 System.clearProperty(MAX_RECORDS_PROPERTY)
             }
-        val records = result.records().filter { it.stream == MIXED_ID }
-        Assertions.assertEquals((1..6).toList(), records.map { it.data["v"].asInt() })
-        val checkpoints: List<MongoDbStreamStateValue> = allStreamStatesFor(result, MIXED_ID)
-        Assertions.assertEquals(
-            listOf(MongoDbIdType.INT, MongoDbIdType.STRING, MongoDbIdType.DATE),
-            checkpoints.map { it.idType }.distinct(),
+        val records = result.records().filter { it.stream == NUMERIC_ID }
+        Assertions.assertEquals((1..4).toList(), records.map { it.data["v"].asInt() })
+        val checkpoints: List<MongoDbStreamStateValue> = allStreamStatesFor(result, NUMERIC_ID)
+        Assertions.assertEquals(MongoDbIdType.DOUBLE, checkpoints.first().idType)
+        Assertions.assertEquals(MongoDbIdType.DECIMAL, checkpoints.last().idType)
+    }
+
+    /** `_id` values of different BSON types in one collection are a configuration error. */
+    @Test
+    fun testMixedIdTypesFailTheSync() {
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            val coll = client.getDatabase(TEST_DB).getCollection(MIXED_ID)
+            coll.drop()
+            coll.insertMany(
+                listOf(1, 2, "a", "b", Date(1_700_000_000_000L)).mapIndexed { i, id ->
+                    Document("_id", id).append("v", i + 1)
+                }
+            )
+        }
+        assertReadFails(
+            configuredCatalog(
+                SyncMode.FULL_REFRESH,
+                DestinationSyncMode.OVERWRITE,
+                setOf(MIXED_ID),
+                includeEmpty = false,
+            ),
+            emptyList(),
+            "Collection $TEST_DB.$MIXED_ID has _id values of more than one type (number and date)",
         )
-        Assertions.assertEquals(ids.last(), checkpoints.last().resumeIdValue())
     }
 
     @Test
@@ -694,6 +710,7 @@ class MongoDbSourceReadTest {
         const val DECIMAL_ID = "decimal_id_coll"
         const val DATE_ID = "date_id_coll"
         const val TIMESTAMP_ID = "timestamp_id_coll"
+        const val NUMERIC_ID = "numeric_id_coll"
         const val MIXED_ID = "mixed_id_coll"
         /**
          * A `_data` the server rejects (`FailedToParse`, not a hex string). Note that any
