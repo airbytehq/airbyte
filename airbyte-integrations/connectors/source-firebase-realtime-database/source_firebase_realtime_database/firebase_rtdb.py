@@ -8,13 +8,31 @@ import firebase_admin
 from firebase_admin import credentials, db
 
 
+DEFAULT_DATABASE_DOMAIN = "firebaseio.com"
+
+
+def database_url_from(database_name):
+    """
+    Builds the database URL from the configured value. Accepts a bare database name
+    (us-central1 databases, https://<name>.firebaseio.com), a hostname such as
+    <name>.europe-west1.firebasedatabase.app (databases in other regions), or a full URL.
+    See https://firebase.google.com/docs/database/locations
+    """
+    value = database_name.strip().rstrip("/")
+    if value.startswith("https://") or value.startswith("http://"):
+        return value
+    if "." in value:
+        return f"https://{value}"
+    return f"https://{value}.{DEFAULT_DATABASE_DOMAIN}"
+
+
 class Client:
     def __init__(self, path="", buffer_size=10000):
         self._path = path
         self._buffer_size = buffer_size
 
     def initialize(self, database_name, google_application_credentials):
-        database_url = f"https://{database_name}.firebaseio.com"
+        database_url = database_url_from(database_name)
         sa_key = json.loads(google_application_credentials)
 
         cred = credentials.Certificate(sa_key)

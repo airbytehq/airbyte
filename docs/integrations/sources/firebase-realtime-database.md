@@ -65,7 +65,7 @@ Follow the [Creating and Managing Service Account Keys](https://cloud.google.com
 
 You should now have all the requirements needed to configure Firebase Realtime Database as a source in the UI. You'll need the following information to configure the Firebase Realtime Database source:
 
-- **Database Name**
+- **Database Name**: the name of your database (for databases in `us-central1`, this is the `<database_name>` in `https://<database_name>.firebaseio.com`). If your database is in another region (for example `europe-west1` or `asia-southeast1`), enter the full database URL or hostname instead, e.g. `https://<database_name>.europe-west1.firebasedatabase.app`. You can find the URL in the Firebase console; see [Realtime Database locations](https://firebase.google.com/docs/database/locations).
 - **Service Account Key JSON**: the contents of your Service Account Key JSON file.
 - **Node Path \[Optional\]**: node path in your database's data which you want to sync. default value is ""(root node).
 - **Buffer Size \[Optional\]**: number of records to fetch at one time (buffered). default value is 10000.
@@ -83,6 +83,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------- |
+| 0.1.50 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Support databases outside `us-central1` by accepting a full database URL/hostname (`*.firebasedatabase.app`) in **Database Name** |
 | 0.1.49 | 2026-06-02 | [78673](https://github.com/airbytehq/airbyte/pull/78673) | Update dependencies |
 | 0.1.48 | 2025-05-24 | [60381](https://github.com/airbytehq/airbyte/pull/60381) | Update dependencies |
 | 0.1.47 | 2025-05-10 | [59978](https://github.com/airbytehq/airbyte/pull/59978) | Update dependencies |
