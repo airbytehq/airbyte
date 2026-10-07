@@ -40,7 +40,8 @@ data:
           its Client ID and Client Secret (and, if applicable, their NinjaOne
           region) in the source configuration. Migration guide:
           https://docs.airbyte.com/integrations/sources/ninjaone-rmm-migrations#upgrading-to-010
-        upgradeDeadline: "2026-10-07"
+        upgradeDeadline: "2026-10-21"
+        deadlineAction: "disable"
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/ninjaone-rmm
   tags:
