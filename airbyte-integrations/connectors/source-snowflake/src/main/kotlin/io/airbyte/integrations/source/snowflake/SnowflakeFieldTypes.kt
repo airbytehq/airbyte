@@ -19,6 +19,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import net.snowflake.client.api.resultset.SnowflakeType
 
 /**
  * Nanoseconds are rounded up to microsecond precision (6 decimal places). See [roundUpToMicros].
@@ -37,7 +38,11 @@ object SnowflakeLocalDateTimeAccessor : JdbcAccessor<LocalDateTime> {
         paramIdx: Int,
         value: LocalDateTime,
     ) {
-        stmt.setTimestamp(paramIdx, Timestamp.valueOf(value))
+        // Bind explicitly as TIMESTAMP_NTZ. A plain setTimestamp is interpreted in the session
+        // TIMEZONE (America/Los_Angeles by default), which shifts an NTZ cursor bound by the
+        // session
+        // offset and makes a warm incremental sync skip rows (airbytehq/airbyte#83800).
+        stmt.setObject(paramIdx, Timestamp.valueOf(value), SnowflakeType.EXTRA_TYPES_TIMESTAMP_NTZ)
     }
 }
 

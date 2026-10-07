@@ -22,7 +22,6 @@ import io.airbyte.protocol.models.v0.SyncMode
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -170,11 +169,8 @@ class SnowflakeSourceCursorIncrementalLiveTest : AbstractSnowflakeLiveTest() {
     }
 
     @Test
-    @Disabled(
-        "airbytehq/airbyte#83800: with the account default TIMEZONE (America/Los_Angeles) the NTZ " +
-            "cursor bound is shifted by the session offset and the warm sync misses rows; 0 of 1 new " +
-            "rows were read on 2.0.1. Enable once the fix is merged."
-    )
+    // airbytehq/airbyte#83800: with the account default TIMEZONE (America/Los_Angeles) a plain
+    // setTimestamp bound was shifted by the session offset and 0 of 1 new rows were read on 2.0.1.
     fun ntzCursorWithAccountDefaultSessionTimezone() {
         execute(
             admin,

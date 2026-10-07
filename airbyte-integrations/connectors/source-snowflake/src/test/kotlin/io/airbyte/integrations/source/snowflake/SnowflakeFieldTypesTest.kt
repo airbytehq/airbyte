@@ -11,10 +11,12 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import net.snowflake.client.api.resultset.SnowflakeType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -107,6 +109,22 @@ class SnowflakeFieldTypesTest {
     }
 
     // --- SnowflakeOffsetDateTimeFieldType tests ---
+
+    @Test
+    fun `SnowflakeLocalDateTimeAccessor binds cursor bounds explicitly as TIMESTAMP_NTZ`() {
+        // airbytehq/airbyte#83800: a plain setTimestamp is read in the session TIMEZONE.
+        val stmt = mock(PreparedStatement::class.java)
+        val value = LocalDateTime.of(2025, 11, 6, 22, 30, 46)
+
+        SnowflakeLocalDateTimeAccessor.set(stmt, 1, value)
+
+        verify(stmt)
+            .setObject(
+                eq(1),
+                eq(Timestamp.valueOf(value)),
+                eq(SnowflakeType.EXTRA_TYPES_TIMESTAMP_NTZ)
+            )
+    }
 
     @Test
     fun `SnowflakeOffsetDateTimeFieldType rounds up 9 decimal places to 6`() {
