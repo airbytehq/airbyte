@@ -16,7 +16,11 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
+        empty_streams:
+          - name: broadcasts
+            bypass_reason: "The test workspace has no API-triggered broadcasts, and the App API cannot create one. Covered by unit_tests/test_messaging_and_audience_streams.py."
+          - name: broadcast_actions
+            bypass_reason: "Substream of broadcasts, which is empty in the test workspace. Covered by unit_tests/test_messaging_and_audience_streams.py."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

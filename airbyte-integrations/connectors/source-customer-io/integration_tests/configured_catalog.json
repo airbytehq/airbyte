@@ -26,6 +26,69 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "broadcasts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "broadcast_actions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "newsletter_variants",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "transactional_messages",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "sender_identities",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "segments",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "segment_usage",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

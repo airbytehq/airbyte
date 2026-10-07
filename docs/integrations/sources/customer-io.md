@@ -11,6 +11,13 @@ Several output streams are available from this source:
 - [Campaigns](https://customer.io/docs/api/#operation/listCampaigns) \(Incremental\)
 - [Campaign Actions](https://customer.io/docs/api/#operation/listCampaignActions) \(Incremental\)
 - [Newsletters](https://customer.io/docs/api/#operation/listNewsletters) \(Incremental\)
+- [Broadcasts](https://docs.customer.io/integrations/api/app/tag/broadcasts/listbroadcasts/) \(Incremental\)
+- [Broadcast Actions](https://docs.customer.io/integrations/api/app/tag/broadcasts/broadcastactions/) \(Incremental\)
+- [Newsletter Variants](https://docs.customer.io/integrations/api/app/tag/newsletter-variants/listnewslettervariants/) \(Full Refresh\)
+- [Transactional Messages](https://docs.customer.io/integrations/api/app/tag/transactional/listtransactional/) \(Incremental\): message templates, not deliveries
+- [Sender Identities](https://docs.customer.io/integrations/api/app/tag/sender-identities/listsenders/) \(Full Refresh\)
+- [Segments](https://docs.customer.io/integrations/api/app/tag/segments/listsegments/) \(Incremental\): archived segments are not included; a segment archived after an incremental sync keeps its last row in the destination
+- [Segment Usage](https://docs.customer.io/integrations/api/app/tag/segments/getsegmentdependencies/) \(Full Refresh\): one record per non-archived segment
 
 If there are more endpoints you'd like Faros AI to support, please [create an
 issue.](https://github.com/faros-ai/airbyte-connectors/issues/new)
@@ -51,6 +58,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                     |
 |:--------|:-----------| :------------------------------------------------------------- |:--------------------------------------------|
+| 0.6.0 | 2026-10-07 | [88130](https://github.com/airbytehq/airbyte/pull/88130) | Add broadcast, newsletter variant, transactional message, sender identity and segment streams |
 | 0.5.0 | 2026-10-07 | [88129](https://github.com/airbytehq/airbyte/pull/88129) | Add rate limiting, Retry-After retries, clearer authentication errors, a one-hour lookback, and missing fields |
 | 0.4.17 | 2026-10-06 | [87812](https://github.com/airbytehq/airbyte/pull/87812) | Update dependencies |
 | 0.4.16 | 2026-09-29 | [87129](https://github.com/airbytehq/airbyte/pull/87129) | Update dependencies |
