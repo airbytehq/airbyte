@@ -12,12 +12,9 @@ import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.LocalDateFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
-import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
@@ -27,6 +24,8 @@ import java.sql.ResultSet
 import java.sql.SQLException
 import java.time.LocalDate
 import java.time.LocalDateTime
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 class JdbcSelectQuerierTest {
     val h2 = H2TestFixture()
@@ -124,15 +123,17 @@ class JdbcSelectQuerierTest {
                         listOf(EmittedField("k", IntFieldType), dateField, timestampField),
                         listOf(),
                     ),
-                ).use { result ->
-                    result.asSequence().map { row ->
-                        QuerierRowSnapshot(
-                            row.data.mapValues { (_, value) ->
-                                (value as FieldValueEncoder<*>).fieldValue
-                            },
-                            row.changes.toMap(),
-                        )
-                    }.toList()
+                )
+                .use { result ->
+                    result
+                        .asSequence()
+                        .map { row ->
+                            QuerierRowSnapshot(
+                                row.data.mapValues { (_, value) -> value.fieldValue },
+                                row.changes.toMap(),
+                            )
+                        }
+                        .toList()
                 }
 
         Assertions.assertEquals(4, rows.size)
@@ -227,11 +228,7 @@ private fun wrapTemporalTestResultSet(resultSet: ResultSet): ResultSet =
         ResultSet::class.java.classLoader,
         arrayOf(ResultSet::class.java),
     ) { _, method, args ->
-        if (
-            method.name in setOf("getDate", "getTimestamp") &&
-                args?.size == 1 &&
-                args[0] is Int
-        ) {
+        if (method.name in setOf("getDate", "getTimestamp") && args?.size == 1 && args[0] is Int) {
             when {
                 resultSet.getString(args[0] as Int)?.startsWith("0001-01-01") == true -> null
                 resultSet.getString(args[0] as Int)?.startsWith("0002-02-02") == true ->

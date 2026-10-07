@@ -426,7 +426,9 @@ class JdbcAccessorTest {
                     TemporalAccessorCase(
                         "OffsetDateTimeFieldType: driver returns null",
                         OffsetDateTimeFieldType.jdbcGetter,
-                        { rs -> every { rs.getObject(1, OffsetDateTime::class.java) } returns null },
+                        { rs ->
+                            every { rs.getObject(1, OffsetDateTime::class.java) } returns null
+                        },
                         false,
                     ),
                 ),
