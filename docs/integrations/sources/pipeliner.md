@@ -10,14 +10,15 @@ Create an API application in your Pipeliner space's administration under **Unit,
 
 Select the data center from your application's Service URL and enter its Space ID. For example, for `https://us-east.api.pipelinersales.com/api/v100/rest/spaces/example_space`, select `us-east` and enter `example_space` as the Space ID.
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `username` | `string` | API username generated for your space's application. |  |
-| `password` | `string` | API password generated for your space's application. |  |
-| `service` | `string` | Data center: `eu-central`, `us-east`, `ca-central`, or `ap-southeast`. |  |
-| `spaceid` | `string` | Space ID from the application's API access settings, not a full URL. |  |
+| Input      | Type     | Description                                                        | Default Value |
+| ---------- | -------- | ------------------------------------------------------------------ | ------------- |
+| `username` | `string` | API username generated for your space's application.                |               |
+| `password` | `string` | API password generated for your space's application.                |               |
+| `service`  | `string` | Data center: `eu-central`, `us-east`, `ca-central`, or `ap-southeast`. |               |
+| `spaceid`  | `string` | Space ID from the application's API access settings, not a full URL. |               |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | accounts | id | DefaultPaginator | ✅ |  ❌  |
@@ -54,8 +55,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date | Pull Request | Subject |
+| ------------------ | ------------------- | -------------- | ---------------- |
 | 0.0.64 | 2026-10-07 | [88284](https://github.com/airbytehq/airbyte/pull/88284) | Fix API hostname allowlist and update API setup documentation |
 | 0.0.63 | 2026-10-06 | [87982](https://github.com/airbytehq/airbyte/pull/87982) | Update dependencies |
 | 0.0.62 | 2026-09-29 | [87283](https://github.com/airbytehq/airbyte/pull/87283) | Update dependencies |
