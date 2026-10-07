@@ -19,6 +19,19 @@ definitions:
           http_method: GET
           request_headers:
             "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 404
+                action: FAIL
+                failure_type: config_error
+                error_message: >-
+                  Wikimedia has no pageviews data for the requested project,
+                  article or date range. Check the project/article values and
+                  make sure the dates are not earlier than 2015-07-01. Data for
+                  a given day is published a few hours after that UTC day ends.
         record_selector:
           type: RecordSelector
           extractor:
@@ -35,12 +48,13 @@ definitions:
         datetime_format: "%Y%m%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{config.start}}"
+          datetime: "{{ config['start'][:8] }}"
           datetime_format: "%Y%m%d"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{config.end}}"
+          datetime: "{{ (config.get('end') or day_delta(-2, '%Y%m%d'))[:8] }}"
           datetime_format: "%Y%m%d"
+          max_datetime: "{{ day_delta(-2, '%Y%m%d') }}"
         step: P1D
         cursor_granularity: P1D
       schema_loader:
@@ -79,6 +93,19 @@ definitions:
           http_method: GET
           request_headers:
             "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 404
+                action: FAIL
+                failure_type: config_error
+                error_message: >-
+                  Wikimedia has no pageviews data for the requested project,
+                  article or date range. Check the project/article values and
+                  make sure the dates are not earlier than 2015-07-01. Data for
+                  a given day is published a few hours after that UTC day ends.
         record_selector:
           type: RecordSelector
           extractor:
@@ -133,6 +160,19 @@ streams:
         http_method: GET
         request_headers:
           "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 404
+              action: FAIL
+              failure_type: config_error
+              error_message: >-
+                Wikimedia has no pageviews data for the requested project,
+                article or date range. Check the project/article values and
+                make sure the dates are not earlier than 2015-07-01. Data for
+                a given day is published a few hours after that UTC day ends.
       record_selector:
         type: RecordSelector
         extractor:
@@ -149,12 +189,13 @@ streams:
       datetime_format: "%Y%m%d"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{config.start}}"
+        datetime: "{{ config['start'][:8] }}"
         datetime_format: "%Y%m%d"
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{config.end}}"
+        datetime: "{{ (config.get('end') or day_delta(-2, '%Y%m%d'))[:8] }}"
         datetime_format: "%Y%m%d"
+        max_datetime: "{{ day_delta(-2, '%Y%m%d') }}"
       step: P1D
       cursor_granularity: P1D
     schema_loader:
@@ -192,6 +233,19 @@ streams:
         http_method: GET
         request_headers:
           "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 404
+              action: FAIL
+              failure_type: config_error
+              error_message: >-
+                Wikimedia has no pageviews data for the requested project,
+                article or date range. Check the project/article values and
+                make sure the dates are not earlier than 2015-07-01. Data for
+                a given day is published a few hours after that UTC day ends.
       record_selector:
         type: RecordSelector
         extractor:
@@ -240,7 +294,6 @@ spec:
       - agent
       - article
       - country
-      - end
       - project
       - start
     properties:
@@ -293,9 +346,11 @@ spec:
       end:
         type: string
         title: End
-        description:
-          The date of the last day to include, in YYYYMMDD or YYYYMMDDHH
-          format.
+        description: >-
+          The date of the last day to include, in YYYYMMDD format. Leave empty
+          to sync up to the latest day published by Wikimedia (data for a day
+          becomes available a few hours after that UTC day ends). Dates in the
+          future are capped to the latest published day.
         order: 4
       project:
         type: string
@@ -312,8 +367,9 @@ spec:
         type: string
         title: Start
         description: >-
-          The date of the first day to include, in YYYYMMDD or YYYYMMDDHH
-          format. Also serves as the date to retrieve data for the top articles.
+          The date of the first day to include, in YYYYMMDD format (data is
+          available from 2015-07-01). Also serves as the date to retrieve data
+          for the top articles.
         order: 6
     additionalProperties: true
 metadata:
