@@ -1,5 +1,19 @@
 # K6 Cloud API
 
+:::warning
+
+## Deprecation Notice
+
+The K6 Cloud source connector has been archived and is no longer available in Airbyte Cloud or the OSS connector registry.
+
+This connector targets the legacy k6 Cloud product (`app.k6.io`, REST endpoints `/v3/organizations`, `/v3/organizations/{id}/projects` and `/loadtests/v2/tests` on `api.k6.io`). Grafana Labs [sunset app.k6.io in September 2024](https://grafana.com/docs/grafana-cloud/observe-and-act/testing/k6/reference/migrate-from-app-k6-io-to-gck6/) and migrated all accounts to Grafana Cloud k6. Legacy API tokens no longer authenticate: the API now answers `app.k6.io has been migrated to Grafana Cloud. To continue using k6 Cloud, please start a new account at https://grafana.com/products/cloud/k6/`, and the `organizations` stream used by the connection check returns HTTP 500. No sync of this connector has succeeded since the sunset.
+
+### Recommended Actions
+
+The replacement [Grafana Cloud k6 REST API](https://grafana.com/docs/grafana-cloud/observe-and-act/testing/k6/reference/cloud-rest-api/) (`https://api.k6.io/cloud/v6/...`) uses a different resource model and requires a Grafana Cloud API token plus an `X-Stack-Id` header, so it is not a drop-in replacement for this connector. Users who want to sync Grafana Cloud k6 data are advised to build a connector for that API with the [Connector Builder](https://docs.airbyte.com/platform/connector-development/connector-builder-ui/overview).
+
+:::
+
 ## Sync overview
 
 This source can sync data from the [K6 Cloud API](https://developers.k6.io). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
@@ -36,6 +50,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.27 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Archive connector: the legacy k6 Cloud (app.k6.io) API it targets was sunset by Grafana Labs in September 2024 |
 | 0.2.26 | 2025-05-24 | [60713](https://github.com/airbytehq/airbyte/pull/60713) | Update dependencies |
 | 0.2.25 | 2025-05-10 | [59830](https://github.com/airbytehq/airbyte/pull/59830) | Update dependencies |
 | 0.2.24 | 2025-05-03 | [59232](https://github.com/airbytehq/airbyte/pull/59232) | Update dependencies |
