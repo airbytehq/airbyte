@@ -3,12 +3,25 @@ The Keka Connector for Airbyte allows seamless integration with the Keka platfor
 
 ## Configuration
 
+Keka API access requires an API subscription. A Global admin can generate the client ID,
+client secret, and API key under **Global admin settings > Integrations & Automations >
+API access > API key**. Grant the API key access to the streams you want to sync.
+See [Keka's setup guide](https://developers.keka.com/docs/getting-started-for-customers).
+
+Enter your company's subdomain: for `https://acme.keka.com`, enter `acme`.
+The connector reads from `https://<subdomain>.keka.com/api/v1` and authenticates at
+`https://login.keka.com/connect/token`.
+
+When upgrading from a version earlier than 0.1.0, follow the [migration guide](keka-migrations.md)
+to configure the company subdomain before syncing.
+
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `scope` | `string` | Scope.  |  |
+| `subdomain` | `string` | Required company subdomain, without `https://` or `.keka.com`. |  |
+| `scope` | `string` | Enter `kekaapi`. |  |
 | `api_key` | `string` | API Key.  |  |
 | `client_id` | `string` | Client ID. Your client identifier for authentication. |  |
-| `grant_type` | `string` | Grant Type.  |  |
+| `grant_type` | `string` | Enter `kekaapi`. |  |
 | `client_secret` | `string` | Client Secret. Your client secret for secure authentication. |  |
 
 ## Streams
@@ -22,6 +35,10 @@ The Keka Connector for Airbyte allows seamless integration with the Keka platfor
 | Leave Type | identifier | DefaultPaginator | ✅ |  ❌  |
 | Leave Request |  | DefaultPaginator | ✅ |  ❌  |
 
+All streams use Keka's one-based pagination. Attendance, Leave Request, and Project
+Timesheets use the API's default date range: the last 30 days. Full refresh reads
+all pages within that range, not the complete historical dataset.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -33,6 +50,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Require the company subdomain, correct pagination, and allow authentication requests. |
 | 0.0.56 | 2026-10-06 | [87915](https://github.com/airbytehq/airbyte/pull/87915) | Update dependencies |
 | 0.0.55 | 2026-09-29 | [87199](https://github.com/airbytehq/airbyte/pull/87199) | Update dependencies |
 | 0.0.54 | 2026-09-22 | [86688](https://github.com/airbytehq/airbyte/pull/86688) | Update dependencies |
