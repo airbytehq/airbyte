@@ -254,6 +254,8 @@ To read more, please check the official [Snowflake documentation](https://docs.s
   Snowflake JDBC driver treated `_` and `%` in the **Schema** option as `LIKE` wildcards and then
   scanned the whole database (`SCHEMA_A` also matched `SCHEMAXA`). Since 2.0.2 the option is an exact
   name; on older versions add `ENABLE_WILDCARDS_IN_SHOW_METADATA_COMMANDS=false` to **JDBC URL Params**.
+  If you relied on `%` or `_` to select several schemas at once, add
+  `ENABLE_WILDCARDS_IN_SHOW_METADATA_COMMANDS=true` to **JDBC URL Params** to keep that behavior.
 - **Key pair authentication fails with `JWT token is invalid`.** The private key does not match the
   RSA public key registered on the user, or the username or account URL is wrong. Compare the
   fingerprint shown by `DESCRIBE USER <user>` (`RSA_PUBLIC_KEY_FP`) with your key, or register the
