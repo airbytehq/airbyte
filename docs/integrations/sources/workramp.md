@@ -44,7 +44,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                       |
 |:--------|:-----------| :------------------------------------------------------- | :---------------------------- |
-| 0.2.25 | 2026-10-07 | [<n>](https://github.com/airbytehq/airbyte/pull/<n>) | Start pagination at page 1 so the first page is not fetched twice (duplicate records) |
+| 0.2.25 | 2026-10-07 | [88229](https://github.com/airbytehq/airbyte/pull/88229) | Start pagination at page 1 so the first page is not fetched twice (duplicate records) |
 | 0.2.24 | 2026-06-02 | [79079](https://github.com/airbytehq/airbyte/pull/79079) | Update dependencies |
 | 0.2.23 | 2025-05-24 | [60767](https://github.com/airbytehq/airbyte/pull/60767) | Update dependencies |
 | 0.2.22 | 2025-05-10 | [59982](https://github.com/airbytehq/airbyte/pull/59982) | Update dependencies |
