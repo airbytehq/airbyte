@@ -10,8 +10,8 @@ Docs : https://www.zoho.com/invoice/api/v3/introduction/#overview
 | `client_id` | `string` | Client ID.  |  |
 | `client_secret` | `string` | Client secret.  |  |
 | `client_refresh_token` | `string` | Refresh token.  |  |
-| `organization_id` | `string` | Organization ID. TO be provided if a user belongs to multiple organizations |  |
-| `region` | `string` | Region.  |  |
+| `organization_id` | `string` | Organization ID. To be provided if a user belongs to multiple organizations |  |
+| `region` | `string` | Region. Zoho data center your organization is hosted on (`com`, `eu`, `in`, `com.cn`, `com.au`, `jp`, `sa`, `ca`) — the domain suffix of your Zoho Invoice URL. It is used for both the API host (`www.zohoapis.<region>`) and the OAuth token endpoint (`accounts.zoho.<region>`, `accounts.zohocloud.ca` for `ca`). |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
