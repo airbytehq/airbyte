@@ -98,6 +98,13 @@ class SnowflakeSourceConfigurationFactory :
         // connection (telemetry only; no supported auth method needs it) and waits up to 1 s per
         // probe. The CDK opens a connection per query, so this saves ~2 s each.
         jdbcProperties["disablePlatformDetection"] = "true"
+        // The Schema option is an exact name. By default the driver treats `_` and `%` in the
+        // schema argument of getTables/getColumns/getPrimaryKeys as LIKE wildcards: it then runs
+        // `show ... in database` over every schema and filters client-side (12 minutes for a check
+        // on
+        // a large account), over-matches other schemas (SCHEMA_A also matched SCHEMAXA) and returns
+        // their columns and primary keys as duplicates (airbytehq/airbyte#87000, #86998).
+        jdbcProperties["ENABLE_WILDCARDS_IN_SHOW_METADATA_COMMANDS"] = "false"
 
         pojo.schema?.let { jdbcProperties["schema"] = it }
         pojo.role.let { jdbcProperties["role"] = it }

@@ -259,6 +259,8 @@ class SnowflakeSourceConfigurationTest {
         assertEquals("true", config.jdbcProperties["validateDefaultParameters"])
         // No instance-metadata probes on every connection.
         assertEquals("true", config.jdbcProperties["disablePlatformDetection"])
+        // `_` and `%` in the schema filter are literal characters, not LIKE wildcards.
+        assertEquals("false", config.jdbcProperties["ENABLE_WILDCARDS_IN_SHOW_METADATA_COMMANDS"])
         // Not a driver property; the result format is the driver default (Arrow).
         assertTrue(!config.jdbcProperties.containsKey("enableArrow"))
     }

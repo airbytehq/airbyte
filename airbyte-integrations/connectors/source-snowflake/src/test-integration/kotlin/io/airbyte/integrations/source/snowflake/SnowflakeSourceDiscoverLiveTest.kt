@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.snowflake
 
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.integrations.source.snowflake.SnowflakeLiveTestSupport.discover
+import io.airbyte.integrations.source.snowflake.SnowflakeLiveTestSupport.execute
 import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.SyncMode
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -69,6 +70,37 @@ class SnowflakeSourceDiscoverLiveTest : AbstractSnowflakeLiveTest() {
             "C_GEOGRAPHY" to LeafAirbyteSchemaType.STRING,
             "C_VECTOR" to LeafAirbyteSchemaType.STRING,
         )
+
+    @Test
+    fun schemaFilterIsAnExactName() {
+        // airbytehq/airbyte#87000, #86998: `_` in the Schema option used to be a LIKE wildcard, so
+        // SCHEMA_A also matched SCHEMAXA, took minutes on a large account, and the matched schemas'
+        // columns and primary keys came back as duplicates.
+        val target = "${schema}_A"
+        val decoy = "${schema}XA"
+        for (s in listOf(target, decoy)) {
+            execute(admin, "CREATE SCHEMA \"$database\".\"$s\"")
+            execute(
+                admin,
+                "CREATE TABLE \"$database\".\"$s\".T (ID INTEGER PRIMARY KEY, V VARCHAR)"
+            )
+        }
+        try {
+            val filtered = discover(SnowflakeLiveTestSupport.spec(schema = target))
+            assertEquals(listOf("T"), filtered.streams.map { it.name })
+            val stream = filtered.streams.single()
+            assertEquals(target, stream.namespace)
+            assertEquals(listOf(listOf("ID")), stream.sourceDefinedPrimaryKey)
+            assertEquals(
+                listOf("ID", "V"),
+                stream.jsonSchema["properties"].fieldNames().asSequence().sorted().toList(),
+            )
+        } finally {
+            for (s in listOf(target, decoy)) {
+                execute(admin, "DROP SCHEMA IF EXISTS \"$database\".\"$s\" CASCADE")
+            }
+        }
+    }
 
     @Test
     fun catalogShape() {
