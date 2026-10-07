@@ -10,17 +10,18 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
 MANIFEST = Path(__file__).parents[1] / "manifest.yaml"
 CONFIG = {"username": "test-token-id", "password": "test-token-secret", "start_date": "2020-01-01T00:00:00Z"}
 
 
-def read_stream(name, config=None):
+def read_stream(name, config=None, sync_mode=SyncMode.full_refresh, state=None):
     config = CONFIG if config is None else config
-    catalog = CatalogBuilder().with_stream(name, SyncMode.full_refresh).build()
-    source = YamlDeclarativeSource(str(MANIFEST), config=config, catalog=catalog)
-    return read(source, config=config, catalog=catalog)
+    catalog = CatalogBuilder().with_stream(name, sync_mode).build()
+    source = YamlDeclarativeSource(str(MANIFEST), config=config, catalog=catalog, state=state)
+    return read(source, config=config, catalog=catalog, state=state)
 
 
 @pytest.mark.parametrize(
@@ -49,6 +50,28 @@ def test_list_streams_paginate(name, path, page_size):
         assert [record.record.data for record in output.records] == records
         http_mocker.assert_number_of_calls(first_page, 1)
         http_mocker.assert_number_of_calls(second_page, 1)
+
+
+@pytest.mark.parametrize(
+    "name,path,page_size",
+    [
+        ("video_transcription-vocabularies", "video/v1/transcription-vocabularies", 10),
+        ("video_signing-keys", "system/v1/signing-keys", 50),
+    ],
+)
+@pytest.mark.parametrize("response_cursor,expected_cursor", [("1609869153", "1609869153"), ("1609869151", "1609869152")])
+def test_changed_incremental_streams_resume_existing_state(name, path, page_size, response_cursor, expected_cursor):
+    state = StateBuilder().with_stream_state(name, {"created_at": "1609869152"}).build()
+    record = {"id": "record-id", "created_at": response_cursor}
+    request = HttpRequest(f"https://api.mux.com/{path}", query_params={"limit": str(page_size), "page": "1"})
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, HttpResponse(body=json.dumps({"data": [record]})))
+
+        output = read_stream(name, sync_mode=SyncMode.incremental, state=state)
+
+        assert output.errors == []
+        assert [message.record.data for message in output.records] == [record]
+        assert vars(output.most_recent_state.stream_state) == {"created_at": expected_cursor}
 
 
 @pytest.mark.parametrize("playback_config", [{}, {"playback_id": ""}])
