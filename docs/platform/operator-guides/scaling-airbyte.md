@@ -4,19 +4,22 @@ products: enterprise-flex
 
 # Scaling Airbyte
 
-Airbyte's scalable self-managed option is [Enterprise Flex](../enterprise-flex/readme.md). Airbyte runs the control plane for you in Airbyte Cloud, and you run one or more data planes in your own infrastructure. Scaling Airbyte means scaling those data planes: giving them enough compute, running enough of them in the right places, and tuning how many jobs they run at once.
+Airbyte's most scalable self-managed option is [Enterprise Flex](../enterprise-flex/readme.md). Airbyte runs the control plane for you in Airbyte Cloud, and you run one or more data planes in your own infrastructure. Scaling Airbyte means scaling those data planes: giving them enough compute, running enough of them in the right places, and tuning how many jobs they run at once.
 
 This guide explains what to scale and how. It assumes you already have a data plane running. If you don't, see [Deploy a data plane with Helm](../enterprise-flex/data-plane.md).
 
-## Open source isn't a scalable deployment
+## Choose between Core and Enterprise Flex
 
-Airbyte Core, the open source version of Airbyte, is a single-user tool for evaluating Airbyte and running small workloads. It isn't designed to run at scale and Airbyte doesn't support tuning its control plane components. It lacks the capabilities a scaled, shared deployment needs.
+Airbyte Core, the open source version of Airbyte, is a capable platform that many organizations run in production with large workloads. It uses the same workload launcher and connector pods as a Flex data plane, so the sizing guidance below applies to Core workers too. If you run Core, you also own the control plane: scheduling, API, database, and Temporal. You can tune those components (see [Configuring Airbyte](configuring-airbyte.md)), but doing so, and keeping them healthy as you grow, is your responsibility.
 
-- No user accounts, [SSO](../access-management/sso.md), [role-based access control](../access-management/rbac.md), [SCIM](../access-management/scim.md), or other governance features.
-- No multiple regions or multiple data planes. The control plane and workers run together on one cluster.
-- No capacity controls, so there's no way to guarantee critical syncs run when the cluster is busy.
+Enterprise Flex is a better fit when your needs shift from moving data to running Airbyte as a shared service:
 
-If you're running Core and outgrowing it, move to [Enterprise Flex](../enterprise-flex/readme.md) or [Airbyte Cloud](https://airbyte.com/product/airbyte-cloud) rather than trying to scale Core.
+- You want Airbyte to run, scale, and upgrade the control plane so you only operate data planes.
+- You need to run jobs in multiple regions or clouds, or want multiple data planes in one region for availability.
+- You need governance: [SSO](../access-management/sso.md), [role-based access control](../access-management/rbac.md), [SCIM](../access-management/scim.md), and [audit logs](../access-management/audit-logs.md) that Core doesn't include.
+- You need capacity controls, so critical syncs run on time when the platform is busy.
+
+You don't have to outgrow Core to choose Flex. Many teams move because they want those capabilities, or because they'd rather not operate a control plane. If none of them matter to you, Core remains a good choice. If you'd rather not run any infrastructure, use [Airbyte Cloud](https://airbyte.com/product/airbyte-cloud).
 
 :::note
 [Airbox](../enterprise-flex/data-plane-util.md) deploys a data plane onto a single machine with Docker Desktop. It's a fast way to start moving data, not a scaled deployment. For production workloads, deploy data planes to a Kubernetes cluster with Helm.
