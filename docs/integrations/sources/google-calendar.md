@@ -8,8 +8,8 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 | ----- | ---- | ----------- | ------------- |
 | `client_id` | `string` | Client ID of the Google Cloud OAuth 2.0 application. | |
 | `client_secret` | `string` | Client secret of the OAuth 2.0 application. | |
-| `client_refresh_token_2` | `string` | Refresh token for the OAuth application with the Calendar API scope. | |
-| `calendarid` | `string` | Calendar Id. For the primary calendar this is the account's email address; the alias `primary` also works but is stored verbatim in `events.calendar_id`. | |
+| `client_refresh_token_2` | `string` | Refresh token for the OAuth application with the Calendar API scope. The `acl` stream also needs the `calendar.acls.readonly` scope. | |
+| `calendarid` | `string` | Optional. The ID of a single calendar to sync `events`, `acl` and `freebusy` from; for the primary calendar this is the account's email address, and the alias `primary` also works. Leave empty to sync every calendar in the account's calendar list, hidden calendars included. | |
 | `start_date` | `string` | Only sync `events` last modified on or after this date. Applies to every Full Refresh sync, to the first Incremental sync, and to any full re-read; when unset, all events are read. See [Events sync behavior](#events-sync-behavior). | |
 | `num_workers` | `integer` | Number of concurrent workers. | 3 |
 
@@ -21,18 +21,27 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 | settings | id | DefaultPaginator | ✅ | ❌ |
 | calendarlist | id | DefaultPaginator | ✅ | ❌ |
 | calendars | id | DefaultPaginator | ✅ | ❌ |
-| events | id | DefaultPaginator | ✅ | ✅ |
+| events | calendar_id, id | DefaultPaginator | ✅ | ✅ |
+| acl | calendar_id, id | DefaultPaginator | ✅ | ❌ |
+| freebusy | calendar_id, start, end | No pagination | ✅ | ❌ |
+
+`events`, `acl` and `freebusy` are read per calendar: the configured `calendarid`, or every calendar in the calendar list when it is empty. Each record carries the calendar in `calendar_id`.
+
+- **`acl`** lists a calendar's sharing rules. It needs the `calendar.acls.readonly` OAuth scope (or `calendar.acls` / `calendar`); without it the stream fails with a configuration error, so re-authorize with that scope or deselect the stream. Google shows sharing rules only to a calendar's owner, so calendars the account does not own are skipped.
+- **`freebusy`** lists busy blocks from 30 days ago to 45 days ahead, recomputed on every sync; `start_date` does not apply to it. A calendar Google cannot compute free/busy for is skipped with a log message.
+- **Push notification channels** (`channels`) are intentionally not synced: they are write-only subscriptions the connector would have to create, not data it can read.
 
 ## Events sync behavior
 
 The `events` stream is incremental on the event's last modification time (`updated`), using the Google Calendar `updatedMin` filter.
 
 - **Cancelled events** are included (`showDeleted=true`) with `status: cancelled`, so deletions reach the destination. Google returns them as stubs without a modification time, so the connector sets their `updated` itself (the saved cursor, or one hour before the sync, whichever is later) so that the cancelled row replaces the live one under *Append + Deduped*. Filter `status != 'cancelled'` downstream if you only want live events.
-- **`calendar_id`** holds the configured Calendar Id exactly as entered. With the alias `primary` it is a label, not the calendar's ID, and will not join to `calendarlist.id` / `calendars.id`; enter the real ID (the account's email address for the primary calendar) if you need that join.
+- **`calendar_id`** holds the calendar's real ID, so it joins to `calendarlist.id` / `calendars.id`. The alias `primary` is resolved to the account's email address.
+- **One cursor for all calendars.** The stream keeps a single `updated` cursor across calendars. A calendar added to the calendar list after the first sync starts from that cursor, so its older events are not synced; clear the `events` stream to backfill it.
 - **Recurring series** are returned as a single record (`singleEvents=false`); individual occurrences are not expanded. The record's `updated` is the last time the series was edited.
 - **`start_date`** limits every Full Refresh sync, the first Incremental sync, and any full re-read (after a reset, or when the saved cursor is older than 21 days) to events last modified on or after that date. Google applies the filter server-side only within the last 29 days; for an older date the connector downloads the calendar and drops older records itself. Because a recurring series counts as one event, a start date also drops series that have not been edited since that date, even if they still have upcoming occurrences. Leave it unset to read everything.
 - **29-day window.** Google rejects `updatedMin` older than 29 days (measured; the limit is undocumented and has been tighter in the past). The connector keeps the newest `updated` it has seen as its cursor; if that cursor is older than 21 days when a sync starts (for example, a calendar with no edits for three weeks, or a connection paused for three weeks) the connector clears the cursor and re-reads the whole calendar (or everything since `start_date`), then continues incrementally. A calendar whose only changes are deletions still advances its cursor (see cancelled events above); one with no changes at all re-reads on every sync until something changes.
-- **Recommended sync mode:** *Incremental | Append + Deduped* with `id` as the primary key. With plain *Append*, each re-read described above adds another copy of every event.
+- **Recommended sync mode:** *Incremental | Append + Deduped* with `calendar_id` and `id` as the primary key; the same event id appears on every calendar a meeting is on. With plain *Append*, each re-read described above adds another copy of every event.
 
 ## IP allow list
 
@@ -45,7 +54,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
-| 0.2.0 | 2026-09-21 | [86470](https://github.com/airbytehq/airbyte/pull/86470) | Add `acl` and `freebusy` streams, partition `events`/`acl`/`freebusy` over all calendars, make `calendarid` optional |
+| 1.0.0 | 2026-10-07 | [86470](https://github.com/airbytehq/airbyte/pull/86470) | Add `acl` and `freebusy` streams, read `events`/`acl`/`freebusy` from every calendar when `calendarid` is empty, change the `events` primary key to `[calendar_id, id]` (breaking, see the [migration guide](/integrations/sources/google-calendar-migrations)) |
 | 0.1.0 | 2026-10-06 | [86468](https://github.com/airbytehq/airbyte/pull/86468) | Add error handling, API budget, concurrency, incremental `events` (now includes cancelled events via `showDeleted=true`) with a `calendar_id` column and an optional `start_date`, and enable acceptance tests |
 | 0.0.55 | 2026-10-06 | [87901](https://github.com/airbytehq/airbyte/pull/87901) | Update dependencies |
 | 0.0.54 | 2026-09-29 | [87194](https://github.com/airbytehq/airbyte/pull/87194) | Update dependencies |
