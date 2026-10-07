@@ -48,8 +48,7 @@ class Products(Stream, IncrementalMixin):
         if "updated_at" in self.state and not self.always_updated:
             return iter([])
 
-        all_products = self.load_products()
-        products = all_products[:-1]
+        products = self.load_products()
         updated_at = ""
 
         median_record_byte_size = 180
