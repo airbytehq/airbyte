@@ -48,9 +48,9 @@ By leveraging the OPUSWatch Airbyte connector, horticultural businesses can brea
 | labels |  | No pagination | ✅ |  ❌  |
 | varieties |  | No pagination | ✅ |  ❌  |
 | registrations initial |  | DefaultPaginator | ✅ |  ❌  |
-| registrations incremental |  | No pagination | ✅ |  ❌  |
+| registrations incremental |  | DefaultPaginator | ✅ |  ❌  |
 | sessions initial |  | DefaultPaginator | ✅ |  ❌  |
-| sessions incremental |  | No pagination | ✅ |  ❌  |
+| sessions incremental |  | DefaultPaginator | ✅ |  ❌  |
 
 ## IP allow list
 
@@ -63,6 +63,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.47 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Paginate recent registrations and sessions to avoid truncating results after the first page. |
 | 0.0.46 | 2026-10-06 | [87977](https://github.com/airbytehq/airbyte/pull/87977) | Update dependencies |
 | 0.0.45 | 2026-09-29 | [87274](https://github.com/airbytehq/airbyte/pull/87274) | Update dependencies |
 | 0.0.44 | 2026-09-22 | [86763](https://github.com/airbytehq/airbyte/pull/86763) | Update dependencies |
