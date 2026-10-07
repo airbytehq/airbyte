@@ -20,7 +20,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 34f697bc-b989-4eda-b06f-d0f39b88825b
-  dockerImageTag: 0.8.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-customer-io
   githubIssueLabel: source-customer-io
   icon: customer-io.svg
@@ -59,6 +59,18 @@ data:
       url: https://status.customerio.com/
       type: status_page
   releases:
+    breakingChanges:
+      "1.0.0":
+        upgradeDeadline: "2026-10-21"
+        deadlineAction: "disable"
+        message: >-
+          Version 1.0.0 corrects declared field types to match Customer.io's API reference: campaigns_actions.from_id and reply_to_id become integers, newsletters.sent_at becomes an integer, so typed destinations stop writing it as null, and the tags, trigger_segment_ids and content_ids arrays of campaigns and newsletters declare their item types. If you sync newsletters to Snowflake or SQL Server, drop the sent_at column of its destination table before the first sync on 1.0.0; it holds only nulls. Then refresh the source schema. On S3 Data Lake, clear campaigns, campaigns_actions and newsletters if they use an Incremental or Full refresh | Append mode; on other destinations, clear only newsletters in those modes, and only to fill sent_at on older rows. Clearing removes rows for records deleted in Customer.io and, in Append modes, earlier versions of each record; back up the tables first if you need them. See https://docs.airbyte.com/integrations/sources/customer-io-migrations#upgrading-to-100.
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - campaigns
+              - campaigns_actions
+              - newsletters
     rolloutConfiguration:
       defaultRolloutMode: autopilot
       autopilotConfig:
