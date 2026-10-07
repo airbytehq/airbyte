@@ -133,8 +133,6 @@ definitions:
             sources: "{{ ','.join(config.get('sources', [])) }}"
             domains: "{{ ','.join(config.get('domains', [])) }}"
             excludeDomains: "{{ ','.join(config.get('exclude_domains', [])) }}"
-            from: "{{ config['start_date'] }}"
-            to: "{{ config['end_date'] }}"
             language: "{{ config['language'] }}"
             sortBy: "{{ config['sort_by'] }}"
             country:
@@ -352,8 +350,6 @@ streams:
           sources: "{{ ','.join(config.get('sources', [])) }}"
           domains: "{{ ','.join(config.get('domains', [])) }}"
           excludeDomains: "{{ ','.join(config.get('exclude_domains', [])) }}"
-          from: "{{ config['start_date'] }}"
-          to: "{{ config['end_date'] }}"
           language: "{{ config['language'] }}"
           sortBy: "{{ config['sort_by'] }}"
           country: "{{ config['country'] if not config.get('sources') else None }}"

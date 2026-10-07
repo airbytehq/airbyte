@@ -50,8 +50,8 @@ The following fields are required fields for the connector to work:
   [News API documentation](https://newsapi.org/sources).
 - (optional) `domains`: Domains to search in.
 - (optional) `exclude_domains`: Domains to exclude from the search.
-- (optional) `start_date`: The start date to search from.
-- (optional) `end_date`: The end date to search to.
+- (optional) `start_date`: The start date to search from (`everything` stream only; News API free plans only allow about one month back).
+- (optional) `end_date`: The end date to search to (`everything` stream only).
 - (optional) `language`: The language to search in.
 - `country`: The country you want headlines for.
 - `category`: The category you want headlines for.
@@ -68,7 +68,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                  |
 |:--------|:-----------| :------------------------------------------------------- | :--------------------------------------- |
-| 0.2.24 | 2026-10-07 | [88217](https://github.com/airbytehq/airbyte/pull/88217) | Fix connection check failing with `Bad request` when `search_query`/`sources`/`domains` are unset; surface News API plan/parameter errors as config errors instead of silently ignoring them |
+| 0.2.24 | 2026-10-07 | [88217](https://github.com/airbytehq/airbyte/pull/88217) | Fix connection check failing with `Bad request` when `search_query`/`sources`/`domains` are unset; stop sending `start_date`/`end_date` to the `top_headlines` endpoint (not supported by News API); surface News API plan/parameter errors as config errors instead of silently ignoring them |
 | 0.2.23 | 2025-05-24 | [60578](https://github.com/airbytehq/airbyte/pull/60578) | Update dependencies |
 | 0.2.22 | 2025-05-10 | [59468](https://github.com/airbytehq/airbyte/pull/59468) | Update dependencies |
 | 0.2.21 | 2025-04-27 | [58520](https://github.com/airbytehq/airbyte/pull/58520) | Update dependencies |
