@@ -27,12 +27,12 @@ definitions:
       type: DeclarativeStream
       name: addresses
       primary_key:
-        - id
+        - object_id
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/addresses
+          path: /addresses
           http_method: GET
           request_headers:
             Authorization: ShippoToken {{ config["shippo_token"] }}
@@ -47,13 +47,14 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: offset
+            field_name: page
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: limit
+            field_name: results
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
+            start_from_page: 1
             page_size: 100
             inject_on_first_request: true
       schema_loader:
@@ -357,67 +358,130 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      address:
+      city:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      is_complete:
+        type:
+          - boolean
+          - "null"
+      is_residential:
+        type:
+          - boolean
+          - "null"
+      latitude:
+        type:
+          - number
+          - string
+          - "null"
+      longitude:
+        type:
+          - number
+          - string
+          - "null"
+      metadata:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      object_created:
+        type:
+          - string
+          - "null"
+      object_id:
+        type: string
+      object_owner:
+        type:
+          - string
+          - "null"
+      object_updated:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      street1:
+        type:
+          - string
+          - "null"
+      street2:
+        type:
+          - string
+          - "null"
+      street3:
+        type:
+          - string
+          - "null"
+      street_no:
+        type:
+          - string
+          - "null"
+      test:
+        type:
+          - boolean
+          - "null"
+      validation_results:
         type:
           - object
           - "null"
         properties:
-          address_line_1:
+          is_valid:
             type:
-              - string
+              - boolean
               - "null"
-          address_line_2:
+          messages:
             type:
-              - string
+              - array
               - "null"
-          address_type:
-            type:
-              - string
-              - "null"
-          city_locality:
-            type:
-              - string
-              - "null"
-          country_code:
-            type:
-              - string
-              - "null"
-          email:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          organization:
-            type:
-              - string
-              - "null"
-          phone:
-            type:
-              - string
-              - "null"
-          postal_code:
-            type:
-              - string
-              - "null"
-          state_province:
-            type:
-              - string
-              - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      updated_at:
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                code:
+                  type:
+                    - string
+                    - "null"
+                source:
+                  type:
+                    - string
+                    - "null"
+                text:
+                  type:
+                    - string
+                    - "null"
+                type:
+                  type:
+                    - string
+                    - "null"
+      zip:
         type:
           - string
           - "null"
     required:
-      - id
+      - object_id
   parcels:
     type: object
     $schema: http://json-schema.org/schema#

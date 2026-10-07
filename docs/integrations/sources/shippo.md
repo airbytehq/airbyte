@@ -15,7 +15,7 @@ In order to use this source, you must first create a Shippo account. Once logged
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| addresses | id | DefaultPaginator | ✅ |  ❌  |
+| addresses | object_id | DefaultPaginator | ✅ |  ❌  |
 | parcels | object_id | DefaultPaginator | ✅ |  ❌  |
 | custom_items | object_id | DefaultPaginator | ✅ |  ❌  |
 | accounts | object_id | DefaultPaginator | ✅ |  ❌  |
@@ -33,6 +33,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.62 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix `addresses` stream (used by `check`): call the documented `/addresses` endpoint with `page`/`results` pagination, use `object_id` as primary key and the Shippo `Address` schema |
 | 0.0.61 | 2026-10-06 | [88031](https://github.com/airbytehq/airbyte/pull/88031) | Update dependencies |
 | 0.0.60 | 2026-09-29 | [87352](https://github.com/airbytehq/airbyte/pull/87352) | Update dependencies |
 | 0.0.59 | 2026-09-22 | [86807](https://github.com/airbytehq/airbyte/pull/86807) | Update dependencies |
