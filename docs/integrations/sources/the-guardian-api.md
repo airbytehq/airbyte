@@ -117,7 +117,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.2.27 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix pagination requesting page 1 twice (duplicate records) and send `page-size=50` as a query parameter instead of an ignored request body; document incremental sync support |
+| 0.2.27 | 2026-10-07 | [88327](https://github.com/airbytehq/airbyte/pull/88327) | Fix pagination requesting page 1 twice (duplicate records) and send `page-size=50` as a query parameter instead of an ignored request body; document incremental sync support |
 | 0.2.26 | 2025-05-25 | [60501](https://github.com/airbytehq/airbyte/pull/60501) | Update dependencies |
 | 0.2.25 | 2025-05-10 | [60109](https://github.com/airbytehq/airbyte/pull/60109) | Update dependencies |
 | 0.2.24 | 2025-05-04 | [59627](https://github.com/airbytehq/airbyte/pull/59627) | Update dependencies |
