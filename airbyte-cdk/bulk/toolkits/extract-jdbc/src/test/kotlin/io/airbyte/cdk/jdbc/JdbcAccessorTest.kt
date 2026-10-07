@@ -21,9 +21,13 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
+import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 
 class JdbcAccessorTest {
     val h2 = H2TestFixture()
@@ -305,94 +309,165 @@ class JdbcAccessorTest {
         }
     }
 
-    @Test
-    fun testTimestampAccessorZeroDateConvertedToNull() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("temporalAccessorCases")
+    fun testTemporalAccessors(case: TemporalAccessorCase) {
         val rs = mockk<ResultSet>()
-        every { rs.wasNull() } returns false
-        every { rs.getTimestamp(1) } returns null
-        Assertions.assertNull(TimestampAccessor.get(rs, 1))
-        verify(exactly = 0) { rs.getString(any<Int>()) }
-    }
+        every { rs.getString(1) } returns "0000-00-00 00:00:00"
+        case.stub(rs)
+        every { rs.wasNull() } returns case.wasNull
 
-    @Test
-    fun testDateAccessorZeroDateConvertedToNull() {
-        val rs = mockk<ResultSet>()
-        every { rs.wasNull() } returns false
-        every { rs.getDate(1) } returns null
-        Assertions.assertNull(DateAccessor.get(rs, 1))
-        verify(exactly = 0) { rs.getString(any<Int>()) }
-    }
-
-    @Test
-    fun testOffsetDateTimeFieldTypeZeroDateConvertedToNull() {
-        val rs = mockk<ResultSet>()
-        every { rs.wasNull() } returns false
-        every { rs.getObject(1, OffsetDateTime::class.java) } returns null
-        Assertions.assertNull(OffsetDateTimeFieldType.jdbcGetter.get(rs, 1))
-        verify(exactly = 0) { rs.getString(any<Int>()) }
-    }
-
-    @Test
-    fun testDateAccessorReturnsNullWhenWasNull() {
-        val rs = mockk<ResultSet>()
-        every { rs.getDate(1) } returns Date(0)
-        every { rs.wasNull() } returns true
-        Assertions.assertNull(DateAccessor.get(rs, 1))
-    }
-
-    @Test
-    fun testTimestampAccessorReturnsNullWhenWasNull() {
-        val rs = mockk<ResultSet>()
-        every { rs.getTimestamp(1) } returns Timestamp(0)
-        every { rs.wasNull() } returns true
-        Assertions.assertNull(TimestampAccessor.get(rs, 1))
-    }
-
-    @Test
-    fun testOffsetDateTimeFieldTypeReturnsNullWhenWasNull() {
-        val rs = mockk<ResultSet>()
-        every { rs.getObject(1, OffsetDateTime::class.java) } returns
-            OffsetDateTime.of(2024, 3, 1, 1, 2, 3, 0, ZoneOffset.UTC)
-        every { rs.wasNull() } returns true
-        Assertions.assertNull(OffsetDateTimeFieldType.jdbcGetter.get(rs, 1))
-    }
-
-    @Test
-    fun testDateAccessorThrowsSQLExceptionForUnconvertibleValue() {
-        val rs = mockk<ResultSet>()
-        every { rs.getDate(1) } throws
-            SQLException("Value '2026-00-01' can not be represented as java.sql.Timestamp")
-        Assertions.assertThrows(SQLException::class.java) { DateAccessor.get(rs, 1) }
-    }
-
-    @Test
-    fun testTimestampAccessorThrowsSQLExceptionForUnconvertibleValue() {
-        val rs = mockk<ResultSet>()
-        every { rs.getTimestamp(1) } throws
-            SQLException("Value '2026-00-01' can not be represented as java.sql.Timestamp")
-        Assertions.assertThrows(SQLException::class.java) { TimestampAccessor.get(rs, 1) }
-    }
-
-    @Test
-    fun testOffsetDateTimeFieldTypeThrowsSQLExceptionForUnconvertibleValue() {
-        val rs = mockk<ResultSet>()
-        every { rs.getObject(1, OffsetDateTime::class.java) } throws
-            SQLException("Value '2026-00-01' can not be represented as java.sql.Timestamp")
-        Assertions.assertThrows(SQLException::class.java) {
-            OffsetDateTimeFieldType.jdbcGetter.get(rs, 1)
+        if (case.expectedException != null) {
+            Assertions.assertThrows(case.expectedException) { case.getter.get(rs, 1) }
+        } else {
+            Assertions.assertEquals(case.expectedValue, case.getter.get(rs, 1))
         }
+
+        verify(exactly = 0) { rs.getString(any<Int>()) }
     }
 
-    @Test
-    fun testTimestampAccessorDoesNotReadString() {
-        val rs = mockk<ResultSet>()
-        every { rs.getTimestamp(1) } returns Timestamp.valueOf("2024-03-01 01:02:03")
-        every { rs.wasNull() } returns false
-        Assertions.assertEquals(
-            LocalDateTime.of(2024, 3, 1, 1, 2, 3),
-            TimestampAccessor.get(rs, 1),
-        )
-        verify(exactly = 0) { rs.getString(any<Int>()) }
+    data class TemporalAccessorCase(
+        val name: String,
+        val getter: JdbcGetter<*>,
+        val stub: (ResultSet) -> Unit,
+        val wasNull: Boolean,
+        val expectedValue: Any? = null,
+        val expectedException: Class<out Exception>? = null,
+    ) {
+        override fun toString(): String = name
+    }
+
+    companion object {
+        @JvmStatic
+        fun temporalAccessorCases(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of(
+                    TemporalAccessorCase(
+                        "DateAccessor: driver returns null",
+                        DateAccessor,
+                        { rs -> every { rs.getDate(1) } returns null },
+                        false,
+                    ),
+                ),
+                Arguments.of(
+                    TemporalAccessorCase(
+                        "DateAccessor: SQL NULL",
+                        DateAccessor,
+                        { rs -> every { rs.getDate(1) } returns Date.valueOf("2024-03-01") },
+                        true,
+                    ),
+                ),
+                Arguments.of(
+                    TemporalAccessorCase(
+                        "DateAccessor: normal value",
+                        DateAccessor,
+                        { rs -> every { rs.getDate(1) } returns Date.valueOf("2024-03-01") },
+                        false,
+                        LocalDate.of(2024, 3, 1),
+                    ),
+                ),
+                Arguments.of(
+                    TemporalAccessorCase(
+                        "DateAccessor: unconvertible value",
+                        DateAccessor,
+                        { rs ->
+                            every { rs.getDate(1) } throws
+                                SQLException(
+                                    "Value '2026-00-01' can not be represented as java.sql.Timestamp",
+                                )
+                        },
+                        false,
+                        expectedException = SQLException::class.java,
+                    ),
+                ),
+                Arguments.of(
+                    TemporalAccessorCase(
+                        "TimestampAccessor: driver returns null",
+                        TimestampAccessor,
+                        { rs -> every { rs.getTimestamp(1) } returns null },
+                        false,
+                    ),
+                ),
+                Arguments.of(
+                    TemporalAccessorCase(
+                        "TimestampAccessor: SQL NULL",
+                        TimestampAccessor,
+                        { rs -> every { rs.getTimestamp(1) } returns Timestamp(0) },
+                        true,
+                    ),
+                ),
+                Arguments.of(
+                    TemporalAccessorCase(
+                        "TimestampAccessor: normal value",
+                        TimestampAccessor,
+                        { rs ->
+                            every { rs.getTimestamp(1) } returns
+                                Timestamp.valueOf("2024-03-01 01:02:03")
+                        },
+                        false,
+                        LocalDateTime.of(2024, 3, 1, 1, 2, 3),
+                    ),
+                ),
+                Arguments.of(
+                    TemporalAccessorCase(
+                        "TimestampAccessor: unconvertible value",
+                        TimestampAccessor,
+                        { rs ->
+                            every { rs.getTimestamp(1) } throws
+                                SQLException(
+                                    "Value '2026-00-01' can not be represented as java.sql.Timestamp",
+                                )
+                        },
+                        false,
+                        expectedException = SQLException::class.java,
+                    ),
+                ),
+                Arguments.of(
+                    TemporalAccessorCase(
+                        "OffsetDateTimeFieldType: driver returns null",
+                        OffsetDateTimeFieldType.jdbcGetter,
+                        { rs -> every { rs.getObject(1, OffsetDateTime::class.java) } returns null },
+                        false,
+                    ),
+                ),
+                Arguments.of(
+                    TemporalAccessorCase(
+                        "OffsetDateTimeFieldType: SQL NULL",
+                        OffsetDateTimeFieldType.jdbcGetter,
+                        { rs ->
+                            every { rs.getObject(1, OffsetDateTime::class.java) } returns
+                                OffsetDateTime.of(2024, 3, 1, 1, 2, 3, 0, ZoneOffset.UTC)
+                        },
+                        true,
+                    ),
+                ),
+                Arguments.of(
+                    TemporalAccessorCase(
+                        "OffsetDateTimeFieldType: normal value",
+                        OffsetDateTimeFieldType.jdbcGetter,
+                        { rs ->
+                            every { rs.getObject(1, OffsetDateTime::class.java) } returns
+                                OffsetDateTime.of(2024, 3, 1, 1, 2, 3, 0, ZoneOffset.UTC)
+                        },
+                        false,
+                        OffsetDateTime.of(2024, 3, 1, 1, 2, 3, 0, ZoneOffset.UTC),
+                    ),
+                ),
+                Arguments.of(
+                    TemporalAccessorCase(
+                        "OffsetDateTimeFieldType: unconvertible value",
+                        OffsetDateTimeFieldType.jdbcGetter,
+                        { rs ->
+                            every { rs.getObject(1, OffsetDateTime::class.java) } throws
+                                SQLException(
+                                    "Value '2026-00-01' can not be represented as java.sql.Timestamp",
+                                )
+                        },
+                        false,
+                        expectedException = SQLException::class.java,
+                    ),
+                ),
+            )
     }
 
     @Test
