@@ -1,10 +1,11 @@
 # Xsolla
+
 The Xsolla Airbyte Connector enables seamless integration between Xsolla and various data destinations. This connector allows you to extract data from Xsolla’s APIs, such as Game Catalog, Virtual Items, Virtual Currency and more.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
+| --- | --- | --- | --- |
 | `api_key` | `string` | Xsolla user JWT for the project, without the `Bearer` prefix. This is not a Publisher Account API key. |  |
 | `project_id` | `number` | Project Id. You can find this parameter in your Publisher Account next to the name of the project . Example: 44056 |  |
 
@@ -24,15 +25,16 @@ the connector does not automatically refresh tokens. Catalog personalization and
 are scoped to the token's user, not all users in the project.
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| Games Catalog | item_id | DefaultPaginator | ✅ |  ❌  |
-| DRM | drm_id | No pagination | ✅ |  ❌  |
-| Virtual Items | item_id | DefaultPaginator | ✅ |  ❌  |
-| Virtual Currency | item_id | DefaultPaginator | ✅ |  ❌  |
-| Virtual Currency Package | item_id | DefaultPaginator | ✅ |  ❌  |
-| Bundles | item_id | DefaultPaginator | ✅ |  ❌  |
-| Reward Chains | reward_chain_id | DefaultPaginator | ✅ |  ❌  |
+| --- | --- | --- | --- | --- |
+| Games Catalog | item_id | DefaultPaginator | ✅ | ❌ |
+| DRM | drm_id | No pagination | ✅ | ❌ |
+| Virtual Items | item_id | DefaultPaginator | ✅ | ❌ |
+| Virtual Currency | item_id | DefaultPaginator | ✅ | ❌ |
+| Virtual Currency Package | item_id | DefaultPaginator | ✅ | ❌ |
+| Bundles | item_id | DefaultPaginator | ✅ | ❌ |
+| Reward Chains | reward_chain_id | DefaultPaginator | ✅ | ❌ |
 
 ## IP allow list
 
@@ -43,8 +45,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date | Pull Request | Subject |
+| --- | --- | --- | --- |
 | 0.0.71 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88291) | Correct user JWT authentication instructions without changing existing configuration fields. |
 | 0.0.70 | 2026-10-06 | [88121](https://github.com/airbytehq/airbyte/pull/88121) | Update dependencies |
 | 0.0.69 | 2026-09-29 | [87427](https://github.com/airbytehq/airbyte/pull/87427) | Update dependencies |
@@ -115,6 +117,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.0.4 | 2024-12-12 | [49392](https://github.com/airbytehq/airbyte/pull/49392) | Update dependencies |
 | 0.0.3 | 2024-11-04 | [48219](https://github.com/airbytehq/airbyte/pull/48219) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47595](https://github.com/airbytehq/airbyte/pull/47595) | Update dependencies |
-| 0.0.1 | 2024-10-01 | | Initial release by [@avirajsingh7](https://github.com/avirajsingh7) via Connector Builder |
+| 0.0.1 | 2024-10-01 |  | Initial release by [@avirajsingh7](https://github.com/avirajsingh7) via Connector Builder |
 
 </details>

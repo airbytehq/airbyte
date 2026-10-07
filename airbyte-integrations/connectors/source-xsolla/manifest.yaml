@@ -255,7 +255,7 @@ spec:
           Replace the token when it expires. See
           https://developers.xsolla.com/api/catalog/authentication-using-users-jwt
         order: 0
-        title: API Key
+        title: User JWT
         airbyte_secret: true
       project_id:
         type: number
