@@ -10,12 +10,12 @@ Create an API application in your Pipeliner space's administration under **Unit,
 
 Select the data center from your application's Service URL and enter its Space ID. For example, for `https://us-east.api.pipelinersales.com/api/v100/rest/spaces/example_space`, select `us-east` and enter `example_space` as the Space ID.
 
-| Input      | Type     | Description                                                        | Default Value |
-| ---------- | -------- | ------------------------------------------------------------------ | ------------- |
-| `username` | `string` | API username generated for your space's application.                |               |
-| `password` | `string` | API password generated for your space's application.                |               |
+| Input      | Type     | Description                                                            | Default Value |
+| ---------- | -------- | ---------------------------------------------------------------------- | ------------- |
+| `username` | `string` | API username generated for your space's application.                   |               |
+| `password` | `string` | API password generated for your space's application.                   |               |
 | `service`  | `string` | Data center: `eu-central`, `us-east`, `ca-central`, or `ap-southeast`. |               |
-| `spaceid`  | `string` | Space ID from the application's API access settings, not a full URL. |               |
+| `spaceid`  | `string` | Space ID from the application's API access settings, not a full URL.   |               |
 
 ## Streams
 
