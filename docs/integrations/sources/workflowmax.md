@@ -71,7 +71,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.67 | 2026-10-07 | [<n>](https://github.com/airbytehq/airbyte/pull/<n>) | Fix authentication: refresh the OAuth access token automatically (WorkflowMax access tokens expire after 30 minutes); use the documented `pagesize` query parameter |
+| 0.0.67 | 2026-10-07 | [88239](https://github.com/airbytehq/airbyte/pull/88239) | Fix authentication: refresh the OAuth access token automatically (WorkflowMax access tokens expire after 30 minutes); use the documented `pagesize` query parameter |
 | 0.0.66 | 2026-10-06 | [88119](https://github.com/airbytehq/airbyte/pull/88119) | Update dependencies |
 | 0.0.65 | 2026-09-29 | [87410](https://github.com/airbytehq/airbyte/pull/87410) | Update dependencies |
 | 0.0.64 | 2026-09-22 | [86894](https://github.com/airbytehq/airbyte/pull/86894) | Update dependencies |
