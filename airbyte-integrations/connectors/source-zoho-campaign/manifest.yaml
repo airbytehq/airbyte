@@ -404,6 +404,8 @@ definitions:
     all_tags:
       type: DeclarativeStream
       name: all_tags
+      primary_key:
+        - tag_id
       retriever:
         type: SimpleRetriever
         requester:
@@ -425,6 +427,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - tags
+      transformations:
+        - type: DpathFlattenFields
+          field_path:
+            - "*"
+        - type: AddFields
+          fields:
+            - path:
+                - tag_id
+              value: "{{ (record.keys() | list)[0] }}"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -440,6 +452,14 @@ definitions:
       refresh_token: "{{ config[\"client_refresh_token\"] }}"
       refresh_request_body: {}
       token_refresh_endpoint: https://accounts.zoho.{{ config["data_center"] }}/oauth/v2/token
+      refresh_token_updater:
+        refresh_token_name: refresh_token
+        access_token_config_path:
+          - access_token
+        refresh_token_config_path:
+          - client_refresh_token
+        token_expiry_date_config_path:
+          - token_expiry_date
 
 streams:
   - $ref: "#/definitions/streams/recent_campaigns"
@@ -486,11 +506,44 @@ spec:
           - eu
           - in
           - com.au
-          - .jp
-          - .com.cn
+          - jp
+          - com.cn
         order: 3
         title: Data Center
+      access_token:
+        type: string
+        order: 4
+        title: Access Token
+        description: >-
+          Cached Zoho access token. Populated automatically by the connector
+          after a token refresh; you do not need to set it.
+        airbyte_secret: true
+        airbyte_hidden: true
+      token_expiry_date:
+        type: string
+        order: 5
+        title: Token Expiry Date
+        description: >-
+          Expiry date-time of the cached access token. Populated automatically
+          by the connector; you do not need to set it.
+        format: date-time
+        airbyte_hidden: true
     additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: >-
+          Older specs offered the data center values ".jp" and ".com.cn", which
+          produced invalid hosts such as "campaigns.zoho..jp". Remap them to the
+          valid "jp" / "com.cn" values.
+        transformations:
+          - type: ConfigRemapField
+            field_path:
+              - data_center
+            map:
+              .jp: jp
+              .com.cn: com.cn
 
 metadata:
   autoImportSchema:
@@ -1323,7 +1376,49 @@ schemas:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
+    required:
+      - tag_id
     properties:
+      tag_id:
+        type:
+          - string
+          - "null"
+      is_crm_tag:
+        type:
+          - string
+          - "null"
+      tag_color:
+        type:
+          - string
+          - "null"
+      tag_created_time:
+        type:
+          - string
+          - "null"
+      tag_desc:
+        type:
+          - string
+          - "null"
+      tag_modified_time:
+        type:
+          - string
+          - "null"
+      tag_name:
+        type:
+          - string
+          - "null"
+      tagged_contact_count:
+        type:
+          - string
+          - "null"
+      tagowner:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
       "169443000000020045":
         type:
           - object
