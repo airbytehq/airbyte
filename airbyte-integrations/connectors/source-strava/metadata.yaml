@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7a4327c4-315a-11ec-8d3d-0242ac130003
-  dockerImageTag: 0.3.52
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-strava
   documentationUrl: https://docs.airbyte.com/integrations/sources/strava
   githubIssueLabel: source-strava
@@ -24,6 +24,11 @@ data:
       enabled: true
   releaseDate: 2021-10-18
   releaseStage: beta
+  releases:
+    breakingChanges:
+      0.4.0:
+        message: "This release adds Airbyte-managed OAuth credential fields and validates activity permissions during setup. Reauthorize with activity:read_all if your token lacks access, and use your latest refresh token. See the migration guide; no stream reset is required."
+        upgradeDeadline: "2026-10-07"
   remoteRegistries:
     pypi:
       enabled: false
