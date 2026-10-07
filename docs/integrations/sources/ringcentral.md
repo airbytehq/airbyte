@@ -84,7 +84,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
-| 0.2.23 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Switch base URL from the retired RingCentral developer sandbox (`platform.devtest.ringcentral.com`) to production (`platform.ringcentral.com`) |
+| 0.2.23 | 2026-10-07 | [88188](https://github.com/airbytehq/airbyte/pull/88188) | Switch base URL from the retired RingCentral developer sandbox (`platform.devtest.ringcentral.com`) to production (`platform.ringcentral.com`) |
 | 0.2.22 | 2025-05-24 | [60537](https://github.com/airbytehq/airbyte/pull/60537) | Update dependencies |
 | 0.2.21 | 2025-05-10 | [60159](https://github.com/airbytehq/airbyte/pull/60159) | Update dependencies |
 | 0.2.20 | 2025-05-04 | [59640](https://github.com/airbytehq/airbyte/pull/59640) | Update dependencies |
