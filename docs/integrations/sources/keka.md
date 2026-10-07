@@ -1,4 +1,5 @@
 # Keka
+
 The Keka Connector for Airbyte allows seamless integration with the Keka platform, enabling users to automate the extraction and synchronization of employee management and payroll data into their preferred destinations for reporting, analytics, or further processing.
 
 ## Configuration
@@ -25,6 +26,7 @@ to configure the company subdomain before syncing.
 | `client_secret` | `string` | Client Secret. Your client secret for secure authentication.   |               |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | Employees |  | DefaultPaginator | ✅ |  ❌  |
