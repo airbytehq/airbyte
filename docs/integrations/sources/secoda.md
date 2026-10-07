@@ -41,7 +41,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                  |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------- |
-| 0.2.26 | 2026-10-07 | [<n>](https://github.com/airbytehq/airbyte/pull/<n>) | Fix dead Secoda API documentation links in spec, metadata and docs |
+| 0.2.26 | 2026-10-07 | [88325](https://github.com/airbytehq/airbyte/pull/88325) | Fix dead Secoda API documentation links in spec, metadata and docs |
 | 0.2.25 | 2025-05-10 | [60140](https://github.com/airbytehq/airbyte/pull/60140) | Update dependencies |
 | 0.2.24 | 2025-05-04 | [59624](https://github.com/airbytehq/airbyte/pull/59624) | Update dependencies |
 | 0.2.23 | 2025-04-27 | [58987](https://github.com/airbytehq/airbyte/pull/58987) | Update dependencies |
