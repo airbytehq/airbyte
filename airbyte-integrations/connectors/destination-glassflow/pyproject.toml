@@ -28,6 +28,3 @@ pytest = "^8.3.2"
 
 [tool.poe]
 include = ["${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml"]
-
-[tool.poe.tasks]
-pytest-integration-tests = "poetry run pytest --junitxml=build/test-results/pytest-integration-tests-junit.xml integration_tests"
