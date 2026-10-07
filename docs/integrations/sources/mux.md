@@ -1,31 +1,36 @@
 # Mux
+
 This directory contains the manifest-only connector for [`source-mux`](https://www.mux.com/).
 
-## Documentation reference:
+## Documentation reference
+
 Visit `https://docs.mux.com/api-reference` for API documentation
 
 ## Authentication setup
+
 Mux uses [HTTP Basic authentication](https://www.mux.com/docs/guides/make-api-requests#http-basic-auth). Set `username` to your access token ID and `password` to its secret, not your Mux account login. Grant the token Mux Video read access and System read access if you select either signing-keys stream. Tokens are scoped to a Mux environment.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `username` | `string` | Mux access token ID. |  |
-| `password` | `string` | Mux access token secret. |  |
-| `start_date` | `string` | Start date.  |  |
-| `playback_id` | `string` | Optional playback ID for `video_playbacks`. When omitted or empty, that stream returns no records. |  |
+| ------- | ------ | ------------- | --------------- |
+| `username` | `string` | Mux access token ID. | |
+| `password` | `string` | Mux access token secret. | |
+| `start_date` | `string` | Start date. | |
+| `playback_id` | `string` | Optional playback ID for `video_playbacks`. When omitted or empty, that stream returns no records. | |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| video_assets | id | DefaultPaginator | ✅ |  ✅  |
-| video_live-streams | id | DefaultPaginator | ✅ |  ✅  |
-| video_playbacks | id | None (single playback ID) | ✅ |  ❌  |
-| system_signin-keys | id | DefaultPaginator | ✅ |  ✅  |
-| video_playback-restrictions | id | DefaultPaginator | ✅ |  ✅  |
-| video_transcription-vocabularies | id | DefaultPaginator | ✅ |  ✅  |
-| video_uploads | id | DefaultPaginator | ✅ |  ❌  |
-| video_signing-keys | id | DefaultPaginator | ✅ |  ✅  |
+| ------------- | ------------- | ------------ | --------------------- | ---------------------- |
+| video_assets | id | DefaultPaginator | ✅ | ✅ |
+| video_live-streams | id | DefaultPaginator | ✅ | ✅ |
+| video_playbacks | id | None (single playback ID) | ✅ | ❌ |
+| system_signin-keys | id | DefaultPaginator | ✅ | ✅ |
+| video_playback-restrictions | id | DefaultPaginator | ✅ | ✅ |
+| video_transcription-vocabularies | id | DefaultPaginator | ✅ | ✅ |
+| video_uploads | id | DefaultPaginator | ✅ | ❌ |
+| video_signing-keys | id | DefaultPaginator | ✅ | ✅ |
 
 `video_transcription-vocabularies` uses Mux's [maximum page size of 10](https://www.mux.com/docs/api-reference/video/transcription-vocabularies/list-transcription-vocabularies). Both `video_signing-keys` and `system_signin-keys` read the [System Signing Keys API](https://www.mux.com/docs/api-reference/system/signing-keys/list-signing-keys); their existing stream names are retained for compatibility.
 
