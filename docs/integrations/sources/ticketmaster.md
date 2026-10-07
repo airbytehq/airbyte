@@ -10,6 +10,13 @@ Buy and sell tickets online for concerts, sports, theater, family and other even
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
 
+## Limitations
+
+The Ticketmaster Discovery API only allows paging through the first 1,000 items of a result set
+(`page * size` must be less than 1,000, see [Deep Paging](https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/)).
+The `events`, `attractions` and `venues` streams therefore stop after 1,000 records; requesting deeper pages
+is rejected by the API with error `DIS1035`.
+
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
@@ -30,6 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.65 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Stop paginating `events`, `attractions` and `venues` at the API's 1,000-item deep-paging limit (fixes `DIS1035` 400 errors) and start from page 0 instead of skipping the first page |
 | 0.0.64 | 2026-10-06 | [88077](https://github.com/airbytehq/airbyte/pull/88077) | Update dependencies |
 | 0.0.63 | 2026-09-29 | [87393](https://github.com/airbytehq/airbyte/pull/87393) | Update dependencies |
 | 0.0.62 | 2026-09-22 | [86855](https://github.com/airbytehq/airbyte/pull/86855) | Update dependencies |
