@@ -37,7 +37,7 @@ The connector doesn't expose options to change this behavior. If you need every 
 
 ### Rate limits
 
-Scryfall enforces [hard rate limits](https://scryfall.com/docs/api/rate-limits): 2 requests per second for `/cards/search`, and 10 requests per second for other endpoints. The search endpoint returns 175 cards per page, so a full sync of the `cards` stream takes roughly 200 requests. If Scryfall responds with HTTP 429, the connector retries the request with backoff.
+Scryfall enforces [hard rate limits](https://scryfall.com/docs/api/rate-limits): 2 requests per second for `/cards/search`, and 10 requests per second for other endpoints. Receiving an HTTP 429 blocks the client for 30 seconds. The connector stays under these limits by sending at most 1 request per second to `/cards/search` and at most 5 requests per second to other endpoints. The search endpoint returns 175 cards per page, so a full sync of the `cards` stream takes roughly 200 requests, or about 3 to 4 minutes. If Scryfall still responds with HTTP 429, the connector waits 35 seconds and retries, up to 5 times.
 
 ### Sync frequency
 
@@ -58,6 +58,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.68 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Throttle requests to Scryfall's documented rate limits and wait 35 seconds before retrying HTTP 429, so full `cards` syncs no longer fail |
 | 0.0.67 | 2026-10-06 | [88025](https://github.com/airbytehq/airbyte/pull/88025) | Update dependencies |
 | 0.0.66 | 2026-10-03 | [87644](https://github.com/airbytehq/airbyte/pull/87644) | Send a custom User-Agent (Scryfall rejects default HTTP-library agents with 400) |
 | 0.0.65 | 2026-09-29 | [87339](https://github.com/airbytehq/airbyte/pull/87339) | Update dependencies |
