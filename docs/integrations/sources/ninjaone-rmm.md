@@ -49,7 +49,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Authenticate with OAuth2 client credentials (NinjaOne access tokens expire after 1 hour), add `region` option, fix `after`/`olderThan` pagination parameters |
+| 0.1.0 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88252) | Authenticate with OAuth2 client credentials (NinjaOne access tokens expire after 1 hour), add `region` option, fix `after`/`olderThan` pagination parameters |
 | 0.0.51 | 2026-10-06 | [87939](https://github.com/airbytehq/airbyte/pull/87939) | Update dependencies |
 | 0.0.50 | 2026-09-29 | [87234](https://github.com/airbytehq/airbyte/pull/87234) | Update dependencies |
 | 0.0.49 | 2026-09-22 | [86723](https://github.com/airbytehq/airbyte/pull/86723) | Update dependencies |
