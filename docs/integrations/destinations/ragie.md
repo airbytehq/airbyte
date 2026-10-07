@@ -147,7 +147,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date | Pull Request | Changes |
 | ------- | ---- | ------------ | ------- |
-| 0.1.1 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix floating-point metadata writes, omit empty partitions, and stop logging authorization headers. |
+| 0.1.1 | 2026-10-07 | [88292](https://github.com/airbytehq/airbyte/pull/88292) | Fix floating-point metadata writes, omit empty partitions, and stop logging authorization headers. |
 | 0.1.0 | | | Initial release with overwrite/append support and field mapping. |
 
 ---
