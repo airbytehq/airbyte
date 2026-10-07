@@ -85,7 +85,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.2.26 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix pagination: follow the API's JSON:API `links.next` URL instead of sending the record offset as the `page` number |
+| 0.2.26 | 2026-10-07 | [88253](https://github.com/airbytehq/airbyte/pull/88253) | Fix pagination: follow the API's JSON:API `links.next` URL instead of sending the record offset as the `page` number |
 | 0.2.25 | 2026-06-02 | [78807](https://github.com/airbytehq/airbyte/pull/78807) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [60156](https://github.com/airbytehq/airbyte/pull/60156) | Update dependencies |
 | 0.2.23 | 2025-05-03 | [59487](https://github.com/airbytehq/airbyte/pull/59487) | Update dependencies |
