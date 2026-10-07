@@ -121,9 +121,7 @@ def test_configured_calendar_resolves_the_primary_alias_without_reading_the_cale
 def test_every_calendar_sends_the_global_cursor_so_a_quiet_calendar_is_not_stale():
     cursor = _days_ago(2)
     state = (
-        StateBuilder()
-        .with_stream_state("events", {"use_global_cursor": True, "state": {"updated": cursor}, "lookback_window": 0})
-        .build()
+        StateBuilder().with_stream_state("events", {"use_global_cursor": True, "state": {"updated": cursor}, "lookback_window": 0}).build()
     )
     with HttpMocker() as http_mocker:
         _mock_calendar_list(http_mocker, _ME, _HOLIDAYS)
@@ -222,9 +220,7 @@ def test_acl_rate_limit_403_is_retried():
 def _freebusy_request(calendar_id: str) -> HttpRequest:
     return HttpRequest(
         f"{_BASE_URL}/freeBusy",
-        body=json.dumps(
-            {"timeMin": "2026-09-07T12:00:00Z", "timeMax": "2026-11-21T12:00:00Z", "items": [{"id": calendar_id}]}
-        ),
+        body=json.dumps({"timeMin": "2026-09-07T12:00:00Z", "timeMax": "2026-11-21T12:00:00Z", "items": [{"id": calendar_id}]}),
     )
 
 
