@@ -28,7 +28,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.53 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix rate-limit (HTTP 429) failures: back off using the `ratelimit-reset` header, raise retries from 1 to 10, and fetch `mailings` 100 per page (API maximum) instead of 5 |
+| 0.0.53 | 2026-10-07 | [88195](https://github.com/airbytehq/airbyte/pull/88195) | Fix rate-limit (HTTP 429) failures: back off using the `ratelimit-reset` header, raise retries from 1 to 10, and fetch `mailings` 100 per page (API maximum) instead of 5 |
 | 0.0.52 | 2026-10-06 | [87994](https://github.com/airbytehq/airbyte/pull/87994) | Update dependencies |
 | 0.0.51 | 2026-09-29 | [87305](https://github.com/airbytehq/airbyte/pull/87305) | Update dependencies |
 | 0.0.50 | 2026-09-22 | [86744](https://github.com/airbytehq/airbyte/pull/86744) | Update dependencies |
