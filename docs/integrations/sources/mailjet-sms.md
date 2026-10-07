@@ -1,5 +1,19 @@
 # Mailjet - SMS API
 
+:::warning
+
+## Deprecation Notice
+
+The Mailjet SMS source connector has been archived and is no longer available in Airbyte Cloud or the OSS connector registry.
+
+Mailjet (Sinch) has removed its SMS API from its product and documentation: the SMS API reference and guides at [dev.mailjet.com/sms](https://dev.mailjet.com/sms/reference) now return 404, the current [Mailjet API Reference](https://dev.mailjet.com/docs/api-reference) only lists the Email API (`/v3`) and Content API (`/v1`), and the [Mailjet Help Center](https://documentation.mailjet.com/hc/en-us/search?query=SMS) has no SMS articles. The `/v4/sms` endpoint this connector relied on is undocumented and unsupported, and no Airbyte connection has ever completed a successful sync with this connector.
+
+### Recommended Actions
+
+Users who still need SMS message data from Sinch should consider building a custom connector against the [Sinch SMS API](https://developers.sinch.com/docs/sms/) using the [Connector Builder](https://docs.airbyte.com/platform/connector-development/connector-builder-ui/overview).
+
+:::
+
 ## Sync overview
 
 This source can sync data from the [Mailjet SMS API](https://dev.mailjet.com/sms/guides/). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
@@ -36,6 +50,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.25 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Archive connector: Mailjet has discontinued its SMS API |
 | 0.2.24 | 2025-05-24 | [60724](https://github.com/airbytehq/airbyte/pull/60724) | Update dependencies |
 | 0.2.23 | 2025-05-10 | [59911](https://github.com/airbytehq/airbyte/pull/59911) | Update dependencies |
 | 0.2.22 | 2025-05-03 | [59294](https://github.com/airbytehq/airbyte/pull/59294) | Update dependencies |
