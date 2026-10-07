@@ -14,8 +14,7 @@ API Key (which acts as bearer token) is mandate for this connector to work, It c
 - Setup params (All params are required)
 - Available params
   - api_key: The generated api key
-  - uid: The unique identifier which can be configured in the fullstory script, under FS.identify
-  - start_date: Date filter for eligible streams, enter
+  - uid: The unique identifier which can be configured in the fullstory script, under FS.identify (used by the `sessions` stream)
 
 ## Step 2: Set up the FullStory connector in Airbyte
 
@@ -24,14 +23,14 @@ API Key (which acts as bearer token) is mandate for this connector to work, It c
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the FullStory connector and select **FullStory** from the Source type dropdown.
-4. Enter your `api_key, uid and start_date`.
+4. Enter your `api_key` and `uid`.
 5. Click **Set up source**.
 
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
-3. Enter your `api_id, api_token and start_date`.
+3. Enter your `api_key` and `uid`.
 4. Click **Set up source**.
 
 ## Supported sync modes
@@ -41,22 +40,23 @@ The FullStory source connector supports the following [sync modes](https://docs.
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
 | Full Refresh Sync             | Yes        |
-| Incremental Sync              | Yes        |
+| Incremental Sync              | No         |
 | Replicate Incremental Deletes | No         |
 | SSL connection                | Yes        |
 | Namespaces                    | No         |
 
 ## Supported Streams
 
-- calls
-- company
-- contacts
-- numbers
-- tags
-- user_availablity
-- users
-- teams
-- webhooks
+- [sessions](https://developer.fullstory.com/server/v1/sessions/list-sessions/)
+- [segments](https://developer.fullstory.com/server/v1/segments/list-segments/)
+- [operations](https://developer.fullstory.com/server/v1/operations/list-operations/)
+- [blockrules](https://developer.fullstory.com/server/v1/settings/get-recording-block-rules/)
+- [domainsettings](https://developer.fullstory.com/server/v1/settings/get-domain-settings/)
+- [geosettings](https://developer.fullstory.com/server/v1/settings/get-geo-settings/)
+- [recordingfeatures](https://developer.fullstory.com/server/v1/settings/get-recording-features/)
+- [sessionTargetingRules](https://developer.fullstory.com/server/v1/settings/get-targeting-settings/)
+- [webhooks](https://developer.fullstory.com/anywhere/v1/webhooks/list-endpoints/)
+- [eventDefs](https://developer.fullstory.com/anywhere/v1/webhooks/list-event-types/)
 
 ## API method example
 
@@ -77,6 +77,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.2.24 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix settings streams returning no records, fix `webhooks` extraction, apply pagination to `segments`, `operations` and `webhooks` |
 | 0.2.23 | 2025-05-24 | [60356](https://github.com/airbytehq/airbyte/pull/60356) | Update dependencies |
 | 0.2.22 | 2025-05-10 | [59932](https://github.com/airbytehq/airbyte/pull/59932) | Update dependencies |
 | 0.2.21 | 2025-05-03 | [59376](https://github.com/airbytehq/airbyte/pull/59376) | Update dependencies |
