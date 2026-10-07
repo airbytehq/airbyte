@@ -292,7 +292,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.7.6 | 2026-10-07 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | When GitHub refuses to list a repository's stargazers because the token is not an admin or collaborator, the `stargazers` stream now says so in the skip message instead of reporting a missing repository or missing token scopes |
+| 2.7.6 | 2026-10-07 | [88163](https://github.com/airbytehq/airbyte/pull/88163) | When GitHub refuses to list a repository's stargazers because the token is not an admin or collaborator, the `stargazers` stream now says so in the skip message instead of reporting a missing repository or missing token scopes |
 | 2.7.5 | 2026-10-06 | [87862](https://github.com/airbytehq/airbyte/pull/87862) | Update dependencies |
 | 2.7.4 | 2026-09-29 | [86932](https://github.com/airbytehq/airbyte/pull/86932) | Replace custom extractors of `reviews`, `issue_reactions` and `pull_request_comment_reactions` and the custom `workflow_runs` paginator with airbyte-cdk 7.31.0 features. Records are unchanged |
 | 2.7.3 | 2026-09-29 | [87172](https://github.com/airbytehq/airbyte/pull/87172) | Update dependencies |
