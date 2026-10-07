@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the [RingCentra
 
 ## Prerequisites
 
-Auth Token (which acts as bearer token), account id and extension id are mandate for this connector to work, Account token could be received by following (Bearer ref - https://developers.ringcentral.com/api-reference/authentication), and account_id and extension id could be seen at response to basic api call to an endpoint with ~ operator. Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
+Auth Token (which acts as bearer token), account id and extension id are mandate for this connector to work, Account token could be received by following (Bearer ref - https://developers.ringcentral.com/api-reference/authentication), and account_id and extension id could be seen at response to basic api call to an endpoint with ~ operator. Example- (https://platform.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
 
 ## Setup guide
 
@@ -15,9 +15,9 @@ Auth Token (which acts as bearer token), account id and extension id are mandate
 - Available params
   - auth_token: Recieved by following https://developers.ringcentral.com/api-reference/authentication
   - account_id: Could be seen at response to basic api call to an endpoint with ~ operator. \
-     \ Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
+     \ Example- (https://platform.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
   - extension_id: Could be seen at response to basic api call to an endpoint with ~ operator. \
-     \ Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
+     \ Example- (https://platform.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
 
 ## Step 2: Set up the RingCentral connector in Airbyte
 
@@ -67,11 +67,11 @@ The RingCentral source connector supports the following [sync modes](https://doc
 
 ## API method example
 
-GET https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours
+GET https://platform.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours
 
 ## Performance considerations
 
-RingCentral [API reference](https://platform.devtest.ringcentral.com/restapi/v1.0) has v1 at present. The connector as default uses v1.
+RingCentral [API reference](https://platform.ringcentral.com/restapi/v1.0) has v1 at present. The connector as default uses v1.
 
 ## IP allow list
 
@@ -84,6 +84,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.2.23 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Switch base URL from the retired RingCentral developer sandbox (`platform.devtest.ringcentral.com`) to production (`platform.ringcentral.com`) |
 | 0.2.22 | 2025-05-24 | [60537](https://github.com/airbytehq/airbyte/pull/60537) | Update dependencies |
 | 0.2.21 | 2025-05-10 | [60159](https://github.com/airbytehq/airbyte/pull/60159) | Update dependencies |
 | 0.2.20 | 2025-05-04 | [59640](https://github.com/airbytehq/airbyte/pull/59640) | Update dependencies |
