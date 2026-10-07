@@ -48,7 +48,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                 |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------- |
-| 1.1.62 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix authentication: read the API token from the `api_secret` field exposed in the spec |
+| 1.1.62 | 2026-10-07 | [88267](https://github.com/airbytehq/airbyte/pull/88267) | Fix authentication: read the API token from the `api_secret` field exposed in the spec |
 | 1.1.61 | 2026-10-06 | [87749](https://github.com/airbytehq/airbyte/pull/87749) | Update dependencies |
 | 1.1.60 | 2026-09-29 | [87094](https://github.com/airbytehq/airbyte/pull/87094) | Update dependencies |
 | 1.1.59 | 2026-09-22 | [86543](https://github.com/airbytehq/airbyte/pull/86543) | Update dependencies |
