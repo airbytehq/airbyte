@@ -30,7 +30,8 @@ data:
     breakingChanges:
       0.3.0:
         message: "The `contacts`, `phones` and `registrations` streams have been removed because tyntec no longer serves the BYON (Bring Your Own Number) endpoints they relied on (`/byon/contacts/v1`, `/byon/phonebook/v1/numbers`, `/byon/provisioning/v1` now return 404). Users syncing these streams must remove them from their connections. The connection check now uses the `sms` stream."
-        upgradeDeadline: "2026-10-07"
+        upgradeDeadline: "2026-10-21"
+        deadlineAction: auto_upgrade
         scopedImpact:
           - scopeType: stream
             impactedScopes:
