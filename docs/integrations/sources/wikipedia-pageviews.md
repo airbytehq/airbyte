@@ -47,6 +47,7 @@ The Wikipedia Pageviews source connector supports the following [sync modes](htt
 - `start` and `end` are dates in `YYYYMMDD` format. Pageviews data is available from 2015-07-01.
 - `end` is optional. Leave it empty to keep syncing up to the latest day published by Wikimedia. Data for a given day is published a few hours after that UTC day ends, so the connector never requests dates later than two days ago; an `end` date in the future is capped accordingly.
 - `article` must be URI-encoded (spaces replaced with underscores).
+- Wikimedia rate-limits unauthenticated clients aggressively (HTTP 429 with a `Retry-After` header). The connector fetches `per-article` data in monthly windows and waits for the time Wikimedia asks for before retrying, so large date ranges still sync but may take a few minutes.
 
 ## Performance considerations
 
@@ -63,7 +64,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject        |
 | :------ | :--------- | :-------------------------------------------------------- | :------------- |
-| 0.2.23 | 2026-10-07 | [88231](https://github.com/airbytehq/airbyte/pull/88231) | Fix syncs failing with HTTP 404 when `end` is today or in the future: cap the date range to the latest published day, make `end` optional, accept `YYYYMMDDHH` inputs and return a clear error when Wikimedia has no data |
+| 0.2.23 | 2026-10-07 | [88231](https://github.com/airbytehq/airbyte/pull/88231) | Fix syncs failing with HTTP 404 when `end` is today or in the future (cap the date range to the latest published day, make `end` optional, accept `YYYYMMDDHH` inputs, clear error when Wikimedia has no data); request `per-article` data in monthly windows instead of one request per day and honor `Retry-After` on HTTP 429 |
 | 0.2.22 | 2025-05-24 | [60778](https://github.com/airbytehq/airbyte/pull/60778) | Update dependencies |
 | 0.2.21 | 2025-05-10 | [59940](https://github.com/airbytehq/airbyte/pull/59940) | Update dependencies |
 | 0.2.20 | 2025-05-04 | [58919](https://github.com/airbytehq/airbyte/pull/58919) | Update dependencies |

@@ -21,6 +21,10 @@ definitions:
             "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0"
           error_handler:
             type: DefaultErrorHandler
+            max_retries: 10
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
             response_filters:
               - type: HttpResponseFilter
                 http_codes:
@@ -55,7 +59,7 @@ definitions:
           datetime: "{{ (config.get('end') or day_delta(-2, '%Y%m%d'))[:8] }}"
           datetime_format: "%Y%m%d"
           max_datetime: "{{ day_delta(-2, '%Y%m%d') }}"
-        step: P1D
+        step: P1M
         cursor_granularity: P1D
       schema_loader:
         type: InlineSchemaLoader
@@ -95,6 +99,10 @@ definitions:
             "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0"
           error_handler:
             type: DefaultErrorHandler
+            max_retries: 10
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
             response_filters:
               - type: HttpResponseFilter
                 http_codes:
@@ -162,6 +170,10 @@ streams:
           "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0"
         error_handler:
           type: DefaultErrorHandler
+          max_retries: 10
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
           response_filters:
             - type: HttpResponseFilter
               http_codes:
@@ -196,7 +208,7 @@ streams:
         datetime: "{{ (config.get('end') or day_delta(-2, '%Y%m%d'))[:8] }}"
         datetime_format: "%Y%m%d"
         max_datetime: "{{ day_delta(-2, '%Y%m%d') }}"
-      step: P1D
+      step: P1M
       cursor_granularity: P1D
     schema_loader:
       type: InlineSchemaLoader
@@ -235,6 +247,10 @@ streams:
           "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0"
         error_handler:
           type: DefaultErrorHandler
+          max_retries: 10
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
           response_filters:
             - type: HttpResponseFilter
               http_codes:
