@@ -82,7 +82,7 @@ class DeepsetCloudApi:
             workspaces = util.get(response.json(), "organization.workspaces", [])
             access = next((True for workspace in workspaces if workspace["name"] == self.config.workspace), False)
         except Exception as ex:
-            raise APIError from ex
+            raise APIError(str(ex)) from ex
         else:
             if access:
                 return
