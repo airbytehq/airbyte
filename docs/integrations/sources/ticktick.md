@@ -5,13 +5,13 @@ Source for the ticktick openapi endpoint at https://developer.ticktick.com/
 
 The connector authenticates against the [TickTick Open API](https://developer.ticktick.com/docs/index.html#/openapi) with a Bearer access token. Two ways to provide it are supported:
 
-| Input                                   | Type     | Description                                                                                                                                                                                                                                      |
-| --------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `authorization.auth_type`               | `string` | `Oauth` to authenticate through the OAuth2 flow with your own TickTick application, or `Token` to paste an access token directly.                                                                                                                 |
-| `authorization.client_id`               | `string` | (OAuth2) Client ID of the application created in the [TickTick developer center](https://developer.ticktick.com/manage).                                                                                                                         |
-| `authorization.client_secret`           | `string` | (OAuth2) Client secret of that application.                                                                                                                                                                                                      |
-| `authorization.client_access_token`     | `string` | (OAuth2) Access token obtained by completing the OAuth2 flow (`tasks:read` scope). Filled automatically when authenticating through the Airbyte UI.                                                                                               |
-| `authorization.bearer_token`            | `string` | (Token) An access token obtained from the OAuth2 flow, or a personal API token created in the TickTick web app under **Settings** > **Account** > **API Token**.                                                                                  |
+| Input                               | Type     | Description                                                                                                                                                      |
+| ----------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `authorization.auth_type`           | `string` | `Oauth` to authenticate through the OAuth2 flow with your own TickTick application, or `Token` to paste an access token directly.                                |
+| `authorization.client_id`           | `string` | (OAuth2) Client ID of the application created in the [TickTick developer center](https://developer.ticktick.com/manage).                                         |
+| `authorization.client_secret`       | `string` | (OAuth2) Client secret of that application.                                                                                                                      |
+| `authorization.client_access_token` | `string` | (OAuth2) Access token obtained by completing the OAuth2 flow (`tasks:read` scope). Filled automatically when authenticating through the Airbyte UI.              |
+| `authorization.bearer_token`        | `string` | (Token) An access token obtained from the OAuth2 flow, or a personal API token created in the TickTick web app under **Settings** > **Account** > **API Token**. |
 
 TickTick does not issue refresh tokens; when an access token expires (or is revoked), re-authenticate the source to obtain a new one.
 
