@@ -2,11 +2,28 @@
 Website: https://app.ninjarmm.com/
 API Reference: https://app.ninjarmm.com/apidocs/?links.active=core
 
+See the [migration guide](ninjaone-rmm-migrations.md) when upgrading across a breaking version such as 0.1.0.
+
+## Prerequisites
+
+The NinjaOne Public API only supports [OAuth 2.0](https://app.ninjarmm.com/apidocs-beta/authorization/overview), and access tokens expire after one hour. The connector therefore authenticates with the [Client Credentials flow](https://app.ninjarmm.com/apidocs-beta/authorization/flows/client-credentials-flow) and requests a fresh token whenever one is needed.
+
+1. In NinjaOne, go to **Administration > Apps > API** and click **Add**.
+2. Choose **API Services (machine-to-machine)** as the Application Platform, give the application a name, and select at least the `Monitoring` scope.
+3. Under **Allowed Grant Types**, select **Client Credentials**.
+4. Save the application and copy the generated **Client ID** and **Client Secret**. The secret is only shown once.
+
+:::note
+If the connection test fails with `404 Client Error: Not Found for url: https://<region>.ninjarmm.com/ws/oauth/token`, NinjaOne did not recognise the Client ID: check the ID and make sure the selected **Region** matches the instance where the application was created.
+:::
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key. Token could be generated natively by authorize section of NinjaOne swagger documentation `https://app.ninjarmm.com/apidocs/?links.active=authorization` |  |
+| `client_id` | `string` | Client ID of a NinjaOne API application that allows the `Client Credentials` grant. |  |
+| `client_secret` | `string` | Client Secret of the NinjaOne API application. |  |
+| `region` | `string` | The NinjaOne instance your account is hosted on: `app` (app.ninjarmm.com), `us2`, `eu`, `ca` or `oc`. | `app` |
 | `start_date` | `string` | Start date.  |  |
 
 ## Streams
@@ -32,6 +49,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Authenticate with OAuth2 client credentials (NinjaOne access tokens expire after 1 hour), add `region` option, fix `after`/`olderThan` pagination parameters |
 | 0.0.51 | 2026-10-06 | [87939](https://github.com/airbytehq/airbyte/pull/87939) | Update dependencies |
 | 0.0.50 | 2026-09-29 | [87234](https://github.com/airbytehq/airbyte/pull/87234) | Update dependencies |
 | 0.0.49 | 2026-09-22 | [86723](https://github.com/airbytehq/airbyte/pull/86723) | Update dependencies |
