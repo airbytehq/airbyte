@@ -206,7 +206,7 @@ definitions:
             response_filters:
             - predicate: "{{ response.code == 3161 }}"
               action: IGNORE
-              error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+              error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
               type: HttpResponseFilter
           - type: DefaultErrorHandler
       paginator:
@@ -436,7 +436,7 @@ definitions:
                     response_filters:
                     - predicate: "{{ response.code == 3161 }}"
                       action: IGNORE
-                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                       type: HttpResponseFilter
                   - type: DefaultErrorHandler
               paginator:
@@ -1300,7 +1300,7 @@ definitions:
                     response_filters:
                     - predicate: "{{ response.code == 3161 }}"
                       action: IGNORE
-                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                       type: HttpResponseFilter
                   - type: DefaultErrorHandler
               paginator:
@@ -1650,7 +1650,7 @@ definitions:
                     response_filters:
                     - predicate: "{{ response.code == 3161 }}"
                       action: IGNORE
-                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                       type: HttpResponseFilter
                   - type: DefaultErrorHandler
               paginator:
@@ -2010,7 +2010,7 @@ definitions:
                     response_filters:
                     - predicate: "{{ response.code == 3161 }}"
                       action: IGNORE
-                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                       type: HttpResponseFilter
                   - type: DefaultErrorHandler
               paginator:
@@ -2307,7 +2307,7 @@ definitions:
                     response_filters:
                     - predicate: "{{ response.code == 3161 }}"
                       action: IGNORE
-                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                       type: HttpResponseFilter
                   - type: DefaultErrorHandler
               paginator:
@@ -5911,7 +5911,7 @@ definitions:
                     response_filters:
                     - predicate: "{{ response.code == 3161 }}"
                       action: IGNORE
-                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                       type: HttpResponseFilter
                   - type: DefaultErrorHandler
               paginator:
@@ -6253,7 +6253,7 @@ definitions:
                     response_filters:
                     - predicate: "{{ response.code == 3161 }}"
                       action: IGNORE
-                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                      error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                       type: HttpResponseFilter
                   - type: DefaultErrorHandler
               paginator:
@@ -7366,7 +7366,7 @@ streams:
                   response_filters:
                   - predicate: "{{ response.code == 3161 }}"
                     action: IGNORE
-                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
               type: HttpRequester
@@ -8257,7 +8257,7 @@ streams:
                   response_filters:
                   - predicate: "{{ response.code == 3161 }}"
                     action: IGNORE
-                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
               type: HttpRequester
@@ -8634,7 +8634,7 @@ streams:
                   response_filters:
                   - predicate: "{{ response.code == 3161 }}"
                     action: IGNORE
-                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
               type: HttpRequester
@@ -9021,7 +9021,7 @@ streams:
                   response_filters:
                   - predicate: "{{ response.code == 3161 }}"
                     action: IGNORE
-                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
               type: HttpRequester
@@ -9344,7 +9344,7 @@ streams:
                   response_filters:
                   - predicate: "{{ response.code == 3161 }}"
                     action: IGNORE
-                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
               type: HttpRequester
@@ -13024,7 +13024,7 @@ streams:
                   response_filters:
                   - predicate: "{{ response.code == 3161 }}"
                     action: IGNORE
-                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
               type: HttpRequester
@@ -13393,7 +13393,7 @@ streams:
                   response_filters:
                   - predicate: "{{ response.code == 3161 }}"
                     action: IGNORE
-                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): this user is not licensed to host or schedule meetings, so it has no meetings to sync; skipping this user."
+                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
               type: HttpRequester
