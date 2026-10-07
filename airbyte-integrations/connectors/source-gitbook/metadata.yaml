@@ -29,7 +29,8 @@ data:
     breakingChanges:
       0.1.0:
         message: "The `insights_traffic` stream has been removed because GitBook removed the `GET /v1/spaces/{spaceId}/insights/traffic` endpoint from its API (it now returns `404 API operation not found`). Users syncing `insights_traffic` must deselect it from their connection; no other streams are affected."
-        upgradeDeadline: "2026-10-07"
+        upgradeDeadline: "2026-10-21"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
