@@ -36,7 +36,7 @@ data:
     breakingChanges:
       4.0.0:
         message: "The connector now uses Klaviyo API revision 2026-01-15 because Klaviyo retires revision 2024-10-15 on 2026-10-15. This only affects users syncing the 'campaigns' or 'campaigns_detailed' streams, and it does not break syncs or destinations: the same records keep syncing with the same values, and no clear is required. What changes is where some nested values live: 'send_strategy.options_static', 'send_strategy.options_sto' and 'send_strategy.options_throttled' are replaced by 'send_strategy.datetime', 'send_strategy.date', 'send_strategy.throttle_percentage' and 'send_strategy.options'; in 'campaigns_detailed', the campaign message fields 'channel', 'label', 'content' and 'render_options' move under 'campaign_messages.attributes.definition'. Downstream queries, models or dashboards that read the old paths need to be updated to the new paths, and you should refresh the source schema so the new fields appear. See the [Klaviyo migration guide](https://docs.airbyte.com/integrations/sources/klaviyo-migrations#upgrading-to-400) for the full field mapping."
-        upgradeDeadline: "2026-10-14"
+        upgradeDeadline: "2026-10-21"
         deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
