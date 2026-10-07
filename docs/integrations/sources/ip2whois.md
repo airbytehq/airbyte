@@ -37,7 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.69 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Make `api_key` and `domain` required in the spec and surface IP2WHOIS error messages (invalid domain, missing API key, no data) as config errors instead of generic HTTP 400/401 failures |
+| 0.2.69 | 2026-10-07 | [88191](https://github.com/airbytehq/airbyte/pull/88191) | Make `api_key` and `domain` required in the spec and surface IP2WHOIS error messages (invalid domain, missing API key, no data) as config errors instead of generic HTTP 400/401 failures |
 | 0.2.68 | 2026-10-06 | [87895](https://github.com/airbytehq/airbyte/pull/87895) | Update dependencies |
 | 0.2.67 | 2026-09-29 | [87195](https://github.com/airbytehq/airbyte/pull/87195) | Update dependencies |
 | 0.2.66 | 2026-09-22 | [86652](https://github.com/airbytehq/airbyte/pull/86652) | Update dependencies |
