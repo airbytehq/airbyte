@@ -31,7 +31,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.66 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix `message_events` pagination (`links.next` is an object, not a list), make the stream incremental so `start_date` is honored via `from`/`to`, fix `allowedHosts` |
+| 0.0.66 | 2026-10-07 | [88218](https://github.com/airbytehq/airbyte/pull/88218) | Fix `message_events` pagination (`links.next` is an object, not a list), make the stream incremental so `start_date` is honored via `from`/`to`, fix `allowedHosts` |
 | 0.0.65 | 2026-10-06 | [88082](https://github.com/airbytehq/airbyte/pull/88082) | Update dependencies |
 | 0.0.64 | 2026-09-29 | [87392](https://github.com/airbytehq/airbyte/pull/87392) | Update dependencies |
 | 0.0.63 | 2026-09-22 | [86836](https://github.com/airbytehq/airbyte/pull/86836) | Update dependencies |
