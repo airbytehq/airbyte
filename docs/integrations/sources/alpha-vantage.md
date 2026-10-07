@@ -10,7 +10,7 @@ weekly and monthly time series data.
 
 This source is capable of syncing the following streams:
 
-- `time_series_intraday`
+- `time_series_intraday` (premium only)
 - `time_series_daily`
 - `time_series_daily_adjusted` (premium only)
 - `time_series_weekly`
