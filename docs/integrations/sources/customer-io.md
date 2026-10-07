@@ -51,6 +51,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                     |
 |:--------|:-----------| :------------------------------------------------------------- |:--------------------------------------------|
+| 0.5.0 | 2026-10-07 | [88129](https://github.com/airbytehq/airbyte/pull/88129) | Add rate limiting, Retry-After retries, clearer authentication errors, a one-hour lookback, and missing fields |
 | 0.4.17 | 2026-10-06 | [87812](https://github.com/airbytehq/airbyte/pull/87812) | Update dependencies |
 | 0.4.16 | 2026-09-29 | [87129](https://github.com/airbytehq/airbyte/pull/87129) | Update dependencies |
 | 0.4.15 | 2026-09-22 | [86584](https://github.com/airbytehq/airbyte/pull/86584) | Update dependencies |
@@ -67,8 +68,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.4.4 | 2026-06-16 | [79829](https://github.com/airbytehq/airbyte/pull/79829) | Update dependencies |
 | 0.4.3 | 2026-06-09 | [79257](https://github.com/airbytehq/airbyte/pull/79257) | Update dependencies |
 | 0.4.2 | 2026-06-02 | [78639](https://github.com/airbytehq/airbyte/pull/78639) | Update dependencies |
-| 0.4.1 | 2026-05-08 | [77895](https://github.com/airbytehq/airbyte/pull/77895) | Align the manifest runtime image with the CDK 7.18.1 behavior used by Customer.io tests. |
-| 0.4.0   | 2026-05-06 | [16327](https://github.com/airbytehq/airbyte-internal-issues/issues/16327) | Add pagination on `campaigns_actions` and `newsletters`, client-side incremental sync on the `updated` cursor, and a configurable `region` (US/EU) selector |
+| 0.4.1 | 2026-05-08 | [77895](https://github.com/airbytehq/airbyte/pull/77895) | Upgrade the base image to source-declarative-manifest 7.18.1 |
+| 0.4.0 | 2026-05-08 | [77819](https://github.com/airbytehq/airbyte/pull/77819) | Add pagination, incremental sync, and EU region support |
 | 0.3.19  | 2025-08-20 | [65113](https://github.com/airbytehq/airbyte/pull/65113) | Update logo                                 |
 | 0.3.18  | 2025-05-10 | [60049](https://github.com/airbytehq/airbyte/pull/60049) | Update dependencies                         |
 | 0.3.17  | 2025-05-03 | [58875](https://github.com/airbytehq/airbyte/pull/58875) | Update dependencies                         |
@@ -99,12 +100,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.2.8   | 2024-07-09 | [41225](https://github.com/airbytehq/airbyte/pull/41225) | Update dependencies                         |
 | 0.2.7   | 2024-07-06 | [40883](https://github.com/airbytehq/airbyte/pull/40883) | Update dependencies                         |
 | 0.2.6   | 2024-06-29 | [40624](https://github.com/airbytehq/airbyte/pull/40624) | Update dependencies                         |
-| 0.2.5   | 2024-06-27 | [38318](https://github.com/airbytehq/airbyte/pull/38318) | Make compatability with builder             |
+| 0.2.5 | 2024-06-27 | [38318](https://github.com/airbytehq/airbyte/pull/38318) | Make the connector compatible with Connector Builder |
 | 0.2.4   | 2024-06-25 | [40369](https://github.com/airbytehq/airbyte/pull/40369) | Update dependencies                         |
 | 0.2.3   | 2024-06-22 | [39953](https://github.com/airbytehq/airbyte/pull/39953) | Update dependencies                         |
 | 0.2.2   | 2024-06-04 | [38980](https://github.com/airbytehq/airbyte/pull/38980) | [autopull] Upgrade base image to v1.2.1     |
 | 0.2.1   | 2024-05-31 | [38812](https://github.com/airbytehq/airbyte/pull/38812) | [autopull] Migrate to base image and poetry |
-| 0.2.0   | 2021-11-09 | [29385](https://github.com/airbytehq/airbyte/pull/29385) | Migrate TS CDK to Low code                  |
-| 0.1.23  | 2021-11-09 | [126](https://github.com/faros-ai/airbyte-connectors/pull/126) | Add Customer.io source                      |
+| 0.2.0 | 2023-08-29 | [29385](https://github.com/airbytehq/airbyte/pull/29385) | Migrate TS CDK to Low code |
+| 0.1.23 | 2021-11-09 | 126 | Add Customer.io source |
 
 </details>

@@ -5,529 +5,37 @@ check:
   stream_names:
     - campaigns
 definitions:
-  streams:
-    campaigns:
-      type: DeclarativeStream
-      name: campaigns
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
-          authenticator:
-            type: BearerAuthenticator
-            api_token: "{{ config['app_api_key'] }}"
-          path: /campaigns
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - "campaigns"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            "type":
-              type:
-                - "null"
-                - string
-            actions:
-              type: array
-              items:
-                type:
-                  - "null"
-                  - object
-                properties:
-                  "type":
-                    type:
-                      - "null"
-                      - string
-                  id:
-                    type:
-                      - "null"
-                      - integer
-            active:
-              type:
-                - "null"
-                - boolean
-            created:
-              type:
-                - "null"
-                - integer
-            created_by:
-              type:
-                - "null"
-                - string
-            date_attribute:
-              type:
-                - "null"
-                - string
-            deduplicate_id:
-              type:
-                - "null"
-                - string
-            event_name:
-              type:
-                - "null"
-                - string
-            first_started:
-              type:
-                - "null"
-                - integer
-            frequency:
-              type:
-                - "null"
-                - string
-            id:
-              type:
-                - "null"
-                - integer
-            msg_templates:
-              type: array
-              items:
-                type:
-                  - "null"
-                  - object
-                properties:
-                  "type":
-                    type:
-                      - "null"
-                      - string
-                  id:
-                    type:
-                      - "null"
-                      - integer
-            name:
-              type:
-                - "null"
-                - string
-            start_hour:
-              type:
-                - "null"
-                - integer
-            start_minutes:
-              type:
-                - "null"
-                - integer
-            state:
-              type:
-                - "null"
-                - string
-            tags:
-              type:
-                - "null"
-                - array
-              additionalProperties: true
-              properties:
-                id:
-                  type:
-                    - "null"
-                    - integer
-            timezone:
-              type:
-                - "null"
-                - string
-            trigger_segment_ids:
-              type:
-                - "null"
-                - array
-              additionalProperties: true
-              properties:
-                id:
-                  type:
-                    - "null"
-                    - integer
-            updated:
-              type:
-                - "null"
-                - integer
-            use_customer_timezone:
-              type:
-                - "null"
-                - boolean
-    campaigns_actions:
-      type: DeclarativeStream
-      name: campaigns_actions
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
-          authenticator:
-            type: BearerAuthenticator
-            api_token: "{{ config['app_api_key'] }}"
-          path: /campaigns/{{ stream_partition.parent_id }}/actions
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - "actions"
-        partition_router:
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: id
-                partition_field: parent_id
-                stream:
-                  type: DeclarativeStream
-                  name: campaigns
-                  primary_key:
-                    - id
-                  retriever:
-                    type: SimpleRetriever
-                    requester:
-                      type: HttpRequester
-                      url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
-                      authenticator:
-                        type: BearerAuthenticator
-                        api_token: "{{ config['app_api_key'] }}"
-                      path: /campaigns
-                      http_method: GET
-                    record_selector:
-                      type: RecordSelector
-                      extractor:
-                        type: DpathExtractor
-                        field_path:
-                          - "campaigns"
-                  schema_loader:
-                    type: InlineSchemaLoader
-                    schema:
-                      type: object
-                      $schema: http://json-schema.org/draft-07/schema#
-                      additionalProperties: true
-                      properties:
-                        "type":
-                          type:
-                            - "null"
-                            - string
-                        actions:
-                          type: array
-                          items:
-                            type:
-                              - "null"
-                              - object
-                            properties:
-                              "type":
-                                type:
-                                  - "null"
-                                  - string
-                              id:
-                                type:
-                                  - "null"
-                                  - integer
-                        active:
-                          type:
-                            - "null"
-                            - boolean
-                        created:
-                          type:
-                            - "null"
-                            - integer
-                        created_by:
-                          type:
-                            - "null"
-                            - string
-                        date_attribute:
-                          type:
-                            - "null"
-                            - string
-                        deduplicate_id:
-                          type:
-                            - "null"
-                            - string
-                        event_name:
-                          type:
-                            - "null"
-                            - string
-                        first_started:
-                          type:
-                            - "null"
-                            - integer
-                        frequency:
-                          type:
-                            - "null"
-                            - string
-                        id:
-                          type:
-                            - "null"
-                            - integer
-                        msg_templates:
-                          type: array
-                          items:
-                            type:
-                              - "null"
-                              - object
-                            properties:
-                              "type":
-                                type:
-                                  - "null"
-                                  - string
-                              id:
-                                type:
-                                  - "null"
-                                  - integer
-                        name:
-                          type:
-                            - "null"
-                            - string
-                        start_hour:
-                          type:
-                            - "null"
-                            - integer
-                        start_minutes:
-                          type:
-                            - "null"
-                            - integer
-                        state:
-                          type:
-                            - "null"
-                            - string
-                        tags:
-                          type:
-                            - "null"
-                            - array
-                          additionalProperties: true
-                          properties:
-                            id:
-                              type:
-                                - "null"
-                                - integer
-                        timezone:
-                          type:
-                            - "null"
-                            - string
-                        trigger_segment_ids:
-                          type:
-                            - "null"
-                            - array
-                          additionalProperties: true
-                          properties:
-                            id:
-                              type:
-                                - "null"
-                                - integer
-                        updated:
-                          type:
-                            - "null"
-                            - integer
-                        use_customer_timezone:
-                          type:
-                            - "null"
-                            - boolean
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            "type":
-              type:
-                - "null"
-                - string
-            bcc:
-              type:
-                - "null"
-                - string
-            body:
-              type:
-                - "null"
-                - string
-            campaign_id:
-              type:
-                - "null"
-                - integer
-            created:
-              type:
-                - "null"
-                - integer
-            deduplicate_id:
-              type:
-                - "null"
-                - string
-            editor:
-              type:
-                - "null"
-                - string
-            fake_bcc:
-              type:
-                - "null"
-                - boolean
-            from:
-              type:
-                - "null"
-                - string
-            from_id:
-              type:
-                - "null"
-                - string
-            headers:
-              type:
-                - "null"
-                - string
-            id:
-              type:
-                - "null"
-                - string
-            language:
-              type:
-                - "null"
-                - string
-            layout:
-              type:
-                - "null"
-                - string
-            name:
-              type:
-                - "null"
-                - string
-            parent_action_id:
-              type:
-                - "null"
-                - integer
-            preheader_text:
-              type:
-                - "null"
-                - string
-            preprocessor:
-              type:
-                - "null"
-                - string
-            recipient:
-              type:
-                - "null"
-                - string
-            recipient_environment_id:
-              type:
-                - "null"
-                - integer
-            reply_to:
-              type:
-                - "null"
-                - string
-            reply_to_id:
-              type:
-                - "null"
-                - string
-            request_method:
-              type:
-                - "null"
-                - string
-            sending_state:
-              type:
-                - "null"
-                - string
-            subject:
-              type:
-                - "null"
-                - string
-            updated:
-              type:
-                - "null"
-                - integer
-            url:
-              type:
-                - "null"
-                - string
-    newsletters:
-      type: DeclarativeStream
-      name: newsletters
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
-          authenticator:
-            type: BearerAuthenticator
-            api_token: "{{ config['app_api_key'] }}"
-          path: /newsletters
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - "newsletters"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            "type":
-              type:
-                - "null"
-                - string
-            content_ids:
-              type:
-                - "null"
-                - array
-              additionalProperties: true
-              properties:
-                id:
-                  type:
-                    - "null"
-                    - integer
-            created:
-              type:
-                - "null"
-                - integer
-            deduplicate_id:
-              type:
-                - "null"
-                - string
-            id:
-              type:
-                - "null"
-                - integer
-            name:
-              type:
-                - "null"
-                - string
-            sent_at:
-              type:
-                - "null"
-                - array
-              additionalProperties: true
-              properties:
-                id:
-                  type:
-                    - "null"
-                    - string
-            tags:
-              type:
-                - "null"
-                - array
-              additionalProperties: true
-              properties:
-                id:
-                  type:
-                    - "null"
-                    - integer
-            updated:
-              type:
-                - "null"
-                - integer
   base_requester:
     type: HttpRequester
     url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config['app_api_key'] }}"
+      api_token: "{{ config['app_api_key'] | trim }}"
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 30
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+          factor: 2
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes: [401]
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Customer.io rejected the App API key. Enter a valid App API key (not a Track API key),
+            select the Region your Customer.io account is hosted in (US or EU), and if your account
+            restricts API access by IP address, add the Airbyte IP addresses to the allowlist.
+        - type: HttpResponseFilter
+          http_codes: [403]
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Customer.io denied this App API key access to the requested data. Use an App API key
+            whose scope includes this data, and if your account restricts API access by IP address,
+            add the Airbyte IP addresses to the allowlist.
 streams:
   - type: DeclarativeStream
     name: campaigns
@@ -555,132 +63,13 @@ streams:
         type: MinMaxDatetime
         datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
         datetime_format: "%s"
+        max_datetime: "{{ now_utc().timestamp() | int }}"
+      lookback_window: PT1H
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          "type":
-            type:
-              - "null"
-              - string
-          actions:
-            type: array
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                "type":
-                  type:
-                    - "null"
-                    - string
-                id:
-                  type:
-                    - "null"
-                    - integer
-          active:
-            type:
-              - "null"
-              - boolean
-          created:
-            type:
-              - "null"
-              - integer
-          created_by:
-            type:
-              - "null"
-              - string
-          date_attribute:
-            type:
-              - "null"
-              - string
-          deduplicate_id:
-            type:
-              - "null"
-              - string
-          event_name:
-            type:
-              - "null"
-              - string
-          first_started:
-            type:
-              - "null"
-              - integer
-          frequency:
-            type:
-              - "null"
-              - string
-          id:
-            type:
-              - "null"
-              - integer
-          msg_templates:
-            type: array
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                "type":
-                  type:
-                    - "null"
-                    - string
-                id:
-                  type:
-                    - "null"
-                    - integer
-          name:
-            type:
-              - "null"
-              - string
-          start_hour:
-            type:
-              - "null"
-              - integer
-          start_minutes:
-            type:
-              - "null"
-              - integer
-          state:
-            type:
-              - "null"
-              - string
-          tags:
-            type:
-              - "null"
-              - array
-            additionalProperties: true
-            properties:
-              id:
-                type:
-                  - "null"
-                  - integer
-          timezone:
-            type:
-              - "null"
-              - string
-          trigger_segment_ids:
-            type:
-              - "null"
-              - array
-            additionalProperties: true
-            properties:
-              id:
-                type:
-                  - "null"
-                  - integer
-          updated:
-            type:
-              - "null"
-              - integer
-          use_customer_timezone:
-            type:
-              - "null"
-              - boolean
+        $ref: "#/schemas/campaigns"
   - type: DeclarativeStream
     name: campaigns_actions
     primary_key:
@@ -691,6 +80,20 @@ streams:
         $ref: "#/definitions/base_requester"
         path: /campaigns/{{ stream_partition.parent_id }}/actions
         http_method: GET
+        # The composite takes max_retries from its first handler, and 401/403 must end on the shared handler.
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 30
+              response_filters:
+                - type: HttpResponseFilter
+                  http_codes: [404]
+                  action: IGNORE
+                  error_message: >-
+                    Customer.io returned 404 for the actions of an automation that was deleted after
+                    the automation list was read. Its actions are skipped.
+            - $ref: "#/definitions/base_requester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -733,128 +136,7 @@ streams:
                 schema_loader:
                   type: InlineSchemaLoader
                   schema:
-                    type: object
-                    $schema: http://json-schema.org/draft-07/schema#
-                    additionalProperties: true
-                    properties:
-                      "type":
-                        type:
-                          - "null"
-                          - string
-                      actions:
-                        type: array
-                        items:
-                          type:
-                            - "null"
-                            - object
-                          properties:
-                            "type":
-                              type:
-                                - "null"
-                                - string
-                            id:
-                              type:
-                                - "null"
-                                - integer
-                      active:
-                        type:
-                          - "null"
-                          - boolean
-                      created:
-                        type:
-                          - "null"
-                          - integer
-                      created_by:
-                        type:
-                          - "null"
-                          - string
-                      date_attribute:
-                        type:
-                          - "null"
-                          - string
-                      deduplicate_id:
-                        type:
-                          - "null"
-                          - string
-                      event_name:
-                        type:
-                          - "null"
-                          - string
-                      first_started:
-                        type:
-                          - "null"
-                          - integer
-                      frequency:
-                        type:
-                          - "null"
-                          - string
-                      id:
-                        type:
-                          - "null"
-                          - integer
-                      msg_templates:
-                        type: array
-                        items:
-                          type:
-                            - "null"
-                            - object
-                          properties:
-                            "type":
-                              type:
-                                - "null"
-                                - string
-                            id:
-                              type:
-                                - "null"
-                                - integer
-                      name:
-                        type:
-                          - "null"
-                          - string
-                      start_hour:
-                        type:
-                          - "null"
-                          - integer
-                      start_minutes:
-                        type:
-                          - "null"
-                          - integer
-                      state:
-                        type:
-                          - "null"
-                          - string
-                      tags:
-                        type:
-                          - "null"
-                          - array
-                        additionalProperties: true
-                        properties:
-                          id:
-                            type:
-                              - "null"
-                              - integer
-                      timezone:
-                        type:
-                          - "null"
-                          - string
-                      trigger_segment_ids:
-                        type:
-                          - "null"
-                          - array
-                        additionalProperties: true
-                        properties:
-                          id:
-                            type:
-                              - "null"
-                              - integer
-                      updated:
-                        type:
-                          - "null"
-                          - integer
-                      use_customer_timezone:
-                        type:
-                          - "null"
-                          - boolean
+                    $ref: "#/schemas/campaigns"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated
@@ -865,122 +147,13 @@ streams:
         type: MinMaxDatetime
         datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
         datetime_format: "%s"
+        max_datetime: "{{ now_utc().timestamp() | int }}"
+      lookback_window: PT1H
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          "type":
-            type:
-              - "null"
-              - string
-          bcc:
-            type:
-              - "null"
-              - string
-          body:
-            type:
-              - "null"
-              - string
-          campaign_id:
-            type:
-              - "null"
-              - integer
-          created:
-            type:
-              - "null"
-              - integer
-          deduplicate_id:
-            type:
-              - "null"
-              - string
-          editor:
-            type:
-              - "null"
-              - string
-          fake_bcc:
-            type:
-              - "null"
-              - boolean
-          from:
-            type:
-              - "null"
-              - string
-          from_id:
-            type:
-              - "null"
-              - string
-          headers:
-            type:
-              - "null"
-              - string
-          id:
-            type:
-              - "null"
-              - string
-          language:
-            type:
-              - "null"
-              - string
-          layout:
-            type:
-              - "null"
-              - string
-          name:
-            type:
-              - "null"
-              - string
-          parent_action_id:
-            type:
-              - "null"
-              - integer
-          preheader_text:
-            type:
-              - "null"
-              - string
-          preprocessor:
-            type:
-              - "null"
-              - string
-          recipient:
-            type:
-              - "null"
-              - string
-          recipient_environment_id:
-            type:
-              - "null"
-              - integer
-          reply_to:
-            type:
-              - "null"
-              - string
-          reply_to_id:
-            type:
-              - "null"
-              - string
-          request_method:
-            type:
-              - "null"
-              - string
-          sending_state:
-            type:
-              - "null"
-              - string
-          subject:
-            type:
-              - "null"
-              - string
-          updated:
-            type:
-              - "null"
-              - integer
-          url:
-            type:
-              - "null"
-              - string
+        $ref: "#/schemas/campaigns_actions"
   - type: DeclarativeStream
     name: newsletters
     primary_key:
@@ -1022,68 +195,24 @@ streams:
         type: MinMaxDatetime
         datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
         datetime_format: "%s"
+        max_datetime: "{{ now_utc().timestamp() | int }}"
+      lookback_window: PT1H
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          "type":
-            type:
-              - "null"
-              - string
-          content_ids:
-            type:
-              - "null"
-              - array
-            additionalProperties: true
-            properties:
-              id:
-                type:
-                  - "null"
-                  - integer
-          created:
-            type:
-              - "null"
-              - integer
-          deduplicate_id:
-            type:
-              - "null"
-              - string
-          id:
-            type:
-              - "null"
-              - integer
-          name:
-            type:
-              - "null"
-              - string
-          sent_at:
-            type:
-              - "null"
-              - array
-            additionalProperties: true
-            properties:
-              id:
-                type:
-                  - "null"
-                  - string
-          tags:
-            type:
-              - "null"
-              - array
-            additionalProperties: true
-            properties:
-              id:
-                type:
-                  - "null"
-                  - integer
-          updated:
-            type:
-              - "null"
-              - integer
+        $ref: "#/schemas/newsletters"
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 3
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10
+          interval: PT1S
+      matchers: []
 spec:
   type: Spec
   connection_specification:
@@ -1094,14 +223,20 @@ spec:
     properties:
       app_api_key:
         type: string
-        title: Customer.io App API Key
+        title: App API Key
+        description: >-
+          App API key for the Customer.io workspace you want to sync. In Customer.io, go to
+          Account Settings > API Credentials and create an App API key for that workspace.
+          Copy it right away, because Customer.io shows it only once. Track API keys do not work.
         airbyte_secret: true
         order: 0
       region:
         type: string
         title: Region
         description: >-
-          The region of your Customer.io workspace. Select "EU" if your account is hosted in the EU region (api-eu.customer.io); otherwise leave as "US".
+          The data center region of your Customer.io account. Account Admins can see it under
+          Settings > Account Settings > Data and Privacy. If the region does not match your account,
+          requests fail with an authentication (401) error.
         enum:
           - US
           - EU
@@ -1111,9 +246,11 @@ spec:
         type: string
         title: Start Date
         description: >-
-          UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Records with an `updated` timestamp before this date will be filtered out client-side. Leave blank to sync all records.
+          Only sync records last updated at or after this UTC date and time, in the format
+          YYYY-MM-DDTHH:MM:SSZ. Leave blank to sync all records.
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        pattern_descriptor: YYYY-MM-DDTHH:MM:SSZ
         examples:
           - "2023-01-01T00:00:00Z"
         order: 2
@@ -1152,6 +289,17 @@ schemas:
         type:
           - "null"
           - boolean
+      audience:
+        type:
+          - "null"
+          - object
+        properties:
+          "type":
+            type:
+              - "null"
+              - integer
+          person_filters: {}
+          relationship_filters: {}
       created:
         type:
           - "null"
@@ -1168,10 +316,34 @@ schemas:
         type:
           - "null"
           - string
+      description:
+        type:
+          - "null"
+          - string
       event_name:
         type:
           - "null"
           - string
+      event_type:
+        type:
+          - "null"
+          - string
+      filter_object_attributes:
+        type:
+          - "null"
+          - string
+      filter_relationship_attributes:
+        type:
+          - "null"
+          - string
+      filter_segment_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       first_started:
         type:
           - "null"
@@ -1203,6 +375,28 @@ schemas:
         type:
           - "null"
           - string
+      object_attribute_triggers: {}
+      object_type_id:
+        type:
+          - "null"
+          - integer
+      relationship_attribute_triggers: {}
+      scheduled_start:
+        type:
+          - "null"
+          - integer
+      scheduled_start_should_backfill:
+        type:
+          - "null"
+          - boolean
+      scheduled_stop:
+        type:
+          - "null"
+          - integer
+      scheduled_stop_should_sunset:
+        type:
+          - "null"
+          - boolean
       start_hour:
         type:
           - "null"
@@ -1247,6 +441,10 @@ schemas:
         type:
           - "null"
           - boolean
+      webhook_id:
+        type:
+          - "null"
+          - integer
   campaigns_actions:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1264,10 +462,30 @@ schemas:
         type:
           - "null"
           - string
+      body_amp:
+        type:
+          - "null"
+          - string
+      body_json:
+        type:
+          - "null"
+          - string
+      body_plain:
+        type:
+          - "null"
+          - string
+      broadcast_id:
+        type:
+          - "null"
+          - integer
       campaign_id:
         type:
           - "null"
           - integer
+      cc:
+        type:
+          - "null"
+          - string
       created:
         type:
           - "null"
@@ -1300,6 +518,10 @@ schemas:
         type:
           - "null"
           - string
+      image_url:
+        type:
+          - "null"
+          - string
       language:
         type:
           - "null"
@@ -1308,6 +530,14 @@ schemas:
         type:
           - "null"
           - string
+      method:
+        type:
+          - "null"
+          - string
+      multi_language_branch_action_id:
+        type:
+          - "null"
+          - integer
       name:
         type:
           - "null"
@@ -1344,6 +574,14 @@ schemas:
         type:
           - "null"
           - string
+      send_to_unsubscribed:
+        type:
+          - "null"
+          - boolean
+      sender_identity_id:
+        type:
+          - "null"
+          - integer
       sending_state:
         type:
           - "null"
@@ -1352,6 +590,10 @@ schemas:
         type:
           - "null"
           - string
+      tracked:
+        type:
+          - "null"
+          - boolean
       updated:
         type:
           - "null"
@@ -1387,11 +629,39 @@ schemas:
         type:
           - "null"
           - string
+      expires_after:
+        type:
+          - "null"
+          - integer
       id:
         type:
           - "null"
           - integer
       name:
+        type:
+          - "null"
+          - string
+      recipient_file_error:
+        type:
+          - "null"
+          - string
+      recipient_file_status:
+        type:
+          - "null"
+          - string
+      recipient_segment_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      scheduled_at:
+        type:
+          - "null"
+          - integer
+      send_state:
         type:
           - "null"
           - string
@@ -1405,6 +675,10 @@ schemas:
             type:
               - "null"
               - string
+      subscription_topic_id:
+        type:
+          - "null"
+          - integer
       tags:
         type:
           - "null"
@@ -1415,6 +689,14 @@ schemas:
             type:
               - "null"
               - integer
+      timezone:
+        type:
+          - "null"
+          - string
+      tz_match_enabled:
+        type:
+          - "null"
+          - boolean
       updated:
         type:
           - "null"
