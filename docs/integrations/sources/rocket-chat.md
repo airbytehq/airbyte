@@ -15,8 +15,8 @@ This source can sync data from the [Rocket.chat API](https://developer.rocket.ch
 
 ### Features
 
-| Feature           | Supported?\(Yes/No\) | Notes |
-| :---------------- | :-------------------- | :---- |
+| Feature | Supported?\(Yes/No\) | Notes |
+| :--- | :--- | :--- |
 | Full Refresh Sync | Yes | |
 | Incremental Sync | No | |
 
