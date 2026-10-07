@@ -35,7 +35,30 @@ class PgSystemTypeTest {
     }
 
     @Test
-    fun `array type name without underscore prefix throws`() {
-        assertThrows<IllegalStateException> { pgType("\"s2\".\"_kind\"", JDBCType.ARRAY) }
+    fun `schema-qualified array type name is an array of a generic element type`() {
+        val type = pgType("\"s2\".\"_kind\"", JDBCType.ARRAY)
+        assertTrue(type.isArray)
+        assertEquals("\"s2\".\"_kind\"", type.scalarTypeName)
+        assertEquals(JDBCType.OTHER, type.scalarJdbcType)
+    }
+
+    @Test
+    fun `schema-qualified array of an extension type is not mapped by element name`() {
+        val type = pgType("\"extensions\".\"_hstore\"", JDBCType.ARRAY)
+        assertTrue(type.isArray)
+        assertEquals(JDBCType.OTHER, type.scalarJdbcType)
+    }
+
+    @Test
+    fun `schema-qualified array of a type named like a built-in is not mapped as the built-in`() {
+        val type = pgType("\"s2\".\"_int4\"", JDBCType.ARRAY)
+        assertTrue(type.isArray)
+        assertEquals(JDBCType.OTHER, type.scalarJdbcType)
+    }
+
+    @Test
+    fun `array type name that is neither underscore-prefixed nor schema-qualified throws`() {
+        assertThrows<IllegalStateException> { pgType("kind", JDBCType.ARRAY) }
+        assertThrows<IllegalStateException> { pgType("\"s2\".\"kind\"", JDBCType.ARRAY) }
     }
 }
