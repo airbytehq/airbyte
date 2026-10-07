@@ -250,6 +250,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.2.5 | 2026-10-06 | [87926](https://github.com/airbytehq/airbyte/pull/87926) | Update dependencies |
 | 6.2.4 | 2026-09-29 | [86321](https://github.com/airbytehq/airbyte/pull/86321) | Fix the `videos` stream failing on Message Ads (Sponsored InMail) creatives and on creatives with a null `content.reference` |
 | 6.2.3 | 2026-09-29 | [87239](https://github.com/airbytehq/airbyte/pull/87239) | Update dependencies |
 | 6.2.2 | 2026-09-22 | [86716](https://github.com/airbytehq/airbyte/pull/86716) | Update dependencies |
