@@ -19,7 +19,7 @@ def database_url_from(database_name):
     See https://firebase.google.com/docs/database/locations
     """
     value = database_name.strip().rstrip("/")
-    if value.startswith("https://") or value.startswith("http://"):
+    if value.startswith("https://"):
         return value
     if "." in value:
         return f"https://{value}"
