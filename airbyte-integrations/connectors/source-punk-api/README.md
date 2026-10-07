@@ -1,1 +1,0 @@
-../_shared/README-python-connectors.md

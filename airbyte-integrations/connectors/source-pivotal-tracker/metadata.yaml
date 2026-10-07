@@ -4,9 +4,9 @@ data:
       - www.pivotaltracker.com
   registryOverrides:
     oss:
-      enabled: true
+      enabled: false
     cloud:
-      enabled: true
+      enabled: false
   remoteRegistries:
     pypi:
       enabled: false
@@ -27,7 +27,7 @@ data:
   name: Pivotal Tracker
   releaseDate: 2022-04-04
   releaseStage: alpha
-  supportLevel: community
+  supportLevel: archived
   documentationUrl: https://docs.airbyte.com/integrations/sources/pivotal-tracker
   tags:
     - cdk:low-code

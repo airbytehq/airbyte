@@ -5,9 +5,9 @@ data:
       - api.height.app
   registryOverrides:
     oss:
-      enabled: true
+      enabled: false
     cloud:
-      enabled: true
+      enabled: false
   remoteRegistries:
     pypi:
       enabled: false
@@ -25,7 +25,7 @@ data:
   name: Height
   releaseDate: 2024-08-31
   releaseStage: alpha
-  supportLevel: community
+  supportLevel: archived
   documentationUrl: https://docs.airbyte.com/integrations/sources/height
   tags:
     - language:manifest-only

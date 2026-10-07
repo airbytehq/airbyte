@@ -30,15 +30,15 @@ data:
   name: Fauna
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-fauna
   registryOverrides:
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
-  supportLevel: community
+  supportLevel: archived
   tags:
     - language:python
     - cdk:python
