@@ -1,26 +1,28 @@
 # Tremendous
+
 Tremendous connector  enables seamless integration with Tremendous API. This connector allows organizations to automate and sync reward, incentive, and payout data, tapping into 2000+ payout methods, including ACH, gift cards, PayPal, and prepaid cards, all from a single platform.
 
 ## Configuration
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `api_key` | `string` | API Key. API key to use. You can generate an API key through the Tremendous dashboard under Team Settings &gt; Developers. Save the key once you’ve generated it. |  |
-| `environment` | `string` | Environment. `api` for production, `testflight` for the Tremendous sandbox. |  |
+| Input         | Type     | Description                                                                                                                                                       | Default Value |
+|---------------|----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| `api_key`     | `string` | API Key. API key to use. You can generate an API key through the Tremendous dashboard under Team Settings &gt; Developers. Save the key once you’ve generated it. |               |
+| `environment` | `string` | Environment. `api` for production, `testflight` for the Tremendous sandbox.                                                                                       |               |
 
 ## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| orders | id | DefaultPaginator | ✅ |  ❌  |
-| products |  | No pagination | ✅ |  ❌  |
-| funding_sources | id | No pagination | ✅ |  ❌  |
-| account_members | id | No pagination | ✅ |  ❌  |
-| campaigns | id | No pagination | ✅ |  ❌  |
-| organizations | id | No pagination | ✅ |  ❌  |
-| balance_transactions |  | DefaultPaginator | ✅ |  ❌  |
-| rewards | id | DefaultPaginator | ✅ |  ❌  |
-| members | id | No pagination | ✅ |  ❌  |
-| invoices | id | DefaultPaginator | ✅ |  ❌  |
+
+| Stream Name          | Primary Key | Pagination       | Supports Full Sync | Supports Incremental |
+|----------------------|-------------|------------------|--------------------|----------------------|
+| orders               | id          | DefaultPaginator | ✅                 | ❌                   |
+| products             |             | No pagination    | ✅                 | ❌                   |
+| funding_sources      | id          | No pagination    | ✅                 | ❌                   |
+| account_members      | id          | No pagination    | ✅                 | ❌                   |
+| campaigns            | id          | No pagination    | ✅                 | ❌                   |
+| organizations        | id          | No pagination    | ✅                 | ❌                   |
+| balance_transactions |             | DefaultPaginator | ✅                 | ❌                   |
+| rewards              | id          | DefaultPaginator | ✅                 | ❌                   |
+| members              | id          | No pagination    | ✅                 | ❌                   |
+| invoices             | id          | DefaultPaginator | ✅                 | ❌                   |
 
 ## IP allow list
 
