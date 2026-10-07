@@ -22,6 +22,10 @@ existing connector configuration, so it must be supplied explicitly.
 All Keka sources upgrading from versions earlier than 0.1.0 must provide their
 company subdomain. Stream names, schemas, and sync modes are unchanged.
 
+Upgrade and configure the subdomain by October 22, 2026. Connections still using
+the old version will be disabled at the deadline rather than automatically
+upgraded without the required configuration.
+
 ### Required steps
 
 1. Find your company's Keka URL. For `https://acme.keka.com`, the subdomain is `acme`.

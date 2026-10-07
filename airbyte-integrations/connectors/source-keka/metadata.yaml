@@ -33,7 +33,8 @@ data:
           the hard-coded master host. Set the subdomain before the first sync after
           upgrading. See https://docs.airbyte.com/integrations/sources/keka-migrations
           for instructions.
-        upgradeDeadline: "2026-10-07"
+        upgradeDeadline: "2026-10-22"
+        deadlineAction: disable
         scopedImpact:
           - scopeType: stream
             impactedScopes:
