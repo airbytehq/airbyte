@@ -226,7 +226,9 @@ def test_incremental_fresh_start_date_sends_updated_min():
         http_mocker.assert_number_of_calls(request, 1)
 
 
-@pytest.mark.parametrize("age_days, sends_updated_min", [(20.5, True), (21.5, False), (28, False), (35, False)], ids=["20.5d", "21.5d", "28d", "35d"])
+@pytest.mark.parametrize(
+    "age_days, sends_updated_min", [(20.5, True), (21.5, False), (28, False), (35, False)], ids=["20.5d", "21.5d", "28d", "35d"]
+)
 def test_start_date_guard_boundary(age_days, sends_updated_min):
     start_date = _days_ago(age_days)
     recent = {"id": "recent", "updated": _days_ago(1)}
