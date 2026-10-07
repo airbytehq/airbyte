@@ -6,8 +6,8 @@ The Xsolla Airbyte Connector enables seamless integration between Xsolla and var
 
 | Input | Type | Description | Default Value |
 | --- | --- | --- | --- |
-| `api_key` | `string` | Xsolla user JWT for the project, without the `Bearer` prefix. This is not a Publisher Account API key. |  |
-| `project_id` | `number` | Project Id. You can find this parameter in your Publisher Account next to the name of the project . Example: 44056 |  |
+| `api_key` | `string` | Xsolla user JWT for the project, without the `Bearer` prefix. This is not a Publisher Account API key. | |
+| `project_id` | `number` | Project Id. You can find this parameter in your Publisher Account next to the name of the project . Example: 44056 | |
 
 ### Authentication
 
@@ -117,6 +117,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.0.4 | 2024-12-12 | [49392](https://github.com/airbytehq/airbyte/pull/49392) | Update dependencies |
 | 0.0.3 | 2024-11-04 | [48219](https://github.com/airbytehq/airbyte/pull/48219) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47595](https://github.com/airbytehq/airbyte/pull/47595) | Update dependencies |
-| 0.0.1 | 2024-10-01 |  | Initial release by [@avirajsingh7](https://github.com/avirajsingh7) via Connector Builder |
+| 0.0.1 | 2024-10-01 | | Initial release by [@avirajsingh7](https://github.com/avirajsingh7) via Connector Builder |
 
 </details>
