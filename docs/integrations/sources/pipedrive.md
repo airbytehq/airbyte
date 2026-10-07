@@ -170,6 +170,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 4.0.0 | 2026-10-06 | [87669](https://github.com/airbytehq/airbyte/pull/87669) | Correct declared field types to match the Pipedrive API reference (lead ids on notes and files are strings) and declare the missing vendor fields on mail, mailThreads, notes and permission_sets |
 | 3.0.5 | 2026-10-06 | [87979](https://github.com/airbytehq/airbyte/pull/87979) | Update dependencies |
 | 3.0.4 | 2026-09-29 | [87265](https://github.com/airbytehq/airbyte/pull/87265) | Update dependencies |
 | 3.0.3 | 2026-09-22 | [86762](https://github.com/airbytehq/airbyte/pull/86762) | Update dependencies |
