@@ -135,7 +135,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                         |
+| Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.4.0 | 2026-10-07 | [88212](https://github.com/airbytehq/airbyte/pull/88212) | Fix OAuth token expiry and refresh-token rotation; validate activity permissions during setup. See the [migration guide](strava-migrations.md). |
 | 0.3.52 | 2026-06-30 | [81265](https://github.com/airbytehq/airbyte/pull/81265) | Update dependencies |
