@@ -254,6 +254,10 @@ To read more, please check the official [Snowflake documentation](https://docs.s
   treats `_` and `%` in the **Schema** option as `LIKE` wildcards and then scans the whole database
   (`SCHEMA_A` also matches `SCHEMAXA`). Until the connector escapes the name itself, add
   `ENABLE_WILDCARDS_IN_SHOW_METADATA_COMMANDS=false` to **JDBC URL Params**.
+- **Key pair authentication fails with `JWT token is invalid`.** The private key does not match the
+  RSA public key registered on the user, or the username or account URL is wrong. Compare the
+  fingerprint shown by `DESCRIBE USER <user>` (`RSA_PUBLIC_KEY_FP`) with your key, or register the
+  public key again with `ALTER USER <user> SET RSA_PUBLIC_KEY='...'`.
 - **Incremental sync on a `TIMESTAMP_NTZ` cursor misses rows.** Snowflake sessions default to the
   `America/Los_Angeles` time zone, which shifts the cursor bound. Add `TIMEZONE=UTC` to
   **JDBC URL Params** as a workaround.
@@ -269,7 +273,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                                                                        | Subject                                                                                                                                                                       |
 |:--------|:-----------|:--------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.0.2   | 2026-09-29 | [87471](https://github.com/airbytehq/airbyte/pull/87471)                                                                                                | TIME columns are no longer emitted as NULL; `9999-12-31 23:59:59.999999999` no longer rounds into year 10000; check fails fast on a wrong warehouse, database or schema; ~2 s less connection latency per query (driver platform detection off); private key written to a temp file.                          |
+| 2.0.2   | 2026-09-29 | [87471](https://github.com/airbytehq/airbyte/pull/87471)                                                                                                | TIME columns are no longer emitted as NULL; `9999-12-31 23:59:59.999999999` no longer rounds into year 10000; check fails fast on a wrong warehouse, database or schema; ~2 s less connection latency per query (driver platform detection off); private key written to a temp file; a rejected key pair (`JWT token is invalid`) is reported as a configuration error instead of a transient one; Bulk CDK 1.1.13 and snowflake-jdbc 4.3.4.                          |
 | 2.0.1   | 2026-09-23 | [85081](https://github.com/airbytehq/airbyte/pull/85081) & [86936](https://github.com/airbytehq/airbyte/pull/86936) | Discover no longer fails entirely when a single view or object is invalid or inaccessible; the offending stream is skipped (h/t @jrbarkin).                                   |
 | 2.0.0   | 2026-09-03 | [85331](https://github.com/airbytehq/airbyte/pull/85331)                                                            | Deprecate username/password authentication; key pair authentication or a programmatic access token is now recommended. Username/password will be removed in a future release. |
 | 1.1.2   | 2026-08-21 | [84927](https://github.com/airbytehq/airbyte/pull/84927)                                                            | Bump Bulk CDK extract version from 1.0.1 to 1.1.10                                                                                                                            |

@@ -58,6 +58,10 @@ docker run --rm -v "$PWD/secrets:/secrets" airbyte/source-snowflake:dev check --
 docker run --rm -v "$PWD/secrets:/secrets" airbyte/source-snowflake:dev discover --config /secrets/config.json
 ```
 
+For protocol sweeps of a published image against the shared integration account (prove-fix
+comparisons, cursor canary), use the harness in `.agents/skills/source-snowflake-e2e-tests/SKILL.md`
+(`poe e2e-local`); it fetches the same GSM secret.
+
 ## Formatting
 
 Kotlin is formatted with ktfmt (kotlinlang style) through spotless:
