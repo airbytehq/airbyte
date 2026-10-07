@@ -11,7 +11,7 @@ from collections import defaultdict
 from logging import getLogger
 from typing import Any, Dict, Iterable, List, Mapping
 
-from surrealdb import Surreal
+from surrealdb import RecordID, Surreal
 
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
@@ -26,6 +26,55 @@ CONFIG_SURREALDB_DATABASE = "surrealdb_database"
 CONFIG_SURREALDB_TOKEN = "surrealdb_token"
 CONFIG_SURREALDB_USERNAME = "surrealdb_username"
 CONFIG_SURREALDB_PASSWORD = "surrealdb_password"
+
+# `id` is reserved for the record ID in SurrealDB, so a source field named `id` is stored under this name instead.
+SOURCE_ID_FIELD = "_airbyte_source_id"
+
+JSON_SCHEMA_TYPE_TO_SURREALDB_TYPE = {
+    "string": "string",
+    "integer": "int",
+    "number": "number",
+    "boolean": "bool",
+    "object": "object",
+    "array": "array",
+}
+
+
+def quote_identifier(name: str) -> str:
+    """Quote a table or field name so that it is safe to use in a SurrealQL statement."""
+    return "`" + name.replace("`", "\\`") + "`"
+
+
+def surrealdb_field_type(props: Mapping[str, Any]) -> str:
+    """
+    Map a JSON schema property definition to a SurrealDB field type.
+
+    Source fields are always optional, because sources do not guarantee that every field is present in every record.
+    """
+    types = props.get("type", [])
+    if isinstance(types, str):
+        types = [types]
+    kinds: List[str] = []
+    for tpe in types:
+        if tpe == "null":
+            continue
+        if tpe == "string" and props.get("format") == "date-time":
+            kind = "datetime"
+        else:
+            kind = JSON_SCHEMA_TYPE_TO_SURREALDB_TYPE.get(tpe, "any")
+        if kind not in kinds:
+            kinds.append(kind)
+    if not kinds or "any" in kinds:
+        return "any"
+    return f"option<{' | '.join(kinds)}>"
+
+
+def is_datetime_type(field_type: str) -> bool:
+    return field_type in ("datetime", "option<datetime>")
+
+
+def destination_field_name(field_name: str) -> str:
+    return SOURCE_ID_FIELD if field_name == "id" else field_name
 
 
 def normalize_url(url: str) -> str:
@@ -130,10 +179,10 @@ class DestinationSurrealDB(Destination):
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 # delete the tables
                 logger.info("Removing table for overwrite: %s", table_name)
-                con.query(f"REMOVE TABLE IF EXISTS {table_name};")
+                con.query(f"REMOVE TABLE IF EXISTS {quote_identifier(table_name)};")
 
             # create the table if needed
-            con.query(f"DEFINE TABLE IF NOT EXISTS {table_name};")
+            con.query(f"DEFINE TABLE IF NOT EXISTS {quote_identifier(table_name)};")
 
             looks_raw = table_name.startswith("airbyte_raw_")
             fields_to_types = {}
@@ -152,24 +201,16 @@ class DestinationSurrealDB(Destination):
                 else:
                     fields_to_types["_airbyte_meta"] = "object"
 
-            stream_fields = configured_stream.stream.json_schema["properties"].keys()
-            for field_name in stream_fields:
-                props = configured_stream.stream.json_schema["properties"][field_name]
-                tpe = props["type"]
-                fmt = props["format"] if "format" in props else None
-                if tpe == "string" and fmt == "date-time":
-                    fields_to_types[field_name] = "datetime"
-                elif tpe == "integer":
-                    fields_to_types[field_name] = "int"
-                else:
-                    fields_to_types[field_name] = tpe
+            stream_properties = configured_stream.stream.json_schema.get("properties", {})
+            for field_name, props in stream_properties.items():
+                fields_to_types[destination_field_name(field_name)] = surrealdb_field_type(props)
 
             for field_name, field_type in fields_to_types.items():
-                con.query(f"DEFINE FIELD OVERWRITE {field_name} ON {table_name} TYPE {field_type};")
+                con.query(f"DEFINE FIELD OVERWRITE {quote_identifier(field_name)} ON {quote_identifier(table_name)} TYPE {field_type};")
 
             dest_table_definitions[table_name] = fields_to_types
 
-        buffer = defaultdict(lambda: defaultdict(list))
+        buffer: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
 
         for message in input_messages:
             if message.type == Type.STATE:
@@ -178,7 +219,7 @@ class DestinationSurrealDB(Destination):
                     logger.info("flushing buffer for state: %s", message)
                     DestinationSurrealDB._flush_buffer(con=con, buffer=buffer, stream_name=stream_name)
 
-                buffer = defaultdict(lambda: defaultdict(list))
+                buffer = defaultdict(list)
 
                 yield message
             elif message.type == Type.RECORD:
@@ -192,36 +233,38 @@ class DestinationSurrealDB(Destination):
                 loaded_at = datetime.datetime.now(datetime.timezone.utc)
                 # add to buffer
                 raw_id = str(uuid.uuid4())
+                record: Dict[str, Any] = {}
                 if is_legacyv1:
                     # OLD Raw Table Columns
                     # See https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2#breakdown-of-breaking-changes
-                    buffer[stream_name]["_airbyte_ab_id"].append(raw_id)
-                    buffer[stream_name]["_airbyte_emitted_at"].append(emitted_at)
-                    buffer[stream_name]["_airbyte_loaded_at"].append(loaded_at)
+                    record["_airbyte_ab_id"] = raw_id
+                    record["_airbyte_emitted_at"] = emitted_at
+                    record["_airbyte_loaded_at"] = loaded_at
                 else:
                     record_meta: dict[str, str] = {}
-                    buffer[stream_name][AB_RAW_ID_COLUMN].append(raw_id)
-                    buffer[stream_name][AB_EXTRACTED_AT_COLUMN].append(loaded_at)
-                    buffer[stream_name][AB_META_COLUMN].append(record_meta)
+                    record[AB_RAW_ID_COLUMN] = raw_id
+                    record[AB_EXTRACTED_AT_COLUMN] = loaded_at
+                    record[AB_META_COLUMN] = record_meta
                 if do_write_raw or stream_name.startswith("airbyte_raw_"):
                     if is_legacyv1:
                         # OLD Raw Table Columns
                         # See https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2#breakdown-of-breaking-changes
-                        buffer[stream_name]["_airbyte_data"].append(json.dumps(data))
+                        record["_airbyte_data"] = json.dumps(data)
                     else:
-                        buffer[stream_name]["_airbyte_data"].append(data)
+                        record["_airbyte_data"] = data
                 else:
-                    for field_name in data.keys():
-                        raw_data = data[field_name]
+                    for source_field_name, raw_data in data.items():
+                        field_name = destination_field_name(source_field_name)
                         if field_name not in dest_table_definitions[stream_name]:
                             logger.error("field %s not in dest_table_definitions[%s]", field_name, stream_name)
                             continue
                         field_type = dest_table_definitions[stream_name][field_name]
-                        if field_type == "datetime":
+                        if is_datetime_type(field_type) and isinstance(raw_data, str):
                             # This supports the following cases:
                             # - "2022-06-20T18:56:18" in case airbyte_type is "timestamp_without_timezone"
                             raw_data = datetime.datetime.fromisoformat(raw_data)
-                        buffer[stream_name][field_name].append(raw_data)
+                        record[field_name] = raw_data
+                buffer[stream_name].append(record)
             else:
                 logger.info("Message type %s not supported, skipping", message.type)
 
@@ -230,18 +273,12 @@ class DestinationSurrealDB(Destination):
             DestinationSurrealDB._flush_buffer(con=con, buffer=buffer, stream_name=stream_name)
 
     @staticmethod
-    def _flush_buffer(*, con: Surreal, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str):
+    def _flush_buffer(*, con: Surreal, buffer: Dict[str, List[Dict[str, Any]]], stream_name: str):
         table_name = stream_name
-        buf = buffer[stream_name]
-        field_names = buf.keys()
-        id_field = "_airbyte_ab_id" if "_airbyte_ab_id" in field_names else AB_RAW_ID_COLUMN
-        id_column = buf[id_field]
-        for i, _id in enumerate(id_column):
-            record = {}
-            for field_name in field_names:
-                record[field_name] = buf[field_name][i]
+        for record in buffer[stream_name]:
+            _id = record["_airbyte_ab_id"] if "_airbyte_ab_id" in record else record[AB_RAW_ID_COLUMN]
             try:
-                con.upsert(f"{table_name}:{_id}", record)
+                con.upsert(RecordID(table_name, _id), record)
             except Exception as e:
                 logger.error("error upserting record %s: %s", record, e)
 
@@ -259,6 +296,8 @@ class DestinationSurrealDB(Destination):
         """
         try:
             con = surrealdb_connect(config)
+            # HTTP connections require a namespace and database to be selected before running any query.
+            con.use(str(config.get(CONFIG_SURREALDB_NAMESPACE)), str(config.get(CONFIG_SURREALDB_DATABASE)))
             logger.debug("Connected to SurrealDB. Running test query.")
             con.query("SELECT * FROM [1];")
             logger.debug("Test query succeeded.")
