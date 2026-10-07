@@ -21,8 +21,10 @@ definitions:
         - http_codes:
           - 403
           action: RETRY
+          error_message: "GNews API returned 403 Forbidden: the daily request quota for this API key has been reached (it resets at 00:00 UTC) or the subscription has expired. Wait for the quota reset or check your GNews plan, then retry the sync."
         backoff_strategies:
-        - class_name: "source_declarative_manifest.components.WaitUntilMidnightBackoffStrategy"
+        - type: "ConstantBackoffStrategy"
+          backoff_time_in_seconds: 1.0
   base_retriever:
     record_selector:
       extractor:
@@ -143,8 +145,10 @@ definitions:
             - http_codes:
               - 403
               action: RETRY
+              error_message: "GNews API returned 403 Forbidden: the daily request quota for this API key has been reached (it resets at 00:00 UTC) or the subscription has expired. Wait for the quota reset or check your GNews plan, then retry the sync."
             backoff_strategies:
-            - class_name: "source_declarative_manifest.components.WaitUntilMidnightBackoffStrategy"
+            - type: "ConstantBackoffStrategy"
+              backoff_time_in_seconds: 1.0
         request_parameters:
           token: "{{ config['api_key'] }}"
           lang: "{{ config['language'] }}"
@@ -245,8 +249,10 @@ definitions:
             - http_codes:
               - 403
               action: RETRY
+              error_message: "GNews API returned 403 Forbidden: the daily request quota for this API key has been reached (it resets at 00:00 UTC) or the subscription has expired. Wait for the quota reset or check your GNews plan, then retry the sync."
             backoff_strategies:
-            - class_name: "source_declarative_manifest.components.WaitUntilMidnightBackoffStrategy"
+            - type: "ConstantBackoffStrategy"
+              backoff_time_in_seconds: 1.0
         request_parameters:
           token: "{{ config['api_key'] }}"
           lang: "{{ config['language'] }}"
@@ -352,10 +358,11 @@ streams:
           - http_codes:
             - 403
             action: RETRY
+            error_message: "GNews API returned 403 Forbidden: the daily request quota for this API key has been reached (it resets at 00:00 UTC) or the subscription has expired. Wait for the quota reset or check your GNews plan, then retry the sync."
             type: HttpResponseFilter
           backoff_strategies:
-          - class_name: "source_declarative_manifest.components.WaitUntilMidnightBackoffStrategy"
-            type: CustomBackoffStrategy
+          - type: "ConstantBackoffStrategy"
+            backoff_time_in_seconds: 1.0
           type: DefaultErrorHandler
       request_parameters:
         token: "{{ config['api_key'] }}"
@@ -468,10 +475,11 @@ streams:
           - http_codes:
             - 403
             action: RETRY
+            error_message: "GNews API returned 403 Forbidden: the daily request quota for this API key has been reached (it resets at 00:00 UTC) or the subscription has expired. Wait for the quota reset or check your GNews plan, then retry the sync."
             type: HttpResponseFilter
           backoff_strategies:
-          - class_name: "source_declarative_manifest.components.WaitUntilMidnightBackoffStrategy"
-            type: CustomBackoffStrategy
+          - type: "ConstantBackoffStrategy"
+            backoff_time_in_seconds: 1.0
           type: DefaultErrorHandler
       request_parameters:
         token: "{{ config['api_key'] }}"
