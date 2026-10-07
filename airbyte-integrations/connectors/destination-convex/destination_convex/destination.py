@@ -4,9 +4,8 @@
 
 
 import io
-import logging
 from dataclasses import dataclass
-from logging import Logger
+from logging import Logger, getLogger
 from typing import Any, Iterable, List, Mapping, Optional, cast
 
 import orjson
@@ -40,7 +39,7 @@ class DestinationConvex(Destination):
             try:
                 raw_message = orjson.loads(line)
             except orjson.JSONDecodeError:
-                logging.getLogger("airbyte").info("Ignoring input which can't be deserialized as an Airbyte message")
+                getLogger("airbyte").info("Ignoring input which can't be deserialized as an Airbyte message")
                 continue
             message = AirbyteMessageSerializer.load(raw_message)
             if message.type == Type.STATE:
@@ -50,7 +49,7 @@ class DestinationConvex(Destination):
                 yield message
 
     def run(self, args: List[str]) -> None:
-        init_uncaught_exception_handler(logging.getLogger("airbyte"))
+        init_uncaught_exception_handler(getLogger("airbyte"))
         for message in self.run_cmd(self.parse_args(args)):
             serialized = message.raw_message if isinstance(message, _StateMessage) else AirbyteMessageSerializer.dump(message)
             print(orjson.dumps(serialized).decode())
