@@ -38,7 +38,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                  |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------- |
-| 0.2.26 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix `activity` stream: send required `date_to` parameter, use `limit` instead of unsupported `page_size`, parse `created_at` cursor format, stop re-fetching page 1 |
+| 0.2.26 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88279) | Fix `activity` stream: send required `date_to` parameter, use `limit` instead of unsupported `page_size`, parse `created_at` cursor format, stop re-fetching page 1 |
 | 0.2.25 | 2025-05-24 | [60696](https://github.com/airbytehq/airbyte/pull/60696) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [59865](https://github.com/airbytehq/airbyte/pull/59865) | Update dependencies |
 | 0.2.23 | 2025-05-03 | [59278](https://github.com/airbytehq/airbyte/pull/59278) | Update dependencies |
