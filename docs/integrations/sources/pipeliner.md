@@ -56,7 +56,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.64 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix API hostname allowlist and update API setup documentation |
+| 0.0.64 | 2026-10-07 | [88284](https://github.com/airbytehq/airbyte/pull/88284) | Fix API hostname allowlist and update API setup documentation |
 | 0.0.63 | 2026-10-06 | [87982](https://github.com/airbytehq/airbyte/pull/87982) | Update dependencies |
 | 0.0.62 | 2026-09-29 | [87283](https://github.com/airbytehq/airbyte/pull/87283) | Update dependencies |
 | 0.0.61 | 2026-09-22 | [86751](https://github.com/airbytehq/airbyte/pull/86751) | Update dependencies |
