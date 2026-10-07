@@ -37,13 +37,6 @@ data:
     ql: 100
   connectorTestSuitesOptions:
     - suite: unitTests
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_SOURCE-PIVOTAL-TRACKER_CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: Pivotal Tracker API
       url: https://www.pivotaltracker.com/help/api
