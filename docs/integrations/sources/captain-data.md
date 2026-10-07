@@ -1,5 +1,21 @@
 # Captain Data
 
+:::warning
+
+## Deprecation Notice
+
+The Captain Data source connector has been archived and is no longer available in Airbyte Cloud or Airbyte Open Source.
+
+This connector was built on the Captain Data **v3 API** (`https://api.captaindata.co/v3/`). Captain Data sunset the v3 API on January 9th, 2026 ("Captain Data v3 has been officially sunset. All v3 features and endpoints are no longer available." — see the [Captain Data product updates](https://docs.captaindata.com/v1/changelog/overview)). Every endpoint used by this connector (`/workspace`, `/workflows`, `/workflows/{uid}/jobs`, `/jobs/{uid}/results`) now returns `404 Not Found`, so the connector can no longer connect or sync.
+
+The replacement [Captain Data v1 API](https://docs.captaindata.com/v1/introduction) is a people/company enrichment API that does not expose the workflow, job, or job result resources this connector was built around, so there is no drop-in migration path.
+
+### Recommended Actions
+
+Users who wish to sync data from the new Captain Data v1 API are advised to build a custom connector with the [Connector Builder](https://docs.airbyte.com/platform/connector-development/connector-builder-ui/overview).
+
+:::
+
 This page contains the setup guide and reference information for the [Captain Data](https://docs.captaindata.co/#intro) source connector.
 
 ## Prerequisites
@@ -69,6 +85,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                            | Subject                                     |
 | :------ |:-----------| :------------------------------------------------------ |:--------------------------------------------|
+| 0.2.26 | 2026-10-07 | [<n>](https://github.com/airbytehq/airbyte/pull/<n>) | Archive connector: Captain Data sunset the v3 API on 2026-01-09; all endpoints return 404 |
 | 0.2.25 | 2026-06-02 | [78635](https://github.com/airbytehq/airbyte/pull/78635) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [59884](https://github.com/airbytehq/airbyte/pull/59884) | Update dependencies |
 | 0.2.23 | 2025-05-03 | [59321](https://github.com/airbytehq/airbyte/pull/59321) | Update dependencies |
