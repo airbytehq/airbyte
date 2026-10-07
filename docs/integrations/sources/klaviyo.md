@@ -97,23 +97,6 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 - [Profiles](https://developers.klaviyo.com/en/v2026-01-15/reference/get_profiles)
 - [Segments](https://developers.klaviyo.com/en/v2026-01-15/reference/get_segments)
 
-### Campaigns and Campaigns Detailed streams
-
-:::warning
-Connector version 4.0.0 moved to Klaviyo API revision `2026-01-15`, which changes the structure of two fields in the **Campaigns** and **Campaigns Detailed** streams. Syncs and destinations are not affected: the same campaigns and campaign messages are returned, and except for SMS message labels (see below) the values are unchanged. Some nested paths inside `attributes.send_strategy` and `campaign_messages` differ, so downstream queries, models or dashboards that read the old paths need to be updated, and you should refresh the source schema after upgrading so the new fields appear. Rows synced before the upgrade keep the old structure. You don't need to clear the streams; if you do clear **Campaigns** or **Campaigns Detailed** to rewrite old rows, the connector only re-reads campaigns updated on or after your **Start Date** (the last year if Start Date is blank), and campaigns deleted in Klaviyo can't be re-read, so back up the tables or set Start Date earlier than your oldest campaign first. See the [migration guide](https://docs.airbyte.com/integrations/sources/klaviyo-migrations#upgrading-to-400) for details.
-
-| Stream | Old path (revision `2024-10-15`) | New path (revision `2026-01-15`) |
-| :-- | :-- | :-- |
-| `campaigns`, `campaigns_detailed` | `attributes.send_strategy.options_static.datetime`, `attributes.send_strategy.options_throttled.datetime` | `attributes.send_strategy.datetime` |
-| `campaigns`, `campaigns_detailed` | `attributes.send_strategy.options_sto.date` | `attributes.send_strategy.date` |
-| `campaigns`, `campaigns_detailed` | `attributes.send_strategy.options_throttled.throttle_percentage` | `attributes.send_strategy.throttle_percentage` |
-| `campaigns`, `campaigns_detailed` | `attributes.send_strategy.options_static.is_local` | `attributes.send_strategy.options.is_local` |
-| `campaigns`, `campaigns_detailed` | `attributes.send_strategy.options_static.send_past_recipients_immediately` | `attributes.send_strategy.options.send_past_recipients_immediately` |
-| `campaigns_detailed` | `campaign_messages[].attributes.channel`, `label`, `content`, `render_options` | `campaign_messages[].attributes.definition.channel`, `label`, `content`, `render_options` |
-
-Klaviyo no longer generates a `label` for SMS campaign messages, so `campaign_messages[].attributes.definition.label` is absent for them (`null` in typed destinations).
-:::
-
 ### Metrics stream
 
 The **Metrics** stream always syncs all metric definitions, regardless of the configured **Start Date**. Metric definitions are reference data needed to interpret other streams (for example, joining `relationships.data.metric.id` in `events` to a metric name), and the Klaviyo API does not support filtering metrics by date. On subsequent incremental syncs, only new and updated metric definitions are emitted. If older metric definitions are missing after upgrading from a previous connector version, clear/reset the `metrics` stream to backfill them.
