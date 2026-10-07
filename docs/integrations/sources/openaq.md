@@ -9,7 +9,7 @@ Docs : https://docs.openaq.org/using-the-api/quick-start
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
-| `country_ids` | `array` | Countries. The list of IDs of countries (comma separated) you need the data for, check more: https://docs.openaq.org/resources/countries |  |
+| `country_ids` | `array` | Countries. The list of numeric OpenAQ country IDs (e.g. 155 for the United States) you need the data for. ISO country codes such as "FR" are not accepted by the API; look up the numeric IDs at https://docs.openaq.org/resources/countries or via the countries stream. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -42,6 +42,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.70 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Validate `country_ids` during check, surface OpenAQ 422 as a config error and document that numeric country IDs are required |
 | 0.0.69 | 2026-10-06 | [87978](https://github.com/airbytehq/airbyte/pull/87978) | Update dependencies |
 | 0.0.68 | 2026-09-29 | [87297](https://github.com/airbytehq/airbyte/pull/87297) | Update dependencies |
 | 0.0.67 | 2026-09-22 | [86760](https://github.com/airbytehq/airbyte/pull/86760) | Update dependencies |
