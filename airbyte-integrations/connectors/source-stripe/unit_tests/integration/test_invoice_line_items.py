@@ -266,7 +266,10 @@ class InvoiceLineItemsLegacyApiVersionTest(TestCase):
         assert by_id["il_A2"]["subscription"] == "sub_S"
         assert all(record["invoice_id"] == "in_A" for record in records)
         assert all(isinstance(record["invoice_updated"], int) for record in records)
-        assert all(not {"unique_id", "unique_line_item_id", "original_record"} & record.keys() for record in records)
+        assert all(record["unique_id"] == record["id"] for record in records)
+        assert by_id["il_A2"]["unique_line_item_id"] == "sli_A2"
+        assert "unique_line_item_id" not in by_id["il_A1"]
+        assert all("original_record" not in record for record in records)
 
     @HttpMocker()
     def test_2018_renewal_pair_sub_collision_yields_distinct_ids(self, http_mocker: HttpMocker) -> None:
@@ -323,7 +326,7 @@ class InvoiceLineItemsLegacyApiVersionTest(TestCase):
 
         assert record["id"] == "il_B1"
         assert record["subscription"] == "sub_S"
-        assert "unique_id" not in record
+        assert record["unique_id"] == "il_B1"
 
     @HttpMocker()
     def test_modern_event_is_noop(self, http_mocker: HttpMocker) -> None:
@@ -578,6 +581,8 @@ class InvoiceLineItemsLegacyApiVersionTest(TestCase):
         assert set(full_refresh_by_id) == set(incremental_by_id) == {"il_L1", "il_L2"}
         assert full_refresh_by_id["il_L2"]["subscription"] == incremental_by_id["il_L2"]["subscription"] == "sub_S"
         assert all(record["invoice_id"] == "in_L" for record in full_refresh_records + incremental_records)
+        assert all(record["unique_id"] == record["id"] for record in incremental_records)
+        assert all("unique_id" not in record for record in full_refresh_records)
 
     @HttpMocker()
     def test_mixed_truncated_and_embedded_legacy_events_emit_only_il_ids(self, http_mocker: HttpMocker) -> None:
