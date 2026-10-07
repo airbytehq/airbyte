@@ -35,7 +35,8 @@ data:
           enter the OAuth application's Client ID, Client Secret and a Refresh
           Token. See the [Employment Hero migration guide](https://docs.airbyte.com/integrations/sources/employment-hero-migrations)
           for details.
-        upgradeDeadline: "2026-10-07"
+        upgradeDeadline: "2026-10-21"
+        deadlineAction: "disable"
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/employment-hero
