@@ -81,7 +81,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date       |Pull Request | Subject        |
 |------------------|------------|--------------|----------------|
-| 0.0.67 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Add refreshable OAuth 2.0 (refresh token / password grant) authentication, send a descriptive User-Agent, fix `subreddit_explore` to iterate over the configured subreddits and read its `created` cursor, and harden pagination against non-object `data` responses |
+| 0.0.67 | 2026-10-07 | [88257](https://github.com/airbytehq/airbyte/pull/88257) | Add refreshable OAuth 2.0 (refresh token / password grant) authentication, send a descriptive User-Agent, fix `subreddit_explore` to iterate over the configured subreddits and read its `created` cursor, and harden pagination against non-object `data` responses |
 | 0.0.66 | 2026-10-06 | [88007](https://github.com/airbytehq/airbyte/pull/88007) | Update dependencies |
 | 0.0.65 | 2026-09-29 | [87320](https://github.com/airbytehq/airbyte/pull/87320) | Update dependencies |
 | 0.0.64 | 2026-09-22 | [86793](https://github.com/airbytehq/airbyte/pull/86793) | Update dependencies |
