@@ -1,6 +1,8 @@
 # Nebius AI
-Website: https://studio.nebius.com/
-API Reference: https://studio.nebius.com/docs/api-reference
+Website: https://tokenfactory.nebius.com/
+API Reference: https://docs.tokenfactory.nebius.com/api-reference/introduction
+
+Nebius AI Studio was rebranded as Nebius Token Factory. The API is OpenAI-compatible and is served from `https://api.tokenfactory.nebius.com`; API keys are created at https://tokenfactory.nebius.com/.
 
 ## Configuration
 
@@ -8,7 +10,7 @@ API Reference: https://studio.nebius.com/docs/api-reference
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key. API key or access token |  |
 | `start_date` | `string` | Start date.  |  |
-| `limit` | `string` | Limit. Limit for each response objects | 20 |
+| `limit` | `string` | Limit. Maximum number of records requested from the `files` and `batches` endpoints | 20 |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -30,6 +32,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Move to the documented Nebius Token Factory API host (`api.tokenfactory.nebius.com`), pass `limit` to the `files` stream, refresh docs links |
 | 0.0.51 | 2026-10-06 | [87951](https://github.com/airbytehq/airbyte/pull/87951) | Update dependencies |
 | 0.0.50 | 2026-09-29 | [87244](https://github.com/airbytehq/airbyte/pull/87244) | Update dependencies |
 | 0.0.49 | 2026-09-22 | [86715](https://github.com/airbytehq/airbyte/pull/86715) | Update dependencies |
