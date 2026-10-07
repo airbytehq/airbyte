@@ -29,7 +29,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.1.0 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Switch to workspace API key authentication (`COASSEMBLE:<workspace_id>:<api_key>`), read `trackings` per course with 0-indexed pagination, remove the retired `screen_types` stream |
+| 0.1.0 | 2026-10-07 | [88329](https://github.com/airbytehq/airbyte/pull/88329) | Switch to workspace API key authentication (`COASSEMBLE:<workspace_id>:<api_key>`), read `trackings` per course with 0-indexed pagination, remove the retired `screen_types` stream |
 | 0.0.66 | 2026-10-06 | [87794](https://github.com/airbytehq/airbyte/pull/87794) | Update dependencies |
 | 0.0.65 | 2026-09-29 | [87116](https://github.com/airbytehq/airbyte/pull/87116) | Update dependencies |
 | 0.0.64 | 2026-09-22 | [86569](https://github.com/airbytehq/airbyte/pull/86569) | Update dependencies |
