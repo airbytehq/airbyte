@@ -22,7 +22,7 @@ Enterprise Flex is a better fit when your needs shift from moving data to runnin
 You don't have to outgrow Core to choose Flex. Many teams move because they want those capabilities, or because they'd rather not operate a control plane. If none of them matter to you, Core remains a good choice. If you'd rather not run any infrastructure, use [Airbyte Cloud](https://airbyte.com/product/airbyte-cloud).
 
 :::note
-[Airbox](../enterprise-flex/data-plane-util.md) deploys a data plane onto a single machine with Docker Desktop. It's a fast way to start moving data, not a scaled deployment. For production workloads, deploy data planes to a Kubernetes cluster with Helm.
+For production workloads, deploy data planes to a Kubernetes cluster with Helm. [Airbox](../enterprise-flex/data-plane-util.md) deploys a data plane onto a single machine with Docker Desktop. It's a fast way to start moving data, not a scaled deployment.
 :::
 
 ## What to scale
