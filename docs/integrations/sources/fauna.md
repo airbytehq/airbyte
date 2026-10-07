@@ -1,5 +1,17 @@
 # Fauna
 
+:::warning
+
+## Deprecation Notice
+
+The Fauna source connector has been archived and is no longer available in Airbyte. Fauna shut down its database service on May 30, 2025 (see the [Fauna announcement](https://fauna.com/blog/the-future-of-fauna)), so the API this connector relied on (`db.fauna.com` and the regional endpoints) no longer exists and the connector can no longer sync data.
+
+### Recommended Actions
+
+Fauna has not published a hosted replacement for the service. Users who migrated their data elsewhere should sync it with the connector for that new platform, or build a [custom connector](https://docs.airbyte.com/connector-development/) if needed.
+
+:::
+
 This page guides you through setting up a [Fauna](https://fauna.com/) source.
 
 ## Overview
@@ -236,6 +248,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                         |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------------- |
+| 0.1.10 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Archive connector: Fauna shut down its service on 2025-05-30 |
 | 0.1.9 | 2025-05-10 | [59992](https://github.com/airbytehq/airbyte/pull/59992) | Update dependencies |
 | 0.1.8 | 2025-05-03 | [59430](https://github.com/airbytehq/airbyte/pull/59430) | Update dependencies |
 | 0.1.7 | 2025-04-26 | [58913](https://github.com/airbytehq/airbyte/pull/58913) | Update dependencies |
