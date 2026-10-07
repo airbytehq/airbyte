@@ -61,7 +61,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
-| 0.0.67 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix pagination (`page` was fed an offset, skipping pages and looping forever on non-paginated endpoints), use `pageSize=250`, wait for `X-Rate-Limit-Reset` on HTTP 429 and throttle to Teamwork's documented 150 requests/minute |
+| 0.0.67 | 2026-10-07 | [88242](https://github.com/airbytehq/airbyte/pull/88242) | Fix pagination (`page` was fed an offset, skipping pages and looping forever on non-paginated endpoints), use `pageSize=250`, wait for `X-Rate-Limit-Reset` on HTTP 429 and throttle to Teamwork's documented 150 requests/minute |
 | 0.0.66 | 2026-10-06 | [88056](https://github.com/airbytehq/airbyte/pull/88056) | Update dependencies |
 | 0.0.65 | 2026-09-29 | [87396](https://github.com/airbytehq/airbyte/pull/87396) | Update dependencies |
 | 0.0.64 | 2026-09-22 | [86832](https://github.com/airbytehq/airbyte/pull/86832) | Update dependencies |
