@@ -5,15 +5,23 @@ API endpoints and methods.
 Documentation: https://uk.castoredc.com/api#/
 
 ## Authentication
-Visit `https://YOUR_REGION.castoredc.com/account/settings` for getting your client id and secret
+Generate an API client ID and client secret in your Castor account settings on the server where your study is stored:
+
+| `url_region` | Server | Account settings |
+| --- | --- | --- |
+| `nl` | Netherlands (EU) | https://data.castoredc.com/account/settings |
+| `uk` | United Kingdom | https://uk.castoredc.com/account/settings |
+| `us` | United States | https://us.castoredc.com/account/settings |
+
+The `nl` setting uses `data.castoredc.com` for both API requests and OAuth authentication, as documented in [Castor's server guide](https://helpdesk.castoredc.com/2-introduction-and-getting-started/server-selecting-data-storage-location).
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `url_region` | `string` | URL Region. The url region given at time of registration | uk |
-| `client_id` | `string` | Client ID. Visit `https://YOUR_REGION.castoredc.com/account/settings` |  |
-| `client_secret` | `string` | Client secret. Visit `https://YOUR_REGION.castoredc.com/account/settings` |  |
+| `url_region` | `string` | Region where your study is stored: `nl` (Netherlands), `uk` (United Kingdom), or `us` (United States). | uk |
+| `client_id` | `string` | Client ID from your regional account settings listed above. |  |
+| `client_secret` | `string` | Client secret from your regional account settings listed above. |  |
 | `start_date` | `string` | Start date.  |  |
 
 ## Streams
@@ -47,6 +55,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.64 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix Netherlands API and OAuth URLs and allowed hosts. |
 | 0.0.63 | 2026-10-06 | [87800](https://github.com/airbytehq/airbyte/pull/87800) | Update dependencies |
 | 0.0.62 | 2026-09-29 | [87125](https://github.com/airbytehq/airbyte/pull/87125) | Update dependencies |
 | 0.0.61 | 2026-09-22 | [86573](https://github.com/airbytehq/airbyte/pull/86573) | Update dependencies |
