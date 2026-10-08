@@ -8,11 +8,11 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 The upgrade asks you to clear the `cards`, `transactions` and `reimbursements` streams. Clearing deletes their data in your destination, and the next sync reads back only the current version of each record from your start date onward. If you sync these streams with an **Append** mode, the earlier copies of a record that Append kept, and any records older than your start date, don't come back. Back up these tables before you clear them if you need that history.
 :::
 
-Version 1.0.0 declares the date and timestamp fields of the `cards`, `transactions` and `reimbursements` streams with their real types. Ramp returns these values in ISO 8601 format, but earlier versions declared them as plain strings, so destinations stored them as text and you had to cast them before filtering or joining by date. Every field of the other 15 streams was already typed when the stream was added.
+Version 1.0.0 declares the date and timestamp fields of the `cards`, `transactions` and `reimbursements` streams with their real types. Ramp returns these values in ISO 8601 format, but earlier versions declared them as plain strings, so destinations stored them as text and you had to cast them before filtering or joining by date. Every ISO 8601 date field of the other 15 streams was already typed when the stream was added.
 
 ### What changed
 
-These 13 fields change type. Destinations that type their columns, such as BigQuery, Snowflake, Redshift, Postgres, ClickHouse and S3 Data Lake (Iceberg), change the matching columns from text to the new type.
+These 13 fields change type. Destinations that type their columns change the matching columns from text to the new type.
 
 | Stream | Field | New type |
 | --- | --- | --- |
@@ -42,7 +42,7 @@ Connections that sync at least one of the `cards`, `transactions` and `reimburse
 
 1. If you sync these streams with an **Append** mode and need the history it kept, back up the `cards`, `transactions` and `reimbursements` tables.
 2. Upgrade the connector to 1.0.0.
-3. Refresh the source schema, and clear the `cards`, `transactions` and `reimbursements` streams. The [connector upgrade guide](#connector-upgrade-guide) below has the steps.
+3. Before the connection's next sync, refresh the source schema, and clear the `cards`, `transactions` and `reimbursements` streams. The [connector upgrade guide](#connector-upgrade-guide) below has the steps.
 4. Sync the connection. The `transactions` and `reimbursements` streams re-read every record updated since your start date, or since 2019-01-01 if you didn't set one.
 
 ### Update downstream queries
