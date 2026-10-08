@@ -289,11 +289,13 @@ definitions:
           http_method: POST
           # A fixed window around now: Google rejects longer spans (timeRangeTooLong), and start_date,
           # which bounds event modification times, has no meaning for a point-in-time availability query.
-          request_body_json:
-            timeMin: "{{ (now_utc() - duration('P30D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-            timeMax: "{{ (now_utc() + duration('P45D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-            items:
-              - id: "{{ stream_partition.calendar_id }}"
+          request_body:
+            type: RequestBodyJsonObject
+            value:
+              timeMin: "{{ (now_utc() - duration('P30D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+              timeMax: "{{ (now_utc() + duration('P45D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+              items:
+                - id: "{{ stream_partition.calendar_id }}"
           error_handler:
             type: DefaultErrorHandler
             backoff_strategies:
@@ -487,13 +489,13 @@ definitions:
                 - 403
               action: FAIL
               failure_type: config_error
-              error_message: "The authorized Google account lacks access to the configured calendar or the Calendar API is disabled."
+              error_message: "The authorized Google account lacks access to this calendar (the one set in \"Calendar Id\", or one listed in the account's calendar list) or the Calendar API is disabled."
             - type: HttpResponseFilter
               http_codes:
                 - 404
               action: FAIL
               failure_type: config_error
-              error_message: "The calendar configured in \"Calendar Id\" was not found by the Google Calendar API. Check the ID in the calendar's settings, or use 'primary'."
+              error_message: "A calendar was not found by the Google Calendar API: check the ID set in \"Calendar Id\" (or use 'primary'), or re-sync if a listed calendar was removed."
             - type: HttpResponseFilter
               # 410 with reason `deleted` (calendar removed) or `fullSyncRequired` (only possible with
               # syncToken, which this connector does not send): the user must act, not wait.
