@@ -15,7 +15,9 @@ This page contains the setup guide and reference information for the OpenAI Ads 
 2. Open the [**Settings**](https://ads.openai.com/settings) page and create a new Advertiser API key.
 3. Copy the key. Each key is scoped to one ad account. To replicate several ad accounts, create one key per account and set up one source per account.
 
-The `spend_limit_windows` stream requires a key with permission to manage billing for the ad account, such as a key created by an ad account admin. If the key lacks this permission, the API returns HTTP 403, the stream returns no records, and the sync continues. OpenAI offers account spending limits only to ad accounts on postpaid invoice billing.
+The `spend_limit_windows` stream needs an ad account on postpaid invoice billing and an API key with permission to manage billing for that account (see [Account spending limits](https://developers.openai.com/ads/api-reference/ad-account)). If the API answers 403, the stream returns no records, the sync continues, and the sync log shows the API's message.
+
+The `conversion_pixels` stream requires pixel management to be enabled for the ad account. If it is not enabled, the stream returns no records and the sync continues.
 
 For more information, see [OpenAI's quickstart](https://developers.openai.com/ads/api-quickstart).
 
@@ -59,16 +61,16 @@ The OpenAI Ads source connector supports the following [sync modes](https://docs
 
 ### Main Tables
 
-| Stream                                                                                        | Primary key | Sync modes   | Notes                                                           |
-| :-------------------------------------------------------------------------------------------- | :---------- | :----------- | :-------------------------------------------------------------- |
-| [ad_account](https://developers.openai.com/ads/api-reference/ad-account)                      | id          | Full Refresh | The ad account the key belongs to                               |
-| [campaigns](https://developers.openai.com/ads/api-reference/campaigns)                        | id          | Full Refresh |                                                                 |
-| [ad_groups](https://developers.openai.com/ads/api-reference/ad-groups)                        | id          | Full Refresh | Listed per campaign, `campaign_id` added to each record         |
-| [ads](https://developers.openai.com/ads/api-reference/ads)                                    | id          | Full Refresh | Listed per ad group, `ad_group_id` added to each record         |
-| [conversion_event_settings](https://developers.openai.com/ads/api-reference/conversion-setup) | id          | Full Refresh | Conversion definitions of the account                           |
-| [conversion_pixels](https://developers.openai.com/ads/api-reference/conversion-setup)         | id          | Full Refresh | Conversion data sources referenced by conversion_event_settings |
-| [custom_audiences](https://developers.openai.com/ads/custom-audiences)                        | id          | Full Refresh | Custom audiences of the account                                 |
-| [spend_limit_windows](https://developers.openai.com/ads/api-reference/ad-account)             | window_id   | Full Refresh | Date range spend limits. Billing permission required            |
+| Stream                                                                                        | Primary key | Sync modes   | Notes                                                                             |
+| :-------------------------------------------------------------------------------------------- | :---------- | :----------- | :-------------------------------------------------------------------------------- |
+| [ad_account](https://developers.openai.com/ads/api-reference/ad-account)                      | id          | Full Refresh | The ad account the key belongs to                                                 |
+| [campaigns](https://developers.openai.com/ads/api-reference/campaigns)                        | id          | Full Refresh |                                                                                   |
+| [ad_groups](https://developers.openai.com/ads/api-reference/ad-groups)                        | id          | Full Refresh | Listed per campaign, `campaign_id` added to each record                           |
+| [ads](https://developers.openai.com/ads/api-reference/ads)                                    | id          | Full Refresh | Listed per ad group, `ad_group_id` added to each record                           |
+| [conversion_event_settings](https://developers.openai.com/ads/api-reference/conversion-setup) | id          | Full Refresh | Conversion definitions of the account                                             |
+| [conversion_pixels](https://developers.openai.com/ads/api-reference/conversion-setup)         | id          | Full Refresh | Conversion data sources referenced by conversion_event_settings                   |
+| [custom_audiences](https://developers.openai.com/ads/custom-audiences)                        | id          | Full Refresh | Custom audiences of the account                                                   |
+| [spend_limit_windows](https://developers.openai.com/ads/api-reference/ad-account)             | window_id   | Full Refresh | Date range spend limits. Postpaid invoice billing and billing permission required |
 
 ### Report Tables
 
@@ -102,7 +104,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 ## Performance considerations
 
-The OpenAI Ads API allows 600 requests per minute per endpoint and 1,200 requests per minute overall. OpenAI enforces these limits per ad account and per IP address. The connector keeps its own requests under 600 per minute, runs streams with the configured number of workers, and retries on 429 and 5xx responses with exponential backoff.
+The OpenAI Ads API allows 600 requests per minute per endpoint and 1,200 requests per minute overall. OpenAI enforces these limits per ad account and per IP address. The connector keeps its own requests under 600 per minute, runs streams with the configured number of workers, and retries on 429 and 5xx responses with exponential backoff, or after the wait in the `Retry-After` header when the API sends one.
 
 Insights are requested in 14 day slices with up to 2,000 rows per page and cursor pagination beyond that. The conversions endpoint has no pagination cursor and rejects requests whose response would exceed 2,000 rows, so the connector asks it for one entity and one 14 day slice at a time (at most 14 rows per request). This makes the conversions streams the most request-intensive part of the connector: each incremental sync issues about three requests per campaign, ad group and ad (a 32 day lookback covers three 14 day slices), and the first sync one request per entity for every 14 days between the start date and today. An account with 5,000 ads needs roughly 15,000 requests per incremental sync for `ad_conversions` alone, about 25 minutes at the rate limit, and writes one row per ad per day. If that is too much, deselect `ad_conversions` and `ad_group_conversions` and keep `campaign_conversions`, which needs three requests per campaign.
 
