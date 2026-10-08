@@ -20,30 +20,50 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 34f697bc-b989-4eda-b06f-d0f39b88825b
-  dockerImageTag: 0.4.17
+  dockerImageTag: 0.8.0
   dockerRepository: airbyte/source-customer-io
   githubIssueLabel: source-customer-io
   icon: customer-io.svg
   license: ELv2
+  maxSecondsBetweenMessages: 1800
   name: Customer.io
   releaseDate: 2023-08-20
   releaseStage: alpha
+  suggestedStreams:
+    streams:
+      - campaigns
+      - campaigns_actions
+      - newsletters
+      - broadcasts
+      - segments
+      - transactional_messages
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/customer-io
   tags:
     - cdk:low-code
     - language:manifest-only
   externalDocumentationUrls:
-    - title: Customer.io API reference
-      url: https://customer.io/docs/api/
+    - title: Customer.io App API reference
+      url: https://docs.customer.io/integrations/api/app/
       type: api_reference
-    - title: Customer.io authentication
-      url: https://customer.io/docs/api/#section/Authentication
+    - title: Customer.io App API authentication
+      url: https://docs.customer.io/integrations/api/app/#authentication
       type: authentication_guide
-    - title: Customer.io rate limits
-      url: https://customer.io/docs/api/#section/Rate-Limiting
+    - title: Customer.io App API rate limits
+      url: https://docs.customer.io/integrations/api/app/#rate-limits
       type: rate_limits
+    - title: Customer.io release notes
+      url: https://docs.customer.io/release-notes/
+      type: api_release_history
     - title: Customer.io Status
-      url: https://status.customer.io/
+      url: https://status.customerio.com/
       type: status_page
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"

@@ -19,7 +19,7 @@ Please follow the instructions in the following [referralhero](https://support.r
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | lists | uuid | DefaultPaginator | ✅ |  ❌  |
-| leaderboard |  | DefaultPaginator | ✅ |  ❌  |
+| leaderboard |  | No pagination | ✅ |  ❌  |
 | bonuses |  | DefaultPaginator | ✅ |  ❌  |
 | subscribers | id | DefaultPaginator | ✅ |  ❌  |
 
@@ -34,6 +34,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.58 | 2026-10-07 | [88297](https://github.com/airbytehq/airbyte/pull/88297) | Send the API token as an `Authorization: Bearer` header per current ReferralHero docs; fix `lists` pagination (10 per page) and `leaderboard` request params |
 | 0.0.57 | 2026-10-06 | [88010](https://github.com/airbytehq/airbyte/pull/88010) | Update dependencies |
 | 0.0.56 | 2026-09-29 | [87316](https://github.com/airbytehq/airbyte/pull/87316) | Update dependencies |
 | 0.0.55 | 2026-09-22 | [86779](https://github.com/airbytehq/airbyte/pull/86779) | Update dependencies |

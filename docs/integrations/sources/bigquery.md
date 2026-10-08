@@ -55,7 +55,7 @@ On Airbyte Cloud the connector reads tables through the [BigQuery Storage Read A
 
 Google bills Storage Read API usage by the bytes read, separately from the bytes a query processes. See [BigQuery pricing](https://cloud.google.com/bigquery/pricing).
 
-Without these permissions the sync still works. At the start of every sync the connector checks once whether it can open a read session. If it can't, it logs a warning that names the missing permission and reads through the query path instead. That path is much slower and scans the table for every query it runs, so grant the role before syncing tables larger than a few gigabytes. Turning **Use the BigQuery Storage Read API** off forces the query path.
+While **Use the BigQuery Storage Read API** is on, the connection test opens a read session to verify these permissions. It fails with a message that names the service account, the missing role and the project, or the API that must be enabled. Grant the role, or turn the setting off to use the query path. A sync repeats the check once at its start, so a permission revoked after setup does not fail the sync: the connector logs a warning that names the missing permission and reads through the query path instead. That path is much slower and scans the table for every query it runs, so grant the role before syncing tables larger than a few gigabytes.
 
 The other permissions the connector uses are `bigquery.datasets.get`, `bigquery.tables.list`, `bigquery.tables.get` and `bigquery.jobs.create`.
 
@@ -165,7 +165,8 @@ Version 1.0.0 keeps the configuration properties and understands the incremental
 - **`Discovered zero tables`** during the connection test means the dataset, or the project when **Dataset ID** is empty, has no tables the service account can see.
 - **Discovery of a whole project is slow** when the project has thousands of datasets, because the tables are listed one dataset at a time. Set **Dataset ID**.
 - **`Access Denied`, `PERMISSION_DENIED` or `Not found` errors** point at a missing role on the data project or the job project. Check the roles listed under [Service account](#service-account), and remember that **Job Execution Project ID** needs the BigQuery Job User role too.
-- **A warning about the Storage Read API at the start of a sync** means the service account lacks a permission listed under [Permissions for high-speed reads](#permissions-for-high-speed-reads). The sync completes through the query path, but large tables take much longer.
+- **The connection test fails with a message about the BigQuery Storage Read API** when **Use the BigQuery Storage Read API** is on and the service account lacks a permission listed under [Permissions for high-speed reads](#permissions-for-high-speed-reads), or the API is not enabled in the project that runs the jobs. The message names the fix. Apply it, or turn the setting off.
+- **A warning about the Storage Read API at the start of a sync** means the permission was lost after the connection test passed. The sync completes through the query path, but large tables take much longer.
 - **Read sessions expire after six hours.** A full refresh that's interrupted and resumed more than six hours later reads the table again from the start. See [State and resuming](#state-and-resuming) for incremental first syncs.
 - **`invalid_grant` or `No valid credentials provided` errors** mean Google rejected the service account key: the key was deleted or disabled, or the JSON was pasted incompletely. Create a new key and paste the whole file.
 - **`GEOGRAPHY`, `INTERVAL` and `RANGE` cursors** haven't been validated. Use one of the [supported cursor types](#incremental-sync).
@@ -181,6 +182,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0.1 | 2026-10-02 | [87654](https://github.com/airbytehq/airbyte/pull/87654) | Fail the connection test with an actionable error when **Use the BigQuery Storage Read API** is on but the service account lacks the Read Session User role or the API is not enabled; fall back to the query API during a sync even when the catalog holds only views |
 | 1.0.0 | 2026-10-02 | [86950](https://github.com/airbytehq/airbyte/pull/86950) | Rebuild on the Bulk CDK: Storage Read API reads with resumable read streams (Airbyte Cloud only), typed date, time and JSON columns, nested schemas, primary keys, cursor incremental reads and speed mode. See the migration guide |
 | 0.4.5 | 2026-01-21 | [72203](https://github.com/airbytehq/airbyte/pull/72203) | Increase integration test timeouts from 1 to 10 minutes |
 | 0.4.4 | 2025-07-10 | [62911](https://github.com/airbytehq/airbyte/pull/62911) | Convert to new gradle build flow |

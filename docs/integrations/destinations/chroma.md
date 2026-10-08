@@ -83,6 +83,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
 |:--------|:-----------| :-------------------------------------------------------- |:-------------------------------------------------------------|
+| 0.0.56 | 2026-10-07 | [88197](https://github.com/airbytehq/airbyte/pull/88197) | Fix username/password (client/server mode) connections failing with `No module named chromadb.auth.basic` by using the `chromadb.auth.basic_authn.BasicAuthClientProvider` path required by chromadb 0.5+ |
 | 0.0.55 | 2026-08-13 | [84361](https://github.com/airbytehq/airbyte/pull/84361) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
 | 0.0.54 | 2025-05-03 | [59326](https://github.com/airbytehq/airbyte/pull/59326) | Update dependencies |
 | 0.0.53 | 2025-04-26 | [58256](https://github.com/airbytehq/airbyte/pull/58256) | Update dependencies |

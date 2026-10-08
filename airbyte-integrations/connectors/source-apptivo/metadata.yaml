@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: eb41169b-b293-4690-b690-a1046cca0e3b
-  dockerImageTag: 0.0.62
+  dockerImageTag: 0.0.63
   dockerRepository: airbyte/source-apptivo
   githubIssueLabel: source-apptivo
   icon: icon.svg
@@ -35,5 +35,5 @@ data:
     sl: 100
   externalDocumentationUrls:
     - title: API documentation
-      url: https://www.apptivo.com/api/
+      url: https://www.apptivo.com/developer-api/
       type: api_reference
