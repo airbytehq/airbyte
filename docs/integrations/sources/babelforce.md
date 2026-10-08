@@ -53,6 +53,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
+| 0.3.43 | 2026-10-07 | [88320](https://github.com/airbytehq/airbyte/pull/88320) | Fix `date_created_from`/`date_created_to` parsing (integer unix timestamps) and ISO-8601 `dateCreated` cursor so check/sync no longer crash |
+| 0.3.42 | 2026-10-06 | [87750](https://github.com/airbytehq/airbyte/pull/87750) | Update dependencies |
+| 0.3.41 | 2026-09-29 | [87072](https://github.com/airbytehq/airbyte/pull/87072) | Update dependencies |
+| 0.3.40 | 2026-09-22 | [86529](https://github.com/airbytehq/airbyte/pull/86529) | Update dependencies |
+| 0.3.39 | 2026-09-15 | [85945](https://github.com/airbytehq/airbyte/pull/85945) | Update dependencies |
 | 0.3.38 | 2026-09-08 | [85394](https://github.com/airbytehq/airbyte/pull/85394) | Update dependencies |
 | 0.3.37 | 2026-08-18 | [84492](https://github.com/airbytehq/airbyte/pull/84492) | Update dependencies |
 | 0.3.36 | 2026-08-11 | [83836](https://github.com/airbytehq/airbyte/pull/83836) | Update dependencies |

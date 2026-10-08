@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 import requests_mock
-from requests.exceptions import ChunkedEncodingError
+from requests.exceptions import ChunkedEncodingError, InvalidURL
 from source_salesforce.api import (
     _LOGIN_DEDUP_SECONDS,
     _REFRESH_FAILURE_BACKOFF_SECONDS,
@@ -16,10 +16,11 @@ from source_salesforce.api import (
     Salesforce,
     SalesforceTokenProvider,
 )
-from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler
+from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
 
 
@@ -316,6 +317,74 @@ class SalesforceErrorHandlerTest(TestCase):
         with pytest.raises(BulkNotSupportedException):
             self._error_handler.interpret_response(response)
 
+    def test_given_invalid_field_on_rest_query_when_interpret_response_then_fail_as_config_error(self) -> None:
+        stream_name = "neutral_stream"
+        raw_message = (
+            "\nSELECT Id, Foo__c FROM Account\n"
+            "           ^\n"
+            "ERROR at Row:1:Column:12\n"
+            "No such column 'Foo__c' on entity 'Account'."
+        )
+        handler = SalesforceErrorHandler(stream_name=stream_name)
+        response = self._create_response(
+            "GET",
+            f"{_ANY_BASE_URL}/services/data/{API_VERSION}/query",
+            400,
+            [{"errorCode": "INVALID_FIELD", "message": raw_message}],
+        )
+
+        resolution = handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.FAIL
+        assert resolution.failure_type == FailureType.config_error
+        assert "Foo__c" in resolution.error_message
+        assert stream_name in resolution.error_message
+        assert raw_message not in resolution.error_message
+        assert "An error occurred:" not in resolution.error_message
+
+    def test_given_invalid_field_with_unrecognized_message_when_interpret_response_then_fail_as_config_error(self) -> None:
+        stream_name = "neutral_stream"
+        handler = SalesforceErrorHandler(stream_name=stream_name)
+        response = self._create_response(
+            "GET",
+            f"{_ANY_BASE_URL}/services/data/{API_VERSION}/query",
+            400,
+            [{"errorCode": "INVALID_FIELD", "message": "The query references an unavailable field."}],
+        )
+
+        resolution = handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.FAIL
+        assert resolution.failure_type == FailureType.config_error
+        assert "A field" in resolution.error_message
+        assert stream_name in resolution.error_message
+
+    def test_given_invalid_field_on_bulk_job_creation_when_interpret_response_then_fail_as_config_error(self) -> None:
+        handler = SalesforceErrorHandler(stream_name="neutral_stream")
+        response = self._create_response(
+            "POST",
+            self._url_for_job_creation(),
+            400,
+            [{"errorCode": "INVALID_FIELD", "message": "No such column 'Foo__c' on entity 'Account'."}],
+        )
+
+        resolution = handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.FAIL
+        assert resolution.failure_type == FailureType.config_error
+
+    def test_given_invalid_field_compound_data_error_on_job_creation_when_interpret_response_then_raise_bulk_not_supported(
+        self,
+    ) -> None:
+        response = self._create_response(
+            "POST",
+            self._url_for_job_creation(),
+            400,
+            [{"errorCode": "INVALID_FIELD", "message": "Selecting compound data not supported in Bulk Query"}],
+        )
+        with pytest.raises(BulkNotSupportedException):
+            self._error_handler.interpret_response(response)
+
     def test_given_txn_security_metering_error_when_interpret_response_then_raise_config_error(self) -> None:
         response = self._create_response(
             "GET",
@@ -337,6 +406,28 @@ class SalesforceErrorHandlerTest(TestCase):
     def test_given_chunked_encoding_error_when_interpret_response_then_retry(self) -> None:
         error_resolution = self._error_handler.interpret_response(ChunkedEncodingError())
         assert error_resolution.response_action == ResponseAction.RETRY
+
+    def test_given_invalid_url_exception_when_interpret_response_then_retry_with_exception_in_message(self) -> None:
+        error_resolution = SalesforceErrorHandler(stream_name="a_stream").interpret_response(
+            InvalidURL("Invalid URL 'x': No host supplied")
+        )
+
+        assert error_resolution.response_action == ResponseAction.RETRY
+        assert error_resolution.failure_type == FailureType.system_error
+        assert error_resolution.error_message == "Request for stream 'a_stream' failed with InvalidURL: Invalid URL 'x': No host supplied"
+
+    def test_given_generic_request_exception_when_interpret_response_then_retry(self) -> None:
+        error_resolution = SalesforceErrorHandler(stream_name="a_stream").interpret_response(requests.exceptions.RequestException("boom"))
+
+        assert error_resolution.response_action == ResponseAction.RETRY
+        assert error_resolution.failure_type == FailureType.system_error
+        assert error_resolution.error_message == "Request for stream 'a_stream' failed with RequestException: boom"
+
+    def test_given_none_when_interpret_response_then_retry(self) -> None:
+        error_resolution = SalesforceErrorHandler(stream_name="a_stream").interpret_response(None)
+
+        assert error_resolution.response_action == ResponseAction.RETRY
+        assert error_resolution.failure_type == FailureType.system_error
 
     def test_given_401_invalid_session_id_with_token_provider_when_interpret_response_then_retry_and_refresh(self) -> None:
         token_provider = MagicMock()
@@ -394,3 +485,45 @@ class SalesforceErrorHandlerTest(TestCase):
 
     def _url_for_job_creation(self) -> str:
         return f"{_ANY_BASE_URL}/services/data/{API_VERSION}/jobs/query"
+
+
+class DefaultBackoffHandlerTest(TestCase):
+    _URL = "https://example.com/non-job-endpoint"
+
+    def test_gives_up_on_http_400_without_crashing(self) -> None:
+        backoff_exception = self._create_backoff_exception(400)
+        call_count = 0
+
+        @default_backoff_handler(max_tries=2)
+        def request() -> None:
+            nonlocal call_count
+            call_count += 1
+            raise backoff_exception
+
+        with pytest.raises(DefaultBackoffException):
+            request()
+
+        assert call_count == 1
+
+    def test_retries_http_500(self) -> None:
+        backoff_exception = self._create_backoff_exception(500)
+        call_count = 0
+
+        @default_backoff_handler(max_tries=2)
+        def request() -> None:
+            nonlocal call_count
+            call_count += 1
+            raise backoff_exception
+
+        with patch("backoff._sync.time.sleep"):
+            with pytest.raises(DefaultBackoffException):
+                request()
+
+        assert call_count == 2
+
+    def _create_backoff_exception(self, status_code: int) -> DefaultBackoffException:
+        with requests_mock.Mocker() as mocker:
+            mocker.get(self._URL, status_code=status_code, json=[{"errorCode": "X", "message": "y"}])
+            response = requests.get(self._URL)
+
+        return DefaultBackoffException(request=response.request, response=response, error_message="e")

@@ -42,6 +42,17 @@ If your Pinterest account has limited permissions, some streams may not return d
 validates your connection using the `user_account_analytics` stream, which requires only the
 `user_accounts:read` scope. This scope is available to all authenticated Pinterest users.
 
+### Pinner data access for apps registered on or after September 14, 2026
+
+If you use your own Pinterest app and it was registered on or after September 14, 2026, Pinterest
+may return `403 PINNER_DATA_ACCESS_DENIED` for the `board_sections`, `board_pins`, and
+`board_section_pins` streams until Pinterest approves the app for pinner data access. This can
+happen when the connector reads boards that don't belong to the account that authorized the app,
+for example boards returned for a business ad account set in **Account ID**. Reading the boards and
+Pins of the authorizing account doesn't require extra approval, and apps registered before that date
+aren't affected. To request approval, contact your Pinterest account manager. For details, see the
+[Pinterest changelog](https://developers.pinterest.com/docs/changelog/changelog/#pinner-data-access-denial-error).
+
 ## Setup guide
 
 <!-- env:cloud -->
@@ -256,6 +267,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:------------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.5 | 2026-10-06 | [87990](https://github.com/airbytehq/airbyte/pull/87990) | Update dependencies |
+| 2.3.4 | 2026-09-29 | [87273](https://github.com/airbytehq/airbyte/pull/87273) | Update dependencies |
+| 2.3.3 | 2026-09-22 | [86737](https://github.com/airbytehq/airbyte/pull/86737) | Update dependencies |
+| 2.3.2 | 2026-09-15 | [86186](https://github.com/airbytehq/airbyte/pull/86186) | Update dependencies |
+| 2.3.1 | 2026-09-08 | [85598](https://github.com/airbytehq/airbyte/pull/85598) | Update dependencies |
 | 2.3.0 | 2026-08-24 | [80303](https://github.com/airbytehq/airbyte/pull/80303) | Split Pinterest custom report status filters into multiple API calls when more than six values are selected. |
 | 2.2.12 | 2026-08-18 | [84706](https://github.com/airbytehq/airbyte/pull/84706) | Update dependencies |
 | 2.2.11 | 2026-08-11 | [83997](https://github.com/airbytehq/airbyte/pull/83997) | Update dependencies |

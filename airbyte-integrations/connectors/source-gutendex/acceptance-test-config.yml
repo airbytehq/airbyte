@@ -1,18 +1,15 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-gutendex:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "manifest.yaml"
+    tests:
+      - spec_path: "manifest.yaml"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
+    bypass_reason: "gutendex.com answers GitHub-hosted runners with a Cloudflare bot challenge (HTTP 403), so live tests cannot run in CI. To run locally, test against integration_tests/config.json, a 2-book query."
   discovery:
-    - config_path: "secrets/config.json"
+    bypass_reason: "gutendex.com answers GitHub-hosted runners with a Cloudflare bot challenge (HTTP 403), so live tests cannot run in CI. To run locally, test against integration_tests/config.json, a 2-book query."
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: []
+    bypass_reason: "gutendex.com answers GitHub-hosted runners with a Cloudflare bot challenge (HTTP 403), so live tests cannot run in CI. To run locally, test against integration_tests/config.json, a 2-book query."
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    bypass_reason: "gutendex.com answers GitHub-hosted runners with a Cloudflare bot challenge (HTTP 403), so live tests cannot run in CI. To run locally, test against integration_tests/config.json, a 2-book query."

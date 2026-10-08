@@ -46,12 +46,16 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dateCreated
         cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%S.%f"
           - "%s"
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['date_created_from'] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime: "{{ config.get('date_created_from') or 0 }}"
+          datetime_format: "%s"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -62,8 +66,8 @@ definitions:
           field_name: filters.dateCreated.to
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['date_created_to'] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime: "{{ config.get('date_created_to') or (now_utc().timestamp() | int) }}"
+          datetime_format: "%s"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -258,12 +262,16 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: dateCreated
       cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S"
+        - "%Y-%m-%dT%H:%M:%S.%f"
         - "%s"
       datetime_format: "%s"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['date_created_from'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: "{{ config.get('date_created_from') or 0 }}"
+        datetime_format: "%s"
       start_time_option:
         type: RequestOption
         inject_into: request_parameter
@@ -274,8 +282,8 @@ streams:
         field_name: filters.dateCreated.to
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['date_created_to'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: "{{ config.get('date_created_to') or (now_utc().timestamp() | int) }}"
+        datetime_format: "%s"
     schema_loader:
       type: InlineSchemaLoader
       schema:

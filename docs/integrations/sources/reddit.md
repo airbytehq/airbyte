@@ -8,43 +8,56 @@ _Full Refresh_ sync means every time a sync is run, Airbyte will copy all rows i
 _Incremental_ sync means only changed resources are copied from Reddit. For the first run, it will be a Full Refresh sync.
 
 
-## Steps for getting `api_key`
+## Setup guide
 
-You can make a POST request from Postman to exchange your Reddit username and password for an `api_key` authorized to make requests.
+### Step 1: Create a Reddit app
 
-First make an app to get the client ID and secret for authentication:
+1. Visit [Reddit's app preferences page](https://www.reddit.com/prefs/apps) and select **create another app**.
+2. Choose the app type:
+   - **script** if you want to authenticate with your own Reddit username and password (simplest; does not work for accounts with two-factor authentication).
+   - **web app** if you want to authenticate with an OAuth 2.0 refresh token.
+3. Set a redirect URI (any URL you control, for example `http://localhost:8080`) and save the app.
+4. Copy the **Client ID** (shown below the app name) and the **Client Secret** (labeled `secret`).
 
-1. Go to Reddit's App Preferences Page:
-- Visit `https://www.reddit.com/prefs/apps`, select `create another app` and input an app name. Select the `script` option and set the redirect URI as `https://oauth.pstmn.io/v1/callback`.
+### Step 2: Choose an authentication method
 
-2. Copy Your App Credentials:
- - After creating the app, you will see the Client ID (below your app name) and Client Secret (labeled as "secret").
- - Client ID: Copy this value as it will be your Authorization Username in Postman.
- - Client Secret: Copy this value as it will be your Authorization Password in Postman.
+Reddit access tokens expire after one hour, so pick one of the first two options to let Airbyte refresh the token on every sync.
 
-3. Visit Postman via web or app and make a new request with following guidelines:
- - Request - POST `https://www.reddit.com/api/v1/access_token`
- - Authorization - Basic Auth -`username: <YOUR_USERNAME>`, `password: <YOUR_PASSWORD>`
- - Body - x-www-form-urlencoded - `grant_type: password, username: YOUR_REDDIT_USERNAME, password: YOUR_REDDIT_PASSWORD`
+#### Option A: Reddit username and password (script app)
 
-Hit send to receive `api_key` in the response under `access_token`
+Select **Reddit username and password (script app)** and enter the Client ID and Client Secret from Step 1 together with the Reddit username and password of the account that owns the app. Airbyte requests a fresh access token with the OAuth 2.0 `password` grant before each sync.
+
+#### Option B: OAuth 2.0 refresh token
+
+Select **OAuth 2.0 (refresh token)** and enter the Client ID, Client Secret and a refresh token. To obtain a refresh token, complete the [Reddit authorization code flow](https://github.com/reddit-archive/reddit/wiki/OAuth2#authorization) with `duration=permanent` and the scopes you need (`identity`, `read`, `privatemessages`, `mysubreddits`), then exchange the returned `code` at `https://www.reddit.com/api/v1/access_token` (HTTP Basic auth with the Client ID as the username and the Client Secret as the password, body `grant_type=authorization_code&code=<code>&redirect_uri=<redirect_uri>`). Copy the `refresh_token` from the response.
+
+#### Option C: Access token (expires after one hour)
+
+Select **Access token (expires after one hour)** and paste an access token obtained manually, for example with Postman:
+
+- Request - POST `https://www.reddit.com/api/v1/access_token`
+- Authorization - Basic Auth - `username: <CLIENT_ID>`, `password: <CLIENT_SECRET>`
+- Body - x-www-form-urlencoded - `grant_type: password, username: YOUR_REDDIT_USERNAME, password: YOUR_REDDIT_PASSWORD`
+
+The `access_token` in the response is the API Key. Because Airbyte cannot refresh it, this option only works for one-off syncs; existing connections configured with the legacy top-level `api_key` field are migrated to this option automatically.
 
 ## Records and rate limiting
 
 - The Reddit API has [rate limiting of 100 queries per minute (QPM) per OAuth client ID](https://support.reddithelp.com/hc/en-us/articles/16160319875092-Reddit-Data-API-Wiki). It is handled with an exponential backoff strategy, with maximum 3 retries.
-- If the `api_key` expires, a new access token will need to be generated through Postman.
+- Access tokens expire after one hour. With the username/password or refresh token options Airbyte obtains a new token automatically; with the access token option a new token must be generated manually.
+- Reddit requires a descriptive `User-Agent`; the connector sends `airbyte:source-reddit:v1 (+https://docs.airbyte.com/integrations/sources/reddit)` on every request.
 - The Reddit API has a hard limit of fetching 1000 records per single stream call with subsequent pagination.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
+| `credentials` | `object` | Authentication. One of: OAuth 2.0 refresh token (`client_id`, `client_secret`, `refresh_token`), Reddit username and password (`client_id`, `client_secret`, `username`, `password`), or a short-lived access token (`api_key`). |  |
 | `query` | `string` | Query. Specifies the query for searching in reddits and subreddits | airbyte |
 | `include_over_18` | `boolean` | Include over 18 flag. Includes mature content | false |
 | `exact` | `boolean` | Exact. Specifies exact keyword and reduces distractions |  |
 | `limit` | `number` | Limit. Max records per page limit | 1000 |
-| `subreddits` | `array` | Subreddits. Subreddits for exploration | [r/funny, r/AskReddit] |
+| `subreddits` | `array` | Subreddits. Subreddits for exploration (`funny`, `r/funny` and `/r/funny` are all accepted) | [r/funny, r/AskReddit] |
 | `start_date` | `string` | Start date.  |  |
 
 ## Streams
@@ -68,6 +81,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date       |Pull Request | Subject        |
 |------------------|------------|--------------|----------------|
+| 0.0.67 | 2026-10-07 | [88257](https://github.com/airbytehq/airbyte/pull/88257) | Add refreshable OAuth 2.0 (refresh token / password grant) authentication, send a descriptive User-Agent, fix `subreddit_explore` to iterate over the configured subreddits and read its `created` cursor, and harden pagination against non-object `data` responses |
+| 0.0.66 | 2026-10-06 | [88007](https://github.com/airbytehq/airbyte/pull/88007) | Update dependencies |
+| 0.0.65 | 2026-09-29 | [87320](https://github.com/airbytehq/airbyte/pull/87320) | Update dependencies |
+| 0.0.64 | 2026-09-22 | [86793](https://github.com/airbytehq/airbyte/pull/86793) | Update dependencies |
+| 0.0.63 | 2026-09-15 | [86199](https://github.com/airbytehq/airbyte/pull/86199) | Update dependencies |
+| 0.0.62 | 2026-09-08 | [85627](https://github.com/airbytehq/airbyte/pull/85627) | Update dependencies |
 | 0.0.61 | 2026-08-18 | [84754](https://github.com/airbytehq/airbyte/pull/84754) | Update dependencies |
 | 0.0.60 | 2026-08-11 | [84090](https://github.com/airbytehq/airbyte/pull/84090) | Update dependencies |
 | 0.0.59 | 2026-08-04 | [83607](https://github.com/airbytehq/airbyte/pull/83607) | Update dependencies |

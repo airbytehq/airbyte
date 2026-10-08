@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-This source can sync data from the [hellobaton API](https://app.hellobaton.com/api/redoc/). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
+This source can sync data from the [Baton API](https://app.hellobaton.com/api/redoc/). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
 
 ## This Source Supports the Following Streams
 
@@ -12,7 +12,7 @@ This source can sync data from the [hellobaton API](https://app.hellobaton.com/a
 - phases
 - project_attachments
 - projects
-- task_attachemnts
+- task_attachments
 - tasks
 - templates
 - time_entries
@@ -49,6 +49,11 @@ The connector is rate limited at 1000 requests per minute per api key. If you fi
 - Hellobaton account
 - Hellobaton api key
 
+### Setup guide
+
+1. **Company**: your Baton workspace subdomain, i.e. the `<company>` part of your workspace URL `https://<company>.hellobaton.com`. The connector calls `https://<company>.hellobaton.com/api/`.
+2. **API Key**: the API key issued by Baton for your workspace. The connector sends it as the `api-key` request header documented in the [Baton API reference](https://app.hellobaton.com/api/redoc/) (and, for backwards compatibility, as the legacy `api_key` query parameter).
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -60,6 +65,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                             |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------- |
+| 0.3.27 | 2026-10-07 | [88336](https://github.com/airbytehq/airbyte/pull/88336) | Send the API key as the `api-key` header documented by the Baton API, turn unknown-workspace 404s into a clear config error, fix spec descriptions and point docs at the live API reference |
 | 0.3.26 | 2025-05-10 | [59908](https://github.com/airbytehq/airbyte/pull/59908) | Update dependencies |
 | 0.3.25 | 2025-05-03 | [59244](https://github.com/airbytehq/airbyte/pull/59244) | Update dependencies |
 | 0.3.24 | 2025-04-26 | [58795](https://github.com/airbytehq/airbyte/pull/58795) | Update dependencies |
