@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "https://*.api.pipelinersales.com/api/v100/rest/"
+      - "*.api.pipelinersales.com"
   registryOverrides:
     oss:
       enabled: true
@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 39fd5da7-5713-446b-a9c6-c695f0352f20
-  dockerImageTag: 0.0.63
+  dockerImageTag: 0.0.64
   dockerRepository: airbyte/source-pipeliner
   githubIssueLabel: source-pipeliner
   icon: icon.svg
@@ -35,5 +35,5 @@ data:
     sl: 100
   externalDocumentationUrls:
     - title: Pipeliner CRM API
-      url: https://workspace.pipelinersales.com/community/api/
+      url: https://developers.pipelinersales.com/api-docs
       type: api_reference

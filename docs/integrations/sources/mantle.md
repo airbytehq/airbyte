@@ -1,12 +1,16 @@
 # Mantle
-This connector use the Mantle API to get customers and subscriptions streams
+This connector uses the [Mantle Core API](https://coreapi.heymantle.dev/reference/introduction) to get customers and subscriptions streams.
+
+## Prerequisites
+
+- A Mantle API token with the `read:customers` and `read:subscriptions` scopes. Generate one at [https://app.heymantle.com/settings/api_tokens](https://app.heymantle.com/settings/api_tokens).
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
-| `start_date` | `string` | Start date.  |  |
+| `api_key` | `string` | API Key. Mantle Core API token (sent as a Bearer token). |  |
+| `start_date` | `string` | Start date. UTC date-time in `YYYY-MM-DDTHH:MM:SSZ` format; records updated/created before this date are not replicated. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -25,6 +29,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.38 | 2026-10-07 | [88304](https://github.com/airbytehq/airbyte/pull/88304) | Align `customers` page size with the documented API maximum (100) and point the API docs link at the Mantle Core API reference |
 | 0.0.37 | 2026-10-06 | [87924](https://github.com/airbytehq/airbyte/pull/87924) | Update dependencies |
 | 0.0.36 | 2026-09-29 | [87259](https://github.com/airbytehq/airbyte/pull/87259) | Update dependencies |
 | 0.0.35 | 2026-09-22 | [86694](https://github.com/airbytehq/airbyte/pull/86694) | Update dependencies |

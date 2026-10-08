@@ -238,6 +238,14 @@ definitions:
           http_method: GET
           request_parameters:
             symbol: "{{ ','.join(config.get('symbols', [])) }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                predicate: "{{ 'must contain at least one of' in (response.get('status', {}).get('error_message') or '') }}"
+                error_message: The quotes stream requires at least one cryptocurrency symbol. Add symbols (for example BTC, ETH) to the "Symbol" field of the source configuration, or deselect the quotes stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -628,6 +636,14 @@ streams:
         http_method: GET
         request_parameters:
           symbol: "{{ ','.join(config.get('symbols', [])) }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              predicate: "{{ 'must contain at least one of' in (response.get('status', {}).get('error_message') or '') }}"
+              error_message: The quotes stream requires at least one cryptocurrency symbol. Add symbols (for example BTC, ETH) to the "Symbol" field of the source configuration, or deselect the quotes stream.
       record_selector:
         type: RecordSelector
         extractor:
@@ -808,7 +824,9 @@ spec:
         title: Symbol
         items:
           type: string
-        description: Cryptocurrency symbols. (only used for quotes stream)
+        description: >-
+          Cryptocurrency symbols (for example BTC, ETH). Required to sync the
+          quotes stream; ignored by the other streams.
         minItems: 1
         examples:
           - AVAX
