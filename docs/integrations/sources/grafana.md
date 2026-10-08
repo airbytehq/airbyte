@@ -28,6 +28,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.25 | 2026-10-08 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Replace the default Airbyte icon with the Grafana logo |
 | 0.0.24 | 2026-10-06 | [87886](https://github.com/airbytehq/airbyte/pull/87886) | Update dependencies |
 | 0.0.23 | 2026-09-29 | [87225](https://github.com/airbytehq/airbyte/pull/87225) | Update dependencies |
 | 0.0.22 | 2026-09-22 | [86659](https://github.com/airbytehq/airbyte/pull/86659) | Update dependencies |

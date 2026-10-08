@@ -89,6 +89,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.54 | 2026-10-08 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Replace the default Airbyte icon with the Basecamp logo |
 | 0.0.53 | 2026-10-06 | [87773](https://github.com/airbytehq/airbyte/pull/87773) | Update dependencies |
 | 0.0.52 | 2026-09-29 | [87071](https://github.com/airbytehq/airbyte/pull/87071) | Update dependencies |
 | 0.0.51 | 2026-09-22 | [86516](https://github.com/airbytehq/airbyte/pull/86516) | Update dependencies |
