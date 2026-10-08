@@ -15,7 +15,7 @@ python = ">=3.10,<3.12"
 airbyte_cdk = "^7.5.0"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
-pytest = "^8.0.0"
+pytest = ">=8,<10"
 
 [tool.pytest.ini_options]
 filterwarnings = [
