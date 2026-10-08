@@ -46,6 +46,22 @@ query($owner: String!, $name: String!, $number: Int!, $after: String = null) {
           }
         }
       }
+      reviews(last: 100) {
+        nodes {
+          body
+          author {
+            __typename
+          }
+        }
+      }
+      comments(last: 100) {
+        nodes {
+          body
+          author {
+            __typename
+          }
+        }
+      }
     }
   }
 }
@@ -65,7 +81,13 @@ GRAPHQL
     cursor="$(jq -er '.data.repository.pullRequest.reviewThreads.pageInfo.endCursor | select(type == "string" and length > 0)' <<<"$response")"
   done
 
-  response="$(jq -cn --argjson nodes "$all_threads" '{data:{repository:{pullRequest:{reviewThreads:{nodes:$nodes}}}}}')"
+  review_summaries="$(jq -c '.data.repository.pullRequest.reviews.nodes // []' <<<"$response")"
+  issue_comments="$(jq -c '.data.repository.pullRequest.comments.nodes // []' <<<"$response")"
+  response="$(jq -cn \
+    --argjson nodes "$all_threads" \
+    --argjson reviews "$review_summaries" \
+    --argjson comments "$issue_comments" \
+    '{data:{repository:{pullRequest:{reviewThreads:{nodes:$nodes},reviews:{nodes:$reviews},comments:{nodes:$comments}}}}}')"
 fi
 
 threads="$(jq -ce '.data.repository.pullRequest.reviewThreads.nodes' <<<"$response")"
@@ -144,9 +166,23 @@ write_multiline_output() {
 }
 
 if [[ "$conversation_count" == 0 ]]; then
-  result="none"
-  status_body="> No breaking-change review conversations found on this PR. Run /ai-breaking-change-review first."
-  echo "$status_body"
+  if jq -e '
+    [
+      (.data.repository.pullRequest.reviews.nodes // [])[],
+      (.data.repository.pullRequest.comments.nodes // [])[]
+    ]
+    | any(.[]; .author.__typename == "Bot" and ((.body // "") | contains("<!-- breaking-change-review:summary -->")))
+  ' <<<"$response" >/dev/null; then
+    result="ready"
+    status_body="**Ready for human review.** The breaking-change review had nothing for the author to resolve. The breaking-change reviewers have been pinged in Slack.
+
+<sub>A resolved conversation means the author answered it, not that a reviewer agreed. Sign-off stays with @airbytehq/breaking-change-reviewers.</sub>"
+    printf 'Gate result: the review had nothing for the author to resolve.\n%s\n' "$status_body"
+  else
+    result="none"
+    status_body="> No breaking-change review conversations found on this PR. Run /ai-breaking-change-review first."
+    echo "$status_body"
+  fi
 elif [[ "$failing_count" != 0 ]]; then
   result="blocked"
   bullets="$(jq -r '.[] | "- **\(.id)** ([\(.title)](\(.url))): \(.status)"' <<<"$failing_threads")"

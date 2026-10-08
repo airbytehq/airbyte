@@ -61,6 +61,7 @@ jobs:
             > `/ai-breaking-change-ready` can only be run on a pull request. Please run it from a PR comment.
 
       - name: Stop if not running on a PR
+        id: require-pr
         if: inputs.pr == ''
         run: exit 1
 
@@ -81,6 +82,8 @@ jobs:
 
       - name: Check out workflow scripts
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.repository.default_branch }}
 
       - name: Check breaking-change review conversations
         id: check-gate
@@ -168,6 +171,14 @@ jobs:
             ) | join("\n")
           ' <<<"$replies_json")"
 
+          if [[ "$CONVERSATION_COUNT" == 0 ]]; then
+            markdown_recommendations="The review had no recommendations for the author."
+            plain_recommendations="$markdown_recommendations"
+          else
+            markdown_recommendations="All $CONVERSATION_COUNT recommendations answered and resolved:"$'\n'"$markdown_bullets"
+            plain_recommendations="All $CONVERSATION_COUNT recommendations answered and resolved:"$'\n'"$plain_bullets"
+          fi
+
           pr_url="$(jq -er '.url' <<<"$PR_DATA")"
           pr_title="$(jq -er '.title | gsub("<"; "‹") | gsub(">"; "›") | gsub("[|]"; "¦")' <<<"$PR_DATA")"
           pr_author="$(jq -er '.author' <<<"$PR_DATA")"
@@ -176,17 +187,15 @@ jobs:
             --arg title "$pr_title" \
             --arg number "$PR_NUMBER" \
             --arg author "$pr_author" \
-            --arg count "$CONVERSATION_COUNT" \
-            --arg bullets "$markdown_bullets" \
-            '"*Breaking change ready for review:* <\($url)|\($title)> · airbyte#\($number) by \($author)\n\nAll \($count) recommendations answered and resolved:\n\($bullets)\n\n<\($url)|Open PR>"')"
+            --arg recommendations "$markdown_recommendations" \
+            '"*Breaking change ready for review:* <\($url)|\($title)> · airbyte#\($number) by \($author)\n\n\($recommendations)\n\n<\($url)|Open PR>"')"
           plain_message="$(jq -nr \
             --arg url "$pr_url" \
             --arg title "$pr_title" \
             --arg number "$PR_NUMBER" \
             --arg author "$pr_author" \
-            --arg count "$CONVERSATION_COUNT" \
-            --arg bullets "$plain_bullets" \
-            '"Breaking change ready for review: " + $title + " · airbyte#" + $number + " by " + $author + "\n\nAll " + $count + " recommendations answered and resolved:\n" + $bullets + "\n\n" + $url')"
+            --arg recommendations "$plain_recommendations" \
+            '"Breaking change ready for review: " + $title + " · airbyte#" + $number + " by " + $author + "\n\n" + $recommendations + "\n\n" + $url')"
 
           open_payload="$(jq -n --arg users "$BREAKING_CHANGE_REVIEWER_SLACK_IDS" '{users: $users}')"
           open_response="$(curl --silent --show-error --request POST \
@@ -221,6 +230,7 @@ jobs:
       - name: Post failure comment
         if: >
           failure() &&
+          steps.require-pr.outcome != 'failure' &&
           (steps.post-start-comment.outputs.comment-id != '' || inputs.comment-id != '')
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
