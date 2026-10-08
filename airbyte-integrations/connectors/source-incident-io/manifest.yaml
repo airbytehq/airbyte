@@ -396,6 +396,7 @@ definitions:
           http_method: GET
           request_parameters:
             updated_at[date_range]: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d') }}~{{ format_datetime(stream_interval['end_time'], '%Y-%m-%d') }}"
+            status_category[one_of]: "{{ ['triage', 'live', 'learning', 'paused', 'closed', 'declined', 'canceled', 'merged'] }}"
         record_selector:
           type: RecordSelector
           extractor:

@@ -16,6 +16,14 @@ To keep parity with `/v2`, both streams use a `ListPartitionRouter` that sends o
 
 If incident.io adds a new `incident_mode` value (see the `incident_mode` parameter in https://docs.incident.io/openapi/latest.json), add it to the `values` list of both routers in `manifest.yaml` and to `_MODES` in `unit_tests/test_v3_streams.py`. Otherwise records from incidents in that mode will silently stop syncing.
 
+## `incidents` includes every status category
+
+`GET /v2/incidents` leaves out `declined`, `canceled` and `merged` incidents unless `status_category` is set. In a sandbox check, the default request returned 9 incidents and a request for all eight categories returned 12.
+
+The `incidents` requester in `manifest.yaml` sends all eight categories as repeated `status_category[one_of]` parameters: `triage`, `live`, `learning`, `paused`, `closed`, `declined`, `canceled` and `merged`.
+
+If incident.io adds a status category, add it to that list and to `_STATUS_CATEGORIES` in `unit_tests/test_v3_streams.py`; otherwise those incidents will silently stop syncing.
+
 ## Incremental sync reads `updated_at` in `date_range` windows
 
 `incidents`, `alerts`, `escalations`, `actions` and `follow-ups` are incremental on `updated_at`.

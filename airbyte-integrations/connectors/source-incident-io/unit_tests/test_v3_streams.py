@@ -42,6 +42,7 @@ _CONFIG = {"api_key": "test-key"}
 _RECENT_CONFIG = {"api_key": "test-key", "start_date": "2026-10-06T00:00:00Z"}
 _BASE_URL = "https://api.incident.io"
 _MODES = ["standard", "retrospective", "test", "tutorial", "stream"]
+_STATUS_CATEGORIES = ["triage", "live", "learning", "paused", "closed", "declined", "canceled", "merged"]
 
 
 def _get_source(state=None, config=None):
@@ -186,6 +187,23 @@ def test_check_uses_incidents_stream():
         assert all("/v3/actions" not in request.url for request in mocker.request_history)
 
     assert connection_status.status == Status.SUCCEEDED
+
+
+def test_incidents_requests_all_status_categories():
+    response = {
+        "incidents": [{"id": "1", "updated_at": "2026-09-18T10:38:18.161Z"}],
+        "pagination_meta": {},
+    }
+    config = {**_CONFIG, "time_window": "P36500D"}
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/incidents", json=response)
+        output = _read_stream("incidents", config=config)
+        requests_made = mocker.request_history
+
+    assert [message.record.data["id"] for message in output.records] == ["1"]
+    assert requests_made
+    assert all(request.qs["status_category[one_of]"] == _STATUS_CATEGORIES for request in requests_made)
 
 
 @pytest.mark.parametrize(

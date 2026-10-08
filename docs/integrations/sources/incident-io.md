@@ -55,6 +55,8 @@ Incremental streams request `updated_at` in windows sized by the `time_window` o
 | users | id | DefaultPaginator | ✅ | ❌ |
 | workflows | id | No pagination | ✅ | ❌ |
 
+The `incidents` stream includes incidents in every status category, including `declined`, `canceled` and `merged`, which the API leaves out by default.
+
 ## Limitations and troubleshooting
 
 The Incident.io API allows 1,200 requests per minute per API key, and the incidents endpoint has a lower limit of 60 requests per minute. The connector paces itself within both limits and, if the API still returns a rate-limit response, waits for the interval the API asks for before retrying.
@@ -70,7 +72,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --------- | ------ | -------------- | --------- |
-| 0.2.0 | 2026-10-06 | [88150](https://github.com/airbytehq/airbyte/pull/88150) | Migrate actions and follow-ups to the /v3 endpoints ahead of the /v2 removal; add incremental sync, rate limiting, clearer error messages, and the time_window and num_workers options |
+| 0.2.0 | 2026-10-06 | [88150](https://github.com/airbytehq/airbyte/pull/88150) | Migrate actions and follow-ups to /v3; add incremental sync, rate limiting, clearer errors, time_window and num_workers options, and sync incidents in every status category |
 | 0.1.42 | 2026-10-06 | [87912](https://github.com/airbytehq/airbyte/pull/87912) | Update dependencies |
 | 0.1.41 | 2026-09-29 | [87212](https://github.com/airbytehq/airbyte/pull/87212) | Update dependencies |
 | 0.1.40 | 2026-09-22 | [86668](https://github.com/airbytehq/airbyte/pull/86668) | Update dependencies |
