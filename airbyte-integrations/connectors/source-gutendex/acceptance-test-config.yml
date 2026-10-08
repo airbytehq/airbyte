@@ -6,18 +6,10 @@ acceptance_tests:
     tests:
       - spec_path: "manifest.yaml"
   connection:
-    tests:
-      - config_path: "integration_tests/config.json"
-        status: "succeed"
+    bypass_reason: "gutendex.com answers GitHub-hosted runners with a Cloudflare bot challenge (HTTP 403), so live tests cannot run in CI. To run locally, test against integration_tests/config.json, a 2-book query."
   discovery:
-    tests:
-      - config_path: "integration_tests/config.json"
+    bypass_reason: "gutendex.com answers GitHub-hosted runners with a Cloudflare bot challenge (HTTP 403), so live tests cannot run in CI. To run locally, test against integration_tests/config.json, a 2-book query."
   basic_read:
-    tests:
-      - config_path: "integration_tests/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
+    bypass_reason: "gutendex.com answers GitHub-hosted runners with a Cloudflare bot challenge (HTTP 403), so live tests cannot run in CI. To run locally, test against integration_tests/config.json, a 2-book query."
   full_refresh:
-    tests:
-      - config_path: "integration_tests/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+    bypass_reason: "gutendex.com answers GitHub-hosted runners with a Cloudflare bot challenge (HTTP 403), so live tests cannot run in CI. To run locally, test against integration_tests/config.json, a 2-book query."
