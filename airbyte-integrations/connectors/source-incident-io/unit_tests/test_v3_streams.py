@@ -506,6 +506,28 @@ def test_rate_limit_waits_for_retry_after_then_succeeds():
     assert any(call.args and call.args[0] >= 7 for call in sleep.call_args_list)
 
 
+def test_spec_exposes_num_workers_within_the_max_concurrency():
+    spec = _get_source().spec(logging.getLogger("airbyte"))
+    properties = spec.connectionSpecification["properties"]
+    assert "num_workers" not in spec.connectionSpecification.get("required", [])
+    num_workers = properties["num_workers"]
+    assert num_workers["type"] == "integer"
+    assert num_workers["default"] == 4
+    assert num_workers["minimum"] == 1
+    assert num_workers["maximum"] == 10
+
+
+@pytest.mark.parametrize("num_workers", [1, 10])
+def test_num_workers_config_reads_a_stream(num_workers):
+    config = {**_RECENT_CONFIG, "num_workers": num_workers}
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/incidents", json={"incidents": [{"id": "i-1"}], "pagination_meta": {}})
+        output = _read_stream("incidents", config=config)
+
+    assert output.errors == []
+    assert [message.record.data["id"] for message in output.records] == ["i-1"]
+
+
 def test_users_requests_inactive_users():
     """`users` asks for deactivated accounts too, so a user who leaves does not vanish from the stream."""
     with requests_mock.Mocker() as mocker:

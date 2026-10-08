@@ -29,15 +29,16 @@ Incremental streams request `updated_at` in windows sized by the `time_window` o
 ## Configuration
 
 | Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
+| ------- | ------ | ------------- | --------------- |
 | `api_key` | `string` | API Key. API key to use. Find it at https://app.incident.io/settings/api-keys | |
 | `start_date` | `string` | Start Date. Only sync records updated on or after this UTC date for the incremental streams. The default predates all incident.io data. | 2020-01-01T00:00:00Z |
 | `time_window` | `string` | Time window. Size of each date window requested from incident.io on incremental streams, as an ISO 8601 duration (for example `P30D`, `P7D`, `P365D`). Smaller windows let more requests run in parallel on large accounts; larger windows mean fewer requests on small accounts. | P30D |
+| `num_workers` | `integer` | Number of concurrent workers. Number of streams and partitions read in parallel. Higher values can speed up large syncs but use more of the incident.io rate limit (1,200 requests per minute per API key, 60 per minute on incidents). | 4 |
 
 ## Streams
 
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
+| ------------- | ------------- | ------------ | --------------------- | ---------------------- |
 | actions | id | DefaultPaginator | ✅ | ✅ |
 | alerts | id | DefaultPaginator | ✅ | ✅ |
 | catalog_types | id | No pagination | ✅ | ❌ |
@@ -68,8 +69,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
   <summary>Expand to review</summary>
 
 | Version | Date | Pull Request | Subject |
-|---------|------|--------------|---------|
-| 0.2.0 | 2026-10-06 | [88150](https://github.com/airbytehq/airbyte/pull/88150) | Migrate `actions` and `follow-ups` to the paginated `/v3` endpoints ahead of the `/v2` removal on 2026-12-31, querying each `incident_mode` so the record set matches `/v2`; add incremental sync on `updated_at` for `incidents`, `alerts`, `escalations`, `actions` and `follow-ups`; handle API errors with actionable messages; respect the rate limit with a budget and `Retry-After` backoff; use the vendor's maximum page sizes; include deactivated users; declare 27 fields the API already returns; move the connection check to `incidents`; run the standard tests against the real API; read incremental streams in windows (`time_window`, default 30 days) |
+| --------- | ------ | -------------- | --------- |
+| 0.2.0 | 2026-10-06 | [88150](https://github.com/airbytehq/airbyte/pull/88150) | Migrate actions and follow-ups to the /v3 endpoints ahead of the /v2 removal; add incremental sync, rate limiting, clearer error messages, and the time_window and num_workers options |
 | 0.1.42 | 2026-10-06 | [87912](https://github.com/airbytehq/airbyte/pull/87912) | Update dependencies |
 | 0.1.41 | 2026-09-29 | [87212](https://github.com/airbytehq/airbyte/pull/87212) | Update dependencies |
 | 0.1.40 | 2026-09-22 | [86668](https://github.com/airbytehq/airbyte/pull/86668) | Update dependencies |

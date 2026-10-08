@@ -54,6 +54,12 @@ documents that `next_shifts` is only
 returned when `page_size` is 25 or lower, and the connector does not emit `next_shifts` today. Lower it
 to 25 if that field is ever added to the schema.
 
+## Concurrency
+
+`default_concurrency` reads `{{ config.get('num_workers') or 4 }}` — `num_workers` in the spec
+(default 4, range 1-10, `max_concurrency` 10) sets how many streams and partitions are read in
+parallel. Every worker shares the same `api_budget`, so raising it never exceeds the rate limit.
+
 ## Rate limits and errors
 
 The API key allows 1,200 requests per minute, but `GET /v2/incidents` is bound at 60 per minute: its

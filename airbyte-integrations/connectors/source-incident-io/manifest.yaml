@@ -561,12 +561,6 @@ definitions:
                 - 422
               error_message: "incident.io rejected the request: {{ ((response.get('errors') or [{}])[0].get('message') or 'see the incident.io error response')[:300] }}"
   updated_at_cursor:
-    # The API filters updated_at through a single `date_range` window — `updated_at[gte]` and
-    # `updated_at[lte]` together are rejected (see CONTRIBUTING.md). Each stream slices on `step`
-    # and sends its own bounds: alerts/actions/follow-ups take exact timestamps, incidents and
-    # escalations dates only. The window also applies to full-refresh syncs, so the default start
-    # must predate all incident.io data: a recent default would silently drop old records for
-    # existing full-refresh connections.
     type: DatetimeBasedCursor
     cursor_field: updated_at
     cursor_datetime_formats:
@@ -575,8 +569,6 @@ definitions:
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     step: "{{ config.get('time_window') or 'P30D' }}"
     cursor_granularity: "PT0.000001S"
-    # incident.io docs say rows on alerts, actions and follow-ups can commit out of timestamp
-    # order, so each slice overlaps the previous window by a few minutes.
     lookback_window: "PT5M"
     start_datetime:
       type: MinMaxDatetime
@@ -602,12 +594,9 @@ streams:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 4
+  default_concurrency: "{{ config.get('num_workers') or 4 }}"
   max_concurrency: 10
 
-# The API key allows 1,200 requests per minute, but GET /v2/incidents is bound at 60 per minute
-# (x-ratelimit-limit on that endpoint reads "60, 1200;window=60, 60;window=60"; every other endpoint
-# reads "1200, ..."). Policies are matched in order, so the incidents policy comes first.
 api_budget:
   type: HTTPAPIBudget
   policies:
@@ -665,6 +654,14 @@ spec:
           - "P7D"
           - "P365D"
         order: 2
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        description: "Number of streams and partitions read in parallel. Higher values can speed up large syncs but use more of the incident.io rate limit (1,200 requests per minute per API key, 60 per minute on incidents). Defaults to 4."
+        default: 4
+        minimum: 1
+        maximum: 10
+        order: 3
     additionalProperties: true
 
 metadata:
