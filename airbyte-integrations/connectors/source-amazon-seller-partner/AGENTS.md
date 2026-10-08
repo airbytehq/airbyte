@@ -118,12 +118,18 @@ sums them. The `AddFields` transformation that emits the cursor value (`endDate`
 per-day values.
 
 **Why this matters:** adding a report stream by copying an existing one is the common path, and the
-missing window is invisible — the sync succeeds and returns records, they are just labelled with a
-date the report did not cover. Two deliberate exceptions: streams whose window is multi-day or
-monthly (for example `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`) set the window explicitly but not
-day-aligned, and the full-refresh snapshot and forecast streams (`GET_VENDOR_INVENTORY_REPORT`,
-`GET_VENDOR_FORECASTING_FRESH_REPORT`, `GET_VENDOR_FORECASTING_RETAIL_REPORT`) have no cursor and
-intentionally send no window at all.
+missing window is invisible — either the sync succeeds and returns records labelled with a date the
+report did not cover, or Amazon rejects the request outright. `GET_VENDOR_INVENTORY_REPORT` was the
+second case: it sent no window at all, and Amazon failed every report with `dataStartTime and
+dataEndTime must be supplied`, so the stream returned no records for the entire low-code era. It now
+declares the same daily cursor and day-aligned window as its siblings, and like the other vendor
+retail analytics reports its cursor ends four days back so it never requests a day Amazon has not
+published yet.
+
+Two deliberate exceptions remain: streams whose window is multi-day or monthly (for example
+`GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`) set the window explicitly but not day-aligned, and the
+forecast streams (`GET_VENDOR_FORECASTING_FRESH_REPORT`, `GET_VENDOR_FORECASTING_RETAIL_REPORT`)
+have no cursor and intentionally send no window at all.
 
 ## 8. Vendor retail analytics reports forward report options but supply no defaults
 
@@ -146,9 +152,60 @@ reportPeriod, distributorView, sellingProgram reportOption to be specified" unti
 block ends in `{{ opts if opts else None }}` so an unconfigured connection sends no `reportOptions` key at all and
 its request body is byte-identical to previous versions.
 
+## 9. Vendor retail analytics streams must hold back four days
+
+Amazon publishes the vendor retail analytics reports "72 hours after the close of the period" for the
+`DAY` reportPeriod
+(https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports).
+Requesting a day it has not published yet makes the report `FATAL` with "The report data for the requested
+date range is not yet available". That is a partial failure per slice, not a skip, so before 6.0.4 every
+sync failed on its newest day and a long-running connection hit the platform's 20-partial-failure limit while
+most of its data had loaded.
+
+The vendor analytics cursors (Vendor Sales, Vendor Inventory, Vendor Traffic, Net Pure Product Margin) therefore end at
+`now_utc() - duration('P4D')`. Four, not three: a slice for day D closes at D 23:59:59 and is published 72
+hours after *that*, so a three-day holdback is only safe for a sync that starts at midnight UTC. The cursor's
+end bound is exclusive, so the newest day actually requested is four to five days back depending on the time
+of day.
+
+An explicitly configured `replication_end_date` is used as-is with no holdback, matching the pre-migration
+Python connector where `availability_sla_days` only ever moved the "now" bound. `GET_VENDOR_INVENTORY_REPORT`
+shares the holdback since 6.1.0, when it gained its daily cursor (section 7), because Amazon publishes it on the
+same schedule. Do not apply the holdback to `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` (published five minutes after
+each hour closes) or to the seller `GET_SALES_AND_TRAFFIC_REPORT` streams, which Amazon publishes on a
+different schedule.
+
+A known limitation: the day-aligned window assumes `reportPeriod: DAY`. A connection that configures `WEEK`
+or `MONTH` gets a one-day window that contradicts the configured period, since Amazon expects Sunday- or
+month-aligned bounds for those. This is not handled.
+
+## 10. FATAL reports must surface Amazon's reason
+
+When `getReport` returns `processingStatus: FATAL`, Amazon accepted `createReport` but could not produce the
+report, and the reason lives in a separate document referenced by `reportDocumentId`. The CDK never fetches it:
+it retries and then fails with "Async job failed after exhausting all retry attempts.", which tells the user
+nothing. `ReportPollingRequester` (wired as the `basic_async_retriever.polling_requester`) fetches that document,
+logs Amazon's reason at ERROR, and raises a `config_error` when the reason points at report options.
+The fail-fast applies only to `_REPORT_TYPES_SENDING_USER_REPORT_OPTIONS` - the four vendor retail
+analytics reports and the two ledger reports - because only those send the user's Report Options;
+every other stream keeps the retry path, since a report-options FATAL there is a connector bug,
+not a config error.
+
+The `config_error` message only tells the user to add options when Amazon says one is missing
+(`_MISSING_REPORT_OPTION_MARKERS`). A reason that merely mentions an option, such as a rejected value or a `WEEK`
+period whose dates are not Sunday-aligned, means the option is already set, so the message quotes Amazon and asks
+the user to check the value instead. The polling requester is shared by every report stream, so keep those
+markers narrow: a bare "requires" would also match value errors.
+
+`AsyncJobOrchestrator._is_breaking_exception` treats a `config_error` as breaking, so that path aborts the sync
+immediately rather than waiting out `failed_retry_wait_time_in_seconds` (default 1800s) per retry. Every other
+case - no document, a fetch failure, an unrecognised payload - must leave the response untouched so the existing
+retry and `status_mapping` behaviour is unchanged. This is a diagnostic path: it must never turn a report Amazon
+accepted into a failure.
+
 ## Incremental Stream Considerations
 
-The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 8 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
+The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 7 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|
@@ -193,7 +250,7 @@ The Amazon Seller Partner API uses an asynchronous report generation model. Most
 | get_stranded_inventory_ui_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
 | get_vendor_forecasting_fresh_report | medium | top-level parent | none | none | deferred_no_api_support | Vendor forecast report; uses report date range, not cursor |
 | get_vendor_forecasting_retail_report | medium | top-level parent | none | none | deferred_no_api_support | Vendor forecast report; uses report date range, not cursor |
-| get_vendor_inventory_report | medium | top-level parent | none | none | deferred_no_api_support | Vendor inventory snapshot; no cursor support |
+| get_vendor_inventory_report | medium | top-level parent | endDate | dataStartTime/dataEndTime | incremental | Daily window |
 | get_vendor_sales_report | medium | top-level parent | endDate | endDate | incremental |  |
 | get_xml_all_orders_data_by_order_date_general | medium | top-level parent | LastUpdatedDate | LastUpdatedDate | incremental |  |
 | get_xml_browse_tree_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
@@ -208,4 +265,4 @@ The Amazon Seller Partner API uses an asynchronous report generation model. Most
 
 ### Future incremental stream candidates
 
-- **No API date filter (8 streams):** `get_brand_analytics_alternate_purchase_report`, `get_brand_analytics_item_comparison_report`, `get_brand_analytics_market_basket_report`, `get_brand_analytics_repeat_purchase_report`, `get_brand_analytics_search_terms_report`, `get_vendor_forecasting_fresh_report`, `get_vendor_forecasting_retail_report`, `get_vendor_inventory_report` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
+- **No API date filter (7 streams):** `get_brand_analytics_alternate_purchase_report`, `get_brand_analytics_item_comparison_report`, `get_brand_analytics_market_basket_report`, `get_brand_analytics_repeat_purchase_report`, `get_brand_analytics_search_terms_report`, `get_vendor_forecasting_fresh_report`, `get_vendor_forecasting_retail_report` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.

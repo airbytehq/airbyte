@@ -2,6 +2,39 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 6, 2026
+
+Platform
+
+- If your organization's paid Airbyte Cloud subscription has ended, you can still view your past usage on the Usage pages and your invoice history on the Billing page in Organization settings. Previously, the Usage pages showed no data and the Billing page was hidden once your subscription ended.
+- Airbyte Cloud free trials last 14 days. The sign-up page and the trial banner now show this trial length. Previously, they said 30 days.
+
+## October 2, 2026
+
+Connections
+
+- The **Streams status** graph on a connection's Status page now loads reliably for connections whose syncs were retried. Previously, a retried sync could cause the graph to fail to load.
+
+Platform
+
+- If your organization is on a Plus plan, the Plans page in Organization settings now selects your current credit tier by default and labels it as your current plan. Previously, the page could show a different tier, such as 100 credits instead of your 40-credit plan. You can still pick another tier to upgrade or downgrade.
+
+## October 1, 2026
+
+Connections
+
+- If a connection is set to "Propagate field changes only" and a table is deleted at the source, Airbyte now removes that table from the connection on the next sync and records the removal in the connection timeline. Previously, the connection kept trying to sync the deleted table until you refreshed the schema.
+
+Platform
+
+- When you upgrade from the Standard plan to a Plus plan, the confirmation now accurately explains that you're charged immediately for Plus and any unbilled Standard usage, and that your billing cycle restarts that day. Previously, it said your first month would be prorated.
+
+## September 30, 2026
+
+Platform
+
+- If your organization is on the Standard plan or a trial, you now have until October 21 to upgrade to a Plus plan and receive free overage credits. This limited-time offer, announced on September 15, previously ended on September 29. Conditions apply, and the number of free overage credits depends on the Plus plan you select, as shown on the Plans page in Organization settings.
+
 ## September 25, 2026
 
 Connections
