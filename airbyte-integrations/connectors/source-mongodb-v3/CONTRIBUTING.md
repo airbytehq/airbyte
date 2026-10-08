@@ -1,9 +1,14 @@
 # Contributing to source-mongodb-v3
 
 `source-mongodb-v3` is a Bulk CDK (`airbyte-cdk/bulk`, `extract` core, no toolkits) rewrite of
-the legacy `source-mongodb-v2` connector. The legacy connector is the parity oracle: `spec`,
-`check`, `discover` and `read` output, saved configurations and persisted state must stay
-compatible with it.
+the legacy `source-mongodb-v2` connector, published as version 3.0.0 of the **same connector
+definition** (`definitionId b2e713cd-…`, carried over as v2 carried it over from `source-mongodb`):
+existing connections upgrade in place. The legacy connector is the parity oracle: `spec`, `check`,
+`discover` and `read` output, saved configurations and persisted state must stay compatible with
+it. The user-facing documentation is `docs/integrations/sources/mongodb-v2.md` (plus the migration
+and troubleshooting pages next to it); keep it in step with behaviour changes. Taking over the
+definition means `source-mongodb-v2` must be retired from the repo in the same change, as
+`source-mongodb` was — two metadata files cannot share a definition.
 
 ## Build and test
 
@@ -143,8 +148,12 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
   `_id` does. Numbers of any width (`int`, `long`, `double`, `decimal`) count as one type, as they
   do for the comparison — drivers routinely mix them (`testNumericIdWidthsAreOneType`). At READ
   time the metadata querier serves `fields()` from the configured catalog rather than re-sampling.
-- **CDC** (`MongoDbCdcPartitionReader`, the `Global` feed): reads the replica-set change stream with
-  the native driver `watch()` — **not Debezium**. Cold start captures a resume token before the
+- **CDC** (`MongoDbCdcPartitionReader`, the `Global` feed): reads the change stream with the native
+  driver `watch()` — **not Debezium**. With one configured database the stream is opened on that
+  database (`db.watch()`), which the `read` role allows; with several it is cluster-wide
+  (`client.watch()`, needs `readAnyDatabase`) — v2's privilege model since 2.0.2, verified against an
+  auth-enabled replica set (a `read`-only user gets `Unauthorized` on the cluster-wide stream).
+  `testCdcAcrossMultipleDatabases` covers the cluster-wide path. Cold start captures a resume token before the
   snapshot; warm start drains available changes (insert/update/replace as upserts, delete with
   `_ab_cdc_deleted_at`) and checkpoints the new token in `MongoDbCdcState`. `update_capture_mode`
   selects `UPDATE_LOOKUP` vs `REQUIRED` (post-image, MongoDB 6.0+). **Legacy v2 state is read

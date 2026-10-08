@@ -345,6 +345,51 @@ class MongoDbSourceReadTest {
         }
     }
 
+    /** Several configured databases are read through one cluster-wide change stream. */
+    @Test
+    fun testCdcAcrossMultipleDatabases() {
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            for (db in listOf(TEST_DB, OTHER_DB)) {
+                val coll = client.getDatabase(db).getCollection(MULTI_DB_CDC)
+                coll.drop()
+                coll.insertOne(Document("_id", 1).append("db", db))
+            }
+        }
+        val config: MongoDbSourceConfigurationSpecification =
+            MongoDbTestConfigs.config(replicaSet.connectionString, listOf(TEST_DB, OTHER_DB))
+        val catalog: ConfiguredAirbyteCatalog =
+            configuredCatalog(
+                SyncMode.INCREMENTAL,
+                DestinationSyncMode.APPEND,
+                setOf(MULTI_DB_CDC),
+                includeEmpty = false,
+                config = config,
+            )
+        Assertions.assertEquals(
+            setOf(TEST_DB, OTHER_DB),
+            catalog.streams.map { it.stream.namespace }.toSet(),
+        )
+        val sync1: BufferingOutputConsumer = read(catalog, config = config)
+        Assertions.assertEquals(2, sync1.records().count { it.stream == MULTI_DB_CDC })
+
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            for (db in listOf(TEST_DB, OTHER_DB)) {
+                client
+                    .getDatabase(db)
+                    .getCollection(MULTI_DB_CDC)
+                    .insertOne(Document("_id", 2).append("db", db))
+            }
+        }
+        val sync2: BufferingOutputConsumer = read(catalog, sync1.states(), config = config)
+        val changes = sync2.records().filter { it.stream == MULTI_DB_CDC }
+        Assertions.assertEquals(
+            setOf(TEST_DB, OTHER_DB),
+            changes.map { it.namespace }.toSet(),
+            "one change per database",
+        )
+        Assertions.assertEquals(listOf(2, 2), changes.map { it.data["_id"].asInt() })
+    }
+
     /** Numbers of any width are one `_id` type: the comparison and the resume treat them alike. */
     @Test
     fun testNumericIdWidthsAreOneType() {
@@ -908,6 +953,8 @@ class MongoDbSourceReadTest {
 
     companion object {
         const val TEST_DB = "test_db"
+        const val OTHER_DB = "other_db"
+        const val MULTI_DB_CDC = "multi_db_cdc_coll"
         const val PEOPLE = "people"
         const val EMPTY = "empty_coll"
         const val CDC = "cdc_coll"

@@ -98,8 +98,7 @@ class MongoDbCdcPartitionReader(
      * start: emit every available change. The cursor's final position is the new resume token.
      */
     private suspend fun drain(resumeAfter: BsonDocument?) {
-        val changeStream: ChangeStreamIterable<Document> =
-            sharedState.client.watch(pipeline()).fullDocument(fullDocumentMode())
+        val changeStream: ChangeStreamIterable<Document> = watch().fullDocument(fullDocumentMode())
         resumeAfter?.let { changeStream.resumeAfter(it) }
         changeStream.cursor().use { cursor ->
             if (resumeAfter == null) {
@@ -158,6 +157,16 @@ class MongoDbCdcPartitionReader(
         accept(payload, null)
         return true
     }
+
+    /**
+     * A single configured database is watched by itself, which the `read` role on that database
+     * allows; several need a cluster-wide stream (`readAnyDatabase`).
+     */
+    private fun watch(): ChangeStreamIterable<Document> =
+        configuration.databases.singleOrNull()?.let {
+            sharedState.client.getDatabase(it).watch(pipeline())
+        }
+            ?: sharedState.client.watch(pipeline())
 
     private fun fullDocumentMode(): FullDocument =
         when (configuration.updateCaptureMode) {
