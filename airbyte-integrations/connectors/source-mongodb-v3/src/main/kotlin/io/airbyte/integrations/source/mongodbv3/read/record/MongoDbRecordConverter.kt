@@ -35,13 +35,12 @@ import org.bson.types.Symbol
 /**
  * Converts a BSON [Document] into a [NativeRecordPayload]: `ObjectId` as hex, `Date` with millis,
  * `Binary` (any subtype) as Base64, regex as `(options)pattern`, `CodeWithScope` as an object;
- * `MinKey`, `MaxKey`, `undefined` and `DBPointer` values are omitted. With [schemaFieldTypes]
- * (READ) every schema field is emitted — `null` when absent — in its declared type's codec; without
- * it, only the document's own fields in a passthrough codec.
+ * `MinKey`, `MaxKey`, `undefined` and `DBPointer` values are omitted. Every field of
+ * [schemaFieldTypes] is emitted — `null` when absent — in its declared type's codec.
  */
 class MongoDbRecordConverter(
     private val schemaEnforced: Boolean,
-    private val schemaFieldTypes: Map<String, MongoDbFieldType> = emptyMap(),
+    private val schemaFieldTypes: Map<String, MongoDbFieldType>,
 ) {
 
     /**
@@ -61,46 +60,26 @@ class MongoDbRecordConverter(
     fun toPayloadWithId(document: Document): Pair<NativeRecordPayload, Any?> {
         val rawId: Any? = document[ID_FIELD]
         val payload: NativeRecordPayload = mutableMapOf()
-        when {
-            !schemaEnforced -> {
-                // Schemaless mode emits `_id` plus the whole document under a single `data` field.
-                val idCodec: MongoDbValueCodec =
-                    schemaFieldTypes[ID_FIELD]?.valueCodec ?: MongoStringValueCodec
-                payload[ID_FIELD] = FieldValueEncoder(toJsonNode(rawId), idCodec)
-                payload[DATA_FIELD] =
-                    FieldValueEncoder(documentToObject(document), MongoJsonbValueCodec)
-            }
-            schemaFieldTypes.isEmpty() -> {
-                // No schema (unit tests): emit only the document's own fields, passthrough codec.
-                for ((name: String, value: Any?) in document) {
-                    val node: JsonNode = toJsonNode(value) ?: continue
-                    payload[name] = FieldValueEncoder(node, MongoJsonbValueCodec)
-                }
-            }
-            else -> {
-                // READ path: emit every schema field (null when absent) with its typed codec.
-                for ((name: String, type: MongoDbFieldType) in schemaFieldTypes) {
-                    val base: String? = transformSourceField(name)
-                    if (base != null) {
-                        // `<field>_aibyte_transform`: stringified `<field>`, which itself is
-                        // nulled.
-                        val value: JsonNode? =
-                            if (document.containsKey(base)) toJsonNode(document[base]) else null
-                        payload[name] =
-                            FieldValueEncoder(value?.let(::stringify), MongoStringValueCodec)
-                        if (base in schemaFieldTypes) {
-                            payload[base] =
-                                FieldValueEncoder(null, schemaFieldTypes[base]!!.valueCodec)
-                        }
-                        continue
-                    }
-                    if (name in payload) continue // nulled by a transform above
-                    val present: Boolean = document.containsKey(name)
-                    val node: JsonNode? = if (present) toJsonNode(document[name]) else null
-                    payload[name] =
-                        FieldValueEncoder(coerceToSchema(node, present, type), type.valueCodec)
-                }
-            }
+        if (!schemaEnforced) {
+            // Schemaless mode emits `_id` plus the whole document under a single `data` field.
+            val idCodec: MongoDbValueCodec = schemaFieldTypes.getValue(ID_FIELD).valueCodec
+            payload[ID_FIELD] = FieldValueEncoder(toJsonNode(rawId), idCodec)
+            payload[DATA_FIELD] =
+                FieldValueEncoder(documentToObject(document), MongoJsonbValueCodec)
+            return payload to rawId
+        }
+        for ((name: String, type: MongoDbFieldType) in schemaFieldTypes) {
+            val present: Boolean = document.containsKey(name)
+            val node: JsonNode? = if (present) toJsonNode(document[name]) else null
+            payload[name] = FieldValueEncoder(coerceToSchema(node, present, type), type.valueCodec)
+        }
+        // `<field>_aibyte_transform`: `<field>` JSON-stringified, and `<field>` itself nulled.
+        for (name: String in schemaFieldTypes.keys) {
+            val base: String = transformSourceField(name) ?: continue
+            val value: JsonNode? =
+                if (document.containsKey(base)) toJsonNode(document[base]) else null
+            payload[name] = FieldValueEncoder(value?.let(::stringify), MongoStringValueCodec)
+            schemaFieldTypes[base]?.let { payload[base] = FieldValueEncoder(null, it.valueCodec) }
         }
         return payload to rawId
     }

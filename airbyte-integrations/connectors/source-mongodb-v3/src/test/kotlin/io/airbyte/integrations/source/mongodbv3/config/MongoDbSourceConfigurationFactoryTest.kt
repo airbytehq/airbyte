@@ -186,24 +186,26 @@ class MongoDbSourceConfigurationFactoryTest {
     }
 
     @Test
-    fun testSplitHostAndPort() {
-        Assertions.assertEquals(
-            "localhost" to 27017,
-            MongoDbSourceConfigurationFactory.splitHostAndPort("localhost"),
-        )
-        Assertions.assertEquals(
-            "localhost" to 27018,
-            MongoDbSourceConfigurationFactory.splitHostAndPort("localhost:27018"),
-        )
-        Assertions.assertEquals(
-            "[::1]" to 27017,
-            MongoDbSourceConfigurationFactory.splitHostAndPort("[::1]"),
-        )
-        Assertions.assertEquals(
-            "[::1]" to 27018,
-            MongoDbSourceConfigurationFactory.splitHostAndPort("[::1]:27018"),
-        )
+    fun testIpv6SeedHostAndDefaultPort() {
+        val config =
+            MongoDbSourceConfigurationFactory()
+                .makeWithoutExceptionHandling(
+                    parse(selfManagedWithConnectionString("mongodb://[::1]/"))
+                )
+        Assertions.assertEquals("::1", config.realHost)
+        Assertions.assertEquals(27017, config.realPort)
     }
+
+    private fun selfManagedWithConnectionString(connectionString: String): String =
+        """
+{
+  "database_config": {
+    "cluster_type": "SELF_MANAGED_REPLICA_SET",
+    "connection_string": "$connectionString",
+    "databases": ["db1"]
+  }
+}
+"""
 
     private fun selfManaged(extraRootProperty: String): String =
         """

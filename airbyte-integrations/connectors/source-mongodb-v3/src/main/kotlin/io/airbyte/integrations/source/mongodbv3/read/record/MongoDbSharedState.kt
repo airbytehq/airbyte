@@ -44,11 +44,9 @@ class MongoDbSharedState(
     /** When an incremental snapshot yields to CDC (WASS); fixed on first access for the READ. */
     val snapshotDeadline: Instant by lazy {
         val budget: Duration =
-            when {
-                maxSnapshotDurationMsOverride != 0L ->
-                    Duration.ofMillis(maxSnapshotDurationMsOverride)
-                else -> configuration.maxSnapshotReadDuration ?: Duration.ofDays(3650)
-            }
+            if (maxSnapshotDurationMsOverride != 0L)
+                Duration.ofMillis(maxSnapshotDurationMsOverride)
+            else checkNotNull(configuration.maxSnapshotReadDuration)
         Instant.now().plus(budget)
     }
 

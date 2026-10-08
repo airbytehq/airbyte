@@ -35,8 +35,8 @@ private val log = KotlinLogging.logger {}
  * collections (not views), fields come from sampling documents.
  */
 class MongoDbSourceMetadataQuerier(
-    val configuration: MongoDbSourceConfiguration,
-    val client: MongoClient,
+    private val configuration: MongoDbSourceConfiguration,
+    private val client: MongoClient,
     /** CHECK only probes that a stream is queryable, so skip the (slow) sampling in [fields]. */
     private val skipFieldDiscovery: Boolean = false,
     /**
@@ -142,16 +142,15 @@ class MongoDbSourceMetadataQuerier(
             .toList()
     }
 
-    /** Samples the collection and maps its fields to [MongoDbFieldType]s, sorted by name. */
-    internal fun discoverFields(streamID: StreamIdentifier): List<EmittedField> {
+    /**
+     * Samples the collection and maps its fields to [MongoDbFieldType]s, sorted by name. Schemaless
+     * mode only needs the type of `_id`: the whole document is emitted in a single `data` field.
+     */
+    private fun discoverFields(streamID: StreamIdentifier): List<EmittedField> {
         val collection: MongoCollection<Document> =
             client.getDatabase(streamID.namespace!!).getCollection(streamID.name)
         val fieldTypes: Map<String, MongoDbFieldType> =
-            if (configuration.schemaEnforced) {
-                sampleFieldTypes(collection)
-            } else {
-                sampleIdFieldType(collection)
-            }
+            sampleFieldTypes(collection, idOnly = !configuration.schemaEnforced)
         if (fieldTypes.isEmpty()) {
             return emptyList()
         }
@@ -160,14 +159,14 @@ class MongoDbSourceMetadataQuerier(
         if (configuration.schemaEnforced) {
             return fields
         }
-        // Schemaless mode: the whole document is emitted in a single `data` object field.
         return fields + EmittedField(DATA_FIELD, MongoDbFieldType.OBJECT)
     }
 
     /**
-     * Top-level field names and BSON types in a random sample of `discover_sample_size` documents:
+     * Top-level field names and BSON types in a random sample of `discover_sample_size` documents
+     * (only `_id` when [idOnly]):
      * ```
-     * [ {$sample: {size: N}},
+     * [ {$sample: {size: N}}, ({$project: {_id: 1}},)
      *   {$project: {fields: {$arrayToObject: {$map: {input: {$objectToArray: "$$ROOT"}, as: "each",
      *                                                 in: {k: "$$each.k", v: {$type: "$$each.v"}}}}}}},
      *   {$unwind: "$fields"},
@@ -176,7 +175,8 @@ class MongoDbSourceMetadataQuerier(
      * Each result is one distinct document shape; for a field with several types, the first wins.
      */
     private fun sampleFieldTypes(
-        collection: MongoCollection<Document>
+        collection: MongoCollection<Document>,
+        idOnly: Boolean,
     ): Map<String, MongoDbFieldType> {
         val typeOfEachField =
             Document(
@@ -189,8 +189,9 @@ class MongoDbSourceMetadataQuerier(
                     )
             )
         val pipeline: List<Bson> =
-            listOf(
+            listOfNotNull(
                 Aggregates.sample(configuration.discoverSampleSize),
+                if (idOnly) Aggregates.project(Projections.include(ID_FIELD)) else null,
                 Aggregates.project(
                     Document("fields", Document("\$arrayToObject", typeOfEachField))
                 ),
@@ -206,30 +207,6 @@ class MongoDbSourceMetadataQuerier(
                     MongoDbFieldType.fromBsonTypeName(bsonTypeName.toString())
                 )
             }
-        }
-        return fieldTypes
-    }
-
-    /** Schemaless mode only needs the type of `_id`; the first sampled type wins. */
-    private fun sampleIdFieldType(
-        collection: MongoCollection<Document>
-    ): Map<String, MongoDbFieldType> {
-        val pipeline: List<Bson> =
-            listOf(
-                Aggregates.sample(configuration.discoverSampleSize),
-                Aggregates.project(
-                    Projections.fields(
-                        Projections.excludeId(),
-                        Projections.computed(ID_TYPE_FIELD, Document("\$type", "\$$ID_FIELD")),
-                    ),
-                ),
-            )
-        val fieldTypes = LinkedHashMap<String, MongoDbFieldType>()
-        sample(collection, pipeline) { document: Document ->
-            fieldTypes.putIfAbsent(
-                ID_FIELD,
-                MongoDbFieldType.fromBsonTypeName(document.getString(ID_TYPE_FIELD)),
-            )
         }
         return fieldTypes
     }
@@ -308,7 +285,6 @@ class MongoDbSourceMetadataQuerier(
         const val ID_FIELD = "_id"
         /** Name of the field holding the whole document in schemaless mode. */
         const val DATA_FIELD = "data"
-        private const val ID_TYPE_FIELD = "_idType"
         private const val CHECK_OPERATION = "check"
         private const val READ_OPERATION = "read"
 

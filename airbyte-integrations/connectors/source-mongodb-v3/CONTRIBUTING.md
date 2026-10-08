@@ -127,7 +127,10 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
   `testTypedIdCollectionsResumeMidSnapshot` resumes a collection of each `_id` type — string,
   int32, int64, binary, UUID subtype 4 and 3, double, decimal, date, timestamp — against the server
   after a forced mid-collection checkpoint). Any other `_id` type checkpoints as its text with
-  `idType: STRING`.
+  `idType: STRING`. A stream state that is present but cannot be parsed fails the sync with the
+  same "Failed to migrate to the new connector version state protocol" error as an unreadable
+  CDC state (`MongoDbStateMigration`), rather than silently restarting the snapshot; absent,
+  JSON-null and empty `{}` states mean "no checkpoint".
 
   **The `_id` type must be the same for every document in a collection.** The resume filter is a
   plain `{_id: {$gt: <checkpoint>}}`, which MongoDB type-brackets: it only matches `_id`s of the

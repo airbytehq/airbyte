@@ -10,6 +10,7 @@ import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mongodbv3.read.record.MongoBooleanValueCodec
 import io.airbyte.integrations.source.mongodbv3.read.record.MongoDbValueCodec
@@ -82,6 +83,13 @@ enum class MongoDbFieldType(
 }
 
 private fun jsonSchemaOf(type: String): ObjectNode = Jsons.objectNode().put("type", type)
+
+/** The declared [MongoDbFieldType] of each non-meta field of a stream, by field id. */
+fun schemaFieldTypesOf(stream: Stream): Map<String, MongoDbFieldType> =
+    stream.schema
+        .filterNot { it.id.startsWith(MetaField.META_PREFIX) }
+        .mapNotNull { field -> (field.type as? MongoDbFieldType)?.let { field.id to it } }
+        .toMap()
 
 /** MongoDB-specific [MetaField]s, in addition to [io.airbyte.cdk.discover.CommonMetaField]. */
 enum class MongoDbMetaField(

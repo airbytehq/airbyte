@@ -3,9 +3,9 @@ package io.airbyte.integrations.source.mongodbv3.read.cdc
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.mongodbv3.read.MongoDbStateMigration
 import java.util.Base64
 import org.bson.BsonDocument
 import org.bson.BsonString
@@ -53,7 +53,7 @@ data class MongoDbCdcState(
          */
         private fun fromDebeziumOffset(persisted: JsonNode): MongoDbCdcState {
             val schemaEnforced: JsonNode? = persisted[DEBEZIUM_SCHEMA_ENFORCED]
-            migrationRequires(schemaEnforced?.isBoolean == true) {
+            MongoDbStateMigration.require(schemaEnforced?.isBoolean == true) {
                 "'$DEBEZIUM_SCHEMA_ENFORCED' must be a boolean, got $schemaEnforced"
             }
             val offsets: JsonNode = persisted[DEBEZIUM_STATE]
@@ -63,23 +63,23 @@ data class MongoDbCdcState(
                     schemaEnforced = schemaEnforced!!.asBoolean()
                 )
             }
-            migrationRequires(offsets.isObject && offsets.size() == 1) {
+            MongoDbStateMigration.require(offsets.isObject && offsets.size() == 1) {
                 "'$DEBEZIUM_STATE' must be an offset map with exactly one entry, got $offsets"
             }
             val offsetValue: JsonNode = offsets.elements().next()
-            migrationRequires(offsetValue.isTextual) {
+            MongoDbStateMigration.require(offsetValue.isTextual) {
                 "the offset value must be a JSON string, got $offsetValue"
             }
             val offset: JsonNode =
                 runCatching { Jsons.readTree(offsetValue.asText()) }
                     .getOrElse {
-                        migrationFailure(
+                        MongoDbStateMigration.failure(
                             "the offset value is not valid JSON: ${offsetValue.asText()}",
                             it
                         )
                     }
             val token: JsonNode? = offset[DEBEZIUM_RESUME_TOKEN]
-            migrationRequires(token?.isTextual == true) {
+            MongoDbStateMigration.require(token?.isTextual == true) {
                 "the offset has no textual '$DEBEZIUM_RESUME_TOKEN', got $offset"
             }
             return of(migrateDebeziumResumeToken(token!!.asText()), schemaEnforced!!.asBoolean())
@@ -94,23 +94,12 @@ data class MongoDbCdcState(
                         RawBsonDocument(Base64.getDecoder().decode(value)).also { it.toJson() }
                     }
                     .getOrElse {
-                        migrationFailure(
+                        MongoDbStateMigration.failure(
                             "'$DEBEZIUM_RESUME_TOKEN' is neither hex nor base64 BSON: $value",
                             it
                         )
                     }
             }
-
-        private inline fun migrationRequires(condition: Boolean, detail: () -> String) {
-            if (!condition) migrationFailure(detail())
-        }
-
-        private fun migrationFailure(detail: String, cause: Throwable? = null): Nothing =
-            throw ConfigErrorException(
-                "Failed to migrate to the new connector version state protocol: $detail. " +
-                    "Reset the connection to start from a fresh snapshot.",
-                cause,
-            )
 
         private val HEX_RESUME_TOKEN_DATA = Regex("^[0-9A-Fa-f]+$")
     }

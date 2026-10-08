@@ -27,12 +27,3 @@ class MongoDbPartitionsCreator(
         acquiredResources = null
     }
 }
-
-/** A [PartitionsCreator] that yields no partitions, ending its feed immediately. */
-data object CreateNoPartitions : PartitionsCreator {
-    override fun tryAcquireResources() = PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN
-
-    override suspend fun run(): List<PartitionReader> = emptyList()
-
-    override fun releaseResources() {}
-}

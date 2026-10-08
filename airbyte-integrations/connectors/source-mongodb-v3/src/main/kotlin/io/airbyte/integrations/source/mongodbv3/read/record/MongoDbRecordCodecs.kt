@@ -2,18 +2,8 @@
 package io.airbyte.integrations.source.mongodbv3.read.record
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.output.sockets.ProtobufAwareCustomConnectorJsonCodec
-import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.integrations.source.mongodbv3.discover.MongoDbFieldType
-
-/** The declared [MongoDbFieldType] of each non-meta field of a stream, by field id. */
-fun schemaFieldTypesOf(stream: Stream): Map<String, MongoDbFieldType> =
-    stream.schema
-        .filterNot { it.id.startsWith(MetaField.META_PREFIX) }
-        .mapNotNull { field -> (field.type as? MongoDbFieldType)?.let { field.id to it } }
-        .toMap()
 
 /**
  * Record-value codecs: pass a pre-built [JsonNode] through on the JSONL channel, but coerce it to

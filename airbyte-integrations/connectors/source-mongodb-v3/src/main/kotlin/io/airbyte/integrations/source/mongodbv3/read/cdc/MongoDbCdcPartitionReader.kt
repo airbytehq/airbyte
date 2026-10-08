@@ -21,12 +21,12 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mongodbv3.config.InvalidCdcCursorPositionBehavior
 import io.airbyte.integrations.source.mongodbv3.config.MongoDbSourceConfiguration
 import io.airbyte.integrations.source.mongodbv3.config.UpdateCaptureMode
+import io.airbyte.integrations.source.mongodbv3.discover.schemaFieldTypesOf
 import io.airbyte.integrations.source.mongodbv3.read.partition.MongoDbPartitionReaderBase
 import io.airbyte.integrations.source.mongodbv3.read.partition.RecordAcceptor
 import io.airbyte.integrations.source.mongodbv3.read.record.MongoDbRecordConverter
 import io.airbyte.integrations.source.mongodbv3.read.record.MongoDbSharedState
 import io.airbyte.integrations.source.mongodbv3.read.record.MongoStringValueCodec
-import io.airbyte.integrations.source.mongodbv3.read.record.schemaFieldTypesOf
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant

@@ -4,8 +4,12 @@ package io.airbyte.integrations.source.mongodbv3.read.snapshot
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.mongodbv3.read.MongoDbStateMigration
 import java.util.Base64
 import java.util.Date
+import java.util.UUID
+import org.bson.BsonBinary
+import org.bson.BsonBinarySubType
 import org.bson.BsonDocument
 import org.bson.BsonTimestamp
 import org.bson.Document
@@ -92,12 +96,19 @@ data class MongoDbStreamStateValue(
         }
 
     companion object {
+        /**
+         * A persisted checkpoint; anything else fails the sync rather than restart the snapshot.
+         */
         fun fromOpaqueStateValue(state: OpaqueStateValue): MongoDbStreamStateValue =
-            Jsons.treeToValue(state, MongoDbStreamStateValue::class.java)
+            try {
+                Jsons.treeToValue(state, MongoDbStreamStateValue::class.java)
+            } catch (e: Exception) {
+                MongoDbStateMigration.failure("stream state $state is not a snapshot checkpoint", e)
+            }
 
-        /** Lenient parse: null for a missing or unparseable state (treated as "no checkpoint"). */
-        fun fromOpaqueStateValueOrNull(state: OpaqueStateValue?): MongoDbStreamStateValue? =
-            state?.let { runCatching { fromOpaqueStateValue(it) }.getOrNull() }
+        /** The feed's current checkpoint, or null when there is none (absent or empty state). */
+        fun fromCurrentState(state: OpaqueStateValue?): MongoDbStreamStateValue? =
+            state?.takeUnless { it.isNull || it.isEmpty }?.let(::fromOpaqueStateValue)
 
         /** Checkpoint for the last `_id` (null if none); a document `_id` is extended JSON. */
         fun fromLastId(lastId: Any?, status: MongoDbSnapshotStatus): MongoDbStreamStateValue =
@@ -147,27 +158,20 @@ data class MongoDbStreamStateValue(
         /** Inverse of [binaryIdToString]: rebuilds a [Binary] `_id` from its stored text form. */
         private fun reconstructBinary(id: String, subType: Int): Binary =
             if (subType == UUID_SUBTYPE) {
-                val uuid = java.util.UUID.fromString(id)
-                val bytes =
-                    java.nio.ByteBuffer.allocate(UUID_BYTE_LENGTH)
-                        .putLong(uuid.mostSignificantBits)
-                        .putLong(uuid.leastSignificantBits)
-                        .array()
-                Binary(subType.toByte(), bytes)
+                BsonBinary(UUID.fromString(id)).let { Binary(it.type, it.data) }
             } else {
                 Binary(subType.toByte(), Base64.getDecoder().decode(id))
             }
 
-        /** UUID text for the standard-UUID subtype (4), Base64 for any other binary subtype. */
+        /** UUID text for a well-formed standard UUID (subtype 4), Base64 for any other binary. */
         private fun binaryIdToString(binary: Binary): String =
             if (binary.type.toInt() == UUID_SUBTYPE && binary.data.size == UUID_BYTE_LENGTH) {
-                val buffer = java.nio.ByteBuffer.wrap(binary.data)
-                java.util.UUID(buffer.long, buffer.long).toString()
+                BsonBinary(binary.type, binary.data).asUuid().toString()
             } else {
                 Base64.getEncoder().encodeToString(binary.data)
             }
 
-        private const val UUID_SUBTYPE = 4
+        private val UUID_SUBTYPE: Int = BsonBinarySubType.UUID_STANDARD.value.toInt()
         private const val UUID_BYTE_LENGTH = 16
     }
 }

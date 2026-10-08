@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mongodbv3.read.record
 
+import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
@@ -29,9 +30,17 @@ import org.junit.jupiter.api.Test
 /** Verifies the documented BSON -> JSON conversions and the legacy state `_id` encoding. */
 class MongoDbRecordConverterTest {
 
-    private val converter = MongoDbRecordConverter(schemaEnforced = true)
-
-    private fun json(document: Document) = converter.toPayloadWithId(document).first.toJson()
+    /**
+     * Converts with a schema of every field in [document] (all `string`: the codec is identity).
+     */
+    private fun json(document: Document): JsonNode =
+        MongoDbRecordConverter(
+                schemaEnforced = true,
+                schemaFieldTypes = document.keys.associateWith { MongoDbFieldType.STRING },
+            )
+            .toPayloadWithId(document)
+            .first
+            .toJson()
 
     @Test
     fun testScalarConversions() {
@@ -159,11 +168,20 @@ class MongoDbRecordConverterTest {
         Assertions.assertTrue(absent["addr_aibyte_transform"].isNull)
     }
 
+    /** Dropped values: `null` as a schema field, absent from the schemaless `data` document. */
     @Test
-    fun testMinAndMaxKeyAreOmitted() {
-        val node = json(Document("_id", 1).append("lo", MinKey()).append("hi", MaxKey()))
-        Assertions.assertFalse(node.has("lo"))
-        Assertions.assertFalse(node.has("hi"))
+    fun testMinAndMaxKeyAreDropped() {
+        val document = Document("_id", 1).append("lo", MinKey()).append("hi", MaxKey())
+        val typed = json(document)
+        Assertions.assertTrue(typed["lo"].isNull)
+        Assertions.assertTrue(typed["hi"].isNull)
+        val schemaless =
+            MongoDbRecordConverter(schemaEnforced = false, SCHEMALESS_FIELDS)
+                .toPayloadWithId(document)
+                .first
+                .toJson()
+        Assertions.assertFalse(schemaless["data"].has("lo"))
+        Assertions.assertFalse(schemaless["data"].has("hi"))
     }
 
     @Test
@@ -180,7 +198,7 @@ class MongoDbRecordConverterTest {
 
     @Test
     fun testSchemalessEmitsIdAndDataObject() {
-        val schemaless = MongoDbRecordConverter(schemaEnforced = false)
+        val schemaless = MongoDbRecordConverter(schemaEnforced = false, SCHEMALESS_FIELDS)
         val payload: NativeRecordPayload =
             schemaless.toPayloadWithId(Document("_id", "k1").append("v", 2)).first
         val node = payload.toJson()
@@ -269,5 +287,11 @@ class MongoDbRecordConverterTest {
             ),
             node
         )
+    }
+
+    companion object {
+        /** The schemaless catalog: `_id` plus the whole document in `data`. */
+        val SCHEMALESS_FIELDS: Map<String, MongoDbFieldType> =
+            mapOf("_id" to MongoDbFieldType.STRING, "data" to MongoDbFieldType.OBJECT)
     }
 }

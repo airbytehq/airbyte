@@ -2,6 +2,7 @@
 package io.airbyte.integrations.source.mongodbv3.config
 
 import com.mongodb.ConnectionString
+import com.mongodb.ServerAddress
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.SourceConfiguration
@@ -95,7 +96,6 @@ data class MongoDbSourceConfiguration(
 
     companion object {
         val DEFAULT_CHECKPOINT_TARGET_INTERVAL: Duration = Duration.ofMinutes(15)
-        const val DEFAULT_MONGODB_PORT = 27017
     }
 }
 
@@ -130,13 +130,12 @@ constructor(
             throw ConfigErrorException("No databases specified in the configuration.")
         }
         val connectionString: String = sanitizeConnectionString(databaseConfig.connectionString)
-        val firstHost: String =
+        val firstHost: ServerAddress =
             try {
-                ConnectionString(connectionString).hosts.first()
+                ServerAddress(ConnectionString(connectionString).hosts.first())
             } catch (e: IllegalArgumentException) {
                 throw ConfigErrorException("Invalid connection string: ${e.message}", e)
             }
-        val (realHost: String, realPort: Int) = splitHostAndPort(firstHost)
 
         val maxConcurrency: Int =
             when (DataChannelMedium.valueOf(dataChannelMedium)) {
@@ -180,8 +179,8 @@ constructor(
                         .toLong()
                 ),
             maxConcurrency = maxConcurrency,
-            realHost = realHost,
-            realPort = realPort,
+            realHost = firstHost.host,
+            realPort = firstHost.port,
         )
     }
 
@@ -192,18 +191,5 @@ constructor(
         /** Trims whitespace, stray quotes and the Atlas `<username>:<password>@` placeholder. */
         fun sanitizeConnectionString(raw: String): String =
             raw.trim().replace("\"", "").replace(CREDENTIALS_PLACEHOLDER, "")
-
-        /** Splits a `host[:port]` seed, IPv6 literals included, defaulting to port 27017. */
-        fun splitHostAndPort(hostAndPort: String): Pair<String, Int> {
-            val closingBracket: Int = hostAndPort.lastIndexOf(']')
-            val colon: Int = hostAndPort.lastIndexOf(':')
-            if (colon < 0 || colon < closingBracket) {
-                return hostAndPort to MongoDbSourceConfiguration.DEFAULT_MONGODB_PORT
-            }
-            val port: Int =
-                hostAndPort.substring(colon + 1).toIntOrNull()
-                    ?: MongoDbSourceConfiguration.DEFAULT_MONGODB_PORT
-            return hostAndPort.substring(0, colon) to port
-        }
     }
 }

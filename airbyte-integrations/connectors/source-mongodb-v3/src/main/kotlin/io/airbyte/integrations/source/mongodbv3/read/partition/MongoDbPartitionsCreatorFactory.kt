@@ -2,8 +2,8 @@
 package io.airbyte.integrations.source.mongodbv3.read.partition
 
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.read.ConfiguredSyncMode
+import io.airbyte.cdk.read.CreateNoPartitions
 import io.airbyte.cdk.read.FeedBootstrap
 import io.airbyte.cdk.read.Global
 import io.airbyte.cdk.read.GlobalFeedBootstrap
@@ -14,17 +14,15 @@ import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.integrations.source.mongodbv3.discover.MongoDbSourceMetadataQuerier.Companion.DATA_FIELD
 import io.airbyte.integrations.source.mongodbv3.discover.MongoDbSourceMetadataQuerier.Companion.ID_FIELD
+import io.airbyte.integrations.source.mongodbv3.discover.schemaFieldTypesOf
 import io.airbyte.integrations.source.mongodbv3.read.cdc.MongoDbCdcPartitionReader
 import io.airbyte.integrations.source.mongodbv3.read.cdc.MongoDbCdcState
 import io.airbyte.integrations.source.mongodbv3.read.record.MongoDbSharedState
-import io.airbyte.integrations.source.mongodbv3.read.record.schemaFieldTypesOf
 import io.airbyte.integrations.source.mongodbv3.read.snapshot.MongoDbSnapshotPartitionReader
 import io.airbyte.integrations.source.mongodbv3.read.snapshot.MongoDbSnapshotStatus
-import io.airbyte.integrations.source.mongodbv3.read.snapshot.MongoDbStreamState
 import io.airbyte.integrations.source.mongodbv3.read.snapshot.MongoDbStreamStateValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 private val log = KotlinLogging.logger {}
@@ -40,14 +38,12 @@ class MongoDbPartitionsCreatorFactory(
     private val sharedState: MongoDbSharedState,
 ) : PartitionsCreatorFactory {
 
-    private val streamStates = ConcurrentHashMap<StreamIdentifier, MongoDbStreamState>()
-
     /** Re-planning guard for the single Global (change-stream) feed. */
     private val cdcStarted = AtomicBoolean(false)
 
     private val schemaModeValidated = AtomicBoolean(false)
 
-    override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator? {
+    override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator {
         if (schemaModeValidated.compareAndSet(false, true)) {
             validateSchemaMode(feedBootstrap)
         }
@@ -62,29 +58,26 @@ class MongoDbPartitionsCreatorFactory(
                 }
             is StreamFeedBootstrap -> {
                 validateSyncModeAgainstState(feedBootstrap)
-                val id: StreamIdentifier = feedBootstrap.feed.id
                 if (snapshotIsDone(feedBootstrap)) {
                     log.info {
-                        "No snapshot partition for $id (complete, read, or yielded to CDC)."
+                        "No snapshot partition for ${feedBootstrap.feed.id} (complete, read, or " +
+                            "yielded to CDC)."
                     }
                     CreateNoPartitions
                 } else {
-                    val streamState: MongoDbStreamState =
-                        streamStates.getOrPut(id) { MongoDbStreamState(sharedState, feedBootstrap) }
                     MongoDbPartitionsCreator(sharedState) {
-                        MongoDbSnapshotPartitionReader(streamState)
+                        MongoDbSnapshotPartitionReader(sharedState, feedBootstrap)
                     }
                 }
             }
-            else -> null
         }
     }
 
     private fun snapshotIsDone(feedBootstrap: StreamFeedBootstrap): Boolean {
-        val id: StreamIdentifier = feedBootstrap.feed.id
+        val id = feedBootstrap.feed.id
         val persistedComplete: Boolean =
-            MongoDbStreamStateValue.fromOpaqueStateValueOrNull(feedBootstrap.currentState)
-                ?.status == MongoDbSnapshotStatus.COMPLETE
+            MongoDbStreamStateValue.fromCurrentState(feedBootstrap.currentState)?.status ==
+                MongoDbSnapshotStatus.COMPLETE
         return persistedComplete ||
             id in sharedState.completedSnapshots ||
             id in sharedState.snapshotYielded
@@ -126,8 +119,7 @@ class MongoDbPartitionsCreatorFactory(
     private fun validateSyncModeAgainstState(feedBootstrap: StreamFeedBootstrap) {
         val stream: Stream = feedBootstrap.feed
         val saved: MongoDbSnapshotStatus =
-            MongoDbStreamStateValue.fromOpaqueStateValueOrNull(feedBootstrap.currentState)?.status
-                ?: return
+            MongoDbStreamStateValue.fromCurrentState(feedBootstrap.currentState)?.status ?: return
         val allowed: Set<MongoDbSnapshotStatus> =
             when (stream.configuredSyncMode) {
                 ConfiguredSyncMode.INCREMENTAL ->

@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mongodbv3.read.snapshot
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.util.Jsons
 import java.nio.ByteBuffer
 import java.util.Date
@@ -67,6 +68,24 @@ class MongoDbStreamStateValueTest {
             MongoDbStreamStateValue.fromLastId(true, MongoDbSnapshotStatus.IN_PROGRESS)
         Assertions.assertEquals(MongoDbIdType.STRING, checkpoint.idType)
         Assertions.assertEquals("true", checkpoint.id)
+    }
+
+    /**
+     * Absent, JSON-null and empty states are "no checkpoint"; anything unreadable fails the sync.
+     */
+    @Test
+    fun testNoCheckpointVersusUnreadableState() {
+        Assertions.assertNull(MongoDbStreamStateValue.fromCurrentState(null))
+        Assertions.assertNull(MongoDbStreamStateValue.fromCurrentState(Jsons.nullNode()))
+        Assertions.assertNull(MongoDbStreamStateValue.fromCurrentState(Jsons.objectNode()))
+        val e =
+            Assertions.assertThrows(ConfigErrorException::class.java) {
+                MongoDbStreamStateValue.fromCurrentState(Jsons.readTree("""{"foo": 1}"""))
+            }
+        Assertions.assertTrue(
+            e.message!!.startsWith("Failed to migrate to the new connector version state protocol"),
+            e.message,
+        )
     }
 
     /** The persisted shape of `source-mongodb-v2`, key names included. */
