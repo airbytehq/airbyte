@@ -1,5 +1,19 @@
 # Timeplus
 
+:::warning
+
+## Deprecation Notice
+
+The Timeplus destination connector is archived and no longer available in Airbyte Cloud or Airbyte Open Source.
+
+This connector only supported [Timeplus Cloud](https://us-west-2.timeplus.cloud/) (API-key authentication against `https://<region>.timeplus.cloud/<workspace_id>`), which has been discontinued by the vendor: the Timeplus Cloud endpoint now responds with "No new workspace can be created in Timeplus Cloud" and existing workspace hosts no longer resolve. Timeplus now offers [Timeplus Enterprise](https://www.timeplus.com/download) (self-hosted), whose [REST API](https://docs.timeplus.com/rest) uses basic authentication and is not compatible with this connector.
+
+### Recommended Actions
+
+Users who want to load data into Timeplus Enterprise are advised to use the [Timeplus ingest REST API](https://docs.timeplus.com/ingest-api) or to build a custom connector. For guidance, please visit our [Custom Connector documentation](https://docs.airbyte.com/connector-development/).
+
+:::
+
 This page guides you through the process of setting up the [Timeplus](https://timeplus.com)
 destination connector.
 
@@ -46,6 +60,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                              | Subject              |
 |:--------| :--------- | :-------------------------------------------------------- | :------------------- |
+| 0.1.46 | 2026-10-07 | [88314](https://github.com/airbytehq/airbyte/pull/88314) | Archive connector: Timeplus Cloud has been discontinued by the vendor; drop legacy `main.py` from poetry packages so the image builds |
 | 0.1.45 | 2025-05-10 | [59836](https://github.com/airbytehq/airbyte/pull/59836) | Update dependencies |
 | 0.1.44 | 2025-05-03 | [59343](https://github.com/airbytehq/airbyte/pull/59343) | Update dependencies |
 | 0.1.43 | 2025-04-26 | [58263](https://github.com/airbytehq/airbyte/pull/58263) | Update dependencies |

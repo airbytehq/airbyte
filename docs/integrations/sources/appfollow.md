@@ -1,10 +1,10 @@
 # Appfollow
 
-This page guides you through setting up the Appfollow source connector to sync data for the [Appfollow API](https://appfollow.docs.apiary.io/#introduction/api-methods).
+This page guides you through setting up the Appfollow source connector to sync data for the [Appfollow API](https://docs.api.appfollow.io/reference/overview).
 
 ## Prerequisite
 
-To set up the Appfollow source connector, you'll need your Appfollow `ext_id`, `cid`, `api_secret` and `Country`.
+To set up the Appfollow source connector, you'll need an Appfollow API token. See the [Appfollow API authorization docs](https://docs.api.appfollow.io/reference/authorization) for how to generate one.
 
 ## Set up the Appfollow source connector
 
@@ -12,14 +12,18 @@ To set up the Appfollow source connector, you'll need your Appfollow `ext_id`, `
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Appfollow** from the Source type dropdown.
 4. Enter a name for your source.
-5. For **ext_id**, **cid**, **api_secret** and **Country**, enter the Appfollow ext_id, cid, api_secret and country.
+5. For **API Key**, enter your Appfollow API token.
 6. Click **Set up source**.
 
 ## Supported Streams
 
 The Appfollow source connector supports the following streams:
 
-- [Ratings](https://appfollow.docs.apiary.io/#reference/0/9.-ratings) \(Full Refresh sync\)
+- [Users](https://docs.api.appfollow.io/reference/users_list_api_v2_account_users_get-1) \(Full Refresh sync\)
+- [App Collections](https://docs.api.appfollow.io/reference/app_collections_list_api_v2_account_apps_get-1) \(Full Refresh sync\)
+- [App Lists](https://docs.api.appfollow.io/reference/list_of_apps_from_the_collection_api_v2_account_apps_app_get-1) \(Full Refresh sync\)
+- [Stat Reviews](https://docs.api.appfollow.io/reference/stat_reviews_api_v2_reviews_stats_get-1) \(Full Refresh sync\)
+- [Ratings](https://docs.api.appfollow.io/reference/ratings_history_api_v2_meta_ratings_history_get) \(Full Refresh sync\)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -44,6 +48,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                 |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------- |
+| 1.1.62 | 2026-10-07 | [88267](https://github.com/airbytehq/airbyte/pull/88267) | Fix authentication: read the API token from the `api_secret` field exposed in the spec |
 | 1.1.61 | 2026-10-06 | [87749](https://github.com/airbytehq/airbyte/pull/87749) | Update dependencies |
 | 1.1.60 | 2026-09-29 | [87094](https://github.com/airbytehq/airbyte/pull/87094) | Update dependencies |
 | 1.1.59 | 2026-09-22 | [86543](https://github.com/airbytehq/airbyte/pull/86543) | Update dependencies |

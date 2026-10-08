@@ -114,7 +114,9 @@ This source is capable of syncing the following streams:
 - [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/) (Products, Performance by Ad Group, Performance by Campaign, Performance by Creative)
 
 :::note
-The Attribution report streams (`attribution_report_products`, `attribution_report_performance_adgroup`, `attribution_report_performance_campaign`, and `attribution_report_performance_creative`) require Amazon Attribution access on each Amazon Ads profile. Profiles without Attribution access are silently skipped, and the sync continues with the remaining authorized profiles. If a sync produces no Attribution records, verify that Amazon Attribution is enabled on at least one profile in your account.
+The Attribution report streams (`attribution_report_products`, `attribution_report_performance_adgroup`, `attribution_report_performance_campaign`, and `attribution_report_performance_creative`) require Amazon Attribution access on each Amazon Ads profile. If Amazon rejects an Attribution report request for a profile, either with the message `This profileID is not authorized to use Amazon Attribution` or with an HTTP 401 Unauthorized response, the connector skips that profile, writes a message to the sync logs, and continues with the remaining profiles. The sync doesn't fail.
+
+If a sync produces no Attribution records, check the sync logs for these messages. A 401 response usually means Amazon Attribution isn't enabled for the profile, or your Amazon Ads API app doesn't have access to the Attribution API.
 :::
 
 :::note

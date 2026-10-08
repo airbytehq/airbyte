@@ -13,7 +13,8 @@ You have to give your login email and password used with `when-i-work` account f
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
+| `email` | `string` | Email of your When I Work account. |  |
+| `password` | `string` | Password for your When I Work account. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |

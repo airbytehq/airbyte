@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2e731a08-e503-4caf-998a-92bd4afd80c1
-  dockerImageTag: 0.0.63
+  dockerImageTag: 0.0.64
   dockerRepository: airbyte/source-systeme
   githubIssueLabel: source-systeme
   icon: icon.svg
@@ -35,5 +35,5 @@ data:
     sl: 100
   externalDocumentationUrls:
     - title: Systeme.io API documentation
-      url: https://systeme.io/api
+      url: https://developer.systeme.io/reference/api
       type: api_reference

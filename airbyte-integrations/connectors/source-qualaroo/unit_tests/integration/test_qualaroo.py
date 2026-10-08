@@ -28,6 +28,7 @@ _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 _RESOURCE_PATH = Path(__file__).parent.parent / "resource"
 _BASE_URL = "https://api.qualaroo.com/api/v1/"
 _START_DATE = "2021-03-01T00:00:00.000Z"
+_START_DATE_TIMESTAMP = 1614556800
 _AUTHORIZATION = "Basic " + base64.b64encode(b"test_key:test_token").decode("ascii")
 
 
@@ -70,7 +71,7 @@ def _records(output: EntrypointOutput) -> List[Dict[str, Any]]:
 
 def _request(path: str) -> HttpRequest:
     return HttpRequest(
-        f"{_BASE_URL}{path}?limit=500&start_date={_START_DATE}",
+        f"{_BASE_URL}{path}?limit=500&start_date={_START_DATE_TIMESTAMP}",
         headers={"Authorization": _AUTHORIZATION},
     )
 
