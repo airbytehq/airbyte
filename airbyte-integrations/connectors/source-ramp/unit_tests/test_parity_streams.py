@@ -143,13 +143,15 @@ def test_users_read_unfiltered_then_suspended():
     [
         pytest.param("vendors", "vendors", "include_subsidiary", id="vendors_subsidiary"),
         pytest.param("receipts", "receipts", "include_ocr_data", id="receipts_ocr"),
+        pytest.param("transactions", "transactions", "include_merchant_data", id="transactions_merchant_data"),
     ],
 )
 def test_optional_fields_are_requested(stream_name, path, flag):
-    """Ramp only returns `subsidiary` and `ocr` when asked; the streams ask so those fields are populated."""
+    """Ramp only returns `subsidiary`, `ocr` and `merchant_data` when asked; the streams ask so those fields are populated."""
+    record = {"id": "x-1", "created_at": "2024-07-01T00:00:00+00:00", "updated_at": "2024-07-01T00:00:00+00:00"}
     with requests_mock.Mocker() as mocker:
         mocker.post(TOKEN_URL, json=TOKEN_RESPONSE)
-        mocker.get(f"{BASE_URL}/{path}", json=_page([{"id": "x-1", "created_at": "2024-07-01T00:00:00+00:00"}]))
+        mocker.get(f"{BASE_URL}/{path}", json=_page([record]))
         read_stream(stream_name)
 
     assert query_params(requests_to(mocker.request_history, f"/developer/v1/{path}")[0]).get(flag) == "true"
