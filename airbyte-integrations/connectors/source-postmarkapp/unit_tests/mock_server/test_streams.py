@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 import freezegun
 from unit_tests.conftest import get_source
 
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
@@ -22,10 +22,7 @@ _FROZEN_NOW = "2025-01-02T12:00:00Z"
 _MESSAGES = "messages"
 _BOUNCES = "bounces"
 _SERVERS = "servers"
-_POSTMARK_LIMIT_MESSAGE = (
-    "Postmark returned more than 10,000 records for a single time window, which exceeds its API limit "
-    "(ErrorCode 700). Lower the Slice Window (Minutes) setting and retry the sync."
-)
+_SPLIT_FAILURE_MESSAGE = "Lower the Slice Window (Minutes) setting so that each request covers less time."
 
 
 def _read_stream(stream_name, sync_mode, config, state=None) -> EntrypointOutput:
@@ -133,8 +130,9 @@ class TestPostmarkStreams(TestCase):
     def test_hourly_windows_cover_the_ambiguous_hour_at_dst_fall_back(self, http_mocker):
         config = ConfigBuilder().with_start_date("2025-11-02T04:00:00Z").with_slice_window_minutes(60).build()
         before_fall_back = _message_request("2025-11-02T00:00:00", "2025-11-02T01:00:00")
-        # 05:00-06:00Z (EDT) and 06:00-07:00Z (EST) are both 01:00-02:00 Eastern; the last window ends at now - 5m (07:00Z).
-        ambiguous_hour_edt = _message_request("2025-11-02T01:00:00", "2025-11-02T02:00:00")
+        # 05:00-06:00Z (EDT) and 06:00-07:00Z (EST) are both 01:00-02:00 Eastern, which Postmark may read as either hour.
+        # The EDT window asks for 00:00-02:00 (04:00-07:00Z), covering it under both readings; the last window ends at now - 5m (07:00Z).
+        ambiguous_hour_edt = _message_request("2025-11-02T00:00:00", "2025-11-02T02:00:00")
         ambiguous_hour_est = _message_request("2025-11-02T01:00:00", "2025-11-02T02:00:01")
         edt_record = {"MessageID": "edt", "ReceivedAt": "2025-11-02T01:30:00.0000000-04:00"}
         est_record = {"MessageID": "est", "ReceivedAt": "2025-11-02T01:30:00.0000000-05:00"}
@@ -150,6 +148,49 @@ class TestPostmarkStreams(TestCase):
         http_mocker.assert_number_of_calls(before_fall_back, 1)
         http_mocker.assert_number_of_calls(ambiguous_hour_edt, 1)
         http_mocker.assert_number_of_calls(ambiguous_hour_est, 1)
+
+    @HttpMocker()
+    def test_window_starting_off_the_hour_across_dst_fall_back_is_not_collapsed(self, http_mocker):
+        config = ConfigBuilder().with_start_date("2025-11-01T00:00:00Z").with_slice_window_minutes(60).build()
+        # Incremental windows start at the last record's second, so they rarely start on the hour.
+        state = StateBuilder().with_stream_state(_MESSAGES, {"ReceivedAt": "2025-11-02T05:17:23+0000"}).build()
+        # 05:17:23-06:17:22Z would map to 01:17:23-01:17:23 Eastern with a single offset per boundary.
+        crossing_window = _message_request("2025-11-02T00:17:23", "2025-11-02T02:17:23")
+        last_window = _message_request("2025-11-02T01:17:23", "2025-11-02T02:17:24")
+        edt_record = {"MessageID": "edt", "ReceivedAt": "2025-11-02T01:30:00.0000000-04:00"}
+        est_record = {"MessageID": "est", "ReceivedAt": "2025-11-02T01:30:00.0000000-05:00"}
+        http_mocker.get(crossing_window, _page("Messages", [edt_record, est_record], total_count=2))
+        http_mocker.get(last_window, _page("Messages", [edt_record, est_record], total_count=2))
+
+        with freezegun.freeze_time("2025-11-02T07:22:23Z"):
+            output = _read_stream(_MESSAGES, SyncMode.incremental, config, state)
+
+        assert output.errors == []
+        assert sorted(record.record.data["MessageID"] for record in output.records) == ["edt", "est"]
+        http_mocker.assert_number_of_calls(crossing_window, 1)
+        http_mocker.assert_number_of_calls(last_window, 1)
+
+    @HttpMocker()
+    def test_hourly_windows_skip_the_missing_hour_at_dst_spring_forward(self, http_mocker):
+        config = ConfigBuilder().with_start_date("2025-03-09T05:00:00Z").with_slice_window_minutes(60).build()
+        # 02:00-03:00 Eastern does not exist on 2025-03-09; the window ending at 07:00Z must ask for 03:00, not 02:00.
+        expected_windows = [
+            ("2025-03-09T00:00:00", "2025-03-09T01:00:00"),
+            ("2025-03-09T01:00:00", "2025-03-09T03:00:00"),
+            ("2025-03-09T03:00:00", "2025-03-09T04:00:01"),
+        ]
+        requests = []
+        for fromdate, todate in expected_windows:
+            request = _message_request(fromdate, todate)
+            http_mocker.get(request, _page("Messages", [], total_count=0))
+            requests.append(request)
+
+        with freezegun.freeze_time("2025-03-09T08:05:00Z"):
+            output = _read_stream(_MESSAGES, SyncMode.incremental, config)
+
+        assert output.errors == []
+        for request in requests:
+            http_mocker.assert_number_of_calls(request, 1)
 
     @HttpMocker()
     def test_record_on_window_boundary_is_emitted_once(self, http_mocker):
@@ -183,11 +224,11 @@ class TestPostmarkStreams(TestCase):
         http_mocker.assert_number_of_calls(request, 1)
 
     @HttpMocker()
-    def test_messages_use_default_daily_windows(self, http_mocker):
-        config = ConfigBuilder().with_start_date("2025-01-01T00:00:00Z").build()
+    def test_messages_use_default_seven_day_windows(self, http_mocker):
+        config = ConfigBuilder().with_start_date("2024-12-20T00:00:00Z").build()
         expected_windows = [
-            ("2024-12-31T19:00:00", "2025-01-01T19:00:00"),
-            ("2025-01-01T19:00:00", "2025-01-02T06:55:01"),
+            ("2024-12-19T19:00:00", "2024-12-26T19:00:00"),
+            ("2024-12-26T19:00:00", "2025-01-02T06:55:01"),
         ]
         requests = []
         for fromdate, todate in expected_windows:
@@ -251,7 +292,7 @@ class TestPostmarkStreams(TestCase):
         start = first_start
         first_request = None
         while start < end:
-            next_start = start + timedelta(days=1)
+            next_start = start + timedelta(days=7)
             slice_end = min(next_start - timedelta(seconds=1), end)
             fromdate = _eastern_wall_time(start)
             todate = _eastern_wall_time(slice_end + timedelta(seconds=1))
@@ -272,41 +313,81 @@ class TestPostmarkStreams(TestCase):
         assert state_value == "2024-12-01T16:09:19-0500"
         datetime.strptime(state_value, "%Y-%m-%dT%H:%M:%S%z")
         assert first_request is not None
-        expected_first_request = _stream_request(_BOUNCES, "2024-01-03T07:00:00", "2024-01-04T07:00:00")
+        expected_first_request = _stream_request(_BOUNCES, "2024-01-03T07:00:00", "2024-01-10T07:00:00")
         assert first_request == expected_first_request
         http_mocker.assert_number_of_calls(first_request, 1)
 
     @HttpMocker()
-    def test_error_code_700_fails_fast_with_config_error(self, http_mocker):
+    def test_window_with_more_than_10000_records_is_split_before_emitting(self, http_mocker):
         config = ConfigBuilder().with_start_date("2025-01-02T11:00:00Z").build()
-        request = _message_request("2025-01-02T06:00:00", "2025-01-02T06:55:01")
-        response = HttpResponse(
-            body=json.dumps({"ErrorCode": 700, "Message": "The combination of count and offset is too large."}),
-            status_code=422,
-        )
-        http_mocker.get(request, response)
+        window = _message_request("2025-01-02T06:00:00", "2025-01-02T06:55:01")
+        # 11:00:00-11:55:00Z splits into 11:00:00-11:27:29Z and 11:27:30-11:55:00Z.
+        first_half = _message_request("2025-01-02T06:00:00", "2025-01-02T06:27:30")
+        second_half = _message_request("2025-01-02T06:27:30", "2025-01-02T06:55:01")
+        http_mocker.get(window, _page("Messages", _messages("oversized", 500, "2025-01-02T06:10:00.0000000-05:00"), total_count=12000))
+        http_mocker.get(first_half, _page("Messages", _messages("first-half", 1, "2025-01-02T06:10:00.0000000-05:00"), total_count=1))
+        http_mocker.get(second_half, _page("Messages", _messages("second-half", 1, "2025-01-02T06:40:00.0000000-05:00"), total_count=1))
 
-        with patch("time.sleep"):
-            output = _read_stream(_MESSAGES, SyncMode.incremental, config)
+        output = _read_stream(_MESSAGES, SyncMode.incremental, config)
 
-        assert any(
-            error.trace.error.failure_type == FailureType.config_error and error.trace.error.message == _POSTMARK_LIMIT_MESSAGE
-            for error in output.errors
-        )
-        http_mocker.assert_number_of_calls(request, 1)
+        assert output.errors == []
+        assert [record.record.data["MessageID"] for record in output.records] == ["first-half-0", "second-half-0"]
+        assert output.most_recent_state.stream_state.__dict__["ReceivedAt"] == "2025-01-02T06:40:00-0500"
+        http_mocker.assert_number_of_calls(window, 1)
+        http_mocker.assert_number_of_calls(first_half, 1)
+        http_mocker.assert_number_of_calls(second_half, 1)
 
     @HttpMocker()
-    def test_other_422_responses_fail_without_retry(self, http_mocker):
+    def test_offset_limit_error_splits_window(self, http_mocker):
+        config = ConfigBuilder().with_start_date("2025-01-02T11:00:00Z").build()
+        cases = (
+            (_MESSAGES, "Messages", {"ErrorCode": 700, "Message": "The combination of count and offset is too large."}),
+            (_BOUNCES, "Bounces", {"ErrorCode": 1000, "Message": "Count + Offset cannot exceed 10,000 bounces."}),
+        )
+        for stream_name, response_key, error in cases:
+            window = _stream_request(stream_name, "2025-01-02T06:00:00", "2025-01-02T06:55:01")
+            first_half = _stream_request(stream_name, "2025-01-02T06:00:00", "2025-01-02T06:27:30")
+            second_half = _stream_request(stream_name, "2025-01-02T06:27:30", "2025-01-02T06:55:01")
+            http_mocker.get(window, HttpResponse(body=json.dumps(error), status_code=422))
+            http_mocker.get(first_half, _page(response_key, [], total_count=0))
+            http_mocker.get(second_half, _page(response_key, [], total_count=0))
+
+            output = _read_stream(stream_name, SyncMode.incremental, config)
+
+            assert output.errors == []
+            http_mocker.assert_number_of_calls(window, 1)
+            http_mocker.assert_number_of_calls(first_half, 1)
+            http_mocker.assert_number_of_calls(second_half, 1)
+
+    @HttpMocker()
+    def test_window_that_cannot_be_split_further_fails_with_guidance(self, http_mocker):
+        config = ConfigBuilder().with_start_date("2025-01-02T11:54:59Z").build()
+        window = _message_request("2025-01-02T06:54:59", "2025-01-02T06:55:01")
+        one_second = _message_request("2025-01-02T06:54:59", "2025-01-02T06:55:00")
+        http_mocker.get(window, _page("Messages", [], total_count=10000))
+        http_mocker.get(one_second, _page("Messages", [], total_count=10000))
+
+        output = _read_stream(_MESSAGES, SyncMode.incremental, config)
+
+        assert output.records == []
+        assert any(error.trace.error.message.endswith(_SPLIT_FAILURE_MESSAGE) for error in output.errors)
+        http_mocker.assert_number_of_calls(one_second, 1)
+
+    @HttpMocker()
+    def test_other_422_responses_fail_without_retry_or_split(self, http_mocker):
         config = ConfigBuilder().with_start_date("2025-01-02T11:00:00Z").build()
         request = _message_request("2025-01-02T06:00:00", "2025-01-02T06:55:01")
+        # ErrorCode 700 covers every messages query validation error; only the offset limit is fixed by a smaller window.
         http_mocker.get(
             request,
-            HttpResponse(body=json.dumps({"ErrorCode": 701, "Message": "Invalid date filter."}), status_code=422),
+            HttpResponse(body=json.dumps({"ErrorCode": 700, "Message": "Invalid date filter."}), status_code=422),
         )
 
         output = _read_stream(_MESSAGES, SyncMode.incremental, config)
 
-        assert any(error.trace.error.message == "Postmark rejected the request: Invalid date filter." for error in output.errors)
+        assert any(
+            error.trace.error.message == "Postmark rejected the request (ErrorCode 700): Invalid date filter." for error in output.errors
+        )
         http_mocker.assert_number_of_calls(request, 1)
 
     @HttpMocker()

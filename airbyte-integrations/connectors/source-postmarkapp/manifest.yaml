@@ -47,16 +47,17 @@ definitions:
       type: MinMaxDatetime
       datetime: "{{ (now_utc() - duration('PT5M')).strftime('%Y-%m-%dT%H:%M:%S%z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    step: "PT{{ config.get('slice_window_minutes') or 1440 }}M"
+    step: "PT{{ config.get('slice_window_minutes') or 10080 }}M"
     cursor_granularity: PT1S
   windowed_request_parameters:
-    # Postmark filters use US Eastern wall time; this conversion is DST-aware.
-    # todate picks its offset from end_time (still inside the window) and adds the 1s granularity after converting,
-    # so a window ending at the November fall-back maps to 01:00-02:00 instead of an empty 01:00-01:00 range.
+    # Postmark filters use US Eastern wall time: EDT from the 2nd Sunday of March 07:00Z to the 1st Sunday of November 06:00Z, EST otherwise.
+    # At the November fall-back, 01:00-02:00 Eastern happens twice and Postmark may read it as either hour, so fromdate switches to EST an
+    # hour early (05:00Z) and todate an hour late (07:00Z). The request then covers the window under either reading, and the record filter
+    # drops the extra hour. todate converts end_time + 1s directly, so it never lands in the 02:00-03:00 hour skipped in March.
     fromdate: >-
-      {% set d = str_to_datetime(stream_interval.start_time) %}{% set m = d.replace(month=3, day=1, hour=7, minute=0, second=0, microsecond=0) %}{% set s = m + duration('P' ~ ((6 - m.weekday()) % 7 + 7) ~ 'D') %}{% set n = d.replace(month=11, day=1, hour=6, minute=0, second=0, microsecond=0) %}{% set e = n + duration('P' ~ ((6 - n.weekday()) % 7) ~ 'D') %}{{ format_datetime(d - duration('PT4H' if s <= d < e else 'PT5H'), '%Y-%m-%dT%H:%M:%S') }}
+      {% set d = str_to_datetime(stream_interval.start_time) %}{% set m = d.replace(month=3, day=1, hour=7, minute=0, second=0, microsecond=0) %}{% set s = m + duration('P' ~ ((6 - m.weekday()) % 7 + 7) ~ 'D') %}{% set n = d.replace(month=11, day=1, hour=5, minute=0, second=0, microsecond=0) %}{% set e = n + duration('P' ~ ((6 - n.weekday()) % 7) ~ 'D') %}{{ format_datetime(d - duration('PT4H' if s <= d < e else 'PT5H'), '%Y-%m-%dT%H:%M:%S') }}
     todate: >-
-      {% set d = str_to_datetime(stream_interval.end_time) %}{% set m = d.replace(month=3, day=1, hour=7, minute=0, second=0, microsecond=0) %}{% set s = m + duration('P' ~ ((6 - m.weekday()) % 7 + 7) ~ 'D') %}{% set n = d.replace(month=11, day=1, hour=6, minute=0, second=0, microsecond=0) %}{% set e = n + duration('P' ~ ((6 - n.weekday()) % 7) ~ 'D') %}{{ format_datetime(d - duration('PT4H' if s <= d < e else 'PT5H') + duration('PT1S'), '%Y-%m-%dT%H:%M:%S') }}
+      {% set d = str_to_datetime(stream_interval.end_time) + duration('PT1S') %}{% set m = d.replace(month=3, day=1, hour=7, minute=0, second=0, microsecond=0) %}{% set s = m + duration('P' ~ ((6 - m.weekday()) % 7 + 7) ~ 'D') %}{% set n = d.replace(month=11, day=1, hour=7, minute=0, second=0, microsecond=0) %}{% set e = n + duration('P' ~ ((6 - n.weekday()) % 7) ~ 'D') %}{{ format_datetime(d - duration('PT4H' if s <= d < e else 'PT5H'), '%Y-%m-%dT%H:%M:%S') }}
   error_handler:
     type: DefaultErrorHandler
     # Backoff is 5 * 2^attempt (10s, 20s, ...); the CDK caps total backoff at 600s, so more than 5 retries is never reached.
@@ -65,15 +66,29 @@ definitions:
       - type: ExponentialBackoffStrategy
         factor: 5
     response_filters:
+      - $ref: "#/definitions/rejected_request_filter"
+  rejected_request_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    http_codes: [422]
+    error_message: "Postmark rejected the request (ErrorCode {{ response.ErrorCode }}): {{ response.Message }}"
+  windowed_error_handler:
+    # Postmark searches return at most 10,000 records (count + offset <= 10,000), so a window that matches more is split in half
+    # and each half read in turn. TotalCount on the first page triggers the split before any record of the window is emitted;
+    # the offset error is a fallback in case the count grows while paging. ErrorCode 700 covers every messages query validation
+    # error, so it only splits when Postmark names the offset; 1000 is the bounces equivalent.
+    $ref: "#/definitions/error_handler"
+    response_filters:
       - type: HttpResponseFilter
-        action: FAIL
-        failure_type: config_error
-        predicate: "{{ response.ErrorCode == 700 }}"
-        error_message: Postmark returned more than 10,000 records for a single time window, which exceeds its API limit (ErrorCode 700). Lower the Slice Window (Minutes) setting and retry the sync.
+        action: SPLIT_REQUEST_WINDOW
+        predicate: "{{ (response.TotalCount or 0) >= 10000 }}"
       - type: HttpResponseFilter
-        action: FAIL
-        http_codes: [422]
-        error_message: "Postmark rejected the request: {{ response.Message }}"
+        action: SPLIT_REQUEST_WINDOW
+        predicate: "{{ (response.ErrorCode == 700 and 'offset' in (response.Message or '') | lower) or response.ErrorCode == 1000 }}"
+      - $ref: "#/definitions/rejected_request_filter"
+  request_window_splitting:
+    type: RequestWindowSplitting
+    failure_message: Lower the Slice Window (Minutes) setting so that each request covers less time.
   streams:
     deliverystats:
       type: DeclarativeStream
@@ -158,6 +173,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /messages/outbound
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/windowed_error_handler"
           request_parameters:
             $ref: "#/definitions/windowed_request_parameters"
         record_selector:
@@ -172,6 +189,8 @@ definitions:
             condition: "{{ str_to_datetime(stream_slice.start_time) <= str_to_datetime(record.ReceivedAt) < str_to_datetime(stream_slice.end_time) + duration('PT1S') }}"
         paginator:
           $ref: "#/definitions/offset_paginator"
+        request_window_splitting:
+          $ref: "#/definitions/request_window_splitting"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -190,6 +209,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /bounces
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/windowed_error_handler"
           request_parameters:
             $ref: "#/definitions/windowed_request_parameters"
         record_selector:
@@ -204,6 +225,8 @@ definitions:
             condition: "{{ str_to_datetime(stream_slice.start_time) <= str_to_datetime(record.BouncedAt) < str_to_datetime(stream_slice.end_time) + duration('PT1S') }}"
         paginator:
           $ref: "#/definitions/offset_paginator"
+        request_window_splitting:
+          $ref: "#/definitions/request_window_splitting"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -300,10 +323,10 @@ spec:
       slice_window_minutes:
         type: integer
         title: Slice Window (Minutes)
-        description: Length in minutes of each time window requested for the messages and bounces streams. Postmark returns at most 10,000 records per window, so lower this value if a sync fails because a window exceeded that limit. Defaults to 1440 (one day).
+        description: Length in minutes of each time window requested for the messages and bounces streams. Windows with more than the 10,000 records Postmark returns per search are split automatically; lower this value if a sync fails because a window could not be split small enough, or to save progress more often. Defaults to 10080 (seven days).
         minimum: 1
-        maximum: 1440
-        examples: [1440, 60]
+        maximum: 10080
+        examples: [10080, 1440, 60]
         order: 3
     additionalProperties: true
 
