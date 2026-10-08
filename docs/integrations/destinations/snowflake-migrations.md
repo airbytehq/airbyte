@@ -6,7 +6,7 @@ This version deprecates username and password authentication. Username and passw
 
 ### Who is affected
 
-If your Airbyte connection to Snowflake uses **username and password** credentials, you must migrate to key pair authentication before Snowflake enforces strong authentication on your account (rolling between August and October 2026). Connections that already use key pair authentication are not affected. No clear or refresh is required; existing destination data and sync state are unaffected.
+If your Airbyte connection to Snowflake uses **username and password** credentials, you must migrate to key pair authentication before Snowflake enforces strong authentication on your account (rolling between August and October 2026). Connections that already use key pair authentication are not affected. If you enter a Snowflake programmatic access token (PAT) in the **Password** field instead of a password, you don't need to migrate. See [Use a programmatic access token](./snowflake#use-a-programmatic-access-token) for PAT expiry and network policy requirements. No clear or refresh is required; existing destination data and sync state are unaffected.
 
 ### Migration steps
 

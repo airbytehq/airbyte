@@ -14,6 +14,8 @@ Starting with version **5.0.0**, username and password authentication is **depre
 This change aligns with [Snowflake's deprecation of single-factor password sign-ins](https://docs.snowflake.com/en/user-guide/security-mfa-rollout). Snowflake is enforcing strong authentication for all users on a rolling per-account basis between **August and October 2026**; once enforced on your account, password-only logins from Airbyte will fail.
 
 If you are currently using username and password authentication, see the [Snowflake Migration Guide](./snowflake-migrations.md) for instructions on migrating to key pair authentication.
+
+If you enter a Snowflake [programmatic access token](#use-a-programmatic-access-token) in the **Password** field instead of a password, you don't need to migrate.
 :::
 
 ## Prerequisites
@@ -177,6 +179,28 @@ in [Step 1](#step-1-set-up-key-pair-authentication) to authenticate.
 | Trim Whitespace from String Fields (Optional) | Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if leading or trailing whitespace in string fields is meaningful and should be preserved. |
 | [Data Retention Period](https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period) (Optional) | The number of days of Snowflake Time Travel to enable on tables. A nonzero value incurs increased storage costs in your Snowflake instance. Defaults to `1`. |
 | Decimal Data Type (Optional) | Determines which Snowflake data type Airbyte uses for columns with the Airbyte `number` type: `NUMBER(38,9)` (recommended) or `FLOAT` (default). See [Data type map](#data-type-map) for guidance on choosing between them. |
+
+#### Use a programmatic access token
+
+Instead of key pair authentication, you can authenticate with a Snowflake [programmatic access token](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) (PAT). Snowflake accepts a PAT [in place of a password](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#using-a-programmatic-access-token-as-a-password), so you can use one with the existing **Username and Password** option.
+
+1. Create a PAT for the Airbyte user in Snowflake:
+
+   ```sql
+   ALTER USER <user_name> ADD PROGRAMMATIC ACCESS TOKEN <token_name>
+     ROLE_RESTRICTION = '<airbyte_role>'
+     DAYS_TO_EXPIRY = <days>;
+   ```
+
+   Snowflake only shows the token secret when you create the token. Store it securely before closing the result.
+
+2. In Airbyte, select **Username and Password** as the authorization method. Enter the Snowflake username in **Username** and paste the PAT into **Password**.
+
+Keep the following in mind when you use a PAT:
+
+- **Tokens expire.** A PAT expires after the number of days you set with `DAYS_TO_EXPIRY` (15 days by default, up to 365). When the token expires, syncs fail until you create a new token and paste it into the **Password** field. Plan to rotate the token before it expires. Key pair authentication doesn't have this limitation.
+- **Network policy.** By default, Snowflake requires a [network policy](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#label-pat-prerequisites-network) on the user to generate or use a PAT. If you're using Airbyte Cloud, make sure that policy allows Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist). See [Step 3](#step-3-configure-network-policies).
+- **Service users.** For users with `TYPE = SERVICE`, Snowflake requires `ROLE_RESTRICTION` when you create the token. If an authentication policy restricts the allowed methods, include `PROGRAMMATIC_ACCESS_TOKEN` in `AUTHENTICATION_METHODS`.
 
 ## Output schema
 
