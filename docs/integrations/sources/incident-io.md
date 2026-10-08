@@ -22,36 +22,44 @@ For more information about the API, see the [Incident.io API reference](https://
 The Incident.io source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
+- Incremental (`incidents`, `alerts`, `escalations`, `actions`, `follow-ups`, on `updated_at`)
+
+Incremental streams request `updated_at` in windows sized by the `time_window` option (default 30 days), resuming from the last synced timestamp with a small overlap so rows that commit slightly out of order are still captured. With the Append + Deduped destination sync mode those repeats are removed by primary key; with plain Append they are kept.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
+| ------- | ------ | ------------- | --------------- |
 | `api_key` | `string` | API Key. API key to use. Find it at https://app.incident.io/settings/api-keys | |
+| `start_date` | `string` | Start Date. Only sync records updated on or after this UTC date for the incremental streams. The default predates all incident.io data. | 2020-01-01T00:00:00Z |
+| `time_window` | `string` | Time window. Size of each date window requested from incident.io on incremental streams, in whole days as an ISO 8601 duration (for example `P30D`, `P7D`, `P365D`). The minimum is `P1D` because incidents and escalations filter by date. Smaller windows let more requests run in parallel on large accounts; larger windows mean fewer requests on small accounts. Defaults to `P30D`. | P30D |
+| `num_workers` | `integer` | Number of concurrent workers. Number of streams and partitions read in parallel. Higher values can speed up large syncs but use more of the incident.io rate limit (1,200 requests per minute per API key, 60 per minute on incidents). | 4 |
 
 ## Streams
 
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| actions | id | No pagination | ✅ | ❌ |
-| alerts | id | DefaultPaginator | ✅ | ❌ |
+| ------------- | ------------- | ------------ | --------------------- | ---------------------- |
+| actions | id | DefaultPaginator | ✅ | ✅ |
+| alerts | id | DefaultPaginator | ✅ | ✅ |
 | catalog_types | id | No pagination | ✅ | ❌ |
 | custom_fields | id | No pagination | ✅ | ❌ |
-| escalations | id | DefaultPaginator | ✅ | ❌ |
-| follow-ups | id | No pagination | ✅ | ❌ |
+| escalations | id | DefaultPaginator | ✅ | ✅ |
+| follow-ups | id | DefaultPaginator | ✅ | ✅ |
 | incident_roles | id | No pagination | ✅ | ❌ |
 | incident_statuses | id | No pagination | ✅ | ❌ |
 | incident_timestamps | id | No pagination | ✅ | ❌ |
 | incident_updates | id | DefaultPaginator | ✅ | ❌ |
-| incidents | id | DefaultPaginator | ✅ | ❌ |
+| incidents | id | DefaultPaginator | ✅ | ✅ |
 | schedules | id | DefaultPaginator | ✅ | ❌ |
 | severities | id | No pagination | ✅ | ❌ |
 | users | id | DefaultPaginator | ✅ | ❌ |
 | workflows | id | No pagination | ✅ | ❌ |
 
+The `incidents` stream includes incidents in every status category, including `declined`, `canceled` and `merged`, which the API leaves out by default.
+
 ## Limitations and troubleshooting
 
-The Incident.io API has a default rate limit of 1,200 requests per minute per API key. If the connector encounters rate limiting, it retries with exponential backoff.
+The Incident.io API allows 1,200 requests per minute per API key, and the incidents endpoint has a lower limit of 60 requests per minute. The connector paces itself within both limits and, if the API still returns a rate-limit response, waits for the interval the API asks for before retrying.
 
 ## IP allow list
 
@@ -63,7 +71,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
   <summary>Expand to review</summary>
 
 | Version | Date | Pull Request | Subject |
-|---------|------|--------------|---------|
+| --------- | ------ | -------------- | --------- |
+| 0.2.0 | 2026-10-06 | [88150](https://github.com/airbytehq/airbyte/pull/88150) | Migrate actions and follow-ups to /v3; add incremental sync, rate limiting, clearer errors, time_window and num_workers options, and sync incidents in every status category |
 | 0.1.42 | 2026-10-06 | [87912](https://github.com/airbytehq/airbyte/pull/87912) | Update dependencies |
 | 0.1.41 | 2026-09-29 | [87212](https://github.com/airbytehq/airbyte/pull/87212) | Update dependencies |
 | 0.1.40 | 2026-09-22 | [86668](https://github.com/airbytehq/airbyte/pull/86668) | Update dependencies |
@@ -133,7 +142,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.0.6 | 2024-12-28 | [50648](https://github.com/airbytehq/airbyte/pull/50648) | Update dependencies |
 | 0.0.5 | 2024-12-21 | [50137](https://github.com/airbytehq/airbyte/pull/50137) | Update dependencies |
 | 0.0.4 | 2024-12-14 | [49218](https://github.com/airbytehq/airbyte/pull/49218) | Update dependencies |
-| 0.0.3 | 2024-12-11 | [48989](https://github.com/airbytehq/airbyte/pull/48989) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.0.3 | 2024-12-11 | [48989](https://github.com/airbytehq/airbyte/pull/48989) | Use a rootless Docker image (requires Airbyte 0.64 or later) |
 | 0.0.2 | 2024-11-04 | [47842](https://github.com/airbytehq/airbyte/pull/47842) | Update dependencies |
 | 0.0.1 | 2024-10-03 | | Initial release by [@aazam-gh](https://github.com/aazam-gh) via Connector Builder |
 
