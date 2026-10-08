@@ -20,6 +20,7 @@ data:
       1.0.0:
         message: "The `events` stream now reads every calendar in the account when `Calendar Id` is empty, and its primary key changes from `id` to `[calendar_id, id]`, because Google keeps event ids unique per calendar only. `calendar_id` now holds the calendar's real ID: connections configured with the alias `primary` get the account's email address instead of the word `primary`. The stream state format also changes. Refresh the source schema and clear the `events` stream after upgrading. See https://docs.airbyte.com/integrations/sources/google-calendar-migrations#upgrading-to-100"
         upgradeDeadline: "2026-11-07"
+        deadlineAction: "disable"
         scopedImpact:
           - scopeType: stream
             impactedScopes:

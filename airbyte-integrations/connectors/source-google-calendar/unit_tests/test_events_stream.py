@@ -480,7 +480,7 @@ def test_server_error_retries_then_succeeds(status_code):
             FailureType.config_error,
             ("rejected the OAuth credentials", "Re-authorize the connector"),
         ),
-        (_error_response(403, message="Forbidden"), FailureType.config_error, ("lacks access to the configured calendar",)),
+        (_error_response(403, message="Forbidden"), FailureType.config_error, ("lacks access to this calendar", "Calendar API is disabled")),
         (_error_response(403, "quotaExceeded"), FailureType.transient_error, ("quota for this project or user is exhausted",)),
         (_error_response(403, "dailyLimitExceeded"), FailureType.transient_error, ("quota for this project or user is exhausted",)),
         (
@@ -493,7 +493,7 @@ def test_server_error_retries_then_succeeds(status_code):
             FailureType.transient_error,
             ("quota for this project or user is exhausted",),
         ),
-        (_error_response(404, message="Not Found"), FailureType.config_error, ('"Calendar Id" was not found', "or use 'primary'")),
+        (_error_response(404, message="Not Found"), FailureType.config_error, ("was not found", "or use 'primary'", "re-sync if a listed calendar was removed")),
     ],
     ids=["401", "403-plain", "403-quotaExceeded", "403-dailyLimitExceeded", "403-quota-string-code", "403-quota-no-code", "404"],
 )
