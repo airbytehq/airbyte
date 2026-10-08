@@ -1,0 +1,34 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-openai
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.27.0@sha256:b68768a6ef880500de7b3b228f60045126e45b0f336e0bc6ff8a361d95162f69
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 620ee20c-a153-4af2-bbfa-092bb9e34b7e
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-openai
+  githubIssueLabel: source-openai
+  icon: icon.svg
+  license: ELv2
+  name: OpenAI
+  releaseDate: 2026-10-08
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/openai
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
