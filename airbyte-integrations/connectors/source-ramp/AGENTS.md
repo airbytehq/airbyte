@@ -152,3 +152,20 @@ on it first. The stream's key is `[vendor_id, id]`, with `vendor_id` added from 
 **Why this matters:** Moving the 404 filter into the shared handler would hide bad-token failures on
 every stream (see section 2). Putting the 404 handler last would make its generic default mapping the
 answer for every failure on this stream, losing the shared handler's actionable messages.
+
+## 9. Date fields are typed, except three that Ramp does not return in ISO 8601
+
+Every top-level field that Ramp returns as an ISO 8601 date or timestamp declares a `format`:
+`date-time` for timestamps, including `transactions.accounting_date` and `settlement_date`, which are full
+timestamps despite their names, and `date` for date-only values such as `reimbursements.transaction_date`
+and the `vendor_agreements` dates. The pairing follows
+[Airbyte's supported data types](https://docs.airbyte.com/platform/understanding-airbyte/supported-data-types),
+and it was checked against the values a full sandbox read returns, not inferred from field names. Three
+date-like fields stay plain strings: `cards.expiration` is `MMYY` (for example `0430`), and
+`business_balance.next_billing_date` and `prev_billing_date` are `MM/DD/YYYY`.
+
+**Why this matters:** Adding, removing or changing `format` on an existing field retypes the column in
+typed destinations and fails schema evolution on existing connections, so it is a breaking change (1.0.0
+was exactly that change). A `format` that does not match the values is worse than none: destinations reject
+or null the values that do not parse. Type a new field when it is first declared, and check its values
+first.
