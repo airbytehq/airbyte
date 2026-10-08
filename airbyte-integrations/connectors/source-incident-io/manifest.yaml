@@ -532,7 +532,7 @@ definitions:
               failure_type: config_error
               http_codes:
                 - 403
-              error_message: "The API key lacks a permission this stream needs: {{ (response.get('errors') or [{}])[0].get('message', 'see the incident.io error response') }}. Grant it in incident.io under Settings > API keys, or deselect the stream."
+              error_message: "The API key lacks a permission this stream needs: {{ ((response.get('errors') or [{}])[0].get('message') or 'see the incident.io error response')[:300] }}. Grant it in incident.io under Settings > API keys, or deselect the stream."
             - type: HttpResponseFilter
               action: RATE_LIMITED
               http_codes:
@@ -559,7 +559,7 @@ definitions:
                 - 412
                 - 413
                 - 422
-              error_message: "incident.io rejected the request: {{ (response.get('errors') or [{}])[0].get('message', 'see the incident.io error response') }}"
+              error_message: "incident.io rejected the request: {{ ((response.get('errors') or [{}])[0].get('message') or 'see the incident.io error response')[:300] }}"
   updated_at_cursor:
     # The API filters updated_at through a single `date_range` window — `updated_at[gte]` and
     # `updated_at[lte]` together are rejected (see CONTRIBUTING.md). Each stream slices on `step`

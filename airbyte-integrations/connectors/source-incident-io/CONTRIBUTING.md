@@ -65,8 +65,9 @@ declared on purpose: with a `MovingWindowCallRatePolicy` the CDK only syncs the 
 header is present. A `429` is retried after the `retry-after` header (the vendor says to prefer it).
 `401` and `403` are configuration errors with actionable messages; `408` and `5xx` are retried; other
 `4xx` fail as system errors with the vendor's message. The message templates read
-`(response.get('errors') or [{}])[0].get('message', ...)`: the `or` matters, an empty `errors` list
+`((response.get('errors') or [{}])[0].get('message') or ...)[:300]`: the `or` matters, an empty `errors` list
 would otherwise raise inside the error handler and turn a clear configuration error into a generic one.
+The vendor message is cut to 300 characters so an oversized error body stays a readable message.
 
 ## `users` includes deactivated accounts
 

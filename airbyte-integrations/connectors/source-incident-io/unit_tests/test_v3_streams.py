@@ -402,6 +402,43 @@ def _stream_error(output, stream_name):
     )
 
 
+def test_403_vendor_message_is_capped_at_300_characters():
+    """A vendor message can be arbitrarily long; the template cuts it to 300 characters."""
+    body = {"errors": [{"code": "missing_required_scope", "message": "a" * 300 + "b" * 700}]}
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/workflows", status_code=403, json=body)
+        output = _read_stream("workflows")
+
+    error = _stream_error(output, "workflows")
+    assert error.failure_type.value == "config_error"
+    assert error.message == (
+        "The API key lacks a permission this stream needs: " + "a" * 300 + ". "
+        "Grant it in incident.io under Settings > API keys, or deselect the stream."
+    )
+
+
+def test_422_vendor_message_is_capped_at_300_characters():
+    body = {"errors": [{"code": "invalid_value", "message": "a" * 300 + "b" * 700}]}
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/incidents", status_code=422, json=body)
+        output = _read_stream("incidents")
+
+    error = _stream_error(output, "incidents")
+    assert error.failure_type.value == "system_error"
+    assert error.message == "incident.io rejected the request: " + "a" * 300
+
+
+def test_403_null_vendor_message_falls_back_to_the_default():
+    body = {"errors": [{"code": "missing_required_scope", "message": None}]}
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/workflows", status_code=403, json=body)
+        output = _read_stream("workflows")
+
+    error = _stream_error(output, "workflows")
+    assert error.failure_type.value == "config_error"
+    assert error.message.startswith("The API key lacks a permission this stream needs: see the incident.io error response.")
+
+
 @pytest.mark.parametrize("body", [{"errors": []}, {"errors": None}, {}])
 def test_403_without_a_vendor_message_is_still_a_config_error(body):
     """An empty or missing errors list must not break the message template (it used to raise UndefinedError
