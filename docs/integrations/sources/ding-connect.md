@@ -13,14 +13,14 @@ API Reference: https://www.dingconnect.com/Api/Description
 ## Streams
 | Stream Name                 | Primary Key | Pagination        | Supports Full Sync | Supports Incremental |
 |-----------------------------|-------------|-------------------|---------------------|----------------------|
-| countries                   | uuid        | DefaultPaginator  | ✅                  | ❌                  |
-| currencies                  | uuid        | DefaultPaginator  | ✅                  | ❌                  |
-| error_code_descriptions     | uuid        | DefaultPaginator  | ✅                  | ❌                  |
-| product_descriptions        | uuid        | DefaultPaginator  | ✅                  | ❌                  |
-| products                    | uuid        | DefaultPaginator  | ✅                  | ❌                  |
-| promotions                  | uuid        | DefaultPaginator  | ✅                  | ✅                  |
-| providers                   | uuid        | DefaultPaginator  | ✅                  | ❌                  |
-| regions                     | uuid        | DefaultPaginator  | ✅                  | ❌                  |
+| countries                   | uuid        | No pagination     | ✅                  | ❌                  |
+| currencies                  | uuid        | No pagination     | ✅                  | ❌                  |
+| error_code_descriptions     | uuid        | No pagination     | ✅                  | ❌                  |
+| product_descriptions        | uuid        | No pagination     | ✅                  | ❌                  |
+| products                    | uuid        | No pagination     | ✅                  | ❌                  |
+| promotions                  | uuid        | No pagination     | ✅                  | ✅                  |
+| providers                   | uuid        | No pagination     | ✅                  | ❌                  |
+| regions                     | uuid        | No pagination     | ✅                  | ❌                  |
 
 ## IP allow list
 
@@ -33,6 +33,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.42 | 2026-10-07 | [88262](https://github.com/airbytehq/airbyte/pull/88262) | Fix never-ending syncs: the Ding API does not support `Skip` offset pagination, so stop paginating and read each endpoint's full `Items` list once |
+| 0.0.41 | 2026-10-06 | [87817](https://github.com/airbytehq/airbyte/pull/87817) | Update dependencies |
 | 0.0.40 | 2026-09-29 | [87133](https://github.com/airbytehq/airbyte/pull/87133) | Update dependencies |
 | 0.0.39 | 2026-09-22 | [86577](https://github.com/airbytehq/airbyte/pull/86577) | Update dependencies |
 | 0.0.38 | 2026-09-15 | [86005](https://github.com/airbytehq/airbyte/pull/86005) | Update dependencies |

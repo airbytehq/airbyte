@@ -50,6 +50,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
+| 0.4.63 | 2026-10-07 | [88323](https://github.com/airbytehq/airbyte/pull/88323) | Send `start_date` to the Qualaroo API as a UNIX timestamp so the configured start date is actually applied to the `responses` stream |
+| 0.4.62 | 2026-10-06 | [87995](https://github.com/airbytehq/airbyte/pull/87995) | Update dependencies |
 | 0.4.61 | 2026-09-29 | [87312](https://github.com/airbytehq/airbyte/pull/87312) | Update dependencies |
 | 0.4.60 | 2026-09-22 | [86770](https://github.com/airbytehq/airbyte/pull/86770) | Update dependencies |
 | 0.4.59 | 2026-09-15 | [86191](https://github.com/airbytehq/airbyte/pull/86191) | Update dependencies |
