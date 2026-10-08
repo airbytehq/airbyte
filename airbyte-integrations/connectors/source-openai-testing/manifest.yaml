@@ -1,0 +1,924 @@
+version: 7.28.2
+
+type: DeclarativeSource
+
+description: tetsing
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['openai_token'] }}"
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 5
+        response_filters:
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 429
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 500
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 502
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 503
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 504
+        backoff_strategies:
+          - type: ExponentialBackoffStrategy
+            factor: 5
+      request_headers:
+        Content-Type: application/json
+        OpenAI-Organization: "{{ config['openai_organization'] }}"
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: after
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 20
+          cursor_value: "{{ response.last_id }}"
+          stop_condition: "{{ response.has_more is false }}"
+    CompliancePaginator:
+      type: DefaultPaginator
+      page_size_option:
+        type: RequestOption
+        field_name: limit
+        inject_into: request_parameter
+      page_token_option:
+        type: RequestOption
+        field_name: after
+        inject_into: request_parameter
+      pagination_strategy:
+        type: CursorPagination
+        page_size: 1000
+        cursor_value: "{{ response.last_id }}"
+        stop_condition: "{{ response.has_more is false }}"
+    ComplianceHistoricalPaginator:
+      type: DefaultPaginator
+      page_size_option:
+        type: RequestOption
+        field_name: limit
+        inject_into: request_parameter
+      page_token_option:
+        type: RequestOption
+        field_name: after
+        inject_into: request_parameter
+      pagination_strategy:
+        type: CursorPagination
+        page_size: 100
+        cursor_value: "{{ response.last_id }}"
+        stop_condition: "{{ response.has_more is false }}"
+    ComplianceAuthenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['openai_compliance_token'] }}"
+
+streams:
+  - type: DeclarativeStream
+    name: users
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: after
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 20
+          cursor_value: "{{ response.last_id }}"
+          stop_condition: "{{ response.has_more is false }}"
+      requester:
+        type: HttpRequester
+        url: https://api.openai.com/v1/organization/users
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['openai_token'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 500
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 502
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 503
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 504
+              error_message_contains: ""
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 5
+              jitter_range_in_seconds: null
+        request_headers:
+          Content-Type: application/json
+          OpenAI-Organization: "{{ config['openai_organization'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          added_at:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: conversation_messages
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.last_end_time }}"
+          stop_condition: "{{ response.has_more is false or not response.last_end_time }}"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.chatgpt.com/v1/compliance/workspaces/{{
+          config['workspace_id'] }}/logs
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['openai_compliance_token'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 500
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 502
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 503
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 504
+              error_message_contains: ""
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 5
+              jitter_range_in_seconds: null
+        request_parameters:
+          after: >-
+            {{ next_page_token['next_page_token'] if next_page_token else
+            stream_interval['start_time'] }}
+          event_type: CONVERSATION_MESSAGE
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - snapshot_date
+        properties:
+          id:
+            type: string
+          end_time:
+            type:
+              - string
+              - "null"
+          file_name:
+            type:
+              - string
+              - "null"
+          file_size:
+            type:
+              - number
+              - "null"
+          event_type:
+            type:
+              - string
+              - "null"
+          file_sha256:
+            type:
+              - string
+              - "null"
+          snapshot_date:
+            type: string
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - snapshot_date
+            value: "{{ stream_interval['start_time'] }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: snapshot_date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ format_datetime((config['end_time'] if config['end_time'] else
+          now_utc().strftime('%Y-%m-%d')), '%Y-%m-%dT%H:%M:%SZ') }}
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_time'], '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_time_option:
+        type: RequestOption
+        field_name: before
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: invites
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: after
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 20
+          cursor_value: "{{ response.last_id }}"
+          stop_condition: "{{ response.has_more is false }}"
+      requester:
+        type: HttpRequester
+        url: https://api.openai.com/v1/organization/invites
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['openai_token'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 500
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 502
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 503
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 504
+              error_message_contains: ""
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 5
+              jitter_range_in_seconds: null
+        request_headers:
+          Content-Type: application/json
+          OpenAI-Organization: "{{ config['openai_organization'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          id:
+            type: string
+          email:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - number
+              - "null"
+          expires_at:
+            type:
+              - number
+              - "null"
+          accepted_at:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: completions
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 7
+          cursor_value: "{{ response.next_page }}"
+          stop_condition: "{{ response.has_more is false }}"
+      requester:
+        type: HttpRequester
+        url: https://api.openai.com/v1/organization/usage/completions
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['openai_token'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 500
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 502
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 503
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 504
+              error_message_contains: ""
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 5
+              jitter_range_in_seconds: null
+        request_headers:
+          Content-Type: application/json
+          OpenAI-Organization: "{{ config['openai_organization'] }}"
+        request_parameters:
+          group_by: project_id,user_id,model
+          bucket_width: 1d
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+          record_expander:
+            type: RecordExpander
+            on_no_records: emit_parent
+            remain_original_record: true
+            expand_records_from_field:
+              - results
+    primary_key:
+      - snapshot_date
+      - project_id
+      - user_id
+      - model
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - snapshot_date
+          - project_id
+          - user_id
+          - model
+          - start_time
+        properties:
+          model:
+            type: string
+          user_id:
+            type: string
+          end_time:
+            type:
+              - string
+              - "null"
+          project_id:
+            type: string
+          start_time:
+            type: string
+          snapshot_date:
+            type: string
+          num_model_requests:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - start_time
+            value: >-
+              {{ record.start_time if record.start_time is defined else
+              record.original_record.start_time }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - end_time
+            value: >-
+              {{ record.end_time if record.end_time is defined else
+              record.original_record.end_time }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - snapshot_date
+            value: >-
+              {{ format_datetime((record.start_time if record.start_time is
+              defined else record.original_record.start_time) | int, '%Y-%m-%d')
+              }}
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - project_id
+            value: "{{ record.project_id if record.project_id is defined else none }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - model
+            value: "{{ record.model if record.model is defined else none }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - user_id
+            value: "{{ record.user_id if record.user_id is defined else none }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: start_time
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ format_datetime((config['end_time'] or
+          today_utc().strftime('%Y-%m-%d')), '%s') }}
+        datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_time'], '%s') }}"
+        datetime_format: "%s"
+      datetime_format: "%s"
+      end_time_option:
+        type: RequestOption
+        field_name: end_time
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: start_time
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+      cursor_datetime_formats:
+        - "%s"
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: current_users
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: after
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: "{{ response.last_id }}"
+          stop_condition: "{{ response.has_more is false }}"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.chatgpt.com/v1/manage/workspaces/{{ config['workspace_id']
+          }}/users
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['openai_compliance_token'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 500
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 502
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 503
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 504
+              error_message_contains: ""
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 5
+              jitter_range_in_seconds: null
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          object:
+            type:
+              - string
+              - "null"
+          seat_type:
+            type:
+              - string
+              - "null"
+          is_scim_managed:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: historical_users
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: after
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.last_id }}"
+          stop_condition: "{{ response.has_more is false }}"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.chatgpt.com/v1/compliance/workspaces/{{
+          config['workspace_id'] }}/users
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['openai_compliance_token'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 500
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 502
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 503
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 504
+              error_message_contains: ""
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 5
+              jitter_range_in_seconds: null
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          object:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - number
+              - "null"
+          is_scim_managed:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - openai_organization
+      - openai_token
+      - start_time
+      - openai_compliance_token
+      - workspace_id
+    properties:
+      end_time:
+        type: string
+        description: >-
+          The end time for querying the API in YYYY-MM-DD (defaults to today if
+          omitted)
+        order: 3
+        title: End Time
+      start_time:
+        type: string
+        description: The start time for querying the API in YYYY-MM-DD
+        order: 2
+        title: Start time
+      openai_token:
+        type: string
+        description: The API key token used for authorizing API requests
+        order: 1
+        title: OpenAI-token
+        airbyte_secret: true
+      workspace_id:
+        type: string
+        description: The ID of the workspace.
+        order: 5
+        title: Workspace ID
+      openai_organization:
+        type: string
+        description: The organization (organization_id) associated with the request
+        order: 0
+        title: OpenAI-Organization
+      openai_compliance_token:
+        type: string
+        description: >-
+          The API key token used for authorizing compliance API endpoint
+          requests
+        order: 4
+        title: OpenAI-compliance-token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema: {}
+  testedStreams:
+    users:
+      streamHash: 7ae51038b2a2a52b8615c21d25cac92e6f9f255a
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    conversation_messages:
+      streamHash: 6b05a25275d86e52fe7a175bd95d080ab21e2b71
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    invites:
+      streamHash: 8eeeb4c03e8c0c0570050867a8d2f7c3d80a26ce
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    completions:
+      streamHash: 3673579b8115bb4e07ca0591831f2a74bf841316
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    current_users:
+      streamHash: 92c0f7fb1002b051d056f488f702932a9be295b4
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    historical_users:
+      streamHash: b937185effcc6714ff638fae5a79db3a7cd109bf
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
