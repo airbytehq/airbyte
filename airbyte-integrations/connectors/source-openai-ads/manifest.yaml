@@ -75,15 +75,18 @@ definitions:
       - '%Y-%m-%d'
     cursor_granularity: P1D
     step: P14D
-    lookback_window: 'P{{ config.get("lookback_window", 30) }}D'
+    lookback_window: 'P{{ config.get("lookback_window", 32) }}D'
     start_datetime:
       type: MinMaxDatetime
       datetime: '{{ config.get("start_date") or "2026-02-01" }}'
       datetime_format: '%Y-%m-%d'
     end_datetime:
       type: MinMaxDatetime
-      datetime: '{{ config.get("end_date") or now_utc().strftime("%Y-%m-%d") }}'
+      # date_range bounds are read in the ad account's time zone and cannot be in the future. The account zone is
+      # not known here, so end at the current date in UTC-12, which is never ahead of any account's local date.
+      datetime: '{{ config.get("end_date") or (now_utc() - duration("PT12H")).strftime("%Y-%m-%d") }}'
       datetime_format: '%Y-%m-%d'
+      max_datetime: '{{ (now_utc() - duration("PT12H")).strftime("%Y-%m-%d") }}'
 
   ad_account_stream:
     type: DeclarativeStream
@@ -777,7 +780,7 @@ spec:
       start_date:
         type: string
         title: Start Date
-        description: UTC date in the format YYYY-MM-DD. Any data before this date will not be replicated. Defaults to 2026-02-01, when ads in ChatGPT launched; there is no data before that.
+        description: Date in the ad account's time zone, in the format YYYY-MM-DD. Any data before this date will not be replicated. Defaults to 2026-02-01, when ads in ChatGPT launched; there is no data before that. OpenAI keeps daily insights for the most recent 365 days and product insights for about 30 days, so older days are no longer available for those streams.
         default: '2026-02-01'
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         pattern_descriptor: YYYY-MM-DD
@@ -788,7 +791,7 @@ spec:
       end_date:
         type: string
         title: End Date
-        description: UTC date in the format YYYY-MM-DD. Any data after this date will not be replicated. (Default value of today is used if not set)
+        description: Date in the ad account's time zone, in the format YYYY-MM-DD. Any data after this date will not be replicated. If empty or later than the current date in UTC-12 (the latest date that has started in every time zone), data is synced through that date.
         pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         pattern_descriptor: YYYY-MM-DD
         examples:
@@ -798,10 +801,10 @@ spec:
       lookback_window:
         type: integer
         title: Lookback Window
-        description: Also known as attribution or conversion window. How far into the past to look for records (in days) on every sync, so conversions attributed after the click are picked up. Set it to the longest attribution_window_days among your conversion event settings; OpenAI's API docs prescribe 30 for that field, which is the default. Used only for insights streams in incremental sync mode.
+        description: How far into the past to look for records (in days) on every sync, so conversions attributed after the click are picked up. Use the click attribution window of the reports (30 days, the API default) plus 2 days, because OpenAI needs at least one day to process conversions. Used only for insights streams in incremental sync mode.
         minimum: 0
         maximum: 90
-        default: 30
+        default: 32
         order: 3
 
       num_workers:
