@@ -2,6 +2,8 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
+      - api.openai.com
+      - api.chatgpt.com
   registryOverrides:
     oss:
       enabled: true
