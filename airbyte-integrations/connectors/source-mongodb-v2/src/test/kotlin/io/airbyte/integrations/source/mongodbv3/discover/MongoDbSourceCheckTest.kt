@@ -29,7 +29,8 @@ class MongoDbSourceCheckTest {
 
     @Test
     fun testCheckFailsWithoutAuthorizedCollections() {
-        // Same actionable message as source-mongodb-v2, naming the unreadable database.
+        // Same actionable message as the legacy (Debezium) connector, naming the unreadable
+        // database.
         SyncsTestFixture.testCheck(
             config(replicaSet.connectionString, listOf("does_not_exist")),
             expectedFailure =

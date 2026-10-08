@@ -17,7 +17,7 @@ airbyte:
               com.mongodb.MongoSecurityException: Exception authenticating
               MongoCredential{mechanism=SCRAM-SHA-256, userName='root', source='admin', password=<hidden>, mechanismProperties=<hidden>}
             error: config
-            # Same user-facing message as the legacy source-mongodb-v2 connector.
+            # Same user-facing message as the legacy (Debezium) connector.
             output: "Authentication failed.  Please check the source's configured credentials."
 
           - pattern: (?i).*Command failed with error 13 \(Unauthorized\).*
@@ -33,7 +33,7 @@ airbyte:
             error: config
 
           # Server error 10334 (BSONObjectTooLarge): a change-stream event exceeded the 16MB BSON
-          # limit. Same actionable message as the legacy source-mongodb-v2 connector.
+          # limit. Same actionable message as the legacy (Debezium) connector.
           - pattern: (?i).*(error 10334|BSONObjectTooLarge).*
             input-example: >-
               com.mongodb.MongoCommandException: Command failed with error 10334 (BSONObjectTooLarge):

@@ -1,22 +1,21 @@
-# Contributing to source-mongodb-v3
+# Contributing to source-mongodb-v2
 
-`source-mongodb-v3` is a Bulk CDK (`airbyte-cdk/bulk`, `extract` core, no toolkits) rewrite of
-the legacy `source-mongodb-v2` connector, published as version 3.0.0 of the **same connector
-definition** (`definitionId b2e713cd-…`, carried over as v2 carried it over from `source-mongodb`):
-existing connections upgrade in place. The legacy connector is the parity oracle: `spec`, `check`,
-`discover` and `read` output, saved configurations and persisted state must stay compatible with
-it. The user-facing documentation is `docs/integrations/sources/mongodb-v2.md` (plus the migration
-and troubleshooting pages next to it); keep it in step with behaviour changes. Taking over the
-definition means `source-mongodb-v2` must be retired from the repo in the same change, as
-`source-mongodb` was — two metadata files cannot share a definition.
+Since version 3.0.0, `source-mongodb-v2` is a Bulk CDK (`airbyte-cdk/bulk`, `extract` core, no
+toolkits) connector. It replaced the Debezium-based Java implementation (versions ≤ 2.1.1, the
+"legacy connector" below) in place, under the **same connector definition** (`definitionId
+b2e713cd-…`, carried over as v2 carried it over from `source-mongodb`), so existing connections
+upgrade without a reset. The legacy connector is the parity oracle: `spec`, `check`, `discover` and
+`read` output, saved configurations and persisted state must stay compatible with it. The
+user-facing documentation is `docs/integrations/sources/mongodb-v2.md` (plus the migration and
+troubleshooting pages next to it); keep it in step with behaviour changes.
 
 ## Build and test
 
 ```bash
 export JAVA_HOME=$(/usr/libexec/java_home -v 21 2>/dev/null || echo /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home)
-./gradlew :airbyte-integrations:connectors:source-mongodb-v3:compileKotlin
-./gradlew :airbyte-integrations:connectors:source-mongodb-v3:test          # unit tests (Testcontainers, needs Docker)
-./gradlew :airbyte-integrations:connectors:source-mongodb-v3:assemble      # builds airbyte/source-mongodb-v3:dev
+./gradlew :airbyte-integrations:connectors:source-mongodb-v2:compileKotlin
+./gradlew :airbyte-integrations:connectors:source-mongodb-v2:test          # unit tests (Testcontainers, needs Docker)
+./gradlew :airbyte-integrations:connectors:source-mongodb-v2:assemble      # builds airbyte/source-mongodb-v2:dev
 ```
 
 Unit tests start `mongo:7.0` containers through Testcontainers as a single-node replica set.
@@ -27,8 +26,8 @@ Unit tests start `mongo:7.0` containers through Testcontainers as a single-node 
 ## Running the connector locally
 
 ```bash
-docker run --rm airbyte/source-mongodb-v3:dev spec
-docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --config /secrets/config.json
+docker run --rm airbyte/source-mongodb-v2:dev spec
+docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --config /secrets/config.json
 ```
 
 `secrets/config.json` is git-ignored. Minimal self-managed example:
@@ -47,10 +46,10 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
 }
 ```
 
-## Parity with source-mongodb-v2
+## Parity with the legacy connector
 
 - `src/test/resources/expected-spec.json` is a snapshot of this connector's generated `spec`;
-  `MongoDbSourceSpecTest` fails if it drifts. It keeps v2's property names, titles, descriptions,
+  `MongoDbSourceSpecTest` fails if it drifts. It keeps the legacy property names, titles, descriptions,
   defaults and `database_config` oneOf so saved v2 configurations load unchanged, minus the two
   dropped Debezium-only properties. Rendering follows the Bulk CDK generator like every other Bulk
   CDK source (`"type": "object"` on oneOf variants, discriminators as a single-value `enum` +
@@ -61,8 +60,8 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
   and run both images on that network with the same `--config` files:
 
   ```bash
-  docker run --rm --network mongo-v3-net -v $PWD/configs:/configs airbyte/source-mongodb-v2:2.0.7 check --config /configs/case.json
-  docker run --rm --network mongo-v3-net -v $PWD/configs:/configs airbyte/source-mongodb-v3:dev   check --config /configs/case.json
+  docker run --rm --network mongo-v3-net -v $PWD/configs:/configs airbyte/source-mongodb-v2:2.1.1 check --config /configs/case.json
+  docker run --rm --network mongo-v3-net -v $PWD/configs:/configs airbyte/source-mongodb-v2:dev   check --config /configs/case.json
   ```
 
   Success output is identical. On failure the Bulk CDK adds an error `TRACE` message and wraps the
@@ -162,7 +161,7 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
   and extracts `resume_token`: Debezium stores the server's own token, as the hex `_data` string
   (Debezium 2.x, v2 ≤ 2.0.x) or as the base64-encoded BSON of the token document (Debezium 3.x,
   v2 ≥ 2.1.0) — both are accepted — so an upgraded connection resumes from where v2 left off with
-  no reset or migration. v3 writes its native shape going forward. A saved token the server rejects
+  no reset or migration. 3.0.0 writes its native shape going forward. A saved token the server rejects
   (oplog rolled past it — `ChangeStreamHistoryLost` — or unparseable) honours
   `invalid_cdc_cursor_position_behavior`: `Fail sync` raises the legacy "Saved offset is not valid…"
   config error; `Re-sync data` resets the CDC and snapshot state and re-snapshots. Note the server
@@ -215,12 +214,14 @@ a later optimization gated on a measured speed-up (SKILL.md Phase 1, "Concurrenc
   `NativeRecordPayload.toProtobuf`, and the STDIO path is exercised by every read test through
   `OutputMessageRouter`; a full Unix-socket sink test (bind sockets, decode `AirbyteMessageProtobuf`
   frames, compare with STDIO) is still to add. Note the CDK protobuf-consumer fixes land in 1.1.13.
-- **Terabyte-scale validation**: bounded-memory, kill/resume and throughput vs `source-mongodb-v2` on
-  a very large collection — needs infrastructure not available here.
-- **Record/state Docker parity** against `source-mongodb-v2` via `databases/mongodb/parity/`.
+- **Terabyte-scale validation**: bounded-memory, kill/resume and throughput vs the legacy image
+  (`airbyte/source-mongodb-v2:2.1.1`) on a very large collection — needs infrastructure not
+  available here.
+- **Record/state Docker parity** against the legacy image via `databases/mongodb/parity/`.
 
 > **CDK version:** this branch pins `cdkVersion=local` and bumps
-> `airbyte-cdk/bulk/core/extract/version.properties` to `1.1.12` because READ-time catalog
-> validation NPE'd on `{"type":"array"}` without `items` (MongoDB arrays) up to 1.1.11. The one-line
-> fix in `StateManagerFactory.airbyteTypeFromJsonSchema` must be published as `1.1.12` and the
-> connector re-pinned to that version before this leaves draft — CI rejects `cdkVersion=local`.
+> `airbyte-cdk/bulk/core/extract/version.properties` to `1.1.14` because READ-time catalog
+> validation NPE'd on `{"type":"array"}` without `items` (MongoDB arrays) up to 1.1.13. The one-line
+> fix in `StateManagerFactory.airbyteTypeFromJsonSchema` (also open as
+> [#88342](https://github.com/airbytehq/airbyte/pull/88342)) must be published and the connector
+> re-pinned to that version before this leaves draft — CI rejects `cdkVersion=local`.

@@ -446,8 +446,8 @@ class MongoDbSourceReadTest {
 
     /**
      * One document holding every BSON type, read through the connector in both schema modes: each
-     * field's emitted value is what the documentation promises (and what `source-mongodb-v2`
-     * emitted, except the two intentional differences: exact decimals and UTC dates).
+     * field's emitted value is what the documentation promises (and what the legacy Debezium
+     * connector emitted, except the two intentional differences: exact decimals and UTC dates).
      */
     @Test
     fun testEveryBsonTypeIsEmittedAsDocumented() {
