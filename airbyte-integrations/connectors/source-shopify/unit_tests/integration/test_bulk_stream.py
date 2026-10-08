@@ -326,7 +326,12 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
         assert any("checkpointing is disabled for the rest of this sync" in log.log.message for log in output.logs)
 
     def test_when_read_with_stale_updated_at_checkpoint_before_slice_start_reruns_slice(self) -> None:
-        """A stale checkpoint cursor must not rewind a slice before its requested start date."""
+        """
+        See https://github.com/airbytehq/oncall/issues/6874
+
+        A checkpoint cursor at or before the slice start (stale, from an earlier slice) must not rewind the slice.
+        The slice is re-run with the checkpointing disabled instead of raising the checkpoint collision error.
+        """
 
         def add_n_records(builder, n, record_date: Optional[str] = None):
             for _ in range(n):
@@ -464,7 +469,9 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
 
     def test_customer_address_with_stale_filter_checkpoint_before_slice_start_reruns_slice(self):
         """
-        A stale filter cursor for an ID-based checkpoint must not rewind the slice before its requested start date.
+        See https://github.com/airbytehq/oncall/issues/6874
+
+        Same as above, for the stream with the ID cursor, where `filter_checkpointed_cursor` is compared to the slice start.
         """
 
         def add_n_records(builder, n, record_date: Optional[str] = None):
