@@ -90,11 +90,12 @@ _LISTS = {
     "snippets": ("snippets", "snippets", _snippet),
     "collections": ("collections", "collections", _collection),
 }
-_INCREMENTAL = ["snippets", "collections"]
+_INCREMENTAL = ["snippets"]
 
 
 def test_discover_declares_primary_keys_cursors_and_sync_modes():
-    """Keys follow the vendor spec; only `snippets` and `collections` return an update time, so the rest are full refresh only."""
+    """Keys follow the vendor spec; only `snippets` syncs incrementally. `collections` returns `updated_at`, but replacing its
+    contents may not move it, so it is full refresh like the streams without an update time."""
     full_refresh, incremental = [SyncMode.full_refresh], [SyncMode.full_refresh, SyncMode.incremental]
     expected = {
         "subscription_topics": ([["id"]], None, full_refresh),
@@ -102,7 +103,7 @@ def test_discover_declares_primary_keys_cursors_and_sync_modes():
         "workspaces": ([["id"]], None, full_refresh),
         "reporting_webhooks": ([["id"]], None, full_refresh),
         "snippets": ([["name"]], ["updated_at"], incremental),
-        "collections": ([["id"]], ["updated_at"], incremental),
+        "collections": ([["id"]], None, full_refresh),
     }
     catalog = get_source(_BASE_CONFIG).discover(logging.getLogger("airbyte"), _BASE_CONFIG)
     declared = {
@@ -141,6 +142,40 @@ def test_empty_list_ends_complete_without_records(stream_name):
     assert not output.errors
     assert output.get_stream_statuses(stream_name)[-1] == AirbyteStreamStatus.COMPLETE
     assert mocker.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "endpoint, synced",
+    [
+        ("https://user:p%40ss@hooks.example.com/in?x=1", "https://hooks.example.com/in?x=1"),
+        ("https://u:raw@pw@host.example/p", "https://host.example/p"),
+        ("http://username:password@example.com", "http://example.com"),
+        ("HTTPS://user:pw@example.com/x", "HTTPS://example.com/x"),
+        ("https://hooks.example.com/in?token=abc", "https://hooks.example.com/in?token=abc"),
+        ("https://hooks.example.com/r?next=http://a@b", "https://hooks.example.com/r?next=http://a@b"),
+        ("https://example.com/a@b/c", "https://example.com/a@b/c"),
+        ("", ""),
+        (None, None),
+    ],
+)
+def test_reporting_webhooks_strip_basic_auth_userinfo_from_the_endpoint(endpoint, synced):
+    """Customer.io documents `username:password@` in the URL as the way to secure a webhook, so it is removed; anything after
+    the host, such as a token in the path or query, is kept, and an empty or missing endpoint is left as is."""
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_API}/reporting_webhooks", json={"reporting_webhooks": [{**_webhook(1), "endpoint": endpoint}]})
+        output = _read("reporting_webhooks", _BASE_CONFIG)
+
+    assert [record.record.data.get("endpoint") for record in output.records] == [synced]
+
+
+def test_collections_ignore_start_date_and_return_every_collection():
+    """Full refresh only: a collection last updated before the Start Date is still read, with its current counts."""
+    records = [_collection(1, _START_EPOCH - 1), _collection(2, _PRIOR_CURSOR)]
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_API}/collections", json={"collections": records})
+        output = _read("collections", {**_BASE_CONFIG, "start_date": _START_DATE})
+
+    assert [record.record.data for record in output.records] == records
 
 
 @pytest.mark.parametrize("stream_name", _INCREMENTAL)

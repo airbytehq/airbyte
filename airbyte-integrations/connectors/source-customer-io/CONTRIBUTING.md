@@ -32,7 +32,8 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    Date. `newsletter_variants`, `sender_identities`, `segment_usage`, `subscription_topics`,
    `object_types`, `workspaces` and `reporting_webhooks` are full refresh: they have no
    update-time field (only the `deduplicate_id` string of variants and senders carries one), and
-   full refresh also drops deleted records. Details in AGENTS.md section 4.
+   full refresh also drops deleted records. `collections` is full refresh as well (item 16).
+   Details in AGENTS.md section 4.
 5. **Substream Parents Are Inline Copies Without a Cursor** - the parent list each substream reads
    ignores Start Date on purpose, because a parent last updated before Start Date can still have
    child records that changed later. Details in AGENTS.md section 5.
@@ -76,17 +77,18 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
     ([listWorkspaces](https://docs.customer.io/integrations/api/app/tag/workspaces/listworkspaces/)).
     The records have no update time, so only full refresh is meaningful. Details in AGENTS.md
     section 13.
-14. **`reporting_webhooks.endpoint` Can Carry Credentials** - the URL is synced as returned, and
-    Customer.io documents basic authentication inside it as a way to secure a reporting webhook
+14. **`reporting_webhooks.endpoint` Can Carry Credentials** - the connector removes the
+    `username:password@` part Customer.io documents for securing a reporting webhook
     ([reporting webhooks FAQ](https://docs.customer.io/integrations/data-out/connections/webhooks/#frequently-asked-questions)),
-    so the stream is not in `suggestedStreams`; connections that propagate all field and stream
-    changes still add it on upgrade. Details in AGENTS.md section 14.
+    but a token in the path or query string is synced as returned, so the stream is not in
+    `suggestedStreams`; connections that propagate all field and stream changes still add it after
+    the upgrade. Details in AGENTS.md section 14.
 15. **`snippets` Are Keyed by Name** - snippets have no ID, and their names are unique and cannot
     change ([snippets FAQ](https://docs.customer.io/messaging/liquid/snippets/#frequently-asked-questions)),
     so `name` is the primary key. Details in AGENTS.md section 15.
 16. **`collections` Lists Metadata, Not Contents** - names, row keys, row counts and sizes
-    ([getCollections](https://docs.customer.io/integrations/api/app/tag/collections/getcollections/));
-    the connector never calls
+    ([getCollections](https://docs.customer.io/integrations/api/app/tag/collections/getcollections/)),
+    full refresh only, because a contents change may not move `updated_at`; the connector never calls
     [getCollectionContents](https://docs.customer.io/integrations/api/app/tag/collections/getcollectioncontents/).
     Details in AGENTS.md section 16.
 

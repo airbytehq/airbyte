@@ -23,13 +23,13 @@ Several output streams are available from this source:
 - [Workspaces](https://docs.customer.io/integrations/api/app/tag/workspaces/listworkspaces/) \(Full Refresh\)
 - [Reporting Webhooks](https://docs.customer.io/integrations/api/app/tag/reporting-webhooks/listwebhooks/) \(Full Refresh\)
 - [Snippets](https://docs.customer.io/integrations/api/app/tag/snippets/listsnippets/) \(Incremental\)
-- [Collections](https://docs.customer.io/integrations/api/app/tag/collections/getcollections/) \(Incremental\)
+- [Collections](https://docs.customer.io/integrations/api/app/tag/collections/getcollections/) \(Full Refresh\)
 
-`reporting_webhooks` syncs each webhook's `endpoint` URL as Customer.io returns it. Customer.io documents basic authentication in the URL (`http://username:password@example.com`) as a way to secure a reporting webhook, so the URL can contain the receiving service's credentials. New connections leave the stream unselected; select it only if the destination may store them. A connection set up before 0.7.0 with **Propagate all field and stream changes** selects it on its own and syncs it in its first sync on 0.7.0. To prevent that, switch the connection to **Propagate field changes only** before the upgrade; otherwise deselect the stream and delete its data from the destination.
+`reporting_webhooks` syncs each webhook's `endpoint` URL with any `username:password@` part removed; a token in the URL's path or query string is synced as Customer.io returns it ([reporting webhooks FAQ](https://docs.customer.io/integrations/data-out/connections/webhooks/#frequently-asked-questions)). New connections leave the stream unselected. Connections set to **Propagate all field and stream changes** add and sync it automatically after upgrading to 0.7.0; to stop syncing it, deselect the stream and clear its data from the destination.
 
 `workspaces` lists every workspace in the account with message counts for the current billing period and current people and object totals, cached by Customer.io for up to two hours. The records have no update time, so use Full Refresh | Overwrite for the latest counts, or Full Refresh | Append to keep one snapshot per sync.
 
-`collections` lists each collection's name, schema, row count and size, not its contents.
+`collections` lists each collection's name, schema, row count and size, not its contents. It is full refresh only, so every sync has the current counts.
 
 If there are more endpoints you'd like Faros AI to support, please [create an
 issue.](https://github.com/faros-ai/airbyte-connectors/issues/new)
