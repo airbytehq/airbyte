@@ -50,19 +50,25 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 ## Getting started
 
-### Requirements
-
-- Zoom Server-to-Server Oauth App
-
 ### Setup guide
 
-Please read [How to generate your Server-to-Server OAuth app ](https://developers.zoom.us/docs/internal-apps/s2s-oauth/).
+#### OAuth2.0 (recommended)
+
+In Airbyte Cloud, select OAuth2.0 and authenticate with Zoom. An administrator may be needed for account-level scopes.
+
+For OSS and self-managed deployments, create a Zoom Marketplace General app (user-managed or admin-managed), add your Airbyte redirect URL, and enable read scopes for users, meetings, webinars, and reports. Enter the app's client ID and client secret, then provide the refresh token.
+
+#### Server-to-Server OAuth
+
+Read [How to generate your Server-to-Server OAuth app](https://developers.zoom.us/docs/internal-apps/s2s-oauth/).
 
 :::info
 
-JWT Tokens are deprecated, only Server-to-Server works now. [link to Zoom](https://developers.zoom.us/docs/internal-apps/jwt-faq/)
+JWT apps are deprecated. See Zoom's [JWT FAQ](https://developers.zoom.us/docs/internal-apps/jwt-faq/).
 
 :::
+
+Existing Server-to-Server OAuth configurations are migrated automatically.
 
 ## IP allow list
 
@@ -75,6 +81,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.4.0 | 2026-10-08 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add OAuth2.0 as the default authentication method; existing Server-to-Server OAuth configurations are migrated automatically |
 | 1.3.0 | 2026-10-07 | [87561](https://github.com/airbytehq/airbyte/pull/87561) | Use the declarative OAuth authenticator, refresh tokens that expire mid-sync and report invalid credentials as configuration errors |
 | 1.2.67 | 2026-10-07 | [87005](https://github.com/airbytehq/airbyte/pull/87005) | Fix sync failures on users without meeting hosting rights, deleted meetings and webinars, and webinar UUIDs containing slashes |
 | 1.2.66 | 2026-10-06 | [88100](https://github.com/airbytehq/airbyte/pull/88100) | Update dependencies |
