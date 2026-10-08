@@ -10,7 +10,7 @@ authors = ["Airbyte <contact@airbyte.io>"]
 python = "^3.10,<3.13"
 airbyte-cdk = "7.18.1.post8.dev25490693965"
 requests_mock = "^1"
-pytest = "^8"
+pytest = ">=8,<10"
 [tool.pytest.ini_options]
 filterwarnings = [
     "ignore:This class is experimental*"
