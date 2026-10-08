@@ -2847,8 +2847,9 @@ definitions:
           - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
-        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        # One slice per report. Each partition is a single settlement report and the slice window is never sent to
+        # Amazon, so splitting it by `period_in_days` would only download the same document once per window.
+        step: "P10Y"
         cursor_granularity: "PT1S"
         # The GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE report only allows for a max start of 90 days from now
         # otherwise it will throw a 400 error. Using 89 days as a buffer to prevent race conditions
@@ -3664,7 +3665,10 @@ definitions:
     primary_key: []
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: dataEndTime
+      # Up to 6.1.0 this checkpoint was `dataEndTime` (which also overwrote the report's own `dataEndTime`), and those
+      # versions checkpointed the listing without ever downloading a report. The rename is what makes their state list the
+      # full window again: the cursor ignores a checkpoint stored under the old key. Do not rename it back.
+      cursor_field: listedUntil
       cursor_datetime_formats:
         - "%Y-%m-%d"
         - "%Y-%m-%dT%H:%M:%SZ"
@@ -3672,7 +3676,7 @@ definitions:
       # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
       step: "P10Y"
       cursor_granularity: "PT1S"
-      lookback_window: "PT{{ config.get('report_stream_lookback_window_in_hours', 0) }}H"
+      # No lookback window: a re-listed report is downloaded and emitted again in full, and this stream has no primary key.
       # Using 89 days as a buffer to prevent race conditions caused by network latency
       # between computing the timestamp and the API receiving the request.
       start_datetime:
@@ -3706,9 +3710,12 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["reports"]
+        # Keep IN_QUEUE and IN_PROGRESS reports: the async retriever polls them until DONE. Filtering them out would let the
+        # listing checkpoint move past them, and they would never be listed again. CANCELLED and FATAL reports have no
+        # document, and polling a FATAL report Amazon generated itself would fail every sync.
         record_filter:
           type: RecordFilter
-          condition: "{{ record.get('processingStatus') == 'DONE' and record.get('reportDocumentId') }}"
+          condition: "{{ record.get('processingStatus') not in ['CANCELLED', 'FATAL'] }}"
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -3718,12 +3725,14 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{ response.get('nextToken') }}"
-    # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+    # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint.
+    # Keep the full timestamp: the next sync lists from exactly this value, so a date would re-list every report created
+    # earlier that day.
     transformations:
       - type: AddFields
         fields:
-          - path: ["dataEndTime"]
-            value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+          - path: ["listedUntil"]
+            value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%dT%H:%M:%SZ') }}"
 
 api_budget:
   type: HTTPAPIBudget

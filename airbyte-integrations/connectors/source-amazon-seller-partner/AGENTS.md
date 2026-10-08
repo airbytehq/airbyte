@@ -212,7 +212,7 @@ that `flat_file_settlement_v2_helper` already listed. Nothing is created; the as
 there for its `download_target_requester`, which resolves `reportDocumentId` to a pre-signed URL and
 downloads it in the same call.
 
-Three constraints that are easy to break:
+Five constraints that are easy to break:
 
 - **Do not move the document lookup into a parent stream.** Amazon signs the URL with
   `X-Amz-Expires=300`. Resolving it in a `SubstreamPartitionRouter` parent minted the URL during
@@ -233,9 +233,20 @@ Three constraints that are easy to break:
   expired` and the CDK cannot resolve a new one. `PresignedUrlDownloadRequester` handles this by
   calling `getReportDocument` again for a fresh URL (up to two times), which only works because the
   download requester's error handler maps 403 to `IGNORE` so the response reaches the component.
+- **Each report must be downloaded exactly once.** A report is one immutable document and the stream
+  has no primary key, so anything that runs a report twice duplicates its rows in the destination. The
+  listing checkpoint (`listedUntil`) is the end of the previous listing to the second, and the listing
+  has no `lookback_window`, so a report is never listed twice. The child stream's `step` is `P10Y`, so
+  `period_in_days` cannot split one report into several jobs. The checkpoint was named `dataEndTime`
+  up to 6.1.0, which listed reports without downloading them; the new name is what makes that state
+  list the full window again, so do not rename it back.
+- **Only `CANCELLED` and `FATAL` reports are filtered out of the listing.** The listing checkpoint
+  moves past every report it lists, so dropping one that is still `IN_QUEUE` or `IN_PROGRESS` loses it
+  for good. The async retriever polls those until `DONE` instead.
 
 **Why this matters:** each of these fails quietly or only at scale. The stream either emits 0 records
-with a successful sync, stops after one page of reports, or fails on large backfills with expired URLs.
+with a successful sync, stops after one page of reports, fails on large backfills with expired URLs,
+emits the same settlement rows more than once, or silently skips reports.
 
 ## Incremental Stream Considerations
 
