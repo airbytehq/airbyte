@@ -12,7 +12,7 @@ Veeqo Airbyte connector for Veeqo enables seamless data integration between Veeq
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | orders | id | DefaultPaginator | ✅ |  ✅  |
-| returns | id | DefaultPaginator | ✅ |  ❌  |
+| returns | id | No pagination | ✅ |  ❌  |
 | products | id | DefaultPaginator | ✅ |  ✅  |
 | purchase_orders | id | DefaultPaginator | ✅ |  ❌  |
 | suppliers | id | DefaultPaginator | ✅ |  ❌  |
@@ -21,7 +21,7 @@ Veeqo Airbyte connector for Veeqo enables seamless data integration between Veeq
 | customers | id | DefaultPaginator | ✅ |  ❌  |
 | stores | id | DefaultPaginator | ✅ |  ❌  |
 | delivery_methods | id | DefaultPaginator | ✅ |  ❌  |
-| tags | id | DefaultPaginator | ✅ |  ❌  |
+| tags | id | No pagination | ✅ |  ❌  |
 
 ## IP allow list
 
@@ -34,6 +34,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.66 | 2026-10-07 | [88208](https://github.com/airbytehq/airbyte/pull/88208) | Fix infinite pagination loop on `tags` and `returns` streams (Veeqo does not paginate these endpoints) |
 | 0.0.65 | 2026-10-06 | [88041](https://github.com/airbytehq/airbyte/pull/88041) | Update dependencies |
 | 0.0.64 | 2026-09-29 | [87379](https://github.com/airbytehq/airbyte/pull/87379) | Update dependencies |
 | 0.0.63 | 2026-09-22 | [86834](https://github.com/airbytehq/airbyte/pull/86834) | Update dependencies |

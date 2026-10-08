@@ -8,6 +8,12 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 Low-code: the streams are declared in `source_google_ads/manifest.yaml`, and `source_google_ads/components.py` holds the custom components the manifest references (requesters that build GAQL queries, the streaming decoder, `GoogleAdsRetriever`, state migrations, transformations). `source_google_ads/streams.py` still contains the older Python stream classes (`IncrementalGoogleAdsStream` and friends); they are not what the manifest runs.
 
+## Custom query HTTP 400 errors
+
+Custom query streams use `custom_query_error_handler` to report HTTP 400 responses as `config_error`, including Google's GoogleAdsFailure message. Its filter must match on `http_codes` only. Never add `predicate` or `error_message_contains` to filters on `searchStream` requesters: the CDK evaluates them on every response and calls `response.json()`, buffering large streamed 200 responses (#78514). Built-in streams keep `base_error_handler`, so a 400 there remains `system_error`.
+
+Mock-server coverage is in `test_custom_query_400_fails_as_config_error_with_google_message`, `test_custom_query_400_without_details_falls_back_to_error_message`, `test_custom_query_successful_response_body_not_parsed_by_error_handler`, and `test_builtin_stream_400_remains_system_error`.
+
 ## Incremental Stream Considerations
 
 The Google Ads API supports date-based segmentation in GAQL queries. The 19 incremental report streams share `incremental_stream_base` in the manifest (12 of them through `incremental_non_manager_stream_base`): a `DatetimeBasedCursor` on `segments.date` with `datetime_format: "%Y-%m-%d"`, `cursor_granularity: P1D` and `step: P14D` (`click_view` steps `P1D`), partitioned per customer account by a `SubstreamPartitionRouter` over `customer_client` (`customer_client_non_manager` for the non-manager base), so each customer keeps its own cursor.

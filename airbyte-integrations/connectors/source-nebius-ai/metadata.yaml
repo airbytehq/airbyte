@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "api.studio.nebius.com"
+      - "api.tokenfactory.nebius.com"
   registryOverrides:
     oss:
       enabled: true
@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dcbc009d-151c-4130-96d7-6734205ac5b7
-  dockerImageTag: 0.0.51
+  dockerImageTag: 0.0.52
   dockerRepository: airbyte/source-nebius-ai
   githubIssueLabel: source-nebius-ai
   icon: icon.svg
@@ -34,6 +34,6 @@ data:
     ql: 100
     sl: 100
   externalDocumentationUrls:
-    - title: Nebius AI documentation
-      url: https://nebius.ai/docs/
+    - title: Nebius Token Factory API reference
+      url: https://docs.tokenfactory.nebius.com/api-reference/introduction
       type: api_reference

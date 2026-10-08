@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-pgvector"
-version = "0.1.12"
+version = "0.1.13"
 description = "Airbyte destination implementation for PGVector."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "ELv2"
@@ -31,7 +31,6 @@ jaraco-functools = "^4.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
-ruff = "^0.3.2"
 mypy = "^1.9.0"
 coverage = "^7.5.3"
 
