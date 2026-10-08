@@ -367,6 +367,13 @@ definitions:
       refresh_token: "{{ config[\"client_refresh_token\"] }}"
       refresh_request_body:
         redirect_uri: "{{ config[\"redirect_uri\"] }}"
+      refresh_token_error_status_codes:
+        - 400
+        - 401
+      refresh_token_error_key: error
+      refresh_token_error_values:
+        - invalid_grant
+        - invalid_client
       refresh_token_updater:
         refresh_token_name: refresh_token
         access_token_config_path:
@@ -423,6 +430,12 @@ spec:
         title: Account Id
       client_refresh_token:
         type: string
+        description: >-
+          FreshBooks refresh tokens are single-use: every token refresh
+          invalidates this value and the connector stores the replacement
+          returned by FreshBooks. If this token has already been used elsewhere
+          it is rejected with `invalid_grant` and you must re-authorize the app
+          to obtain a new one.
         order: 4
         title: Refresh token
         airbyte_secret: true

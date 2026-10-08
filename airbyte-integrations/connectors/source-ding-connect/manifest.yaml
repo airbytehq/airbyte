@@ -33,15 +33,7 @@ definitions:
             field_path:
               - Items
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: Skip
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
+          type: NoPagination
         decoder:
           type: JsonDecoder
       transformations:
@@ -75,15 +67,7 @@ definitions:
             field_path:
               - Items
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: Skip
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
+          type: NoPagination
         decoder:
           type: JsonDecoder
       transformations:
@@ -117,15 +101,7 @@ definitions:
             field_path:
               - Items
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: Skip
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
+          type: NoPagination
         decoder:
           type: JsonDecoder
       transformations:
@@ -159,15 +135,7 @@ definitions:
             field_path:
               - Items
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: Skip
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
+          type: NoPagination
         decoder:
           type: JsonDecoder
       transformations:
@@ -201,15 +169,7 @@ definitions:
             field_path:
               - Items
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: Skip
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
+          type: NoPagination
         decoder:
           type: JsonDecoder
       transformations:
@@ -243,15 +203,7 @@ definitions:
             field_path:
               - Items
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: Skip
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
+          type: NoPagination
         decoder:
           type: JsonDecoder
       transformations:
@@ -285,15 +237,7 @@ definitions:
             field_path:
               - Items
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: Skip
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
+          type: NoPagination
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -341,15 +285,7 @@ definitions:
             field_path:
               - Items
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: Skip
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
+          type: NoPagination
         decoder:
           type: JsonDecoder
       transformations:
