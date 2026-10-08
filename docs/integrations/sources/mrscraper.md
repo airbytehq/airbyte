@@ -116,6 +116,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2026-10-05 | | Initial release |
+| 0.0.1 | 2026-10-05 | [88352](https://github.com/airbytehq/airbyte/pull/88352) | Initial release |
 
 </details>
