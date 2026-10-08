@@ -1,0 +1,297 @@
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
+package io.airbyte.integrations.source.mongodb.discover
+
+import com.fasterxml.jackson.databind.JsonNode
+import com.mongodb.client.MongoClient
+import com.mongodb.client.MongoCollection
+import com.mongodb.client.model.Aggregates
+import com.mongodb.client.model.Projections
+import com.mongodb.connection.ClusterType
+import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.Operation
+import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.discover.EmittedField
+import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.discover.MetadataQuerier
+import io.airbyte.integrations.source.mongodb.config.MongoDbClientFactory
+import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfiguration
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Primary
+import io.micronaut.context.annotation.Value
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
+import org.bson.BsonDocument
+import org.bson.Document
+import org.bson.conversions.Bson
+
+private val log = KotlinLogging.logger {}
+
+/**
+ * [MetadataQuerier] for MongoDB: namespaces are the configured databases, streams the readable
+ * collections (not views), fields come from sampling documents.
+ */
+class MongoDbSourceMetadataQuerier(
+    private val configuration: MongoDbSourceConfiguration,
+    private val client: MongoClient,
+    /** CHECK only probes that a stream is queryable, so skip the (slow) sampling in [fields]. */
+    private val skipFieldDiscovery: Boolean = false,
+    /**
+     * READ only: serve [fields] from the configured catalog. The CDK validates the catalog against
+     * [fields] and drops a stream (aborting the READ) on any missing or re-typed property, which a
+     * fresh random sample can legitimately produce; only the catalog itself is guaranteed to pass.
+     */
+    private val readModeCatalog: ConfiguredAirbyteCatalog? = null,
+) : MetadataQuerier {
+
+    private val fieldsByStream = ConcurrentHashMap<StreamIdentifier, List<EmittedField>>()
+    private val sampledNamespaces: MutableSet<String> = ConcurrentHashMap.newKeySet()
+
+    /** Configured databases in which the credentials can read no collection (see [streamNames]). */
+    private val databasesWithoutPermission: MutableList<String> = mutableListOf()
+
+    override fun streamNamespaces(): List<String> = configuration.databases
+
+    /**
+     * The collections of [streamNamespace], sorted. During `check`, if the last configured database
+     * is also empty, name the unreadable databases instead of the CDK's generic "Discovered zero
+     * tables." (`CheckOperation` stops at the first readable stream, so none had any.)
+     */
+    override fun streamNames(streamNamespace: String?): List<StreamIdentifier> {
+        if (streamNamespace == null) {
+            return emptyList()
+        }
+        val collections: Set<String> = authorizedCollections(streamNamespace)
+        if (collections.isEmpty()) {
+            databasesWithoutPermission += streamNamespace
+            val allDatabasesEmpty: Boolean =
+                skipFieldDiscovery &&
+                    streamNamespace == configuration.databases.last() &&
+                    databasesWithoutPermission.containsAll(configuration.databases)
+            if (allDatabasesEmpty) {
+                throw ConfigErrorException(
+                    "Target MongoDB databases do not contain any authorized collections. " +
+                        "Databases without permissions: ${databasesWithoutPermission.joinToString(", ")}",
+                )
+            }
+        }
+        return collections.sorted().map { collectionName: String ->
+            StreamIdentifier.from(
+                StreamDescriptor().withName(collectionName).withNamespace(streamNamespace),
+            )
+        }
+    }
+
+    /** Names of the collections (not views) in [databaseName] the credentials may read. */
+    fun authorizedCollections(databaseName: String): Set<String> {
+        val command =
+            Document("listCollections", 1)
+                .append("authorizedCollections", true)
+                .append("nameOnly", true)
+                .append("filter", Document("type", "collection"))
+        val result: BsonDocument =
+            client.getDatabase(databaseName).runCommand(command).toBsonDocument()
+        return result
+            .getDocument("cursor")
+            .getArray("firstBatch")
+            .map { it.asDocument().getString("name").value }
+            .filter(::isSupportedCollection)
+            .toSet()
+    }
+
+    /**
+     * Fields discovered by sampling; empty for an empty collection (which DISCOVER omits). The
+     * first call for a namespace samples all of its collections in parallel and caches the results.
+     */
+    override fun fields(streamID: StreamIdentifier): List<EmittedField> {
+        if (skipFieldDiscovery) {
+            return emptyList()
+        }
+        readModeCatalog?.let {
+            return fieldsFromConfiguredCatalog(streamID, it)
+        }
+        val namespace: String = streamID.namespace ?: return emptyList()
+        if (sampledNamespaces.add(namespace)) {
+            streamNames(namespace).parallelStream().forEach {
+                fieldsByStream[it] = discoverFields(it)
+            }
+        }
+        return fieldsByStream.computeIfAbsent(streamID, ::discoverFields)
+    }
+
+    /** A stream's fields from the configured catalog's JSON schema, minus `_ab_*` meta fields. */
+    private fun fieldsFromConfiguredCatalog(
+        streamID: StreamIdentifier,
+        catalog: ConfiguredAirbyteCatalog,
+    ): List<EmittedField> {
+        val configuredStream =
+            catalog.streams.firstOrNull {
+                it.stream.name == streamID.name && it.stream.namespace == streamID.namespace
+            }
+                ?: return emptyList()
+        val properties: JsonNode =
+            configuredStream.stream.jsonSchema?.get("properties") ?: return emptyList()
+        return properties
+            .fields()
+            .asSequence()
+            .filterNot { (name, _) -> name.startsWith(MetaField.META_PREFIX) }
+            .map { (name, schema) -> EmittedField(name, MongoDbFieldType.fromJsonSchema(schema)) }
+            .toList()
+    }
+
+    /**
+     * Samples the collection and maps its fields to [MongoDbFieldType]s, sorted by name. Schemaless
+     * mode only needs the type of `_id`: the whole document is emitted in a single `data` field.
+     */
+    private fun discoverFields(streamID: StreamIdentifier): List<EmittedField> {
+        val collection: MongoCollection<Document> =
+            client.getDatabase(streamID.namespace!!).getCollection(streamID.name)
+        val fieldTypes: Map<String, MongoDbFieldType> =
+            sampleFieldTypes(collection, idOnly = !configuration.schemaEnforced)
+        if (fieldTypes.isEmpty()) {
+            return emptyList()
+        }
+        val fields: List<EmittedField> =
+            fieldTypes.entries.sortedBy { it.key }.map { (name, type) -> EmittedField(name, type) }
+        if (configuration.schemaEnforced) {
+            return fields
+        }
+        return fields + EmittedField(DATA_FIELD, MongoDbFieldType.OBJECT)
+    }
+
+    /**
+     * Top-level field names and BSON types in a random sample of `discover_sample_size` documents
+     * (only `_id` when [idOnly]):
+     * ```
+     * [ {$sample: {size: N}}, ({$project: {_id: 1}},)
+     *   {$project: {fields: {$arrayToObject: {$map: {input: {$objectToArray: "$$ROOT"}, as: "each",
+     *                                                 in: {k: "$$each.k", v: {$type: "$$each.v"}}}}}}},
+     *   {$unwind: "$fields"},
+     *   {$group: {_id: "$fields"}} ]
+     * ```
+     * Each result is one distinct document shape; for a field with several types, the first wins.
+     */
+    private fun sampleFieldTypes(
+        collection: MongoCollection<Document>,
+        idOnly: Boolean,
+    ): Map<String, MongoDbFieldType> {
+        val typeOfEachField =
+            Document(
+                "\$map",
+                Document("input", Document("\$objectToArray", "\$\$ROOT"))
+                    .append("as", "each")
+                    .append(
+                        "in",
+                        Document("k", "\$\$each.k").append("v", Document("\$type", "\$\$each.v"))
+                    )
+            )
+        val pipeline: List<Bson> =
+            listOfNotNull(
+                Aggregates.sample(configuration.discoverSampleSize),
+                if (idOnly) Aggregates.project(Projections.include(ID_FIELD)) else null,
+                Aggregates.project(
+                    Document("fields", Document("\$arrayToObject", typeOfEachField))
+                ),
+                Aggregates.unwind("\$fields"),
+                Document("\$group", Document("_id", "\$fields")),
+            )
+        val fieldTypes = LinkedHashMap<String, MongoDbFieldType>()
+        sample(collection, pipeline) { shape: Document ->
+            val bsonTypeByField: Document = shape.get("_id", Document::class.java)
+            for ((fieldName: String, bsonTypeName: Any?) in bsonTypeByField) {
+                fieldTypes.putIfAbsent(
+                    fieldName,
+                    MongoDbFieldType.fromBsonTypeName(bsonTypeName.toString())
+                )
+            }
+        }
+        return fieldTypes
+    }
+
+    /** Runs [pipeline] within `discover_timeout_seconds`; on any error, keep what was read. */
+    private fun sample(
+        collection: MongoCollection<Document>,
+        pipeline: List<Bson>,
+        consumer: (Document) -> Unit
+    ) {
+        try {
+            collection
+                .aggregate(pipeline)
+                .allowDiskUse(true)
+                .maxTime(configuration.discoverTimeout.toSeconds(), TimeUnit.SECONDS)
+                .cursor()
+                .use { cursor ->
+                    while (cursor.hasNext()) {
+                        consumer(cursor.next())
+                    }
+                }
+        } catch (e: Exception) {
+            log.warn(e) {
+                "Running discovery for document: ${collection.namespace.fullName}. Error processing cursor: ${e.message}"
+            }
+        }
+    }
+
+    override fun primaryKey(streamID: StreamIdentifier): List<List<String>> =
+        listOf(listOf(ID_FIELD))
+
+    /**
+     * A standalone `mongod` has no oplog, so it can never sync: fail now with a clear message.
+     * `SHARDED` (via `mongos`) and `LOAD_BALANCED` support change streams and pass.
+     */
+    override fun extraChecks() {
+        when (val clusterType: ClusterType = client.clusterDescription.type) {
+            ClusterType.REPLICA_SET,
+            ClusterType.SHARDED,
+            ClusterType.LOAD_BALANCED -> Unit
+            ClusterType.STANDALONE ->
+                throw ConfigErrorException(
+                    "Target MongoDB instance is a standalone server, which has no oplog and does " +
+                        "not support change streams. Please connect to a replica set or a sharded " +
+                        "cluster.",
+                )
+            else -> log.warn { "Unexpected MongoDB cluster type $clusterType; proceeding." }
+        }
+    }
+
+    override fun close() {
+        client.close()
+    }
+
+    /** MongoDB implementation of [MetadataQuerier.Factory]. */
+    @Singleton
+    @Primary
+    class Factory
+    @Inject
+    constructor(
+        @Value("\${${Operation.PROPERTY}:discover}") private val operation: String = "discover",
+        /** Present at READ time; empty for spec/check/discover. */
+        private val configuredCatalog: ConfiguredAirbyteCatalog? = null,
+    ) : MetadataQuerier.Factory<MongoDbSourceConfiguration> {
+        /** The configuration is not injected so tests can pass their own. */
+        override fun session(config: MongoDbSourceConfiguration): MetadataQuerier =
+            MongoDbSourceMetadataQuerier(
+                config,
+                MongoDbClientFactory.create(config),
+                skipFieldDiscovery = operation == CHECK_OPERATION,
+                readModeCatalog = if (operation == READ_OPERATION) configuredCatalog else null,
+            )
+    }
+
+    companion object {
+        const val ID_FIELD = "_id"
+        /** Name of the field holding the whole document in schemaless mode. */
+        const val DATA_FIELD = "data"
+        private const val CHECK_OPERATION = "check"
+        private const val READ_OPERATION = "read"
+
+        /** Collection name prefixes which are never exposed as streams. */
+        val IGNORED_COLLECTION_PREFIXES: Set<String> = setOf("system.", "replset.", "oplog.")
+
+        fun isSupportedCollection(collectionName: String): Boolean =
+            IGNORED_COLLECTION_PREFIXES.none { collectionName.startsWith(it) }
+    }
+}

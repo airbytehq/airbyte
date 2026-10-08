@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.mongodbv3.MongoDbSource'
+    mainClass = 'io.airbyte.integrations.source.mongodb.MongoDbSource'
 }
 
 airbyteBulkConnector {
