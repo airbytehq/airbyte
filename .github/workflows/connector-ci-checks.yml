@@ -150,9 +150,12 @@ jobs:
       creds-available: ${{ (secrets.GCP_PROJECT_ID == '') && (vars.GCP_PROJECT_ID == '') && 'false' || 'true' }}
       # Whether the matrix contains at least one connector to test:
       connectors-found: ${{ steps.check-matrix.outputs.connectors-found }}
-      # Whether the PR added or modified connector code. Always 'false' on the
-      # workflow_call path, where paths-filter has no pull request to diff.
-      connector-files-changed: ${{ steps.cdk-changes.outputs.connectors }}
+      # Whether the PR added or modified connector code. Only computed for
+      # pull_request events. On the workflow_call path (slash command or fork
+      # push), paths-filter diffs against a git base of its own, which can differ
+      # from the one get-modified-connectors.sh uses, so it is reported as 'false'
+      # and the summary's empty-matrix guard does not apply.
+      connector-files-changed: ${{ github.event_name == 'pull_request' && steps.cdk-changes.outputs.connectors || 'false' }}
 
   jvm-connectors-test:
     needs: [generate-matrix]
@@ -686,7 +689,7 @@ jobs:
           fi
 
   # --- Soft launch: ops CLI artifact generation + validation (parallel job) ---
-  # Runs alongside existing pre-release checks to validate the new ops CLI path.
+  # Runs alongside the connector QA checks to validate the new ops CLI path.
   # continue-on-error: true ensures this does not block the CI pipeline.
   # Tracking: https://github.com/airbytehq/airbyte-ops-mcp/issues/504
   build-and-verify-artifacts:

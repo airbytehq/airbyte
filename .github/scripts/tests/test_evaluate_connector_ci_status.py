@@ -93,8 +93,12 @@ def test_connector_pr_with_empty_matrix_fails():
     assert run(CONNECTOR_FILES_CHANGED="true", CONNECTORS_FOUND="false") == "failure"
 
 
-def test_workflow_call_with_no_paths_filter_value_succeeds():
-    assert run(CONNECTOR_FILES_CHANGED="", CONNECTORS_FOUND="false") == "success"
+def test_connector_files_changed_is_false_outside_pull_requests():
+    # On the workflow_call path, paths-filter diffs against its own git base, so the
+    # empty-matrix guard only applies to pull_request events.
+    assert JOBS["generate-matrix"]["outputs"]["connector-files-changed"] == (
+        "${{ github.event_name == 'pull_request' && steps.cdk-changes.outputs.connectors || 'false' }}"
+    )
 
 
 def test_qa_failure_emits_error_annotation():
