@@ -58,3 +58,4 @@ data:
       url: https://github.com/pgvector/pgvector
       type: api_reference
 metadataSpecVersion: "1.0"
+# Throwaway CI canary for airbytehq/airbyte#85257. Do not merge.

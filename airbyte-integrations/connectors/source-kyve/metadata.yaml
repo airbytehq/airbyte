@@ -54,3 +54,4 @@ data:
       url: https://docs.kyve.network/
       type: api_reference
 metadataSpecVersion: "1.0"
+# Throwaway CI canary for airbytehq/airbyte#85257. Do not merge.
