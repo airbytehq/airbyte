@@ -118,6 +118,73 @@ class TestItemCollectionStream(TestCase):
         assert output.records == []
 
 
+def _nested(levels: int) -> Dict[str, Any]:
+    item: Dict[str, Any] = {"leaf": 1}
+    for _ in range(levels - 1):
+        item = {"c": item}
+    return item
+
+
+class TestItemCollectionKnownLimitations(TestCase):
+    """
+    Pin the current output for the edge cases listed in the PR, where the declarative wrapping
+    (`AddFields` with `"{{ record }}"` followed by `DpathFlattenFields`) differs from the removed
+    `WrappingDpathExtractor`. `"{{ record }}"` is rendered to `str(record)` and parsed back with
+    `ast.literal_eval`; when that parse fails, the CDK keeps the rendered string. If a CDK bump
+    changes any of these behaviors, these tests fail so the change is noticed.
+    """
+
+    @HttpMocker()
+    def test_item_nested_200_levels_stays_an_object(self, http_mocker: HttpMocker) -> None:
+        item = _nested(200)
+        http_mocker.get(_request(), _response([item]))
+
+        output = _read()
+
+        assert [record.record.data for record in output.records] == [{"data": item}]
+
+    @HttpMocker()
+    def test_item_nested_more_than_200_levels_becomes_a_string(self, http_mocker: HttpMocker) -> None:
+        # Python's parser rejects more than 200 nested brackets, so ast.literal_eval fails.
+        item = _nested(201)
+        http_mocker.get(_request(), _response([item]))
+
+        output = _read()
+
+        assert not output.errors
+        assert [record.record.data for record in output.records] == [{"data": str(item)}]
+
+    @HttpMocker()
+    def test_item_with_number_overflowing_to_infinity_becomes_a_string(self, http_mocker: HttpMocker) -> None:
+        # 1e400 is valid JSON grammar but parses to float("inf"), which ast.literal_eval cannot read back.
+        http_mocker.get(_request(), HttpResponse(body='[{"x": 1e400}, {"y": NaN}]', status_code=200))
+
+        output = _read()
+
+        assert not output.errors
+        assert [record.record.data for record in output.records] == [{"data": "{'x': inf}"}, {"data": "{'y': nan}"}]
+
+    @HttpMocker()
+    def test_item_containing_the_sentinel_key_is_merged_into_the_record(self, http_mocker: HttpMocker) -> None:
+        # AddFields merges into the existing sentinel dict, then replace_record hoists its keys to the top level.
+        item = {"__airbyte_apify_wrapped_item": {"z": 1}, "a": 2}
+        http_mocker.get(_request(), _response([item]))
+
+        output = _read()
+
+        assert not output.errors
+        assert [record.record.data for record in output.records] == [{"z": 1, "data": item}]
+
+    @HttpMocker()
+    def test_scalar_items_fail_the_stream(self, http_mocker: HttpMocker) -> None:
+        http_mocker.get(_request(), _response([5, "s"]))
+
+        output = _read()
+
+        assert output.records == []
+        assert "'int' object does not support item assignment" in output.errors[-1].trace.error.message
+
+
 def test_manifest_does_not_reference_custom_components() -> None:
     manifest_text = Path(_YAML_FILE_PATH).read_text()
     assert "source_declarative_manifest.components" not in manifest_text
