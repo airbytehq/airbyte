@@ -81,7 +81,7 @@ class MongoDbRecordConverterTest {
         Assertions.assertEquals("function(){}", node["codews"]["code"].asText())
         Assertions.assertEquals(1, node["codews"]["scope"]["x"].asInt())
         Assertions.assertEquals("s", node["sym"].asText())
-        Assertions.assertTrue(node["ts"].isTextual)
+        Assertions.assertEquals("231375532-06-01T08:53:20.001Z", node["ts"].asText())
     }
 
     @Test

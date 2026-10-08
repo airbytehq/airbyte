@@ -96,9 +96,16 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
   see "Concurrency" below); the `Global` feed gets one `MongoDbCdcPartitionsCreator`.
 - **Snapshot** (`MongoDbSnapshotPartitionReader`): reads a collection ordered by `_id` and emits
   every document. `MongoDbRecordConverter` reproduces the legacy record shape (ObjectId hex, `Date`
-  always with milliseconds, `Binary` as Base64, `BsonRegularExpression` as `(options)pattern` or
-  the bare pattern when there are no options, `CodeWithScope` as an object, `MinKey`/`MaxKey`
-  omitted, the `BsonTimestamp` epoch-millis quirk). Two v2 behaviours tied to the configured
+  always with milliseconds and no sign on a year beyond 9999, `Binary` of **any** subtype as the
+  Base64 of its raw bytes — UUIDs of subtype 3 and 4 and subtype-9 vectors included —
+  `BsonRegularExpression` as `(options)pattern` or the bare pattern when there are no options,
+  `CodeWithScope` as an object, `MinKey`/`MaxKey`/`undefined`/`DBPointer` omitted, the
+  `BsonTimestamp` epoch-millis quirk). `MongoDbClientFactory` pins the driver's
+  `uuidRepresentation` to `UNSPECIFIED` so that a `?uuidRepresentation=` in the connection string
+  cannot make the driver decode binaries to `UUID` objects, which would change the emitted value
+  and lose the subtype the `_id` checkpoint needs. `testEveryBsonTypeIsEmittedAsDocumented` reads
+  one document holding every BSON type through the connector in both schema modes (and once with
+  `?uuidRepresentation=standard`) and asserts each field's value. Two v2 behaviours tied to the configured
   catalog are kept as well: a non-array value in a field declared `array` is wrapped in a
   one-element array (a present BSON `null` included → `[null]`) so the structural mismatch does
   not become `null` downstream; and a user-added `<field>_aibyte_transform` (string) catalog
@@ -116,8 +123,11 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
   Base64 otherwise) and, since v2 2.1.0, `OBJECT` (a document `_id` as extended JSON) — and adds
   `DOUBLE` and `DECIMAL` (the number's own text, `Decimal128.parse` is exact), `DATE` (epoch
   milliseconds) and `TIMESTAMP` (the 64-bit value), so those `_id`s resume as their native BSON
-  type (`MongoDbStreamStateValueTest` round-trips every type, NaN/-0.0/±Infinity included). Any
-  other `_id` type checkpoints as its text with `idType: STRING`.
+  type (`MongoDbStreamStateValueTest` round-trips every type, NaN/-0.0/±Infinity included;
+  `testTypedIdCollectionsResumeMidSnapshot` resumes a collection of each `_id` type — string,
+  int32, int64, binary, UUID subtype 4 and 3, double, decimal, date, timestamp — against the server
+  after a forced mid-collection checkpoint). Any other `_id` type checkpoints as its text with
+  `idType: STRING`.
 
   **The `_id` type must be the same for every document in a collection.** The resume filter is a
   plain `{_id: {$gt: <checkpoint>}}`, which MongoDB type-brackets: it only matches `_id`s of the

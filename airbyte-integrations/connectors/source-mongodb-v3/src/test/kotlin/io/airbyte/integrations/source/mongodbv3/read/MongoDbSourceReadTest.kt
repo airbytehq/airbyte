@@ -29,9 +29,34 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.protocol.models.v0.SyncMode
 import java.math.BigDecimal
+import java.util.Base64
 import java.util.Date
+import java.util.UUID
+import org.bson.BinaryVector
+import org.bson.BsonArray
+import org.bson.BsonBinary
+import org.bson.BsonBinarySubType
+import org.bson.BsonBoolean
+import org.bson.BsonDateTime
+import org.bson.BsonDbPointer
+import org.bson.BsonDecimal128
+import org.bson.BsonDocument
+import org.bson.BsonDouble
+import org.bson.BsonInt32
+import org.bson.BsonInt64
+import org.bson.BsonJavaScript
+import org.bson.BsonJavaScriptWithScope
+import org.bson.BsonMaxKey
+import org.bson.BsonMinKey
+import org.bson.BsonNull
+import org.bson.BsonObjectId
+import org.bson.BsonRegularExpression
+import org.bson.BsonString
+import org.bson.BsonSymbol
 import org.bson.BsonTimestamp
+import org.bson.BsonUndefined
 import org.bson.Document
+import org.bson.types.Binary
 import org.bson.types.Decimal128
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.AfterAll
@@ -236,6 +261,32 @@ class MongoDbSourceReadTest {
     fun testTypedIdCollectionsResumeMidSnapshot() {
         val collections: Map<String, Pair<List<Any>, MongoDbIdType>> =
             mapOf(
+                STRING_ID to Pair(listOf("id-1", "id-2", "id-3"), MongoDbIdType.STRING),
+                INT_ID to Pair(listOf(1, 2, 3), MongoDbIdType.INT),
+                LONG_ID to
+                    Pair(
+                        listOf(10_000_000_000L, 10_000_000_001L, 10_000_000_002L),
+                        MongoDbIdType.LONG,
+                    ),
+                BINARY_ID to
+                    Pair(
+                        listOf(
+                            Binary(byteArrayOf(1)),
+                            Binary(byteArrayOf(2)),
+                            Binary(byteArrayOf(3))
+                        ),
+                        MongoDbIdType.BINARY,
+                    ),
+                UUID_ID to
+                    Pair(
+                        (1..3).map { Binary(BsonBinarySubType.UUID_STANDARD, uuidBytes(it)) },
+                        MongoDbIdType.BINARY,
+                    ),
+                LEGACY_UUID_ID to
+                    Pair(
+                        (1..3).map { Binary(BsonBinarySubType.UUID_LEGACY, uuidBytes(it)) },
+                        MongoDbIdType.BINARY,
+                    ),
                 DOUBLE_ID to Pair(listOf(1.5, 2.5, 3.5), MongoDbIdType.DOUBLE),
                 DECIMAL_ID to
                     Pair(
@@ -346,6 +397,161 @@ class MongoDbSourceReadTest {
             emptyList(),
             "Collection $TEST_DB.$MIXED_ID has _id values of more than one type (number and date)",
         )
+    }
+
+    /**
+     * One document holding every BSON type, read through the connector in both schema modes: each
+     * field's emitted value is what the documentation promises (and what `source-mongodb-v2`
+     * emitted, except the two intentional differences: exact decimals and UTC dates).
+     */
+    @Test
+    fun testEveryBsonTypeIsEmittedAsDocumented() {
+        val uuid: UUID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
+        val uuidBytes: ByteArray = BsonBinary(uuid).data
+        val uuidBase64: String = Base64.getEncoder().encodeToString(uuidBytes)
+        val document: BsonDocument =
+            BsonDocument("_id", BsonObjectId(ObjectId("650000000000000000000099")))
+                .append("double", BsonDouble(1.5))
+                .append("string", BsonString("text"))
+                .append("object", BsonDocument("a", BsonInt32(1)).append("b", BsonString("x")))
+                .append(
+                    "array",
+                    BsonArray(
+                        listOf(
+                            BsonInt32(1),
+                            BsonString("two"),
+                            BsonDocument("three", BsonInt32(3)),
+                            BsonArray(listOf(BsonInt32(4))),
+                        )
+                    ),
+                )
+                .append("binData", BsonBinary(byteArrayOf(1, 2, 3)))
+                .append("uuid", BsonBinary(uuid))
+                .append("legacyUuid", BsonBinary(BsonBinarySubType.UUID_LEGACY, uuidBytes))
+                .append("vector", BsonBinary(BinaryVector.floatVector(floatArrayOf(1.5f, -2f))))
+                .append("undefined", BsonUndefined())
+                .append("objectId", BsonObjectId(ObjectId("650000000000000000000001")))
+                .append("bool", BsonBoolean(true))
+                .append("date", BsonDateTime(1_704_067_200_000L))
+                .append("null", BsonNull())
+                .append("regex", BsonRegularExpression("^a.c$", "i"))
+                .append("regexNoOptions", BsonRegularExpression("abc"))
+                .append("dbPointer", BsonDbPointer("db.coll", ObjectId("650000000000000000000002")))
+                .append("javascript", BsonJavaScript("function() { return 1; }"))
+                .append("symbol", BsonSymbol("sym"))
+                .append(
+                    "javascriptWithScope",
+                    BsonJavaScriptWithScope(
+                        "function() { return x; }",
+                        BsonDocument("x", BsonInt32(1))
+                    ),
+                )
+                .append("int", BsonInt32(7))
+                .append("timestamp", BsonTimestamp(1_700_000_000, 1))
+                .append("long", BsonInt64(9_007_199_254_740_993L))
+                .append("decimal", BsonDecimal128(Decimal128.parse("12.34")))
+                .append("minKey", BsonMinKey())
+                .append("maxKey", BsonMaxKey())
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            val coll =
+                client.getDatabase(TEST_DB).getCollection(ALL_TYPES, BsonDocument::class.java)
+            coll.drop()
+            coll.insertOne(document)
+        }
+        /** Values that are dropped: absent from the schemaless `data`, `null` as a schema field. */
+        val dropped: Set<String> = setOf("undefined", "dbPointer", "minKey", "maxKey")
+
+        fun assertEmitted(data: JsonNode) {
+            Assertions.assertEquals(1.5, data["double"].asDouble())
+            Assertions.assertEquals("text", data["string"].asText())
+            Assertions.assertEquals("""{"a":1,"b":"x"}""", data["object"].toString())
+            Assertions.assertEquals("""[1,"two",{"three":3},[4]]""", data["array"].toString())
+            Assertions.assertEquals("AQID", data["binData"].asText())
+            Assertions.assertEquals(uuidBase64, data["uuid"].asText())
+            Assertions.assertEquals(uuidBase64, data["legacyUuid"].asText())
+            Assertions.assertEquals(
+                Base64.getEncoder().encodeToString(document.getBinary("vector").data),
+                data["vector"].asText(),
+            )
+            Assertions.assertEquals("650000000000000000000001", data["objectId"].asText())
+            Assertions.assertTrue(data["bool"].asBoolean())
+            Assertions.assertEquals("2024-01-01T00:00:00.000Z", data["date"].asText())
+            Assertions.assertTrue(data["null"].isNull)
+            Assertions.assertEquals("(i)^a.c$", data["regex"].asText())
+            Assertions.assertEquals("abc", data["regexNoOptions"].asText())
+            Assertions.assertEquals("function() { return 1; }", data["javascript"].asText())
+            Assertions.assertEquals("sym", data["symbol"].asText())
+            Assertions.assertEquals(
+                """{"code":"function() { return x; }","scope":{"x":1}}""",
+                data["javascriptWithScope"].toString(),
+            )
+            Assertions.assertEquals(7, data["int"].asInt())
+            // The raw 64-bit timestamp formatted as epoch milliseconds, no sign on the big year.
+            Assertions.assertEquals("231375532-06-01T08:53:20.001Z", data["timestamp"].asText())
+            Assertions.assertEquals(9_007_199_254_740_993L, data["long"].asLong())
+            Assertions.assertEquals(BigDecimal("12.34"), data["decimal"].decimalValue())
+        }
+
+        val enforced: JsonNode =
+            read(
+                    configuredCatalog(
+                        SyncMode.FULL_REFRESH,
+                        DestinationSyncMode.OVERWRITE,
+                        setOf(ALL_TYPES),
+                        includeEmpty = false,
+                    ),
+                )
+                .records()
+                .single { it.stream == ALL_TYPES }
+                .data
+        Assertions.assertEquals("650000000000000000000099", enforced["_id"].asText())
+        assertEmitted(enforced)
+        dropped.forEach { Assertions.assertTrue(enforced[it].isNull, it) }
+
+        val schemaless: JsonNode =
+            read(
+                    configuredCatalog(
+                        SyncMode.FULL_REFRESH,
+                        DestinationSyncMode.OVERWRITE,
+                        setOf(ALL_TYPES),
+                        includeEmpty = false,
+                        config = config(schemaEnforced = false),
+                    ),
+                    config = config(schemaEnforced = false),
+                )
+                .records()
+                .single { it.stream == ALL_TYPES }
+                .data
+        Assertions.assertEquals("650000000000000000000099", schemaless["_id"].asText())
+        // `data` is the whole document, `_id` included, minus the dropped values.
+        Assertions.assertEquals(
+            document.keys - dropped,
+            schemaless["data"].fieldNames().asSequence().toSet(),
+        )
+        Assertions.assertEquals("650000000000000000000099", schemaless["data"]["_id"].asText())
+        assertEmitted(schemaless["data"])
+
+        // A UUID representation in the connection string must not change how binaries are emitted.
+        val standardUuidConfig: MongoDbSourceConfigurationSpecification =
+            MongoDbTestConfigs.config(
+                replicaSet.connectionString + "?uuidRepresentation=standard",
+                listOf(TEST_DB),
+            )
+        val withUuidRepresentation: JsonNode =
+            read(
+                    configuredCatalog(
+                        SyncMode.FULL_REFRESH,
+                        DestinationSyncMode.OVERWRITE,
+                        setOf(ALL_TYPES),
+                        includeEmpty = false,
+                        config = standardUuidConfig,
+                    ),
+                    config = standardUuidConfig,
+                )
+                .records()
+                .single { it.stream == ALL_TYPES }
+                .data
+        assertEmitted(withUuidRepresentation)
     }
 
     @Test
@@ -557,8 +763,9 @@ class MongoDbSourceReadTest {
         destinationSyncMode: DestinationSyncMode,
         names: Set<String>,
         includeEmpty: Boolean,
+        config: MongoDbSourceConfigurationSpecification = config(),
     ): ConfiguredAirbyteCatalog {
-        val discovered = CliRunner.source("discover", config()).run().catalogs().first()
+        val discovered = CliRunner.source("discover", config).run().catalogs().first()
         val streams: List<ConfiguredAirbyteStream> =
             discovered.streams
                 .filter { it.name in names }
@@ -706,6 +913,13 @@ class MongoDbSourceReadTest {
         const val CDC = "cdc_coll"
         const val LEGACY_CDC = "legacy_cdc_coll"
         const val DOC_ID = "doc_id_coll"
+        const val ALL_TYPES = "all_types_coll"
+        const val STRING_ID = "string_id_coll"
+        const val INT_ID = "int_id_coll"
+        const val LONG_ID = "long_id_coll"
+        const val BINARY_ID = "binary_id_coll"
+        const val UUID_ID = "uuid_id_coll"
+        const val LEGACY_UUID_ID = "legacy_uuid_id_coll"
         const val DOUBLE_ID = "double_id_coll"
         const val DECIMAL_ID = "decimal_id_coll"
         const val DATE_ID = "date_id_coll"
@@ -724,8 +938,15 @@ class MongoDbSourceReadTest {
 
         lateinit var replicaSet: MongoDBContainer
 
-        fun config(): MongoDbSourceConfigurationSpecification =
-            MongoDbTestConfigs.config(replicaSet.connectionString, listOf(TEST_DB))
+        fun config(schemaEnforced: Boolean = true): MongoDbSourceConfigurationSpecification =
+            MongoDbTestConfigs.config(
+                replicaSet.connectionString,
+                listOf(TEST_DB),
+                schemaEnforced = schemaEnforced,
+            )
+
+        /** The 16 bytes of a UUID whose last byte is [n]. */
+        fun uuidBytes(n: Int): ByteArray = BsonBinary(UUID(0L, n.toLong())).data
 
         @JvmStatic
         @BeforeAll

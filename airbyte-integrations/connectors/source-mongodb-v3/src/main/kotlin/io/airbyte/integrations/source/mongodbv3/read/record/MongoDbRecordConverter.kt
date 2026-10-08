@@ -11,8 +11,17 @@ import io.airbyte.integrations.source.mongodbv3.discover.MongoDbFieldType
 import io.airbyte.integrations.source.mongodbv3.discover.MongoDbSourceMetadataQuerier.Companion.DATA_FIELD
 import io.airbyte.integrations.source.mongodbv3.discover.MongoDbSourceMetadataQuerier.Companion.ID_FIELD
 import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.time.format.SignStyle
+import java.time.temporal.ChronoField
 import java.util.Base64
+import org.bson.BinaryVector
+import org.bson.BsonBinary
+import org.bson.BsonDbPointer
 import org.bson.BsonRegularExpression
+import org.bson.BsonUndefined
 import org.bson.Document
 import org.bson.types.Binary
 import org.bson.types.Code
@@ -25,9 +34,10 @@ import org.bson.types.Symbol
 
 /**
  * Converts a BSON [Document] into a [NativeRecordPayload]: `ObjectId` as hex, `Date` with millis,
- * `Binary` as Base64, regex as `(options)pattern`, `CodeWithScope` as an object, `MinKey`/`MaxKey`
- * omitted. With [schemaFieldTypes] (READ) every schema field is emitted — `null` when absent — in
- * its declared type's codec; without it, only the document's own fields in a passthrough codec.
+ * `Binary` (any subtype) as Base64, regex as `(options)pattern`, `CodeWithScope` as an object;
+ * `MinKey`, `MaxKey`, `undefined` and `DBPointer` values are omitted. With [schemaFieldTypes]
+ * (READ) every schema field is emitted — `null` when absent — in its declared type's codec; without
+ * it, only the document's own fields in a passthrough codec.
  */
 class MongoDbRecordConverter(
     private val schemaEnforced: Boolean,
@@ -135,7 +145,9 @@ class MongoDbRecordConverter(
         when (value) {
             null -> Jsons.nullNode()
             is MinKey,
-            is MaxKey -> null
+            is MaxKey,
+            is BsonUndefined,
+            is BsonDbPointer -> null
             is ObjectId -> Jsons.textNode(value.toHexString())
             is String -> Jsons.textNode(value)
             is Boolean -> Jsons.booleanNode(value)
@@ -146,6 +158,8 @@ class MongoDbRecordConverter(
             is java.util.Date -> Jsons.textNode(formatDate(value))
             is org.bson.BsonTimestamp -> Jsons.textNode(formatBsonTimestamp(value))
             is Binary -> Jsons.textNode(Base64.getEncoder().encodeToString(value.data))
+            is BinaryVector ->
+                Jsons.textNode(Base64.getEncoder().encodeToString(BsonBinary(value).data))
             is ByteArray -> Jsons.textNode(Base64.getEncoder().encodeToString(value))
             // `(options)pattern`, or just the pattern when there are no options.
             is BsonRegularExpression ->
@@ -170,20 +184,25 @@ class MongoDbRecordConverter(
             else -> Jsons.textNode(value.toString())
         }
 
-    /** `Instant.toString()` drops trailing zero milliseconds; keep them. */
-    private fun formatDate(date: java.util.Date): String {
-        val instant: Instant = date.toInstant()
-        val millis: Int = (instant.toEpochMilli() % 1000L).toInt()
-        val secondsPart: String = Instant.ofEpochSecond(instant.epochSecond).toString().dropLast(1)
-        return "%s.%03dZ".format(secondsPart, if (millis < 0) millis + 1000 else millis)
-    }
+    private fun formatDate(date: java.util.Date): String = ISO_MILLIS.format(date.toInstant())
 
-    /** Formats the raw 64-bit `BsonTimestamp` value as if it were epoch millis (for parity). */
+    /** The raw 64-bit `BsonTimestamp` value formatted as if it were epoch millis. */
     private fun formatBsonTimestamp(timestamp: org.bson.BsonTimestamp): String =
-        Instant.ofEpochMilli(timestamp.value).toString()
+        ISO_MILLIS.format(Instant.ofEpochMilli(timestamp.value))
 
     companion object {
         /** Catalog marker for "emit this field JSON-stringified" (sic: `aibyte`). */
         const val TRANSFORM_SUFFIX = "_aibyte_transform"
+
+        /**
+         * `yyyy-MM-dd'T'HH:mm:ss.SSS'Z'` in UTC: milliseconds always present, no sign on a year
+         * beyond 9999 (unlike `Instant.toString()`).
+         */
+        private val ISO_MILLIS: DateTimeFormatter =
+            DateTimeFormatterBuilder()
+                .appendValue(ChronoField.YEAR, 4, 10, SignStyle.NORMAL)
+                .appendPattern("-MM-dd'T'HH:mm:ss.SSS'Z'")
+                .toFormatter()
+                .withZone(ZoneOffset.UTC)
     }
 }

@@ -10,6 +10,7 @@ import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoClients
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import org.bson.UuidRepresentation
 
 /** Builds a [MongoClient] from a [MongoDbSourceConfiguration]. */
 object MongoDbClientFactory {
@@ -18,7 +19,12 @@ object MongoDbClientFactory {
     fun create(configuration: MongoDbSourceConfiguration): MongoClient {
         val connectionString = ConnectionString(configuration.connectionString)
         val settings: MongoClientSettings.Builder =
-            MongoClientSettings.builder().applyConnectionString(connectionString)
+            MongoClientSettings.builder()
+                .applyConnectionString(connectionString)
+                // Binary values are emitted as their raw bytes whatever their subtype; a UUID
+                // representation (also settable in the connection string) would decode subtype 3/4
+                // binaries to `UUID` objects and lose the subtype the `_id` checkpoint needs.
+                .uuidRepresentation(UuidRepresentation.UNSPECIFIED)
         if (connectionString.readPreference == null) {
             settings.readPreference(ReadPreference.secondaryPreferred())
         }
