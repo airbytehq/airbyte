@@ -14,7 +14,7 @@ airbyte-cdk = "^7"
 pyyaml = "^6.0"
 requests-mock = "^1.11.0"
 pytest-mock = "^3.6.1"
-pytest = "^8.0.0"
+pytest = ">=8,<10"
 freezegun = "^1.4.0"
 
 [tool.pytest.ini_options]
