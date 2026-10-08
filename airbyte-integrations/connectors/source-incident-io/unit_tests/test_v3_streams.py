@@ -19,6 +19,7 @@ import logging
 from pathlib import Path
 from unittest import mock
 
+import jsonschema
 import pytest
 import requests_mock
 
@@ -533,6 +534,25 @@ def test_spec_exposes_num_workers_within_the_max_concurrency():
     assert num_workers["default"] == 4
     assert num_workers["minimum"] == 1
     assert num_workers["maximum"] == 10
+
+
+@pytest.mark.parametrize(
+    "value, valid",
+    [
+        ("P1D", True),
+        ("P30D", True),
+        ("P365D", True),
+        ("PT1H", False),
+        ("P0D", False),
+        ("PT0S", False),
+        ("P1W", False),
+        ("P1DT1H", False),
+    ],
+)
+def test_spec_time_window_accepts_whole_days_only(value, valid):
+    spec = _get_source().spec(logging.getLogger("airbyte"))
+    time_window = spec.connectionSpecification["properties"]["time_window"]
+    assert jsonschema.Draft7Validator(time_window).is_valid(value) is valid
 
 
 @pytest.mark.parametrize("num_workers", [1, 10])

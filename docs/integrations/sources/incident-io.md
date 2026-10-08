@@ -32,7 +32,7 @@ Incremental streams request `updated_at` in windows sized by the `time_window` o
 | ------- | ------ | ------------- | --------------- |
 | `api_key` | `string` | API Key. API key to use. Find it at https://app.incident.io/settings/api-keys | |
 | `start_date` | `string` | Start Date. Only sync records updated on or after this UTC date for the incremental streams. The default predates all incident.io data. | 2020-01-01T00:00:00Z |
-| `time_window` | `string` | Time window. Size of each date window requested from incident.io on incremental streams, as an ISO 8601 duration (for example `P30D`, `P7D`, `P365D`). Smaller windows let more requests run in parallel on large accounts; larger windows mean fewer requests on small accounts. | P30D |
+| `time_window` | `string` | Time window. Size of each date window requested from incident.io on incremental streams, in whole days as an ISO 8601 duration (for example `P30D`, `P7D`, `P365D`). The minimum is `P1D` because incidents and escalations filter by date. Smaller windows let more requests run in parallel on large accounts; larger windows mean fewer requests on small accounts. Defaults to `P30D`. | P30D |
 | `num_workers` | `integer` | Number of concurrent workers. Number of streams and partitions read in parallel. Higher values can speed up large syncs but use more of the incident.io rate limit (1,200 requests per minute per API key, 60 per minute on incidents). | 4 |
 
 ## Streams

@@ -34,9 +34,11 @@ exact timestamps (half-open `[start, end)` at millisecond precision) with a `PT5
 `lookback_window`, because the vendor documents that those rows can commit out of timestamp order.
 `incidents` and `escalations` match `date_range` by date, both ends inclusive, so their templates
 format the bounds as `%Y-%m-%d`. The slice size is `step: {{ config.get('time_window') or 'P30D' }}`;
-`cursor_granularity` is `PT0.000001S` because the CDK requires it whenever `step` is set. The
-re-reads the overlap produces are de-duplicated by primary key when the destination sync mode is
-Append + Deduped (with plain Append they are kept).
+`cursor_granularity` is `PT0.000001S` because the CDK requires it whenever `step` is set.
+`time_window` only accepts whole days (`^P[1-9][0-9]*D$`): `incidents` and `escalations` filter by
+date, so a sub-day window would re-request the same day, and `PT1H` from the 2020 default is about
+59,000 requests per stream. The overlap re-reads are de-duplicated by primary key when the
+destination sync mode is Append + Deduped (with plain Append they are kept).
 
 Record timestamps come back as `%Y-%m-%dT%H:%M:%S.%fZ`; older reports (airbytehq/alpha-beta-issues issues
 1769 and 2926) show `%Y-%m-%dT%H:%M:%SZ` as well, so both are listed in `cursor_datetime_formats`.

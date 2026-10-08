@@ -647,9 +647,9 @@ spec:
       time_window:
         type: string
         title: Time window
-        description: "Size of each date window requested from incident.io on incremental streams, as an ISO 8601 duration (for example P30D, P7D, P365D). Smaller windows let more requests run in parallel on large accounts; larger windows mean fewer requests on small accounts. Defaults to P30D."
+        description: "Size of each date window requested from incident.io on incremental streams, in whole days as an ISO 8601 duration (for example P30D, P7D, P365D). The minimum is P1D because incidents and escalations filter by date. Smaller windows let more requests run in parallel on large accounts; larger windows mean fewer requests on small accounts. Defaults to P30D."
         default: "P30D"
-        pattern: "^P(?=\\d|T\\d)(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?(T(\\d+H)?(\\d+M)?(\\d+S)?)?$"
+        pattern: "^P[1-9][0-9]*D$"
         examples:
           - "P30D"
           - "P7D"
