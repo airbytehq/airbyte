@@ -118,8 +118,7 @@ def test_default_start_date_covers_every_day_once():
 
     assert not output.errors, [error.trace.error.message for error in output.errors]
     windows = sorted(
-        (date.fromisoformat(params["startAt"]), date.fromisoformat(params["endAt"]))
-        for params in map(query_params, mocker.request_history)
+        (date.fromisoformat(params["startAt"]), date.fromisoformat(params["endAt"])) for params in map(query_params, mocker.request_history)
     )
     assert windows[0][0] == date(2020, 1, 1)
     assert windows[-1][1] == today()
