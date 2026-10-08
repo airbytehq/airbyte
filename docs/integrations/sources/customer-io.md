@@ -45,7 +45,7 @@ The connector authenticates with an App API key. Each key belongs to one workspa
 
 <FieldAnchor field="start_date">
 
-**Start Date** (optional): A UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2023-01-01T00:00:00Z`. Only records created or last updated at or after it are synced, in every stream that supports incremental sync and in Full Refresh mode too: automations, actions, one-time sends, broadcasts, transactional message templates, segments, snippets and collections by their last update, `messages` by creation time and `activities` by event time. Streams that support only full refresh, such as `newsletter_variants`, `people`, `segment_memberships` and `esp_suppressions`, sync every record. Leave it blank to sync all records. See [Incremental sync and Start Date](#incremental-sync-and-start-date).
+**Start Date** (optional): A UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2023-01-01T00:00:00Z`. Only records created or last updated at or after it are synced, in every stream that supports incremental sync and in Full Refresh mode too: automations, actions, one-time sends, broadcasts, transactional message templates, segments and snippets by their last update, `messages` by creation time and `activities` by event time. Streams that support only full refresh, such as `newsletter_variants`, `people`, `segment_memberships` and `esp_suppressions`, sync every record. Leave it blank to sync all records. See [Incremental sync and Start Date](#incremental-sync-and-start-date).
 
 </FieldAnchor>
 
@@ -73,7 +73,7 @@ The Customer.io source connector supports the following [sync modes](https://doc
 | Incremental Sync | Yes |
 | Namespaces | No |
 
-Eleven streams support incremental sync; the other ten are full refresh only. No stream marks records deleted in Customer.io: see [Limitations & Troubleshooting](#limitations--troubleshooting).
+Ten streams support incremental sync; the other eleven are full refresh only. No stream marks records deleted in Customer.io: see [Limitations & Troubleshooting](#limitations--troubleshooting).
 
 ## Supported Streams
 
@@ -96,18 +96,18 @@ New connections select the streams marked **Yes** under **Selected by default**;
 | `workspaces` | [Workspaces](https://docs.customer.io/integrations/api/app/tag/workspaces/listworkspaces/) | `id` | None | Full Refresh | No |
 | `reporting_webhooks` | [Reporting webhooks](https://docs.customer.io/integrations/api/app/tag/reporting-webhooks/listwebhooks/) | `id` | None | Full Refresh | No |
 | `snippets` | [Snippets](https://docs.customer.io/integrations/api/app/tag/snippets/listsnippets/) | `name` | `updated_at` | Full Refresh, Incremental | No |
-| `collections` | [Collections](https://docs.customer.io/integrations/api/app/tag/collections/getcollections/) | `id` | `updated_at` | Full Refresh, Incremental | No |
+| `collections` | [Collections](https://docs.customer.io/integrations/api/app/tag/collections/getcollections/) | `id` | None | Full Refresh | No |
 | `messages` | [Messages](https://docs.customer.io/integrations/api/app/tag/messages/listmessages/): deliveries | `id` | `created` | Full Refresh, Incremental | No (personal data) |
 | `activities` | [Activities](https://docs.customer.io/integrations/api/app/tag/activities/listactivities/) | `id` | `timestamp` | Full Refresh, Incremental | No (personal data) |
 | `people` | [Customers](https://docs.customer.io/integrations/api/app/tag/customers/getpeoplefilter/) with their [attributes and devices](https://docs.customer.io/integrations/api/app/tag/customers/getpeoplebyid/) | `cio_id` | None | Full Refresh | No (personal data) |
 | `segment_memberships` | [Customers in a segment](https://docs.customer.io/integrations/api/app/tag/segments/getsegmentmembership/) | `segment_id`, `cio_id` | None | Full Refresh | No (personal data) |
 | `esp_suppressions` | [ESP-suppressed emails](https://docs.customer.io/integrations/api/app/tag/esp-suppression/getsuppressionbytype/) | `suppression_type`, `domain`, `email` | None | Full Refresh | No (personal data) |
 
-`reporting_webhooks` syncs each webhook's `endpoint` URL as Customer.io returns it. Customer.io documents basic authentication in the URL (`http://username:password@example.com`) as a way to secure a reporting webhook ([webhooks FAQ](https://docs.customer.io/integrations/data-out/connections/webhooks/#frequently-asked-questions)), so the URL can contain the receiving service's credentials. New connections leave the stream unselected; select it only if the destination may store them. A connection set up before 0.7.0 with **Propagate all field and stream changes** selects it on its own and syncs it in its first sync on 0.7.0 or later. To prevent that, switch the connection to **Propagate field changes only** before the upgrade; otherwise deselect the stream and delete its data from the destination.
+`reporting_webhooks` syncs each webhook's `endpoint` URL with any `username:password@` part removed; a token in the URL's path or query string is synced as Customer.io returns it ([reporting webhooks FAQ](https://docs.customer.io/integrations/data-out/connections/webhooks/#frequently-asked-questions)). New connections leave the stream unselected; select it only if the destination may store such tokens. Connections set to **Propagate all field and stream changes** add and sync it automatically after upgrading to 0.7.0; to stop syncing it, deselect the stream and clear its data from the destination.
 
 `workspaces` lists every workspace in the account with message counts for the current billing period and current people and object totals, cached by Customer.io for up to two hours. The records have no update time, so use Full Refresh | Overwrite for the latest counts, or Full Refresh | Append to keep one snapshot per sync.
 
-`collections` lists each collection's name, schema, row count and size, not its contents.
+`collections` lists each collection's name, schema, row count and size, not its contents. It is full refresh only, so every sync has the current counts.
 
 `messages` has one record per delivery, a message sent to one person, with the time each metric (delivered, opened, clicked, converted and more) was recorded. Syncs read deliveries in 30-day windows of creation time, one request per 1,000 deliveries, and Start Date applies to the creation time. Customer.io records opens and clicks for up to 6 months and conversions for up to 90 days, so each incremental sync reads the deliveries created in the last **Messages Lookback Window (Days)** again (default 30, up to 180): use Incremental | Append + Deduped. Raise the setting, or run a full refresh from time to time, for complete metrics; lower it to shorten syncs in high-volume workspaces. Records carry the recipient's address and identifiers, the subject line and per-person open and click times.
 
@@ -119,7 +119,7 @@ New connections select the streams marked **Yes** under **Selected by default**;
 
 `esp_suppressions` has one record per address on each of Customer.io's email suppression lists (bounces, blocks, spam reports, invalid emails), with a reason that can repeat the address. Each sync makes one request per 1,000 addresses on each list, at least 4 (4 per configured domain). Lifted suppressions leave the list without a record, so use Full Refresh | Overwrite: Append adds a full copy on every sync. Customer.io suppresses an address on the sending domain where it bounced or was reported as spam, so if you send from more than one domain, enter them in **Sending Domains for ESP Suppressions**: each list is then read once per domain, and records carry their `domain`. A mistyped or unknown domain returns no records instead of an error. The lists can include addresses suppressed by other workspaces that send from the same domain. If you send through your own SMTP server, your email provider keeps the suppressions, so deselect the stream.
 
-`messages`, `activities`, `people`, `segment_memberships` and `esp_suppressions` carry personal data and are not selected by default. A connection set up before 0.8.0 with **Propagate all field and stream changes** selects them on its own and syncs them in its first sync on 0.8.0 or later. To prevent that, switch the connection to **Propagate field changes only** before the upgrade; otherwise deselect the streams and delete their data from the destination. Incremental and Append syncs keep rows of people later deleted or suppressed in Customer.io, so handle erasure requests in the destination too. If these streams fail with a 403 error, check that the key can read this data and that the Airbyte IP addresses are on your allowlist, or deselect the streams.
+`messages`, `activities`, `people`, `segment_memberships` and `esp_suppressions` carry personal data and are not selected by default. Connections set to **Propagate all field and stream changes** add and sync them automatically after upgrading to 0.8.0; to stop syncing them, deselect the streams and clear their data from the destination. Incremental and Append syncs keep rows of people later deleted or suppressed in Customer.io, so handle erasure requests in the destination too. If these streams fail with a 403 error, check that the key can read this data and that the Airbyte IP addresses are on your allowlist, or deselect the streams.
 
 ## Incremental sync and Start Date
 
@@ -129,7 +129,7 @@ Of the lists the connector reads, only deliveries can be filtered by time, so `m
 
 `messages` reads 30-day windows of creation time, and each incremental sync starts **Messages Lookback Window (Days)** before the newest `created` already synced, so metrics recorded after sending reach the destination. `activities` reads newest first and stops at the first page with no activity inside the cursor window, and Customer.io guarantees only the last 30 days of activity. The notes on both streams under [Supported Streams](#supported-streams) describe the trade-offs.
 
-Start Date applies to the streams that support incremental sync, in Full Refresh mode too: they skip records created or last updated before it, by creation time for `messages` and event time for `activities`. The ten full refresh streams ignore it and sync every record. A future Start Date passes the connection check, but until that date a sync emits only records changed while it runs. Leave it blank to sync all records.
+Start Date applies to the streams that support incremental sync, in Full Refresh mode too: they skip records created or last updated before it, by creation time for `messages` and event time for `activities`. The eleven full refresh streams ignore it and sync every record. A future Start Date passes the connection check, but until that date a sync emits only records changed while it runs. Leave it blank to sync all records.
 
 ### Performance considerations
 
@@ -167,7 +167,6 @@ How the connector treats Customer.io HTTP errors:
 - **Joins**: `object_types.id` is a string, because Customer.io passes object type IDs as strings, while `campaigns.object_type_id` is an integer, so that join needs a cast.
 - **Variants**: `broadcast_actions` has one record per language variant of a message, all with the same `multi_language_branch_action_id`, and `newsletter_variants` one per language or A/B test of a one-time send, each with its own `id`.
 - **Hidden senders**: `sender_identities` includes hidden senders; use `hidden` to tell them apart.
-- **Collection counts**: Customer.io does not document whether replacing a collection's contents changes its `updated_at`. If it does not, incremental syncs keep the old `rows`, `bytes` and `schema`; Full Refresh | Overwrite always has the current values of the collections it syncs.
 - **Empty streams**: `subscription_topics` is empty until the workspace has subscription topics, and a non-empty stream does not mean the subscription center is enabled. `broadcasts` and `broadcast_actions` are empty without API-triggered broadcasts, and `activities` can be empty after 30 days without activity.
 - **Deliveries without content**: a `messages` record with `forgotten: true` is one whose content Customer.io did not keep, for example a transactional message sent with message retention disabled.
 - **Log warning**: `campaigns_actions` logs "Parent state handling is not supported for CartesianProductStreamSlicer." on every sync. It is harmless and needs no action.
