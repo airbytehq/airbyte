@@ -1,0 +1,235 @@
+name: AI Breaking Change Ready Command
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "PR. Pull request number (if triggered from a PR)"
+        type: number
+        required: false
+      comment-id:
+        description: "Comment ID. The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+      repo:
+        description: "Repo. Repo (passed by slash command dispatcher)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Git ref. Git ref (passed by slash command dispatcher)"
+        required: false
+
+run-name: "AI Breaking Change Ready for PR #${{ inputs.pr }}"
+
+concurrency:
+  group: ai-breaking-change-ready-${{ inputs.pr || 'unknown' }}
+  cancel-in-progress: false
+
+# Edit this list to add or remove reviewers.
+env:
+  BREAKING_CHANGE_REVIEWER_SLACK_IDS: "U04QENY1EDV,U07V1RTGP88"
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  ai-breaking-change-ready:
+    name: Check author conversations and notify reviewers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get job variables
+        id: job-vars
+        run: echo "run-url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Require PR context
+        if: inputs.pr == '' && inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          body: |
+            > `/ai-breaking-change-ready` can only be run on a pull request. Please run it from a PR comment.
+
+      - name: Stop if not running on a PR
+        if: inputs.pr == ''
+        run: exit 1
+
+      - name: Post start comment
+        id: post-start-comment
+        if: inputs.pr != '' || inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id || '' }}
+          issue-number: ${{ inputs.pr || '' }}
+          edit-mode: replace
+          body: |
+            > **Checking breaking-change review conversations**
+            >
+            > Checking whether every recommendation has a human reply and is resolved.
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})
+
+      - name: Check out workflow scripts
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Check breaking-change review conversations
+        id: check-gate
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ inputs.pr }}
+        run: bash .github/scripts/check-breaking-change-ready.sh
+
+      - name: Update slash comment when no conversations exist
+        if: steps.check-gate.outputs.result == 'none'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          comment-id: ${{ steps.post-start-comment.outputs.comment-id || inputs.comment-id }}
+          issue-number: ${{ inputs.pr || '' }}
+          edit-mode: replace
+          body: ${{ steps.check-gate.outputs.status_body }}
+
+      - name: Update slash comment when conversations are unresolved
+        if: steps.check-gate.outputs.result == 'blocked'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          comment-id: ${{ steps.post-start-comment.outputs.comment-id || inputs.comment-id }}
+          issue-number: ${{ inputs.pr || '' }}
+          edit-mode: replace
+          body: ${{ steps.check-gate.outputs.status_body }}
+
+      - name: Update slash comment when ready for human review
+        if: steps.check-gate.outputs.result == 'ready'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          comment-id: ${{ steps.post-start-comment.outputs.comment-id || inputs.comment-id }}
+          issue-number: ${{ inputs.pr || '' }}
+          edit-mode: replace
+          body: ${{ steps.check-gate.outputs.status_body }}
+
+      - name: Get pull request details
+        if: steps.check-gate.outputs.result == 'ready'
+        id: pull-request
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ inputs.pr }}
+        run: |
+          pr_data="$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" | jq -c '{url: .html_url, title: .title, author: .user.login}')"
+          printf 'pull_request=%s\n' "$pr_data" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Ping breaking-change reviewers in Slack
+        if: steps.check-gate.outputs.result == 'ready'
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          PR_NUMBER: ${{ inputs.pr }}
+          PR_DATA: ${{ steps.pull-request.outputs.pull_request }}
+          CONVERSATION_COUNT: ${{ steps.check-gate.outputs.conversation_count }}
+          REPLIES_B64: ${{ steps.check-gate.outputs.replies_b64 }}
+        run: |
+          set -euo pipefail
+
+          replies_json="$(printf '%s' "$REPLIES_B64" | base64 --decode)"
+          markdown_bullets="$(jq -r '
+            def snippet:
+              gsub("[\r\n]+"; " ")
+              | .[0:150]
+              | gsub("<"; "‹")
+              | gsub(">"; "›")
+              | gsub("\\*"; "∗")
+              | gsub("_"; "＿")
+              | gsub("~"; "～")
+              | gsub("`"; "ˋ");
+            map(
+              "• *\(.id)* (\(.title)): _\"" + (.latestHumanReply | snippet) + "…\"_"
+            ) | join("\n")
+          ' <<<"$replies_json")"
+          plain_bullets="$(jq -r '
+            def snippet:
+              gsub("[\r\n]+"; " ")
+              | .[0:150]
+              | gsub("<"; "‹")
+              | gsub(">"; "›");
+            map(
+              "• \(.id) (\(.title)): \"" + (.latestHumanReply | snippet) + "…\""
+            ) | join("\n")
+          ' <<<"$replies_json")"
+
+          pr_url="$(jq -er '.url' <<<"$PR_DATA")"
+          pr_title="$(jq -er '.title | gsub("<"; "‹") | gsub(">"; "›") | gsub("[|]"; "¦")' <<<"$PR_DATA")"
+          pr_author="$(jq -er '.author' <<<"$PR_DATA")"
+          markdown_message="$(jq -nr \
+            --arg url "$pr_url" \
+            --arg title "$pr_title" \
+            --arg number "$PR_NUMBER" \
+            --arg author "$pr_author" \
+            --arg count "$CONVERSATION_COUNT" \
+            --arg bullets "$markdown_bullets" \
+            '"*Breaking change ready for review:* <\($url)|\($title)> · airbyte#\($number) by \($author)\n\nAll \($count) recommendations answered and resolved:\n\($bullets)\n\n<\($url)|Open PR>"')"
+          plain_message="$(jq -nr \
+            --arg url "$pr_url" \
+            --arg title "$pr_title" \
+            --arg number "$PR_NUMBER" \
+            --arg author "$pr_author" \
+            --arg count "$CONVERSATION_COUNT" \
+            --arg bullets "$plain_bullets" \
+            '"Breaking change ready for review: " + $title + " · airbyte#" + $number + " by " + $author + "\n\nAll " + $count + " recommendations answered and resolved:\n" + $bullets + "\n\n" + $url')"
+
+          open_payload="$(jq -n --arg users "$BREAKING_CHANGE_REVIEWER_SLACK_IDS" '{users: $users}')"
+          open_response="$(curl --silent --show-error --request POST \
+            --header "Authorization: Bearer $SLACK_BOT_TOKEN" \
+            --header "Content-Type: application/json; charset=utf-8" \
+            --data "$open_payload" \
+            https://slack.com/api/conversations.open)"
+          jq -e '.ok == true' >/dev/null <<<"$open_response" || {
+            slack_error="$(jq -r '.error // "unknown error"' <<<"$open_response")"
+            echo "::error::Slack conversations.open failed: $slack_error"
+            exit 1
+          }
+          channel_id="$(jq -er '.channel.id' <<<"$open_response")"
+
+          message_payload="$(jq -n \
+            --arg channel "$channel_id" \
+            --arg text "$plain_message" \
+            --arg markdown "$markdown_message" \
+            '{channel: $channel, text: $text, mrkdwn: true, blocks: [{type: "section", text: {type: "mrkdwn", text: $markdown}}]}')"
+          message_response="$(curl --silent --show-error --request POST \
+            --header "Authorization: Bearer $SLACK_BOT_TOKEN" \
+            --header "Content-Type: application/json; charset=utf-8" \
+            --data "$message_payload" \
+            https://slack.com/api/chat.postMessage)"
+          jq -e '.ok == true' >/dev/null <<<"$message_response" || {
+            slack_error="$(jq -r '.error // "unknown error"' <<<"$message_response")"
+            echo "::error::Slack chat.postMessage failed: $slack_error"
+            exit 1
+          }
+          echo "Breaking-change reviewers were notified in Slack."
+
+      - name: Post failure comment
+        if: >
+          failure() &&
+          (steps.post-start-comment.outputs.comment-id != '' || inputs.comment-id != '')
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token || github.token }}
+          comment-id: ${{ steps.post-start-comment.outputs.comment-id || inputs.comment-id }}
+          issue-number: ${{ inputs.pr || '' }}
+          edit-mode: replace
+          body: |
+            > **AI Breaking Change Ready Command Failed**
+            >
+            > An error occurred while checking review conversations or notifying reviewers.
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})
