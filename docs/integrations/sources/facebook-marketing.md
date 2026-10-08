@@ -158,7 +158,7 @@ Refer to Facebook's official documentation on [Access Levels and Authorization](
 3. (Optional) For **End Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. This is the date until which you'd like to replicate Insights data. All data generated between the start date and this end date will be replicated. Not setting this option will result in always syncing the latest data.
 
    :::note
-   End Date only bounds the Insights streams: the built-in Ads Insights stream, the Prebuilt Ads Insights Reports, and Custom Insights streams. The other incremental streams (`activities`, `ad_sets`, `ads`, `ad_creatives_from_ads`, `campaigns`, `images`, and `videos`) query Facebook by cursor value only and always sync up to the present.
+   End Date only bounds the Insights streams: the built-in Ads Insights stream, the Prebuilt Ads Insights Reports, and Custom Insights streams. The other incremental streams (`activities`, `ad_sets`, `ads`, `ad_creatives_from_ads`, `campaigns`, `images`, and `videos`) ignore End Date and always sync up to the present. Their lower bound is your **Start Date** on the first sync and the saved cursor after that.
    :::
 </FieldAnchor>
 
@@ -400,6 +400,8 @@ If you sync multiple ad accounts in different timezones within a single connecti
 
 The Facebook Marketing connector uses the `lookback_window` parameter to repeatedly read data from the last `<lookback_window>` days during an Incremental sync. This means some data will be synced twice (or possibly more often) despite the cursor value being up to date, in order to capture updated ads conversion data from Facebook. You can change this date window by adjusting the `lookback_window` parameter when setting up the source, up to a maximum of 28 days. Smaller values will result in fewer duplicates, while larger values provide more accurate results. For a deeper understanding of the purpose and role of the attribution window, refer to this [Meta article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 
+The connector saves a separate Insights cursor for each ad account and checkpoints state as each date slice completes. If a sync attempt fails or is canceled partway through, the next attempt starts from the saved cursor minus the lookback window, so those days are read again rather than skipped. Since version 6.1.3, re-reading the lookback window never moves the saved cursor backward, so repeated interruptions don't widen the range that the next attempt re-reads.
+
 ### Action attribution windows
 
 Separately from the lookback window, the connector asks Facebook to break down action metrics by attribution window. Every Insights stream requests `1d_click`, `7d_click`, `28d_click`, and `1d_view` by default. Two more windows are opt-in: enable **Include Incrementality** for `incrementality`, and **Include Engaged View** for `1d_ev`. Enabling either one adds fields to the action metrics (`actions`, `action_values`, `cost_per_action_type`, and similar) rather than changing existing ones, so you must refresh the connection's schema to sync the new fields. The global settings apply to all built-in Insights streams; each custom insight has its own copy of both toggles.
@@ -469,7 +471,7 @@ Meta enforces [rate limits](https://developers.facebook.com/docs/graph-api/overv
 
 These pauses appear in the sync logs as `Facebook API Utilization is too high`. They are expected and do not fail the sync.
 
-If Meta has already blocked the ad account, the API returns error code 17 with subcode 2446079 (`Ad Account Has Too Many API Calls`). Since version 6.1.2, the connector treats this as a quota block rather than a transient error: it waits for the reset time Meta reports (capped at 10 minutes per attempt, and 10 minutes when no estimate is provided), retries, and repeats for up to 1 hour of total waiting before failing the sync. The logs show `Facebook API quota block` with the remaining wait budget. Other rate limit error codes (for example, 4, 613, and 80000 to 80008) are retried with the connector's standard backoff.
+If Meta has already blocked the ad account, the API returns error code 17 with subcode 2446079 (`Ad Account Has Too Many API Calls`). Since version 6.1.2, the connector treats this as a quota block rather than a transient error: it waits for the reset time Meta reports (capped at 10 minutes per attempt, and 10 minutes when no estimate is provided), retries, and repeats for up to 1 hour of total waiting before failing the sync. The logs show `Facebook API quota block` with the remaining wait budget. Other rate limit error codes, such as 4, 32, and 613, are retried with the connector's standard backoff.
 
 The connection check does not wait out rate limits. If you test the connection while the account is rate limited, the check fails immediately with the rate limit error. Wait for the limit to reset and test again.
 
