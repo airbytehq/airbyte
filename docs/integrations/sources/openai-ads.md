@@ -76,23 +76,23 @@ The OpenAI Ads source connector supports the following [sync modes](https://docs
 
 All report tables are built on the [insights](https://developers.openai.com/ads/api-reference/insights) endpoint with daily granularity in the account timezone. Each row is one entity and one day. Field names follow the API's response keys.
 
-| Stream                        | Primary key                                                  | Sync modes                | Level and breakdown                         |
-| :---------------------------- | :----------------------------------------------------------- | :------------------------ | :------------------------------------------ |
-| ad_account_insights           | ad_account_id, readable_time                                 | Full Refresh, Incremental | Ad account                                  |
-| campaign_insights             | campaign_id, readable_time                                   | Full Refresh, Incremental | Campaign                                    |
-| ad_group_insights             | ad_group_id, readable_time                                   | Full Refresh, Incremental | Ad group                                    |
-| ad_insights                   | ad_id, readable_time                                         | Full Refresh, Incremental | Ad                                          |
-| campaign_insights_by_country  | campaign_id, country_name, readable_time                     | Full Refresh, Incremental | Campaign by country                         |
-| campaign_insights_by_device   | campaign_id, device_type, readable_time                      | Full Refresh, Incremental | Campaign by device type                     |
-| campaign_insights_by_platform | campaign_id, platform, readable_time                         | Full Refresh, Incremental | Campaign by platform                        |
-| campaign_insights_by_product  | campaign_id, product_feed_id, product_item_id, readable_time | Full Refresh, Incremental | Campaign by product feed item               |
-| campaign_conversions          | entity_id, date                                              | Full Refresh, Incremental | Attributed conversions per campaign and day |
-| ad_group_conversions          | entity_id, date                                              | Full Refresh, Incremental | Attributed conversions per ad group and day |
-| ad_conversions                | entity_id, date                                              | Full Refresh, Incremental | Attributed conversions per ad and day       |
+| Stream                        | Primary key                                          | Sync modes                | Level and breakdown                         |
+| :---------------------------- | :--------------------------------------------------- | :------------------------ | :------------------------------------------ |
+| ad_account_insights           | ad_account_id, readable_time                         | Full Refresh, Incremental | Ad account                                  |
+| campaign_insights             | campaign_id, readable_time                           | Full Refresh, Incremental | Campaign                                    |
+| ad_group_insights             | ad_group_id, readable_time                           | Full Refresh, Incremental | Ad group                                    |
+| ad_insights                   | ad_id, readable_time                                 | Full Refresh, Incremental | Ad                                          |
+| campaign_insights_by_country  | campaign_id, country_name, readable_time             | Full Refresh, Incremental | Campaign by country                         |
+| campaign_insights_by_device   | campaign_id, device_type, readable_time              | Full Refresh, Incremental | Campaign by device type                     |
+| campaign_insights_by_platform | campaign_id, platform, readable_time                 | Full Refresh, Incremental | Campaign by platform                        |
+| campaign_insights_by_product  | campaign_id, product_feed_id, item_id, readable_time | Full Refresh, Incremental | Campaign by product feed item               |
+| campaign_conversions          | entity_id, date                                      | Full Refresh, Incremental | Attributed conversions per campaign and day |
+| ad_group_conversions          | entity_id, date                                      | Full Refresh, Incremental | Attributed conversions per ad group and day |
+| ad_conversions                | entity_id, date                                      | Full Refresh, Incremental | Attributed conversions per ad and day       |
 
 Every insights stream requests all attribute fields the API allows at its level, for its own entity and every level above it: account id, name, url and budgets; campaign id, name, description, status, start and end time and budgets; ad group id, name, description and status; ad id, name, title, copy, link, status and review status. Attributes that are unset for an entity are omitted from the row. The metrics are `impressions`, `clicks`, `spend`, `ctr`, `cpc`, `cpm`, with the same names at every level and for every segment. Days on which an entity had no impressions are not returned, so missing days mean zero delivery. The API's own row `id` is kept on the record but is not the primary key, because it embeds a query plan token that changes with the requested fields.
 
-The conversions streams come from the [conversions insights](https://developers.openai.com/ads/api-reference/insights) endpoint and return `conversions`, `click_through_conversions` and `view_through_conversions` per entity (`entity_id`) and `date`, at campaign, ad group and ad level. Unlike the insights endpoint, this endpoint returns a row for every entity and every day of the requested range, zeros included, also for days before the entity was created. The connector keeps these rows as delivered, so each entity has a complete daily series from the start date. Set the Start Date to when the account began advertising to avoid rows for days before that; rows before an entity's own creation can be removed downstream with `created_at` from the `campaigns`, `ad_groups` and `ads` streams.
+The conversions streams come from the [conversions insights](https://developers.openai.com/ads/api-reference/insights) endpoint and return `conversions`, `click_through_conversions`, `view_through_conversions`, `order_created_attributed_sales` and `order_created_attributed_sales_currency` per entity (`entity_id`) and `date`, at campaign, ad group and ad level. Unlike the insights endpoint, this endpoint returns a row for every entity and every day of the requested range, zeros included, also for days before the entity was created. The connector keeps these rows as delivered, so each entity has a complete daily series from the start date. Set the Start Date to when the account began advertising to avoid rows for days before that; rows before an entity's own creation can be removed downstream with `created_at` from the `campaigns`, `ad_groups` and `ads` streams.
 
 ## Note on the Lookback Window
 

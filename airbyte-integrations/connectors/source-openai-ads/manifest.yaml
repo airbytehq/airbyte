@@ -588,7 +588,7 @@ definitions:
     primary_key:
       - campaign_id
       - product_feed_id
-      - product_item_id
+      - item_id
       - readable_time
     $parameters:
       aggregation_level: campaign
@@ -2228,7 +2228,7 @@ schemas:
         type:
           - string
           - 'null'
-      product_item_id:
+      item_id:
         type:
           - string
           - 'null'
@@ -2317,6 +2317,14 @@ schemas:
         type:
           - integer
           - 'null'
+      order_created_attributed_sales:
+        type:
+          - string
+          - 'null'
+      order_created_attributed_sales_currency:
+        type:
+          - string
+          - 'null'
   custom_audiences:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -2372,6 +2380,14 @@ schemas:
         type:
           - integer
           - 'null'
+      order_created_attributed_sales:
+        type:
+          - string
+          - 'null'
+      order_created_attributed_sales_currency:
+        type:
+          - string
+          - 'null'
   ad_conversions:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -2396,6 +2412,14 @@ schemas:
       view_through_conversions:
         type:
           - integer
+          - 'null'
+      order_created_attributed_sales:
+        type:
+          - string
+          - 'null'
+      order_created_attributed_sales_currency:
+        type:
+          - string
           - 'null'
 
 api_budget:
