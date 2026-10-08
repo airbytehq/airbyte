@@ -16,19 +16,7 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
-      testSecrets:
-        - fileName: config.json
-          name: SECRET_SOURCE-MONGODB-V2__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
     - suite: acceptanceTests
-      testSecrets:
-        - fileName: config.json
-          name: SECRET_SOURCE-MONGODB-V2__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
   connectorType: source
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   dockerImageTag: 3.0.0

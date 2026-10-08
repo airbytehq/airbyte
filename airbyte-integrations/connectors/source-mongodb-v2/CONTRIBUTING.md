@@ -219,9 +219,7 @@ a later optimization gated on a measured speed-up (SKILL.md Phase 1, "Concurrenc
   available here.
 - **Record/state Docker parity** against the legacy image via `databases/mongodb/parity/`.
 
-> **CDK version:** this branch pins `cdkVersion=local` and bumps
-> `airbyte-cdk/bulk/core/extract/version.properties` to `1.1.14` because READ-time catalog
-> validation NPE'd on `{"type":"array"}` without `items` (MongoDB arrays) up to 1.1.13. The one-line
-> fix in `StateManagerFactory.airbyteTypeFromJsonSchema` (also open as
-> [#88342](https://github.com/airbytehq/airbyte/pull/88342)) must be published and the connector
-> re-pinned to that version before this leaves draft — CI rejects `cdkVersion=local`.
+> **CDK version:** `cdkVersion` must be at least `1.1.14`: up to 1.1.13, READ-time catalog
+> validation NPE'd on `{"type":"array"}` without `items`, which is how MongoDB arrays are declared
+> (`StateManagerFactory.airbyteTypeFromJsonSchema`, fixed in
+> [#88342](https://github.com/airbytehq/airbyte/pull/88342)).
