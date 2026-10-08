@@ -566,6 +566,158 @@ streams:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/segment_usage"
+  - type: DeclarativeStream
+    name: subscription_topics
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /subscription_topics
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "topics"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/subscription_topics"
+  - type: DeclarativeStream
+    name: object_types
+    # The spec types id as a string (integers passed as strings), but campaigns.object_type_id as an integer.
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /object_types
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "types"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/object_types"
+  - type: DeclarativeStream
+    name: workspaces
+    # Lists every workspace in the account. The counts are a snapshot with no update time (message counts
+    # cover the current billing period), so the stream is full refresh only.
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /workspaces
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "workspaces"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/workspaces"
+  - type: DeclarativeStream
+    name: reporting_webhooks
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /reporting_webhooks
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "reporting_webhooks"
+    # Customer.io documents user:password@ in the URL as the way to secure a webhook: strip it. The pattern is anchored
+    # on the scheme, so an @ later in the path or query is kept, and so is a token there (the docs say so).
+    # http:/{2} spells the plain-http scheme without the URL prefix the Pre-Release check rejects.
+    transformations:
+      - type: AddFields
+        condition: "{{ record.get('endpoint') }}"
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - endpoint
+            value: "{{ record['endpoint'] | regex_replace('(?i)(?<=^https://)[^/?#]*@|(?<=^http:/{2})[^/?#]*@', '') }}"
+            value_type: string
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/reporting_webhooks"
+  - type: DeclarativeStream
+    name: snippets
+    # Snippets have no id; the spec documents name as unique, and deleteSnippet addresses a snippet by name.
+    primary_key:
+      - name
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /snippets
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "snippets"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      datetime_format: "%s"
+      cursor_datetime_formats:
+        - "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
+        datetime_format: "%s"
+        max_datetime: "{{ now_utc().timestamp() | int }}"
+      lookback_window: PT1H
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/snippets"
+  - type: DeclarativeStream
+    name: collections
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        # Collection metadata only; the contents (getCollectionContents) are not read.
+        path: /collections
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "collections"
+    # Full refresh only: Customer.io does not document whether replacing a collection's contents moves updated_at,
+    # and incremental would save nothing (one request, at most 50 collections per workspace).
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/collections"
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 3
@@ -631,6 +783,12 @@ metadata:
     sender_identities: false
     segments: false
     segment_usage: false
+    subscription_topics: false
+    object_types: false
+    workspaces: false
+    reporting_webhooks: false
+    snippets: false
+    collections: false
 schemas:
   campaigns:
     type: object
@@ -1578,3 +1736,189 @@ schemas:
           type:
             - "null"
             - integer
+  subscription_topics:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      identifier:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      subscribed_by_default:
+        type:
+          - "null"
+          - boolean
+  object_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      enabled:
+        type:
+          - "null"
+          - boolean
+      icon:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      singular_name:
+        type:
+          - "null"
+          - string
+      singular_slug:
+        type:
+          - "null"
+          - string
+      slug:
+        type:
+          - "null"
+          - string
+  workspaces:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      billable_messages_sent:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      messages_sent:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      object_types:
+        type:
+          - "null"
+          - integer
+      objects:
+        type:
+          - "null"
+          - integer
+      people:
+        type:
+          - "null"
+          - integer
+  reporting_webhooks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      "type":
+        type:
+          - "null"
+          - string
+      disabled:
+        type:
+          - "null"
+          - boolean
+      endpoint:
+        type:
+          - "null"
+          - string
+      events:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      full_resolution:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      with_content:
+        type:
+          - "null"
+          - boolean
+  snippets:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - integer
+      value:
+        type:
+          - "null"
+          - string
+  collections:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      bytes:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      rows:
+        type:
+          - "null"
+          - integer
+      schema:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      updated_at:
+        type:
+          - "null"
+          - integer

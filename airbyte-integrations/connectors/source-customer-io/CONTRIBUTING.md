@@ -29,9 +29,11 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    lists and keeps records whose `updated` or `updated_at` (epoch seconds) is at or after the saved
    cursor minus one hour, so Incremental | Append stores the last hour's records again on every
    sync. A new campaign's or broadcast's actions start from the stream-wide cursor, not the Start
-   Date. `newsletter_variants`, `sender_identities` and `segment_usage` are full refresh:
-   they have no update-time field (only the `deduplicate_id` string carries one), and full refresh
-   also drops deleted variants and senders. Details in AGENTS.md section 4.
+   Date. `newsletter_variants`, `sender_identities`, `segment_usage`, `subscription_topics`,
+   `object_types`, `workspaces` and `reporting_webhooks` are full refresh: they have no
+   update-time field (only the `deduplicate_id` string of variants and senders carries one), and
+   full refresh also drops deleted records. `collections` is full refresh as well (item 16).
+   Details in AGENTS.md section 4.
 5. **Substream Parents Are Inline Copies Without a Cursor** - the parent list each substream reads
    ignores Start Date on purpose, because a parent last updated before Start Date can still have
    child records that changed later. Details in AGENTS.md section 5.
@@ -64,6 +66,31 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
     [OpenAPI spec](https://docs.customer.io/files/journeys-app.json), but every example there is a
     JSON string and no live record shows them, so the schema leaves them untyped. Details in
     AGENTS.md section 11.
+12. **`subscription_topics` Is Empty Until Topics Are Added** - the list is empty when the workspace
+    has no topics ([getTopics](https://docs.customer.io/integrations/api/app/tag/subscription-center/gettopics/)),
+    as in the test workspace. Topics exist before the subscription center can be enabled
+    ([enable the subscription center](https://docs.customer.io/messaging/channels/subscriptions/center/#enable-sub-center)),
+    so a non-empty stream does not mean the center is on. Details in AGENTS.md section 12.
+13. **`workspaces` Is a Snapshot of Account-Wide Counts** - every workspace in the account, not
+    only the key's, with message counts for the current billing period and current people and
+    object totals, cached for up to two hours
+    ([listWorkspaces](https://docs.customer.io/integrations/api/app/tag/workspaces/listworkspaces/)).
+    The records have no update time, so only full refresh is meaningful. Details in AGENTS.md
+    section 13.
+14. **`reporting_webhooks.endpoint` Can Carry Credentials** - the connector removes the
+    `username:password@` part Customer.io documents for securing a reporting webhook
+    ([reporting webhooks FAQ](https://docs.customer.io/integrations/data-out/connections/webhooks/#frequently-asked-questions)),
+    but a token in the path or query string is synced as returned, so the stream is not in
+    `suggestedStreams`; connections that propagate all field and stream changes still add it after
+    the upgrade. Details in AGENTS.md section 14.
+15. **`snippets` Are Keyed by Name** - snippets have no ID, and their names are unique and cannot
+    change ([snippets FAQ](https://docs.customer.io/messaging/liquid/snippets/#frequently-asked-questions)),
+    so `name` is the primary key. Details in AGENTS.md section 15.
+16. **`collections` Lists Metadata, Not Contents** - names, row keys, row counts and sizes
+    ([getCollections](https://docs.customer.io/integrations/api/app/tag/collections/getcollections/)),
+    full refresh only, because a contents change may not move `updated_at`; the connector never calls
+    [getCollectionContents](https://docs.customer.io/integrations/api/app/tag/collections/getcollectioncontents/).
+    Details in AGENTS.md section 16.
 
 ## Testing notes
 
@@ -76,3 +103,5 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 - `broadcasts` and `broadcast_actions` are `empty_streams` in `acceptance-test-config.yml`: the test
   workspace has no API-triggered broadcasts, and the App API cannot create one, so only the unit
   tests read them.
+- `subscription_topics` and `object_types` are also `empty_streams`: the test workspace has
+  neither, and the App API cannot create them, so only the unit tests read them.

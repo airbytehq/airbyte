@@ -18,6 +18,18 @@ Several output streams are available from this source:
 - [Sender Identities](https://docs.customer.io/integrations/api/app/tag/sender-identities/listsenders/) \(Full Refresh\)
 - [Segments](https://docs.customer.io/integrations/api/app/tag/segments/listsegments/) \(Incremental\): archived segments are not included; a segment archived after an incremental sync keeps its last row in the destination
 - [Segment Usage](https://docs.customer.io/integrations/api/app/tag/segments/getsegmentdependencies/) \(Full Refresh\): one record per non-archived segment
+- [Subscription Topics](https://docs.customer.io/integrations/api/app/tag/subscription-center/gettopics/) \(Full Refresh\)
+- [Object Types](https://docs.customer.io/integrations/api/app/tag/objects/getobjecttypes/) \(Full Refresh\)
+- [Workspaces](https://docs.customer.io/integrations/api/app/tag/workspaces/listworkspaces/) \(Full Refresh\)
+- [Reporting Webhooks](https://docs.customer.io/integrations/api/app/tag/reporting-webhooks/listwebhooks/) \(Full Refresh\)
+- [Snippets](https://docs.customer.io/integrations/api/app/tag/snippets/listsnippets/) \(Incremental\)
+- [Collections](https://docs.customer.io/integrations/api/app/tag/collections/getcollections/) \(Full Refresh\)
+
+`reporting_webhooks` syncs each webhook's `endpoint` URL with any `username:password@` part removed; a token in the URL's path or query string is synced as Customer.io returns it ([reporting webhooks FAQ](https://docs.customer.io/integrations/data-out/connections/webhooks/#frequently-asked-questions)). New connections leave the stream unselected. Connections set to **Propagate all field and stream changes** add and sync it automatically after upgrading to 0.7.0; to stop syncing it, deselect the stream and clear its data from the destination.
+
+`workspaces` lists every workspace in the account with message counts for the current billing period and current people and object totals, cached by Customer.io for up to two hours. The records have no update time, so use Full Refresh | Overwrite for the latest counts, or Full Refresh | Append to keep one snapshot per sync.
+
+`collections` lists each collection's name, schema, row count and size, not its contents. It is full refresh only, so every sync has the current counts.
 
 If there are more endpoints you'd like Faros AI to support, please [create an
 issue.](https://github.com/faros-ai/airbyte-connectors/issues/new)
@@ -58,6 +70,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                     |
 |:--------|:-----------| :------------------------------------------------------------- |:--------------------------------------------|
+| 0.7.0 | 2026-10-08 | [88135](https://github.com/airbytehq/airbyte/pull/88135) | Add subscription topic, object type, workspace, reporting webhook, snippet and collection streams |
 | 0.6.0 | 2026-10-07 | [88130](https://github.com/airbytehq/airbyte/pull/88130) | Add broadcast, newsletter variant, transactional message, sender identity and segment streams |
 | 0.5.0 | 2026-10-07 | [88129](https://github.com/airbytehq/airbyte/pull/88129) | Add rate limiting, Retry-After retries, clearer authentication errors, a one-hour lookback, and missing fields |
 | 0.4.17 | 2026-10-06 | [87812](https://github.com/airbytehq/airbyte/pull/87812) | Update dependencies |
