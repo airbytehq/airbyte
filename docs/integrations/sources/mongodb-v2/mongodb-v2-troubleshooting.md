@@ -1,4 +1,4 @@
-# Troubleshooting Mongo DB Sources
+# Troubleshooting MongoDB Sources
 
 ## Connector Limitations
 
@@ -8,7 +8,7 @@
 
 We recommend adjusting the Oplog size for your MongoDB cluster to ensure it holds at least 24 hours of changes. For optimal results, we suggest expanding it to maintain a week's worth of data. To adjust your Oplog size, see the corresponding tutorials for [MongoDB Atlas](https://www.mongodb.com/docs/atlas/cluster-additional-settings/#set-oplog-size) (fully-managed) and [MongoDB shell](https://www.mongodb.com/docs/manual/tutorial/change-oplog-size/) (self-hosted).
 
-If you are running into an issue similar to "invalid resume token", it may mean you need to:
+If a sync fails with "Saved offset is not valid", the change stream position saved by the previous sync is no longer in the oplog. The **Invalid CDC position behavior** setting decides what happens: with "Fail sync" (the default) you need to reset the connection, with "Re-sync data" the connector takes a new initial snapshot by itself. To prevent it from happening again:
 
 1. Increase the Oplog retention period.
 2. Increase the Oplog size.
@@ -84,17 +84,17 @@ This risk can also apply to Lookup when the full document and change event metad
 
 ### Supported MongoDB Clusters
 
-- Only supports [replica set](https://www.mongodb.com/docs/manual/replication/) cluster type.
-- TLS/SSL is required by this connector. TLS/SSL is enabled by default for MongoDB Atlas clusters. To enable TSL/SSL connection for a self-hosted MongoDB instance, please refer to [MongoDb Documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/).
-- Views, capped collections and clustered collections are not supported.
+- [Replica sets](https://www.mongodb.com/docs/manual/replication/) and [sharded clusters](https://www.mongodb.com/docs/manual/sharding/) connected through `mongos` are supported. A standalone `mongod` has no oplog and no change streams: the connection test fails with "Target MongoDB instance is a standalone server".
+- Connections to MongoDB Atlas always use TLS. For a self-hosted cluster, add `tls=true` to the connection string; see the [MongoDB documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/) for enabling TLS on the server.
+- Views are not discovered and cannot be synced; sync the underlying collection. Capped and clustered collections have not been validated with this connector.
 - Empty collections are excluded from schema discovery.
-- Collections with different data types for the values in the `_id` field among the documents in a collection are not supported. All `_id` values within the collection must be the same data type.
+- All documents in a collection must use the same BSON type for `_id`; integers, longs, doubles and decimals count as one type. A collection mixing types fails the sync with "Collection &lt;database&gt;.&lt;collection&gt; has \_id values of more than one type", because a sync resuming after a checkpoint on one type would miss the documents of the other.
 - Atlas DB cluster are only supported in a dedicated M10 tier and above. Lower tiers may fail during connection setup.
 
 ### Schema Discovery & Enforcement
 
 - Schema discovery uses [sampling](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) of the documents to collect all distinct top-level fields. This value is universally applied to all collections discovered in the target database. The approach is modelled after [MongoDB Compass sampling](https://www.mongodb.com/docs/compass/current/sampling/) and is used for efficiency. By default, 10,000 documents are sampled. This value can be increased up to 100,000 documents to increase the likelihood that all fields will be discovered. However, the trade-off is time, as a higher value will take the process longer to sample the collection.
-- When running with Schema Enforced set to `false`, there is no attempt to discover any schema. See more in [Schema Enforcement](/integrations/sources/mongodb-v2#schema-enforcement).
+- When running with Schema Enforced set to `false`, discovery only determines the type of `_id`; the rest of the document is synced as one JSON object. See more in [Schema Enforcement](/integrations/sources/mongodb-v2#schema-enforcement).
 
 ### Schema discovery performance impact
 
@@ -108,7 +108,7 @@ On clusters with hundreds of collections, this means hundreds of simultaneous ag
 
 These approaches address the root cause of the performance risk by reducing or eliminating the discovery workload.
 
-1. **Disable schema enforcement.** Set **Schema Enforced** to `false` to skip the sampling-based discovery entirely. In schemaless mode, the connector samples only one document per collection to confirm the `_id` field exists. This dramatically reduces the load on your cluster, but all data is returned as a single JSON object per document rather than individual typed fields. See [Schema Enforcement](/integrations/sources/mongodb-v2#schema-enforcement) for configuration details.
+1. **Disable schema enforcement.** Set **Schema Enforced** to `false`. In schemaless mode the sample is only used to find the type of `_id`, which avoids the per-field type extraction and reduces the load on your cluster, but all data is returned as a single JSON object per document rather than individual typed fields. See [Schema Enforcement](/integrations/sources/mongodb-v2#schema-enforcement) for configuration details.
 
 2. **Reduce the discovery sample size.** If you need schema enforcement, lower the **Discovery Sample Size** setting to reduce the number of documents sampled per collection. The default is 10,000. A smaller value such as 1,000 reduces the load on your cluster but may miss fields in collections with highly variable document structures. See the [Discovery Sample Size](https://docs.airbyte.com/integrations/sources/mongodb-v2#configuration-parameters) configuration parameter.
 
@@ -145,7 +145,7 @@ _where_ it is deployed.
 
 #### Self Hosted MongoDB
 
-Airbyte does not support self-signed SSL certificates for SSH tunnels.
+Airbyte does not support self-signed TLS certificates.
 
 #### AWS DocumentDB
 

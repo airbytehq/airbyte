@@ -30,11 +30,11 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorType: source
-  definitionId: 25f274f8-7f58-4544-83e0-f711a49e2e9a
+  # The MongoDB connector's definition, carried over from source-mongodb-v2 (as v2 carried it
+  # over from source-mongodb): 3.0.0 is an in-place upgrade, not a new connector.
+  definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-mongodb-v3
-  # Points at the mongodb-v2 docs until a mongodb-v3 docs page exists: this connector is the
-  # Bulk CDK successor to source-mongodb-v2 and the v2 page is the current user documentation.
   documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
   githubIssueLabel: source-mongodb-v3
   icon: icon.svg
@@ -58,7 +58,10 @@ data:
           initial-snapshot state and saved configurations are all read as-is, so no
           reset is required. The Debezium-only settings 'initial_waiting_seconds' and
           'queue_size' are removed from the spec (saved configurations that still
-          carry them are accepted and the values ignored)."
+          carry them are accepted and the values ignored). Views are no longer
+          discovered as streams, boolean fields are now typed as boolean, and a
+          collection whose _id values are of more than one type fails the sync
+          instead of risking missed documents. See the migration guide for details."
         upgradeDeadline: "2026-12-31"
         scopedImpact:
           - scopeType: stream
