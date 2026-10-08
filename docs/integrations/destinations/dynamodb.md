@@ -26,8 +26,9 @@ objects containing 4 fields:
 
 ### Performance considerations
 
-This connector by default uses 10 capacity units for both Read and Write in DynamoDB tables. Please
-provision more capacity units in the DynamoDB console when there are performance constraints.
+Tables created by this connector use the on-demand (`PAY_PER_REQUEST`) billing mode, so no
+capacity units need to be provisioned up front. Records are written in batches of 25 items with
+automatic retries for unprocessed items.
 
 ## Supported sync modes
 
@@ -60,9 +61,15 @@ provision more capacity units in the DynamoDB console when there are performance
     - See
       [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)
       on how to generate an access key.
-    - We recommend creating an Airbyte-specific user. This user will require
-      [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_dynamodb_specific-table.html)
-      to the DynamoDB table.
+    - We recommend creating an Airbyte-specific user. Because the connector creates one table per
+      stream (and a temporary `<prefix>_airbyte_connection_test_*` table during **Test connection**),
+      read/write access to existing tables is not enough: the user's
+      [IAM policy](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/iam-policy-structure.html)
+      must allow the following actions on `arn:aws:dynamodb:<region>:<account>:table/<prefix>_*`:
+      `dynamodb:CreateTable`, `dynamodb:DescribeTable`, `dynamodb:DeleteTable`, `dynamodb:PutItem`
+      and `dynamodb:BatchWriteItem`. A missing `dynamodb:CreateTable` permission results in
+      `AccessDeniedException: User ... is not authorized to perform: dynamodb:CreateTable` when
+      testing the connection.
   - **Secret Access Key**
     - Corresponding key to the above key id.
 - Make sure your DynamoDB tables are accessible from the machine running Airbyte.

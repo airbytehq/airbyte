@@ -16,6 +16,16 @@ definitions:
       client_id: "{{ config.client_id }}"
       secret_key: "{{ config.secret_key }}"
       lifetime: "PT3600S"
+    error_handler:
+      # https://docs.railz.ai/reference/rate-limit: 1,000 requests/minute per team,
+      # 429 responses carry a Retry-After header (seconds)
+      type: DefaultErrorHandler
+      max_retries: 10
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+          factor: 5
   retriever:
     type: SimpleRetriever
     record_selector:
@@ -63,15 +73,6 @@ definitions:
         record_filter:
           # every stream defines in parameters which services it is needed
           condition: "{{ record.status in ['active', 'expired'] and record.serviceName in parameters.serviceNames }}"
-    transformations:
-      - type: AddFields
-        fields:
-          - path:
-              - connection
-            value: >-
-              {{
-              stream_partition['businessName']-stream_partition['serviceName']
-              }}
     $parameters:
       name: "connections_slice"
       path: "/connections"
@@ -1026,7 +1027,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
-          condition: "{{ record[parameters.cursor_field] >= stream_interval['start_date'] }}"
+          condition: "{{ record[parameters.cursor_field] >= stream_interval['start_time'] }}"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
