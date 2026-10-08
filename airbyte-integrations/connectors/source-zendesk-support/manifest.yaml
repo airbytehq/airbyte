@@ -81,6 +81,9 @@ definitions:
       error_handler:
         type: DefaultErrorHandler
         response_filters:
+          - error_message_contains: "invalid_token"
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: "Zendesk rejected the OAuth access token for stream '{{ parameters.get('name') }}' (invalid_token). Refreshing the OAuth token and retrying the request. If this persists, re-authenticate the source."
           - error_message_contains: "You do not have access"
             action: IGNORE
             error_message: "Skipping stream '{{ parameters.get('name') }}' because the authenticated user lacks permission to access this resource. This is expected for non-admin accounts on admin-only endpoints. Other streams will still sync."
@@ -308,6 +311,9 @@ definitions:
             - type: WaitTimeFromHeader
               header: Retry-After
           response_filters:
+            - error_message_contains: "invalid_token"
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: "Zendesk rejected the OAuth access token for stream '{{ parameters.get('name') }}' (invalid_token). Refreshing the OAuth token and retrying the request. If this persists, re-authenticate the source."
             - http_codes: [403]
               action: IGNORE
               failure_type: config_error
@@ -411,6 +417,14 @@ definitions:
             oauth2.0: "#/definitions/bearer_authenticator"
             oauth2_refresh: "#/definitions/oauth_refresh_authenticator"
             api_token: "#/definitions/basic_authenticator"
+        error_handler:
+          type: DefaultErrorHandler
+          # Attachment bodies are files, not JSON, so match on the status code here instead of the
+          # error body: a text attachment containing "invalid_token" must not trigger a refresh.
+          response_filters:
+            - http_codes: [401]
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: "Zendesk rejected the OAuth access token while downloading an attachment (401). Refreshing the OAuth token and retrying the request. If this persists, re-authenticate the source."
       download_target_extractor:
         type: DpathExtractor
         field_path: ["content_url"]
@@ -918,6 +932,9 @@ definitions:
             - type: WaitTimeFromHeader
               header: Retry-After
           response_filters:
+            - error_message_contains: "invalid_token"
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: "Zendesk rejected the OAuth access token for stream '{{ parameters.get('name') }}' (invalid_token). Refreshing the OAuth token and retrying the request. If this persists, re-authenticate the source."
             - http_codes: [504]
               action: FAIL
               error_message: "Skipping stream `{{ parameters.get('name') }}`. Timed out waiting for response: {{ response.text }}..."
@@ -969,6 +986,9 @@ definitions:
             - type: ExponentialBackoffStrategy
               factor: 10
           response_filters:
+            - error_message_contains: "invalid_token"
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: "Zendesk rejected the OAuth access token for stream '{{ parameters.get('name') }}' (invalid_token). Refreshing the OAuth token and retrying the request. If this persists, re-authenticate the source."
             - http_codes: [504]
               action: RETRY
               error_message: "Gateway timeout waiting for response from stream `{{ parameters.get('name') }}`. Retrying with exponential backoff..."
@@ -1033,6 +1053,9 @@ definitions:
           # conversations are gated by plan, add-on, brand and group, so individual tickets are
           # refused while the rest of the stream reads fine. Skip the ticket, keep the sync.
           response_filters:
+            - error_message_contains: "invalid_token"
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: "Zendesk rejected the OAuth access token for stream '{{ parameters.get('name') }}' (invalid_token). Refreshing the OAuth token and retrying the request. If this persists, re-authenticate the source."
             - http_codes: [422]
               action: IGNORE
               error_message: "Skipping side conversations for this ticket because the Zendesk API returned an unprocessable entity error. This typically means the ticket type does not support side conversations. Other tickets will continue to sync normally."
@@ -1087,6 +1110,9 @@ definitions:
           error_handlers:
             - type: DefaultErrorHandler
               response_filters:
+                - error_message_contains: "invalid_token"
+                  action: REFRESH_TOKEN_THEN_RETRY
+                  error_message: "Zendesk rejected the OAuth access token for stream '{{ parameters.get('name') }}' (invalid_token). Refreshing the OAuth token and retrying the request. If this persists, re-authenticate the source."
                 - http_codes: [403, 404]
                   action: FAIL # fail as this stream used to define enterprise plan
                   error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issue with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
@@ -1332,6 +1358,9 @@ definitions:
               - type: WaitTimeFromHeader
                 header: Retry-After
             response_filters:
+              - error_message_contains: "invalid_token"
+                action: REFRESH_TOKEN_THEN_RETRY
+                error_message: "Zendesk rejected the OAuth access token for stream '{{ parameters.get('name') }}' (invalid_token). Refreshing the OAuth token and retrying the request. If this persists, re-authenticate the source."
               - http_codes: [403]
                 action: IGNORE
                 failure_type: config_error
