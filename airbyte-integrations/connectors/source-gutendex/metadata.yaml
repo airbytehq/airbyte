@@ -5,6 +5,7 @@ data:
   dockerImageTag: 0.2.13
   dockerRepository: airbyte/source-gutendex
   githubIssueLabel: source-gutendex
+  icon: icon.svg
   license: ELv2
   name: Gutendex
   remoteRegistries:
