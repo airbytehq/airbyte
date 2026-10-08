@@ -32,7 +32,7 @@ definitions:
           path: /v3/actions
           http_method: GET
           request_parameters:
-            updated_at[gte]: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%dT%H:%M:%SZ') }}"
+            updated_at[date_range]: "{{ stream_interval['start_time'] }}~{{ stream_interval['end_time'] }}"
         partition_router:
           type: ListPartitionRouter
           cursor_field: incident_mode
@@ -127,7 +127,7 @@ definitions:
           path: /v3/follow_ups
           http_method: GET
           request_parameters:
-            updated_at[gte]: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%dT%H:%M:%SZ') }}"
+            updated_at[date_range]: "{{ stream_interval['start_time'] }}~{{ stream_interval['end_time'] }}"
         partition_router:
           type: ListPartitionRouter
           cursor_field: incident_mode
@@ -395,7 +395,7 @@ definitions:
           path: /v2/incidents
           http_method: GET
           request_parameters:
-            updated_at[gte]: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%dT%H:%M:%SZ') }}"
+            updated_at[date_range]: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d') }}~{{ format_datetime(stream_interval['end_time'], '%Y-%m-%d') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -435,7 +435,7 @@ definitions:
           path: /v2/alerts
           http_method: GET
           request_parameters:
-            updated_at[gte]: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%dT%H:%M:%SZ') }}"
+            updated_at[date_range]: "{{ stream_interval['start_time'] }}~{{ stream_interval['end_time'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -475,7 +475,7 @@ definitions:
           path: /v2/escalations
           http_method: GET
           request_parameters:
-            updated_at[gte]: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%dT%H:%M:%SZ') }}"
+            updated_at[date_range]: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d') }}~{{ format_datetime(stream_interval['end_time'], '%Y-%m-%d') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -561,17 +561,23 @@ definitions:
                 - 422
               error_message: "incident.io rejected the request: {{ (response.get('errors') or [{}])[0].get('message', 'see the incident.io error response') }}"
   updated_at_cursor:
-    # The API's updated_at filter accepts dates only (yyyy-mm-dd, see CONTRIBUTING.md), so the
-    # streams send the slice start as a date and re-read the current day on every sync. State keeps
-    # the full timestamp. The window also applies to full-refresh syncs, so the default start must
-    # predate all incident.io data: a recent default would silently drop old records for existing
-    # full-refresh connections.
+    # The API filters updated_at through a single `date_range` window — `updated_at[gte]` and
+    # `updated_at[lte]` together are rejected (see CONTRIBUTING.md). Each stream slices on `step`
+    # and sends its own bounds: alerts/actions/follow-ups take exact timestamps, incidents and
+    # escalations dates only. The window also applies to full-refresh syncs, so the default start
+    # must predate all incident.io data: a recent default would silently drop old records for
+    # existing full-refresh connections.
     type: DatetimeBasedCursor
     cursor_field: updated_at
     cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S.%fZ"
       - "%Y-%m-%dT%H:%M:%SZ"
-    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    step: "{{ config.get('time_window') or 'P30D' }}"
+    cursor_granularity: "PT0.000001S"
+    # incident.io docs say rows on alerts, actions and follow-ups can commit out of timestamp
+    # order, so each slice overlaps the previous window by a few minutes.
+    lookback_window: "PT5M"
     start_datetime:
       type: MinMaxDatetime
       datetime: "{{ config.get('start_date') or '2020-01-01T00:00:00Z' }}"
@@ -648,6 +654,17 @@ spec:
         examples:
           - "2024-01-01T00:00:00Z"
         order: 1
+      time_window:
+        type: string
+        title: Time window
+        description: "Size of each date window requested from incident.io on incremental streams, as an ISO 8601 duration (for example P30D, P7D, P365D). Smaller windows let more requests run in parallel on large accounts; larger windows mean fewer requests on small accounts. Defaults to P30D."
+        default: "P30D"
+        pattern: "^P(?=\\d|T\\d)(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?(T(\\d+H)?(\\d+M)?(\\d+S)?)?$"
+        examples:
+          - "P30D"
+          - "P7D"
+          - "P365D"
+        order: 2
     additionalProperties: true
 
 metadata:

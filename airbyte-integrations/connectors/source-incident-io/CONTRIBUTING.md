@@ -16,23 +16,31 @@ To keep parity with `/v2`, both streams use a `ListPartitionRouter` that sends o
 
 If incident.io adds a new `incident_mode` value (see the `incident_mode` parameter in https://docs.incident.io/openapi/latest.json), add it to the `values` list of both routers in `manifest.yaml` and to `_MODES` in `unit_tests/test_v3_streams.py`. Otherwise records from incidents in that mode will silently stop syncing.
 
-## Incremental sync sends dates, not timestamps
+## Incremental sync reads `updated_at` in `date_range` windows
 
-`incidents`, `alerts`, `escalations`, `actions` and `follow-ups` are incremental on `updated_at`. The
-API's `updated_at[gte]` filter accepts a date only: a timestamp such as `2026-09-18T10:38:16Z` is
-rejected with `422 Filter field date_range must provide a date in the format yyyy-mm-dd` (verified
-against the live API on 2026-10-06). The shared `updated_at_cursor` therefore keeps the full timestamp
-in state but formats the slice start as `%Y-%m-%d` in `request_parameters`. Every sync re-reads the
-records updated since midnight UTC of the day the state points to; those are de-duplicated by primary
-key when the destination sync mode is Append + Deduped (with plain Append they are kept). Do not switch to `start_time_option` with a full-timestamp `datetime_format`,
-and do not enable client-side filtering: the day-level overlap is what prevents gaps at the boundary.
+`incidents`, `alerts`, `escalations`, `actions` and `follow-ups` are incremental on `updated_at`.
+Sending `updated_at[gte]` and `updated_at[lte]` together is a `422` on all five endpoints, so
+`start_time_option`/`end_time_option` cannot be used — the window goes out as a single
+`updated_at[date_range]=<start>~<end>` parameter per slice. `alerts`, `actions` and `follow-ups` take
+exact timestamps (half-open `[start, end)` at millisecond precision) with a `PT5M`
+`lookback_window`, because the vendor documents that those rows can commit out of timestamp order.
+`incidents` and `escalations` match `date_range` by date, both ends inclusive, so their templates
+format the bounds as `%Y-%m-%d`. The slice size is `step: {{ config.get('time_window') or 'P30D' }}`;
+`cursor_granularity` is `PT0.000001S` because the CDK requires it whenever `step` is set. The
+re-reads the overlap produces are de-duplicated by primary key when the destination sync mode is
+Append + Deduped (with plain Append they are kept).
 
 Record timestamps come back as `%Y-%m-%dT%H:%M:%S.%fZ`; older reports (airbytehq/alpha-beta-issues issues
 1769 and 2926) show `%Y-%m-%dT%H:%M:%SZ` as well, so both are listed in `cursor_datetime_formats`.
 
+On `actions` and `follow-ups`, an `incident_mode` partition that has never returned a record keeps
+its cursor at `start_date`, so it re-scans every window on each incremental sync (about 83 requests
+per empty mode per stream at `P30D` from 2020). If that traffic matters on a real account, tune
+`time_window` or `start_date`.
+
 **The cursor window applies to full-refresh syncs too.** A declarative stream with a
-`DatetimeBasedCursor` sends `updated_at[gte]` whatever the sync mode, so the default `start_date` has
-to predate all incident.io data. It is `2020-01-01`. A regression run
+`DatetimeBasedCursor` sends the `updated_at` window whatever the sync mode, so the default
+`start_date` has to predate all incident.io data. It is `2020-01-01`. A regression run
 with a two-year default lost every 2023 record on an existing full-refresh connection; do not make the
 default relative to "now".
 

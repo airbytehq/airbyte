@@ -38,22 +38,24 @@ def _get_manifest_path() -> Path:
 
 _MANIFEST_PATH = _get_manifest_path() / "manifest.yaml"
 _CONFIG = {"api_key": "test-key"}
+# A start_date inside one P30D window of "now", so tests that count requests see a single slice.
+_RECENT_CONFIG = {"api_key": "test-key", "start_date": "2026-10-06T00:00:00Z"}
 _BASE_URL = "https://api.incident.io"
 _MODES = ["standard", "retrospective", "test", "tutorial", "stream"]
 
 
-def _get_source(state=None):
+def _get_source(state=None, config=None):
     return YamlDeclarativeSource(
         path_to_yaml=str(_MANIFEST_PATH),
         catalog=CatalogBuilder().build(),
-        config=_CONFIG,
+        config=config or _CONFIG,
         state=state if state is not None else StateBuilder().build(),
     )
 
 
-def _read_stream(stream_name, sync_mode=SyncMode.full_refresh, state=None):
+def _read_stream(stream_name, sync_mode=SyncMode.full_refresh, state=None, config=None):
     catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
-    return read(_get_source(state), _CONFIG, catalog, state=state)
+    return read(_get_source(state, config), config or _CONFIG, catalog, state=state)
 
 
 def _mock_empty(mocker, path, records_field):
@@ -87,7 +89,7 @@ def test_stream_reads_v3_endpoint_and_follows_pagination(stream_name, path, reco
     with requests_mock.Mocker() as mocker:
         _mock_empty(mocker, path, records_field)
         _mock_mode(mocker, path, "standard", [{"json": first_response}, {"json": second_response}])
-        output = _read_stream(stream_name)
+        output = _read_stream(stream_name, config=_RECENT_CONFIG)
 
         requests_made = mocker.request_history
 
@@ -121,7 +123,7 @@ def test_stream_queries_every_incident_mode(stream_name, path, records_field):
                     "pagination_meta": {"page_size": 100},
                 },
             )
-        output = _read_stream(stream_name)
+        output = _read_stream(stream_name, config=_RECENT_CONFIG)
 
         requests_made = mocker.request_history
 
@@ -146,7 +148,7 @@ def test_stream_stops_after_single_page(stream_name, path, records_field):
 
     with requests_mock.Mocker() as mocker:
         mocker.get(f"{_BASE_URL}{path}", json=response)
-        output = _read_stream(stream_name)
+        output = _read_stream(stream_name, config=_RECENT_CONFIG)
 
         requests_made = mocker.request_history
 
@@ -165,7 +167,7 @@ def test_follow_ups_record_keeps_category():
     with requests_mock.Mocker() as mocker:
         _mock_empty(mocker, "/v3/follow_ups", "follow_ups")
         _mock_mode(mocker, "/v3/follow_ups", "standard", json=response)
-        output = _read_stream("follow-ups")
+        output = _read_stream("follow-ups", config=_RECENT_CONFIG)
 
     assert output.records[0].record.data["category"] == category
 
@@ -196,9 +198,11 @@ def test_check_uses_incidents_stream():
         ("follow-ups", "/v3/follow_ups", "follow_ups"),
     ],
 )
-def test_incremental_sends_state_as_a_date_and_keeps_full_timestamp(stream_name, path, records_field):
-    """The API's `updated_at[gte]` filter accepts `yyyy-mm-dd` only, so the request carries the date of the
-    stored cursor while the emitted state keeps the full timestamp (see CONTRIBUTING.md)."""
+def test_incremental_sends_a_date_range_window_and_keeps_full_timestamp(stream_name, path, records_field):
+    """`updated_at[gte]`+`updated_at[lte]` together are a 422, so each slice goes out as one
+    `updated_at[date_range]=<start>~<end>` parameter. Resuming applies the PT5M lookback for the
+    timestamp-level streams (alerts/actions/follow-ups); incidents and escalations send dates only
+    (see CONTRIBUTING.md)."""
     state = StateBuilder().with_stream_state(stream_name, {"updated_at": "2026-09-18T10:38:18Z"}).build()
     response = {
         records_field: [{"id": "r-1", "updated_at": "2026-09-20T08:00:00.123Z"}],
@@ -211,16 +215,20 @@ def test_incremental_sends_state_as_a_date_and_keeps_full_timestamp(stream_name,
         requests_made = mocker.request_history
 
     assert requests_made, "no request was made"
-    assert all(request.qs["updated_at[gte]"] == ["2026-09-18"] for request in requests_made)
+    expected_start = "2026-09-18t10:33:18" if stream_name in ("alerts", "actions", "follow-ups") else "2026-09-18~"
+    for request in requests_made:
+        assert "updated_at[gte]" not in request.qs
+        assert "updated_at[lte]" not in request.qs
+        assert request.qs["updated_at[date_range]"][0].lower().startswith(expected_start)
     assert [message.record.data["id"] for message in output.records][:1] == ["r-1"]
     final_state = output.most_recent_state.stream_state.__dict__
     if stream_name in ("actions", "follow-ups"):
         # One cursor per incident_mode plus a global fallback; every partition saw the same record.
-        assert final_state["state"] == {"updated_at": "2026-09-20T08:00:00Z"}
+        assert final_state["state"] == {"updated_at": "2026-09-20T08:00:00.123000Z"}
         assert {s["partition"]["incident_mode"] for s in final_state["states"]} == set(_MODES)
-        assert all(s["cursor"] == {"updated_at": "2026-09-20T08:00:00Z"} for s in final_state["states"])
+        assert all(s["cursor"] == {"updated_at": "2026-09-20T08:00:00.123000Z"} for s in final_state["states"])
     else:
-        assert final_state == {"updated_at": "2026-09-20T08:00:00Z"}
+        assert final_state == {"updated_at": "2026-09-20T08:00:00.123000Z"}
 
 
 @pytest.mark.parametrize(
@@ -248,23 +256,24 @@ def test_per_partition_state_sets_each_mode_filter(stream_name, path, records_fi
     with requests_mock.Mocker() as mocker:
         mocker.get(f"{_BASE_URL}{path}", json={records_field: [], "pagination_meta": {"page_size": 250}})
         output = _read_stream(stream_name, SyncMode.incremental, state)
-        by_mode = {request.qs["incident_mode"][0]: request.qs["updated_at[gte]"] for request in mocker.request_history}
+        by_mode = {request.qs["incident_mode"][0]: request.qs["updated_at[date_range]"][0].lower() for request in mocker.request_history}
 
-    assert by_mode["standard"] == ["2026-09-19"]
-    assert all(by_mode[mode] == ["2026-09-18"] for mode in _MODES if mode != "standard")
+    # The standard partition resumes 5 minutes before its own cursor; the others from the global one.
+    assert by_mode["standard"].startswith("2026-09-18t23:55:00")
+    assert all(by_mode[mode].startswith("2026-09-18t10:33:18") for mode in _MODES if mode != "standard")
     final_state = output.most_recent_state.stream_state.__dict__
     standard = next(s for s in final_state["states"] if s["partition"] == {"incident_mode": "standard"})
-    assert standard["cursor"] == {"updated_at": "2026-09-19T00:00:00Z"}
+    assert standard["cursor"] == {"updated_at": "2026-09-19T00:00:00.000000Z"}
 
 
-def test_start_date_config_is_sent_as_a_date():
+def test_start_date_config_starts_the_first_window():
     config = {**_CONFIG, "start_date": "2025-03-01T00:00:00Z"}
     catalog = CatalogBuilder().with_stream("incidents", SyncMode.full_refresh).build()
     source = YamlDeclarativeSource(path_to_yaml=str(_MANIFEST_PATH), catalog=catalog, config=config, state=StateBuilder().build())
     with requests_mock.Mocker() as mocker:
         mocker.get(f"{_BASE_URL}/v2/incidents", json={"incidents": [], "pagination_meta": {}})
         read(source, config, catalog)
-        assert mocker.request_history[0].qs["updated_at[gte]"] == ["2025-03-01"]
+        assert mocker.request_history[0].qs["updated_at[date_range]"][0].startswith("2025-03-01~")
 
 
 @pytest.mark.parametrize(
@@ -295,14 +304,64 @@ def test_page_sizes_match_what_the_api_serves(stream_name, path, records_field, 
 def test_full_refresh_without_start_date_reads_everything(stream_name, path, records_field):
     """The cursor window is applied in full refresh too, so the default start must predate all
     incident.io data. A relative default (for example two years back) silently dropped 2023 records on
-    an existing full-refresh connection."""
+    an existing full-refresh connection. One huge `time_window` keeps this to a single request."""
+    config = {**_CONFIG, "time_window": "P36500D"}
     with requests_mock.Mocker() as mocker:
         mocker.get(f"{_BASE_URL}{path}", json={records_field: [{"id": "r-1"}], "pagination_meta": {}})
-        _read_stream(stream_name)
+        _read_stream(stream_name, config=config)
         requests_made = mocker.request_history
 
     assert requests_made
-    assert all(request.qs["updated_at[gte]"] == ["2020-01-01"] for request in requests_made)
+    assert all(request.qs["updated_at[date_range]"][0].startswith("2020-01-01") for request in requests_made)
+
+
+@pytest.mark.parametrize(
+    ("stream_name", "path", "records_field", "first_window", "second_window"),
+    [
+        # Timestamp-level streams: half-open [start, end) slices at microsecond precision.
+        (
+            "alerts",
+            "/v2/alerts",
+            "alerts",
+            "2020-01-01t00:00:00.000000z~2020-01-30t23:59:59.999999z",
+            "2020-01-31t00:00:00.000000z~2020-02-29t23:59:59.999999z",
+        ),
+        # Date-level streams: both bounds inclusive, formatted as dates.
+        (
+            "escalations",
+            "/v2/escalations",
+            "escalations",
+            "2020-01-01~2020-01-30",
+            "2020-01-31~2020-02-29",
+        ),
+    ],
+)
+def test_p30d_slices_tile_without_gaps(stream_name, path, records_field, first_window, second_window):
+    """Consecutive P30D slices neither overlap nor gap: each slice ends one cursor_granularity tick
+    before the next one starts."""
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}{path}", json={records_field: [], "pagination_meta": {}})
+        _read_stream(stream_name, SyncMode.incremental)
+
+        windows = [request.qs["updated_at[date_range]"][0].lower() for request in mocker.request_history]
+
+    assert len(windows) > 1
+    assert windows[0] == first_window
+    assert windows[1] == second_window
+
+
+def test_time_window_config_changes_the_slice_size():
+    """`time_window` overrides the default P30D step; P365D tiles the same range in ~365-day windows."""
+    config = {**_CONFIG, "start_date": "2020-01-01T00:00:00Z", "time_window": "P365D"}
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/alerts", json={"alerts": [], "pagination_meta": {}})
+        _read_stream("alerts", SyncMode.incremental, config=config)
+
+        windows = [request.qs["updated_at[date_range]"][0].lower() for request in mocker.request_history]
+
+    assert windows[0] == "2020-01-01t00:00:00.000000z~2020-12-30t23:59:59.999999z"
+    assert windows[1].startswith("2020-12-31t00:00:00.000000z~")
+    assert len(windows) < 10
 
 
 def test_missing_scope_is_a_config_error_naming_the_scope():
@@ -402,7 +461,7 @@ def test_rate_limit_waits_for_retry_after_then_succeeds():
     ]
     with mock.patch("time.sleep") as sleep, requests_mock.Mocker() as mocker:
         mocker.get(f"{_BASE_URL}/v2/incidents", responses)
-        output = _read_stream("incidents")
+        output = _read_stream("incidents", config=_RECENT_CONFIG)
         assert len(mocker.request_history) == 2
 
     assert output.errors == []
