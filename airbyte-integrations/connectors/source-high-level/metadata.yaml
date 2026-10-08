@@ -5,9 +5,9 @@ data:
       - api.leadconnectorpro.co
   registryOverrides:
     oss:
-      enabled: true
+      enabled: false
     cloud:
-      enabled: true
+      enabled: false
   remoteRegistries:
     pypi:
       enabled: false
@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2028e68a-8c97-45c4-b196-e61bad7b6f40
-  dockerImageTag: 0.0.66
+  dockerImageTag: 0.0.67
   dockerRepository: airbyte/source-high-level
   githubIssueLabel: source-high-level
   icon: icon.svg
@@ -25,7 +25,7 @@ data:
   name: High Level
   releaseDate: 2024-08-23
   releaseStage: alpha
-  supportLevel: community
+  supportLevel: archived
   documentationUrl: https://docs.airbyte.com/integrations/sources/high-level
   tags:
     - language:manifest-only
