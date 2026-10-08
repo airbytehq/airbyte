@@ -357,7 +357,7 @@ Under the hood, the agent uses a small set of skill-docs tools to learn a connec
 
 - `inspect_connector` reports a connector's metadata, its `docs_skill_id`, and Context Store readiness.
 - `read_skill_docs` returns a connector's usage docs — an outline of entities and actions, or a specific section when the agent passes one.
-- `list_skills` and `search_skills` browse and search the skills available to your agent.
+- `list_skills` and `search_skills` browse and search the [skills](../../concepts/skills.md) available to your agent.
 
 The agent inspects the connector, reads the relevant skill docs, then executes — the same inspect → read docs → execute flow the [SDK](../sdk/execute.md) and [API](../api/execute.md) expose. Most clients call these tools automatically, so you just prompt in natural language.
 

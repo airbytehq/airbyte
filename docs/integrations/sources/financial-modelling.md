@@ -1,4 +1,19 @@
 # Financial Modelling
+
+:::warning
+
+## Deprecation Notice
+
+The Financial Modelling source connector has been archived and is no longer available for new connections in Airbyte.
+
+This connector was built against the Financial Modeling Prep (FMP) legacy `/api/v3` endpoints. FMP has moved all of these endpoints to "legacy" status: they are no longer part of the public API documentation (auth-gated since August 27, 2025 and available only to eligible accounts), are "maintained for backward compatibility and may not receive regular updates", and have been replaced by the new [FMP Stable API](https://site.financialmodelingprep.com/developer/docs/stable), which uses different paths, parameters and response schemas. No Airbyte connection has ever completed a successful sync with this connector.
+
+### Recommended Actions
+
+Users who wish to sync data from Financial Modeling Prep are advised to build a custom connector against the [FMP Stable API](https://site.financialmodelingprep.com/developer/docs/stable) using the [Connector Builder](https://docs.airbyte.com/platform/connector-development/connector-builder-ui/overview).
+
+:::
+
 FMP provides financial data.
 Using this connector we can extract data from various endpoints like Stocks list, ETFs list , Exchange Symbols and Historical MarketCap etc
 Docs : https://site.financialmodelingprep.com/developer/docs
@@ -46,6 +61,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.66 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88333) | Archive connector: built on the deprecated FMP legacy `/api/v3` API, zero successful syncs |
+| 0.0.65 | 2026-10-06 | [87828](https://github.com/airbytehq/airbyte/pull/87828) | Update dependencies |
+| 0.0.64 | 2026-09-29 | [87140](https://github.com/airbytehq/airbyte/pull/87140) | Update dependencies |
+| 0.0.63 | 2026-09-22 | [86625](https://github.com/airbytehq/airbyte/pull/86625) | Update dependencies |
+| 0.0.62 | 2026-09-15 | [86029](https://github.com/airbytehq/airbyte/pull/86029) | Update dependencies |
+| 0.0.61 | 2026-09-08 | [85458](https://github.com/airbytehq/airbyte/pull/85458) | Update dependencies |
 | 0.0.60 | 2026-08-18 | [84597](https://github.com/airbytehq/airbyte/pull/84597) | Update dependencies |
 | 0.0.59 | 2026-08-11 | [83910](https://github.com/airbytehq/airbyte/pull/83910) | Update dependencies |
 | 0.0.58 | 2026-08-04 | [83427](https://github.com/airbytehq/airbyte/pull/83427) | Update dependencies |

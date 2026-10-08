@@ -178,6 +178,7 @@ Classes
     * airbyte_agent_sdk.connectors.amplitude.models.AirbyteSearchResult[AverageSessionLengthSearchData]
     * airbyte_agent_sdk.connectors.amplitude.models.AirbyteSearchResult[CohortsSearchData]
     * airbyte_agent_sdk.connectors.amplitude.models.AirbyteSearchResult[EventsListSearchData]
+    * airbyte_agent_sdk.connectors.amplitude.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

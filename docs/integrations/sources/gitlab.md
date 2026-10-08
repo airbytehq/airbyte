@@ -101,11 +101,12 @@ This connector outputs the following streams:
 - [Group Milestones](https://docs.gitlab.com/api/group_milestones/)
 - [Groups](https://docs.gitlab.com/api/groups/)
 - [Issues](https://docs.gitlab.com/api/issues/) (Incremental)
-- [Jobs](https://docs.gitlab.com/api/jobs/) (child of Pipelines — one request per pipeline)
+- [Jobs](https://docs.gitlab.com/api/jobs/) (Incremental; child of Pipelines — one request per pipeline)
 - [Merge Request Commits](https://docs.gitlab.com/api/merge_requests/) (child of Merge Requests — one request per merge request)
 - [Merge Requests](https://docs.gitlab.com/api/merge_requests/) (Incremental)
-- [Pipelines](https://docs.gitlab.com/api/pipelines/) (Incremental)
-- [Pipelines Extended](https://docs.gitlab.com/api/pipelines/) (detailed per-pipeline info, child of Pipelines)
+- [Pipelines](https://docs.gitlab.com/api/pipelines/) (Incremental; includes child pipelines, which GitLab only returns when queried with `source=parent_pipeline`)
+- [Pipeline Trigger Jobs](https://docs.gitlab.com/api/jobs/#list-pipeline-trigger-jobs) (Incremental; bridge jobs that trigger downstream pipelines, child of Pipelines — one request per pipeline)
+- [Pipelines Extended](https://docs.gitlab.com/api/pipelines/) (Incremental; child of Pipelines — one request per pipeline)
 - [Project Labels](https://docs.gitlab.com/api/labels/)
 - [Project Members](https://docs.gitlab.com/api/members/)
 - [Project Milestones](https://docs.gitlab.com/api/milestones/)
@@ -122,7 +123,26 @@ This connector uses GitLab API v4. It works with both GitLab.com and self-hosted
 
 ### Incremental sync window
 
-Incremental streams filter on `updated_at` and request data in 180-day windows, so a first sync of a long-lived project issues many requests. If you leave **Start date** blank, incremental streams start from 2014-01-01, which is effectively all history for most projects. Set a start date to cut the initial sync short.
+Incremental streams request data in 180-day windows, so a first sync of a long-lived project issues many requests. Most incremental streams filter on `updated_at`, but `commits` filters on `created_at` using GitLab's `since` and `until` parameters. If you leave **Start date** blank, incremental streams start from 2014-01-01, which is effectively all history for most projects. Set a start date to cut the initial sync short.
+
+### Incremental pipeline child streams
+
+`jobs`, `pipelines_extended`, and `pipeline_trigger_jobs` make one request per pipeline. In Incremental mode, a sync only makes these requests for the pipelines returned by the incremental `pipelines` query, which are the pipelines whose `updated_at` is at or after the previous sync's cursor. All three streams use `pipeline_updated_at`, the pipeline's `updated_at` as returned by `pipelines`, as their cursor. Keep the following in mind:
+
+- Changes that don't update the parent pipeline's `updated_at`, such as erasing a job or job artifacts expiring, aren't picked up. Use Full Refresh for these streams if you need those changes.
+- When a job is retried, GitLab returns only the new attempt, under a new job `id`. The row for the earlier attempt keeps the status it had when it was last synced, which can be `running` or `pending`. To get one row per job, keep the highest `id` per `pipeline_id` and `name`. Deleted pipelines and their jobs are not removed from the destination.
+- In `pipeline_trigger_jobs`, the `downstream_pipeline` fields, such as `status`, reflect the downstream pipeline when the upstream pipeline last changed. A trigger job without `strategy: depend` finishes as soon as the downstream pipeline is created, so later status changes in the downstream pipeline don't update the upstream pipeline, and the row isn't read again. To get the downstream pipeline's current status, join `downstream_pipeline_id` to the `pipelines` stream, or use Full Refresh for `pipeline_trigger_jobs`.
+- The cursor has one-second precision and GitLab's `updated_after` filter includes the boundary. On every sync, the most recently updated regular pipeline and the most recently updated child pipeline in each project are requested again, so up to two pipelines per project. Use **Incremental | Append + Deduped** to avoid duplicate rows.
+- A project that first appears after the first incremental sync starts from the latest `pipelines` cursor minus the duration of the previous sync, not from **Start date**. This applies to projects added to the connector configuration and to projects created in or moved into a configured group. Older pipelines in that project aren't read. Refresh these streams to backfill them.
+- Changing a stream's sync mode clears its saved state. The first Incremental sync after switching from Full Refresh reads every pipeline from **Start date**. With **Incremental | Append**, rows written by earlier Full Refresh syncs stay in the destination; use **Append + Deduped** or clear the stream when you switch.
+- In Full Refresh mode, a failed attempt can resume instead of reading every pipeline again when the destination supports refreshes and the schema has been refreshed after upgrading to 4.5.0. This also applies to existing Full Refresh connections that never switch to Incremental. An attempt resumes from the last completed 180-day `pipelines` window in each project, so some pipelines are read twice; use **Full Refresh | Overwrite + Deduped** to avoid duplicate rows. Each new Full Refresh sync still starts from **Start date**.
+- Pipelines are paginated by page number. If a pipeline is updated while a sync is paging through results, another pipeline can shift to an earlier page and not be returned. That pipeline's child records are skipped until it's updated again.
+
+### Child pipelines on very large instances
+
+Since version 4.4.41, `pipelines` reads each project twice: once for regular pipelines and once with `source=parent_pipeline` for child pipelines. Existing connections keep their per-project cursor for regular pipelines and backfill child pipelines from **Start date** automatically.
+
+The backfill is not guaranteed when the stream tracks more than 10,000 partitions (more than roughly 5,000 projects, since each project now has two partitions). Above that limit the connector stores a single shared cursor for the whole stream instead of one per project, and child pipelines older than that cursor are not read. If your connection is that large, reset the `pipelines`, `pipelines_extended`, `jobs`, and `pipeline_trigger_jobs` streams once after upgrading to load historical child pipelines.
 
 ### Rate limits
 
@@ -164,8 +184,15 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
+| Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.5.0 | 2026-10-07 | [87655](https://github.com/airbytehq/airbyte/pull/87655) | Add incremental sync support to the `pipelines_extended`, `jobs`, and `pipeline_trigger_jobs` streams. Failed Full Refresh attempts of these streams can now resume, which can write duplicate rows under Full Refresh \| Overwrite |
+| 4.4.43 | 2026-10-06 | [87865](https://github.com/airbytehq/airbyte/pull/87865) | Update dependencies |
+| 4.4.42 | 2026-09-29 | [87138](https://github.com/airbytehq/airbyte/pull/87138) | Update dependencies |
+| 4.4.41 | 2026-09-24 | [86933](https://github.com/airbytehq/airbyte/pull/86933) | Include child pipelines in the `pipelines` stream (and therefore `pipelines_extended` and `jobs`) and add the `pipeline_trigger_jobs` stream |
+| 4.4.40 | 2026-09-22 | [86599](https://github.com/airbytehq/airbyte/pull/86599) | Update dependencies |
+| 4.4.39 | 2026-09-15 | [86063](https://github.com/airbytehq/airbyte/pull/86063) | Update dependencies |
+| 4.4.38 | 2026-09-08 | [85485](https://github.com/airbytehq/airbyte/pull/85485) | Update dependencies |
 | 4.4.37 | 2026-08-18 | [84568](https://github.com/airbytehq/airbyte/pull/84568) | Update dependencies |
 | 4.4.36 | 2026-08-11 | [83941](https://github.com/airbytehq/airbyte/pull/83941) | Update dependencies |
 | 4.4.35 | 2026-07-28 | [82903](https://github.com/airbytehq/airbyte/pull/82903) | Update dependencies |

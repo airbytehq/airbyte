@@ -3,21 +3,22 @@ This is the setup for the Sigma Computing source that ingests data from the sigm
 
 Sigma is next-generation analytics and business intelligence that scales billions of records using spreadsheets, SQL, Python, or AI—without compromising speed and security https://www.sigmacomputing.com/
 
-In order to use this source, you must first create an account on Sigma Computing. Go to Account General Settings and review the Site section for the Cloud provider, this will be used to find the base url of your API. Compare it at https://help.sigmacomputing.com/reference/get-started-sigma-api
+In order to use this source, you must first create an account on Sigma Computing. Go to Administration > Developer Access and copy the **API base URL** shown there (it depends on the cloud your Sigma organization is hosted on, e.g. `https://aws-api.sigmacomputing.com` for AWS-US (West) or `https://api.sigmacomputing.com` for GCP). You can also look it up at https://help.sigmacomputing.com/reference/get-started-sigma-api#identify-your-api-request-url
 
-Next, head over to Developer Access and click on create. This will generate your Client ID and Client Secret required by the API. You can learn more about the API here https://help.sigmacomputing.com/reference
+Next, in Developer Access click **Create new** to generate the Client ID and Client Secret required by the API. The connector exchanges them for a short-lived access token using the `client_credentials` grant on every sync, so no refresh token is needed. You can learn more about the API here https://help.sigmacomputing.com/reference/get-started-sigma-api
+
+:::note
+Sigma has [deprecated datasets](https://help.sigmacomputing.com/reference/list-datasets) in favor of data models. The `datasets` stream still works as long as Sigma keeps serving the `GET /v2/datasets` endpoint, but it may return no records for organizations that have migrated to data models.
+:::
 
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `client_id` | `string` | Client ID.  |  |
-| `client_secret` | `string` | Client secret.  |  |
-| `client_refresh_token` | `string` | Refresh token.  |  |
-| `oauth_access_token` | `string` | Access token. The current access token. This field might be overridden by the connector based on the token refresh endpoint response. |  |
-| `oauth_token_expiry_date` | `string` | Token expiry date. The date the current access token expires in. This field might be overridden by the connector based on the token refresh endpoint response. |  |
-| `base_url` | `string` | Base URL. The base url of your sigma organization |  |
+| `client_id` | `string` | Client ID. The Client ID of your Sigma API credentials (Administration > Developer Access). |  |
+| `client_secret` | `string` | Client secret. The Client Secret of your Sigma API credentials (Administration > Developer Access). |  |
+| `base_url` | `string` | Base URL. The API base URL of your Sigma organization (Administration > Developer Access > API base URL), e.g. `https://aws-api.sigmacomputing.com`. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -42,6 +43,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.63 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88228) | Authenticate with the `client_credentials` grant (no refresh token needed); fix API docs link |
+| 0.0.62 | 2026-10-06 | [88027](https://github.com/airbytehq/airbyte/pull/88027) | Update dependencies |
+| 0.0.61 | 2026-09-29 | [87344](https://github.com/airbytehq/airbyte/pull/87344) | Update dependencies |
+| 0.0.60 | 2026-09-22 | [86803](https://github.com/airbytehq/airbyte/pull/86803) | Update dependencies |
+| 0.0.59 | 2026-09-15 | [86229](https://github.com/airbytehq/airbyte/pull/86229) | Update dependencies |
+| 0.0.58 | 2026-09-08 | [85668](https://github.com/airbytehq/airbyte/pull/85668) | Update dependencies |
 | 0.0.57 | 2026-08-18 | [84752](https://github.com/airbytehq/airbyte/pull/84752) | Update dependencies |
 | 0.0.56 | 2026-08-11 | [84088](https://github.com/airbytehq/airbyte/pull/84088) | Update dependencies |
 | 0.0.55 | 2026-08-04 | [83621](https://github.com/airbytehq/airbyte/pull/83621) | Update dependencies |

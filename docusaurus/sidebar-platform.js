@@ -451,11 +451,38 @@ module.exports = {
                     },
                   ],
                 },
+                {
+                  type: "doc",
+                  id: "access-management/audit-logs",
+                },
               ],
             },
           ],
         },   
         buildAConnector,     
+        sectionHeader("Work with AI agents"),
+        {
+          type: "category",
+          label: "Airbyte MCP",
+          link: {
+            type: "doc",
+            id: "airbyte-mcp/readme",
+          },
+          items: [
+            "airbyte-mcp/install",
+            "airbyte-mcp/tools",
+            "airbyte-mcp/self-managed",
+          ],
+        },
+        {
+          type: "category",
+          label: "Context layer",
+          link: {
+            type: "doc",
+            id: "context-layer/readme",
+          },
+          items: ["context-layer/manage-access"],
+        },
         sectionHeader("Deploy and upgrade Airbyte"),
         deployAirbyte,
         "enterprise-setup/README",

@@ -5,529 +5,51 @@ check:
   stream_names:
     - campaigns
 definitions:
-  streams:
-    campaigns:
-      type: DeclarativeStream
-      name: campaigns
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
-          authenticator:
-            type: BearerAuthenticator
-            api_token: "{{ config['app_api_key'] }}"
-          path: /campaigns
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - "campaigns"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            "type":
-              type:
-                - "null"
-                - string
-            actions:
-              type: array
-              items:
-                type:
-                  - "null"
-                  - object
-                properties:
-                  "type":
-                    type:
-                      - "null"
-                      - string
-                  id:
-                    type:
-                      - "null"
-                      - integer
-            active:
-              type:
-                - "null"
-                - boolean
-            created:
-              type:
-                - "null"
-                - integer
-            created_by:
-              type:
-                - "null"
-                - string
-            date_attribute:
-              type:
-                - "null"
-                - string
-            deduplicate_id:
-              type:
-                - "null"
-                - string
-            event_name:
-              type:
-                - "null"
-                - string
-            first_started:
-              type:
-                - "null"
-                - integer
-            frequency:
-              type:
-                - "null"
-                - string
-            id:
-              type:
-                - "null"
-                - integer
-            msg_templates:
-              type: array
-              items:
-                type:
-                  - "null"
-                  - object
-                properties:
-                  "type":
-                    type:
-                      - "null"
-                      - string
-                  id:
-                    type:
-                      - "null"
-                      - integer
-            name:
-              type:
-                - "null"
-                - string
-            start_hour:
-              type:
-                - "null"
-                - integer
-            start_minutes:
-              type:
-                - "null"
-                - integer
-            state:
-              type:
-                - "null"
-                - string
-            tags:
-              type:
-                - "null"
-                - array
-              additionalProperties: true
-              properties:
-                id:
-                  type:
-                    - "null"
-                    - integer
-            timezone:
-              type:
-                - "null"
-                - string
-            trigger_segment_ids:
-              type:
-                - "null"
-                - array
-              additionalProperties: true
-              properties:
-                id:
-                  type:
-                    - "null"
-                    - integer
-            updated:
-              type:
-                - "null"
-                - integer
-            use_customer_timezone:
-              type:
-                - "null"
-                - boolean
-    campaigns_actions:
-      type: DeclarativeStream
-      name: campaigns_actions
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
-          authenticator:
-            type: BearerAuthenticator
-            api_token: "{{ config['app_api_key'] }}"
-          path: /campaigns/{{ stream_partition.parent_id }}/actions
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - "actions"
-        partition_router:
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: id
-                partition_field: parent_id
-                stream:
-                  type: DeclarativeStream
-                  name: campaigns
-                  primary_key:
-                    - id
-                  retriever:
-                    type: SimpleRetriever
-                    requester:
-                      type: HttpRequester
-                      url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
-                      authenticator:
-                        type: BearerAuthenticator
-                        api_token: "{{ config['app_api_key'] }}"
-                      path: /campaigns
-                      http_method: GET
-                    record_selector:
-                      type: RecordSelector
-                      extractor:
-                        type: DpathExtractor
-                        field_path:
-                          - "campaigns"
-                  schema_loader:
-                    type: InlineSchemaLoader
-                    schema:
-                      type: object
-                      $schema: http://json-schema.org/draft-07/schema#
-                      additionalProperties: true
-                      properties:
-                        "type":
-                          type:
-                            - "null"
-                            - string
-                        actions:
-                          type: array
-                          items:
-                            type:
-                              - "null"
-                              - object
-                            properties:
-                              "type":
-                                type:
-                                  - "null"
-                                  - string
-                              id:
-                                type:
-                                  - "null"
-                                  - integer
-                        active:
-                          type:
-                            - "null"
-                            - boolean
-                        created:
-                          type:
-                            - "null"
-                            - integer
-                        created_by:
-                          type:
-                            - "null"
-                            - string
-                        date_attribute:
-                          type:
-                            - "null"
-                            - string
-                        deduplicate_id:
-                          type:
-                            - "null"
-                            - string
-                        event_name:
-                          type:
-                            - "null"
-                            - string
-                        first_started:
-                          type:
-                            - "null"
-                            - integer
-                        frequency:
-                          type:
-                            - "null"
-                            - string
-                        id:
-                          type:
-                            - "null"
-                            - integer
-                        msg_templates:
-                          type: array
-                          items:
-                            type:
-                              - "null"
-                              - object
-                            properties:
-                              "type":
-                                type:
-                                  - "null"
-                                  - string
-                              id:
-                                type:
-                                  - "null"
-                                  - integer
-                        name:
-                          type:
-                            - "null"
-                            - string
-                        start_hour:
-                          type:
-                            - "null"
-                            - integer
-                        start_minutes:
-                          type:
-                            - "null"
-                            - integer
-                        state:
-                          type:
-                            - "null"
-                            - string
-                        tags:
-                          type:
-                            - "null"
-                            - array
-                          additionalProperties: true
-                          properties:
-                            id:
-                              type:
-                                - "null"
-                                - integer
-                        timezone:
-                          type:
-                            - "null"
-                            - string
-                        trigger_segment_ids:
-                          type:
-                            - "null"
-                            - array
-                          additionalProperties: true
-                          properties:
-                            id:
-                              type:
-                                - "null"
-                                - integer
-                        updated:
-                          type:
-                            - "null"
-                            - integer
-                        use_customer_timezone:
-                          type:
-                            - "null"
-                            - boolean
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            "type":
-              type:
-                - "null"
-                - string
-            bcc:
-              type:
-                - "null"
-                - string
-            body:
-              type:
-                - "null"
-                - string
-            campaign_id:
-              type:
-                - "null"
-                - integer
-            created:
-              type:
-                - "null"
-                - integer
-            deduplicate_id:
-              type:
-                - "null"
-                - string
-            editor:
-              type:
-                - "null"
-                - string
-            fake_bcc:
-              type:
-                - "null"
-                - boolean
-            from:
-              type:
-                - "null"
-                - string
-            from_id:
-              type:
-                - "null"
-                - string
-            headers:
-              type:
-                - "null"
-                - string
-            id:
-              type:
-                - "null"
-                - string
-            language:
-              type:
-                - "null"
-                - string
-            layout:
-              type:
-                - "null"
-                - string
-            name:
-              type:
-                - "null"
-                - string
-            parent_action_id:
-              type:
-                - "null"
-                - integer
-            preheader_text:
-              type:
-                - "null"
-                - string
-            preprocessor:
-              type:
-                - "null"
-                - string
-            recipient:
-              type:
-                - "null"
-                - string
-            recipient_environment_id:
-              type:
-                - "null"
-                - integer
-            reply_to:
-              type:
-                - "null"
-                - string
-            reply_to_id:
-              type:
-                - "null"
-                - string
-            request_method:
-              type:
-                - "null"
-                - string
-            sending_state:
-              type:
-                - "null"
-                - string
-            subject:
-              type:
-                - "null"
-                - string
-            updated:
-              type:
-                - "null"
-                - integer
-            url:
-              type:
-                - "null"
-                - string
-    newsletters:
-      type: DeclarativeStream
-      name: newsletters
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
-          authenticator:
-            type: BearerAuthenticator
-            api_token: "{{ config['app_api_key'] }}"
-          path: /newsletters
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - "newsletters"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            "type":
-              type:
-                - "null"
-                - string
-            content_ids:
-              type:
-                - "null"
-                - array
-              additionalProperties: true
-              properties:
-                id:
-                  type:
-                    - "null"
-                    - integer
-            created:
-              type:
-                - "null"
-                - integer
-            deduplicate_id:
-              type:
-                - "null"
-                - string
-            id:
-              type:
-                - "null"
-                - integer
-            name:
-              type:
-                - "null"
-                - string
-            sent_at:
-              type:
-                - "null"
-                - array
-              additionalProperties: true
-              properties:
-                id:
-                  type:
-                    - "null"
-                    - string
-            tags:
-              type:
-                - "null"
-                - array
-              additionalProperties: true
-              properties:
-                id:
-                  type:
-                    - "null"
-                    - integer
-            updated:
-              type:
-                - "null"
-                - integer
   base_requester:
     type: HttpRequester
     url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config['app_api_key'] }}"
+      api_token: "{{ config['app_api_key'] | trim }}"
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 30
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+          factor: 2
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes: [401]
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Customer.io rejected the App API key. Enter a valid App API key (not a Track API key),
+            select the Region your Customer.io account is hosted in (US or EU), and if your account
+            restricts API access by IP address, add the Airbyte IP addresses to the allowlist.
+        - type: HttpResponseFilter
+          http_codes: [403]
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Customer.io denied this App API key access to the requested data. Use an App API key
+            whose scope includes this data, and if your account restricts API access by IP address,
+            add the Airbyte IP addresses to the allowlist.
+  # The composite takes max_retries from its first handler, and 401/403 must end on the shared handler.
+  substream_error_handler:
+    type: CompositeErrorHandler
+    error_handlers:
+      - type: DefaultErrorHandler
+        max_retries: 30
+        response_filters:
+          - type: HttpResponseFilter
+            http_codes: [404]
+            action: IGNORE
+            error_message: >-
+              Customer.io returned 404 for a record that was deleted after its parent list was read.
+              Its child records are skipped.
+      - $ref: "#/definitions/base_requester/error_handler"
 streams:
   - type: DeclarativeStream
     name: campaigns
@@ -555,132 +77,13 @@ streams:
         type: MinMaxDatetime
         datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
         datetime_format: "%s"
+        max_datetime: "{{ now_utc().timestamp() | int }}"
+      lookback_window: PT1H
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          "type":
-            type:
-              - "null"
-              - string
-          actions:
-            type: array
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                "type":
-                  type:
-                    - "null"
-                    - string
-                id:
-                  type:
-                    - "null"
-                    - integer
-          active:
-            type:
-              - "null"
-              - boolean
-          created:
-            type:
-              - "null"
-              - integer
-          created_by:
-            type:
-              - "null"
-              - string
-          date_attribute:
-            type:
-              - "null"
-              - string
-          deduplicate_id:
-            type:
-              - "null"
-              - string
-          event_name:
-            type:
-              - "null"
-              - string
-          first_started:
-            type:
-              - "null"
-              - integer
-          frequency:
-            type:
-              - "null"
-              - string
-          id:
-            type:
-              - "null"
-              - integer
-          msg_templates:
-            type: array
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                "type":
-                  type:
-                    - "null"
-                    - string
-                id:
-                  type:
-                    - "null"
-                    - integer
-          name:
-            type:
-              - "null"
-              - string
-          start_hour:
-            type:
-              - "null"
-              - integer
-          start_minutes:
-            type:
-              - "null"
-              - integer
-          state:
-            type:
-              - "null"
-              - string
-          tags:
-            type:
-              - "null"
-              - array
-            additionalProperties: true
-            properties:
-              id:
-                type:
-                  - "null"
-                  - integer
-          timezone:
-            type:
-              - "null"
-              - string
-          trigger_segment_ids:
-            type:
-              - "null"
-              - array
-            additionalProperties: true
-            properties:
-              id:
-                type:
-                  - "null"
-                  - integer
-          updated:
-            type:
-              - "null"
-              - integer
-          use_customer_timezone:
-            type:
-              - "null"
-              - boolean
+        $ref: "#/schemas/campaigns"
   - type: DeclarativeStream
     name: campaigns_actions
     primary_key:
@@ -691,6 +94,8 @@ streams:
         $ref: "#/definitions/base_requester"
         path: /campaigns/{{ stream_partition.parent_id }}/actions
         http_method: GET
+        error_handler:
+          $ref: "#/definitions/substream_error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -733,128 +138,7 @@ streams:
                 schema_loader:
                   type: InlineSchemaLoader
                   schema:
-                    type: object
-                    $schema: http://json-schema.org/draft-07/schema#
-                    additionalProperties: true
-                    properties:
-                      "type":
-                        type:
-                          - "null"
-                          - string
-                      actions:
-                        type: array
-                        items:
-                          type:
-                            - "null"
-                            - object
-                          properties:
-                            "type":
-                              type:
-                                - "null"
-                                - string
-                            id:
-                              type:
-                                - "null"
-                                - integer
-                      active:
-                        type:
-                          - "null"
-                          - boolean
-                      created:
-                        type:
-                          - "null"
-                          - integer
-                      created_by:
-                        type:
-                          - "null"
-                          - string
-                      date_attribute:
-                        type:
-                          - "null"
-                          - string
-                      deduplicate_id:
-                        type:
-                          - "null"
-                          - string
-                      event_name:
-                        type:
-                          - "null"
-                          - string
-                      first_started:
-                        type:
-                          - "null"
-                          - integer
-                      frequency:
-                        type:
-                          - "null"
-                          - string
-                      id:
-                        type:
-                          - "null"
-                          - integer
-                      msg_templates:
-                        type: array
-                        items:
-                          type:
-                            - "null"
-                            - object
-                          properties:
-                            "type":
-                              type:
-                                - "null"
-                                - string
-                            id:
-                              type:
-                                - "null"
-                                - integer
-                      name:
-                        type:
-                          - "null"
-                          - string
-                      start_hour:
-                        type:
-                          - "null"
-                          - integer
-                      start_minutes:
-                        type:
-                          - "null"
-                          - integer
-                      state:
-                        type:
-                          - "null"
-                          - string
-                      tags:
-                        type:
-                          - "null"
-                          - array
-                        additionalProperties: true
-                        properties:
-                          id:
-                            type:
-                              - "null"
-                              - integer
-                      timezone:
-                        type:
-                          - "null"
-                          - string
-                      trigger_segment_ids:
-                        type:
-                          - "null"
-                          - array
-                        additionalProperties: true
-                        properties:
-                          id:
-                            type:
-                              - "null"
-                              - integer
-                      updated:
-                        type:
-                          - "null"
-                          - integer
-                      use_customer_timezone:
-                        type:
-                          - "null"
-                          - boolean
+                    $ref: "#/schemas/campaigns"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated
@@ -865,122 +149,13 @@ streams:
         type: MinMaxDatetime
         datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
         datetime_format: "%s"
+        max_datetime: "{{ now_utc().timestamp() | int }}"
+      lookback_window: PT1H
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          "type":
-            type:
-              - "null"
-              - string
-          bcc:
-            type:
-              - "null"
-              - string
-          body:
-            type:
-              - "null"
-              - string
-          campaign_id:
-            type:
-              - "null"
-              - integer
-          created:
-            type:
-              - "null"
-              - integer
-          deduplicate_id:
-            type:
-              - "null"
-              - string
-          editor:
-            type:
-              - "null"
-              - string
-          fake_bcc:
-            type:
-              - "null"
-              - boolean
-          from:
-            type:
-              - "null"
-              - string
-          from_id:
-            type:
-              - "null"
-              - string
-          headers:
-            type:
-              - "null"
-              - string
-          id:
-            type:
-              - "null"
-              - string
-          language:
-            type:
-              - "null"
-              - string
-          layout:
-            type:
-              - "null"
-              - string
-          name:
-            type:
-              - "null"
-              - string
-          parent_action_id:
-            type:
-              - "null"
-              - integer
-          preheader_text:
-            type:
-              - "null"
-              - string
-          preprocessor:
-            type:
-              - "null"
-              - string
-          recipient:
-            type:
-              - "null"
-              - string
-          recipient_environment_id:
-            type:
-              - "null"
-              - integer
-          reply_to:
-            type:
-              - "null"
-              - string
-          reply_to_id:
-            type:
-              - "null"
-              - string
-          request_method:
-            type:
-              - "null"
-              - string
-          sending_state:
-            type:
-              - "null"
-              - string
-          subject:
-            type:
-              - "null"
-              - string
-          updated:
-            type:
-              - "null"
-              - integer
-          url:
-            type:
-              - "null"
-              - string
+        $ref: "#/schemas/campaigns_actions"
   - type: DeclarativeStream
     name: newsletters
     primary_key:
@@ -1022,68 +197,906 @@ streams:
         type: MinMaxDatetime
         datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
         datetime_format: "%s"
+        max_datetime: "{{ now_utc().timestamp() | int }}"
+      lookback_window: PT1H
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          "type":
-            type:
-              - "null"
-              - string
-          content_ids:
-            type:
-              - "null"
-              - array
-            additionalProperties: true
-            properties:
-              id:
-                type:
-                  - "null"
-                  - integer
-          created:
-            type:
-              - "null"
-              - integer
-          deduplicate_id:
-            type:
-              - "null"
-              - string
-          id:
-            type:
-              - "null"
-              - integer
-          name:
-            type:
-              - "null"
-              - string
-          sent_at:
-            type:
-              - "null"
-              - array
-            additionalProperties: true
-            properties:
-              id:
-                type:
-                  - "null"
-                  - string
-          tags:
-            type:
-              - "null"
-              - array
-            additionalProperties: true
-            properties:
-              id:
-                type:
-                  - "null"
-                  - integer
-          updated:
-            type:
-              - "null"
-              - integer
+        $ref: "#/schemas/newsletters"
+  - type: DeclarativeStream
+    name: broadcasts
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /broadcasts
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "broadcasts"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated
+      datetime_format: "%s"
+      cursor_datetime_formats:
+        - "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
+        datetime_format: "%s"
+        max_datetime: "{{ now_utc().timestamp() | int }}"
+      lookback_window: PT1H
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/broadcasts"
+  - type: DeclarativeStream
+    name: broadcast_actions
+    primary_key:
+      - broadcast_id
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /broadcasts/{{ stream_partition.broadcast_id }}/actions
+        http_method: GET
+        error_handler:
+          $ref: "#/definitions/substream_error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "actions"
+      # Not documented for this endpoint, but the sibling listCampaignActions pages its actions with next.
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.next }}"
+          stop_condition: "{{ not response.next }}"
+        page_token_option:
+          type: RequestOption
+          field_name: start
+          inject_into: request_parameter
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: broadcast_id
+            # Inline parent without incremental_sync: a client-side cursor here would drop broadcasts
+            # updated before start_date, and their actions would never be read.
+            stream:
+              type: DeclarativeStream
+              name: broadcasts
+              primary_key:
+                - id
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: /broadcasts
+                  http_method: GET
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path:
+                      - "broadcasts"
+              schema_loader:
+                type: InlineSchemaLoader
+                schema:
+                  $ref: "#/schemas/broadcasts"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - broadcast_id
+            value: "{{ stream_partition.broadcast_id }}"
+            value_type: integer
+      # The spec types id as integer, but listCampaignActions returns action ids as strings.
+      - type: AddFields
+        condition: "{{ record.get('id') is not none }}"
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: "{{ record['id'] }}"
+            value_type: integer
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated
+      datetime_format: "%s"
+      cursor_datetime_formats:
+        - "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
+        datetime_format: "%s"
+        max_datetime: "{{ now_utc().timestamp() | int }}"
+      lookback_window: PT1H
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/broadcast_actions"
+  - type: DeclarativeStream
+    name: newsletter_variants
+    primary_key:
+      - newsletter_id
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /newsletters/{{ stream_partition.newsletter_id }}/contents
+        http_method: GET
+        error_handler:
+          $ref: "#/definitions/substream_error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "contents"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: newsletter_id
+            # Inline parent without incremental_sync: a client-side cursor here would drop one-time sends
+            # updated before start_date, and their variants would never be read.
+            stream:
+              type: DeclarativeStream
+              name: newsletters
+              primary_key:
+                - id
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: /newsletters
+                  http_method: GET
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path:
+                      - "newsletters"
+                paginator:
+                  type: DefaultPaginator
+                  pagination_strategy:
+                    type: CursorPagination
+                    page_size: 100
+                    cursor_value: "{{ response.next }}"
+                    stop_condition: "{{ not response.next }}"
+                  page_token_option:
+                    type: RequestOption
+                    field_name: start
+                    inject_into: request_parameter
+                  page_size_option:
+                    type: RequestOption
+                    field_name: limit
+                    inject_into: request_parameter
+              schema_loader:
+                type: InlineSchemaLoader
+                schema:
+                  $ref: "#/schemas/newsletters"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/newsletter_variants"
+  - type: DeclarativeStream
+    name: transactional_messages
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /transactional
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "messages"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      datetime_format: "%s"
+      cursor_datetime_formats:
+        - "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
+        datetime_format: "%s"
+        max_datetime: "{{ now_utc().timestamp() | int }}"
+      lookback_window: PT1H
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/transactional_messages"
+  - type: DeclarativeStream
+    name: sender_identities
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /sender_identities
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "sender_identities"
+        # Keep each sender only in the list its own `hidden` flag belongs to, so `id` stays unique even if the lists overlap.
+        record_filter:
+          type: RecordFilter
+          condition: "{{ (record.get('hidden') is true) == (stream_partition.hidden == 'true') }}"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.next }}"
+          # The last page returns next "" after one empty page; stopping on an empty page also guards a non-empty next.
+          stop_condition: "{{ not response.next or not response.sender_identities }}"
+        page_token_option:
+          type: RequestOption
+          field_name: start
+          inject_into: request_parameter
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+      # hidden=true left out the one visible sender and hidden=false returned it (live, 2026-10-06; the workspace has no hidden
+      # sender), so read both lists; the record filter above keeps each sender once.
+      partition_router:
+        type: ListPartitionRouter
+        cursor_field: hidden
+        values:
+          - "false"
+          - "true"
+        request_option:
+          type: RequestOption
+          field_name: hidden
+          inject_into: request_parameter
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/sender_identities"
+  - type: DeclarativeStream
+    name: segments
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /segments
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "segments"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      datetime_format: "%s"
+      cursor_datetime_formats:
+        - "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
+        datetime_format: "%s"
+        max_datetime: "{{ now_utc().timestamp() | int }}"
+      lookback_window: PT1H
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/segments"
+  - type: DeclarativeStream
+    name: segment_usage
+    primary_key:
+      - segment_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /segments/{{ stream_partition.segment_id }}/used_by
+        http_method: GET
+        error_handler:
+          $ref: "#/definitions/substream_error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "used_by"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: segment_id
+            # Inline parent without incremental_sync: a client-side cursor here would drop
+            # segments updated before start_date, and their usage would never be read.
+            stream:
+              type: DeclarativeStream
+              name: segments
+              primary_key:
+                - id
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: /segments
+                  http_method: GET
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path:
+                      - "segments"
+              schema_loader:
+                type: InlineSchemaLoader
+                schema:
+                  $ref: "#/schemas/segments"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/segment_usage"
+  - type: DeclarativeStream
+    name: subscription_topics
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /subscription_topics
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "topics"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/subscription_topics"
+  - type: DeclarativeStream
+    name: object_types
+    # The spec types id as a string (integers passed as strings), but campaigns.object_type_id as an integer.
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /object_types
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "types"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/object_types"
+  - type: DeclarativeStream
+    name: workspaces
+    # Lists every workspace in the account. The counts are a snapshot with no update time (message counts
+    # cover the current billing period), so the stream is full refresh only.
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /workspaces
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "workspaces"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/workspaces"
+  - type: DeclarativeStream
+    name: reporting_webhooks
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /reporting_webhooks
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "reporting_webhooks"
+    # Customer.io documents user:password@ in the URL as the way to secure a webhook: strip it. The pattern is anchored
+    # on the scheme, so an @ later in the path or query is kept, and so is a token there (the docs say so).
+    # http:/{2} spells the plain-http scheme without the URL prefix the Pre-Release check rejects.
+    transformations:
+      - type: AddFields
+        condition: "{{ record.get('endpoint') }}"
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - endpoint
+            value: "{{ record['endpoint'] | regex_replace('(?i)(?<=^https://)[^/?#]*@|(?<=^http:/{2})[^/?#]*@', '') }}"
+            value_type: string
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/reporting_webhooks"
+  - type: DeclarativeStream
+    name: snippets
+    # Snippets have no id; the spec documents name as unique, and deleteSnippet addresses a snippet by name.
+    primary_key:
+      - name
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /snippets
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "snippets"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      datetime_format: "%s"
+      cursor_datetime_formats:
+        - "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
+        datetime_format: "%s"
+        max_datetime: "{{ now_utc().timestamp() | int }}"
+      lookback_window: PT1H
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/snippets"
+  - type: DeclarativeStream
+    name: collections
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        # Collection metadata only; the contents (getCollectionContents) are not read.
+        path: /collections
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "collections"
+    # Full refresh only: Customer.io does not document whether replacing a collection's contents moves updated_at,
+    # and incremental would save nothing (one request, at most 50 collections per workspace).
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/collections"
+  - type: DeclarativeStream
+    name: messages
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /messages
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "messages"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: "{{ response.next }}"
+          stop_condition: "{{ not response.next }}"
+        page_token_option:
+          type: RequestOption
+          field_name: start
+          inject_into: request_parameter
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+    # start_ts/end_ts filter on creation time and one request covers at most 6 months, so read 30-day windows.
+    # Both bounds are inclusive, also when equal (live), so windows ending 1 s before the next one leave no gap.
+    # Metrics fill in after creation, so every sync re-reads messages_lookback_days (default 30) before the cursor.
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      datetime_format: "%s"
+      cursor_datetime_formats:
+        - "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
+        datetime_format: "%s"
+        # A Start Date before 1970 would send negative start times, and year 0001 overflows the window math.
+        min_datetime: "0"
+        max_datetime: "{{ now_utc().timestamp() | int }}"
+      start_time_option:
+        type: RequestOption
+        field_name: start_ts
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: end_ts
+        inject_into: request_parameter
+      step: P30D
+      cursor_granularity: PT1S
+      lookback_window: "P{{ config['messages_lookback_days'] if config.get('messages_lookback_days') is not none else 30 }}D"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/messages"
+  - type: DeclarativeStream
+    name: activities
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /activities
+        http_method: GET
+        request_parameters:
+          # deleted defaults to false ("If true, return results for deleted people"). deleted=true returned the same
+          # 25 activities as the default request (live, 2026-10-06), so it does not narrow the list.
+          deleted: "true"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "activities"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.next }}"
+          # last_page_size counts only activities inside the cursor window: from the Start Date, or the saved
+          # cursor minus the lookback, to the current time. Activities come newest first (live), so the first
+          # page with none ends the read, unless its last activity is dated after now: the whole page is then
+          # future-dated, and the next page can still hold activities in the window. An empty page ends it too.
+          stop_condition: "{{ not response.next or not response.activities or (last_page_size == 0 and response.activities[-1].timestamp < now_utc().timestamp()) }}"
+        page_token_option:
+          type: RequestOption
+          field_name: start
+          inject_into: request_parameter
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: timestamp
+      datetime_format: "%s"
+      cursor_datetime_formats:
+        - "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
+        datetime_format: "%s"
+        # A Start Date before 1970 would send negative start times, and year 0001 overflows the window math.
+        min_datetime: "0"
+        max_datetime: "{{ now_utc().timestamp() | int }}"
+      lookback_window: PT1H
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/activities"
+  - type: DeclarativeStream
+    name: people
+    primary_key:
+      - cio_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /customers/attributes
+        http_method: POST
+        request_parameters:
+          id_type: cio_id
+        # A grouped slice holds a list of up to 100 cio_ids. The API omits ids that no longer exist (live, a group of only
+        # unknown ids returned 200), so a 404 here is not a deleted group: it fails the sync like any other request.
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            ids: "{{ stream_partition.cio_id }}"
+      # The spec wraps each item in `customer`; live items carry the person's fields directly (2026-10-07).
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "customers"
+      partition_router:
+        type: GroupingPartitionRouter
+        group_size: 100
+        # The search pages with a cursor, so each person is listed once. Deduplication would keep
+        # every cio_id of the sync in memory (about 95 MB per million people).
+        deduplicate: false
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: cio_id
+              partition_field: cio_id
+              stream:
+                type: DeclarativeStream
+                name: people_search
+                primary_key:
+                  - cio_id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    path: /customers
+                    http_method: POST
+                    # Every person has a cio_id that cannot be removed, so this matches the whole workspace.
+                    # The "and" form follows the getPeopleFilter example in the spec.
+                    request_body:
+                      type: RequestBodyJsonObject
+                      value:
+                        filter:
+                          and:
+                            - attribute:
+                                field: cio_id
+                                operator: exists
+                  # Not `ids`: those are empty strings for people without an id.
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - "identifiers"
+                  paginator:
+                    type: DefaultPaginator
+                    pagination_strategy:
+                      type: CursorPagination
+                      page_size: 1000
+                      cursor_value: "{{ response.next }}"
+                      stop_condition: "{{ not response.next }}"
+                    page_token_option:
+                      type: RequestOption
+                      field_name: start
+                      inject_into: request_parameter
+                    page_size_option:
+                      type: RequestOption
+                      field_name: limit
+                      inject_into: request_parameter
+                # Never emitted; without a loader the CDK logs "Could not find schema" on every read.
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type: object
+    transformations:
+      # The spec documents cio_id in identifiers and in attributes, but its examples show only attributes,
+      # and record['identifiers']['cio_id'] fails the sync when identifiers is absent. value_type keeps ids
+      # like 30000001 or 30e00001 strings (without it: the number 30000001 and 300.0); the trailing ''
+      # avoids the string "None".
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - cio_id
+            value: "{{ (record.get('identifiers') or {}).get('cio_id') or (record.get('attributes') or {}).get('cio_id') or '' }}"
+            value_type: string
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/people"
+  - type: DeclarativeStream
+    name: segment_memberships
+    primary_key:
+      - segment_id
+      - cio_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /segments/{{ stream_partition.segment_id }}/membership
+        http_method: GET
+        error_handler:
+          $ref: "#/definitions/substream_error_handler"
+      # identifiers, not ids: ids has no cio_id and holds "" for a member without an id.
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "identifiers"
+      # limit 30000 is the documented maximum. next is an opaque position token ("MDo2MQ==" is "0:61" after
+      # 5 members). Only an empty next ends a segment: an empty page that still carries a token is not proven last.
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 30000
+          cursor_value: "{{ response.next }}"
+          stop_condition: "{{ not response.next }}"
+        page_token_option:
+          type: RequestOption
+          field_name: start
+          inject_into: request_parameter
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: segment_id
+            # Inline parent without incremental_sync: a client-side cursor here would drop
+            # segments updated before start_date, and their members would never be read.
+            stream:
+              type: DeclarativeStream
+              name: segments
+              primary_key:
+                - id
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  $ref: "#/definitions/base_requester"
+                  path: /segments
+                  http_method: GET
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path:
+                      - "segments"
+              schema_loader:
+                type: InlineSchemaLoader
+                schema:
+                  $ref: "#/schemas/segments"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - segment_id
+            value: "{{ stream_partition.segment_id }}"
+            value_type: integer
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/segment_memberships"
+  - type: DeclarativeStream
+    name: esp_suppressions
+    primary_key:
+      - suppression_type
+      - domain
+      - email
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /esp/suppression/{{ stream_partition.suppression_type }}
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "suppressions"
+      # The response has no next token or total: a page shorter than limit ends the list,
+      # and an empty list arrives as suppressions: null (0 records).
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 1000
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+      # Each type is read once per configured sending domain. Without domains the list falls back to [""]:
+      # an empty list would cross to zero partitions, and ListPartitionRouter does not send an empty value,
+      # so each type is read once without the domain parameter.
+      partition_router:
+        - type: ListPartitionRouter
+          cursor_field: suppression_type
+          values:
+            - bounces
+            - blocks
+            - spam_reports
+            - invalid_emails
+        - type: ListPartitionRouter
+          cursor_field: domain
+          values: "{{ config.get('esp_suppression_domains') or [''] }}"
+          request_option:
+            type: RequestOption
+            field_name: domain
+            inject_into: request_parameter
+    # Suppression records carry no type or domain, so both come from the partition.
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - suppression_type
+            value: "{{ stream_partition.suppression_type }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - domain
+            value: "{{ stream_partition.domain }}"
+            value_type: string
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/esp_suppressions"
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 3
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10
+          interval: PT1S
+      matchers: []
 spec:
   type: Spec
   connection_specification:
@@ -1094,14 +1107,20 @@ spec:
     properties:
       app_api_key:
         type: string
-        title: Customer.io App API Key
+        title: App API Key
+        description: >-
+          App API key for the Customer.io workspace you want to sync. In Customer.io, go to
+          Account Settings > API Credentials and create an App API key for that workspace.
+          Copy it right away, because Customer.io shows it only once. Track API keys do not work.
         airbyte_secret: true
         order: 0
       region:
         type: string
         title: Region
         description: >-
-          The region of your Customer.io workspace. Select "EU" if your account is hosted in the EU region (api-eu.customer.io); otherwise leave as "US".
+          The data center region of your Customer.io account. Account Admins can see it under
+          Settings > Account Settings > Data and Privacy. If the region does not match your account,
+          requests fail with an authentication (401) error.
         enum:
           - US
           - EU
@@ -1111,18 +1130,70 @@ spec:
         type: string
         title: Start Date
         description: >-
-          UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Records with an `updated` timestamp before this date will be filtered out client-side. Leave blank to sync all records.
+          Only sync records created or last updated at or after this UTC date and time, in the format
+          YYYY-MM-DDTHH:MM:SSZ: creation time for messages, event time for activities. Streams that
+          support only full refresh, such as newsletter variants, people, segment memberships and ESP
+          suppressions, sync every record.
+          Leave blank to sync all records.
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        pattern_descriptor: YYYY-MM-DDTHH:MM:SSZ
         examples:
           - "2023-01-01T00:00:00Z"
         order: 2
+      messages_lookback_days:
+        type: integer
+        title: Messages Lookback Window (Days)
+        description: >-
+          How many days before the last synced message each incremental sync of the messages stream reads
+          again, so that opens, clicks, conversions, bounces and unsubscribes recorded after a message was sent
+          reach the destination. Customer.io can record a conversion up to 90 days after a message is sent,
+          opened or clicked, and records opens and clicks for up to 6 months. A longer window keeps these
+          metrics more complete, but every sync then requests one page per 1,000 messages sent in the window.
+          Enter 1 to 180 days. Defaults to 30.
+        default: 30
+        minimum: 1
+        maximum: 180
+        order: 3
+      esp_suppression_domains:
+        type: array
+        title: Sending Domains for ESP Suppressions
+        description: >-
+          The domains you send email from, in lowercase, for example mail.example.com. Customer.io lists them
+          under Settings > Workspace Settings > Email. The esp_suppressions stream reads each suppression list
+          once per domain and records the domain on every row. Customer.io suppresses an address on the domain
+          where it bounced or was reported as spam, so if you send from more than one domain, enter them all.
+          Leave empty to read each list once without a domain filter; the domain column is then empty. Not
+          needed if you send through your own SMTP server.
+        items:
+          type: string
+          pattern: ^[a-z0-9-]+(\.[a-z0-9-]+)+$
+        uniqueItems: true
+        order: 4
     additionalProperties: true
 metadata:
   autoImportSchema:
     campaigns: false
     campaigns_actions: false
     newsletters: false
+    broadcasts: false
+    broadcast_actions: false
+    newsletter_variants: false
+    transactional_messages: false
+    sender_identities: false
+    segments: false
+    segment_usage: false
+    subscription_topics: false
+    object_types: false
+    workspaces: false
+    reporting_webhooks: false
+    snippets: false
+    collections: false
+    messages: false
+    activities: false
+    people: false
+    segment_memberships: false
+    esp_suppressions: false
 schemas:
   campaigns:
     type: object
@@ -1152,6 +1223,17 @@ schemas:
         type:
           - "null"
           - boolean
+      audience:
+        type:
+          - "null"
+          - object
+        properties:
+          "type":
+            type:
+              - "null"
+              - integer
+          person_filters: {}
+          relationship_filters: {}
       created:
         type:
           - "null"
@@ -1168,10 +1250,34 @@ schemas:
         type:
           - "null"
           - string
+      description:
+        type:
+          - "null"
+          - string
       event_name:
         type:
           - "null"
           - string
+      event_type:
+        type:
+          - "null"
+          - string
+      filter_object_attributes:
+        type:
+          - "null"
+          - string
+      filter_relationship_attributes:
+        type:
+          - "null"
+          - string
+      filter_segment_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       first_started:
         type:
           - "null"
@@ -1203,6 +1309,28 @@ schemas:
         type:
           - "null"
           - string
+      object_attribute_triggers: {}
+      object_type_id:
+        type:
+          - "null"
+          - integer
+      relationship_attribute_triggers: {}
+      scheduled_start:
+        type:
+          - "null"
+          - integer
+      scheduled_start_should_backfill:
+        type:
+          - "null"
+          - boolean
+      scheduled_stop:
+        type:
+          - "null"
+          - integer
+      scheduled_stop_should_sunset:
+        type:
+          - "null"
+          - boolean
       start_hour:
         type:
           - "null"
@@ -1247,6 +1375,10 @@ schemas:
         type:
           - "null"
           - boolean
+      webhook_id:
+        type:
+          - "null"
+          - integer
   campaigns_actions:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1264,10 +1396,30 @@ schemas:
         type:
           - "null"
           - string
+      body_amp:
+        type:
+          - "null"
+          - string
+      body_json:
+        type:
+          - "null"
+          - string
+      body_plain:
+        type:
+          - "null"
+          - string
+      broadcast_id:
+        type:
+          - "null"
+          - integer
       campaign_id:
         type:
           - "null"
           - integer
+      cc:
+        type:
+          - "null"
+          - string
       created:
         type:
           - "null"
@@ -1300,6 +1452,10 @@ schemas:
         type:
           - "null"
           - string
+      image_url:
+        type:
+          - "null"
+          - string
       language:
         type:
           - "null"
@@ -1308,6 +1464,14 @@ schemas:
         type:
           - "null"
           - string
+      method:
+        type:
+          - "null"
+          - string
+      multi_language_branch_action_id:
+        type:
+          - "null"
+          - integer
       name:
         type:
           - "null"
@@ -1344,6 +1508,14 @@ schemas:
         type:
           - "null"
           - string
+      send_to_unsubscribed:
+        type:
+          - "null"
+          - boolean
+      sender_identity_id:
+        type:
+          - "null"
+          - integer
       sending_state:
         type:
           - "null"
@@ -1352,6 +1524,10 @@ schemas:
         type:
           - "null"
           - string
+      tracked:
+        type:
+          - "null"
+          - boolean
       updated:
         type:
           - "null"
@@ -1387,11 +1563,39 @@ schemas:
         type:
           - "null"
           - string
+      expires_after:
+        type:
+          - "null"
+          - integer
       id:
         type:
           - "null"
           - integer
       name:
+        type:
+          - "null"
+          - string
+      recipient_file_error:
+        type:
+          - "null"
+          - string
+      recipient_file_status:
+        type:
+          - "null"
+          - string
+      recipient_segment_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      scheduled_at:
+        type:
+          - "null"
+          - integer
+      send_state:
         type:
           - "null"
           - string
@@ -1405,6 +1609,10 @@ schemas:
             type:
               - "null"
               - string
+      subscription_topic_id:
+        type:
+          - "null"
+          - integer
       tags:
         type:
           - "null"
@@ -1415,7 +1623,995 @@ schemas:
             type:
               - "null"
               - integer
+      timezone:
+        type:
+          - "null"
+          - string
+      tz_match_enabled:
+        type:
+          - "null"
+          - boolean
       updated:
         type:
           - "null"
           - integer
+  broadcasts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      "type":
+        type:
+          - "null"
+          - string
+      actions:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            "type":
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+      active:
+        type:
+          - "null"
+          - boolean
+      created:
+        type:
+          - "null"
+          - integer
+      created_by:
+        type:
+          - "null"
+          - string
+      deduplicate_id:
+        type:
+          - "null"
+          - string
+      first_started:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      msg_template_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            "type":
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+      name:
+        type:
+          - "null"
+          - string
+      state:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      updated:
+        type:
+          - "null"
+          - integer
+  broadcast_actions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      "type":
+        type:
+          - "null"
+          - string
+      bcc:
+        type:
+          - "null"
+          - string
+      body:
+        type:
+          - "null"
+          - string
+      body_amp:
+        type:
+          - "null"
+          - string
+      body_json:
+        type:
+          - "null"
+          - string
+      body_plain:
+        type:
+          - "null"
+          - string
+      broadcast_id:
+        type:
+          - "null"
+          - integer
+      cc:
+        type:
+          - "null"
+          - string
+      created:
+        type:
+          - "null"
+          - integer
+      deduplicate_id:
+        type:
+          - "null"
+          - string
+      fake_bcc:
+        type:
+          - "null"
+          - boolean
+      from:
+        type:
+          - "null"
+          - string
+      from_id:
+        type:
+          - "null"
+          - integer
+      headers:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      image_url:
+        type:
+          - "null"
+          - string
+      language:
+        type:
+          - "null"
+          - string
+      layout:
+        type:
+          - "null"
+          - string
+      method:
+        type:
+          - "null"
+          - string
+      multi_language_branch_action_id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      preheader_text:
+        type:
+          - "null"
+          - string
+      preprocessor:
+        type:
+          - "null"
+          - string
+      recipient:
+        type:
+          - "null"
+          - string
+      reply_to:
+        type:
+          - "null"
+          - string
+      reply_to_id:
+        type:
+          - "null"
+          - integer
+      send_to_unsubscribed:
+        type:
+          - "null"
+          - boolean
+      sender_identity_id:
+        type:
+          - "null"
+          - integer
+      sending_state:
+        type:
+          - "null"
+          - string
+      subject:
+        type:
+          - "null"
+          - string
+      tracked:
+        type:
+          - "null"
+          - boolean
+      updated:
+        type:
+          - "null"
+          - integer
+      url:
+        type:
+          - "null"
+          - string
+  newsletter_variants:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      "type":
+        type:
+          - "null"
+          - string
+      bcc:
+        type:
+          - "null"
+          - string
+      body:
+        type:
+          - "null"
+          - string
+      body_amp:
+        type:
+          - "null"
+          - string
+      body_plain:
+        type:
+          - "null"
+          - string
+      cc:
+        type:
+          - "null"
+          - string
+      created:
+        type:
+          - "null"
+          - integer
+      deduplicate_id:
+        type:
+          - "null"
+          - string
+      fake_bcc:
+        type:
+          - "null"
+          - boolean
+      from:
+        type:
+          - "null"
+          - string
+      from_id:
+        type:
+          - "null"
+          - integer
+      headers:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      language:
+        type:
+          - "null"
+          - string
+      layout:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      newsletter_id:
+        type:
+          - "null"
+          - integer
+      preheader_text:
+        type:
+          - "null"
+          - string
+      preprocessor:
+        type:
+          - "null"
+          - string
+      recipient:
+        type:
+          - "null"
+          - string
+      reply_to:
+        type:
+          - "null"
+          - string
+      reply_to_id:
+        type:
+          - "null"
+          - integer
+      subject:
+        type:
+          - "null"
+          - string
+      test_group_id:
+        type:
+          - "null"
+          - integer
+      updated:
+        type:
+          - "null"
+          - integer
+  transactional_messages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - integer
+      description:
+        type:
+          - "null"
+          - string
+      hide_message_body:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - integer
+      link_tracking:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      open_tracking:
+        type:
+          - "null"
+          - boolean
+      queue_drafts:
+        type:
+          - "null"
+          - boolean
+      send_to_unsubscribed:
+        type:
+          - "null"
+          - boolean
+      trigger_name:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - integer
+  sender_identities:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - "null"
+          - string
+      auto_generated:
+        type:
+          - "null"
+          - boolean
+      deduplicate_id:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      hidden:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      phone:
+        type:
+          - "null"
+          - string
+      template_type:
+        type:
+          - "null"
+          - string
+  segments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      "type":
+        type:
+          - "null"
+          - string
+      conditions:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      created_at:
+        type:
+          - "null"
+          - integer
+      deduplicate_id:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      progress:
+        type:
+          - "null"
+          - number
+      state:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      updated_at:
+        type:
+          - "null"
+          - integer
+  segment_usage:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      campaigns:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      draft_newsletters:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      segment_id:
+        type:
+          - "null"
+          - integer
+      sent_newsletters:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+  subscription_topics:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      identifier:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      subscribed_by_default:
+        type:
+          - "null"
+          - boolean
+  object_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      enabled:
+        type:
+          - "null"
+          - boolean
+      icon:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      singular_name:
+        type:
+          - "null"
+          - string
+      singular_slug:
+        type:
+          - "null"
+          - string
+      slug:
+        type:
+          - "null"
+          - string
+  workspaces:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      billable_messages_sent:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      messages_sent:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      object_types:
+        type:
+          - "null"
+          - integer
+      objects:
+        type:
+          - "null"
+          - integer
+      people:
+        type:
+          - "null"
+          - integer
+  reporting_webhooks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      "type":
+        type:
+          - "null"
+          - string
+      disabled:
+        type:
+          - "null"
+          - boolean
+      endpoint:
+        type:
+          - "null"
+          - string
+      events:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      full_resolution:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      with_content:
+        type:
+          - "null"
+          - boolean
+  snippets:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - integer
+      value:
+        type:
+          - "null"
+          - string
+  collections:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      bytes:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      rows:
+        type:
+          - "null"
+          - integer
+      schema:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      updated_at:
+        type:
+          - "null"
+          - integer
+  messages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      "type":
+        type:
+          - "null"
+          - string
+      action_id:
+        type:
+          - "null"
+          - integer
+      broadcast_id:
+        type:
+          - "null"
+          - integer
+      campaign_id:
+        type:
+          - "null"
+          - integer
+      content_id:
+        type:
+          - "null"
+          - integer
+      created:
+        type:
+          - "null"
+          - integer
+      customer_id:
+        type:
+          - "null"
+          - string
+      customer_identifiers:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          cio_id:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+      deduplicate_id:
+        type:
+          - "null"
+          - string
+      failure_message:
+        type:
+          - "null"
+          - string
+      forgotten:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - string
+      message_template_id:
+        type:
+          - "null"
+          - integer
+      # Keys vary by channel and grow over time (attempted, replied, secondary:delivered): declare none.
+      metrics:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      msg_template_id:
+        type:
+          - "null"
+          - integer
+      newsletter_id:
+        type:
+          - "null"
+          - integer
+      parent_action_id:
+        type:
+          - "null"
+          - integer
+      recipient:
+        type:
+          - "null"
+          - string
+      subject:
+        type:
+          - "null"
+          - string
+      transactional_message_id:
+        type:
+          - "null"
+          - integer
+      trigger_event_id:
+        type:
+          - "null"
+          - string
+  activities:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      "type":
+        type:
+          - "null"
+          - string
+      customer_id:
+        type:
+          - "null"
+          - string
+      customer_identifiers:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          cio_id:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+      # Keys depend on the activity type (delivery metrics, event properties, attribute changes): declare none.
+      data:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      delivery_id:
+        type:
+          - "null"
+          - string
+      delivery_type:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      timestamp:
+        type:
+          - "null"
+          - integer
+      url:
+        type:
+          - "null"
+          - string
+  people:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      attributes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      cio_id:
+        type:
+          - "null"
+          - string
+      devices:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            attributes:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+            id:
+              type:
+                - "null"
+                - string
+            last_used:
+              type:
+                - "null"
+                - integer
+            platform:
+              type:
+                - "null"
+                - string
+      id:
+        type:
+          - "null"
+          - string
+      identifiers:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          cio_id:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+      timestamps:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      unsubscribed:
+        type:
+          - "null"
+          - boolean
+  segment_memberships:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      cio_id:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      segment_id:
+        type:
+          - "null"
+          - integer
+  esp_suppressions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created:
+        type:
+          - "null"
+          - integer
+      domain:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      reason:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      suppression_type:
+        type:
+          - "null"
+          - string

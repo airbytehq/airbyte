@@ -8,17 +8,17 @@ The Stripe connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](#customers-list), [Create](#customers-create), [Get](#customers-get), [Update](#customers-update), [Delete](#customers-delete), [API Search](#customers-api-search), [Context Store Search](#customers-context-store-search) |
-| Invoices | [List](#invoices-list), [Create](#invoices-create), [Get](#invoices-get), [API Search](#invoices-api-search), [Context Store Search](#invoices-context-store-search) |
+| Customers | [List](#customers-list), [Create](#customers-create), [Get](#customers-get), [Update](#customers-update), [Delete](#customers-delete), [Search](#customers-search), [Context Store Search](#customers-context-store-search), [Context Store SQL Query](#customers-context-store-sql-query) |
+| Invoices | [List](#invoices-list), [Create](#invoices-create), [Get](#invoices-get), [Search](#invoices-search), [Context Store Search](#invoices-context-store-search), [Context Store SQL Query](#invoices-context-store-sql-query) |
 | Invoice Finalizations | [Create](#invoice-finalizations-create) |
 | Invoice Sends | [Create](#invoice-sends-create) |
-| Charges | [List](#charges-list), [Get](#charges-get), [API Search](#charges-api-search), [Context Store Search](#charges-context-store-search) |
-| Subscriptions | [List](#subscriptions-list), [Create](#subscriptions-create), [Get](#subscriptions-get), [Update](#subscriptions-update), [Delete](#subscriptions-delete), [API Search](#subscriptions-api-search), [Context Store Search](#subscriptions-context-store-search) |
-| Refunds | [List](#refunds-list), [Create](#refunds-create), [Get](#refunds-get), [Context Store Search](#refunds-context-store-search) |
-| Products | [List](#products-list), [Create](#products-create), [Get](#products-get), [Update](#products-update), [Delete](#products-delete), [API Search](#products-api-search) |
+| Charges | [List](#charges-list), [Get](#charges-get), [Search](#charges-search), [Context Store Search](#charges-context-store-search), [Context Store SQL Query](#charges-context-store-sql-query) |
+| Subscriptions | [List](#subscriptions-list), [Create](#subscriptions-create), [Get](#subscriptions-get), [Update](#subscriptions-update), [Delete](#subscriptions-delete), [Search](#subscriptions-search), [Context Store Search](#subscriptions-context-store-search), [Context Store SQL Query](#subscriptions-context-store-sql-query) |
+| Refunds | [List](#refunds-list), [Create](#refunds-create), [Get](#refunds-get), [Context Store Search](#refunds-context-store-search), [Context Store SQL Query](#refunds-context-store-sql-query) |
+| Products | [List](#products-list), [Create](#products-create), [Get](#products-get), [Update](#products-update), [Delete](#products-delete), [Search](#products-search) |
 | Balance | [Get](#balance-get) |
 | Balance Transactions | [List](#balance-transactions-list), [Get](#balance-transactions-get) |
-| Payment Intents | [List](#payment-intents-list), [Create](#payment-intents-create), [Get](#payment-intents-get), [Update](#payment-intents-update), [API Search](#payment-intents-api-search) |
+| Payment Intents | [List](#payment-intents-list), [Create](#payment-intents-create), [Get](#payment-intents-get), [Update](#payment-intents-update), [Search](#payment-intents-search) |
 | Payment Intent Confirmations | [Create](#payment-intent-confirmations-create) |
 | Payment Intent Cancellations | [Create](#payment-intent-cancellations-create) |
 | Prices | [Create](#prices-create) |
@@ -444,7 +444,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Customers API Search
+### Customers Search
 
 Search for customers using Stripe's Search Query Language.
 
@@ -455,7 +455,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "stripe",
   "entity": "customers",
-  "action": "api_search",
+  "action": "search",
   "params": {
     "query": "<str>"
   }
@@ -465,7 +465,7 @@ airbyte-agent connectors execute --json '{
 #### Python SDK
 
 ```python
-await stripe.customers.api_search(
+await stripe.customers.search(
     query="<str>"
 )
 ```
@@ -478,7 +478,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "customers",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "query": "<str>"
     }
@@ -677,6 +677,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].tax_info_verification` | `string` | Verification status of the customer's tax information. |
 | `data[].test_clock` | `string` | ID of the test clock associated with this customer for testing time-dependent scenarios. |
 | `data[].updated` | `integer` | Timestamp indicating when the customer object was last updated. |
+
+</details>
+
+### Customers Context Store SQL Query
+
+Run a SQL query against customers records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "customers",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await stripe.customers.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "customers",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1128,7 +1191,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Invoices API Search
+### Invoices Search
 
 Search for invoices using Stripe's Search Query Language
 
@@ -1139,7 +1202,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "stripe",
   "entity": "invoices",
-  "action": "api_search",
+  "action": "search",
   "params": {
     "query": "<str>"
   }
@@ -1149,7 +1212,7 @@ airbyte-agent connectors execute --json '{
 #### Python SDK
 
 ```python
-await stripe.invoices.api_search(
+await stripe.invoices.search(
     query="<str>"
 )
 ```
@@ -1162,7 +1225,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "invoices",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "query": "<str>"
     }
@@ -1538,6 +1601,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].transfer_data` | `object` | Information about the transfer of funds associated with this invoice in Connect scenarios. |
 | `data[].updated` | `integer` | Timestamp indicating when the invoice was last updated. |
 | `data[].webhooks_delivered_at` | `number` | Timestamp indicating when webhooks for this invoice were successfully delivered. |
+
+</details>
+
+### Invoices Context Store SQL Query
+
+Run a SQL query against invoices records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "invoices",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await stripe.invoices.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "invoices",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2074,7 +2200,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Charges API Search
+### Charges Search
 
 Search for charges using Stripe's Search Query Language
 
@@ -2085,7 +2211,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "stripe",
   "entity": "charges",
-  "action": "api_search",
+  "action": "search",
   "params": {
     "query": "<str>"
   }
@@ -2095,7 +2221,7 @@ airbyte-agent connectors execute --json '{
 #### Python SDK
 
 ```python
-await stripe.charges.api_search(
+await stripe.charges.search(
     query="<str>"
 )
 ```
@@ -2108,7 +2234,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "charges",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "query": "<str>"
     }
@@ -2366,6 +2492,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].transfer_data` | `object` | Object containing destination and amount for transfers to connected accounts (Connect only). |
 | `data[].transfer_group` | `string` | String identifier for grouping related charges and transfers together (Connect only). |
 | `data[].updated` | `integer` | Timestamp of the last update to this charge object. |
+
+</details>
+
+### Charges Context Store SQL Query
+
+Run a SQL query against charges records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "charges",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await stripe.charges.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "charges",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2929,7 +3118,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Subscriptions API Search
+### Subscriptions Search
 
 Search for subscriptions using Stripe's Search Query Language
 
@@ -2940,7 +3129,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "stripe",
   "entity": "subscriptions",
-  "action": "api_search",
+  "action": "search",
   "params": {
     "query": "<str>"
   }
@@ -2950,7 +3139,7 @@ airbyte-agent connectors execute --json '{
 #### Python SDK
 
 ```python
-await stripe.subscriptions.api_search(
+await stripe.subscriptions.search(
     query="<str>"
 )
 ```
@@ -2963,7 +3152,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "subscriptions",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "query": "<str>"
     }
@@ -3221,6 +3410,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].trial_settings` | `object` | Settings related to trial periods, including conditions for ending trials. |
 | `data[].trial_start` | `integer` | Timestamp indicating when the trial period began, if applicable. |
 | `data[].updated` | `integer` | Timestamp indicating when the subscription was last updated. |
+
+</details>
+
+### Subscriptions Context Store SQL Query
+
+Run a SQL query against subscriptions records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "subscriptions",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await stripe.subscriptions.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "subscriptions",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -3567,6 +3819,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].status` | `string` | Status of the refund (pending, requires_action, succeeded, failed, or canceled). |
 | `data[].transfer_reversal` | `string` | ID of the reversal of the transfer that funded the charge being refunded (Connect only). |
 | `data[].updated` | `integer` | Timestamp indicating when the refund was last updated. |
+
+</details>
+
+### Refunds Context Store SQL Query
+
+Run a SQL query against refunds records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "stripe",
+  "entity": "refunds",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await stripe.refunds.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "refunds",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -3954,7 +4269,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Products API Search
+### Products Search
 
 Search for products using Stripe's Search Query Language.
 
@@ -3965,7 +4280,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "stripe",
   "entity": "products",
-  "action": "api_search",
+  "action": "search",
   "params": {
     "query": "<str>"
   }
@@ -3975,7 +4290,7 @@ airbyte-agent connectors execute --json '{
 #### Python SDK
 
 ```python
-await stripe.products.api_search(
+await stripe.products.search(
     query="<str>"
 )
 ```
@@ -3988,7 +4303,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "products",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "query": "<str>"
     }
@@ -4573,7 +4888,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Payment Intents API Search
+### Payment Intents Search
 
 Search for payment intents using Stripe's Search Query Language.
 
@@ -4584,7 +4899,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "stripe",
   "entity": "payment_intents",
-  "action": "api_search",
+  "action": "search",
   "params": {
     "query": "<str>"
   }
@@ -4594,7 +4909,7 @@ airbyte-agent connectors execute --json '{
 #### Python SDK
 
 ```python
-await stripe.payment_intents.api_search(
+await stripe.payment_intents.search(
     query="<str>"
 )
 ```
@@ -4607,7 +4922,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "payment_intents",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "query": "<str>"
     }
