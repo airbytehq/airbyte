@@ -120,8 +120,8 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
   }
 
   /**
-   * Mirrors {@code AbstractDbSource#check}, but also surfaces {@link ConfigErrorException}s raised
-   * by {@link #createDatabase} as config errors with their display message.
+   * Mirrors {@code AbstractDbSource#check}, but also surfaces {@link ConfigErrorException}s raised by
+   * {@link #createDatabase} as config errors with their display message.
    */
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
