@@ -30,6 +30,6 @@ Sync behavior: incremental on time in 1-day slices with a 1-day lookback window.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2026-10-08 | | Initial release by [@Joshua-omolewa](https://github.com/Joshua-omolewa) via Connector Builder |
+| 0.0.1 | 2026-10-08 | [88377](https://github.com/airbytehq/airbyte/pull/88377) | Initial release by [@Joshua-omolewa](https://github.com/Joshua-omolewa) via Connector Builder |
 
 </details>
