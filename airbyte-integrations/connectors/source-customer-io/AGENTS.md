@@ -172,4 +172,4 @@ An App API key belongs to one workspace ([adding credentials](https://docs.custo
 
 `messages`, `activities`, `people`, `segment_memberships` and `esp_suppressions` carry end-user data (sections 17 to 21), so none of them is in `suggestedStreams`, and new connections leave them unselected.
 
-**Why this matters:** Keep them out when editing `suggestedStreams`. It only sets the default selection of new connections: a connection set up before 0.8.0 with Propagate all field and stream changes selects all five on upgrade and syncs them in the same job (section 14), and the user docs say how to prevent that.
+**Why this matters:** Keep them out when editing `suggestedStreams`. It only sets the default selection of new connections: a connection set up before 0.8.0 with Propagate all field and stream changes selects all five on upgrade and syncs them in the same job, with no user step under Autopilot (section 14), and the user docs say how to stop it.
