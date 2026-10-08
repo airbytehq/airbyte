@@ -21,7 +21,6 @@ from typing import Any, Dict
 from unittest import TestCase
 
 import pytest
-from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import AirbyteStreamStatus, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -29,6 +28,7 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.state_builder import StateBuilder
+from unit_tests.conftest import get_source
 
 
 _BASE_URL = "https://api.zoom.us/v2"
