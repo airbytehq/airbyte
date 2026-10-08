@@ -122,13 +122,13 @@ jobs:
       PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
     steps:
       - name: Detect net-new connector
-        if: matrix.connector
+        if: matrix.connector && env.GCP_PROD_DB_ACCESS_CREDENTIALS == ''
         id: net-new
         env:
           CONNECTOR_NAME: ${{ matrix.connector }}
         run: |
           registry_url="https://connectors.airbyte.com/files/metadata/airbyte/${CONNECTOR_NAME}/latest/metadata.yaml"
-          http_code="$(curl -sS -o /dev/null -w '%{http_code}' --retry 3 --retry-all-errors "${registry_url}")"
+          http_code="$(curl -sS -o "${RUNNER_TEMP}/registry-metadata.yaml" -w '%{http_code}' --max-time 30 --retry 3 --retry-all-errors "${registry_url}")"
           case "${http_code}" in
             200)
               echo "is-net-new=false" | tee -a "${GITHUB_OUTPUT}"
