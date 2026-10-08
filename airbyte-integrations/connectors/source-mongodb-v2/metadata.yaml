@@ -7,36 +7,19 @@ data:
       - ${connection_string}
   connectorBuildOptions:
     baseImage: docker.io/airbyte/java-connector-base:2.0.4@sha256:5f343797cfcf021ca98ba9bdf5970ef66cbf6222d8cc17b0d61d13860a5bcc2b
+  connectorIPCOptions:
+    dataChannel:
+      version: "0.0.2"
+      supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedTransport: ["SOCKET", "STDIO"]
   connectorSubtype: database
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
-      testSecrets:
-        - fileName: credentials.json
-          name: SECRET_SOURCE-MONGODB-V2_CREDENTIALS__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: config.json
-          name: SECRET_SOURCE-MONGODB-V2__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
     - suite: acceptanceTests
-      testSecrets:
-        - fileName: credentials.json
-          name: SECRET_SOURCE-MONGODB-V2_CREDENTIALS__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: config.json
-          name: SECRET_SOURCE-MONGODB-V2__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
   connectorType: source
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
-  dockerImageTag: 2.1.1
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-mongodb-v2
   documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
   githubIssueLabel: source-mongodb-v2
@@ -52,6 +35,23 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      3.0.0:
+        message:
+          "This is a full rewrite of the MongoDB source on the Bulk CDK. Change data
+          capture now reads the replica-set change stream with the native MongoDB
+          driver instead of Debezium. Existing connections upgrade in place: the
+          saved CDC position (the MongoDB resume token Debezium stored), the
+          initial-snapshot state and saved configurations are all read as-is, so no
+          reset is required. The Debezium-only settings 'initial_waiting_seconds' and
+          'queue_size' are removed from the spec (saved configurations that still
+          carry them are accepted and the values ignored). Views are no longer
+          discovered as streams, boolean fields are now typed as boolean, and a
+          collection whose _id values are of more than one type fails the sync
+          instead of risking missed documents. See the migration guide for details."
+        upgradeDeadline: "2026-12-31"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["*"]
       2.0.0:
         message:
           "**Important: This version introduces multiple database support for MongoDB v2 source connector.**

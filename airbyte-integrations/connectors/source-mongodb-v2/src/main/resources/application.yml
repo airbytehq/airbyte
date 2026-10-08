@@ -1,0 +1,51 @@
+---
+airbyte:
+  connector:
+    data-channel:
+      medium: ${DATA_CHANNEL_MEDIUM:STDIO}
+      format: ${DATA_CHANNEL_FORMAT:JSONL}
+      socket-paths: ${DATA_CHANNEL_SOCKET_PATHS}
+    output:
+      buffer-byte-size-threshold-for-flush: 8192
+    exception-classifiers:
+      regex:
+        # Rules are applied in order to a Throwable's message and to the messages of its causes.
+        # See airbyte-cdk/bulk/core/base/src/main/kotlin/io/airbyte/cdk/output/ExceptionClassifier.kt
+        rules:
+          - pattern: (?i).*Exception authenticating MongoCredential.*
+            input-example: >-
+              com.mongodb.MongoSecurityException: Exception authenticating
+              MongoCredential{mechanism=SCRAM-SHA-256, userName='root', source='admin', password=<hidden>, mechanismProperties=<hidden>}
+            error: config
+            # Same user-facing message as the legacy (Debezium) connector.
+            output: "Authentication failed.  Please check the source's configured credentials."
+
+          - pattern: (?i).*Command failed with error 13 \(Unauthorized\).*
+            input-example: >-
+              com.mongodb.MongoCommandException: Command failed with error 13 (Unauthorized):
+              'not authorized on test_db to execute command { listCollections: 1, authorizedCollections: true, nameOnly: true }' on server mongo:27017.
+            error: config
+
+          - pattern: (?i).*Timed out.*while waiting for a server that matches.*
+            input-example: >-
+              com.mongodb.MongoTimeoutException: Timed out while waiting for a server that matches
+              ReadPreferenceServerSelector{readPreference=primary}. Client view of cluster state is {type=UNKNOWN, ...}
+            error: config
+
+          # Server error 10334 (BSONObjectTooLarge): a change-stream event exceeded the 16MB BSON
+          # limit. Same actionable message as the legacy (Debezium) connector.
+          - pattern: (?i).*(error 10334|BSONObjectTooLarge).*
+            input-example: >-
+              com.mongodb.MongoCommandException: Command failed with error 10334 (BSONObjectTooLarge):
+              'BSONObj size: 16810000 (0x1008B90) is invalid. Size must be between 0 and 16793600(16MB)' on server mongo:27017.
+            error: config
+            output: >-
+              A document in your MongoDB database exceeds the 16MB BSON size limit when processed through
+              CDC (Change Data Capture) change streams. This error occurs specifically during
+              incremental/CDC syncs when change stream events become too large. To resolve this issue, you
+              have several options: (1) Switch the affected stream(s) to 'Full Refresh' sync mode instead of
+              'Incremental' mode, which does not use change streams. (2) If you are using 'Post Image' update
+              capture mode, switch to 'Lookup' mode to reduce change event size. (3) Identify and restructure
+              the large documents in your MongoDB collection to stay under 16MB. (4) Deselect streams
+              containing documents that are too large. For more information, see
+              https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-cdc-limitations
