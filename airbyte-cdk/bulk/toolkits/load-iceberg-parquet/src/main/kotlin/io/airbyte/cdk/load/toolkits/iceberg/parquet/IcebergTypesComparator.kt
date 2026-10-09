@@ -15,7 +15,7 @@ import org.apache.iceberg.types.Types
  * - Columns whose data types have changed.
  * - Columns that no longer exist in the incoming schema (removed).
  * - Columns, struct fields, and list elements that changed from required to optional. Nullability
- *   relaxations are tracked separately and are not considered type changes.
+ * relaxations are tracked separately and are not considered type changes.
  */
 @Singleton
 class IcebergTypesComparator {
@@ -122,7 +122,8 @@ class IcebergTypesComparator {
         diff: ColumnDiff
     ) {
         if (incomingType.isStructType && existingType.isStructType) {
-            val incomingFieldsByName = incomingType.asStructType().fields().associateBy { it.name() }
+            val incomingFieldsByName =
+                incomingType.asStructType().fields().associateBy { it.name() }
             for (existingField in existingType.asStructType().fields()) {
                 val incomingField = incomingFieldsByName[existingField.name()] ?: continue
                 if (!existingField.isOptional && incomingField.isOptional) {

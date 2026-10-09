@@ -9,7 +9,6 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta
-import org.apache.iceberg.types.Types
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -47,7 +46,10 @@ class AirbyteTypeToIcebergSchemaTest {
     fun `array elements are always optional`() {
         val list =
             converter
-                .convert(ArrayType(FieldType(StringType, nullable = false)), stringifyObjects = false)
+                .convert(
+                    ArrayType(FieldType(StringType, nullable = false)),
+                    stringifyObjects = false
+                )
                 .asListType()
 
         assertThat(list.isElementOptional).isTrue()

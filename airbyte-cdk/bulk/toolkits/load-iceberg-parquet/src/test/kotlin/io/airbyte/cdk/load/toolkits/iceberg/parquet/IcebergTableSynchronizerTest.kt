@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.toolkits.iceberg.parquet
 
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
@@ -564,21 +563,9 @@ class IcebergTableSynchronizerTest {
                             Types.ListType.ofRequired(
                                 4,
                                 Types.StructType.of(
-                                    Types.NestedField.required(
-                                        5,
-                                        "field",
-                                        Types.StringType.get()
-                                    ),
-                                    Types.NestedField.required(
-                                        6,
-                                        "change",
-                                        Types.StringType.get()
-                                    ),
-                                    Types.NestedField.required(
-                                        7,
-                                        "reason",
-                                        Types.StringType.get()
-                                    ),
+                                    Types.NestedField.required(5, "field", Types.StringType.get()),
+                                    Types.NestedField.required(6, "change", Types.StringType.get()),
+                                    Types.NestedField.required(7, "reason", Types.StringType.get()),
                                 ),
                             ),
                         ),
@@ -615,8 +602,7 @@ class IcebergTableSynchronizerTest {
         val oldNestedFields = oldElement.fields().associate { it.name() to it.fieldId() }
 
         val firstResult =
-            createRealSynchronizer()
-                .maybeApplySchemaChanges(table, incomingSchema, behavior)
+            createRealSynchronizer().maybeApplySchemaChanges(table, incomingSchema, behavior)
         if (behavior == ColumnTypeChangeBehavior.OVERWRITE) {
             firstResult.pendingUpdates.forEach { it.commit() }
         }

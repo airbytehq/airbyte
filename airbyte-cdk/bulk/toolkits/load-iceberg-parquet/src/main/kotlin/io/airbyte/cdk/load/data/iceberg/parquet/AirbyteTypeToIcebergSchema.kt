@@ -89,11 +89,7 @@ class AirbyteTypeToIcebergSchema {
                 if (airbyteSchema.options.size == 1) {
                     return Types.ListType.ofOptional(
                         UUID.randomUUID().hashCode(),
-                        convert(
-                            airbyteSchema.options.first(),
-                            stringifyObjects,
-                            insideList = true
-                        )
+                        convert(airbyteSchema.options.first(), stringifyObjects, insideList = true)
                     )
                 }
                 // We stringify nontrivial unions
