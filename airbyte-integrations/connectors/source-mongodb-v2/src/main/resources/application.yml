@@ -9,8 +9,10 @@ airbyte:
       buffer-byte-size-threshold-for-flush: 8192
     exception-classifiers:
       regex:
-        # Rules are applied in order to a Throwable's message and to the messages of its causes.
-        # See airbyte-cdk/bulk/core/base/src/main/kotlin/io/airbyte/cdk/output/ExceptionClassifier.kt
+        # Rules are applied in order to a Throwable's message and to the messages of its causes,
+        # after MongoDbExceptionClassifier has classified transient driver failures by type and
+        # server error code. See
+        # airbyte-cdk/bulk/core/base/src/main/kotlin/io/airbyte/cdk/output/ExceptionClassifier.kt
         rules:
           - pattern: (?i).*Exception authenticating MongoCredential.*
             input-example: >-
@@ -20,17 +22,23 @@ airbyte:
             # Same user-facing message as the legacy (Debezium) connector.
             output: "Authentication failed.  Please check the source's configured credentials."
 
-          - pattern: (?i).*Command failed with error 13 \(Unauthorized\).*
+          # The driver phrases this "Command execution failed on MongoDB server with error 13"
+          # since 5.x and "Command failed with error 13" before; match the code and name only.
+          - pattern: (?i).*error 13 \(Unauthorized\).*
             input-example: >-
-              com.mongodb.MongoCommandException: Command failed with error 13 (Unauthorized):
+              com.mongodb.MongoCommandException: Command execution failed on MongoDB server with error 13 (Unauthorized):
               'not authorized on test_db to execute command { listCollections: 1, authorizedCollections: true, nameOnly: true }' on server mongo:27017.
             error: config
 
+          # Server selection timed out: a wrong host during CHECK (reported as a config error
+          # there regardless), a network blip or an election mid-READ (retry from the checkpoint).
+          # MongoDbExceptionClassifier handles the exception type; this rule covers a wrapped
+          # message that lost the type.
           - pattern: (?i).*Timed out.*while waiting for a server that matches.*
             input-example: >-
               com.mongodb.MongoTimeoutException: Timed out while waiting for a server that matches
               ReadPreferenceServerSelector{readPreference=primary}. Client view of cluster state is {type=UNKNOWN, ...}
-            error: config
+            error: transient
 
           # Server error 10334 (BSONObjectTooLarge): a change-stream event exceeded the 16MB BSON
           # limit. Same actionable message as the legacy (Debezium) connector.

@@ -176,8 +176,20 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   fields, so documents' extra fields never cross the network.
 - **TLS**: `ATLAS_REPLICA_SET` enables TLS on the client (Atlas requires it; v2 forced
   `mongodb.ssl.enabled=true` on its CDC path). Self-managed clusters honour the connection string.
-- **`BSONObjectTooLarge`** (server error 10334, a change event over 16MB) is mapped by an
-  `application.yml` classifier rule to the legacy actionable message.
+- **Error classification.** `MongoDbExceptionClassifier` (order 5, between the CDK's default
+  classifier and the `application.yml` message rules) marks as **transient** — the platform retries
+  from the last checkpoint — the failures a retry recovers from: any `MongoSocketException`
+  (read/write timeouts, resets), `MongoTimeoutException` (server selection), a cleared connection
+  pool, and `MongoCommandException`s with the retryable-reads codes (elections, shutdowns,
+  `NotWritablePrimary`, …) plus `CursorNotFound`/`CursorKilled`, and errors carrying the
+  `ResumableChangeStreamError` label. The message rules keep the configuration errors
+  (authentication, `Unauthorized`, `BSONObjectTooLarge` with the legacy actionable message). CHECK
+  needs no special casing: the CDK's `handleCheckFailure` reports every failure as a configuration
+  error, so a server-selection timeout is "fix the host" during CHECK and a retry mid-READ.
+  `MongoDbExceptionClassifierTest` goes through the CDK's `ExceptionHandler` with real driver
+  exceptions — which is how it caught that driver 5.x phrases command errors "Command execution
+  failed on MongoDB server with error 13" and the old "Command failed with error 13" rule no
+  longer matched.
 - **WASS**: an incremental snapshot that exceeds `maxSnapshotReadDuration`
   (`initial_load_timeout_hours`) yields for the rest of the READ so the next sync's change-stream
   read advances the resume token before the snapshot resumes.
