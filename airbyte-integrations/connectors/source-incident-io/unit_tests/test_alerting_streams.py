@@ -2,42 +2,9 @@
 
 """Tests for the incident.io alerting and escalation streams."""
 
-from pathlib import Path
-
 import pytest
 import requests_mock
-
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.state_builder import StateBuilder
-
-
-def _get_manifest_path() -> Path:
-    ci_path = Path("/airbyte/integration_code/source_declarative_manifest")
-    if ci_path.exists():
-        return ci_path
-    return Path(__file__).parent.parent
-
-
-_MANIFEST_PATH = _get_manifest_path() / "manifest.yaml"
-_CONFIG = {"api_key": "test-key"}
-_BASE_URL = "https://api.incident.io"
-
-
-def _get_source():
-    return YamlDeclarativeSource(
-        path_to_yaml=str(_MANIFEST_PATH),
-        catalog=CatalogBuilder().build(),
-        config=_CONFIG,
-        state=StateBuilder().build(),
-    )
-
-
-def _read_stream(stream_name):
-    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
-    return read(_get_source(), _CONFIG, catalog)
+from conftest import _BASE_URL, _read_stream
 
 
 @pytest.mark.parametrize(
