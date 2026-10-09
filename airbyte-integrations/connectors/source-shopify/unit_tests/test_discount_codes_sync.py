@@ -605,10 +605,10 @@ def _child_request_variables(m):
 def test_new_codes_only_fetches_codes_after_max_code_id(auth_config, time_sleep_mock):
     stream = DiscountCodesSync(_new_codes_only_config(auth_config))
     url = _graphql_url()
-    parent_node = _make_parent_node(100, updated_at="2023-06-02T00:00:00Z")
+    parent_node = _make_parent_node(100, updated_at="2023-06-02T00:00:00Z", codesCount={"count": 301, "precision": "EXACT"})
     prior_state = {
         "updated_at": "2023-06-01T00:00:00+00:00",
-        "parents": {"100": {"updated_at": "2023-06-01T00:00:00+00:00", "max_code_id": 1004}},
+        "parents": {"100": {"updated_at": "2023-06-01T00:00:00+00:00", "max_code_id": 1004, "codes_seen": 300}},
     }
 
     with rmock.Mocker() as m:
@@ -619,8 +619,9 @@ def test_new_codes_only_fetches_codes_after_max_code_id(auth_config, time_sleep_
     assert [r["id"] for r in records] == [1005]
     assert stream.get_updated_state(prior_state, records[-1]) == {
         "updated_at": "2023-06-02T00:00:00+00:00",
-        "parents": {"100": {"updated_at": "2023-06-02T00:00:00+00:00", "max_code_id": 1005}},
+        "parents": {"100": {"updated_at": "2023-06-02T00:00:00+00:00", "max_code_id": 1005, "codes_seen": 301}},
     }
+    assert records[0]["codes_count"] == {"count": 301}
 
 
 def test_new_codes_only_skips_parent_with_unchanged_updated_at(auth_config, time_sleep_mock):
@@ -668,7 +669,7 @@ def test_new_codes_only_full_fetch_for_unknown_parent_then_tracks_state(auth_con
     assert [r["id"] for r in records] == [2000, 2001, 2002]
     assert stream.get_updated_state(prior_state, records[-1])["parents"] == {
         "100": {"updated_at": "2023-06-02T00:00:00+00:00", "max_code_id": 1001},
-        "200": {"updated_at": "2023-06-03T00:00:00+00:00", "max_code_id": 2002},
+        "200": {"updated_at": "2023-06-03T00:00:00+00:00", "max_code_id": 2002, "codes_seen": 3},
     }
 
 
@@ -691,7 +692,7 @@ def test_new_codes_only_interrupted_parent_is_not_marked_synced(auth_config, tim
         second_record = next(records_iter)
 
     assert [first_record["id"], second_record["id"]] == [1000, 1001]
-    assert stream.get_updated_state({}, second_record)["parents"] == {"100": {"max_code_id": 1001}}
+    assert stream.get_updated_state({}, second_record)["parents"] == {"100": {"max_code_id": 1001, "codes_seen": 2}}
 
 
 def test_new_codes_only_disabled_keeps_full_child_fetch(auth_config, time_sleep_mock):
@@ -710,3 +711,87 @@ def test_new_codes_only_disabled_keeps_full_child_fetch(auth_config, time_sleep_
     assert _child_request_variables(m) == [{"id": "gid://shopify/DiscountCodeNode/100", "first": 250}]
     assert [r["id"] for r in records] == [1000, 1005]
     assert "parents" not in stream.get_updated_state({}, records[-1])
+
+
+def test_new_codes_only_does_not_track_parent_fitting_in_one_page(auth_config, time_sleep_mock):
+    stream = DiscountCodesSync(_new_codes_only_config(auth_config))
+    url = _graphql_url()
+    parent_node = _make_parent_node(100, updated_at="2023-06-02T00:00:00Z", codesCount={"count": 250, "precision": "EXACT"})
+    prior_state = {
+        "updated_at": "2023-06-01T00:00:00+00:00",
+        "parents": {"100": {"updated_at": "2023-06-01T00:00:00+00:00", "max_code_id": 1004, "codes_seen": 2}},
+    }
+
+    with rmock.Mocker() as m:
+        m.post(url, [{"json": _parent_response([parent_node])}, {"json": _child_response([_make_code_node(1000), _make_code_node(1005)])}])
+        records = list(stream.read_records(sync_mode=None, stream_state=prior_state))
+
+    assert _child_request_variables(m) == [{"id": "gid://shopify/DiscountCodeNode/100", "first": 250}]
+    assert [r["id"] for r in records] == [1000, 1005]
+    assert stream.get_updated_state(prior_state, records[-1])["parents"] == {}
+
+
+@pytest.mark.parametrize(
+    "prior_codes_seen,codes_count,new_codes,all_code_ids",
+    [
+        pytest.param(3, 5, [1005], [999, 1001, 1002, 1004, 1005], id="code_added_below_max_code_id"),
+        pytest.param(4, 3, [], [1001, 1002, 1004], id="code_deleted"),
+    ],
+)
+def test_new_codes_only_count_mismatch_rereads_all_codes(
+    auth_config, time_sleep_mock, prior_codes_seen, codes_count, new_codes, all_code_ids
+):
+    stream = DiscountCodesSync(_new_codes_only_config(auth_config))
+    stream.CHILD_PAGE_SIZE = 2
+    url = _graphql_url()
+    parent_node = _make_parent_node(100, updated_at="2023-06-02T00:00:00Z", codesCount={"count": codes_count, "precision": "EXACT"})
+    prior_state = {
+        "updated_at": "2023-06-01T00:00:00+00:00",
+        "parents": {"100": {"updated_at": "2023-06-01T00:00:00+00:00", "max_code_id": 1004, "codes_seen": prior_codes_seen}},
+    }
+    pages = [all_code_ids[i : i + 2] for i in range(0, len(all_code_ids), 2)]
+    full_read = [
+        {"json": _child_response([_make_code_node(c) for c in page], has_next=i < len(pages) - 1, end_cursor=f"c{i}")}
+        for i, page in enumerate(pages)
+    ]
+
+    with rmock.Mocker() as m:
+        m.post(
+            url,
+            [
+                {"json": _parent_response([parent_node])},
+                {"json": _child_response([_make_code_node(c) for c in new_codes])},
+                *full_read,
+            ],
+        )
+        records = list(stream.read_records(sync_mode=None, stream_state=prior_state))
+
+    assert _child_request_variables(m) == [
+        {"id": "gid://shopify/DiscountCodeNode/100", "first": 2, "query": "id:>1004"},
+        {"id": "gid://shopify/DiscountCodeNode/100", "first": 2},
+        *[{"id": "gid://shopify/DiscountCodeNode/100", "first": 2, "after": f"c{i}"} for i in range(len(pages) - 1)],
+    ]
+    assert [r["id"] for r in records] == new_codes + all_code_ids
+    assert stream.get_updated_state(prior_state, records[-1])["parents"] == {
+        "100": {"updated_at": "2023-06-02T00:00:00+00:00", "max_code_id": max(all_code_ids), "codes_seen": codes_count},
+    }
+
+
+def test_new_codes_only_skips_count_check_for_inexact_count(auth_config, time_sleep_mock):
+    stream = DiscountCodesSync(_new_codes_only_config(auth_config))
+    url = _graphql_url()
+    parent_node = _make_parent_node(100, updated_at="2023-06-02T00:00:00Z", codesCount={"count": 10000, "precision": "AT_LEAST"})
+    prior_state = {
+        "updated_at": "2023-06-01T00:00:00+00:00",
+        "parents": {"100": {"updated_at": "2023-06-01T00:00:00+00:00", "max_code_id": 50004, "codes_seen": 12000}},
+    }
+
+    with rmock.Mocker() as m:
+        m.post(url, [{"json": _parent_response([parent_node])}, {"json": _child_response([_make_code_node(50005)])}])
+        records = list(stream.read_records(sync_mode=None, stream_state=prior_state))
+
+    assert _child_request_variables(m) == [{"id": "gid://shopify/DiscountCodeNode/100", "first": 250, "query": "id:>50004"}]
+    assert [r["id"] for r in records] == [50005]
+    assert stream.get_updated_state(prior_state, records[-1])["parents"] == {
+        "100": {"updated_at": "2023-06-02T00:00:00+00:00", "max_code_id": 50005, "codes_seen": 12001},
+    }

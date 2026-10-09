@@ -148,7 +148,7 @@
       "discount_codes_sync_new_codes_only": {
         "type": "boolean",
         "title": "Discount Codes Sync: Fetch Only New Codes",
-        "description": "If enabled, the `Discount Codes Sync` stream stores the highest synced code ID per discount and, when a discount is updated, only fetches codes created since the last sync instead of re-reading every code of that discount. Previously synced codes are not re-emitted, so their `usage_count` is not refreshed. Defaults to false.",
+        "description": "If enabled, the `Discount Codes Sync` stream stores the highest synced code ID per discount with more than 250 codes and, when that discount is updated, only fetches codes created since the last sync instead of re-reading every code of that discount. Previously synced codes are not re-emitted, so their `usage_count` is not refreshed. Defaults to false.",
         "default": false
       }
     }
