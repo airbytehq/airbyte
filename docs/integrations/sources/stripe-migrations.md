@@ -12,9 +12,10 @@ After the first sync, incremental syncs of `invoice_line_items` read line items 
 
 - `ii_...`: the ID of the invoice item behind the line.
 - `sub_...`: the ID of the subscription behind the line. It repeats on every renewal invoice for that subscription.
+- `su_...`: also a subscription ID, used by some older subscriptions. Like `sub_...`, it repeats on every renewal invoice for that subscription.
 - `sli_...`: a subscription line item ID used by API versions from 2018 and 2019.
 
-Full refresh syncs read the same line items from the Invoices endpoints and get Stripe's current `il_...` IDs. Before 7.0.0, one connection could therefore write the same line item under two different IDs. In a deduplicated destination, each renewal of a `sub_...` line also replaced the previous renewal's row.
+Full refresh syncs read the same line items from the Invoices endpoints and get Stripe's current `il_...` IDs. Before 7.0.0, one connection could therefore write the same line item under two different IDs. In a deduplicated destination, each renewal of a `sub_...` or `su_...` line also replaced the previous renewal's row.
 
 In 7.0.0, incremental syncs use the current `il_...` ID that Stripe includes in legacy event payloads, so incremental and full refresh syncs write the same IDs. On legacy subscription lines whose ID was the subscription ID, the `subscription` field is now filled with that subscription ID. No other streams, fields, or sync modes change.
 
@@ -49,11 +50,11 @@ Refreshing and removing records deletes this stream's existing data in your dest
 Upgrading to 7.0.0 stops new legacy IDs from being written, but rows that earlier versions wrote stay in your destination until you refresh the stream:
 
 - Line items synced incrementally before the upgrade keep their legacy ID, and the same line items appear again under their `il_...` ID when they're next synced. Counts and sums over `invoice_line_items` can include these line items twice.
-- In a deduplicated destination, older renewal lines of a subscription that were replaced under a shared `sub_...` ID stay missing.
+- In a deduplicated destination, older renewal lines of a subscription that were replaced under a shared `sub_...` or `su_...` ID stay missing.
 
 ### Downstream changes
 
-Queries, models, and dashboards that join or filter on `invoice_line_items.id` using legacy `ii_...`, `sub_...`, or `sli_...` values must use `il_...` IDs instead. To relate a subscription line to its subscription, use the `subscription` field rather than the line's `id`.
+Queries, models, and dashboards that join or filter on `invoice_line_items.id` using legacy `ii_...`, `sub_...`, `su_...`, or `sli_...` values must use `il_...` IDs instead. To relate a subscription line to its subscription, use the `subscription` field rather than the line's `id`.
 
 For general upgrade steps, see the [connector upgrade guide](#connector-upgrade-guide).
 
