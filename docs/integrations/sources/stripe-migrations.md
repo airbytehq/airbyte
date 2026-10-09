@@ -2,6 +2,61 @@
 
 import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
+## Upgrading to 7.0.0
+
+Version 7.0.0 changes the `id` values that incremental syncs of the `invoice_line_items` stream write for Stripe accounts whose default API version is older than `2019-12-03`. `id` is this stream's primary key, so on those accounts, rows written by earlier versions don't match rows written by 7.0.0. Most Stripe accounts use a newer default API version and aren't affected.
+
+### What changed
+
+After the first sync, incremental syncs of `invoice_line_items` read line items from the Stripe Events API. Stripe renders each event in the account's default API version at the time the event was created, whatever API version the connector requests. Before `2019-12-03`, Stripe used legacy invoice line item IDs:
+
+- `ii_...`: the ID of the invoice item behind the line.
+- `sub_...`: the ID of the subscription behind the line. It repeats on every renewal invoice for that subscription.
+- `sli_...`: a subscription line item ID used by API versions from 2018 and 2019.
+
+Full refresh syncs read the same line items from the Invoices endpoints and get Stripe's current `il_...` IDs. Before 7.0.0, one connection could therefore write the same line item under two different IDs. In a deduplicated destination, each renewal of a `sub_...` line also replaced the previous renewal's row.
+
+In 7.0.0, incremental syncs use the current `il_...` ID that Stripe includes in legacy event payloads, so incremental and full refresh syncs write the same IDs. On legacy subscription lines whose ID was the subscription ID, the `subscription` field is now filled with that subscription ID. No other streams, fields, or sync modes change.
+
+### Who is affected
+
+You're affected only if both of these are true:
+
+- You sync `invoice_line_items` with an incremental sync mode.
+- Your Stripe account's default API version is older than `2019-12-03`. Workbench in the Stripe Dashboard shows your account's default API version.
+
+To check your destination, run this query, replacing `<schema>` with your destination schema:
+
+```sql
+SELECT COUNT(*) FROM <schema>.invoice_line_items WHERE SUBSTR(id, 1, 3) <> 'il_';
+```
+
+If the count is `0`, or you don't meet both conditions above, you don't need to do anything. The upgrade doesn't change your data.
+
+### Migration steps
+
+If the query returns a count greater than zero:
+
+1. Upgrade the connector to 7.0.0.
+2. [Refresh the `invoice_line_items` stream and remove records](/platform/operator-guides/refreshes).
+
+You must remove records. The legacy rows have a different primary key from the new `il_...` rows, so refreshing and retaining records leaves the legacy rows in your destination alongside the new ones.
+
+Refreshing and removing records deletes this stream's existing data in your destination before syncing it again. The refreshed stream is rebuilt from the Invoices endpoints, not from the 30-day Events API window, so it restores line items for invoices from your configured start date onward. Rows that recorded deleted draft invoices (`is_deleted` is `true`) aren't recreated. If you need those rows or the legacy IDs, back up the `invoice_line_items` table before you refresh.
+
+### If you don't refresh
+
+Upgrading to 7.0.0 stops new legacy IDs from being written, but rows that earlier versions wrote stay in your destination until you refresh the stream:
+
+- Line items synced incrementally before the upgrade keep their legacy ID, and the same line items appear again under their `il_...` ID when they're next synced. Counts and sums over `invoice_line_items` can include these line items twice.
+- In a deduplicated destination, older renewal lines of a subscription that were replaced under a shared `sub_...` ID stay missing.
+
+### Downstream changes
+
+Queries, models, and dashboards that join or filter on `invoice_line_items.id` using legacy `ii_...`, `sub_...`, or `sli_...` values must use `il_...` IDs instead. To relate a subscription line to its subscription, use the `subscription` field rather than the line's `id`.
+
+For general upgrade steps, see the [connector upgrade guide](#connector-upgrade-guide).
+
 ## Upgrading to 6.0.0
 
 Version 6.0.0 fixes a bug where the `invoice_line_items` and `subscription_items` incremental streams emitted only one record per Stripe event instead of correctly expanding nested line items. An event containing N line items previously produced 1 record; it now produces N records.
