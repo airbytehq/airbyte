@@ -82,6 +82,8 @@ This stream returns one record per month of RCS consumption, starting 365 days b
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 0.0.4 | 2026-10-06 | [88065](https://github.com/airbytehq/airbyte/pull/88065) | Update dependencies |
+| 0.0.3 | 2026-09-29 | [87384](https://github.com/airbytehq/airbyte/pull/87384) | Update dependencies |
 | 0.0.2 | 2026-09-22 | [86828](https://github.com/airbytehq/airbyte/pull/86828) | Update dependencies |
 | 0.0.1 | 2026-09-16 | [79710](https://github.com/airbytehq/airbyte/pull/79710) | Initial release by [@CaladeTechnologies](https://github.com/CaladeTechnologies) via Connector Builder. Syncs a rolling 30-day window of `rcs_messages` across MT and MO directions, and monthly `consumptions_rcs`. |
 

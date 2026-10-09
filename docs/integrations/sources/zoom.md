@@ -73,8 +73,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                              |
+| Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.3.0 | 2026-10-07 | [87561](https://github.com/airbytehq/airbyte/pull/87561) | Use the declarative OAuth authenticator, refresh tokens that expire mid-sync and report invalid credentials as configuration errors |
+| 1.2.67 | 2026-10-07 | [87005](https://github.com/airbytehq/airbyte/pull/87005) | Fix sync failures on users without meeting hosting rights, deleted meetings and webinars, and webinar UUIDs containing slashes |
+| 1.2.66 | 2026-10-06 | [88100](https://github.com/airbytehq/airbyte/pull/88100) | Update dependencies |
+| 1.2.65 | 2026-09-29 | [87422](https://github.com/airbytehq/airbyte/pull/87422) | Update dependencies |
 | 1.2.64 | 2026-09-22 | [86858](https://github.com/airbytehq/airbyte/pull/86858) | Update dependencies |
 | 1.2.63 | 2026-09-15 | [86307](https://github.com/airbytehq/airbyte/pull/86307) | Update dependencies |
 | 1.2.62 | 2026-09-08 | [85742](https://github.com/airbytehq/airbyte/pull/85742) | Update dependencies |

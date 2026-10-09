@@ -11,6 +11,16 @@ Get ad analytics from all Mercado Ads placements
 | `lookback_days` | `number` | Lookback Days.  | 7 |
 | `start_date` | `string` | Start Date. Cannot exceed 90 days from current day for Product Ads, and 90 days from &quot;End Date&quot; on Brand and Display Ads |  |
 | `end_date` | `string` | End Date. Cannot exceed 90 days from current day for Product Ads |  |
+| `access_token` | `string` | Access Token. Managed automatically by the connector; leave empty. |  |
+| `token_expiry_date` | `string` | Token Expiry Date. Managed automatically by the connector; leave empty. |  |
+
+:::note
+Mercado Libre refresh tokens are single-use: every call to `/oauth/token` invalidates the refresh token that was used and returns a new one
+(see [Authentication and Authorization](https://developers.mercadolibre.com.ar/en_us/authentication-and-authorization)).
+The connector persists the rotated `client_refresh_token` back into the source configuration after each refresh, so the
+refresh token you enter must not have been used anywhere else (for example in a manual `curl` call or another integration) after you
+obtained it. If you see an `invalid_grant` error, generate a fresh refresh token and update the source configuration.
+:::
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -44,6 +54,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.46 | 2026-10-07 | [88243](https://github.com/airbytehq/airbyte/pull/88243) | Persist Mercado Libre's rotated single-use refresh token (`refresh_token_updater`), surface `invalid_grant` as a config error, fix double slash in `brand_keywords_metrics` path |
+| 0.0.45 | 2026-10-06 | [87946](https://github.com/airbytehq/airbyte/pull/87946) | Update dependencies |
+| 0.0.44 | 2026-09-29 | [87245](https://github.com/airbytehq/airbyte/pull/87245) | Update dependencies |
 | 0.0.43 | 2026-09-22 | [86711](https://github.com/airbytehq/airbyte/pull/86711) | Update dependencies |
 | 0.0.42 | 2026-09-15 | [86141](https://github.com/airbytehq/airbyte/pull/86141) | Update dependencies |
 | 0.0.41 | 2026-09-08 | [85568](https://github.com/airbytehq/airbyte/pull/85568) | Update dependencies |

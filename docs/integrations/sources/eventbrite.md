@@ -12,6 +12,10 @@ To get a Private Token:
 - Log in to your Eventbrite account and visit your [API Keys page](https://www.eventbrite.com/platform/api-keys).
 - Copy your private token.
 
+## Rate limits
+
+Eventbrite allows [2,000 API requests per hour per token](https://www.eventbrite.com/platform/api#/introduction/rate-limits). The connector throttles itself to stay under that limit and waits before retrying when Eventbrite returns HTTP 429. Because most streams make at least one request per event, a first sync of an organization with many events can take several hours. Avoid sharing the same private token between several Airbyte sources, since all of them count against the same hourly budget.
+
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
@@ -41,6 +45,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.68 | 2026-10-07 | [88232](https://github.com/airbytehq/airbyte/pull/88232) | Fix connection check failing with HTTP 429: check the `organizations` stream instead of `attendees`, throttle requests to Eventbrite's 2,000/hour limit, retry on `Retry-After`, raise `events` page size to 50 |
+| 0.0.67 | 2026-10-06 | [87856](https://github.com/airbytehq/airbyte/pull/87856) | Update dependencies |
+| 0.0.66 | 2026-09-29 | [87148](https://github.com/airbytehq/airbyte/pull/87148) | Update dependencies |
 | 0.0.65 | 2026-09-22 | [86601](https://github.com/airbytehq/airbyte/pull/86601) | Update dependencies |
 | 0.0.64 | 2026-09-15 | [86042](https://github.com/airbytehq/airbyte/pull/86042) | Update dependencies |
 | 0.0.63 | 2026-09-08 | [85475](https://github.com/airbytehq/airbyte/pull/85475) | Update dependencies |

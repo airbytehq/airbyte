@@ -59,6 +59,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.39 | 2026-10-06 | [87941](https://github.com/airbytehq/airbyte/pull/87941) | Update dependencies |
+| 0.0.38 | 2026-09-29 | [87246](https://github.com/airbytehq/airbyte/pull/87246) | Update dependencies |
 | 0.0.37 | 2026-09-22 | [86696](https://github.com/airbytehq/airbyte/pull/86696) | Update dependencies |
 | 0.0.36 | 2026-09-15 | [86126](https://github.com/airbytehq/airbyte/pull/86126) | Update dependencies |
 | 0.0.35 | 2026-09-10 | [79626](https://github.com/airbytehq/airbyte/pull/79626) | Add `url` and `title` fields to the `brands` stream schema |

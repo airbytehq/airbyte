@@ -111,6 +111,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.5.0 | 2026-10-05 | [87006](https://github.com/airbytehq/airbyte/pull/87006) | Fix `extensiveCalls` schema (`parties[].context`, `media`) and add missing `reviewMethod` and `conferencingProviders` fields |
+| 1.4.4 | 2026-10-06 | [87873](https://github.com/airbytehq/airbyte/pull/87873) | Update dependencies |
+| 1.4.3 | 2026-09-29 | [87189](https://github.com/airbytehq/airbyte/pull/87189) | Update dependencies |
 | 1.4.2 | 2026-09-22 | [86644](https://github.com/airbytehq/airbyte/pull/86644) | Update dependencies |
 | 1.4.1 | 2026-09-15 | [86067](https://github.com/airbytehq/airbyte/pull/86067) | Update dependencies |
 | 1.4.0 | 2026-08-30 | [85192](https://github.com/airbytehq/airbyte/pull/85192) | Promote connector to certified |

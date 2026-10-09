@@ -97,11 +97,46 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.scryfall.com
+    request_headers:
+      User-Agent: Airbyte
+      Accept: application/json
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+            - 429
+          action: RATE_LIMITED
+          error_message: Scryfall rate limit hit (HTTP 429); access is limited for 30 seconds.
+      backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 35
 
 streams:
   - $ref: "#/definitions/streams/cards"
   - $ref: "#/definitions/streams/sets"
   - $ref: "#/definitions/streams/symbols"
+
+# Scryfall hard limits (https://scryfall.com/docs/api/rate-limits): /cards/search 2/second,
+# everything else 10/second. A 429 blocks the client for 30 seconds, so stay under the limits.
+api_budget:
+  type: HTTPAPIBudget
+  status_codes_for_ratelimit_hit:
+    - 429
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1
+          interval: PT1S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: ^/cards/search
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 5
+          interval: PT1S
+      matchers: []
 
 spec:
   type: Spec
