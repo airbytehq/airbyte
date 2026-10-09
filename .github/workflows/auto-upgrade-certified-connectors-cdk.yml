@@ -12,6 +12,10 @@ on:
         type: string
         default: "airbyte"
 
+# All repo writes use GitHub App tokens, not GITHUB_TOKEN.
+permissions:
+  contents: read
+
 jobs:
   list-certified-connectors:
     name: List Certified Connectors
@@ -85,10 +89,12 @@ jobs:
         id: upgrade-cdk
         run: |
           set -euo pipefail
-          ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:upgradeCdk
           # --quiet disables all of gradle's normal logging, so we only get the CDK version number
+          old_cdk_version=$(./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:getCdkVersion --quiet)
+          echo "old_cdk_version=$old_cdk_version" | tee -a $GITHUB_OUTPUT
+          ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:upgradeCdk
           new_cdk_version=$(./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:getCdkVersion --quiet)
-          echo "new_cdk_version=$new_cdk_version" >> $GITHUB_OUTPUT
+          echo "new_cdk_version=$new_cdk_version" | tee -a $GITHUB_OUTPUT
 
       - name: Check for changes
         id: check-changes
@@ -162,3 +168,109 @@ jobs:
         run: gh pr ready "${{ steps.create-pr.outputs.pull-request-number }}"
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Enable auto-merge on PR
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: gh pr merge "$PR_NUMBER" --squash --auto
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+
+      # Use a different bot identity (admin) to approve, because the bot that
+      # created the PR cannot approve its own PRs.
+      - name: Authenticate as 'octavia-bot-admin' GitHub App
+        if: steps.check-changes.outputs.has_changes == 'true'
+        continue-on-error: true
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v2
+        id: admin-token
+        with:
+          owner: "airbytehq"
+          repositories: ${{ inputs.repositories || 'airbyte' }}
+          app-id: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
+
+      - name: Apply bot approval
+        if: steps.check-changes.outputs.has_changes == 'true' && steps.admin-token.outcome == 'success'
+        continue-on-error: true
+        run: gh pr review "$PR_NUMBER" --approve --body "Auto-approved by CDK auto-upgrade workflow."
+        env:
+          GH_TOKEN: ${{ steps.admin-token.outputs.token }}
+          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+
+      # Record the outcome for this connector so the summary job can report on it.
+      - name: Record result
+        if: always()
+        env:
+          CONNECTOR: ${{ matrix.connector }}
+          HAS_CHANGES: ${{ steps.check-changes.outputs.has_changes }}
+          OLD_CDK_VERSION: ${{ steps.upgrade-cdk.outputs.old_cdk_version }}
+          NEW_CDK_VERSION: ${{ steps.upgrade-cdk.outputs.new_cdk_version }}
+          CONNECTOR_VERSION: ${{ steps.bump-version.outputs.new_version }}
+          PR_URL: ${{ steps.create-pr.outputs.pull-request-url }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          # A PR can exist even when a later step (changelog, auto-merge) failed, so check the job status first.
+          if [[ "$JOB_STATUS" != "success" ]]; then
+            status=failed
+          elif [[ -n "$PR_URL" ]]; then
+            status=upgraded
+          elif [[ "$HAS_CHANGES" == "false" ]]; then
+            status=up-to-date
+          else
+            status=failed
+          fi
+          mkdir -p cdk-upgrade-results
+          jq --null-input \
+            --arg connector "$CONNECTOR" \
+            --arg status "$status" \
+            --arg old_cdk_version "$OLD_CDK_VERSION" \
+            --arg new_cdk_version "$NEW_CDK_VERSION" \
+            --arg connector_version "$CONNECTOR_VERSION" \
+            --arg pr_url "$PR_URL" \
+            '$ARGS.named' | tee "cdk-upgrade-results/$CONNECTOR.json"
+
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cdk-upgrade-result-${{ matrix.connector }}
+          path: cdk-upgrade-results/
+          retention-days: 7
+
+  notify-slack:
+    name: Post Slack summary
+    needs: [list-certified-connectors, upgrade-connector-cdk]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          sparse-checkout: tools/bin/bulk-cdk/auto-upgrade
+
+      - name: Download connector results
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          pattern: cdk-upgrade-result-*
+          path: cdk-upgrade-results
+          merge-multiple: true
+
+      - name: Build Slack payload
+        env:
+          CONNECTORS_JSON: ${{ needs.list-certified-connectors.outputs.connectors || '[]' }}
+          SLACK_CHANNEL: C043JHEEYKG # #team-hydra-connectors
+        run: |
+          tools/bin/bulk-cdk/auto-upgrade/build-slack-summary.sh \
+            cdk-upgrade-results \
+            "$CONNECTORS_JSON" \
+            "$SLACK_CHANNEL" \
+            slack-payload.json
+
+      - name: Post to Slack
+        # Not every repo that calls this workflow has the Slack token, so don't fail the run over a missed notification.
+        continue-on-error: true
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload-file-path: slack-payload.json

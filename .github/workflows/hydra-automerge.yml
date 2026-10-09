@@ -70,10 +70,30 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
         run: |
-          pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft,title)
+          pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft,title,baseRefName,headRefName,labels)
           state=$(echo "$pr_json" | jq -r '.state')
           is_draft=$(echo "$pr_json" | jq -r '.isDraft')
           title=$(echo "$pr_json" | jq -r '.title')
+
+          # Hydra only merges into master, so never act on a PR with any other
+          # base. This also blocks PRs opened by an airbytehq/ai-skills eval's
+          # own Devin session, which carry no eval marker and are only
+          # identifiable by their non-master base.
+          base=$(echo "$pr_json" | jq -r '.baseRefName')
+          if [[ "$base" != "master" ]]; then
+            echo "::error::PR #$PR_NUMBER targets base '$base', not master. Auto-merge is blocked."
+            exit 1
+          fi
+
+          # Never auto-merge PRs created by the airbytehq/ai-skills eval harness,
+          # which are marked by their head branch, title, or label.
+          head=$(echo "$pr_json" | jq -r '.headRefName')
+          labels=$(echo "$pr_json" | jq -r '[.labels[].name] | join(",")')
+          if [[ "$head" == eval/* || "$title" == "[EVAL - DO NOT MERGE]"* || ",$labels," == *",eval-test,"* ]]; then
+            echo "::error::PR #$PR_NUMBER is a playbook-eval PR (base=$base, head=$head). Auto-merge is blocked."
+            exit 1
+          fi
+
           echo "state=$state" | tee -a "$GITHUB_OUTPUT"
           echo "is_draft=$is_draft" | tee -a "$GITHUB_OUTPUT"
           echo "title=$title" | tee -a "$GITHUB_OUTPUT"
