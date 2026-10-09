@@ -203,6 +203,51 @@ case - no document, a fetch failure, an unrecognised payload - must leave the re
 retry and `status_mapping` behaviour is unchanged. This is a diagnostic path: it must never turn a report Amazon
 accepted into a failure.
 
+## 11. Settlement Reports Use `AsyncRetriever` Without Creating Anything
+
+`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` is the one report stream Amazon generates on its own —
+`createReport` is not allowed for it. It still uses `basic_async_retriever`, with the
+`creation_requester` overridden to a **GET** of `reports/2021-06-30/reports/{reportId}` for a report
+that `flat_file_settlement_v2_helper` already listed. Nothing is created; the async machinery is
+there for its `download_target_requester`, which resolves `reportDocumentId` to a pre-signed URL and
+downloads it in the same call.
+
+Five constraints that are easy to break:
+
+- **Do not move the document lookup into a parent stream.** Amazon signs the URL with
+  `X-Amz-Expires=300`. Resolving it in a `SubstreamPartitionRouter` parent minted the URL during
+  partition generation and consumed it during partition read, which blew the five-minute window on
+  any sizeable backfill (`getReportDocument` is budgeted at 1 request/minute, so 100 reports is ~100
+  minutes) and replayed the same dead URL on every retry.
+- **`getReports` pagination must send `nextToken` alone.** Reports 2021-06-30 returns `400
+  InvalidInput` if `nextToken` arrives with `reportTypes`, `pageSize`, `createdSince` or
+  `createdUntil` — unlike Orders v0, which ignores them. Suppressing all four takes two mechanisms:
+  `ignore_stream_slicer_parameters_on_paginated_requests` on the **SimpleRetriever** (the CDK ignores
+  it on the DeclarativeStream) covers the cursor's `createdSince`/`createdUntil`, and
+  `"{{ '' if next_page_token else ... }}"` in the requester's `request_parameters` covers
+  `reportTypes` and `pageSize`. The paginator's `page_size_option` cannot be used, because
+  `DefaultPaginator` injects it on paginated requests too. The response field is also `nextToken`
+  (lower camel case); `NextToken` is the Orders/Finances v0 spelling and resolves to an empty string
+  here, which silently stops pagination after the first page.
+- **The download requester must ignore 403.** If the URL expires anyway, S3 returns `403 Request has
+  expired` and the CDK cannot resolve a new one. `PresignedUrlDownloadRequester` handles this by
+  calling `getReportDocument` again for a fresh URL (up to two times), which only works because the
+  download requester's error handler maps 403 to `IGNORE` so the response reaches the component.
+- **Each report must be downloaded exactly once.** A report is one immutable document and the stream
+  has no primary key, so anything that runs a report twice duplicates its rows in the destination. The
+  listing checkpoint (`listedUntil`) is the end of the previous listing to the second, and the listing
+  has no `lookback_window`, so a report is never listed twice. The child stream's `step` is `P10Y`, so
+  `period_in_days` cannot split one report into several jobs. The checkpoint was named `dataEndTime`
+  up to 6.1.0, which listed reports without downloading them; the new name is what makes that state
+  list the full window again, so do not rename it back.
+- **Only `CANCELLED` and `FATAL` reports are filtered out of the listing.** The listing checkpoint
+  moves past every report it lists, so dropping one that is still `IN_QUEUE` or `IN_PROGRESS` loses it
+  for good. The async retriever polls those until `DONE` instead.
+
+**Why this matters:** each of these fails quietly or only at scale. The stream either emits 0 records
+with a successful sync, stops after one page of reports, fails on large backfills with expired URLs,
+emits the same settlement rows more than once, or silently skips reports.
+
 ## Incremental Stream Considerations
 
 The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 7 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
