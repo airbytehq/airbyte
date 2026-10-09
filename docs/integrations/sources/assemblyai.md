@@ -9,6 +9,11 @@ The deprecated `lemur_response` stream has been removed. See the [migration guid
 Website: https://www.assemblyai.com/
 API Reference: https://www.assemblyai.com/docs/api-reference/overview
 
+## Prerequisites
+
+- An AssemblyAI account with transcripts stored in AssemblyAI's US region. The connector only calls `https://api.assemblyai.com`, so it can't read transcripts from the EU server at `api.eu.assemblyai.com`.
+- An AssemblyAI API key. Copy it from the [AssemblyAI dashboard](https://www.assemblyai.com/app/api-keys).
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
@@ -26,9 +31,15 @@ API Reference: https://www.assemblyai.com/docs/api-reference/overview
 | paragraphs | uuid | DefaultPaginator | ✅ | ❌ |
 | transcript_subtitle | uuid | DefaultPaginator | ✅ | ❌ |
 
-The connector uses AssemblyAI's US API at `https://api.assemblyai.com`. Transcript listing returns the newest records first; the connector follows `page_details.prev_url` to read older pages. AssemblyAI limits transcript listing to the [last 90 days](https://www.assemblyai.com/docs/pre-recorded-audio/api-reference/transcripts/list).
+The `transcripts` stream reads AssemblyAI's [list transcripts endpoint](https://www.assemblyai.com/docs/api-reference/transcripts/list), which returns the newest transcripts first. The connector follows `page_details.prev_url` to read older pages. AssemblyAI only lists transcripts from the last 30 days of usage, so the connector can't sync older transcripts even if `start_date` is earlier.
 
-Despite its legacy name, `transcript_subtitle` reads the [redacted audio endpoint](https://www.assemblyai.com/docs/api-reference/transcripts/get-redacted-audio), returning `status` and `redacted_audio_url`. Select it only for transcripts with redacted audio available; AssemblyAI retains these files for 24 hours. The stream name and schema are unchanged in this release.
+The `transcript_sentences`, `paragraphs`, and `transcript_subtitle` streams request data separately for each transcript returned by the `transcripts` stream. Their `uuid` primary key isn't an AssemblyAI identifier: the connector sets it to the UTC timestamp at which it reads each record, so the same sentence or paragraph gets a different `uuid` on every sync.
+
+Despite its legacy name, `transcript_subtitle` reads the [redacted audio endpoint](https://www.assemblyai.com/docs/api-reference/transcripts/get-redacted-audio), returning `status` and `redacted_audio_url`. Select it only for transcripts with redacted audio available; AssemblyAI retains these files for 24 hours.
+
+## Rate limits
+
+AssemblyAI limits each account to 20,000 HTTP requests per five minutes across all endpoints, and returns HTTP `403` when you exceed it. Because the child streams send requests for each transcript, syncing them for a large number of transcripts uses this limit faster. For details, see [AssemblyAI rate limits](https://www.assemblyai.com/docs/pre-recorded-audio/rate-limits).
 
 ## IP allow list
 
@@ -41,7 +52,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
-| 1.0.0 | 2026-10-07 | [88224](https://github.com/airbytehq/airbyte/pull/88224) | Remove deprecated LeMUR stream; fix API-key authentication, transcript pagination, and cursor timestamp parsing |
+| 1.0.0 | 2026-10-09 | [88224](https://github.com/airbytehq/airbyte/pull/88224) | Remove deprecated LeMUR stream; fix API-key authentication, transcript pagination, and cursor timestamp parsing |
 | 0.0.44 | 2026-10-06 | [87774](https://github.com/airbytehq/airbyte/pull/87774) | Update dependencies |
 | 0.0.43 | 2026-09-29 | [87073](https://github.com/airbytehq/airbyte/pull/87073) | Update dependencies |
 | 0.0.42 | 2026-09-22 | [86514](https://github.com/airbytehq/airbyte/pull/86514) | Update dependencies |
