@@ -827,6 +827,32 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
 
 
 @dataclass
+class HubspotCRMSearchFilteredPaginationStrategy(HubspotCRMSearchPaginationStrategy):
+    """
+    Same as HubspotCRMSearchPaginationStrategy, for streams that drop records with a RecordFilter.
+
+    The CDK passes the page size and last record *after* filtering, so a filtered page looks shorter
+    than `page_size` and pagination would stop early, and the `after` offset would fall behind the
+    real one. This strategy reads both from the raw `results` of the response instead.
+    """
+
+    def next_page_token(
+        self,
+        response: requests.Response,
+        last_page_size: int,
+        last_record: Optional[Record],
+        last_page_token_value: Optional[Any] = None,
+    ) -> Optional[Any]:
+        results = response.json().get("results") or []
+        return super().next_page_token(
+            response=response,
+            last_page_size=len(results),
+            last_record=results[-1] if results else None,
+            last_page_token_value=last_page_token_value,
+        )
+
+
+@dataclass
 class HubspotCustomObjectsSchemaLoader(SchemaLoader):
     """
     Custom schema loader for HubSpot custom object streams.

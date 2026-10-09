@@ -1850,6 +1850,260 @@ definitions:
       schema:
         $ref: "#/schemas/engagements_task_pipelines"
 
+  recording_download_error_handler:
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes:
+          - 429
+        error_message: >-
+          HubSpot rate limit reached (429) while downloading a recording. Backoff based on 'Retry-After' header, then exponential backoff fallback.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 500
+          - 502
+          - 503
+          - 504
+        error_message: >-
+          HubSpot server error (5xx) while downloading a recording. Retrying with exponential backoff...
+      - type: HttpResponseFilter
+        action: REFRESH_TOKEN_THEN_RETRY
+        http_codes:
+          - 401
+        error_message: >-
+          Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot.
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 403
+          - 404
+          - 410
+        error_message: >-
+          HubSpot refused to serve a recording (HTTP 403/404/410), skipping its content. The file written
+          for this record holds the HubSpot error body instead of media.
+
+  recording_file_uploader:
+    type: FileUploader
+    requester:
+      type: HttpRequester
+      url_base: "{{ download_target }}"
+      http_method: GET
+      authenticator:
+        $ref: "#/definitions/authenticator"
+      request_headers:
+        # Cloudflare in front of the recording CDN rejects default library user agents (error 1010).
+        User-Agent: Airbyte
+      error_handler:
+        $ref: "#/definitions/recording_download_error_handler"
+    download_target_extractor:
+      type: DpathExtractor
+      field_path:
+        - recording_url
+    filename_extractor: "{{ record.file_name }}"
+
+  recording_properties_transformation:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - object_type
+        value: "{{ parameters['object_type'] }}"
+      - type: AddedFieldDefinition
+        path:
+          - recording_url
+        value: >-
+          {{ record['properties'].get('hs_meeting_recording_url')
+          or record['properties'].get('hs_call_recording_url')
+          or record['properties'].get('hs_call_video_recording_url') }}
+      - type: AddedFieldDefinition
+        path:
+          - hs_createdate
+        value: "{{ record['properties'].get('hs_createdate') }}"
+      - type: AddedFieldDefinition
+        path:
+          - hs_lastmodifieddate
+        value: "{{ record['properties'].get('hs_lastmodifieddate') }}"
+
+  recording_file_name_transformation:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - file_name
+        value: >-
+          {{ record['id'] }}.{{ ((record.get('recording_url') or '') | lower |
+          regex_search('[.](mp4|m4a|mp3|wav|webm|ogg|mov)(?:[?#]|$)')) or 'mp4' }}
+
+  # The engagement id is exposed as call_id / meeting_id by each stream.
+  recording_cleanup_transformation:
+    type: RemoveFields
+    field_pointers:
+      - - properties
+      - - createdAt
+      - - updatedAt
+      - - id
+
+  base_recordings_stream:
+    $ref: "#/definitions/stream_base"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/crm/v3/objects/{{ parameters['entity'] }}/search"
+        http_method: POST
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CustomPaginationStrategy
+          class_name: source_declarative_manifest.components.HubspotCRMSearchFilteredPaginationStrategy
+          page_size: 200
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        transform_before_filtering: true
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ (record.get('recording_url') or '') |
+            regex_search('^https://(?:[A-Za-z0-9-]+[.])*(hubspot|hubapi)[.]com(?:[/?#:]|$)') != '' }}
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      cursor_field: hs_lastmodifieddate
+      step: P30D
+      cursor_granularity: PT0.001S
+      lookback_window: PT{{ config.get('lookback_window', 0) }}M
+    file_uploader:
+      $ref: "#/definitions/recording_file_uploader"
+
+  meeting_recordings_stream:
+    $ref: "#/definitions/base_recordings_stream"
+    name: meeting_recordings
+    $parameters:
+      name: meeting_recordings
+      entity: meetings
+      object_type: meeting
+      required_scopes: crm.objects.contacts.read
+    primary_key:
+      - meeting_id
+    transformations:
+      - $ref: "#/definitions/recording_properties_transformation"
+      - $ref: "#/definitions/recording_file_name_transformation"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - meeting_id
+            value: "{{ record['id'] }}"
+            value_type: string
+      - $ref: "#/definitions/recording_cleanup_transformation"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/meeting_recordings"
+    retriever:
+      $ref: "#/definitions/base_recordings_stream/retriever"
+      requester:
+        $ref: "#/definitions/base_recordings_stream/retriever/requester"
+        request_body_json:
+          limit: 200
+          sorts:
+            - propertyName: hs_object_id
+              direction: ASCENDING
+          filterGroups:
+            - filters:
+                - propertyName: hs_meeting_recording_url
+                  operator: HAS_PROPERTY
+                - propertyName: hs_lastmodifieddate
+                  operator: GTE
+                  value: "{{ format_datetime(stream_interval.start_time, '%ms') }}"
+                - propertyName: hs_lastmodifieddate
+                  operator: LTE
+                  value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
+                - propertyName: hs_object_id
+                  operator: GTE
+                  value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
+          properties:
+            - hs_meeting_recording_url
+            - hs_createdate
+            - hs_lastmodifieddate
+          after: "{{ next_page_token['next_page_token']['after'] }}"
+
+  call_recordings_stream:
+    $ref: "#/definitions/base_recordings_stream"
+    name: call_recordings
+    $parameters:
+      name: call_recordings
+      entity: calls
+      object_type: call
+      required_scopes: crm.objects.contacts.read
+    primary_key:
+      - call_id
+    transformations:
+      - $ref: "#/definitions/recording_properties_transformation"
+      - $ref: "#/definitions/recording_file_name_transformation"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - call_id
+            value: "{{ record['id'] }}"
+            value_type: string
+      - $ref: "#/definitions/recording_cleanup_transformation"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/call_recordings"
+    retriever:
+      $ref: "#/definitions/base_recordings_stream/retriever"
+      requester:
+        $ref: "#/definitions/base_recordings_stream/retriever/requester"
+        request_body_json:
+          limit: 200
+          sorts:
+            - propertyName: hs_object_id
+              direction: ASCENDING
+          filterGroups:
+            - filters:
+                - propertyName: hs_call_recording_url
+                  operator: HAS_PROPERTY
+                - propertyName: hs_lastmodifieddate
+                  operator: GTE
+                  value: "{{ format_datetime(stream_interval.start_time, '%ms') }}"
+                - propertyName: hs_lastmodifieddate
+                  operator: LTE
+                  value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
+                - propertyName: hs_object_id
+                  operator: GTE
+                  value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
+            - filters:
+                - propertyName: hs_call_video_recording_url
+                  operator: HAS_PROPERTY
+                - propertyName: hs_lastmodifieddate
+                  operator: GTE
+                  value: "{{ format_datetime(stream_interval.start_time, '%ms') }}"
+                - propertyName: hs_lastmodifieddate
+                  operator: LTE
+                  value: "{{ format_datetime(stream_interval.end_time, '%ms') }}"
+                - propertyName: hs_object_id
+                  operator: GTE
+                  value: "{{ next_page_token['next_page_token'].get('id', 0) }}"
+          properties:
+            - hs_call_recording_url
+            - hs_call_video_recording_url
+            - hs_createdate
+            - hs_lastmodifieddate
+          after: "{{ next_page_token['next_page_token']['after'] }}"
+
   subscription_changes_stream:
     $ref: "#/definitions/stream_base"
     name: subscription_changes
@@ -2759,6 +3013,8 @@ streams:
   - "#/definitions/engagements_notes_stream"
   - "#/definitions/engagements_tasks_stream"
   - "#/definitions/engagements_task_pipelines_stream"
+  - "#/definitions/meeting_recordings_stream"
+  - "#/definitions/call_recordings_stream"
   - "#/definitions/form_submissions_stream"
   - "#/definitions/forms_stream"
   - "#/definitions/goals_stream"
@@ -5544,6 +5800,90 @@ schemas:
           type:
             - "null"
             - string
+
+  call_recordings:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      call_id:
+        description: HubSpot call ID. Joins to `engagements_calls.id`.
+        type:
+          - "null"
+          - string
+      object_type:
+        description: Engagement type of the recording, always `call`.
+        type:
+          - "null"
+          - string
+      recording_url:
+        description: URL the recording file was downloaded from.
+        type:
+          - "null"
+          - string
+      file_name:
+        description: Name of the downloaded file, `<call_id>.<extension>`.
+        type:
+          - "null"
+          - string
+      hs_createdate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      hs_lastmodifieddate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      archived:
+        type:
+          - "null"
+          - boolean
+
+  meeting_recordings:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      meeting_id:
+        description: HubSpot meeting ID. Joins to `engagements_meetings.id`.
+        type:
+          - "null"
+          - string
+      object_type:
+        description: Engagement type of the recording, always `meeting`.
+        type:
+          - "null"
+          - string
+      recording_url:
+        description: URL the recording file was downloaded from.
+        type:
+          - "null"
+          - string
+      file_name:
+        description: Name of the downloaded file, `<meeting_id>.<extension>`.
+        type:
+          - "null"
+          - string
+      hs_createdate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      hs_lastmodifieddate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      archived:
+        type:
+          - "null"
+          - boolean
 
   engagements_task_pipelines:
     $schema: http://json-schema.org/draft-07/schema#

@@ -32,6 +32,10 @@ acceptance_tests:
         empty_streams:
           - name: engagements_calls
             bypass_reason: Unable to populate (cost $20/month) - covered by integration tests
+          - name: call_recordings
+            bypass_reason: Test account has no recorded calls - covered by integration tests
+          - name: meeting_recordings
+            bypass_reason: Test account has no recorded meetings - covered by integration tests
           - name: owners_archived
             bypass_reason: Unable to populate - covered by integration tests
           - name: deals_archived
@@ -79,6 +83,10 @@ acceptance_tests:
         empty_streams:
           - name: engagements_calls
             bypass_reason: Unable to populate (cost $20/month) - covered by integration tests
+          - name: call_recordings
+            bypass_reason: Test account has no recorded calls - covered by integration tests
+          - name: meeting_recordings
+            bypass_reason: Test account has no recorded meetings - covered by integration tests
           - name: owners_archived
             bypass_reason: Unable to populate - covered by integration tests
           - name: deals_archived
