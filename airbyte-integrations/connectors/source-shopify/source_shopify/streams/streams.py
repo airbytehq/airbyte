@@ -466,6 +466,12 @@ class DiscountCodesSync(IncrementalShopifyStream):
     with cursor pagination, then explicitly pages each parent's child `codes`
     connection (up to 250 per page), merging parent metadata onto every child
     record to match the existing `discount_codes` schema.
+
+    `DiscountRedeemCode` has no `updatedAt`, so by default every code of an updated parent is
+    re-emitted. With `discount_codes_sync_new_codes_only` enabled, the stream keeps per-parent
+    state (`parents: {<discount_id>: {updated_at, max_code_id}}`) and only fetches codes with
+    `id:>max_code_id` for parents already synced, skipping parents whose `updated_at` has not moved.
+    The trade-off is that `usage_count` of previously synced codes is not refreshed.
     """
 
     data_field = "graphql"
@@ -474,6 +480,23 @@ class DiscountCodesSync(IncrementalShopifyStream):
 
     PARENT_PAGE_SIZE = 50
     CHILD_PAGE_SIZE = 250
+    PARENTS_STATE_KEY = "parents"
+
+    def __init__(self, config: Mapping[str, Any]):
+        super().__init__(config)
+        self._parents_state: MutableMapping[str, MutableMapping[str, Any]] = {}
+
+    @property
+    def new_codes_only(self) -> bool:
+        return bool(self.config.get("discount_codes_sync_new_codes_only", False))
+
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> MutableMapping[str, Any]:
+        updated_state = super().get_updated_state(current_stream_state, latest_record)
+        if self.new_codes_only:
+            updated_state[self.PARENTS_STATE_KEY] = {parent_id: dict(value) for parent_id, value in self._parents_state.items()}
+        return updated_state
 
     PARENT_QUERY = """
     query DiscountCodeNodes($first: Int!, $after: String, $query: String) {
@@ -552,29 +575,29 @@ class DiscountCodesSync(IncrementalShopifyStream):
     """
 
     CHILD_CODES_QUERY = """
-    query DiscountCodesForNode($id: ID!, $first: Int!, $after: String) {
+    query DiscountCodesForNode($id: ID!, $first: Int!, $after: String, $query: String) {
       codeDiscountNode(id: $id) {
         codeDiscount {
           ... on DiscountCodeApp {
-            codes(first: $first, after: $after) {
+            codes(first: $first, after: $after, query: $query, sortKey: ID) {
               pageInfo { hasNextPage endCursor }
               nodes { id code asyncUsageCount createdBy { id title } }
             }
           }
           ... on DiscountCodeBasic {
-            codes(first: $first, after: $after) {
+            codes(first: $first, after: $after, query: $query, sortKey: ID) {
               pageInfo { hasNextPage endCursor }
               nodes { id code asyncUsageCount createdBy { id title } }
             }
           }
           ... on DiscountCodeBxgy {
-            codes(first: $first, after: $after) {
+            codes(first: $first, after: $after, query: $query, sortKey: ID) {
               pageInfo { hasNextPage endCursor }
               nodes { id code asyncUsageCount createdBy { id title } }
             }
           }
           ... on DiscountCodeFreeShipping {
-            codes(first: $first, after: $after) {
+            codes(first: $first, after: $after, query: $query, sortKey: ID) {
               pageInfo { hasNextPage endCursor }
               nodes { id code asyncUsageCount createdBy { id title } }
             }
@@ -655,11 +678,16 @@ class DiscountCodesSync(IncrementalShopifyStream):
             **parent_meta,
         }
 
-    def _fetch_child_codes(self, parent_gid: str, parent_meta: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+    def _fetch_child_codes(
+        self, parent_gid: str, parent_meta: Mapping[str, Any], min_code_id: Optional[int] = None
+    ) -> Iterable[Mapping[str, Any]]:
         child_cursor: Optional[str] = None
         has_more = True
+        parent_state = self._parents_state.get(str(BulkTools.resolve_str_id(parent_gid))) if self.new_codes_only else None
         while has_more:
             variables: dict = {"id": parent_gid, "first": self.CHILD_PAGE_SIZE}
+            if min_code_id is not None:
+                variables["query"] = f"id:>{min_code_id}"
             if child_cursor:
                 variables["after"] = child_cursor
             result = self._graphql_request(self.CHILD_CODES_QUERY, variables)
@@ -667,12 +695,25 @@ class DiscountCodesSync(IncrementalShopifyStream):
             codes_conn = self._extract_codes_connection(code_discount)
             for code_node in codes_conn.get("nodes", []):
                 record = self._build_child_record(code_node, parent_gid, parent_meta)
+                if parent_state is not None and record["id"] is not None:
+                    parent_state["max_code_id"] = max(record["id"], parent_state.get("max_code_id") or 0)
                 yield self._transformer.transform(record)
             page_info = codes_conn.get("pageInfo", {})
             has_more = page_info.get("hasNextPage", False)
             child_cursor = page_info.get("endCursor")
             if has_more and not child_cursor:
                 break
+
+    def _fetch_new_child_codes(self, parent_gid: str, parent_meta: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        parent_id = str(BulkTools.resolve_str_id(parent_gid))
+        parent_updated_at = parent_meta.get("updated_at")
+        parent_state = self._parents_state.setdefault(parent_id, {})
+        synced_updated_at = parent_state.get("updated_at")
+        if synced_updated_at and parent_updated_at and parent_updated_at <= synced_updated_at:
+            return
+        yield from self._fetch_child_codes(parent_gid, parent_meta, min_code_id=parent_state.get("max_code_id"))
+        # only mark the parent as synced once all of its codes were read, so an interrupted sync resumes from `max_code_id`
+        parent_state["updated_at"] = parent_updated_at
 
     def read_records(
         self,
@@ -684,6 +725,10 @@ class DiscountCodesSync(IncrementalShopifyStream):
         state_value = (stream_state or {}).get(self.cursor_field, self.config.get("start_date", ""))
         if state_value:
             state_value = self._apply_lookback_window(state_value)
+        if self.new_codes_only:
+            self._parents_state = {
+                str(parent_id): dict(value) for parent_id, value in ((stream_state or {}).get(self.PARENTS_STATE_KEY) or {}).items()
+            }
 
         parent_cursor: Optional[str] = None
         has_more_parents = True
@@ -705,7 +750,10 @@ class DiscountCodesSync(IncrementalShopifyStream):
                 if not code_discount:
                     continue
                 parent_meta = self._build_parent_metadata(code_discount)
-                yield from self._fetch_child_codes(parent_gid, parent_meta)
+                if self.new_codes_only:
+                    yield from self._fetch_new_child_codes(parent_gid, parent_meta)
+                else:
+                    yield from self._fetch_child_codes(parent_gid, parent_meta)
 
             has_more_parents = page_info.get("hasNextPage", False)
             parent_cursor = page_info.get("endCursor")
