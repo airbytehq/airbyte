@@ -8,6 +8,10 @@ This page contains the setup guide and reference information for the [Customer.i
 
 The Customer.io source connector uses the [Customer.io App API](https://docs.customer.io/integrations/api/app/) to sync data from one Customer.io workspace. It syncs messaging configuration, such as automations, one-time sends, broadcasts, transactional message templates, sender identities, segments, snippets, and collections. It can also sync end-user data: message deliveries, the activity log, people profiles, segment memberships, and email suppression lists.
 
+:::info
+Version 1.0.0 changes the declared types of fields in the `campaigns`, `campaigns_actions`, and `newsletters` streams. If you sync any of them, follow the [migration guide](/integrations/sources/customer-io-migrations#upgrading-to-100) before your first sync on 1.0.0.
+:::
+
 ## Prerequisites
 
 - A Customer.io App API key for the workspace you want to sync. Track API keys don't work with this connector.
@@ -116,6 +120,7 @@ New connections select `campaigns`, `campaigns_actions`, `newsletters`, `broadca
 - **Child streams:** `campaigns_actions`, `newsletter_variants`, `broadcast_actions`, `segment_usage`, and `segment_memberships` read their parent list, then make requests for each parent record. If a parent is deleted between those requests, Customer.io returns a `404` error and the connector skips that parent instead of failing the sync.
 - **`newsletter_variants` and `broadcast_actions`** contain one record per language variant of a multi-language message. `newsletter_variants` also contains one record per A/B test variant.
 - **`sender_identities`** contains both visible and hidden senders.
+- **ID and time fields:** `campaigns_actions.from_id` and `campaigns_actions.reply_to_id` join to `sender_identities.id`. `campaigns.trigger_segment_ids` holds `segments.id` values, and `newsletters.content_ids` holds `newsletter_variants.id` values. `newsletters.sent_at` is the Unix time, in seconds, of the one-time send's last send.
 - **`segments`, `segment_usage`, and `segment_memberships`** don't include archived segments. `segment_usage` contains one record per segment, listing the automations and one-time sends that use it.
 - **`subscription_topics`** is empty until you add topics to your workspace's [subscription center](https://docs.customer.io/messaging/channels/subscriptions/center/). `newsletters.subscription_topic_id` joins to `subscription_topics.id`.
 - **`object_types`**: `id` is a string, while `campaigns.object_type_id` is an integer. Cast one of them to join the two streams.
