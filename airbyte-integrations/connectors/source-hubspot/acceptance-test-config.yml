@@ -166,6 +166,13 @@ acceptance_tests:
               bypass_reason: Hubspot time depend on current time
       - config_path: secrets/config_oauth_no_start_date.json
         configured_catalog_path: integration_tests/full_refresh_oauth_catalog.json
+        empty_streams:
+          - name: campaigns
+            bypass_reason: This OAuth token gets 403 (missing scopes) on this stream; covered by the config_oauth.json entry
+          - name: contact_lists
+            bypass_reason: This OAuth token gets 403 (missing scopes) on this stream; covered by the config_oauth.json entry
+          - name: companies
+            bypass_reason: This OAuth token gets 403 (missing scopes) on this stream; covered by the config_oauth.json entry
         ignored_fields:
           contact_lists:
             - name: ilsFilterBranch

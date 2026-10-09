@@ -26,6 +26,13 @@ acceptance_tests:
         # test 403 exception is not breaking the sync
       - config_path: secrets/config_limited_scopes.json
         configured_catalog_path: integration_tests/configured_catalog_full_refresh.json
+        empty_streams:
+          - name: all_projects_detail
+            bypass_reason: "The limited-scope token gets 403 Forbidden on this stream."
+          - name: issues
+            bypass_reason: "The limited-scope token gets 403 Forbidden on this stream."
+          - name: projects
+            bypass_reason: "The limited-scope token gets 403 Forbidden on this stream."
   incremental:
     tests:
       - config_path: secrets/config.json
