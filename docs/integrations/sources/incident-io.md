@@ -43,6 +43,9 @@ The `start_date` filter applies to these five streams in every sync mode, includ
 | Stream Name | Endpoint | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 | ------------- | ---------- | ------------- | ------------ | --------------------- | ---------------------- |
 | actions | `/v3/actions` | id | DefaultPaginator | ✅ | ✅ |
+| alert_attributes | `/v2/alert_attributes` | id | No pagination | ✅ | ❌ |
+| alert_routes | `/v2/alert_routes` | id | DefaultPaginator | ✅ | ❌ |
+| alert_sources | `/v2/alert_sources` | id | No pagination | ✅ | ❌ |
 | alerts | `/v2/alerts` | id | DefaultPaginator | ✅ | ✅ |
 | catalog_entries | `/v3/catalog_entries` | id | DefaultPaginator | ✅ | ❌ |
 | catalog_resources | `/v3/catalog_resources` | type | No pagination | ✅ | ❌ |
@@ -50,8 +53,10 @@ The `start_date` filter applies to these five streams in every sync mode, includ
 | custom_field_options | `/v1/custom_field_options` | id | DefaultPaginator | ✅ | ❌ |
 | custom_fields | `/v2/custom_fields` | id | No pagination | ✅ | ❌ |
 | escalations | `/v2/escalations` | id | DefaultPaginator | ✅ | ✅ |
+| escalation_paths | `/v2/escalation_paths` | id | DefaultPaginator | ✅ | ❌ |
 | follow-ups | `/v3/follow_ups` | id | DefaultPaginator | ✅ | ✅ |
 | incident_attachments | `/v1/incident_attachments` | id | No pagination | ✅ | ❌ |
+| incident_alerts | `/v2/incident_alerts` | id | DefaultPaginator | ✅ | ❌ |
 | incident_roles | `/v2/incident_roles` | id | No pagination | ✅ | ❌ |
 | incident_statuses | `/v1/incident_statuses` | id | No pagination | ✅ | ❌ |
 | incident_timestamps | `/v2/incident_timestamps` | id | No pagination | ✅ | ❌ |
@@ -88,6 +93,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --------- | ------ | -------------- | --------- |
+| 0.4.0 | 2026-10-09 | [88418](https://github.com/airbytehq/airbyte/pull/88418) | Add five alerting and escalation path streams |
 | 0.3.0 | 2026-10-09 | [88416](https://github.com/airbytehq/airbyte/pull/88416) | Add five incident and catalog streams |
 | 0.2.0 | 2026-10-08 | [88150](https://github.com/airbytehq/airbyte/pull/88150) | Migrate actions and follow-ups to /v3; add incremental sync, rate limiting, clearer errors, time_window and num_workers options, and sync incidents in every status category |
 | 0.1.42 | 2026-10-06 | [87912](https://github.com/airbytehq/airbyte/pull/87912) | Update dependencies |

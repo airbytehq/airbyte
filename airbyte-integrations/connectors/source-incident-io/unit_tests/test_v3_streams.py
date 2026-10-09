@@ -16,13 +16,13 @@ catch-all.
 """
 
 import logging
-from pathlib import Path
 from unittest import mock
 
 import jsonschema
 import pytest
 import requests_mock
 import yaml
+from conftest import _BASE_URL, _CONFIG, _MANIFEST_PATH, _get_source, _read_stream
 
 from airbyte_cdk.models import Status, SyncMode
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
@@ -32,34 +32,10 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
-def _get_manifest_path() -> Path:
-    ci_path = Path("/airbyte/integration_code/source_declarative_manifest")
-    if ci_path.exists():
-        return ci_path
-    return Path(__file__).parent.parent
-
-
-_MANIFEST_PATH = _get_manifest_path() / "manifest.yaml"
-_CONFIG = {"api_key": "test-key"}
 # A start_date inside one P30D window of "now", so tests that count requests see a single slice.
 _RECENT_CONFIG = {"api_key": "test-key", "start_date": "2026-10-06T00:00:00Z"}
-_BASE_URL = "https://api.incident.io"
 _MODES = ["standard", "retrospective", "test", "tutorial", "stream"]
 _STATUS_CATEGORIES = ["triage", "live", "learning", "paused", "closed", "declined", "canceled", "merged"]
-
-
-def _get_source(state=None, config=None):
-    return YamlDeclarativeSource(
-        path_to_yaml=str(_MANIFEST_PATH),
-        catalog=CatalogBuilder().build(),
-        config=config or _CONFIG,
-        state=state if state is not None else StateBuilder().build(),
-    )
-
-
-def _read_stream(stream_name, sync_mode=SyncMode.full_refresh, state=None, config=None):
-    catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
-    return read(_get_source(state, config), config or _CONFIG, catalog, state=state)
 
 
 def _mock_empty(mocker, path, records_field):
