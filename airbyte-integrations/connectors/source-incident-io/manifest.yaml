@@ -539,57 +539,17 @@ definitions:
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: retry-after
-                    max_waiting_time_in_seconds: 600
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
+              - $ref: "#/definitions/base_error_handler"
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
                     http_codes:
                       - 404
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    failure_type: config_error
-                    http_codes:
-                      - 401
-                    error_message: "The API key is invalid or has been revoked. Create a new key in incident.io under Settings > API keys and update the connector configuration."
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    failure_type: config_error
-                    http_codes:
-                      - 403
-                    error_message: "The API key lacks a permission this stream needs: {{ ((response.get('errors') or [{}])[0].get('message') or 'see the incident.io error response')[:300] }}. Grant it in incident.io under Settings > API keys, or deselect the stream."
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: "incident.io rate limit reached. Retrying after the Retry-After interval."
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 408
-                      - 500
-                      - 502
-                      - 503
-                      - 504
-                    error_message: "incident.io returned a transient error. Retrying."
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    failure_type: system_error
-                    http_codes:
-                      - 400
-                      - 405
-                      - 406
-                      - 409
-                      - 412
-                      - 413
-                      - 422
-                    error_message: "incident.io rejected the request: {{ ((response.get('errors') or [{}])[0].get('message') or 'see the incident.io error response')[:300] }}"
+                  - $ref: "#/definitions/base_error_handler/response_filters/0"
+                  - $ref: "#/definitions/base_error_handler/response_filters/1"
+                  - $ref: "#/definitions/base_error_handler/response_filters/2"
+                  - $ref: "#/definitions/base_error_handler/response_filters/3"
+                  - $ref: "#/definitions/base_error_handler/response_filters/4"
         record_selector:
           type: RecordSelector
           extractor:
@@ -729,6 +689,55 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/custom_field_options"
+  base_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: retry-after
+        max_waiting_time_in_seconds: 600
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 401
+        error_message: "The API key is invalid or has been revoked. Create a new key in incident.io under Settings > API keys and update the connector configuration."
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 403
+        error_message: "The API key lacks a permission this stream needs: {{ ((response.get('errors') or [{}])[0].get('message') or 'see the incident.io error response')[:300] }}. Grant it in incident.io under Settings > API keys, or deselect the stream."
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes:
+          - 429
+        error_message: "incident.io rate limit reached. Retrying after the Retry-After interval."
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 408
+          - 500
+          - 502
+          - 503
+          - 504
+        error_message: "incident.io returned a transient error. Retrying."
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: system_error
+        http_codes:
+          - 400
+          - 404
+          - 405
+          - 406
+          - 409
+          - 412
+          - 413
+          - 422
+        error_message: "incident.io rejected the request: {{ ((response.get('errors') or [{}])[0].get('message') or 'see the incident.io error response')[:300] }}"
   base_requester:
     type: HttpRequester
     url_base: https://api.incident.io
@@ -738,54 +747,7 @@ definitions:
     error_handler:
       type: CompositeErrorHandler
       error_handlers:
-        - type: DefaultErrorHandler
-          max_retries: 5
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: retry-after
-              max_waiting_time_in_seconds: 600
-            - type: ExponentialBackoffStrategy
-              factor: 5
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              failure_type: config_error
-              http_codes:
-                - 401
-              error_message: "The API key is invalid or has been revoked. Create a new key in incident.io under Settings > API keys and update the connector configuration."
-            - type: HttpResponseFilter
-              action: FAIL
-              failure_type: config_error
-              http_codes:
-                - 403
-              error_message: "The API key lacks a permission this stream needs: {{ ((response.get('errors') or [{}])[0].get('message') or 'see the incident.io error response')[:300] }}. Grant it in incident.io under Settings > API keys, or deselect the stream."
-            - type: HttpResponseFilter
-              action: RATE_LIMITED
-              http_codes:
-                - 429
-              error_message: "incident.io rate limit reached. Retrying after the Retry-After interval."
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
-                - 408
-                - 500
-                - 502
-                - 503
-                - 504
-              error_message: "incident.io returned a transient error. Retrying."
-            - type: HttpResponseFilter
-              action: FAIL
-              failure_type: system_error
-              http_codes:
-                - 400
-                - 404
-                - 405
-                - 406
-                - 409
-                - 412
-                - 413
-                - 422
-              error_message: "incident.io rejected the request: {{ ((response.get('errors') or [{}])[0].get('message') or 'see the incident.io error response')[:300] }}"
+        - $ref: "#/definitions/base_error_handler"
   updated_at_cursor:
     type: DatetimeBasedCursor
     cursor_field: updated_at

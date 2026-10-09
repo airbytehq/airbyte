@@ -22,8 +22,10 @@ from unittest import mock
 import jsonschema
 import pytest
 import requests_mock
+import yaml
 
 from airbyte_cdk.models import Status, SyncMode
+from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -651,6 +653,31 @@ def test_incident_attachments_retries_transient_errors():
     assert output.errors == []
     assert [message.record.data["id"] for message in output.records] == ["attachment-1"]
     assert len(attachment_requests) == 2
+
+
+def test_incident_attachments_error_handler_reuses_base_filters():
+    raw_manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    manifest = ManifestReferenceResolver().preprocess_manifest(raw_manifest)
+    definitions = manifest["definitions"]
+    base_requester_handlers = definitions["base_requester"]["error_handler"]["error_handlers"]
+    assert len(base_requester_handlers) == 1
+    base_handler = base_requester_handlers[0]
+
+    attachment_requester = definitions["streams"]["incident_attachments"]["retriever"]["requester"]
+    attachment_handlers = attachment_requester["error_handler"]["error_handlers"]
+    assert len(attachment_handlers) == 1
+    attachment_handler = attachment_handlers[0]
+    assert attachment_handler["type"] == "DefaultErrorHandler"
+    assert attachment_handler["max_retries"] == base_handler["max_retries"]
+
+    base_filters = base_handler["response_filters"]
+    attachment_filters = attachment_handler["response_filters"]
+    assert len(attachment_filters) == len(base_filters) + 1
+    assert attachment_filters[0]["action"] == "IGNORE"
+    assert attachment_filters[0]["http_codes"] == [404]
+    assert [(filter["action"], filter["http_codes"]) for filter in attachment_filters[1:]] == [
+        (filter["action"], filter["http_codes"]) for filter in base_filters
+    ]
 
 
 def test_catalog_entries_partitions_and_follows_all_pages():
