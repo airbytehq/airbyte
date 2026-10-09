@@ -20,6 +20,10 @@ API Reference: https://aviationstack.com/documentation
 | countries | id | DefaultPaginator | ✅ |  ❌  |
 | taxes | id | DefaultPaginator | ✅ |  ❌  |
 
+## Request quota and rate limits
+
+Every page of every stream costs one Aviationstack API request against your plan's monthly quota, and the catalog streams (`airports`, `airlines`, `airplanes`, `cities`, ...) return thousands of records each. The connector requests the maximum page size allowed below the Professional plan (100 records per request), so a full sync of all streams still takes several hundred requests. The [Free plan](https://aviationstack.com/product) only includes 100 requests per month, which is not enough to sync the catalog; once the quota is exhausted the API answers `HTTP 429 usage_limit_reached` and the connection check and syncs fail with a configuration error until the quota resets or the plan is upgraded. See the [Aviationstack API documentation](https://docs.apilayer.com/aviationstack/docs/api-documentation) for details.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -31,6 +35,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.45 | 2026-10-07 | [88226](https://github.com/airbytehq/airbyte/pull/88226) | Halve request volume (page size 50 → 100) and fail fast with a clear `config_error` when the Aviationstack request quota is exhausted (HTTP 429) |
+| 0.0.44 | 2026-10-06 | [87757](https://github.com/airbytehq/airbyte/pull/87757) | Update dependencies |
+| 0.0.43 | 2026-09-29 | [87069](https://github.com/airbytehq/airbyte/pull/87069) | Update dependencies |
+| 0.0.42 | 2026-09-22 | [86521](https://github.com/airbytehq/airbyte/pull/86521) | Update dependencies |
+| 0.0.41 | 2026-09-15 | [85961](https://github.com/airbytehq/airbyte/pull/85961) | Update dependencies |
+| 0.0.40 | 2026-09-08 | [85391](https://github.com/airbytehq/airbyte/pull/85391) | Update dependencies |
+| 0.0.39 | 2026-08-18 | [84480](https://github.com/airbytehq/airbyte/pull/84480) | Update dependencies |
+| 0.0.38 | 2026-08-11 | [83825](https://github.com/airbytehq/airbyte/pull/83825) | Update dependencies |
+| 0.0.37 | 2026-08-04 | [83361](https://github.com/airbytehq/airbyte/pull/83361) | Update dependencies |
+| 0.0.36 | 2026-07-28 | [82838](https://github.com/airbytehq/airbyte/pull/82838) | Update dependencies |
+| 0.0.35 | 2026-07-21 | [82320](https://github.com/airbytehq/airbyte/pull/82320) | Update dependencies |
+| 0.0.34 | 2026-07-14 | [81746](https://github.com/airbytehq/airbyte/pull/81746) | Update dependencies |
+| 0.0.33 | 2026-06-30 | [80965](https://github.com/airbytehq/airbyte/pull/80965) | Update dependencies |
+| 0.0.32 | 2026-06-23 | [80351](https://github.com/airbytehq/airbyte/pull/80351) | Update dependencies |
 | 0.0.31 | 2026-06-16 | [79751](https://github.com/airbytehq/airbyte/pull/79751) | Update dependencies |
 | 0.0.30 | 2026-06-09 | [79212](https://github.com/airbytehq/airbyte/pull/79212) | Update dependencies |
 | 0.0.29 | 2026-06-02 | [78560](https://github.com/airbytehq/airbyte/pull/78560) | Update dependencies |

@@ -12,6 +12,10 @@ To get a Private Token:
 - Log in to your Eventbrite account and visit your [API Keys page](https://www.eventbrite.com/platform/api-keys).
 - Copy your private token.
 
+## Rate limits
+
+Eventbrite allows [2,000 API requests per hour per token](https://www.eventbrite.com/platform/api#/introduction/rate-limits). The connector throttles itself to stay under that limit and waits before retrying when Eventbrite returns HTTP 429. Because most streams make at least one request per event, a first sync of an organization with many events can take several hours. Avoid sharing the same private token between several Airbyte sources, since all of them count against the same hourly budget.
+
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
@@ -41,6 +45,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.68 | 2026-10-07 | [88232](https://github.com/airbytehq/airbyte/pull/88232) | Fix connection check failing with HTTP 429: check the `organizations` stream instead of `attendees`, throttle requests to Eventbrite's 2,000/hour limit, retry on `Retry-After`, raise `events` page size to 50 |
+| 0.0.67 | 2026-10-06 | [87856](https://github.com/airbytehq/airbyte/pull/87856) | Update dependencies |
+| 0.0.66 | 2026-09-29 | [87148](https://github.com/airbytehq/airbyte/pull/87148) | Update dependencies |
+| 0.0.65 | 2026-09-22 | [86601](https://github.com/airbytehq/airbyte/pull/86601) | Update dependencies |
+| 0.0.64 | 2026-09-15 | [86042](https://github.com/airbytehq/airbyte/pull/86042) | Update dependencies |
+| 0.0.63 | 2026-09-08 | [85475](https://github.com/airbytehq/airbyte/pull/85475) | Update dependencies |
+| 0.0.62 | 2026-08-18 | [84533](https://github.com/airbytehq/airbyte/pull/84533) | Update dependencies |
+| 0.0.61 | 2026-08-11 | [83903](https://github.com/airbytehq/airbyte/pull/83903) | Update dependencies |
+| 0.0.60 | 2026-08-04 | [83456](https://github.com/airbytehq/airbyte/pull/83456) | Update dependencies |
+| 0.0.59 | 2026-07-28 | [82895](https://github.com/airbytehq/airbyte/pull/82895) | Update dependencies |
+| 0.0.58 | 2026-07-21 | [82416](https://github.com/airbytehq/airbyte/pull/82416) | Update dependencies |
+| 0.0.57 | 2026-07-14 | [81820](https://github.com/airbytehq/airbyte/pull/81820) | Update dependencies |
+| 0.0.56 | 2026-06-30 | [81077](https://github.com/airbytehq/airbyte/pull/81077) | Update dependencies |
+| 0.0.55 | 2026-06-23 | [80469](https://github.com/airbytehq/airbyte/pull/80469) | Update dependencies |
 | 0.0.54 | 2026-06-16 | [79851](https://github.com/airbytehq/airbyte/pull/79851) | Update dependencies |
 | 0.0.53 | 2026-06-09 | [79304](https://github.com/airbytehq/airbyte/pull/79304) | Update dependencies |
 | 0.0.52 | 2026-06-02 | [78723](https://github.com/airbytehq/airbyte/pull/78723) | Update dependencies |

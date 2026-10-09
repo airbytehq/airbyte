@@ -58,6 +58,10 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
   - Dataset ID (check the [docs](https://docs.apify.com/platform/storage/dataset))
 - Limitations:
   - The stream uses a dynamic schema (all the data are stored under the `"data"` key), so it should support all the Apify Datasets (produced by whatever Actor).
+  - Each item must be a JSON object. Since version 2.2.62:
+    - An item nested more than 200 levels deep, or containing a number that does not fit in a 64-bit float (for example `1e400`) or `NaN`/`Infinity`, is emitted with `"data"` set to a string representation of the item instead of an object.
+    - A dataset containing non-object items (for example numbers or strings) fails the stream with a `TypeError`.
+    - An item with a top-level `__airbyte_apify_wrapped_item` key is emitted with that key's contents merged into the top level of the record.
 
 ### `item_collection_website_content_crawler`
 
@@ -76,6 +80,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                 | Subject                                                                         |
 | :------ | :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 2.2.62 | 2026-10-06 | [88134](https://github.com/airbytehq/airbyte/pull/88134) | Replace the custom `item_collection` record extractor with built-in declarative transformations; record output is unchanged |
+| 2.2.61 | 2026-10-06 | [87770](https://github.com/airbytehq/airbyte/pull/87770) | Update dependencies |
+| 2.2.60 | 2026-09-29 | [87064](https://github.com/airbytehq/airbyte/pull/87064) | Update dependencies |
+| 2.2.59 | 2026-09-22 | [86526](https://github.com/airbytehq/airbyte/pull/86526) | Update dependencies |
+| 2.2.58 | 2026-09-15 | [85955](https://github.com/airbytehq/airbyte/pull/85955) | Update dependencies |
+| 2.2.57 | 2026-09-08 | [84487](https://github.com/airbytehq/airbyte/pull/84487) | Update dependencies |
+| 2.2.56 | 2026-08-11 | [83850](https://github.com/airbytehq/airbyte/pull/83850) | Update dependencies |
+| 2.2.55 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 2.2.54 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.2.52 — 2.2.53 is built on SDM 7.23.7, which breaks bundled custom components |
+| 2.2.53 | 2026-07-28 | [82834](https://github.com/airbytehq/airbyte/pull/82834) | Update dependencies |
+| 2.2.52 | 2026-07-21 | [82336](https://github.com/airbytehq/airbyte/pull/82336) | Update dependencies |
+| 2.2.51 | 2026-07-14 | [81739](https://github.com/airbytehq/airbyte/pull/81739) | Update dependencies |
+| 2.2.50 | 2026-06-30 | [80961](https://github.com/airbytehq/airbyte/pull/80961) | Update dependencies |
+| 2.2.49 | 2026-06-23 | [80380](https://github.com/airbytehq/airbyte/pull/80380) | Update dependencies |
 | 2.2.48 | 2026-06-16 | [79760](https://github.com/airbytehq/airbyte/pull/79760) | Update dependencies |
 | 2.2.47 | 2026-06-09 | [79203](https://github.com/airbytehq/airbyte/pull/79203) | Update dependencies |
 | 2.2.46 | 2026-06-02 | [78578](https://github.com/airbytehq/airbyte/pull/78578) | Update dependencies |

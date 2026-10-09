@@ -1,4 +1,19 @@
 # High Level
+
+:::warning
+
+## Deprecation Notice
+
+The High Level source connector has been archived and is no longer available in Airbyte Cloud or the OSS connector registry.
+
+This connector did not call the official HighLevel API. It was a proxy connector that relied on a third-party paid proxy service hosted at `api.leadconnectorpro.co`. That service has shut down: the domain is no longer registered (DNS returns `NXDOMAIN`), so every connection check and sync fails with `Max retries exceeded with url`. There is no replacement for the proxy service, and the official [HighLevel API](https://highlevel.stoplight.io/) uses different endpoints, authentication, and response formats, so the connector cannot be repaired in place.
+
+### Recommended Actions
+
+Users who want to sync data from HighLevel are advised to build a custom connector against the official [HighLevel API](https://highlevel.stoplight.io/) using the [Connector Builder](https://docs.airbyte.com/platform/connector-development/connector-builder-ui/overview).
+
+:::
+
 Proxy connector for [Go High Level](https://gohighlevel.com) (Lead Connector). Requires a paid subscription to the proxy service.
 
 ## Configuration
@@ -36,6 +51,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.67 | 2026-10-07 | [88182](https://github.com/airbytehq/airbyte/pull/88182) | Archive connector: the third-party proxy service (`api.leadconnectorpro.co`) it depended on has shut down |
+| 0.0.66 | 2026-10-06 | [87894](https://github.com/airbytehq/airbyte/pull/87894) | Update dependencies |
+| 0.0.65 | 2026-09-29 | [87220](https://github.com/airbytehq/airbyte/pull/87220) | Update dependencies |
+| 0.0.64 | 2026-09-22 | [86664](https://github.com/airbytehq/airbyte/pull/86664) | Update dependencies |
+| 0.0.63 | 2026-09-15 | [86105](https://github.com/airbytehq/airbyte/pull/86105) | Update dependencies |
+| 0.0.62 | 2026-09-08 | [85509](https://github.com/airbytehq/airbyte/pull/85509) | Update dependencies |
+| 0.0.61 | 2026-08-18 | [84613](https://github.com/airbytehq/airbyte/pull/84613) | Update dependencies |
+| 0.0.60 | 2026-08-11 | [83963](https://github.com/airbytehq/airbyte/pull/83963) | Update dependencies |
+| 0.0.59 | 2026-08-04 | [83497](https://github.com/airbytehq/airbyte/pull/83497) | Update dependencies |
+| 0.0.58 | 2026-07-28 | [82949](https://github.com/airbytehq/airbyte/pull/82949) | Update dependencies |
+| 0.0.57 | 2026-07-21 | [82464](https://github.com/airbytehq/airbyte/pull/82464) | Update dependencies |
+| 0.0.56 | 2026-07-14 | [81868](https://github.com/airbytehq/airbyte/pull/81868) | Update dependencies |
+| 0.0.55 | 2026-06-30 | [81121](https://github.com/airbytehq/airbyte/pull/81121) | Update dependencies |
+| 0.0.54 | 2026-06-23 | [80486](https://github.com/airbytehq/airbyte/pull/80486) | Update dependencies |
 | 0.0.53 | 2026-06-16 | [79915](https://github.com/airbytehq/airbyte/pull/79915) | Update dependencies |
 | 0.0.52 | 2026-06-09 | [79371](https://github.com/airbytehq/airbyte/pull/79371) | Update dependencies |
 | 0.0.51 | 2026-06-02 | [78744](https://github.com/airbytehq/airbyte/pull/78744) | Update dependencies |

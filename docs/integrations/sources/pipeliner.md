@@ -2,18 +2,23 @@
 
 Pipeliner is a CRM tool.
 Using this connector we fetch data from various streams such as contacts, data, leads and quotes.
-[API Docs](https://pipeliner.stoplight.io/docs/api-docs)
+[API Docs](https://developers.pipelinersales.com/api-docs)
 
 ## Configuration
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `username` | `string` | Username.  |  |
-| `password` | `string` | Password.  |  |
-| `service` | `string` | Data Center.  |  |
-| `spaceid` | `string` | Space ID.  |  |
+Create an API application in your Pipeliner space's administration under **Unit, Users & Roles > Applications**, then select **Show API Access**. Use the generated API username and password, not your account login credentials. See the [authentication guide](https://developers.pipelinersales.com/api-docs/overview/authentication) for details.
+
+Select the data center from your application's Service URL and enter its Space ID. For example, for `https://us-east.api.pipelinersales.com/api/v100/rest/spaces/example_space`, select `us-east` and enter `example_space` as the Space ID.
+
+| Input      | Type     | Description                                                            | Default Value |
+| ---------- | -------- | ---------------------------------------------------------------------- | ------------- |
+| `username` | `string` | API username generated for your space's application.                   |               |
+| `password` | `string` | API password generated for your space's application.                   |               |
+| `service`  | `string` | Data center: `eu-central`, `us-east`, `ca-central`, or `ap-southeast`. |               |
+| `spaceid`  | `string` | Space ID from the application's API access settings, not a full URL.   |               |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | accounts | id | DefaultPaginator | ✅ |  ❌  |
@@ -50,8 +55,21 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date | Pull Request | Subject |
+| ------------------ | ------------------- | -------------- | ---------------- |
+| 0.0.64 | 2026-10-07 | [88284](https://github.com/airbytehq/airbyte/pull/88284) | Fix API hostname allowlist and update API setup documentation |
+| 0.0.63 | 2026-10-06 | [87982](https://github.com/airbytehq/airbyte/pull/87982) | Update dependencies |
+| 0.0.62 | 2026-09-29 | [87283](https://github.com/airbytehq/airbyte/pull/87283) | Update dependencies |
+| 0.0.61 | 2026-09-22 | [86751](https://github.com/airbytehq/airbyte/pull/86751) | Update dependencies |
+| 0.0.60 | 2026-09-15 | [86174](https://github.com/airbytehq/airbyte/pull/86174) | Update dependencies |
+| 0.0.59 | 2026-09-08 | [85609](https://github.com/airbytehq/airbyte/pull/85609) | Update dependencies |
+| 0.0.58 | 2026-08-18 | [84708](https://github.com/airbytehq/airbyte/pull/84708) | Update dependencies |
+| 0.0.57 | 2026-08-11 | [83569](https://github.com/airbytehq/airbyte/pull/83569) | Update dependencies |
+| 0.0.56 | 2026-07-28 | [83034](https://github.com/airbytehq/airbyte/pull/83034) | Update dependencies |
+| 0.0.55 | 2026-07-21 | [82537](https://github.com/airbytehq/airbyte/pull/82537) | Update dependencies |
+| 0.0.54 | 2026-07-14 | [81966](https://github.com/airbytehq/airbyte/pull/81966) | Update dependencies |
+| 0.0.53 | 2026-06-30 | [81208](https://github.com/airbytehq/airbyte/pull/81208) | Update dependencies |
+| 0.0.52 | 2026-06-23 | [80585](https://github.com/airbytehq/airbyte/pull/80585) | Update dependencies |
 | 0.0.51 | 2026-06-16 | [80000](https://github.com/airbytehq/airbyte/pull/80000) | Update dependencies |
 | 0.0.50 | 2026-06-09 | [79455](https://github.com/airbytehq/airbyte/pull/79455) | Update dependencies |
 | 0.0.49 | 2026-06-02 | [78917](https://github.com/airbytehq/airbyte/pull/78917) | Update dependencies |

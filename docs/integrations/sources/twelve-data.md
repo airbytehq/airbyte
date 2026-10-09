@@ -9,9 +9,9 @@ Docs : https://twelvedata.com/docs
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
-| `country` | `string` | Country. Where instrument is traded |  |
-| `exchange` | `string` | Exchange. Where instrument is traded |  |
-| `symbol` | `string` | Symbol. Ticker of the instrument |  |
+| `country` | `string` | Country. Where instrument is traded. Filters the `stocks`, `funds`, `bonds`, `etfs`, `exchanges`, `market_state` and `mutual_funds` streams. |  |
+| `exchange` | `string` | Exchange. Where instrument is traded. Filters the `stocks`, `funds`, `bonds`, `etfs` and `market_state` streams. |  |
+| `symbol` | `string` | Symbol. Ticker of the instrument. Filters the `stocks` stream and therefore the per-symbol streams built from it (`time_series`, `quote`, `price`, `eod_price`). Strongly recommended: without it those streams request every symbol in the Twelve Data stock universe (100k+ requests), which cannot complete within the free/basic plan rate limits. |  |
 | `interval` | `enum` | Interval. Between two consecutive points in time series Supports: 1min, 5min, 15min, 30min, 45min, 1h, 2h, 4h, 1day, 1week, 1month |  |
 
 ## Streams
@@ -48,6 +48,19 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.67 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88220) | Fix zero-success syncs: honor `symbol`/`exchange` config in `stocks` (and derived per-symbol streams), skip symbols unavailable on the plan (403/404) instead of failing, validate the API key during check |
+| 0.0.66 | 2026-09-29 | [87385](https://github.com/airbytehq/airbyte/pull/87385) | Update dependencies |
+| 0.0.65 | 2026-09-22 | [86822](https://github.com/airbytehq/airbyte/pull/86822) | Update dependencies |
+| 0.0.64 | 2026-09-15 | [86257](https://github.com/airbytehq/airbyte/pull/86257) | Update dependencies |
+| 0.0.63 | 2026-09-08 | [85710](https://github.com/airbytehq/airbyte/pull/85710) | Update dependencies |
+| 0.0.62 | 2026-08-18 | [84785](https://github.com/airbytehq/airbyte/pull/84785) | Update dependencies |
+| 0.0.61 | 2026-08-11 | [84126](https://github.com/airbytehq/airbyte/pull/84126) | Update dependencies |
+| 0.0.60 | 2026-08-04 | [83663](https://github.com/airbytehq/airbyte/pull/83663) | Update dependencies |
+| 0.0.59 | 2026-07-28 | [83095](https://github.com/airbytehq/airbyte/pull/83095) | Update dependencies |
+| 0.0.58 | 2026-07-21 | [82646](https://github.com/airbytehq/airbyte/pull/82646) | Update dependencies |
+| 0.0.57 | 2026-07-14 | [82042](https://github.com/airbytehq/airbyte/pull/82042) | Update dependencies |
+| 0.0.56 | 2026-06-30 | [81284](https://github.com/airbytehq/airbyte/pull/81284) | Update dependencies |
+| 0.0.55 | 2026-06-23 | [80057](https://github.com/airbytehq/airbyte/pull/80057) | Update dependencies |
 | 0.0.54 | 2026-06-09 | [79520](https://github.com/airbytehq/airbyte/pull/79520) | Update dependencies |
 | 0.0.53 | 2026-06-02 | [79002](https://github.com/airbytehq/airbyte/pull/79002) | Update dependencies |
 | 0.0.52 | 2026-04-28 | [77487](https://github.com/airbytehq/airbyte/pull/77487) | Update dependencies |

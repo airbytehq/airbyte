@@ -498,3 +498,111 @@ class TestMetricsStream(TestCase):
 
         assert len(output.records) == 0
         assert not any(log.log.level == "ERROR" for log in output.logs)
+
+    @HttpMocker()
+    def test_metrics_older_than_config_start_date_are_synced(self, http_mocker: HttpMocker):
+        """
+        Test that metric definitions updated before the configured start_date are synced.
+
+        The metrics stream pins start_datetime to 1970-01-01 and ignores the configured
+        start_date so that every metric definition is available to join against events.
+
+        Given: A config with start_date of 2024-05-01
+        When: The API returns a metric last updated in 2013 (long before start_date)
+        Then: The record is emitted instead of being dropped by the client-side filter
+        """
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 1, tzinfo=timezone.utc)).build()
+
+        # Metrics stream has no query parameters (no request_parameters in manifest)
+        http_mocker.get(
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": [
+                            {
+                                "type": "metric",
+                                "id": "metric_ancient",
+                                "attributes": {
+                                    "name": "Received Email",
+                                    "created": "2013-07-01T08:00:00+00:00",
+                                    "updated": "2013-07-01T08:00:00+00:00",
+                                    "integration": {"id": "int_001", "name": "Klaviyo"},
+                                },
+                            }
+                        ],
+                        "links": {"self": "https://a.klaviyo.com/api/metrics", "next": None},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "metric_ancient"
+
+    @HttpMocker()
+    def test_state_still_filters_old_metrics_despite_pinned_start_date(self, http_mocker: HttpMocker):
+        """
+        Test that existing connections keep filtering on their state cursor.
+
+        The 1970-01-01 pinned start_datetime only widens the window for connections
+        without state. Once a state cursor exists, records older than the cursor
+        must still be filtered out client-side.
+
+        Given: A previous sync state with cursor 2024-03-01
+        When: The API returns one metric updated in 2013 and one updated after the cursor
+        Then: Only the record newer than the state cursor is emitted
+        """
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 1, tzinfo=timezone.utc)).build()
+        # Using +0000 format (without colon) to match connector's timezone format
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+0000"}).build()
+
+        # Metrics stream has no query parameters (no request_parameters in manifest)
+        http_mocker.get(
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": [
+                            {
+                                "type": "metric",
+                                "id": "metric_ancient",
+                                "attributes": {
+                                    "name": "Received Email",
+                                    "created": "2013-07-01T08:00:00+00:00",
+                                    "updated": "2013-07-01T08:00:00+00:00",
+                                    "integration": {"id": "int_001", "name": "Klaviyo"},
+                                },
+                            },
+                            {
+                                "type": "metric",
+                                "id": "metric_new",
+                                "attributes": {
+                                    "name": "Placed Order",
+                                    "created": "2024-03-10T10:00:00+00:00",
+                                    "updated": "2024-03-15T10:00:00+00:00",
+                                    "integration": {"id": "int_001", "name": "Shopify"},
+                                },
+                            },
+                        ],
+                        "links": {"self": "https://a.klaviyo.com/api/metrics", "next": None},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        source = get_source(config=config, state=state)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(source, config=config, catalog=catalog, state=state)
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "metric_new"
+
+        latest_state = output.most_recent_state.stream_state.__dict__
+        assert latest_state["updated"] == "2024-03-15T10:00:00+0000"

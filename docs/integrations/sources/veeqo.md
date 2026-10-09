@@ -12,7 +12,7 @@ Veeqo Airbyte connector for Veeqo enables seamless data integration between Veeq
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | orders | id | DefaultPaginator | ✅ |  ✅  |
-| returns | id | DefaultPaginator | ✅ |  ❌  |
+| returns | id | No pagination | ✅ |  ❌  |
 | products | id | DefaultPaginator | ✅ |  ✅  |
 | purchase_orders | id | DefaultPaginator | ✅ |  ❌  |
 | suppliers | id | DefaultPaginator | ✅ |  ❌  |
@@ -21,7 +21,7 @@ Veeqo Airbyte connector for Veeqo enables seamless data integration between Veeq
 | customers | id | DefaultPaginator | ✅ |  ❌  |
 | stores | id | DefaultPaginator | ✅ |  ❌  |
 | delivery_methods | id | DefaultPaginator | ✅ |  ❌  |
-| tags | id | DefaultPaginator | ✅ |  ❌  |
+| tags | id | No pagination | ✅ |  ❌  |
 
 ## IP allow list
 
@@ -34,6 +34,19 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.66 | 2026-10-07 | [88208](https://github.com/airbytehq/airbyte/pull/88208) | Fix infinite pagination loop on `tags` and `returns` streams (Veeqo does not paginate these endpoints) |
+| 0.0.65 | 2026-10-06 | [88041](https://github.com/airbytehq/airbyte/pull/88041) | Update dependencies |
+| 0.0.64 | 2026-09-29 | [87379](https://github.com/airbytehq/airbyte/pull/87379) | Update dependencies |
+| 0.0.63 | 2026-09-22 | [86834](https://github.com/airbytehq/airbyte/pull/86834) | Update dependencies |
+| 0.0.62 | 2026-09-15 | [86282](https://github.com/airbytehq/airbyte/pull/86282) | Update dependencies |
+| 0.0.61 | 2026-09-08 | [85709](https://github.com/airbytehq/airbyte/pull/85709) | Update dependencies |
+| 0.0.60 | 2026-08-18 | [84166](https://github.com/airbytehq/airbyte/pull/84166) | Update dependencies |
+| 0.0.59 | 2026-08-04 | [83630](https://github.com/airbytehq/airbyte/pull/83630) | Update dependencies |
+| 0.0.58 | 2026-07-28 | [83130](https://github.com/airbytehq/airbyte/pull/83130) | Update dependencies |
+| 0.0.57 | 2026-07-21 | [82619](https://github.com/airbytehq/airbyte/pull/82619) | Update dependencies |
+| 0.0.56 | 2026-07-14 | [82052](https://github.com/airbytehq/airbyte/pull/82052) | Update dependencies |
+| 0.0.55 | 2026-06-30 | [81290](https://github.com/airbytehq/airbyte/pull/81290) | Update dependencies |
+| 0.0.54 | 2026-06-23 | [80696](https://github.com/airbytehq/airbyte/pull/80696) | Update dependencies |
 | 0.0.53 | 2026-06-16 | [80062](https://github.com/airbytehq/airbyte/pull/80062) | Update dependencies |
 | 0.0.52 | 2026-06-09 | [79561](https://github.com/airbytehq/airbyte/pull/79561) | Update dependencies |
 | 0.0.51 | 2026-06-02 | [77470](https://github.com/airbytehq/airbyte/pull/77470) | Update dependencies |

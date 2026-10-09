@@ -20,15 +20,15 @@ The Airbyte connector for Clockodo enables seamless data integration between Clo
 | entries | id | DefaultPaginator | ✅ |  ✅  |
 | holidays_carry | id | No pagination | ✅ |  ❌  |
 | holidays_quota | id | No pagination | ✅ |  ❌  |
-| lumpsum_services | id | No pagination | ✅ |  ❌  |
+| lumpsum_services | id | DefaultPaginator | ✅ |  ❌  |
 | non_business_days | id | No pagination | ✅ |  ❌  |
 | overtime_carry | id | No pagination | ✅ |  ❌  |
 | services | id | DefaultPaginator | ✅ |  ❌  |
 | surcharges | id | No pagination | ✅ |  ❌  |
 | target_hours | id | No pagination | ✅ |  ❌  |
-| teams | id | No pagination | ✅ |  ❌  |
+| teams | id | DefaultPaginator | ✅ |  ❌  |
 | user_reports |  | No pagination | ✅ |  ❌  |
-| users | id | No pagination | ✅ |  ❌  |
+| users | id | DefaultPaginator | ✅ |  ❌  |
 | customers_projects | user_id | No pagination | ✅ |  ❌  |
 | access_services | user_id | No pagination | ✅ |  ❌  |
 | work_times |  | DefaultPaginator | ✅ |  ❌  |
@@ -44,6 +44,19 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.68 | 2026-10-07 | [88255](https://github.com/airbytehq/airbyte/pull/88255) | Migrate streams off the retired Clockodo v2/legacy endpoints (HTTP 410) to the current v2/v3/v4 endpoints, fix `work_times` date parameters, and stop pagination on empty result sets |
+| 0.0.67 | 2026-10-06 | [87783](https://github.com/airbytehq/airbyte/pull/87783) | Update dependencies |
+| 0.0.66 | 2026-09-29 | [87110](https://github.com/airbytehq/airbyte/pull/87110) | Update dependencies |
+| 0.0.65 | 2026-09-22 | [86558](https://github.com/airbytehq/airbyte/pull/86558) | Update dependencies |
+| 0.0.64 | 2026-09-15 | [85963](https://github.com/airbytehq/airbyte/pull/85963) | Update dependencies |
+| 0.0.63 | 2026-09-08 | [84512](https://github.com/airbytehq/airbyte/pull/84512) | Update dependencies |
+| 0.0.62 | 2026-08-11 | [83884](https://github.com/airbytehq/airbyte/pull/83884) | Update dependencies |
+| 0.0.61 | 2026-08-04 | [83402](https://github.com/airbytehq/airbyte/pull/83402) | Update dependencies |
+| 0.0.60 | 2026-07-28 | [82842](https://github.com/airbytehq/airbyte/pull/82842) | Update dependencies |
+| 0.0.59 | 2026-07-21 | [82359](https://github.com/airbytehq/airbyte/pull/82359) | Update dependencies |
+| 0.0.58 | 2026-07-14 | [81782](https://github.com/airbytehq/airbyte/pull/81782) | Update dependencies |
+| 0.0.57 | 2026-06-30 | [81018](https://github.com/airbytehq/airbyte/pull/81018) | Update dependencies |
+| 0.0.56 | 2026-06-23 | [80419](https://github.com/airbytehq/airbyte/pull/80419) | Update dependencies |
 | 0.0.55 | 2026-06-16 | [79817](https://github.com/airbytehq/airbyte/pull/79817) | Update dependencies |
 | 0.0.54 | 2026-06-09 | [79258](https://github.com/airbytehq/airbyte/pull/79258) | Update dependencies |
 | 0.0.53 | 2026-06-02 | [78612](https://github.com/airbytehq/airbyte/pull/78612) | Update dependencies |

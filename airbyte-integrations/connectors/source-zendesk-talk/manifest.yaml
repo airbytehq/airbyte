@@ -254,7 +254,13 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get(\"next_page\", {}) }}"
-            stop_condition: "{{ response.get(\"count\", {}) <= 1 }}"
+            # Zendesk Talk incremental exports always return a `next_page` URL and filter
+            # `start_time` inclusively, so once caught up the paginator keeps re-requesting
+            # `start_time=end_time` and receiving the same boundary record(s). Stop when a page
+            # is not full (fewer than the 1000-record page size) — Zendesk's documented signal
+            # that no more items are available. A count-based "caught up" check is unsafe here
+            # because a single call can have several legs sharing the same `updated_at` second.
+            stop_condition: "{{ response.get(\"count\", 0) < 1000 }}"
       name: call_legs
       primary_key:
         - id
@@ -306,7 +312,13 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get(\"next_page\", {}) }}"
-            stop_condition: "{{ response.get(\"count\", {}) <= 1 }}"
+            # Zendesk Talk incremental exports always return a `next_page` URL and filter
+            # `start_time` inclusively, so once caught up the paginator keeps re-requesting
+            # `start_time=end_time` and receiving the same boundary record(s). Stop when a page
+            # is not full (fewer than the 1000-record page size) — Zendesk's documented signal
+            # that no more items are available. A count-based "caught up" check is unsafe here
+            # because a single call can have several legs sharing the same `updated_at` second.
+            stop_condition: "{{ response.get(\"count\", 0) < 1000 }}"
       name: calls
       primary_key:
         - id
@@ -802,10 +814,11 @@ spec:
         consent_url: "https://{{subdomain}}.zendesk.com/oauth/authorizations/new?response_type=code&{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}"
         scopes:
           - scope: read
-        access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens?grant_type=authorization_code&{{auth_code_param}}&{{client_id_param}}&{{client_secret_param}}&{{redirect_uri_param}}&{{scopes_param}}"
+        access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens?grant_type=authorization_code&{{auth_code_param}}&{{client_id_param}}&{{client_secret_param}}&{{redirect_uri_param}}&{{scopes_param}}&expires_in=172800"
         extract_output:
           - access_token
           - refresh_token
+          - expires_in
 
 metadata:
   autoImportSchema:

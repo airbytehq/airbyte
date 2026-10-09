@@ -10,8 +10,12 @@ Connector for the Amplitude Analytics API. Provides access to core analytics dat
 The Amplitude connector is optimized to handle prompts like these.
 
 - List all chart annotations in Amplitude
+- Show me the details of the most recent annotation
 - Show me all cohorts
+- Show me the details of the first cohort
 - List all event types
+- How many daily active users did I have recently?
+- What is the average session length in Amplitude?
 - Which cohorts have more than 1000 users?
 - What are the most popular event types by total count?
 - Show me annotations created in the last month
@@ -30,11 +34,11 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Annotations | [List](./REFERENCE.md#annotations-list), [Get](./REFERENCE.md#annotations-get), [Context Store Search](./REFERENCE.md#annotations-context-store-search) |
-| Cohorts | [List](./REFERENCE.md#cohorts-list), [Get](./REFERENCE.md#cohorts-get), [Context Store Search](./REFERENCE.md#cohorts-context-store-search) |
-| Events List | [List](./REFERENCE.md#events-list-list), [Context Store Search](./REFERENCE.md#events-list-context-store-search) |
-| Active Users | [List](./REFERENCE.md#active-users-list), [Context Store Search](./REFERENCE.md#active-users-context-store-search) |
-| Average Session Length | [List](./REFERENCE.md#average-session-length-list), [Context Store Search](./REFERENCE.md#average-session-length-context-store-search) |
+| Annotations | [List](./REFERENCE.md#annotations-list), [Get](./REFERENCE.md#annotations-get), [Context Store Search](./REFERENCE.md#annotations-context-store-search), [Context Store SQL Query](./REFERENCE.md#annotations-context-store-sql-query) |
+| Cohorts | [List](./REFERENCE.md#cohorts-list), [Get](./REFERENCE.md#cohorts-get), [Context Store Search](./REFERENCE.md#cohorts-context-store-search), [Context Store SQL Query](./REFERENCE.md#cohorts-context-store-sql-query) |
+| Events List | [List](./REFERENCE.md#events-list-list), [Context Store Search](./REFERENCE.md#events-list-context-store-search), [Context Store SQL Query](./REFERENCE.md#events-list-context-store-sql-query) |
+| Active Users | [List](./REFERENCE.md#active-users-list), [Context Store Search](./REFERENCE.md#active-users-context-store-search), [Context Store SQL Query](./REFERENCE.md#active-users-context-store-sql-query) |
+| Average Session Length | [List](./REFERENCE.md#average-session-length-list), [Context Store Search](./REFERENCE.md#average-session-length-context-store-search), [Context Store SQL Query](./REFERENCE.md#average-session-length-context-store-sql-query) |
 
 
 ## Amplitude API docs
@@ -110,6 +114,169 @@ This example assumes you've already authenticated your connector with Airbyte. S
 The `connect()` factory returns a fully typed `AmplitudeConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
 
 
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+
+connector = connect("amplitude", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+
+connector = connect("amplitude", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+
+connector = connect("amplitude", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Amplitude Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+
+connector = connect("amplitude", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Amplitude Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `AmplitudeConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+
+connector = connect("amplitude", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@AmplitudeConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="amplitude_inspect",
+    docs_tool="amplitude_read_docs",
+)
+async def amplitude_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@AmplitudeConnector.agent_tool(framework="pydantic_ai")
+async def amplitude_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@AmplitudeConnector.agent_tool(framework="pydantic_ai")
+async def amplitude_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+
+connector = connect("amplitude", workspace_name="<your_workspace_name>")
+
+@AmplitudeConnector.agent_tool(
+    inspect_tool="amplitude_inspect",
+    docs_tool="amplitude_read_docs",
+)
+async def amplitude_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@AmplitudeConnector.agent_tool()
+async def amplitude_inspect():
+    return await connector.inspect_connector()
+
+@AmplitudeConnector.agent_tool()
+async def amplitude_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (amplitude_inspect, amplitude_read_docs, amplitude_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. The deprecated `AmplitudeConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `AmplitudeConnector.agent_tool` above.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -184,12 +351,15 @@ async def amplitude_execute(entity: str, action: str, params: dict | None = None
     result = await connector.execute(entity, action, params or {})
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
+
 
 Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
 
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
 from pydantic_ai import Agent
 from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -203,18 +373,15 @@ connector = AmplitudeConnector(
     )
 )
 
-agent = Agent("openai:gpt-4o")
-
-@agent.tool_plain
-@AmplitudeConnector.tool_utils
-async def amplitude_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
 ```
 
 **LangChain**
 
 ```python title="LangChain"
-from langchain_core.tools import tool
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
 from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -227,18 +394,21 @@ connector = AmplitudeConnector(
     )
 )
 
-@tool
-@AmplitudeConnector.tool_utils
-async def amplitude_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Amplitude connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
 ```
 
 **OpenAI Agents**
 
 ```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
 from agents import Agent, function_tool
 from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -252,21 +422,16 @@ connector = AmplitudeConnector(
     )
 )
 
-# strict_mode=False because `params: dict` is permissive and the default strict
-# JSON schema rejects objects with additionalProperties.
-@function_tool(strict_mode=False)
-@AmplitudeConnector.tool_utils(framework="openai_agents")
-async def amplitude_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Amplitude connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
 
-agent = Agent(name="Amplitude Assistant", tools=[amplitude_execute])
+agent = Agent(name="Amplitude Assistant", tools=openai_tools)
 ```
 
 **FastMCP**
 
 ```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
 from fastmcp import FastMCP
 from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -282,18 +447,220 @@ connector = AmplitudeConnector(
 
 mcp = FastMCP("Amplitude Agent")
 
-@mcp.tool
-@AmplitudeConnector.tool_utils
-async def amplitude_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Amplitude connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
 ```
+
 
 ##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+from airbyte_agent_sdk.connectors.amplitude.models import AmplitudeAuthConfig
+
+connector = AmplitudeConnector(
+    auth_config=AmplitudeAuthConfig(
+        api_key="<Your Amplitude project API key. Find it in Settings > Projects in your Amplitude account.
+>",
+        secret_key="<Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
+>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+from airbyte_agent_sdk.connectors.amplitude.models import AmplitudeAuthConfig
+
+connector = AmplitudeConnector(
+    auth_config=AmplitudeAuthConfig(
+        api_key="<Your Amplitude project API key. Find it in Settings > Projects in your Amplitude account.
+>",
+        secret_key="<Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
+>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+from airbyte_agent_sdk.connectors.amplitude.models import AmplitudeAuthConfig
+
+connector = AmplitudeConnector(
+    auth_config=AmplitudeAuthConfig(
+        api_key="<Your Amplitude project API key. Find it in Settings > Projects in your Amplitude account.
+>",
+        secret_key="<Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
+>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Amplitude Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+from airbyte_agent_sdk.connectors.amplitude.models import AmplitudeAuthConfig
+
+connector = AmplitudeConnector(
+    auth_config=AmplitudeAuthConfig(
+        api_key="<Your Amplitude project API key. Find it in Settings > Projects in your Amplitude account.
+>",
+        secret_key="<Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
+>"
+    )
+)
+
+mcp = FastMCP("Amplitude Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `AmplitudeConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+from airbyte_agent_sdk.connectors.amplitude.models import AmplitudeAuthConfig
+
+connector = AmplitudeConnector(
+    auth_config=AmplitudeAuthConfig(
+        api_key="<Your Amplitude project API key. Find it in Settings > Projects in your Amplitude account.
+>",
+        secret_key="<Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
+>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@AmplitudeConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="amplitude_inspect",
+    docs_tool="amplitude_read_docs",
+)
+async def amplitude_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@AmplitudeConnector.agent_tool(framework="pydantic_ai")
+async def amplitude_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@AmplitudeConnector.agent_tool(framework="pydantic_ai")
+async def amplitude_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+from airbyte_agent_sdk.connectors.amplitude.models import AmplitudeAuthConfig
+
+connector = AmplitudeConnector(
+    auth_config=AmplitudeAuthConfig(
+        api_key="<Your Amplitude project API key. Find it in Settings > Projects in your Amplitude account.
+>",
+        secret_key="<Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
+>"
+    )
+)
+
+@AmplitudeConnector.agent_tool(
+    inspect_tool="amplitude_inspect",
+    docs_tool="amplitude_read_docs",
+)
+async def amplitude_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@AmplitudeConnector.agent_tool()
+async def amplitude_inspect():
+    return await connector.inspect_connector()
+
+@AmplitudeConnector.agent_tool()
+async def amplitude_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (amplitude_inspect, amplitude_read_docs, amplitude_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. The deprecated `AmplitudeConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `AmplitudeConnector.agent_tool` above.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -396,6 +763,7 @@ async def amplitude_execute(entity: str, action: str, params: dict | None = None
     result = await connector.execute(entity, action, params or {})
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
+
 
 ## Authentication
 

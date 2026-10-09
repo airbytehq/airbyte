@@ -11,10 +11,12 @@ from chromadb.config import Settings
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier, format_exception
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, DestinationSyncMode
 from destination_chroma.config import ChromaIndexingConfigModel
 from destination_chroma.utils import is_valid_collection_name
+
+
+BASIC_AUTH_PROVIDER = "chromadb.auth.basic_authn.BasicAuthClientProvider"
 
 
 class ChromaIndexer(Indexer):
@@ -31,8 +33,8 @@ class ChromaIndexer(Indexer):
         if auth_method.mode == "persistent_client" and not auth_method.path.startswith("/local/"):
             return "Path must be prefixed with /local"
 
-        client = self._get_client()
         try:
+            client = self._get_client()
             heartbeat = client.heartbeat()
             if not heartbeat:
                 return "Chroma client server is not alive"
@@ -43,8 +45,6 @@ class ChromaIndexer(Indexer):
             return
         except Exception as e:
             return format_exception(e)
-        finally:
-            del client
 
     def delete(self, delete_ids, namespace, stream):
         if len(delete_ids) > 0:
@@ -90,7 +90,7 @@ class ChromaIndexer(Indexer):
 
             if username and password:
                 settings = Settings(
-                    chroma_client_auth_provider="chromadb.auth.basic.BasicAuthClientProvider",
+                    chroma_client_auth_provider=BASIC_AUTH_PROVIDER,
                     chroma_client_auth_credentials=f"{username}:{password}",
                 )
                 client = chromadb.HttpClient(settings=settings, host=host, port=port, ssl=ssl)

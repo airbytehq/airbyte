@@ -23,7 +23,8 @@ Ip2whois APIs allows you to query up to 500 WHOIS domain name per month.
 
 ### Requirements
 
-- [API token](https://www.ip2whois.com/register)
+- [API key](https://www.ip2location.io/) — IP2WHOIS keys are issued by IP2Location.io (the free plan includes 500 WHOIS lookups per month).
+- A registered domain name to look up (for example `airbyte.com`). Both the API key and the domain are required; the API returns `Invalid domain.` if the domain is empty or malformed and `No data found.` if no WHOIS record exists for it.
 
 ## IP allow list
 
@@ -36,6 +37,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.69 | 2026-10-07 | [88191](https://github.com/airbytehq/airbyte/pull/88191) | Make `api_key` and `domain` required in the spec and surface IP2WHOIS error messages (invalid domain, missing API key, no data) as config errors instead of generic HTTP 400/401 failures |
+| 0.2.68 | 2026-10-06 | [87895](https://github.com/airbytehq/airbyte/pull/87895) | Update dependencies |
+| 0.2.67 | 2026-09-29 | [87195](https://github.com/airbytehq/airbyte/pull/87195) | Update dependencies |
+| 0.2.66 | 2026-09-22 | [86652](https://github.com/airbytehq/airbyte/pull/86652) | Update dependencies |
+| 0.2.65 | 2026-09-15 | [86092](https://github.com/airbytehq/airbyte/pull/86092) | Update dependencies |
+| 0.2.64 | 2026-09-08 | [85538](https://github.com/airbytehq/airbyte/pull/85538) | Update dependencies |
+| 0.2.63 | 2026-08-18 | [84629](https://github.com/airbytehq/airbyte/pull/84629) | Update dependencies |
+| 0.2.62 | 2026-08-11 | [83978](https://github.com/airbytehq/airbyte/pull/83978) | Update dependencies |
+| 0.2.61 | 2026-08-04 | [83487](https://github.com/airbytehq/airbyte/pull/83487) | Update dependencies |
+| 0.2.60 | 2026-07-28 | [82960](https://github.com/airbytehq/airbyte/pull/82960) | Update dependencies |
+| 0.2.59 | 2026-07-21 | [82479](https://github.com/airbytehq/airbyte/pull/82479) | Update dependencies |
+| 0.2.58 | 2026-07-14 | [81856](https://github.com/airbytehq/airbyte/pull/81856) | Update dependencies |
+| 0.2.57 | 2026-06-30 | [81101](https://github.com/airbytehq/airbyte/pull/81101) | Update dependencies |
+| 0.2.56 | 2026-06-23 | [80495](https://github.com/airbytehq/airbyte/pull/80495) | Update dependencies |
 | 0.2.55 | 2026-06-16 | [79907](https://github.com/airbytehq/airbyte/pull/79907) | Update dependencies |
 | 0.2.54 | 2026-06-09 | [79360](https://github.com/airbytehq/airbyte/pull/79360) | Update dependencies |
 | 0.2.53 | 2026-06-02 | [78748](https://github.com/airbytehq/airbyte/pull/78748) | Update dependencies |

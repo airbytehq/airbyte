@@ -40,6 +40,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.66 | 2026-10-07 | [88302](https://github.com/airbytehq/airbyte/pull/88302) | Send `audit` stream `from`/`to` filters as epoch milliseconds as required by the Codefresh API |
+| 0.0.65 | 2026-10-06 | [87793](https://github.com/airbytehq/airbyte/pull/87793) | Update dependencies |
+| 0.0.64 | 2026-09-29 | [87135](https://github.com/airbytehq/airbyte/pull/87135) | Update dependencies |
+| 0.0.63 | 2026-09-22 | [86588](https://github.com/airbytehq/airbyte/pull/86588) | Update dependencies |
+| 0.0.62 | 2026-09-15 | [85981](https://github.com/airbytehq/airbyte/pull/85981) | Update dependencies |
+| 0.0.61 | 2026-09-08 | [85440](https://github.com/airbytehq/airbyte/pull/85440) | Update dependencies |
+| 0.0.60 | 2026-08-18 | [84532](https://github.com/airbytehq/airbyte/pull/84532) | Update dependencies |
+| 0.0.59 | 2026-08-11 | [83895](https://github.com/airbytehq/airbyte/pull/83895) | Update dependencies |
+| 0.0.58 | 2026-08-04 | [83398](https://github.com/airbytehq/airbyte/pull/83398) | Update dependencies |
+| 0.0.57 | 2026-07-28 | [82871](https://github.com/airbytehq/airbyte/pull/82871) | Update dependencies |
+| 0.0.56 | 2026-07-21 | [82344](https://github.com/airbytehq/airbyte/pull/82344) | Update dependencies |
+| 0.0.55 | 2026-07-14 | [81774](https://github.com/airbytehq/airbyte/pull/81774) | Update dependencies |
+| 0.0.54 | 2026-06-30 | [81014](https://github.com/airbytehq/airbyte/pull/81014) | Update dependencies |
+| 0.0.53 | 2026-06-23 | [80427](https://github.com/airbytehq/airbyte/pull/80427) | Update dependencies |
 | 0.0.52 | 2026-06-16 | [79822](https://github.com/airbytehq/airbyte/pull/79822) | Update dependencies |
 | 0.0.51 | 2026-06-09 | [79247](https://github.com/airbytehq/airbyte/pull/79247) | Update dependencies |
 | 0.0.50 | 2026-06-02 | [78643](https://github.com/airbytehq/airbyte/pull/78643) | Update dependencies |

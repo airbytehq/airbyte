@@ -80,7 +80,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesEqCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesNeqCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesGtCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesGteCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLtCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLteCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesInCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLikeCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesFuzzyCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesKeywordCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesContainsCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesNotCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAndCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesOrCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesEqCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesNeqCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesGtCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesGteCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLtCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLteCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesInCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesStartswithCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesEndswithCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesFuzzyCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesKeywordCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesContainsCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesNotCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAndCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesOrCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProfilesAnyCondition"></a>
@@ -134,10 +134,24 @@ Classes
     `timezone: Any`
     :   The type of the None singleton.
 
+<a id="ProfilesArrayContainsCondition"></a>
+
+`ProfilesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ProfilesContainsCondition"></a>
 
 `ProfilesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -146,6 +160,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProfilesEndswithCondition"></a>
+
+`ProfilesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesStringFilter`
     :   The type of the None singleton.
 
 <a id="ProfilesEqCondition"></a>
@@ -283,20 +311,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesStringFilter`
     :   The type of the None singleton.
 
-<a id="ProfilesLikeCondition"></a>
-
-`ProfilesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesStringFilter`
-    :   The type of the None singleton.
-
 <a id="ProfilesListParams"></a>
 
 `ProfilesListParams(*args, **kwargs)`
@@ -372,7 +386,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesEqCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesNeqCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesGtCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesGteCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLtCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLteCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesInCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLikeCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesFuzzyCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesKeywordCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesContainsCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesNotCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAndCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesOrCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesEqCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesNeqCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesGtCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesGteCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLtCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLteCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesInCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesStartswithCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesEndswithCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesFuzzyCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesKeywordCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesContainsCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesNotCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAndCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesOrCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProfilesOrCondition"></a>
@@ -394,7 +408,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesEqCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesNeqCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesGtCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesGteCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLtCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLteCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesInCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLikeCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesFuzzyCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesKeywordCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesContainsCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesNotCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAndCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesOrCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesEqCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesNeqCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesGtCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesGteCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLtCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLteCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesInCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesStartswithCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesEndswithCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesFuzzyCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesKeywordCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesContainsCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesNotCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAndCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesOrCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProfilesSearchFilter"></a>
@@ -437,7 +451,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesEqCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesNeqCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesGtCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesGteCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLtCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLteCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesInCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLikeCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesFuzzyCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesKeywordCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesContainsCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesNotCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAndCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesOrCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesEqCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesNeqCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesGtCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesGteCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLtCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesLteCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesInCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesStartswithCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesEndswithCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesFuzzyCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesKeywordCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesContainsCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesNotCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAndCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesOrCondition | airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesSortFilter]`
@@ -472,10 +486,24 @@ Classes
     `timezone: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="ProfilesStartswithCondition"></a>
+
+`ProfilesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.amazon_ads.types.ProfilesStringFilter`
+    :   The type of the None singleton.
+
 <a id="ProfilesStringFilter"></a>
 
 `ProfilesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

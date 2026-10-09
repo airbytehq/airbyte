@@ -23,6 +23,7 @@ data class SnowflakeConfiguration(
     val trimSpace: Boolean,
     val jdbcUrlParams: String?,
     val retentionPeriodDays: Int,
+    val numberDataTypeConversion: NumberDataType = NumberDataType.FLOAT,
 ) : DestinationConfiguration()
 
 sealed interface AuthTypeConfiguration
@@ -83,7 +84,8 @@ class SnowflakeConfigurationFactory :
                 },
             trimSpace = pojo.trimSpace ?: true,
             jdbcUrlParams = pojo.jdbcUrlParams,
-            retentionPeriodDays = pojo.retentionPeriodDays ?: 1
+            retentionPeriodDays = pojo.retentionPeriodDays ?: 1,
+            numberDataTypeConversion = pojo.numberDataTypeConversion ?: NumberDataType.FLOAT,
         )
     }
 }

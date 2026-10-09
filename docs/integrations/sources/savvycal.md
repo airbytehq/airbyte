@@ -25,6 +25,19 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.69 | 2026-10-07 | [88186](https://github.com/airbytehq/airbyte/pull/88186) | Declare typed record schemas (including primary key `id`) for all streams so typed destinations can create columns and deduplicate |
+| 0.0.68 | 2026-10-06 | [88030](https://github.com/airbytehq/airbyte/pull/88030) | Update dependencies |
+| 0.0.67 | 2026-09-29 | [87355](https://github.com/airbytehq/airbyte/pull/87355) | Update dependencies |
+| 0.0.66 | 2026-09-22 | [86812](https://github.com/airbytehq/airbyte/pull/86812) | Update dependencies |
+| 0.0.65 | 2026-09-15 | [86230](https://github.com/airbytehq/airbyte/pull/86230) | Update dependencies |
+| 0.0.64 | 2026-09-08 | [85634](https://github.com/airbytehq/airbyte/pull/85634) | Update dependencies |
+| 0.0.63 | 2026-08-18 | [84748](https://github.com/airbytehq/airbyte/pull/84748) | Update dependencies |
+| 0.0.62 | 2026-08-11 | [84119](https://github.com/airbytehq/airbyte/pull/84119) | Update dependencies |
+| 0.0.61 | 2026-08-04 | [83081](https://github.com/airbytehq/airbyte/pull/83081) | Update dependencies |
+| 0.0.60 | 2026-07-21 | [82602](https://github.com/airbytehq/airbyte/pull/82602) | Update dependencies |
+| 0.0.59 | 2026-07-14 | [82014](https://github.com/airbytehq/airbyte/pull/82014) | Update dependencies |
+| 0.0.58 | 2026-07-07 | [81231](https://github.com/airbytehq/airbyte/pull/81231) | Update dependencies |
+| 0.0.57 | 2026-06-23 | [80634](https://github.com/airbytehq/airbyte/pull/80634) | Update dependencies |
 | 0.0.56 | 2026-06-16 | [80023](https://github.com/airbytehq/airbyte/pull/80023) | Update dependencies |
 | 0.0.55 | 2026-06-09 | [79516](https://github.com/airbytehq/airbyte/pull/79516) | Update dependencies |
 | 0.0.54 | 2026-06-02 | [78939](https://github.com/airbytehq/airbyte/pull/78939) | Update dependencies |

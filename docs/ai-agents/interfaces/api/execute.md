@@ -26,6 +26,33 @@ curl 'https://api.airbyte.ai/api/v1/integrations/connectors?workspace_name=defau
 
 The Agent SDK can resolve a connector by its slug (for example, `"hubspot"`) without any IDs. Consider using the [SDK](../sdk/execute) if you want to avoid managing connector IDs in application code.
 
+## Discover what to execute
+
+Before you execute, discover which entities and actions a connector supports and how to call them. Rather than hard-coding a schema, fetch the connector's **skill docs** — concise, chunked usage guidance the platform generates for each connector.
+
+First, inspect the connector to get its `docs_skill_id` and Context Store readiness:
+
+```bash title="Request"
+curl 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/inspect' \
+  --header 'Authorization: Bearer <your_application_token>'
+```
+
+The response includes a `docs_skill_id` of the form `connector-source:<connector_id>`. Pass it to the skill docs endpoint. Omit `section` to get an outline with the connector's entities, actions, and the available section IDs:
+
+```bash title="Request"
+curl 'https://api.airbyte.ai/api/v1/skills/docs?id=<docs_skill_id>' \
+  --header 'Authorization: Bearer <your_application_token>'
+```
+
+Then request a specific section for the operation you're about to run:
+
+```bash title="Request"
+curl 'https://api.airbyte.ai/api/v1/skills/docs?id=<docs_skill_id>&section=<section_id>' \
+  --header 'Authorization: Bearer <your_application_token>'
+```
+
+The full flow is inspect → read skill docs (outline) → read skill docs (section) → execute. To browse or search skills across a workspace, use `GET /api/v1/skills` and `GET /api/v1/skills/search?query=...`. See the [API reference](/ai-agents/reference/api) for full response schemas.
+
 ## Execute an operation
 
 To execute an operation against a connector, send a POST request to the execute endpoint with the entity, action, and any required parameters.

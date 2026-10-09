@@ -14,6 +14,10 @@ The Uppromote Connector for Airbyte enables seamless data integration between Up
 | coupons | id | DefaultPaginator | ✅ |  ❌  |
 | referrals | id | DefaultPaginator | ✅ |  ✅  |
 
+## Rate limits
+
+The UpPromote API allows 60 requests per minute per store and reports rate-limit errors as `HTTP 400` responses with the message `Too Many Attempts.`. The connector requests 100 records per page (the API maximum) and waits 60 seconds before retrying when this limit is reached, so large syncs may take several minutes.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -25,6 +29,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.70 | 2026-10-07 | [88225](https://github.com/airbytehq/airbyte/pull/88225) | Fix syncs failing with `Too Many Attempts`: retry UpPromote rate-limit errors (returned as HTTP 400) and request 100 records per page |
+| 0.0.69 | 2026-10-06 | [88057](https://github.com/airbytehq/airbyte/pull/88057) | Update dependencies |
+| 0.0.68 | 2026-09-29 | [87398](https://github.com/airbytehq/airbyte/pull/87398) | Update dependencies |
+| 0.0.67 | 2026-09-22 | [86835](https://github.com/airbytehq/airbyte/pull/86835) | Update dependencies |
+| 0.0.66 | 2026-09-15 | [86262](https://github.com/airbytehq/airbyte/pull/86262) | Update dependencies |
+| 0.0.65 | 2026-09-08 | [85706](https://github.com/airbytehq/airbyte/pull/85706) | Update dependencies |
+| 0.0.64 | 2026-08-18 | [84776](https://github.com/airbytehq/airbyte/pull/84776) | Update dependencies |
+| 0.0.63 | 2026-08-11 | [84151](https://github.com/airbytehq/airbyte/pull/84151) | Update dependencies |
+| 0.0.62 | 2026-08-04 | [83658](https://github.com/airbytehq/airbyte/pull/83658) | Update dependencies |
+| 0.0.61 | 2026-07-28 | [83117](https://github.com/airbytehq/airbyte/pull/83117) | Update dependencies |
+| 0.0.60 | 2026-07-21 | [82615](https://github.com/airbytehq/airbyte/pull/82615) | Update dependencies |
+| 0.0.59 | 2026-07-14 | [82050](https://github.com/airbytehq/airbyte/pull/82050) | Update dependencies |
+| 0.0.58 | 2026-06-30 | [81283](https://github.com/airbytehq/airbyte/pull/81283) | Update dependencies |
+| 0.0.57 | 2026-06-23 | [80687](https://github.com/airbytehq/airbyte/pull/80687) | Update dependencies |
 | 0.0.56 | 2026-06-16 | [80086](https://github.com/airbytehq/airbyte/pull/80086) | Update dependencies |
 | 0.0.55 | 2026-06-09 | [79559](https://github.com/airbytehq/airbyte/pull/79559) | Update dependencies |
 | 0.0.54 | 2026-06-02 | [79030](https://github.com/airbytehq/airbyte/pull/79030) | Update dependencies |

@@ -10,18 +10,26 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 ARG CONNECTOR_NAME
 
-# Set permissions for downloaded files
-RUN chmod +x /airbyte/base.sh /airbyte/javabase.sh && \
-    chown airbyte:airbyte /airbyte/base.sh /airbyte/javabase.sh
+# Base images up to 2.0.1 end with `USER airbyte`, and a non-root user cannot chown to group 0.
+USER root
+
+# Set permissions for downloaded files.
+# OpenShift runs containers as an arbitrary UID that is not the airbyte user but is always a
+# member of group 0. Group 0 owns the files and gets the owner's permissions (g=u) so that UID
+# can use them; the owner stays airbyte.
+RUN chmod 755 /airbyte/base.sh /airbyte/javabase.sh && \
+    chown airbyte:0 /airbyte/base.sh /airbyte/javabase.sh
 
 ENV AIRBYTE_ENTRYPOINT="/airbyte/base.sh"
 ENV APPLICATION="${CONNECTOR_NAME}"
 
-# Add the connector TAR file and extract it
-COPY airbyte-app.tar /tmp/${CONNECTOR_NAME}.tar
-RUN tar xf /tmp/${CONNECTOR_NAME}.tar --strip-components=1 -C /airbyte && \
-    rm -rf /tmp/${CONNECTOR_NAME}.tar && \
-    chown -R airbyte:airbyte /airbyte
+# Add the connector TAR file and extract it.
+# The tarball is bind-mounted rather than COPY'd: a COPY would persist the archive in its own
+# layer, so the final image would carry both the tarball and its extracted contents.
+RUN --mount=type=bind,source=airbyte-app.tar,target=/tmp/airbyte-app.tar \
+    tar xf /tmp/airbyte-app.tar --strip-components=1 -C /airbyte && \
+    chown -R airbyte:0 /airbyte && \
+    chmod -R g=u /airbyte
 
 # Set the non-root user
 USER airbyte

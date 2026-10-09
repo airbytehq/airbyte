@@ -6,7 +6,7 @@ Connector for the Basespace v1 API. This can be used to extract data on projects
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `access_token` | `string` | Access Token. BaseSpace access token. Instructions for obtaining your access token can be found in the BaseSpace Developer Documentation. |  |
-| `domain` | `string` | Domain. Domain name of the BaseSpace instance (e.g., euw2.sh.basespace.illumina.com) |  |
+| `domain` | `string` | Domain. Domain name of the BaseSpace instance your access token was issued for, without the `api.` prefix (e.g. `basespace.illumina.com` for the US instance, `euw2.sh.basespace.illumina.com` for EU West 2). Requests are sent to `https://api.<domain>/v1pre3`. |  |
 | `user` | `string` | User. Providing a user ID restricts the returned data to what that user can access. If you use the default (&#39;current&#39;), all data accessible to the user associated with the API key will be shown. | current |
 
 ## Streams
@@ -19,7 +19,7 @@ Connector for the Basespace v1 API. This can be used to extract data on projects
 | run_files | Id | DefaultPaginator | ✅ |  ❌  |
 | appsessions | Id | DefaultPaginator | ✅ |  ❌  |
 | appresults | Id | DefaultPaginator | ✅ |  ❌  |
-| appresults_files | Id | No pagination | ✅ |  ❌  |
+| appresults_files | Id | DefaultPaginator | ✅ |  ❌  |
 
 ## IP allow list
 
@@ -32,6 +32,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.70 | 2026-10-07 | [88307](https://github.com/airbytehq/airbyte/pull/88307) | Use the configured `domain` (region) and `user` in requests instead of hard-coding the EU West 2 host; paginate `appresults_files`; cap file-stream page size at the API maximum (1000) |
+| 0.0.69 | 2026-10-06 | [87890](https://github.com/airbytehq/airbyte/pull/87890) | Update dependencies |
+| 0.0.68 | 2026-09-29 | [87226](https://github.com/airbytehq/airbyte/pull/87226) | Update dependencies |
+| 0.0.67 | 2026-09-22 | [86660](https://github.com/airbytehq/airbyte/pull/86660) | Update dependencies |
+| 0.0.66 | 2026-09-15 | [86098](https://github.com/airbytehq/airbyte/pull/86098) | Update dependencies |
+| 0.0.65 | 2026-09-08 | [85508](https://github.com/airbytehq/airbyte/pull/85508) | Update dependencies |
+| 0.0.64 | 2026-08-18 | [84640](https://github.com/airbytehq/airbyte/pull/84640) | Update dependencies |
+| 0.0.63 | 2026-08-11 | [83982](https://github.com/airbytehq/airbyte/pull/83982) | Update dependencies |
+| 0.0.62 | 2026-08-04 | [83486](https://github.com/airbytehq/airbyte/pull/83486) | Update dependencies |
+| 0.0.61 | 2026-07-28 | [82947](https://github.com/airbytehq/airbyte/pull/82947) | Update dependencies |
+| 0.0.60 | 2026-07-21 | [82446](https://github.com/airbytehq/airbyte/pull/82446) | Update dependencies |
+| 0.0.59 | 2026-07-14 | [81859](https://github.com/airbytehq/airbyte/pull/81859) | Update dependencies |
+| 0.0.58 | 2026-06-30 | [81122](https://github.com/airbytehq/airbyte/pull/81122) | Update dependencies |
+| 0.0.57 | 2026-06-23 | [80524](https://github.com/airbytehq/airbyte/pull/80524) | Update dependencies |
 | 0.0.56 | 2026-06-16 | [79897](https://github.com/airbytehq/airbyte/pull/79897) | Update dependencies |
 | 0.0.55 | 2026-06-09 | [79378](https://github.com/airbytehq/airbyte/pull/79378) | Update dependencies |
 | 0.0.54 | 2026-06-02 | [78750](https://github.com/airbytehq/airbyte/pull/78750) | Update dependencies |

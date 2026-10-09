@@ -1,0 +1,3 @@
+
+# Test artifact: the CDK request cache "in-memory" URI becomes a real file on macOS.
+file::memory:?cache=shared

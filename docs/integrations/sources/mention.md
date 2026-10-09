@@ -37,6 +37,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.69 | 2026-10-07 | [88288](https://github.com/airbytehq/airbyte/pull/88288) | Send the API key as `Authorization: Bearer <token>` as required by the Mention API (previously sent as a raw header value, so every request failed with 401) |
+| 0.0.68 | 2026-10-06 | [87935](https://github.com/airbytehq/airbyte/pull/87935) | Update dependencies |
+| 0.0.67 | 2026-09-29 | [87250](https://github.com/airbytehq/airbyte/pull/87250) | Update dependencies |
+| 0.0.66 | 2026-09-22 | [86695](https://github.com/airbytehq/airbyte/pull/86695) | Update dependencies |
+| 0.0.65 | 2026-09-15 | [86127](https://github.com/airbytehq/airbyte/pull/86127) | Update dependencies |
+| 0.0.64 | 2026-09-08 | [85566](https://github.com/airbytehq/airbyte/pull/85566) | Update dependencies |
+| 0.0.63 | 2026-08-18 | [84649](https://github.com/airbytehq/airbyte/pull/84649) | Update dependencies |
+| 0.0.62 | 2026-08-11 | [84012](https://github.com/airbytehq/airbyte/pull/84012) | Update dependencies |
+| 0.0.61 | 2026-08-04 | [83548](https://github.com/airbytehq/airbyte/pull/83548) | Update dependencies |
+| 0.0.60 | 2026-07-28 | [82982](https://github.com/airbytehq/airbyte/pull/82982) | Update dependencies |
+| 0.0.59 | 2026-07-21 | [82501](https://github.com/airbytehq/airbyte/pull/82501) | Update dependencies |
+| 0.0.58 | 2026-07-14 | [81922](https://github.com/airbytehq/airbyte/pull/81922) | Update dependencies |
+| 0.0.57 | 2026-06-30 | [81146](https://github.com/airbytehq/airbyte/pull/81146) | Update dependencies |
+| 0.0.56 | 2026-06-23 | [80560](https://github.com/airbytehq/airbyte/pull/80560) | Update dependencies |
 | 0.0.55 | 2026-06-16 | [79936](https://github.com/airbytehq/airbyte/pull/79936) | Update dependencies |
 | 0.0.54 | 2026-06-09 | [79412](https://github.com/airbytehq/airbyte/pull/79412) | Update dependencies |
 | 0.0.53 | 2026-06-02 | [78835](https://github.com/airbytehq/airbyte/pull/78835) | Update dependencies |

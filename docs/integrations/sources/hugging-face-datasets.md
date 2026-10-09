@@ -2,6 +2,8 @@
 Imports datasets from Hugging Face ([https://huggingface.co/datasets](https://huggingface.co/datasets))
 
 Only datasets with [Parquet exports](https://huggingface.co/docs/dataset-viewer/en/parquet) can be imported with this connector.
+
+The connector reads data through the [Hugging Face dataset viewer API](https://huggingface.co/docs/dataset-viewer/en/quick_start) (`https://datasets-server.huggingface.co`). Anonymous requests are [rate limited per IP address](https://huggingface.co/docs/hub/en/rate-limits), so syncs of larger datasets may fail with `429 Too Many Requests` unless you provide a Hugging Face user token. Private and gated datasets always require a token with access to the dataset.
 ## Configuration
 
 | Input | Type | Description | Default Value |
@@ -9,6 +11,7 @@ Only datasets with [Parquet exports](https://huggingface.co/docs/dataset-viewer/
 | `dataset_name` | `string` | Dataset Name.  |  |
 | `dataset_subsets` | `array` | Dataset Subsets. Dataset Subsets to import. Will import all of them if nothing is provided (see https://huggingface.co/docs/dataset-viewer/en/configs_and_splits for more details) |  |
 | `dataset_splits` | `array` | Dataset Splits. Splits to import. Will import all of them if nothing is provided (see https://huggingface.co/docs/dataset-viewer/en/configs_and_splits for more details) |  |
+| `api_token` | `string` | Hugging Face API Token. Optional for public datasets, but required for private or gated datasets and strongly recommended to avoid anonymous per-IP rate limits (see https://huggingface.co/docs/hub/en/rate-limits). Create one at https://huggingface.co/settings/tokens. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -27,6 +30,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.66 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88272) | Add optional Hugging Face API token, honor rate-limit headers with longer 429 backoff, and surface clear 401/404 errors |
+| 0.0.65 | 2026-10-06 | [87904](https://github.com/airbytehq/airbyte/pull/87904) | Update dependencies |
+| 0.0.64 | 2026-09-29 | [87224](https://github.com/airbytehq/airbyte/pull/87224) | Update dependencies |
+| 0.0.63 | 2026-09-22 | [86680](https://github.com/airbytehq/airbyte/pull/86680) | Update dependencies |
+| 0.0.62 | 2026-09-15 | [86089](https://github.com/airbytehq/airbyte/pull/86089) | Update dependencies |
+| 0.0.61 | 2026-09-08 | [85544](https://github.com/airbytehq/airbyte/pull/85544) | Update dependencies |
+| 0.0.60 | 2026-08-18 | [84611](https://github.com/airbytehq/airbyte/pull/84611) | Update dependencies |
+| 0.0.59 | 2026-08-11 | [83976](https://github.com/airbytehq/airbyte/pull/83976) | Update dependencies |
+| 0.0.58 | 2026-08-04 | [83490](https://github.com/airbytehq/airbyte/pull/83490) | Update dependencies |
+| 0.0.57 | 2026-07-28 | [82964](https://github.com/airbytehq/airbyte/pull/82964) | Update dependencies |
+| 0.0.56 | 2026-07-21 | [82457](https://github.com/airbytehq/airbyte/pull/82457) | Update dependencies |
+| 0.0.55 | 2026-07-14 | [81860](https://github.com/airbytehq/airbyte/pull/81860) | Update dependencies |
+| 0.0.54 | 2026-06-30 | [81111](https://github.com/airbytehq/airbyte/pull/81111) | Update dependencies |
+| 0.0.53 | 2026-06-23 | [80530](https://github.com/airbytehq/airbyte/pull/80530) | Update dependencies |
 | 0.0.52 | 2026-06-16 | [79903](https://github.com/airbytehq/airbyte/pull/79903) | Update dependencies |
 | 0.0.51 | 2026-06-09 | [79343](https://github.com/airbytehq/airbyte/pull/79343) | Update dependencies |
 | 0.0.50 | 2026-06-02 | [78783](https://github.com/airbytehq/airbyte/pull/78783) | Update dependencies |

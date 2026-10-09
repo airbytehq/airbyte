@@ -1,6 +1,8 @@
 # Nebius AI
-Website: https://studio.nebius.com/
-API Reference: https://studio.nebius.com/docs/api-reference
+Website: https://tokenfactory.nebius.com/
+API Reference: https://docs.tokenfactory.nebius.com/api-reference/introduction
+
+Nebius AI Studio was rebranded as Nebius Token Factory. The API is OpenAI-compatible and is served from `https://api.tokenfactory.nebius.com`; API keys are created at https://tokenfactory.nebius.com/.
 
 ## Configuration
 
@@ -8,7 +10,7 @@ API Reference: https://studio.nebius.com/docs/api-reference
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key. API key or access token |  |
 | `start_date` | `string` | Start date.  |  |
-| `limit` | `string` | Limit. Limit for each response objects | 20 |
+| `limit` | `string` | Limit. Maximum number of records requested from the `files` and `batches` endpoints | 20 |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -30,6 +32,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-10-07 | [88306](https://github.com/airbytehq/airbyte/pull/88306) | Move to the documented Nebius Token Factory API host (`api.tokenfactory.nebius.com`), pass `limit` to the `files` stream, refresh docs links |
+| 0.0.51 | 2026-10-06 | [87951](https://github.com/airbytehq/airbyte/pull/87951) | Update dependencies |
+| 0.0.50 | 2026-09-29 | [87244](https://github.com/airbytehq/airbyte/pull/87244) | Update dependencies |
+| 0.0.49 | 2026-09-22 | [86715](https://github.com/airbytehq/airbyte/pull/86715) | Update dependencies |
+| 0.0.48 | 2026-09-15 | [86122](https://github.com/airbytehq/airbyte/pull/86122) | Update dependencies |
+| 0.0.47 | 2026-09-08 | [85548](https://github.com/airbytehq/airbyte/pull/85548) | Update dependencies |
+| 0.0.46 | 2026-08-18 | [84662](https://github.com/airbytehq/airbyte/pull/84662) | Update dependencies |
+| 0.0.45 | 2026-08-11 | [84030](https://github.com/airbytehq/airbyte/pull/84030) | Update dependencies |
+| 0.0.44 | 2026-08-04 | [83520](https://github.com/airbytehq/airbyte/pull/83520) | Update dependencies |
+| 0.0.43 | 2026-07-28 | [83004](https://github.com/airbytehq/airbyte/pull/83004) | Update dependencies |
+| 0.0.42 | 2026-07-21 | [82488](https://github.com/airbytehq/airbyte/pull/82488) | Update dependencies |
+| 0.0.41 | 2026-07-14 | [81933](https://github.com/airbytehq/airbyte/pull/81933) | Update dependencies |
+| 0.0.40 | 2026-06-30 | [81132](https://github.com/airbytehq/airbyte/pull/81132) | Update dependencies |
+| 0.0.39 | 2026-06-23 | [80568](https://github.com/airbytehq/airbyte/pull/80568) | Update dependencies |
 | 0.0.38 | 2026-06-16 | [79937](https://github.com/airbytehq/airbyte/pull/79937) | Update dependencies |
 | 0.0.37 | 2026-06-09 | [79405](https://github.com/airbytehq/airbyte/pull/79405) | Update dependencies |
 | 0.0.36 | 2026-06-02 | [78859](https://github.com/airbytehq/airbyte/pull/78859) | Update dependencies |

@@ -1,31 +1,38 @@
 # Mux
+
 This directory contains the manifest-only connector for [`source-mux`](https://www.mux.com/).
 
-## Documentation reference:
+## Documentation reference
+
 Visit `https://docs.mux.com/api-reference` for API documentation
 
 ## Authentication setup
-`Mux` uses Http basic authentication, Visit `https://docs.mux.com/core/make-api-requests#http-basic-auth` for getting your API keys.
+
+Mux uses [HTTP Basic authentication](https://www.mux.com/docs/guides/make-api-requests#http-basic-auth). Set `username` to your access token ID and `password` to its secret, not your Mux account login. Grant the token Mux Video read access and System read access if you select either signing-keys stream. Tokens are scoped to a Mux environment.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `username` | `string` | Username.  |  |
-| `password` | `string` | Password.  |  |
-| `start_date` | `string` | Start date.  |  |
-| `playback_id` | `string` | Playback ID. The playback id for your video asset shown in website details |  |
+| ------- | ------ | ------------- | --------------- |
+| `username` | `string` | Mux access token ID. | |
+| `password` | `string` | Mux access token secret. | |
+| `start_date` | `string` | Start date. | |
+| `playback_id` | `string` | Optional playback ID for `video_playbacks`. When omitted or empty, that stream returns no records. | |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| video_assets | id | DefaultPaginator | ✅ |  ✅  |
-| video_live-streams | id | DefaultPaginator | ✅ |  ✅  |
-| video_playbacks | id | DefaultPaginator | ✅ |  ❌  |
-| system_signin-keys | id | DefaultPaginator | ✅ |  ✅  |
-| video_playback-restrictions | id | DefaultPaginator | ✅ |  ✅  |
-| video_transcription-vocabularies | id | DefaultPaginator | ✅ |  ✅  |
-| video_uploads | id | DefaultPaginator | ✅ |  ❌  |
-| video_signing-keys | id | DefaultPaginator | ✅ |  ✅  |
+| ------------- | ------------- | ------------ | --------------------- | ---------------------- |
+| video_assets | id | DefaultPaginator | ✅ | ✅ |
+| video_live-streams | id | DefaultPaginator | ✅ | ✅ |
+| video_playbacks | id | None (single playback ID) | ✅ | ❌ |
+| system_signin-keys | id | DefaultPaginator | ✅ | ✅ |
+| video_playback-restrictions | id | DefaultPaginator | ✅ | ✅ |
+| video_transcription-vocabularies | id | DefaultPaginator | ✅ | ✅ |
+| video_uploads | id | DefaultPaginator | ✅ | ❌ |
+| video_signing-keys | id | DefaultPaginator | ✅ | ✅ |
+
+`video_transcription-vocabularies` uses Mux's [maximum page size of 10](https://www.mux.com/docs/api-reference/video/transcription-vocabularies/list-transcription-vocabularies). Both `video_signing-keys` and `system_signin-keys` read the [System Signing Keys API](https://www.mux.com/docs/api-reference/system/signing-keys/list-signing-keys); their existing stream names are retained for compatibility.
 
 ## IP allow list
 
@@ -38,6 +45,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.70 | 2026-10-07 | [88192](https://github.com/airbytehq/airbyte/pull/88192) | Fix transcription vocabulary pagination, optional playback ID reads, and deprecated signing-keys endpoint |
+| 0.0.69 | 2026-10-06 | [87945](https://github.com/airbytehq/airbyte/pull/87945) | Update dependencies |
+| 0.0.68 | 2026-09-29 | [87240](https://github.com/airbytehq/airbyte/pull/87240) | Update dependencies |
+| 0.0.67 | 2026-09-22 | [86708](https://github.com/airbytehq/airbyte/pull/86708) | Update dependencies |
+| 0.0.66 | 2026-09-15 | [86148](https://github.com/airbytehq/airbyte/pull/86148) | Update dependencies |
+| 0.0.65 | 2026-09-08 | [85563](https://github.com/airbytehq/airbyte/pull/85563) | Update dependencies |
+| 0.0.64 | 2026-08-18 | [84677](https://github.com/airbytehq/airbyte/pull/84677) | Update dependencies |
+| 0.0.63 | 2026-08-11 | [84031](https://github.com/airbytehq/airbyte/pull/84031) | Update dependencies |
+| 0.0.62 | 2026-08-04 | [83547](https://github.com/airbytehq/airbyte/pull/83547) | Update dependencies |
+| 0.0.61 | 2026-07-28 | [82988](https://github.com/airbytehq/airbyte/pull/82988) | Update dependencies |
+| 0.0.60 | 2026-07-21 | [82483](https://github.com/airbytehq/airbyte/pull/82483) | Update dependencies |
+| 0.0.59 | 2026-07-14 | [81932](https://github.com/airbytehq/airbyte/pull/81932) | Update dependencies |
+| 0.0.58 | 2026-06-30 | [81153](https://github.com/airbytehq/airbyte/pull/81153) | Update dependencies |
+| 0.0.57 | 2026-06-23 | [80549](https://github.com/airbytehq/airbyte/pull/80549) | Update dependencies |
 | 0.0.56 | 2026-06-16 | [79949](https://github.com/airbytehq/airbyte/pull/79949) | Update dependencies |
 | 0.0.55 | 2026-06-09 | [79391](https://github.com/airbytehq/airbyte/pull/79391) | Update dependencies |
 | 0.0.54 | 2026-06-02 | [78858](https://github.com/airbytehq/airbyte/pull/78858) | Update dependencies |

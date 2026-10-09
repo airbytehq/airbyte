@@ -1,26 +1,28 @@
 # Tremendous
+
 Tremendous connector  enables seamless integration with Tremendous API. This connector allows organizations to automate and sync reward, incentive, and payout data, tapping into 2000+ payout methods, including ACH, gift cards, PayPal, and prepaid cards, all from a single platform.
 
 ## Configuration
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `api_key` | `string` | API Key. API key to use. You can generate an API key through the Tremendous dashboard under Team Settings &gt; Developers. Save the key once you’ve generated it. |  |
-| `environment` | `string` | Environment.  |  |
+| Input         | Type     | Description                                                                                                                                                       | Default Value |
+|---------------|----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| `api_key`     | `string` | API Key. API key to use. You can generate an API key through the Tremendous dashboard under Team Settings &gt; Developers. Save the key once you’ve generated it. |               |
+| `environment` | `string` | Environment. `api` for production, `testflight` for the Tremendous sandbox.                                                                                       |               |
 
 ## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| orders | id | DefaultPaginator | ✅ |  ❌  |
-| products | id | DefaultPaginator | ✅ |  ❌  |
-| funding_sources | id | DefaultPaginator | ✅ |  ❌  |
-| account_members | id | DefaultPaginator | ✅ |  ❌  |
-| campaigns | id | DefaultPaginator | ✅ |  ❌  |
-| exchange_rates |  | DefaultPaginator | ✅ |  ❌  |
-| organizations | id | DefaultPaginator | ✅ |  ❌  |
-| balance_transactions |  | DefaultPaginator | ✅ |  ❌  |
-| rewards | id | DefaultPaginator | ✅ |  ❌  |
-| invoices | id | DefaultPaginator | ✅ |  ❌  |
+
+| Stream Name          | Primary Key | Pagination       | Supports Full Sync | Supports Incremental |
+|----------------------|-------------|------------------|--------------------|----------------------|
+| orders               | id          | DefaultPaginator | ✅                 | ❌                   |
+| products             |             | No pagination    | ✅                 | ❌                   |
+| funding_sources      | id          | No pagination    | ✅                 | ❌                   |
+| account_members      | id          | No pagination    | ✅                 | ❌                   |
+| campaigns            | id          | No pagination    | ✅                 | ❌                   |
+| organizations        | id          | No pagination    | ✅                 | ❌                   |
+| balance_transactions |             | DefaultPaginator | ✅                 | ❌                   |
+| rewards              | id          | DefaultPaginator | ✅                 | ❌                   |
+| members              | id          | No pagination    | ✅                 | ❌                   |
+| invoices             | id          | DefaultPaginator | ✅                 | ❌                   |
 
 ## IP allow list
 
@@ -33,6 +35,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.69 | 2026-10-07 | [88230](https://github.com/airbytehq/airbyte/pull/88230) | Fix infinite pagination on non-paginated endpoints (`products`, `funding_sources`, `members`, `account_members`, `campaigns`, `organizations`), send explicit `limit` for `rewards`, and populate the empty `invoices` schema |
+| 0.0.68 | 2026-10-06 | [88064](https://github.com/airbytehq/airbyte/pull/88064) | Update dependencies |
+| 0.0.67 | 2026-09-29 | [87391](https://github.com/airbytehq/airbyte/pull/87391) | Update dependencies |
+| 0.0.66 | 2026-09-22 | [86860](https://github.com/airbytehq/airbyte/pull/86860) | Update dependencies |
+| 0.0.65 | 2026-09-15 | [86272](https://github.com/airbytehq/airbyte/pull/86272) | Update dependencies |
+| 0.0.64 | 2026-09-08 | [85676](https://github.com/airbytehq/airbyte/pull/85676) | Update dependencies |
+| 0.0.63 | 2026-08-18 | [84753](https://github.com/airbytehq/airbyte/pull/84753) | Update dependencies |
+| 0.0.62 | 2026-08-11 | [84125](https://github.com/airbytehq/airbyte/pull/84125) | Update dependencies |
+| 0.0.61 | 2026-08-04 | [83643](https://github.com/airbytehq/airbyte/pull/83643) | Update dependencies |
+| 0.0.60 | 2026-07-28 | [83146](https://github.com/airbytehq/airbyte/pull/83146) | Update dependencies |
+| 0.0.59 | 2026-07-21 | [82644](https://github.com/airbytehq/airbyte/pull/82644) | Update dependencies |
+| 0.0.58 | 2026-07-14 | [81994](https://github.com/airbytehq/airbyte/pull/81994) | Update dependencies |
+| 0.0.57 | 2026-06-30 | [81301](https://github.com/airbytehq/airbyte/pull/81301) | Update dependencies |
+| 0.0.56 | 2026-06-23 | [80671](https://github.com/airbytehq/airbyte/pull/80671) | Update dependencies |
 | 0.0.55 | 2026-06-16 | [80053](https://github.com/airbytehq/airbyte/pull/80053) | Update dependencies |
 | 0.0.54 | 2026-06-09 | [79518](https://github.com/airbytehq/airbyte/pull/79518) | Update dependencies |
 | 0.0.53 | 2026-06-02 | [79012](https://github.com/airbytehq/airbyte/pull/79012) | Update dependencies |

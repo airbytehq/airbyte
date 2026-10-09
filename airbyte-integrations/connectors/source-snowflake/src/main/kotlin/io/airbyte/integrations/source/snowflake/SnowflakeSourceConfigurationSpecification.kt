@@ -205,7 +205,10 @@ data class KeyPairCredentialsSpecification(
     val privateKeyPassword: String? = null
 ) : CredentialsSpecification
 
-@JsonSchemaTitle("Username and Password")
+@JsonSchemaTitle("Username and Password (Deprecated)")
+@JsonSchemaDescription(
+    "Deprecated: Username and password authentication is deprecated as of version 2.0.0 and will be removed in a future release. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. Switch to key pair authentication or a programmatic access token instead. See the <a href=\"https://docs.airbyte.com/integrations/sources/snowflake-migrations\">migration guide</a> for details."
+)
 @JsonSchemaInject(json = """{"order":2}""")
 data class UsernamePasswordCredentialsSpecification(
     @JsonProperty("auth_type")
@@ -218,7 +221,7 @@ data class UsernamePasswordCredentialsSpecification(
     val username: String,
     @JsonProperty("password")
     @JsonSchemaTitle("Password")
-    @JsonPropertyDescription("The password associated with the username.")
+    @JsonPropertyDescription("Deprecated. The password associated with the username.")
     @JsonSchemaInject(json = """{"order":2,"airbyte_secret":true}""")
     val password: String
 ) : CredentialsSpecification

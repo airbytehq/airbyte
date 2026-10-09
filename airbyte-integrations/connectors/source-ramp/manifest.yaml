@@ -1,0 +1,2483 @@
+version: 7.23.7
+
+type: DeclarativeSource
+
+description: >-
+  Syncs cards, transactions and reimbursements, plus Ramp's organisation, spend-control, accounts-payable
+  and procurement resources, from Ramp's developer API.
+
+check:
+  type: CheckStream
+  stream_names:
+    - transactions
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: SessionTokenAuthenticator
+        login_requester:
+          type: HttpRequester
+          url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/token"
+          http_method: POST
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['client_id'] }}"
+            password: "{{ config['client_secret'] }}"
+          request_body:
+            type: RequestBodyUrlEncodedForm
+            value:
+              grant_type: client_credentials
+              # One token for every stream's scope. Ramp grants the subset the app has and silently drops the
+              # rest, so a missing scope only fails its own stream (403 DEVELOPER_7100), never the login.
+              scope: >-
+                transactions:read cards:read reimbursements:read users:read departments:read locations:read
+                entities:read business:read funds:read spend_programs:read bills:read vendors:read
+                receipts:read merchants:read purchase_orders:read
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 400
+                  - 401
+                action: FAIL
+                failure_type: config_error
+                # Ramp does not fail the token call for a scope the app lacks: it drops the scope and the
+                # data call later returns 403 DEVELOPER_7100, handled by the shared error handler.
+                error_message: >-
+                  Ramp rejected the client ID or client secret ({{ (response.get('error_v2') or {}).get('message')
+                  or response.get('error_description') or response.get('error') or 'no details' }}).
+                  Copy both again from Ramp > Company > Developer > your app, and check the app uses the
+                  Client Credentials grant.
+        session_token_path:
+          - access_token
+        expiration_duration: PT240H
+        request_authentication:
+          type: Bearer
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 5
+        backoff_strategies:
+          - type: ExponentialBackoffStrategy
+            factor: 2
+        # A filter matches when the status code is in `http_codes` OR the predicate is true, so the
+        # Ramp-specific filters below match on `error_v2.error_code` alone.
+        response_filters:
+          - type: HttpResponseFilter
+            predicate: "{{ (response.get('error_v2') or {}).get('error_code') == 'DEVELOPER_7100' }}"
+            action: FAIL
+            failure_type: config_error
+            error_message: >-
+              Your Ramp app is not allowed to read this data ({{ (response.get('error_v2') or {}).get('message') }}).
+              In Ramp, open Company > Developer > your app, grant the missing read scope, then re-test the
+              source.{{ parameters.get('access_note', '') }}
+          - type: HttpResponseFilter
+            predicate: "{{ (response.get('error_v2') or {}).get('error_code') == 'DEVELOPER_7002' }}"
+            action: FAIL
+            failure_type: config_error
+            error_message: >-
+              Ramp no longer accepts this connector's access token. Check that the Ramp app still exists and
+              its client secret has not been rotated, then re-test the source.
+          - type: HttpResponseFilter
+            http_codes:
+              - 401
+            action: FAIL
+            failure_type: config_error
+            error_message: >-
+              Ramp rejected the connector's credentials. Re-enter the client ID and client secret from
+              Ramp > Company > Developer > your app.
+          - type: HttpResponseFilter
+            http_codes:
+              - 403
+            action: FAIL
+            failure_type: config_error
+            error_message: >-
+              Ramp denied access to this data. In Ramp, open Company > Developer > your app and check it has the
+              {{ parameters.get('required_scope', 'required read') }} scope, then re-test the
+              source.{{ parameters.get('access_note', '') }}
+      request_headers:
+        Content-Type: application/json
+    Paginator:
+      type: DefaultPaginator
+      page_size_option:
+        type: RequestOption
+        field_name: page_size
+        inject_into: request_parameter
+      page_token_option:
+        type: RequestOption
+        field_name: start
+        inject_into: request_parameter
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: "{{ last_record['id'] }}"
+        stop_condition: "{{ not (response.get('page') or {}).get('next') }}"
+        page_size: 50
+    # `Paginator` for list endpoints that take their filters and page token in a JSON body.
+    BodyPaginator:
+      type: DefaultPaginator
+      page_size_option:
+        type: RequestOption
+        field_name: page_size
+        inject_into: body_json
+      page_token_option:
+        type: RequestOption
+        field_name: start
+        inject_into: body_json
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: "{{ last_record['id'] }}"
+        stop_condition: "{{ not (response.get('page') or {}).get('next') }}"
+        page_size: 50
+    # Requester and retriever shared by the streams added after 0.1.0; each stream sets only its `url`.
+    Requester:
+      type: HttpRequester
+      http_method: GET
+      authenticator:
+        $ref: "#/definitions/linked/HttpRequester/authenticator"
+      error_handler:
+        $ref: "#/definitions/linked/HttpRequester/error_handler"
+      request_headers:
+        $ref: "#/definitions/linked/HttpRequester/request_headers"
+    Retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/Paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+  streams:
+    vendors:
+      type: DeclarativeStream
+      name: vendors
+      $parameters:
+        required_scope: vendors:read
+      primary_key:
+        - id
+      retriever:
+        $ref: "#/definitions/linked/Retriever"
+        requester:
+          $ref: "#/definitions/linked/Requester"
+          url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/vendors"
+          request_parameters:
+            include_subsidiary: "true"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          required:
+            - id
+          properties:
+            accounting_vendor_remote_id:
+              type:
+                - string
+                - "null"
+              description: The accounting remote id of the vendor.
+            address:
+              type:
+                - object
+                - "null"
+              description: The default address of the vendor.
+            addresses:
+              type:
+                - array
+                - "null"
+              items:
+                type: object
+              description: The addresses of the vendor.
+            billing_frequency:
+              type:
+                - string
+                - "null"
+              description: The billing frequency for this vendor.
+            contacts:
+              type:
+                - array
+                - "null"
+              items:
+                type: string
+              description: Unique identifiers of contacts associated with this vendor.
+            country:
+              type:
+                - string
+                - "null"
+              description: The 2-letter country of the vendor.
+            created_at:
+              type:
+                - string
+                - "null"
+              format: date-time
+              description: The date and time when this vendor was created.
+            default_entity_id:
+              type:
+                - string
+                - "null"
+              description: Unique identifier of the default business entity associated with this vendor.
+            default_payment_method:
+              type:
+                - object
+                - "null"
+              description: Default payment method for this vendor, including update source and policy.
+            description:
+              type:
+                - string
+                - "null"
+              description: Description of the vendor.
+            external_vendor_id:
+              type:
+                - string
+                - "null"
+              description: Customer-defined external identifier for the vendor.
+            federal_tax_classification:
+              type:
+                - string
+                - "null"
+              description: The federal tax classification of the vendor.
+            id:
+              type: string
+              description: Unique identifier of the vendor.
+            is_active:
+              type:
+                - boolean
+                - "null"
+              description: Whether this vendor is active.
+            is_deletable:
+              type:
+                - boolean
+                - "null"
+              description: Whether this vendor is deletable.
+            merchant_id:
+              type:
+                - string
+                - "null"
+              description: The id of the card merchant.
+            name:
+              type:
+                - string
+                - "null"
+              description: Name of the vendor.
+            name_legal:
+              type:
+                - string
+                - "null"
+              description: Legal name of the vendor.
+            net_payment_terms:
+              type:
+                - integer
+                - "null"
+              description: Number of days after receipt that payment is due. 0 means due on receipt.
+            parent_vendor_id:
+              type:
+                - string
+                - "null"
+              description: Unique identifier of the parent vendor, if this vendor has one.
+            sk_category_id:
+              type:
+                - integer
+                - "null"
+              description: Ramp category code of the vendor.
+            sk_category_name:
+              type:
+                - string
+                - "null"
+              description: The category name of the vendor.
+            state:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+              description: Status of the vendor, such as ACTIVE; returned by Ramp but not in its OpenAPI spec.
+            subsidiary:
+              type:
+                - array
+                - "null"
+              items:
+                type: string
+              description: ERP subsidiary identifiers associated with this vendor.
+            tax_address:
+              type:
+                - object
+                - "null"
+              description: The tax address of the vendor.
+            total_spend_all_time:
+              type:
+                - object
+                - "null"
+              description: Total spend for all time for this vendor.
+            total_spend_last_30_days:
+              type:
+                - object
+                - "null"
+              description: Total spend for the last 30 days for this vendor.
+            total_spend_last_365_days:
+              type:
+                - object
+                - "null"
+              description: Total spend for the last 365 days for this vendor.
+            total_spend_ytd:
+              type:
+                - object
+                - "null"
+              description: Total spend year-to-date for this vendor.
+            vendor_owner_id:
+              type:
+                - string
+                - "null"
+              description: Unique identifier of the user which owns this vendor.
+            vendor_type:
+              type:
+                - string
+                - "null"
+              description: The type of vendor if bill pay.
+
+streams:
+  - type: DeclarativeStream
+    name: cards
+    $parameters:
+      required_scope: cards:read
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/Paginator"
+      requester:
+        type: HttpRequester
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/cards"
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          id:
+            type: string
+            description: Ramp card UUID
+          display_name:
+            type:
+              - string
+              - "null"
+            description: Card display name.
+          state:
+            type:
+              - string
+              - "null"
+            description: e.g. ACTIVE
+          is_physical:
+            type:
+              - boolean
+              - "null"
+          cardholder_id:
+            type:
+              - string
+              - "null"
+          cardholder_name:
+            type:
+              - string
+              - "null"
+          card_program_id:
+            type:
+              - string
+              - "null"
+          last_four:
+            type:
+              - string
+              - "null"
+            description: Last four digits of the card number.
+          entity_id:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          expiration:
+            type:
+              - string
+              - "null"
+            description: MMYY format (e.g. "0430")
+          has_program_overridden:
+            type:
+              - boolean
+              - "null"
+          fulfillment:
+            type:
+              - object
+              - "null"
+            description: Nested object - fulfillment_status, shipping_date, etc.
+          spending_restrictions:
+            type:
+              - object
+              - "null"
+            description: Nested object - interval, auto_lock_date, etc.
+    transformations:
+      - type: KeysToSnakeCase
+  - type: DeclarativeStream
+    name: transactions
+    $parameters:
+      required_scope: transactions:read
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/Paginator"
+      requester:
+        type: HttpRequester
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/transactions"
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        # Ramp omits declined transactions unless `state=ALL` is sent, and returns `merchant_data` as null
+        # unless `include_merchant_data=true` is sent.
+        request_parameters:
+          state: ALL
+          include_merchant_data: "true"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          id:
+            type: string
+            description: Ramp transaction UUID
+          amount:
+            type:
+              - number
+              - "null"
+          currency_code:
+            type:
+              - string
+              - "null"
+            description: e.g. USD
+          card_id:
+            type:
+              - string
+              - "null"
+            description: Join key to cards stream
+          card_holder:
+            type:
+              - object
+              - "null"
+            description: Nested - first_name, employee_id, location_name, etc.
+          state:
+            type:
+              - string
+              - "null"
+            description: e.g. PENDING
+          sync_status:
+            type:
+              - string
+              - "null"
+            description: e.g. NOT_SYNC_READY
+          synced_at:
+            type:
+              - string
+              - "null"
+            description: ERP sync time. Null if not yet synced.
+          updated_at:
+            type:
+              - string
+              - "null"
+            description: >-
+              When the transaction was last updated. Used as the incremental
+              cursor.
+          user_transaction_time:
+            type:
+              - string
+              - "null"
+            description: When the transaction occurred.
+          accounting_date:
+            type:
+              - string
+              - "null"
+          merchant_id:
+            type:
+              - string
+              - "null"
+          merchant_name:
+            type:
+              - string
+              - "null"
+          merchant_descriptor:
+            type:
+              - string
+              - "null"
+          merchant_category_code:
+            type:
+              - string
+              - "null"
+          merchant_category_code_description:
+            type:
+              - string
+              - "null"
+          merchant_location:
+            type:
+              - object
+              - "null"
+          sk_category_id:
+            type:
+              - integer
+              - "null"
+          sk_category_name:
+            type:
+              - string
+              - "null"
+          spend_program_id:
+            type:
+              - string
+              - "null"
+          limit_id:
+            type:
+              - string
+              - "null"
+          entity_id:
+            type:
+              - string
+              - "null"
+          original_transaction_amount:
+            type:
+              - object
+              - "null"
+            description: Nested - amount, minor_unit_conversion_rate, currency
+          line_items:
+            type:
+              - array
+              - "null"
+          accounting_categories:
+            type:
+              - array
+              - "null"
+          accounting_field_selections:
+            type:
+              - array
+              - "null"
+          policy_violations:
+            type:
+              - array
+              - "null"
+          receipts:
+            type:
+              - array
+              - "null"
+          disputes:
+            type:
+              - array
+              - "null"
+          memo:
+            type:
+              - string
+              - "null"
+          trip_id:
+            type:
+              - string
+              - "null"
+          trip_name:
+            type:
+              - string
+              - "null"
+          card_present:
+            type:
+              - boolean
+              - "null"
+          network_merchant_id:
+            type:
+              - string
+              - "null"
+          settlement_date:
+            type:
+              - string
+              - "null"
+          minor_unit_conversion_rate:
+            type:
+              - integer
+              - "null"
+          all_requirements_met_and_approved:
+            type:
+              - boolean
+              - "null"
+          decline_details:
+            type:
+              - object
+              - "null"
+            description: Why the transaction was declined. Null unless state is DECLINED.
+          entity_amount:
+            type:
+              - object
+              - "null"
+          fund_id:
+            type:
+              - string
+              - "null"
+          merchant_amount:
+            type:
+              - object
+              - "null"
+          original_transaction_id:
+            type:
+              - string
+              - "null"
+          statement_id:
+            type:
+              - string
+              - "null"
+          merchant_data:
+            type:
+              - object
+              - "null"
+            description: >-
+              Purchase data provided by the merchant - auto_rental, flight, lodging, receipt (itemised
+              lines) and reference. Null when the merchant sends none.
+          attendees:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+            description: Attendees of the transaction - name, and user_id when the attendee is a Ramp user.
+          requires_accounting_vendor_creation_to_sync:
+            type:
+              - boolean
+              - "null"
+            description: >-
+              Whether an accounting vendor must be created and coded to the transaction before it can sync.
+              Ramp omits it unless vendor creation on sync is enabled.
+    transformations:
+      - type: KeysToSnakeCase
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2019-01-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      # `updated_after` is not in Ramp's published parameter list for /transactions; the sandbox honours it
+      # inclusively (probed 2026-09-24, see airbytehq/airbyte-internal-issues#17540). If Ramp ever ignores it,
+      # the stream re-reads everything and emits duplicates rather than losing records.
+      start_time_option:
+        type: RequestOption
+        field_name: updated_after
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: reimbursements
+    $parameters:
+      required_scope: reimbursements:read
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/Paginator"
+      requester:
+        type: HttpRequester
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/reimbursements"
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: ListPartitionRouter
+        cursor_field: direction
+        values:
+          - BUSINESS_TO_USER
+          - USER_TO_BUSINESS
+        request_option:
+          type: RequestOption
+          field_name: direction
+          inject_into: request_parameter
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+            description: e.g. OUT_OF_POCKET
+          id:
+            type: string
+            description: Ramp reimbursement UUID
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          direction:
+            type:
+              - string
+              - "null"
+            description: >-
+              BUSINESS_TO_USER (out-of-pocket reimbursement) or USER_TO_BUSINESS
+              (repayment)
+          state:
+            type:
+              - string
+              - "null"
+            description: e.g. PENDING
+          sync_status:
+            type:
+              - string
+              - "null"
+          synced_at:
+            type:
+              - string
+              - "null"
+          submitted_at:
+            type:
+              - string
+              - "null"
+          approved_at:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+            description: >-
+              When the reimbursement was last updated. Used as the incremental
+              cursor.
+          accounting_date:
+            type:
+              - string
+              - "null"
+          transaction_date:
+            type:
+              - string
+              - "null"
+          memo:
+            type:
+              - string
+              - "null"
+            description: Free-text memo on the reimbursement.
+          merchant:
+            type:
+              - string
+              - "null"
+          merchant_id:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          user_email:
+            type:
+              - string
+              - "null"
+          user_full_name:
+            type:
+              - string
+              - "null"
+          entity_id:
+            type:
+              - string
+              - "null"
+          trip_id:
+            type:
+              - string
+              - "null"
+          spend_limit_id:
+            type:
+              - string
+              - "null"
+          accounting_field_selections:
+            type:
+              - array
+              - "null"
+          line_items:
+            type:
+              - array
+              - "null"
+          attendees:
+            type:
+              - array
+              - "null"
+          receipts:
+            type:
+              - array
+              - "null"
+          original_reimbursement_amount:
+            type:
+              - object
+              - "null"
+          payee_amount:
+            type:
+              - object
+              - "null"
+          entity_amount:
+            type:
+              - object
+              - "null"
+          fund_id:
+            type:
+              - string
+              - "null"
+          merchant_amount:
+            type:
+              - object
+              - "null"
+          payment_batch_id:
+            type:
+              - string
+              - "null"
+          payment_id:
+            type:
+              - string
+              - "null"
+          payment_processed_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          repayment_transaction_id:
+            type:
+              - string
+              - "null"
+          funding_source:
+            type:
+              - string
+              - "null"
+            description: >-
+              NOT_RAMP_FUNDED, PAID_OUTSIDE_RAMP, PENDING (not known before payment) or RAMP_FUNDED (does not
+              confirm settlement). Null when Ramp cannot determine it.
+          employee_id:
+            type:
+              - string
+              - "null"
+            description: Employee ID of the person who made the reimbursement.
+          distance:
+            type:
+              - number
+              - "null"
+            description: Trip distance in miles, for mileage reimbursements.
+          start_location:
+            type:
+              - string
+              - "null"
+            description: Starting location of the trip, for mileage reimbursements.
+          end_location:
+            type:
+              - string
+              - "null"
+            description: Ending location of the trip, for mileage reimbursements.
+          waypoints:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+            description: Intermediate stops during the trip, for mileage reimbursements.
+    transformations:
+      - type: KeysToSnakeCase
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2019-01-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: updated_after
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: users
+    $parameters:
+      required_scope: users:read
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/linked/Retriever"
+      requester:
+        $ref: "#/definitions/linked/Requester"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/users"
+        # The unfiltered call returns every status except USER_SUSPENDED, including the invite and onboarding
+        # statuses the `status` filter rejects; suspended users need their own call.
+        request_parameters: "{{ {} if stream_partition['status'] == 'ALL' else {'status': stream_partition['status']} }}"
+      partition_router:
+        type: ListPartitionRouter
+        cursor_field: status
+        values:
+          - ALL
+          - USER_SUSPENDED
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          business_id:
+            type:
+              - string
+              - "null"
+            description: Unique identifier of the company that the employee's working for.
+          custom_fields:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+            description: A list of custom fields of the user.
+          department_id:
+            type:
+              - string
+              - "null"
+            description: Unique identifier of the employee's department
+          email:
+            type:
+              - string
+              - "null"
+            description: The employee's email address
+          employee_id:
+            type:
+              - string
+              - "null"
+            description: An alternative identifier for an employee, coming from external systems, which can be used in place of an email.
+          entity_id:
+            type:
+              - string
+              - "null"
+            description: Unique identifier of business entity user is associated with.
+          first_name:
+            type:
+              - string
+              - "null"
+            description: First name of the employee
+          id:
+            type: string
+            description: Unique employee identifier
+          is_manager:
+            type:
+              - boolean
+              - "null"
+            description: Whether the employee is a manager
+          last_name:
+            type:
+              - string
+              - "null"
+            description: Last name of the employee
+          location_id:
+            type:
+              - string
+              - "null"
+            description: Unique identifier of the employee's location
+          manager_id:
+            type:
+              - string
+              - "null"
+            description: Unique identifier of the employee's manager
+          phone:
+            type:
+              - string
+              - "null"
+            description: The employee's phone number
+          role:
+            type:
+              - string
+              - "null"
+            description: The employee's role
+          scheduled_deactivation_date:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: The date when the user is scheduled to be deactivated.
+          scheduled_invitation_date:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: The date when the user (currently in USER_DRAFT status) is scheduled to be invited to Ramp.
+          status:
+            type:
+              - string
+              - "null"
+  - type: DeclarativeStream
+    name: departments
+    $parameters:
+      required_scope: departments:read
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/linked/Retriever"
+      requester:
+        $ref: "#/definitions/linked/Requester"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/departments"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          id:
+            type: string
+            description: Unique identifier for the department.
+          name:
+            type:
+              - string
+              - "null"
+            description: Name of the department.
+  - type: DeclarativeStream
+    name: locations
+    $parameters:
+      required_scope: locations:read
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/linked/Retriever"
+      requester:
+        $ref: "#/definitions/linked/Requester"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/locations"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          entity_id:
+            type:
+              - string
+              - "null"
+            description: Identifier of the business entity this location belongs to.
+          id:
+            type: string
+            description: Unique identifier for the location.
+          name:
+            type:
+              - string
+              - "null"
+            description: Name of the location.
+  - type: DeclarativeStream
+    name: entities
+    $parameters:
+      required_scope: entities:read
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/linked/Retriever"
+      requester:
+        $ref: "#/definitions/linked/Requester"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/entities"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          accounts:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+            description: Information about the entity's active accounts
+          connected_subsidiary:
+            type:
+              - object
+              - "null"
+            description: The subsidiary in the ERP system that this entity is mapped to.
+          currency:
+            type:
+              - string
+              - "null"
+            description: Currency used by this business entity.
+          default_bill_pay_payment_account_id:
+            type:
+              - string
+              - "null"
+            description: Bank account UUID of the entity's configured default Bill Pay payment account, if one exists.
+          entity_name:
+            type:
+              - string
+              - "null"
+            description: Name of the business entity.
+          id:
+            type: string
+            description: Unique identifier for the business entity.
+          is_primary:
+            type:
+              - boolean
+              - "null"
+            description: Whether this is the primary entity for the business.
+          location_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+            description: List of identifiers for locations associated with this entity.
+          payment_accounts:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+            description: Bank accounts eligible for bill payment for this entity.
+  - type: DeclarativeStream
+    name: business
+    $parameters:
+      required_scope: business:read
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/linked/Requester"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/business"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          active:
+            type:
+              - boolean
+              - "null"
+            description: Whether the business account is active.
+          billing_address:
+            type:
+              - object
+              - "null"
+            description: Billing address of the business.
+          business_name_legal:
+            type:
+              - string
+              - "null"
+            description: Legal name of the business entity.
+          business_name_on_card:
+            type:
+              - string
+              - "null"
+            description: Business name that appears on issued cards.
+          created_time:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: When the business account was created.
+          enforce_sso:
+            type:
+              - boolean
+              - "null"
+            description: Whether single sign-on is enforced for the business.
+          id:
+            type: string
+            description: Unique identifier for the business.
+          initial_approved_limit:
+            type:
+              - integer
+              - "null"
+            description: Initial credit limit approved for the business, in whole US dollars (USD).
+          initial_approved_limit_amount:
+            type:
+              - object
+              - "null"
+            description: Initial credit limit approved for the business, in minor units (cents) with an explicit USD currency code.
+          is_integrated_with_slack:
+            type:
+              - boolean
+              - "null"
+            description: Whether the business has integrated with Slack.
+          is_reimbursements_enabled:
+            type:
+              - boolean
+              - "null"
+            description: Whether reimbursements feature is enabled for the business.
+          limit_locked:
+            type:
+              - boolean
+              - "null"
+            description: Whether the credit limit is locked and cannot be modified.
+          phone:
+            type:
+              - string
+              - "null"
+            description: Primary contact phone number for the business.
+          website:
+            type:
+              - string
+              - "null"
+            description: Company website URL.
+  - type: DeclarativeStream
+    name: business_balance
+    $parameters:
+      required_scope: business:read
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/linked/Requester"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/business/balance"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          available_card_limit:
+            type:
+              - number
+              - "null"
+            description: Remaining available card spending limit.
+          available_card_limit_amount:
+            type:
+              - object
+              - "null"
+            description: Remaining available card spending limit in minor units with an explicit USD currency code.
+          available_flex_limit:
+            type:
+              - number
+              - "null"
+            description: Remaining available flex spending limit.
+          available_flex_limit_amount:
+            type:
+              - object
+              - "null"
+            description: Remaining available flex spending limit in minor units with an explicit USD currency code.
+          balance_including_pending:
+            type:
+              - number
+              - "null"
+            description: Total balance including pending transactions.
+          balance_including_pending_amount:
+            type:
+              - object
+              - "null"
+            description: Total balance including pending transactions in minor units with an explicit USD currency code.
+          card_balance_excluding_pending:
+            type:
+              - number
+              - "null"
+            description: Card balance excluding pending transactions; returned by Ramp but not in its OpenAPI spec.
+          card_balance_excluding_pending_amount:
+            type:
+              - object
+              - "null"
+            description: Current card balance excluding pending transactions in minor units with an explicit USD currency code.
+          card_balance_including_pending:
+            type:
+              - number
+              - "null"
+            description: Current card balance including pending transactions.
+          card_balance_including_pending_amount:
+            type:
+              - object
+              - "null"
+            description: Current card balance including pending transactions in minor units with an explicit USD currency code.
+          card_limit:
+            type:
+              - number
+              - "null"
+            description: Maximum allowed card spending limit.
+          card_limit_amount:
+            type:
+              - object
+              - "null"
+            description: Maximum allowed card spending limit in minor units with an explicit USD currency code.
+          flex_balance:
+            type:
+              - number
+              - "null"
+            description: Current balance of flex spending.
+          flex_balance_amount:
+            type:
+              - object
+              - "null"
+            description: Current balance of flex spending in minor units with an explicit USD currency code.
+          flex_limit:
+            type:
+              - number
+              - "null"
+            description: Maximum allowed flex spending limit.
+          flex_limit_amount:
+            type:
+              - object
+              - "null"
+            description: Maximum allowed flex spending limit in minor units with an explicit USD currency code.
+          float_balance_excluding_pending:
+            type:
+              - number
+              - "null"
+            description: Float account balance excluding pending transactions.
+          float_balance_excluding_pending_amount:
+            type:
+              - object
+              - "null"
+            description: Float account balance excluding pending transactions in minor units with an explicit USD currency code.
+          global_limit:
+            type:
+              - number
+              - "null"
+            description: Overall spending limit for the business.
+          global_limit_amount:
+            type:
+              - object
+              - "null"
+            description: Overall spending limit for the business in minor units with an explicit USD currency code.
+          max_balance:
+            type:
+              - number
+              - "null"
+            description: Maximum balance allowed for the business.
+          max_balance_amount:
+            type:
+              - object
+              - "null"
+            description: Maximum balance allowed for the business in minor units with an explicit USD currency code.
+          next_billing_date:
+            type:
+              - string
+              - "null"
+            description: Date of the next billing cycle.
+          prev_billing_date:
+            type:
+              - string
+              - "null"
+            description: Date of the previous billing cycle.
+          statement_balance:
+            type:
+              - number
+              - "null"
+            description: Balance from the most recent statement.
+          statement_balance_amount:
+            type:
+              - object
+              - "null"
+            description: Balance from the most recent statement in minor units with an explicit USD currency code.
+  - type: DeclarativeStream
+    name: funds
+    $parameters:
+      required_scope: funds:read
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/linked/Retriever"
+      requester:
+        $ref: "#/definitions/linked/Requester"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/funds"
+      # Read terminated funds as well, so a terminated fund keeps its final state downstream.
+      partition_router:
+        type: ListPartitionRouter
+        cursor_field: is_terminated
+        values:
+          - "false"
+          - "true"
+        request_option:
+          type: RequestOption
+          field_name: is_terminated
+          inject_into: request_parameter
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          balance:
+            type:
+              - object
+              - "null"
+            description: Current balance of the fund.
+          cards:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+            description: Cards linked to this fund.
+          created_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: Time at which the fund was created, in ISO 8601 format.
+          display_name:
+            type:
+              - string
+              - "null"
+            description: Display name of the fund.
+          entity_id:
+            type:
+              - string
+              - "null"
+            description: Associated business entity of the fund.
+          id:
+            type: string
+            description: Unique identifier of the fund.
+          is_exempt_from_policy_agent:
+            type:
+              - boolean
+              - "null"
+            description: Whether this fund is exempt from policy agent review.
+          is_shareable:
+            type:
+              - boolean
+              - "null"
+            description: Whether this fund is shareable among multiple users.
+          members:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+            description: Members who can spend from the fund.
+          overrides_spend_program:
+            type:
+              - boolean
+              - "null"
+            description: Whether the fund's settings override those of its spend program.
+          permitted_spend_types:
+            type:
+              - object
+              - "null"
+            description: Permitted spend types for this fund.
+          spend_program_id:
+            type:
+              - string
+              - "null"
+            description: Unique identifier of the associated spend program.
+          spending_restrictions:
+            type:
+              - object
+              - "null"
+            description: Spending restrictions on this fund.
+          state:
+            type:
+              - string
+              - "null"
+            description: "Current state of the fund: ACTIVE, SUSPENDED, or TERMINATED."
+          suspension:
+            type:
+              - object
+              - "null"
+            description: Suspension details at the fund level, or null if the fund is not suspended.
+  - type: DeclarativeStream
+    name: spend_programs
+    $parameters:
+      required_scope: spend_programs:read
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/linked/Retriever"
+      requester:
+        $ref: "#/definitions/linked/Requester"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/spend-programs"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+            description: Description of the spend program.
+          display_name:
+            type:
+              - string
+              - "null"
+            description: Display name of the spend program.
+          icon:
+            type:
+              - string
+              - "null"
+            description: The template icon for the spend program.
+          id:
+            type: string
+            description: Unique identifier of the spend program.
+          is_shareable:
+            type:
+              - boolean
+              - "null"
+            description: Whether this spend program is shareable.
+          issue_physical_card_if_needed:
+            type:
+              - boolean
+              - "null"
+            description: Indicates whether the spend program should issue a physical card if the user does not have one.
+          permitted_spend_types:
+            type:
+              - object
+              - "null"
+            description: Permitted spend types for the spend program.
+          restrictions:
+            type:
+              - object
+              - "null"
+            description: A set of restrictions imposed on the spend program.
+  - type: DeclarativeStream
+    name: bills
+    $parameters:
+      required_scope: bills:read
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/linked/Retriever"
+      requester:
+        $ref: "#/definitions/linked/Requester"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/bills"
+      # Ramp returns either active or archived (deleted) bills; read both so deletions replicate via `archived_at`.
+      partition_router:
+        type: ListPartitionRouter
+        cursor_field: is_archived
+        values:
+          - "false"
+          - "true"
+        request_option:
+          type: RequestOption
+          field_name: is_archived
+          inject_into: request_parameter
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          accounting_date:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: The date for the bill for accounting purposes.
+          accounting_field_selections:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+            description: List of accounting field options selected to code the bill.
+          amount:
+            type:
+              - object
+              - "null"
+            description: Amount of the bill, represented in the lowest denomination of the currency (e.g., cents for USD).
+          applied_vendor_credits:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+            description: Vendor Credits that have been applied to this Bill
+          approval_status:
+            type:
+              - string
+              - "null"
+            description: Approval status of the bill.
+          archived_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: The datetime the bill was archived.
+          attachments:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+            description: Bill attachments visible to the business - id, attachment_type and a pre-signed download url.
+          bill_owner:
+            type:
+              - object
+              - "null"
+            description: Information about the bill owner.
+          created_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          deep_link_url:
+            type:
+              - string
+              - "null"
+            description: Link to bill in ERP, if exists.
+          draft_bill_created_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: The date the draft bill was created if this bill was created from a draft bill, otherwise None.
+          draft_bill_id:
+            type:
+              - string
+              - "null"
+            description: Unique identifier of the draft bill this bill was created from, if one exists.
+          due_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          enable_accounting_sync:
+            type:
+              - boolean
+              - "null"
+            description: Flag specifying whether the bill should sync to the ERP
+          entity_id:
+            type:
+              - string
+              - "null"
+            description: Associated business entity.
+          fx_conversion_rate:
+            type:
+              - string
+              - "null"
+            description: FX conversion rate from bill invoice currency to payer currency.
+          id:
+            type: string
+          inventory_line_items:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+            description: List of inventory line items related to the bill.
+          invoice_number:
+            type:
+              - string
+              - "null"
+            description: The invoice number on the bill.
+          invoice_urls:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+            description: Pre-signed urls to download invoice files.
+          is_payment_sync_ready:
+            type:
+              - boolean
+              - "null"
+            description: Whether the bill is ready for payment accounting export.
+          is_withholding_release:
+            type:
+              - boolean
+              - "null"
+            description: Whether this bill is a retainage withholding release bill, if applicable.
+          issued_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: The date the bill was issued on invoice.
+          item_receipt_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+            description: List of unique identifiers for item receipts associated with this bill through matched purchase orders.
+          line_items:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+            description: List of line items related to the bill.
+          memo:
+            type:
+              - string
+              - "null"
+            description: Memo of the bill.
+          paid_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: The datetime the bill's payment status is set to PAID.
+          payment:
+            type:
+              - object
+              - "null"
+            description: Payment information for the bill.
+          posting_date:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: The date the bill was posted to the ERP.
+          purchase_order_id:
+            type:
+              - string
+              - "null"
+            description: Unique identifier of matched purchase order, if one exists.
+          purchase_order_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+            description: Unique identifiers of the purchase orders matched to this bill; returned by Ramp but not in its OpenAPI spec.
+          related_bills:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+            description: Bills associated with this bill, labelled from this bill's side (e.g. the insurance bill for a rental). Only returned when bill associations are enabled for the business.
+          remote_id:
+            type:
+              - string
+              - "null"
+            description: The external ID that identifies the bill on the client's side.
+          status:
+            type:
+              - string
+              - "null"
+          status_summary:
+            type:
+              - string
+              - "null"
+            description: Status summary of the bill.
+          sync_status:
+            type:
+              - string
+              - "null"
+            description: Sync status of the bill.
+          vendor:
+            type:
+              - object
+              - "null"
+            description: Vendor information of the bill.
+          vendor_contact_id:
+            type:
+              - string
+              - "null"
+            description: Unique identifier of associated vendor contact.
+          vendor_memo:
+            type:
+              - string
+              - "null"
+            description: Memo to the vendor.
+  - $ref: "#/definitions/streams/vendors"
+  - type: DeclarativeStream
+    name: vendor_contacts
+    $parameters:
+      required_scope: vendors:read
+    primary_key:
+      - vendor_id
+      - id
+    retriever:
+      $ref: "#/definitions/linked/Retriever"
+      requester:
+        $ref: "#/definitions/linked/Requester"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/vendors/{{ stream_partition['vendor_id'] }}/contacts"
+        # A vendor deleted after the parent read returns 404; skip it instead of failing the stream.
+        # The 404 handler goes first: on FAIL the composite falls through and returns the shared handler's result.
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              max_retries: 5
+              response_filters:
+                - type: HttpResponseFilter
+                  http_codes:
+                    - 404
+                  action: IGNORE
+            - $ref: "#/definitions/linked/HttpRequester/error_handler"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/streams/vendors"
+            parent_key: id
+            partition_field: vendor_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+          - vendor_id
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+            description: Unique identifier of the vendor contact.
+          is_default:
+            type:
+              - boolean
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          vendor_id:
+            type: string
+            description: Unique identifier of the vendor this contact belongs to; added by the connector from the parent vendor.
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - vendor_id
+            value: "{{ stream_partition['vendor_id'] }}"
+  - type: DeclarativeStream
+    name: vendor_agreements
+    $parameters:
+      required_scope: vendors:read
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/linked/Retriever"
+      requester:
+        $ref: "#/definitions/linked/Requester"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/vendors/agreements"
+        # Ramp lists vendor agreements through a POST query endpoint; archived ones are excluded by default.
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            include_archived: true
+      paginator:
+        $ref: "#/definitions/linked/BodyPaginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          auto_renewal:
+            type:
+              - boolean
+              - "null"
+          available_actions:
+            type:
+              - object
+              - "null"
+          contract_owners:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+          created_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          currency:
+            type:
+              - string
+              - "null"
+          custom_record_field_values:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+          days_remaining:
+            type:
+              - object
+              - "null"
+          deleted_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          department:
+            type:
+              - object
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          draft_spend_requests:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+          end_date:
+            type:
+              - string
+              - "null"
+            format: date
+          has_approved_renewal_request:
+            type:
+              - boolean
+              - "null"
+          id:
+            type: string
+          is_snoozed:
+            type:
+              - boolean
+              - "null"
+          is_up_for_renewal:
+            type:
+              - boolean
+              - "null"
+          last_date_to_terminate:
+            type:
+              - string
+              - "null"
+            format: date
+          latest_renewal_request:
+            type:
+              - object
+              - "null"
+          logo:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          notifications_on:
+            type:
+              - boolean
+              - "null"
+          payee_id:
+            type:
+              - string
+              - "null"
+          payee_name:
+            type:
+              - string
+              - "null"
+          renewal_status:
+            type:
+              - string
+              - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+            format: date
+          total_value:
+            type:
+              - object
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          uploaded_by_user:
+            type:
+              - object
+              - "null"
+            description: Recorded uploader of the source document's latest version, or null when unavailable.
+          vendor_owners:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+  - type: DeclarativeStream
+    name: receipts
+    $parameters:
+      required_scope: receipts:read
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/linked/Retriever"
+      requester:
+        $ref: "#/definitions/linked/Requester"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/receipts"
+        request_parameters:
+          include_ocr_data: "true"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: Timestamp when the receipt was created.
+          id:
+            type: string
+            description: Unique identifier for the receipt.
+          ocr:
+            type:
+              - object
+              - "null"
+            description: Structured data extracted from receipt OCR.
+          receipt_url:
+            type:
+              - string
+              - "null"
+            description: Pre-signed URL to download receipt image (valid for 1 hour by default).
+          reimbursement_id:
+            type:
+              - string
+              - "null"
+            description: Reimbursement associated with this receipt.
+          transaction_id:
+            type:
+              - string
+              - "null"
+            description: Transaction associated with this receipt.
+          user_id:
+            type:
+              - string
+              - "null"
+            description: User who uploaded the receipt.
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_at
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S%z'
+        - '%Y-%m-%dT%H:%M:%S.%f%z'
+        - '%Y-%m-%dT%H:%M:%SZ'
+        - '%Y-%m-%dT%H:%M:%S.%fZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2019-01-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: created_after
+        inject_into: request_parameter
+  - type: DeclarativeStream
+    name: merchants
+    $parameters:
+      required_scope: merchants:read
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/linked/Retriever"
+      requester:
+        $ref: "#/definitions/linked/Requester"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/merchants"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          id:
+            type: string
+            description: Unique identifier for the merchant.
+          is_auto_approved:
+            type:
+              - boolean
+              - "null"
+            description: Indicates if transactions from this merchant are exempt from receipt submission requirements.
+          merchant_name:
+            type:
+              - string
+              - "null"
+            description: Display name of the merchant.
+          sk_category_name:
+            type:
+              - string
+              - "null"
+            description: Category classification of the merchant.
+  - type: DeclarativeStream
+    name: purchase_orders
+    $parameters:
+      required_scope: purchase_orders:read
+      access_note: ' Purchase orders are only available on Ramp Plus; deselect this stream if your plan does not include it.'
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/linked/Retriever"
+      requester:
+        $ref: "#/definitions/linked/Requester"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/purchase-orders"
+        request_parameters:
+          include_archived: "true"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        required:
+          - id
+        properties:
+          accounting_field_selections:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+            description: List of accounting field options selected to code the purchase order.
+          amount:
+            type:
+              - object
+              - "null"
+            description: Amount of the purchse order.
+          archived_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          bill_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+            description: List of unique identifiers for attached bills.
+          billing_status:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          creation_source:
+            type:
+              - string
+              - "null"
+          entity_id:
+            type:
+              - string
+              - "null"
+            description: Associated business entity.
+          external_id:
+            type:
+              - string
+              - "null"
+            description: An ID that uniquely identifies the purchase order on the client's side.
+          id:
+            type: string
+          item_receipt_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+            description: List of unique identifiers for item receipts matched to the purchase order.
+          line_items:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+            description: List of line items on the purchase order.
+          memo:
+            type:
+              - string
+              - "null"
+            description: Memo of the purchase order.
+          name:
+            type:
+              - string
+              - "null"
+            description: The name of the spend request associated with the purchase order.
+          net_payment_terms:
+            type:
+              - integer
+              - "null"
+            description: The required time an invoice needs to be paid after receipt.
+          owner_id:
+            type:
+              - string
+              - "null"
+            description: Unique identifier for the owner of the spend request.
+          promise_date:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: The date the vendor will deliver the goods or services.
+          purchase_order_number:
+            type:
+              - string
+              - "null"
+          ramp_url:
+            type:
+              - string
+              - "null"
+            description: A stable URL that links to the purchase order in the Ramp web application.
+          receipt_status:
+            type:
+              - string
+              - "null"
+          remote_id:
+            type:
+              - string
+              - "null"
+            description: The accounting remote identifier of the purchase order.
+          ship_to_address:
+            type:
+              - object
+              - "null"
+            description: Delivery address for the purchase order.
+          ship_to_company_name:
+            type:
+              - string
+              - "null"
+            description: Company name associated with the delivery address.
+          shipping_contact_email:
+            type:
+              - string
+              - "null"
+            description: Email address of the delivery contact.
+          shipping_contact_first_name:
+            type:
+              - string
+              - "null"
+            description: First name of the delivery contact.
+          shipping_contact_last_name:
+            type:
+              - string
+              - "null"
+            description: Last name of the delivery contact.
+          shipping_contact_phone_number:
+            type:
+              - string
+              - "null"
+            description: Phone number of the delivery contact.
+          spend_end_date:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: The date when spending for this purchase order ends.
+          spend_program_id:
+            type:
+              - string
+              - "null"
+            description: Unique identifier for the spend program associated with the purchase order.
+          spend_request_id:
+            type:
+              - string
+              - "null"
+            description: Unique identifier for the spend request associated with the purchase order.
+          spend_start_date:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: The date when spending for this purchase order begins.
+          spend_total_amount:
+            type:
+              - object
+              - "null"
+            description: Total amount of the purchase order, calculated based on frequency and date range for recurring purchases.
+          three_way_match_enabled:
+            type:
+              - boolean
+              - "null"
+            description: Whether three-way match is enabled for the purchase order.
+          transaction_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+            description: List of unique identifiers for attached transactions.
+          user_id:
+            type:
+              - string
+              - "null"
+            description: Unique identifier for the user who created the spend request.
+          vendor_id:
+            type:
+              - string
+              - "null"
+            description: Unique identifier for the vendor.
+          withholding_default_rate:
+            type:
+              - string
+              - "null"
+            description: Default retainage withholding rate for the purchase order, expressed as a fractional decimal.
+
+spec:
+  type: Spec
+  documentation_url: https://docs.ramp.com/developer-api
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+    properties:
+      client_id:
+        type: string
+        description: >-
+          Client ID of the Ramp developer app (Ramp > Company > Developer). The app needs the Client
+          Credentials grant and the scopes `transactions:read`, `cards:read` and `reimbursements:read`. Every
+          other stream needs its own read scope, such as `users:read` or `bills:read`, granted only if you sync it.
+        title: Ramp Client ID
+        airbyte_secret: true
+        order: 0
+      client_secret:
+        type: string
+        description: Your Ramp API client secret.
+        title: Ramp Client Secret
+        airbyte_secret: true
+        order: 1
+      start_date:
+        type: string
+        description: >-
+          Only transactions and reimbursements changed on or after this date, and receipts created on or
+          after it, are synced on the first sync. Use UTC, for example 2024-01-01T00:00:00Z.
+        title: Start Date
+        format: date-time
+        default: "2019-01-01T00:00:00Z"
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?Z$
+        examples:
+          - "2024-01-01T00:00:00Z"
+        order: 2
+      api_url:
+        type: string
+        description: >-
+          Ramp API base URL. All production Ramp accounts use the default. Set
+          to https://demo-api.ramp.com only when testing against a Ramp
+          sandbox app.
+        title: API Base URL
+        default: https://api.ramp.com
+        pattern: ^https://
+        airbyte_hidden: true
+        order: 3
+    additionalProperties: true
+
+# Ramp allows 200 requests per 10-second rolling window per IP; keep some headroom.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 180
+          interval: PT10S
+      matchers: []
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1

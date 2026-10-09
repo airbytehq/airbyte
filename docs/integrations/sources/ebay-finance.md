@@ -13,7 +13,8 @@ Documentation: https://developer.ebay.com/api-docs/sell/finances/overview.html
 | `redirect_uri` | `string` | Redirect URI.  |  |
 | `refresh_token` | `string` | Refresh Token.  |  |
 | `api_host` | `string` | API Host. https://apiz.sandbox.ebay.com for sandbox &amp; https://apiz.ebay.com for production | https://apiz.ebay.com |
-| `start_date` | `string` | Start date.  |  |
+| `start_date` | `string` | Start date. UTC date and time to start replicating from. eBay only returns transactions and payouts from the last five years. |  |
+| `marketplace_id` | `string` | Marketplace ID. eBay marketplace of the seller, sent as the `X-EBAY-C-MARKETPLACE-ID` header (for example EBAY_US, EBAY_GB, EBAY_DE). | EBAY_US |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -32,6 +33,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-10-07 | [88203](https://github.com/airbytehq/airbyte/pull/88203) | Fix `transactionDate`/`payoutDate` filters (3-digit ms, bounded 1-year windows), cap payouts page size at 200, add marketplace ID header |
+| 0.0.51 | 2026-10-06 | [87839](https://github.com/airbytehq/airbyte/pull/87839) | Update dependencies |
+| 0.0.50 | 2026-09-29 | [87178](https://github.com/airbytehq/airbyte/pull/87178) | Update dependencies |
+| 0.0.49 | 2026-09-22 | [86641](https://github.com/airbytehq/airbyte/pull/86641) | Update dependencies |
+| 0.0.48 | 2026-09-15 | [86043](https://github.com/airbytehq/airbyte/pull/86043) | Update dependencies |
+| 0.0.47 | 2026-09-08 | [85478](https://github.com/airbytehq/airbyte/pull/85478) | Update dependencies |
+| 0.0.46 | 2026-08-18 | [84582](https://github.com/airbytehq/airbyte/pull/84582) | Update dependencies |
+| 0.0.45 | 2026-08-11 | [83933](https://github.com/airbytehq/airbyte/pull/83933) | Update dependencies |
+| 0.0.44 | 2026-08-04 | [83434](https://github.com/airbytehq/airbyte/pull/83434) | Update dependencies |
+| 0.0.43 | 2026-07-28 | [82919](https://github.com/airbytehq/airbyte/pull/82919) | Update dependencies |
+| 0.0.42 | 2026-07-21 | [82388](https://github.com/airbytehq/airbyte/pull/82388) | Update dependencies |
+| 0.0.41 | 2026-07-14 | [81815](https://github.com/airbytehq/airbyte/pull/81815) | Update dependencies |
+| 0.0.40 | 2026-06-30 | [81059](https://github.com/airbytehq/airbyte/pull/81059) | Update dependencies |
+| 0.0.39 | 2026-06-23 | [80455](https://github.com/airbytehq/airbyte/pull/80455) | Update dependencies |
 | 0.0.38 | 2026-06-16 | [79858](https://github.com/airbytehq/airbyte/pull/79858) | Update dependencies |
 | 0.0.37 | 2026-06-09 | [79323](https://github.com/airbytehq/airbyte/pull/79323) | Update dependencies |
 | 0.0.36 | 2026-06-02 | [78678](https://github.com/airbytehq/airbyte/pull/78678) | Update dependencies |

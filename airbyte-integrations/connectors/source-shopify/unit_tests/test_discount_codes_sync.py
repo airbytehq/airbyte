@@ -6,13 +6,14 @@ import json
 
 import pytest
 import requests_mock as rmock
+from source_shopify.streams.base_streams import ShopifyStream
 from source_shopify.streams.streams import DiscountCodesSync
 
 from airbyte_cdk.utils import AirbyteTracedException
 
 
-def _graphql_url(shop: str = "test_shop") -> str:
-    return f"https://{shop}.myshopify.com/admin/api/2025-10/graphql.json"
+def _graphql_url(shop: str = "test-shop") -> str:
+    return f"https://{shop}.myshopify.com/admin/api/{ShopifyStream.api_version}/graphql.json"
 
 
 _EXTENSIONS = {
@@ -117,7 +118,7 @@ def test_single_parent_single_child(auth_config, time_sleep_mock):
     assert r["title"] == "DISCOUNT-100"
     assert r["status"] == "ACTIVE"
     assert r["total_sales"] == {"amount": 100.0, "currency_code": "USD"}
-    assert r["shop_url"] == "test_shop"
+    assert r["shop_url"] == "test-shop"
     assert r["updated_at"] == "2023-06-01T00:00:00+00:00"
     assert r["created_at"] == "2023-01-01T00:00:00+00:00"
 
@@ -266,7 +267,7 @@ def test_state_filters_parent_query(auth_config, time_sleep_mock):
 
 def test_lookback_window_applied_to_state(time_sleep_mock):
     config = {
-        "shop": "test_shop",
+        "shop": "test-shop",
         "start_date": "2023-01-01",
         "credentials": {"auth_method": "api_password", "api_password": "api_password"},
         "authenticator": None,

@@ -16,6 +16,7 @@ You can find more about the API here https://developer.revolut.com/docs/merchant
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
+| `api_version` | `string` | API Version. Value of the `Revolut-Api-Version` header sent with every request. Example: `2024-09-01`. |  |
 | `secret_api_key` | `string` | Secret API Key. Secret API key to use for authenticating with the Revolut Merchant API. Find it in your Revolut Business account under APIs > Merchant API. |  |
 | `start_date` | `string` | Start date.  |  |
 | `environment` | `string` | environment. The base url of your environment. Either sandbox or production |  |
@@ -38,6 +39,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.66 | 2026-10-07 | [88338](https://github.com/airbytehq/airbyte/pull/88338) | Fix `orders` pagination: page with `created_before` cursor instead of an unsupported offset |
+| 0.0.65 | 2026-10-06 | [88000](https://github.com/airbytehq/airbyte/pull/88000) | Update dependencies |
+| 0.0.64 | 2026-09-29 | [87321](https://github.com/airbytehq/airbyte/pull/87321) | Update dependencies |
+| 0.0.63 | 2026-09-22 | [86774](https://github.com/airbytehq/airbyte/pull/86774) | Update dependencies |
+| 0.0.62 | 2026-09-15 | [86231](https://github.com/airbytehq/airbyte/pull/86231) | Update dependencies |
+| 0.0.61 | 2026-09-08 | [85660](https://github.com/airbytehq/airbyte/pull/85660) | Update dependencies |
+| 0.0.60 | 2026-08-18 | [84733](https://github.com/airbytehq/airbyte/pull/84733) | Update dependencies |
+| 0.0.59 | 2026-08-11 | [84087](https://github.com/airbytehq/airbyte/pull/84087) | Update dependencies |
+| 0.0.58 | 2026-08-04 | [83602](https://github.com/airbytehq/airbyte/pull/83602) | Update dependencies |
+| 0.0.57 | 2026-07-28 | [83113](https://github.com/airbytehq/airbyte/pull/83113) | Update dependencies |
+| 0.0.56 | 2026-07-21 | [82606](https://github.com/airbytehq/airbyte/pull/82606) | Update dependencies |
+| 0.0.55 | 2026-07-14 | [81978](https://github.com/airbytehq/airbyte/pull/81978) | Update dependencies |
+| 0.0.54 | 2026-07-07 | [81214](https://github.com/airbytehq/airbyte/pull/81214) | Update dependencies |
+| 0.0.53 | 2026-06-23 | [80616](https://github.com/airbytehq/airbyte/pull/80616) | Update dependencies |
 | 0.0.52 | 2026-06-16 | [80032](https://github.com/airbytehq/airbyte/pull/80032) | Update dependencies |
 | 0.0.51 | 2026-06-09 | [79481](https://github.com/airbytehq/airbyte/pull/79481) | Update dependencies |
 | 0.0.50 | 2026-06-02 | [78934](https://github.com/airbytehq/airbyte/pull/78934) | Update dependencies |

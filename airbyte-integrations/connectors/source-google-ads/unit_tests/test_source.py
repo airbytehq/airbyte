@@ -112,7 +112,7 @@ def test_chunk_date_range():
 
 def test_streams_count(config):
     streams = get_source(config).streams(config)
-    expected_streams_number = 31
+    expected_streams_number = 33
     assert len(streams) == expected_streams_number
 
 
@@ -207,6 +207,36 @@ def test_read_missing_stream(config):
             {"use_global_cursor": True, "lookback_window": 15, "state": {"segments.date": "2020-01-02"}},
             [],
             {"use_global_cursor": True, "lookback_window": 15, "state": {"segments.date": "2020-01-02"}},
+        ),
+        # mid-sync per-partition checkpoint without global cursor ⇒ unchanged
+        (
+            {
+                "use_global_cursor": False,
+                "states": [
+                    {
+                        "partition": {"customer_id": "123", "parent_slice": {"customer_id": "123", "parent_slice": {}}},
+                        "cursor": {"segments.date": "2026-03-10"},
+                    }
+                ],
+                "lookback_window": 0,
+            },
+            [],
+            {
+                "use_global_cursor": False,
+                "states": [
+                    {
+                        "partition": {"customer_id": "123", "parent_slice": {"customer_id": "123", "parent_slice": {}}},
+                        "cursor": {"segments.date": "2026-03-10"},
+                    }
+                ],
+                "lookback_window": 0,
+            },
+        ),
+        # global-cursor-only checkpoint without per-partition states ⇒ unchanged
+        (
+            {"use_global_cursor": True, "lookback_window": 0},
+            [],
+            {"use_global_cursor": True, "lookback_window": 0},
         ),
     ],
 )

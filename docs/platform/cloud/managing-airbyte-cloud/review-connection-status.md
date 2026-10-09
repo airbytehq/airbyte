@@ -31,7 +31,7 @@ Each connection you've set up in your Workspace has a **Status** page that displ
 ![Connection Status](./assets/cloud-status-page.png)
 
 :::note
-The Streams status and Records loaded graphs are only available in Airbyte Cloud and Airbyte Self-Managed Enterprise.
+The Streams status and Records loaded graphs are only available in Airbyte Cloud.
 :::
 
 To view the connection status:
@@ -54,7 +54,7 @@ To view the connection status:
 
 ### Queued connections (Cloud Pro and Enterprise Flex)
 
-On capacity-based Cloud plans, when your organization's committed data worker capacity is fully utilized, newly triggered sync jobs enter a "Queued" state. Queued connections display an orange hourglass icon.
+On Cloud Pro and Enterprise Flex plans, when your organization's committed data worker capacity is fully utilized, newly triggered sync jobs enter a "Queued" state. Queued connections display an orange hourglass icon.
 
 A queued job is cancelled when:
 
@@ -62,7 +62,7 @@ A queued job is cancelled when:
 - The next scheduled sync for that connection arrives. The newer sync replaces the queued one so the most recent data syncs when capacity frees up.
 - Eight hours have elapsed and the connection uses a manual schedule type.
 
-You can filter the Connections page by "Queued" status to identify all queued connections. For information about monitoring and managing data worker capacity, see [Monitor data worker usage](./manage-data-workers.md).
+You can filter the Connections page by "Queued" status to identify all queued connections. For information about monitoring and managing data worker capacity, see [Manage and monitor data workers](./manage-data-workers.md).
 
 ## Review one stream's status
 
@@ -78,7 +78,7 @@ The stream status allows you to monitor an individual stream's latest status. Co
 | ![Action Required](./assets/connection_action_required.png)     | **Action Required**      | A breaking change related to the source or destination requires attention to resolve                                                               |
 
 :::note
-Stream-level "Queued" status means the stream is waiting to sync within an active connection sync. This is different from a connection-level "Queued" status, which means the entire sync job is waiting for data worker capacity. When a connection is queued for data worker capacity, its individual streams display as **Pending** (not Queued). For more information about capacity-based queuing, see [Monitor data worker usage](./manage-data-workers.md).
+Stream-level "Queued" status means the stream is waiting to sync within an active connection sync. This is different from a connection-level "Queued" status, which means the entire sync job is waiting for data worker capacity. When a connection is queued for data worker capacity, its individual streams display as **Pending** (not Queued). For more information about capacity-based queuing, see [Manage and monitor data workers](./manage-data-workers.md).
 :::
 
 Once the sync is complete, each stream displays the time since Airbyte loaded the last record to the destination. You can click **Last record loaded** in the header to optionally display the exact datetime the last record loaded.

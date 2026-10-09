@@ -31,17 +31,59 @@ uses `QueryProperties` with `PropertyChunking` configured at a limit of 18 field
 2 slots for the mandatory `dateRange` and `pivotValues` fields that are always included).
 
 Records from multiple chunks are stitched back together using `GroupByKeyMergeStrategy` keyed on
-`["end_date", "string_of_pivot_values"]`.
+`["end_date", "string_of_pivot_values"]`. Impression-device analytics also includes
+`sponsoredCampaign` in its merge key so records for different campaigns are not combined.
 
 **Why this matters:** With ~90 analytics fields defined, each analytics record requires approximately 5
-separate HTTP requests to assemble. Every analytics stream is also partitioned by parent entity (one
-campaign or creative per partition), so the total API call count is roughly
-`num_entities * num_date_slices * 5`. Adding new analytics fields increases the chunk count and
+separate HTTP requests to assemble. Campaign and impression-device analytics batch up to 50 campaign
+URNs per partition, while creative analytics batches up to 50 creative URNs. Member-demographic
+analytics remain on the `q=analytics` finder with one campaign per request because the `q=statistics`
+finder does not support `MEMBER_*` pivots. Adding new analytics fields increases the chunk count and
 silently multiplies API usage across every partition.
 
 ---
 
-## 3. DNS Resolution Errors Treated as Transient
+## 3. Analytics Request Batching (`group_size`)
+
+The analytics streams `ad_campaign_analytics`, `ad_creative_analytics`, and
+`ad_impression_device_analytics` batch multiple parent-entity URNs into a single `adAnalytics` request
+via the CDK `GroupingPartitionRouter` with `group_size: 50`. Campaign and impression-device
+analytics batch campaign URNs; creative analytics batches creative URNs. Compared with one request per
+parent entity, a full 50-entity batch reduces analytics request volume by 98%.
+
+Why 50 entities per request:
+
+- LinkedIn does not document a maximum number of campaign URNs per request. The binding constraint is URL
+  length: the query string is capped at 4 KB, and the raw URL is capped at 8 KB. Exceeding either limit
+  returns HTTP 414 `REQUEST_URI_TOO_LONG`.
+- Each URL-encoded campaign URN (`urn%3Ali%3AsponsoredCampaign%3A<id>`) is approximately 42 bytes: a 31-byte
+  fixed prefix, an approximately 9–10 digit ID, and a comma separator. Each request also carries one field
+  chunk, so the worst-case query length is approximately `643 + n × (32 + id_digits)` bytes.
+- At `group_size: 50`, the worst-case query string is approximately 3 KB, leaving approximately 900 bytes
+  of headroom under the 4 KB cap even with long campaign IDs. A group size of 60 is also safe, but 80
+  exceeds the cap with IDs of 12 or more digits and is unsafe as a default.
+
+The `adAnalytics` API does not support pagination and caps each response at 15,000 elements. Campaign
+and creative analytics can return at most 1,550 daily rows per 50-entity `P30D` request.
+Impression-device analytics can return at most 7,750 rows for the five documented device categories
+over the same range.
+
+Grouping changes partition membership, so the three batched streams use a global substream cursor.
+
+The primary key for `ad_impression_device_analytics` is
+`["string_of_pivot_values", "end_date", "sponsoredCampaign"]`. The campaign field is required because
+`string_of_pivot_values` contains only the device type after the `CAMPAIGN` pivot is moved to
+`sponsoredCampaign`; without it, deduplication can collapse records from different campaigns that
+share the same device type and date.
+
+The eight `ad_member_*` demographic streams are not batched. Batching requires a second `CAMPAIGN` pivot
+to attribute each row back to its campaign, which only the multi-pivot `q=statistics` finder supports.
+However, `q=statistics` does not accept `MEMBER_*` pivots. The `q=analytics` finder is single-pivot, so
+member-demographic streams cannot batch campaigns and remain one request per campaign.
+
+---
+
+## 4. DNS Resolution Errors Treated as Transient
 
 The `LinkedInAdsErrorHandler` catches Python `InvalidURL` exceptions and classifies them as transient
 (retryable) errors rather than failing the sync. This is a workaround for intermittent DNS resolution
@@ -54,7 +96,7 @@ intermittently.
 
 ---
 
-## 4. Millisecond Timestamps and Multiple Datetime Formats
+## 5. Millisecond Timestamps and Multiple Datetime Formats
 
 LinkedIn's API returns timestamps in inconsistent formats across different endpoints. Entity streams
 (accounts, campaigns, creatives) return `lastModified` and `created` as millisecond Unix timestamps
@@ -71,7 +113,7 @@ or skipping records entirely.
 
 ---
 
-## 5. Reserved Keyword Renaming for Destination Compatibility
+## 6. Reserved Keyword Renaming for Destination Compatibility
 
 The `transform_data` function renames the `pivot` field to `_pivot` in every analytics record. This is
 because `PIVOT` is a reserved keyword in Amazon Redshift, and using it as a column name causes
@@ -84,7 +126,7 @@ conflicts with reserved keywords in common destinations (Redshift, BigQuery, Sno
 
 ---
 
-## 6. Unpublished Rate Limits with Per-Endpoint Daily Caps
+## 7. Unpublished Rate Limits with Per-Endpoint Daily Caps
 
 LinkedIn does not publish standard API rate limits. The connector's comments document that each endpoint
 has its own individually tracked rate limit that resets daily, with tiers that vary by account. The
@@ -98,6 +140,54 @@ from a higher default after customers experienced rate limiting issues.
 predict when a customer will hit limits. If customers report rate limiting, the `num_workers` config
 value is the primary lever to reduce pressure. The analytics property chunking (5 requests per record
 page) means the effective request rate is much higher than the visible concurrency level suggests.
+
+LinkedIn separately limits Ad Analytics requests to 45 million metric values across a rolling five-minute
+window. Metric values are calculated from the requested fields and returned records, so the call-count
+budget cannot predict this limit. `LinkedInAdsDataVolumeBackoffStrategy` detects the documented response
+message and waits 330 seconds before retrying. Analytics requests keep the existing five-retry limit but
+allow up to 30 minutes so each retry starts after the rolling window can clear.
+
+**Why this matters:** Do not replace the data-volume backoff with a faster generic 429 strategy. Count-based
+429 responses must continue using the exponential fallback, and unrecognized response bodies must not be
+treated as data-volume throttles.
+
+---
+
+## 8. Videos Stream: Creative References That Are Not Posts
+
+The `videos` stream resolves each creative's `content.reference` through the Posts API
+(`GET /rest/posts/{urn}`, in the internal `videos_creative_posts` stream) before fetching the video by
+URN. Two kinds of creative reference cannot be fetched as a post, and neither can reference a video:
+
+- **Message Ads (Sponsored InMail) creatives** reference `urn:li:adInMailContent:` URNs. LinkedIn
+  documents the wrong-URN-type rejection as a restli `400 INVALID_URN_TYPE` that names the URN in
+  `message`, but the API returns `400 UGC_VALIDATIONS_FAILED`, whose `message` is generic and whose
+  offending URN appears only under `errorDetails` (observed with `Linkedin-Version: 202601`, for any
+  content ID):
+
+  ```json
+  {"code": "UGC_VALIDATIONS_FAILED", "errorDetailType": "com.linkedin.common.error.BadRequest", "message": "Validations failed on the UGC entity. Please see errorDetails for more information.", "errorDetails": {"inputErrors": [{"description": "urn:li:adInMailContent:2825243 is not a valid urn type"}]}, "status": 400}
+  ```
+
+  The `IGNORE` response filter matches both shapes. Its `errorDetails` clause matches only
+  `urn:li:adInMailContent:`, the one non-post reference type the Creatives API documents, so a
+  `UGC_VALIDATIONS_FAILED` 400 that echoes a share or ugcPost URN for any other reason still fails the
+  stream. The `message` clause keeps its original bare `URN` substring test, so a 400 whose message
+  merely contains "returned" is skipped as well.
+- **Creatives with an explicitly null `content.reference`.** `SubstreamPartitionRouter` skips a parent
+  record whose key is missing but still emits a partition for a null value, which would request the
+  literal path `posts/None`. LinkedIn rejects that with `400 "Key parameter value 'None' is invalid"`,
+  which carries no URN signal. Instead of matching that message, the `creatives` instance that feeds the
+  `videos_creative_posts` partitions has a `record_filter` that drops creatives without a non-empty
+  reference, so the request is never sent. The filter is added through nested `$ref` overrides and
+  applies only to that parent instance; the exposed `creatives` stream is unchanged.
+
+**Why this matters:** Widening the `errorDetails` clause back to any `urn:li:` token silently drops
+genuine video posts while the sync reports success, and replacing the parent `record_filter` with an
+error filter would depend on an error message that has no URN signal to match. `test_videos.py` pins
+both behaviors: the InMail tests use the body captured from the live API, a `UGC_VALIDATIONS_FAILED`
+body naming a share URN must fail the stream, and the null-reference test mocks no `posts/None`
+request, so it fails if that request is ever sent.
 
 ## Incremental Stream Considerations
 

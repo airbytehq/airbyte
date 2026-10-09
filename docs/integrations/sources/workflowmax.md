@@ -5,9 +5,13 @@ This directory contains the manifest-only connector for [`source-workflowmax`](h
 Visit `https://app.swaggerhub.com/apis-docs/WorkflowMax-BlueRock/WorkflowMax-BlueRock-OpenAPI3/0.1#/` for V1 API documentation
 
 ## Authentication setup
-`Workflowmax` uses bearer token authentication, You have to input your bearer access_token in the field of API key for authentication.
+WorkflowMax uses OAuth 2.0. Access tokens expire after 30 minutes and refresh tokens expire after 60 days (see the
+[WorkflowMax authentication docs](https://api-docs.workflowmax.com/authentication)), so the connector needs your
+OAuth application's **Client ID**, **Client Secret** and a **Refresh Token** in order to obtain new access tokens
+automatically. A static access token alone will stop working within 30 minutes.
 
-### Using postman to get access token 
+### Using postman to get a refresh token
+- Register an OAuth 2.0 application in the [WorkflowMax developer portal](https://developer.workflowmax.com/) and note the Client ID and Client Secret.
 - Move to Authorization tab of an empty http request and selected Oauth 2.0
 - Set use token type as `access token`
 - Set header prefix as `Bearer`
@@ -15,22 +19,25 @@ Visit `https://app.swaggerhub.com/apis-docs/WorkflowMax-BlueRock/WorkflowMax-Blu
 - Check `Authorize using browser`
 - Set Auth URL as `https://oauth.workflowmax2.com/oauth/authorize`
 - Set Access token URL as `https://oauth.workflowmax2.com/oauth/token`
-- Set Client ID, Client secret, Scope defined as your Workflowmax settings, Example Scope: `openid profile email workflowmax offline_access`
+- Set Client ID, Client secret, Scope defined as your Workflowmax settings. The scope **must** include `offline_access` to receive a refresh token, Example Scope: `openid profile email workflowmax offline_access`
 - Set state as any number, Example: `1`
 - Set Client Authentication as `Send as Basic Auth Header`
-  Click `Get New Access Token` for retrieving access token
+  Click `Get New Access Token`; copy the `refresh_token` (and optionally the `access_token`) from the response.
 
-Then authorize your source with the required information. 
+Then authorize your source with the required information.
 1. Go to set up `The Source` page.
-2. Enter your Workflowmax application's access token.
-3. Click Save button.
- 
+2. Enter your Workflowmax application's Client ID, Client Secret and Refresh Token (the Access Token field is optional).
+3. Enter your Account ID and Start date.
+4. Click Save button.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key_2` | `string` | API Key.  |  |
+| `client_id` | `string` | Client ID. The Client ID of your WorkflowMax OAuth 2.0 application. |  |
+| `client_secret` | `string` | Client Secret. The Client Secret of your WorkflowMax OAuth 2.0 application. |  |
+| `refresh_token` | `string` | Refresh Token. OAuth 2.0 refresh token obtained with the `offline_access` scope; used to refresh the access token automatically. |  |
+| `api_key_2` | `string` | Access Token. Optional - refreshed and stored automatically. |  |
 | `account_id` | `string` | Account ID. The account id for workflowmax |  |
 | `start_date` | `string` | Start date.  |  |
 
@@ -64,6 +71,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.67 | 2026-10-07 | [88239](https://github.com/airbytehq/airbyte/pull/88239) | Fix authentication: refresh the OAuth access token automatically (WorkflowMax access tokens expire after 30 minutes); use the documented `pagesize` query parameter |
+| 0.0.66 | 2026-10-06 | [88119](https://github.com/airbytehq/airbyte/pull/88119) | Update dependencies |
+| 0.0.65 | 2026-09-29 | [87410](https://github.com/airbytehq/airbyte/pull/87410) | Update dependencies |
+| 0.0.64 | 2026-09-22 | [86894](https://github.com/airbytehq/airbyte/pull/86894) | Update dependencies |
+| 0.0.63 | 2026-09-15 | [86285](https://github.com/airbytehq/airbyte/pull/86285) | Update dependencies |
+| 0.0.62 | 2026-09-08 | [85718](https://github.com/airbytehq/airbyte/pull/85718) | Update dependencies |
+| 0.0.61 | 2026-08-18 | [84812](https://github.com/airbytehq/airbyte/pull/84812) | Update dependencies |
+| 0.0.60 | 2026-08-11 | [84193](https://github.com/airbytehq/airbyte/pull/84193) | Update dependencies |
+| 0.0.59 | 2026-08-04 | [83686](https://github.com/airbytehq/airbyte/pull/83686) | Update dependencies |
+| 0.0.58 | 2026-07-28 | [83160](https://github.com/airbytehq/airbyte/pull/83160) | Update dependencies |
+| 0.0.57 | 2026-07-21 | [82652](https://github.com/airbytehq/airbyte/pull/82652) | Update dependencies |
+| 0.0.56 | 2026-07-14 | [82078](https://github.com/airbytehq/airbyte/pull/82078) | Update dependencies |
+| 0.0.55 | 2026-06-30 | [81314](https://github.com/airbytehq/airbyte/pull/81314) | Update dependencies |
+| 0.0.54 | 2026-06-23 | [80710](https://github.com/airbytehq/airbyte/pull/80710) | Update dependencies |
 | 0.0.53 | 2026-06-16 | [80109](https://github.com/airbytehq/airbyte/pull/80109) | Update dependencies |
 | 0.0.52 | 2026-06-09 | [79576](https://github.com/airbytehq/airbyte/pull/79576) | Update dependencies |
 | 0.0.51 | 2026-06-02 | [79088](https://github.com/airbytehq/airbyte/pull/79088) | Update dependencies |

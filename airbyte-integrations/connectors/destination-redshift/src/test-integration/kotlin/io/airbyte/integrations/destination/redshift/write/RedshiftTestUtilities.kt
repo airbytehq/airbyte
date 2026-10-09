@@ -72,14 +72,14 @@ object RedshiftDataCleaner : DestinationCleaner {
             val schemas =
                 statement.executeQuery(
                     """
-                    SELECT schema_name
-                    FROM information_schema.schemata
-                    WHERE schema_name LIKE 'test%'
+                    SELECT nspname AS schema_name
+                    FROM pg_namespace
+                    WHERE nspname LIKE '%test%'
                     """.trimIndent(),
                 )
             while (schemas.next()) {
                 val schemaName = schemas.getString("schema_name")
-                if (IntegrationTest.isNamespaceOld(schemaName)) {
+                if (IntegrationTest.isNamespaceOld(schemaName, retentionDays = 2)) {
                     schemasToDrop.add(schemaName)
                 }
             }
