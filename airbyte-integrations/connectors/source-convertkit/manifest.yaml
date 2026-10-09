@@ -859,6 +859,7 @@ spec:
         title: Authentication Type
       api_secret:
         type: string
+        airbyte_secret: true
         order: 2
         title: Legacy Start Date
         airbyte_hidden: true
