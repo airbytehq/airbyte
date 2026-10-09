@@ -167,7 +167,7 @@ The `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL
 - [Flat File Orders By Last Update Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 - [Flat File Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 - [Flat File Returns Report by Return Date](https://developer-docs.amazon.com/sp-api/docs/report-type-values-returns) \(incremental\)
-- [Flat File Settlement Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-settlement) \(incremental\) — this stream reads `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`, which Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) on March 17, 2025 and plans to remove on November 11, 2026
+- [Flat File Settlement Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-settlement) \(incremental\) — this stream reads `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`, which Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) on March 17, 2025 and plans to remove on November 11, 2026. See [Settlement reports](#settlement-reports).
 - [Inactive Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
 - [Inventory Ledger Report - Detailed View](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
 - [Inventory Ledger Report - Summary View](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
@@ -238,6 +238,16 @@ For more information about Amazon SP-API roles and permissions, see the [Amazon 
 ### Finances v0 deprecation
 
 The Financial Events stream reads the Finances v0 `listFinancialEvents` operation. Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) that operation on July 21, 2025 and plans to remove it on August 27, 2027. Amazon's replacement is the Finances v2024-06-19 [`listTransactions`](https://developer-docs.amazon.com/sp-api/docs/finances-api-v2024-06-19-reference) operation, which this connector doesn't use yet. Amazon's deprecation list doesn't include `listFinancialEventGroups`, so the Financial Event Groups stream isn't affected.
+
+### Settlement reports
+
+The Flat File Settlement Report stream (`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`) works differently from the other report streams. Amazon [generates settlement reports automatically](https://developer-docs.amazon.com/sp-api/docs/retrieve-automatically-generated-reports) and doesn't let applications request them. Instead of creating a report, the connector lists the settlement reports Amazon has already generated and downloads each report's file.
+
+- **History is limited to about 90 days.** Amazon [retains reports for a maximum of 90 days](https://developer-docs.amazon.com/sp-api/reference/getreports), so the connector lists reports created since your **Start Date** or 89 days ago, whichever is later. Older settlement reports can't be synced through the API.
+- **Each report is synced once.** The stream has no primary key, so the connector downloads each listed report exactly once. **Period In Days** and **Report Stream Lookback Window (Hours)** don't apply to this stream.
+- **Report status.** Reports that are still in progress are waited on until Amazon finishes them. Reports with a `CANCELLED` or `FATAL` status have no file and are skipped.
+
+Before 6.1.1, the stream read each report's metadata instead of its file, so syncs finished successfully but emitted no records. Version 6.1.1 also renamed the stream's internal listing checkpoint, so the first sync after you upgrade lists and downloads every settlement report in the available window. You don't need to refresh the stream.
 
 ### Daily report windows
 
@@ -330,6 +340,7 @@ Other streams ignore **Period In Days** entirely:
 - The daily report streams listed in [Daily report windows](#daily-report-windows) always request a single calendar day per report, and Sales and Traffic Business Report (Monthly) always requests a single calendar month.
 - Vendor Orders, Vendor Order Status, and Vendor Direct Fulfillment Shipping always request 7 days at a time.
 - Financial Events and Financial Event Groups use **Financial Events Step Size** instead.
+- Flat File Settlement Report downloads one settlement report per job, regardless of the report's date range. See [Settlement reports](#settlement-reports).
 
 ## Performance considerations
 
