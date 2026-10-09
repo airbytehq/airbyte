@@ -34,29 +34,34 @@ The `start_date` filter applies to these five streams in every sync mode, includ
 | Input | Type | Description | Default Value |
 | ------- | ------ | ------------- | --------------- |
 | `api_key` | `string` | API Key. API key to use. Find it at https://app.incident.io/settings/api-keys | |
-| `start_date` | `string` | Start Date. Only sync records updated on or after this UTC date-time, in the format `YYYY-MM-DDTHH:MM:SSZ`, for the `incidents`, `alerts`, `escalations`, `actions`, and `follow-ups` streams. Applies to both Full Refresh and Incremental syncs. The default predates all incident.io data. | 2020-01-01T00:00:00Z |
+| `start_date` | `string` | Start Date. Only sync records updated on or after this UTC date-time, in the format `YYYY-MM-DDTHH:MM:SSZ`, for the `incidents`, `alerts`, `escalations`, `actions`, and `follow-ups` streams. Applies to both Full Refresh and Incremental syncs. The default predates all incident.io data. Streams read per incident, such as `incident_attachments`, follow the same scope and only cover incidents updated on or after this date. | 2020-01-01T00:00:00Z |
 | `time_window` | `string` | Time window. Size of each date window requested from incident.io on incremental streams, in whole days as an ISO 8601 duration (for example `P30D`, `P7D`, `P365D`). The minimum is `P1D` because incidents and escalations filter by date. Smaller windows let more requests run in parallel on large accounts; larger windows mean fewer requests on small accounts. Defaults to `P30D`. | P30D |
 | `num_workers` | `integer` | Number of concurrent workers. Number of streams and partitions read in parallel. Higher values can speed up large syncs but use more of the incident.io rate limit (1,200 requests per minute per API key, 60 per minute on incidents). | 4 |
 
 ## Streams
 
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-| ------------- | ------------- | ------------ | --------------------- | ---------------------- |
-| actions | id | DefaultPaginator | ✅ | ✅ |
-| alerts | id | DefaultPaginator | ✅ | ✅ |
-| catalog_types | id | No pagination | ✅ | ❌ |
-| custom_fields | id | No pagination | ✅ | ❌ |
-| escalations | id | DefaultPaginator | ✅ | ✅ |
-| follow-ups | id | DefaultPaginator | ✅ | ✅ |
-| incident_roles | id | No pagination | ✅ | ❌ |
-| incident_statuses | id | No pagination | ✅ | ❌ |
-| incident_timestamps | id | No pagination | ✅ | ❌ |
-| incident_updates | id | DefaultPaginator | ✅ | ❌ |
-| incidents | id | DefaultPaginator | ✅ | ✅ |
-| schedules | id | DefaultPaginator | ✅ | ❌ |
-| severities | id | No pagination | ✅ | ❌ |
-| users | id | DefaultPaginator | ✅ | ❌ |
-| workflows | id | No pagination | ✅ | ❌ |
+| Stream Name | Endpoint | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
+| ------------- | ---------- | ------------- | ------------ | --------------------- | ---------------------- |
+| actions | `/v3/actions` | id | DefaultPaginator | ✅ | ✅ |
+| alerts | `/v2/alerts` | id | DefaultPaginator | ✅ | ✅ |
+| catalog_entries | `/v3/catalog_entries` | id | DefaultPaginator | ✅ | ❌ |
+| catalog_resources | `/v3/catalog_resources` | type | No pagination | ✅ | ❌ |
+| catalog_types | `/v2/catalog_types` | id | No pagination | ✅ | ❌ |
+| custom_field_options | `/v1/custom_field_options` | id | DefaultPaginator | ✅ | ❌ |
+| custom_fields | `/v2/custom_fields` | id | No pagination | ✅ | ❌ |
+| escalations | `/v2/escalations` | id | DefaultPaginator | ✅ | ✅ |
+| follow-ups | `/v3/follow_ups` | id | DefaultPaginator | ✅ | ✅ |
+| incident_attachments | `/v1/incident_attachments` | id | No pagination | ✅ | ❌ |
+| incident_roles | `/v2/incident_roles` | id | No pagination | ✅ | ❌ |
+| incident_statuses | `/v1/incident_statuses` | id | No pagination | ✅ | ❌ |
+| incident_timestamps | `/v2/incident_timestamps` | id | No pagination | ✅ | ❌ |
+| incident_types | `/v1/incident_types` | id | No pagination | ✅ | ❌ |
+| incident_updates | `/v2/incident_updates` | id | DefaultPaginator | ✅ | ❌ |
+| incidents | `/v2/incidents` | id | DefaultPaginator | ✅ | ✅ |
+| schedules | `/v2/schedules` | id | DefaultPaginator | ✅ | ❌ |
+| severities | `/v1/severities` | id | No pagination | ✅ | ❌ |
+| users | `/v2/users` | id | DefaultPaginator | ✅ | ❌ |
+| workflows | `/v2/workflows` | id | No pagination | ✅ | ❌ |
 
 The `incidents` stream includes incidents in every status category, including `declined`, `canceled` and `merged`, which the API leaves out by default.
 
@@ -83,6 +88,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --------- | ------ | -------------- | --------- |
+| 0.3.0 | 2026-10-09 | [88416](https://github.com/airbytehq/airbyte/pull/88416) | Add five incident and catalog streams |
 | 0.2.0 | 2026-10-08 | [88150](https://github.com/airbytehq/airbyte/pull/88150) | Migrate actions and follow-ups to /v3; add incremental sync, rate limiting, clearer errors, time_window and num_workers options, and sync incidents in every status category |
 | 0.1.42 | 2026-10-06 | [87912](https://github.com/airbytehq/airbyte/pull/87912) | Update dependencies |
 | 0.1.41 | 2026-09-29 | [87212](https://github.com/airbytehq/airbyte/pull/87212) | Update dependencies |
