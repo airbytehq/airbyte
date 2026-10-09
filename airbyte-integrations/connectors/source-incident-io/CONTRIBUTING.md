@@ -57,12 +57,25 @@ default relative to "now".
 ## Page sizes
 
 Each paginated stream uses the largest `page_size` the API serves (`incidents` 250,
-`incident_updates` 250, `users` 10000, `alerts` 50, `escalations` 50, `actions` and `follow-ups` 250).
+`incident_updates` 250, `users` 10000, `alerts` 50, `escalations` 50, `actions` and `follow-ups` 250,
+`catalog_entries` 250, `custom_field_options` 250).
 For `incidents` the OpenAPI spec allows 500, but the API caps it at 250: a request for 500 comes back
 with `pagination_meta.page_size: 250`. One exception: `schedules` stays at 100 because the vendor
 documents that `next_shifts` is only
 returned when `page_size` is 25 or lower, and the connector does not emit `next_shifts` today. Lower it
 to 25 if that field is ever added to the schema.
+
+## Child-stream request cost
+
+`incident_attachments` sends one request per incident. As a full-refresh child, it re-reads the
+windowed `incidents` parent on every sync; the parent endpoint is limited to 60 requests per minute.
+A 2,000-incident account therefore needs about 2,000 attachment requests plus the `incidents` read.
+The attachment stream ignores a 404 because an incident can be deleted after the parent read and
+before its attachment partition runs.
+
+`catalog_entries` sends one request per catalog type for each page of up to 250 entries.
+`custom_field_options` sends one request per custom field, with additional requests when a field has
+more than 250 options.
 
 ## Concurrency
 
