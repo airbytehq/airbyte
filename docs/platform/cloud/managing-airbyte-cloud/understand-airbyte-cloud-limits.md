@@ -16,6 +16,8 @@ These limitations only apply to those using the Standard plan. Upgrading to a hi
 
 - Single sign-on (SSO) isn't available. If your Standard organization already uses SSO, you keep it as long as you remain a paying customer.
 
+- Role-based access control (RBAC), user groups, and SCIM provisioning aren't available. Every user is a workspace admin or an organization admin, and you can't change their roles. See [Manage users and permissions](/platform/access-management/manage-users).
+
 ## Plus plan limitations
 
 These limitations only apply to those using the Plus plan. If you upgrade to Pro or Enterprise Flex, Airbyte removes these limitations.
@@ -24,7 +26,7 @@ These limitations only apply to those using the Plus plan. If you upgrade to Pro
 
 - Scheduled or cron syncs can run at most every 15 minutes.
 
-- SSO is available, but SCIM provisioning and role-based access control aren't.
+- SSO is available, but SCIM provisioning, user groups, and role-based access control aren't. Every user is a workspace admin or an organization admin. See [Manage users and permissions](/platform/access-management/manage-users).
 
 ## Cloud limitations for all plans
 
