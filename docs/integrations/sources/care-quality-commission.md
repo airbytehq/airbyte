@@ -7,6 +7,7 @@ https://www.cqc.org.uk/
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key. Your CQC Primary Key. See https://www.cqc.org.uk/about-us/transparency/using-cqc-data#api for steps to generate one. |  |
+| `num_workers` | `integer` | Number of Concurrent Threads. Number of concurrent threads used to fetch the per-record detail streams (locations_detailed, providers_detailed, provider_locations). Higher values speed up syncs but may hit the CQC API rate limit. | 5 |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -17,6 +18,13 @@ https://www.cqc.org.uk/
 | provider_locations | organisationId | No pagination | ✅ |  ❌  |
 | locations_detailed | locationId | No pagination | ✅ |  ❌  |
 | providers_detailed | providerId | No pagination | ✅ |  ❌  |
+
+## Performance considerations
+
+The `locations_detailed`, `providers_detailed` and `provider_locations` streams make one API request per
+location or provider (tens of thousands of requests for a full sync of the CQC register). The connector
+fetches these partitions concurrently; increase `num_workers` to speed up syncs, or lower it if you see
+HTTP 429 rate-limit responses from the CQC API.
 
 ## IP allow list
 
@@ -29,6 +37,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.66 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88256) | Add `concurrency_level` and `num_workers` option to speed up the per-record detail streams |
+| 0.0.65 | 2026-10-06 | [87796](https://github.com/airbytehq/airbyte/pull/87796) | Update dependencies |
+| 0.0.64 | 2026-09-29 | [87118](https://github.com/airbytehq/airbyte/pull/87118) | Update dependencies |
 | 0.0.63 | 2026-09-22 | [86562](https://github.com/airbytehq/airbyte/pull/86562) | Update dependencies |
 | 0.0.62 | 2026-09-15 | [85993](https://github.com/airbytehq/airbyte/pull/85993) | Update dependencies |
 | 0.0.61 | 2026-09-08 | [85431](https://github.com/airbytehq/airbyte/pull/85431) | Update dependencies |

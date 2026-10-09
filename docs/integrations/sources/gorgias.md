@@ -106,6 +106,8 @@ The incremental sync `end_datetime` is evaluated when the sync starts. Records c
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.1.56 | 2026-10-06 | [87876](https://github.com/airbytehq/airbyte/pull/87876) | Update dependencies |
+| 0.1.55 | 2026-09-29 | [87230](https://github.com/airbytehq/airbyte/pull/87230) | Update dependencies |
 | 0.1.54 | 2026-09-22 | [86646](https://github.com/airbytehq/airbyte/pull/86646) | Update dependencies |
 | 0.1.53 | 2026-09-15 | [86083](https://github.com/airbytehq/airbyte/pull/86083) | Update dependencies |
 | 0.1.52 | 2026-09-08 | [85503](https://github.com/airbytehq/airbyte/pull/85503) | Update dependencies |

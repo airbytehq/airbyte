@@ -10,8 +10,8 @@ Docs : https://www.zoho.com/invoice/api/v3/introduction/#overview
 | `client_id` | `string` | Client ID.  |  |
 | `client_secret` | `string` | Client secret.  |  |
 | `client_refresh_token` | `string` | Refresh token.  |  |
-| `organization_id` | `string` | Organization ID. TO be provided if a user belongs to multiple organizations |  |
-| `region` | `string` | Region.  |  |
+| `organization_id` | `string` | Organization ID. To be provided if a user belongs to multiple organizations |  |
+| `region` | `string` | Region. Zoho data center your organization is hosted on (`com`, `eu`, `in`, `com.cn`, `com.au`, `jp`, `sa`, `ca`) — the domain suffix of your Zoho Invoice URL. It is used for both the API host (`www.zohoapis.<region>`) and the OAuth token endpoint (`accounts.zoho.<region>`, `accounts.zohocloud.ca` for `ca`). |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -37,6 +37,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.65 | 2026-10-07 | [88321](https://github.com/airbytehq/airbyte/pull/88321) | Fix OAuth token endpoint to follow the configured `region` (was hard-coded to `accounts.zoho.in`); use 1-based page-number pagination instead of offsets |
+| 0.0.64 | 2026-10-06 | [88097](https://github.com/airbytehq/airbyte/pull/88097) | Update dependencies |
+| 0.0.63 | 2026-09-29 | [87426](https://github.com/airbytehq/airbyte/pull/87426) | Update dependencies |
 | 0.0.62 | 2026-09-22 | [86880](https://github.com/airbytehq/airbyte/pull/86880) | Update dependencies |
 | 0.0.61 | 2026-09-15 | [86297](https://github.com/airbytehq/airbyte/pull/86297) | Update dependencies |
 | 0.0.60 | 2026-09-08 | [85736](https://github.com/airbytehq/airbyte/pull/85736) | Update dependencies |

@@ -3,6 +3,11 @@ Tinyemail is an email marketing tool.
 We can extract data from campaigns and contacts streams using this connector.
 [API Docs](https://docs.tinyemail.com/docs/tiny-email/tinyemail)
 
+## Prerequisites
+
+- The tinyEmail API is available only to Enterprise accounts. Non-Enterprise plans must be upgraded before an API key can be created.
+- Create an API key at [app.tinyemail.com](https://app.tinyemail.com) under **My Account → API Keys**.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
@@ -17,6 +22,8 @@ We can extract data from campaigns and contacts streams using this connector.
 | sender_details | id | No pagination | ✅ |  ❌  |
 | contact_members |  | DefaultPaginator | ✅ |  ❌  |
 
+The `contacts` and `contact_members` streams read from the tinyEmail [Audiences API](https://docs.tinyemail.com/docs/tiny-email/audiences) (`GET /audiences` and `GET /audiences/{id}/customers`); the stream names are kept for backwards compatibility.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -28,6 +35,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.63 | 2026-10-07 | [88312](https://github.com/airbytehq/airbyte/pull/88312) | Use the renamed Audiences endpoints (`/audiences`, `/audiences/{id}/customers`) for the `contacts` and `contact_members` streams; declare newly documented fields; document Enterprise-only API access |
+| 0.0.62 | 2026-10-06 | [88046](https://github.com/airbytehq/airbyte/pull/88046) | Update dependencies |
+| 0.0.61 | 2026-09-29 | [87370](https://github.com/airbytehq/airbyte/pull/87370) | Update dependencies |
 | 0.0.60 | 2026-09-22 | [86839](https://github.com/airbytehq/airbyte/pull/86839) | Update dependencies |
 | 0.0.59 | 2026-09-15 | [85680](https://github.com/airbytehq/airbyte/pull/85680) | Update dependencies |
 | 0.0.58 | 2026-08-18 | [84781](https://github.com/airbytehq/airbyte/pull/84781) | Update dependencies |

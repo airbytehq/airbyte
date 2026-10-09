@@ -2,14 +2,28 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import re
 from unittest.mock import Mock
 from urllib.parse import parse_qs, urlparse
 
+import pytest
+from freezegun import freeze_time
+
 from airbyte_cdk import YamlDeclarativeSource
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
+from airbyte_cdk.test.entrypoint_wrapper import discover as entrypoint_discover
+from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.test.state_builder import StateBuilder
 
 from .conftest import _YAML_FILE_PATH, BASE_CONFIG, GROUPS_LIST_URL, get_source, get_stream_by_name
+
+
+@pytest.fixture(autouse=True)
+def _frozen_clock():
+    # Request windows depend on "now": keep every pipelines partition in a single P180DT1S window.
+    with freeze_time("2026-10-01T00:00:00Z", tick=True):
+        yield
 
 
 CONFIG = BASE_CONFIG | {"projects_list": ["p_1", "p_2"], "start_date": "2026-06-01T00:00:00Z"}
@@ -18,24 +32,35 @@ PROJECT_IDS = {"p_1": 11, "p_2": 22}
 
 PIPELINES = {
     11: {
-        "<absent>": [{"id": 100, "source": "push"}],
-        "parent_pipeline": [{"id": 101, "source": "parent_pipeline"}],
+        "<absent>": [{"id": 100, "source": "push", "updated_at": "2026-06-10T00:00:00Z"}],
+        "parent_pipeline": [{"id": 101, "source": "parent_pipeline", "updated_at": "2026-06-11T00:00:00Z"}],
     },
     22: {
-        "<absent>": [{"id": 200, "source": "web"}],
-        "parent_pipeline": [{"id": 201, "source": "parent_pipeline"}],
+        "<absent>": [{"id": 200, "source": "web", "updated_at": "2026-06-12T00:00:00Z"}],
+        "parent_pipeline": [{"id": 201, "source": "parent_pipeline", "updated_at": "2026-06-13T00:00:00Z"}],
     },
 }
+
+CHILD_STREAMS = [
+    ("pipelines_extended", "/pipelines/{id}"),
+    ("jobs", "/pipelines/{id}/jobs"),
+    ("pipeline_trigger_jobs", "/pipelines/{id}/bridges"),
+]
+CHILD_CURSOR_FIELD = "pipeline_updated_at"
 
 
 def _source_param(request):
     return parse_qs(urlparse(request.url).query).get("source", ["<absent>"])[0]
 
 
-def _mock_pipelines(requests_mock):
+def _mock_project_resolution(requests_mock):
     requests_mock.get(url=GROUPS_LIST_URL, status_code=200)
     for project_path, project_id in PROJECT_IDS.items():
         requests_mock.get(f"/api/v4/projects/{project_path}", json=[{"id": project_id, "path_with_namespace": project_path}])
+
+
+def _mock_pipelines(requests_mock):
+    _mock_project_resolution(requests_mock)
     for project_id, by_source in PIPELINES.items():
         for source, pipelines in by_source.items():
             requests_mock.get(
@@ -59,6 +84,390 @@ def _read_records(requests_mock, stream_name, state=None):
     for partition in stream.generate_partitions():
         records.extend(dict(record) for record in partition.read())
     return records
+
+
+def _incremental_catalog(stream_name):
+    return (
+        CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental)).build()
+    )
+
+
+def _read_incremental_stream(stream_name, state=None):
+    catalog = _incremental_catalog(stream_name)
+    state_messages = StateBuilder().with_stream_state(stream_name, state).build() if state is not None else StateBuilder().build()
+    source = YamlDeclarativeSource(
+        path_to_yaml=str(_YAML_FILE_PATH),
+        config=CONFIG,
+        state=state_messages,
+        catalog=catalog,
+    )
+    source.write_config = Mock()
+    output = entrypoint_read(source=source, config=CONFIG, catalog=catalog, state=state_messages)
+    output.raise_if_errors()
+    return output
+
+
+def _all_pipeline_records():
+    return {
+        project_id: [pipeline for pipelines in by_source.values() for pipeline in pipelines] for project_id, by_source in PIPELINES.items()
+    }
+
+
+def _child_url_path(project_id, child_path, pipeline_id):
+    return f"/api/v4/projects/{project_id}{child_path.format(id=pipeline_id)}"
+
+
+def _mock_child_endpoints(requests_mock, child_path, pipelines_by_project):
+    for project_id, pipelines in pipelines_by_project.items():
+        for pipeline in pipelines:
+            if child_path == "/pipelines/{id}":
+                response = pipeline
+            else:
+                response = [{"id": pipeline["id"] * 10, "pipeline": {"id": pipeline["id"]}}]
+            requests_mock.get(_child_url_path(project_id, child_path, pipeline["id"]), json=response)
+
+
+def _pipeline_request_signature(request):
+    params = parse_qs(urlparse(request.url).query)
+    params.pop("updated_before", None)
+    return (urlparse(request.url).path, tuple((key, tuple(values)) for key, values in sorted(params.items())))
+
+
+def _expected_pipeline_request_signature(project_id, source, updated_after):
+    params = {"per_page": ("50",), "updated_after": (updated_after,)}
+    if source == "parent_pipeline":
+        params["source"] = ("parent_pipeline",)
+    return (f"/api/v4/projects/{project_id}/pipelines", tuple(sorted(params.items())))
+
+
+def _mock_incremental_pipelines(requests_mock, response_by_partition):
+    _mock_project_resolution(requests_mock)
+    for (project_id, source, updated_after), pipelines in response_by_partition.items():
+        requests_mock.get(
+            f"/api/v4/projects/{project_id}/pipelines",
+            json=pipelines,
+            additional_matcher=lambda request, source=source, updated_after=updated_after: (
+                _source_param(request) == source and parse_qs(urlparse(request.url).query).get("updated_after") == [updated_after]
+            ),
+        )
+
+
+def _all_child_request_paths(requests_mock, child_path):
+    child_path_pattern = re.compile(r"/api/v4/projects/\d+" + re.escape(child_path).replace(r"\{id\}", r"\d+"))
+    return sorted(
+        urlparse(request.url).path for request in requests_mock.request_history if child_path_pattern.fullmatch(urlparse(request.url).path)
+    )
+
+
+def _resume_parent_state(parent_cursors):
+    return {
+        "use_global_cursor": False,
+        "state": {"updated_at": max(parent_cursors.values())},
+        "states": [
+            {
+                "partition": {
+                    "id": project_id,
+                    "parent_slice": {"id": project_path},
+                    "pipeline_source": source,
+                },
+                "cursor": {"updated_at": parent_cursors[(project_id, source)]},
+            }
+            for project_path, project_id in PROJECT_IDS.items()
+            for source in ("default", "parent_pipeline")
+            if (project_id, source) in parent_cursors
+        ],
+    }
+
+
+RESUME_PARENT_CURSORS = {
+    (11, "default"): "2026-08-01T00:00:00Z",
+    (11, "parent_pipeline"): "2026-08-02T00:00:00Z",
+    (22, "default"): "2026-08-03T00:00:00Z",
+    (22, "parent_pipeline"): "2026-08-04T00:00:00Z",
+}
+
+RESUME_PARENT_RESPONSES = {
+    (11, "<absent>", RESUME_PARENT_CURSORS[(11, "default")]): [{"id": 110, "source": "push", "updated_at": "2026-08-05T00:00:00Z"}],
+    (11, "parent_pipeline", RESUME_PARENT_CURSORS[(11, "parent_pipeline")]): [],
+    (22, "<absent>", RESUME_PARENT_CURSORS[(22, "default")]): [{"id": 210, "source": "web", "updated_at": "2026-08-06T00:00:00Z"}],
+    (22, "parent_pipeline", RESUME_PARENT_CURSORS[(22, "parent_pipeline")]): [],
+}
+
+
+def _mock_resumed_pipelines(requests_mock, child_path):
+    _mock_incremental_pipelines(requests_mock, RESUME_PARENT_RESPONSES)
+    _mock_child_endpoints(
+        requests_mock,
+        child_path,
+        {
+            11: RESUME_PARENT_RESPONSES[(11, "<absent>", RESUME_PARENT_CURSORS[(11, "default")])],
+            22: RESUME_PARENT_RESPONSES[(22, "<absent>", RESUME_PARENT_CURSORS[(22, "default")])],
+        },
+    )
+
+
+@pytest.mark.parametrize(("stream_name", "_child_path"), CHILD_STREAMS)
+def test_pipeline_child_streams_discover_incremental(stream_name, _child_path):
+    output = entrypoint_discover(source=get_source(config=CONFIG), config=CONFIG)
+    output.raise_if_errors()
+    streams = {stream.name: stream for stream in output.catalog.catalog.streams}
+
+    stream = streams[stream_name]
+    assert SyncMode.incremental in stream.supported_sync_modes
+    assert stream.source_defined_cursor
+    assert stream.default_cursor_field == [CHILD_CURSOR_FIELD]
+
+
+@pytest.mark.parametrize(("stream_name", "child_path"), CHILD_STREAMS)
+def test_pipeline_child_stream_first_incremental_read(requests_mock, stream_name, child_path):
+    _mock_pipelines(requests_mock)
+    pipelines_by_project = _all_pipeline_records()
+    _mock_child_endpoints(requests_mock, child_path, pipelines_by_project)
+
+    output = _read_incremental_stream(stream_name)
+
+    expected_parent_requests = [
+        _expected_pipeline_request_signature(project_id, source, CONFIG["start_date"])
+        for project_id in PROJECT_IDS.values()
+        for source in ("<absent>", "parent_pipeline")
+    ]
+    assert sorted(_pipeline_request_signature(request) for request in _pipelines_requests(requests_mock)) == sorted(
+        expected_parent_requests
+    )
+
+    expected_children = sorted(
+        _child_url_path(project_id, child_path, pipeline["id"])
+        for project_id, pipelines in pipelines_by_project.items()
+        for pipeline in pipelines
+    )
+    assert _all_child_request_paths(requests_mock, child_path) == expected_children
+
+    # pipelines_extended records are the pipeline itself; jobs and bridges carry pipeline_id.
+    records_by_pipeline = {
+        record.get("pipeline_id", record["id"]): record[CHILD_CURSOR_FIELD]
+        for record in (message.record.data for message in output.records)
+    }
+    assert records_by_pipeline == {
+        pipeline["id"]: pipeline["updated_at"] for pipelines in pipelines_by_project.values() for pipeline in pipelines
+    }
+
+    child_state = output.most_recent_state.stream_state.__dict__
+    assert child_state["use_global_cursor"] is True
+    parent_states = child_state["parent_state"]["pipelines"]["states"]
+    assert all(set(state["cursor"]) == {"updated_at"} for state in parent_states)
+    assert {
+        (state["partition"]["id"], state["partition"]["pipeline_source"]): state["cursor"]["updated_at"] for state in parent_states
+    } == {
+        (project_id, "default" if source == "<absent>" else source): pipelines[0]["updated_at"]
+        for project_id, by_source in PIPELINES.items()
+        for source, pipelines in by_source.items()
+    }
+
+
+@pytest.mark.parametrize(("stream_name", "child_path"), CHILD_STREAMS)
+def test_pipeline_child_stream_resumes_parent_partitions_from_state(requests_mock, stream_name, child_path):
+    child_state = {
+        "use_global_cursor": True,
+        "state": {CHILD_CURSOR_FIELD: "2026-08-04T00:00:00Z"},
+        "parent_state": {"pipelines": _resume_parent_state(RESUME_PARENT_CURSORS)},
+    }
+    _mock_resumed_pipelines(requests_mock, child_path)
+
+    output = _read_incremental_stream(stream_name, state=child_state)
+
+    expected_parent_requests = [
+        _expected_pipeline_request_signature(project_id, "<absent>" if source == "default" else source, cursor)
+        for (project_id, source), cursor in RESUME_PARENT_CURSORS.items()
+    ]
+    assert sorted(_pipeline_request_signature(request) for request in _pipelines_requests(requests_mock)) == sorted(
+        expected_parent_requests
+    )
+    assert _all_child_request_paths(requests_mock, child_path) == sorted(
+        _child_url_path(project_id, child_path, pipeline_id) for project_id, pipeline_id in ((11, 110), (22, 210))
+    )
+    assert {record.record.data[CHILD_CURSOR_FIELD] for record in output.records} == {"2026-08-05T00:00:00Z", "2026-08-06T00:00:00Z"}
+    assert output.most_recent_state.stream_state.__dict__["state"] == {CHILD_CURSOR_FIELD: "2026-08-06T00:00:00Z"}
+
+
+def _read_stream(stream_name, sync_mode, state=None):
+    catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(sync_mode)).build()
+    state_messages = StateBuilder().with_stream_state(stream_name, state).build() if state is not None else StateBuilder().build()
+    source = YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), config=CONFIG, state=state_messages, catalog=catalog)
+    source.write_config = Mock()
+    return entrypoint_read(source=source, config=CONFIG, catalog=catalog, state=state_messages)
+
+
+def _parent_cursors(state):
+    return {
+        (entry["partition"]["id"], entry["partition"]["pipeline_source"]): entry["cursor"]["updated_at"]
+        for entry in state["parent_state"]["pipelines"]["states"]
+    }
+
+
+@pytest.mark.parametrize(("stream_name", "child_path"), CHILD_STREAMS)
+def test_pipeline_child_stream_next_attempt_resumes_from_last_checkpoint(requests_mock, stream_name, child_path):
+    # Attempt 1: project 22's child requests fail after project 11 has finished.
+    _mock_pipelines(requests_mock)
+    pipelines = _all_pipeline_records()
+    _mock_child_endpoints(requests_mock, child_path, {11: pipelines[11]})
+    for pipeline in pipelines[22]:
+        requests_mock.get(_child_url_path(22, child_path, pipeline["id"]), status_code=404, json={})
+
+    failed = _read_stream(stream_name, SyncMode.incremental)
+
+    assert failed.errors
+    checkpoint = failed.state_messages[-1].state.stream.stream_state.__dict__
+    assert _parent_cursors(checkpoint) == {
+        (11, "default"): "2026-06-10T00:00:00Z",
+        (11, "parent_pipeline"): "2026-06-11T00:00:00Z",
+        (22, "default"): "2026-06-01T00:00:00Z",
+    }
+
+    # Attempt 2: starts from the checkpoint, not from scratch.
+    requests_mock.reset_mock()
+    _mock_child_endpoints(requests_mock, child_path, pipelines)
+
+    resumed = _read_stream(stream_name, SyncMode.incremental, state=checkpoint)
+
+    resumed.raise_if_errors()
+    assert sorted(_pipeline_request_signature(request) for request in _pipelines_requests(requests_mock)) == sorted(
+        [
+            _expected_pipeline_request_signature(11, "<absent>", "2026-06-10T00:00:00Z"),
+            _expected_pipeline_request_signature(11, "parent_pipeline", "2026-06-11T00:00:00Z"),
+            _expected_pipeline_request_signature(22, "<absent>", "2026-06-01T00:00:00Z"),
+            _expected_pipeline_request_signature(22, "parent_pipeline", "2026-06-01T00:00:00Z"),
+        ]
+    )
+    # Project 11's boundary pipelines come back because updated_after is inclusive.
+    assert _all_child_request_paths(requests_mock, child_path) == sorted(
+        _child_url_path(project_id, child_path, pipeline_id) for project_id, pipeline_id in ((11, 100), (11, 101), (22, 200), (22, 201))
+    )
+    assert resumed.most_recent_state.stream_state.__dict__["state"] == {CHILD_CURSOR_FIELD: "2026-06-13T00:00:00Z"}
+
+
+@pytest.mark.parametrize(("stream_name", "child_path"), CHILD_STREAMS)
+def test_pipeline_child_stream_full_refresh_with_incoming_state_resumes_parent_partitions(requests_mock, stream_name, child_path):
+    # Resumable Full Refresh: the platform only passes state to a later attempt of the same job.
+    state = {
+        "use_global_cursor": True,
+        "state": {CHILD_CURSOR_FIELD: "2026-08-04T00:00:00Z"},
+        "parent_state": {"pipelines": _resume_parent_state(RESUME_PARENT_CURSORS)},
+    }
+    _mock_resumed_pipelines(requests_mock, child_path)
+
+    output = _read_stream(stream_name, SyncMode.full_refresh, state=state)
+
+    output.raise_if_errors()
+    assert sorted(_pipeline_request_signature(request) for request in _pipelines_requests(requests_mock)) == sorted(
+        _expected_pipeline_request_signature(project_id, "<absent>" if source == "default" else source, cursor)
+        for (project_id, source), cursor in RESUME_PARENT_CURSORS.items()
+    )
+    assert len(output.records) == 2
+
+
+@pytest.mark.parametrize(("stream_name", "child_path"), CHILD_STREAMS)
+def test_pipeline_child_stream_reads_parent_pipelines_when_child_cursor_is_ahead_of_clock(requests_mock, stream_name, child_path):
+    # The child cursor only holds state. A stored value later than the worker clock (clock skew or an edited
+    # state) must not stop the child from reading pipelines the parent returns, or the parent cursor would
+    # advance past them and they would never be read.
+    child_state = {
+        "use_global_cursor": True,
+        "state": {CHILD_CURSOR_FIELD: "2124-01-01T00:00:00Z"},
+        "parent_state": {"pipelines": _resume_parent_state(RESUME_PARENT_CURSORS)},
+    }
+    _mock_resumed_pipelines(requests_mock, child_path)
+
+    output = _read_incremental_stream(stream_name, state=child_state)
+
+    assert _all_child_request_paths(requests_mock, child_path) == sorted(
+        _child_url_path(project_id, child_path, pipeline_id) for project_id, pipeline_id in ((11, 110), (22, 210))
+    )
+    assert len(output.records) == 2
+
+
+@pytest.mark.parametrize(("stream_name", "_child_path"), CHILD_STREAMS)
+def test_pipeline_child_stream_new_project_starts_from_parent_global_cursor_minus_last_sync_duration(
+    requests_mock, stream_name, _child_path
+):
+    parent_cursors = {
+        (11, "default"): "2026-08-01T00:00:00Z",
+        (11, "parent_pipeline"): "2026-08-02T00:00:00Z",
+    }
+    parent_global_cursor = "2026-08-15T00:00:00Z"
+    # The CDK stores the duration of the previous sync (in seconds) as lookback_window; a new partition starts
+    # from the parent's global cursor minus that duration. 46800 s = a 13-hour sync.
+    last_sync_duration_seconds = 46800
+    new_project_updated_after = "2026-08-14T11:00:00Z"
+    pipeline_parent_state = _resume_parent_state(parent_cursors) | {
+        "state": {"updated_at": parent_global_cursor},
+        "lookback_window": last_sync_duration_seconds,
+    }
+    child_state = {
+        "use_global_cursor": True,
+        "state": {CHILD_CURSOR_FIELD: parent_global_cursor},
+        "lookback_window": last_sync_duration_seconds,
+        "parent_state": {"pipelines": pipeline_parent_state},
+    }
+
+    _mock_project_resolution(requests_mock)
+    for project_id in PROJECT_IDS.values():
+        for source in ("<absent>", "parent_pipeline"):
+            requests_mock.get(
+                f"/api/v4/projects/{project_id}/pipelines",
+                json=[],
+                additional_matcher=lambda request, source=source: _source_param(request) == source,
+            )
+
+    output = _read_incremental_stream(stream_name, state=child_state)
+
+    expected_parent_requests = [
+        _expected_pipeline_request_signature(project_id, "<absent>" if source == "default" else source, cursor)
+        for (project_id, source), cursor in parent_cursors.items()
+    ] + [
+        _expected_pipeline_request_signature(project_id, source, new_project_updated_after)
+        for project_id in (22,)
+        for source in ("<absent>", "parent_pipeline")
+    ]
+    assert sorted(_pipeline_request_signature(request) for request in _pipelines_requests(requests_mock)) == sorted(
+        expected_parent_requests
+    )
+    assert output.records == []
+
+
+@pytest.mark.parametrize(
+    "state",
+    [
+        pytest.param({"__ab_no_cursor_state_message": True}, id="full_refresh_sentinel"),
+        # Without parent_state the CDK falls back to the child's global `state` for the parent; the child cursor key
+        # must differ from the parent's `updated_at` so that one global value isn't applied to every project.
+        pytest.param(
+            {"use_global_cursor": True, "state": {CHILD_CURSOR_FIELD: "2026-08-04T00:00:00Z"}}, id="global_cursor_without_parent_state"
+        ),
+    ],
+)
+@pytest.mark.parametrize(("stream_name", "child_path"), CHILD_STREAMS)
+def test_pipeline_child_stream_without_parent_state_reads_parents_from_start_date(requests_mock, stream_name, child_path, state):
+    _mock_pipelines(requests_mock)
+    pipelines_by_project = _all_pipeline_records()
+    _mock_child_endpoints(requests_mock, child_path, pipelines_by_project)
+
+    output = _read_incremental_stream(stream_name, state=state)
+
+    expected_parent_requests = [
+        _expected_pipeline_request_signature(project_id, source, CONFIG["start_date"])
+        for project_id in PROJECT_IDS.values()
+        for source in ("<absent>", "parent_pipeline")
+    ]
+    assert sorted(_pipeline_request_signature(request) for request in _pipelines_requests(requests_mock)) == sorted(
+        expected_parent_requests
+    )
+    expected_children = sorted(
+        _child_url_path(project_id, child_path, pipeline["id"])
+        for project_id, pipelines in pipelines_by_project.items()
+        for pipeline in pipelines
+    )
+    assert _all_child_request_paths(requests_mock, child_path) == expected_children
+    assert len(output.records) == 4
 
 
 def _pipelines_requests(requests_mock):
@@ -182,6 +591,7 @@ def test_pipeline_trigger_jobs_stream(requests_mock):
             "user_id": "u_1",
             "commit_id": "c_1",
             "pipeline_id": 100,
+            "pipeline_updated_at": "2026-06-10T00:00:00Z",
             "downstream_pipeline_id": 101,
         }
     ]

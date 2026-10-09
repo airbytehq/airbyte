@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
+import io.airbyte.cdk.data.ArrayAirbyteSchemaType
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.output.BufferingCatalogValidationFailureHandler
 import io.airbyte.cdk.output.CatalogValidationFailure
 import io.airbyte.cdk.output.StreamHasNoFields
@@ -210,6 +212,42 @@ class StateManagerStreamStatesTest {
         )
         Assertions.assertEquals(expectedCursor, eventsStream.configuredCursor?.id)
         return eventsStream
+    }
+
+    @Test
+    @Property(name = "metadata.resource", value = "discover/metadata-array-field.json")
+    @Property(
+        name = "airbyte.connector.catalog.json",
+        value =
+            """
+{"streams": [{
+    "stream": {
+        "name": "DOCS",
+        "json_schema": {
+            "type": "object",
+            "properties": {
+                "ID": {"type": "string"},
+                "TAGS": {"type": "array"}
+            }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["ID"]],
+        "namespace": "PUBLIC"
+    },
+    "sync_mode": "full_refresh",
+    "primary_key": [["ID"]],
+    "destination_sync_mode": "overwrite"
+}]}""",
+    )
+    @Property(name = "airbyte.connector.state.json", value = "[]")
+    fun testArrayFieldWithoutItems() {
+        val stream: Stream = stateManager.feeds.filterIsInstance<Stream>().single()
+        Assertions.assertEquals(listOf<CatalogValidationFailure>(), handler.get())
+        Assertions.assertEquals(listOf("ID", "TAGS"), stream.fields.map { it.id })
+        Assertions.assertEquals(
+            ArrayAirbyteSchemaType(LeafAirbyteSchemaType.JSONB),
+            stream.fields.single { it.id == "TAGS" }.type.airbyteSchemaType,
+        )
     }
 
     private fun streamID(name: String): StreamIdentifier =

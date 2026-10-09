@@ -29,6 +29,10 @@ Capsule CRM connector  enables seamless data syncing from Capsule CRM to various
 | activity_types | id | DefaultPaginator | ✅ |  ❌  |
 | stages | id | DefaultPaginator | ✅ |  ❌  |
 
+## Rate limits
+
+Capsule allows up to 4,000 API requests per hour per user ([docs](https://developer.capsulecrm.com/v2/overview/handling-api-responses)). When the quota is exhausted, Capsule responds with HTTP 429 until the window resets; the connector waits until the time given in the `X-RateLimit-Reset` header before retrying. Large accounts (the `employees` stream issues one request per party) may therefore pause for up to an hour during a sync.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -40,6 +44,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.59 | 2026-10-07 | [88223](https://github.com/airbytehq/airbyte/pull/88223) | Wait until `X-RateLimit-Reset` on HTTP 429 instead of failing with "Too many requests" |
+| 0.0.58 | 2026-10-06 | [87791](https://github.com/airbytehq/airbyte/pull/87791) | Update dependencies |
+| 0.0.57 | 2026-09-29 | [87109](https://github.com/airbytehq/airbyte/pull/87109) | Update dependencies |
 | 0.0.56 | 2026-09-22 | [86575](https://github.com/airbytehq/airbyte/pull/86575) | Update dependencies |
 | 0.0.55 | 2026-09-15 | [86001](https://github.com/airbytehq/airbyte/pull/86001) | Update dependencies |
 | 0.0.54 | 2026-09-08 | [85434](https://github.com/airbytehq/airbyte/pull/85434) | Update dependencies |

@@ -26,6 +26,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.66 | 2026-10-07 | [88300](https://github.com/airbytehq/airbyte/pull/88300) | Fix `shipments` pagination: send `continuationToken` as a query parameter instead of the request path |
+| 0.0.65 | 2026-10-06 | [87849](https://github.com/airbytehq/airbyte/pull/87849) | Update dependencies |
+| 0.0.64 | 2026-09-29 | [87180](https://github.com/airbytehq/airbyte/pull/87180) | Update dependencies |
 | 0.0.63 | 2026-09-22 | [86616](https://github.com/airbytehq/airbyte/pull/86616) | Update dependencies |
 | 0.0.62 | 2026-09-15 | [86054](https://github.com/airbytehq/airbyte/pull/86054) | Update dependencies |
 | 0.0.61 | 2026-09-08 | [85460](https://github.com/airbytehq/airbyte/pull/85460) | Update dependencies |

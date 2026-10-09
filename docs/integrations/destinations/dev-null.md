@@ -53,6 +53,7 @@ The self-managed and Cloud variants have the same version number starting from v
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.9.6 | 2026-10-09 | [88426](https://github.com/airbytehq/airbyte/pull/88426) | Upgrade to Bulk CDK 1.1.1. |
 | 0.9.5 | 2026-09-15 | [86330](https://github.com/airbytehq/airbyte/pull/86330) | Version bump to republish the Cloud-specific connector spec. |
 | 0.9.4 | 2026-05-19 | [78228](https://github.com/airbytehq/airbyte/pull/78228) | Upgrade CDK to 1.0.13 |
 | 0.9.3 | 2026-02-04 | [72856](https://github.com/airbytehq/airbyte/pull/72856) | Upgrade CDK to 0.2.8 |
