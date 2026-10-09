@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
-  dockerImageTag: 3.8.6
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-postgres
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   githubIssueLabel: source-postgres
@@ -77,6 +77,25 @@ data:
         autoStart: true
         autoPromoteStages: true
         strategy: slow
+    breakingChanges:
+      4.0.0:
+        message:
+          "**Version 4.0.0 corrects the discovered type of two kinds of user-defined type columns.
+          Connections without such columns don't need to do anything.**
+
+          **What changed:** a column whose type is a user-defined non-array type with a name
+          starting with an underscore (for example `CREATE TYPE _status AS ENUM (...)`) is discovered
+          as a string instead of an array; versions 3.8.0 to 3.8.6 synced it as null or failed CDC
+          syncs. An array column whose element type is a user-defined or extension type in a schema
+          that isn't on the search_path is discovered as an array again instead of a string, as in
+          version 3.7.
+
+          **What to do:** refresh the source schema of affected connections after upgrading. If a
+          sync then fails because of the type change, refresh the affected streams. See the
+          [migration guide](https://docs.airbyte.com/integrations/sources/postgres-migrations).
+          "
+        upgradeDeadline: "2026-12-01"
+        deadlineAction: "auto_upgrade"
   externalDocumentationUrls:
     - title: PostgreSQL documentation
       url: https://www.postgresql.org/docs/
