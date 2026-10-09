@@ -17,13 +17,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: a152c0b0-6c5d-43d6-a74c-72df24dae70e
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-openai-ads
   githubIssueLabel: source-openai-ads
   icon: icon.svg
   license: ELv2
   name: OpenAI Ads
-  releaseDate: 2026-09-16
+  releaseDate: 2026-10-08
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/openai-ads
