@@ -311,9 +311,9 @@ def test_public_messages_standalone_is_full_refresh_and_emits_records(base_confi
     calls = _gmail_calls(requests_mock, _MESSAGES_LIST_URL)
     assert calls, "Expected at least one call to the messages list endpoint"
     qs = parse_qs(urlparse(calls[0].url).query)
-    assert "q" not in qs or qs.get("q") == [""], (
-        f"Public `messages` must not inject a `q=after:` filter without a configured `start_date`; got {qs.get('q')!r}"
-    )
+    assert "q" not in qs or qs.get("q") == [
+        ""
+    ], f"Public `messages` must not inject a `q=after:` filter without a configured `start_date`; got {qs.get('q')!r}"
 
 
 def test_public_messages_injects_after_unix_seconds_when_start_date_set(config_with_start_date, requests_mock):
@@ -388,9 +388,9 @@ def test_messages_details_parent_omits_q_when_no_start_date(base_config, request
     list_calls = [c for c in _gmail_calls(requests_mock, _MESSAGES_LIST_URL) if urlparse(c.url).path.endswith("/messages")]
     assert list_calls, "Expected at least one call to the messages list endpoint"
     qs = parse_qs(urlparse(list_calls[0].url).query)
-    assert "q" not in qs or qs.get("q") == [""], (
-        f"Parent `messages` list call must not inject `q=after:` without a configured `start_date`; got {qs.get('q')!r}"
-    )
+    assert "q" not in qs or qs.get("q") == [
+        ""
+    ], f"Parent `messages` list call must not inject `q=after:` without a configured `start_date`; got {qs.get('q')!r}"
 
 
 def test_messages_details_parent_injects_after_from_start_date(config_with_start_date, requests_mock):
@@ -570,9 +570,9 @@ def test_retry_after_on_403_rate_limit_exceeded_is_honoured(reason, base_config,
     output = _read_stream("messages_details", SyncMode.full_refresh, base_config)
 
     sleep_durations = [call.args[0] for call in sleep_mock.call_args_list if call.args]
-    assert any(5 <= duration <= 8 for duration in sleep_durations), (
-        f"Expected a backoff honouring Retry-After=5s on 403 {reason}; got {sleep_durations!r}"
-    )
+    assert any(
+        5 <= duration <= 8 for duration in sleep_durations
+    ), f"Expected a backoff honouring Retry-After=5s on 403 {reason}; got {sleep_durations!r}"
     assert output.records, f"Expected the retry to succeed and produce a record for reason={reason!r}"
     # Sanity: the sync must not have failed — a 403 without the predicate match
     # would have produced no records and an auth/config error trace.
@@ -617,7 +617,7 @@ def test_non_rate_limit_403_is_not_retried(base_config, requests_mock, mocker):
     output = _read_stream("messages_details", SyncMode.full_refresh, base_config)
 
     sleep_durations = [call.args[0] for call in sleep_mock.call_args_list if call.args]
-    assert not any(d >= 5 for d in sleep_durations), (
-        f"Insufficient-permission 403 must not trigger a Retry-After backoff; got {sleep_durations!r}"
-    )
+    assert not any(
+        d >= 5 for d in sleep_durations
+    ), f"Insufficient-permission 403 must not trigger a Retry-After backoff; got {sleep_durations!r}"
     assert not output.records, "Insufficient-permission 403 must not yield records"
