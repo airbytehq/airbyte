@@ -59,6 +59,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.67 | 2026-10-07 | [88184](https://github.com/airbytehq/airbyte/pull/88184) | Fail with a clear config error when Flowlu returns an error body with HTTP 200 (wrong company subdomain / invalid API key) instead of silently returning no records |
 | 0.0.66 | 2026-10-06 | [87846](https://github.com/airbytehq/airbyte/pull/87846) | Update dependencies |
 | 0.0.65 | 2026-09-29 | [87149](https://github.com/airbytehq/airbyte/pull/87149) | Update dependencies |
 | 0.0.64 | 2026-09-22 | [86628](https://github.com/airbytehq/airbyte/pull/86628) | Update dependencies |

@@ -34,7 +34,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ last_record['next_page'] }}"
+            cursor_value: "{{ response.get('next_page') }}"
+            stop_condition: "{{ not response.get('has_more') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -91,8 +92,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            extractorPath: leads
-            cursor_value: "{{ last_record['next_page'] }}"
+            cursor_value: "{{ response.get('next_page') }}"
+            stop_condition: "{{ not response.get('has_more') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -244,8 +245,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            extractorPath: campaigns
-            cursor_value: "{{ last_record['next_page'] }}"
+            cursor_value: "{{ response.get('next_page') }}"
+            stop_condition: "{{ not response.get('has_more') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -339,7 +340,8 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ last_record['next_page'] }}"
+          cursor_value: "{{ response.get('next_page') }}"
+          stop_condition: "{{ not response.get('has_more') }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -395,8 +397,8 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          extractorPath: leads
-          cursor_value: "{{ last_record['next_page'] }}"
+          cursor_value: "{{ response.get('next_page') }}"
+          stop_condition: "{{ not response.get('has_more') }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -547,8 +549,8 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          extractorPath: campaigns
-          cursor_value: "{{ last_record['next_page'] }}"
+          cursor_value: "{{ response.get('next_page') }}"
+          stop_condition: "{{ not response.get('has_more') }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
