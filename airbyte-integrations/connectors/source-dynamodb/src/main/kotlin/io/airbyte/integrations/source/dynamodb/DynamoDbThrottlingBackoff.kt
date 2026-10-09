@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.dynamodb
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
@@ -30,6 +31,7 @@ private val log = KotlinLogging.logger {}
  * [maxThrottledDuration] without a single success, the last throttling exception is rethrown and
  * classified (`application.yml`).
  */
+@SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "Kotlin coroutines")
 class DynamoDbThrottlingBackoff(
     val initialBackoff: Duration = DEFAULT_INITIAL_BACKOFF,
     val maxBackoff: Duration = DEFAULT_MAX_BACKOFF,
