@@ -7,7 +7,20 @@ description: Gmail is the email service provided by Google.
 check:
   type: CheckStream
   stream_names:
-    - messages
+    - profile
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1500
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_base: https://gmail.googleapis.com
+  status_codes_for_ratelimit_hit:
+    - 429
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -333,6 +346,7 @@ definitions:
     authenticator: "#/definitions/authenticator"
     error_handler:
       type: DefaultErrorHandler
+      max_retries: 10
       backoff_strategies:
         # Gmail usually returns a `Retry-After` header on 429 and on 403
         # quota-saturation responses, but not always. `WaitTimeFromHeader`
@@ -372,6 +386,18 @@ definitions:
           error_message: "Gmail returned a per-user or per-project quota saturation 403 (rateLimitExceeded / userRateLimitExceeded). Honouring `Retry-After` and retrying — the sync will resume once Gmail's rolling quota window frees up."
           predicate: >-
             {{ ((response.get('error', {}).get('errors', [{}]) | first).get('reason', '')) in ['rateLimitExceeded', 'userRateLimitExceeded'] }}
+        - type: HttpResponseFilter
+          action: FAIL
+          failure_type: config_error
+          error_message: "The Gmail API is not enabled for this Google Cloud project. Enable it at https://console.cloud.google.com/apis/library/gmail.googleapis.com and retry."
+          predicate: >-
+            {{ ((response.get('error', {}).get('errors', [{}]) | first).get('reason', '')) in ['accessNotConfigured'] }}
+        - type: HttpResponseFilter
+          action: FAIL
+          failure_type: config_error
+          error_message: "The authorized account lacks the required Gmail scope. Re-authenticate and grant gmail.readonly (self-managed / service account) or gmail.modify (Airbyte Cloud)."
+          predicate: >-
+            {{ ((response.get('error', {}).get('errors', [{}]) | first).get('reason', '')) in ['insufficientPermissions'] }}
 
 streams:
   - $ref: "#/definitions/streams/profile"
@@ -671,6 +697,19 @@ schemas:
         type:
           - string
           - "null"
+      color:
+        type:
+          - object
+          - "null"
+        properties:
+          backgroundColor:
+            type:
+              - string
+              - "null"
+          textColor:
+            type:
+              - string
+              - "null"
       id:
         type: string
       labelListVisibility:
@@ -681,9 +720,25 @@ schemas:
         type:
           - string
           - "null"
+      messagesTotal:
+        type:
+          - integer
+          - "null"
+      messagesUnread:
+        type:
+          - integer
+          - "null"
       name:
         type:
           - string
+          - "null"
+      threadsTotal:
+        type:
+          - integer
+          - "null"
+      threadsUnread:
+        type:
+          - integer
           - "null"
     required:
       - id
@@ -696,6 +751,19 @@ schemas:
         type:
           - string
           - "null"
+      color:
+        type:
+          - object
+          - "null"
+        properties:
+          backgroundColor:
+            type:
+              - string
+              - "null"
+          textColor:
+            type:
+              - string
+              - "null"
       id:
         type: string
       labelListVisibility:
@@ -756,6 +824,36 @@ schemas:
         type:
           - string
           - "null"
+      classificationLabelValues:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            fields:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  selection:
+                    type:
+                      - string
+                      - "null"
+            labelId:
+              type:
+                - string
+                - "null"
       labelIds:
         type:
           - array
@@ -774,6 +872,10 @@ schemas:
               - object
               - "null"
             properties:
+              attachmentId:
+                type:
+                  - string
+                  - "null"
               data:
                 type:
                   - string
@@ -825,6 +927,10 @@ schemas:
                     - object
                     - "null"
                   properties:
+                    attachmentId:
+                      type:
+                        - string
+                        - "null"
                     data:
                       type:
                         - string
@@ -925,6 +1031,36 @@ schemas:
               type:
                 - string
                 - "null"
+            classificationLabelValues:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fields:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        fieldId:
+                          type:
+                            - string
+                            - "null"
+                        selection:
+                          type:
+                            - string
+                            - "null"
+                  labelId:
+                    type:
+                      - string
+                      - "null"
             labelIds:
               type:
                 - array
@@ -943,6 +1079,10 @@ schemas:
                     - object
                     - "null"
                   properties:
+                    attachmentId:
+                      type:
+                        - string
+                        - "null"
                     data:
                       type:
                         - string
@@ -994,6 +1134,10 @@ schemas:
                           - object
                           - "null"
                         properties:
+                          attachmentId:
+                            type:
+                              - string
+                              - "null"
                           data:
                             type:
                               - string

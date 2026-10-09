@@ -151,6 +151,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.20 | 2026-10-08 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Check connection via profile and retry rate limits; add actionable Gmail API errors, API budget and missing schema fields |
 | 0.1.19 | 2026-10-06 | [87854](https://github.com/airbytehq/airbyte/pull/87854) | Update dependencies |
 | 0.1.18 | 2026-09-29 | [87179](https://github.com/airbytehq/airbyte/pull/87179) | Update dependencies |
 | 0.1.17 | 2026-09-22 | [86632](https://github.com/airbytehq/airbyte/pull/86632) | Update dependencies |

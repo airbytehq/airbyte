@@ -6,11 +6,12 @@ the incremental cursor, `start_date` server-side filtering, and rate-limit
 backoff behaviour end-to-end.
 """
 
+import logging
 from urllib.parse import parse_qs, urlparse
 
 import pytest
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import Status, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -20,7 +21,9 @@ from .conftest import build_source
 
 _MESSAGES_LIST_URL = "https://gmail.googleapis.com/gmail/v1/users/me/messages"
 _DRAFTS_LIST_URL = "https://gmail.googleapis.com/gmail/v1/users/me/drafts"
+_LABELS_LIST_URL = "https://gmail.googleapis.com/gmail/v1/users/me/labels"
 _THREADS_LIST_URL = "https://gmail.googleapis.com/gmail/v1/users/me/threads"
+_PROFILE_URL = "https://gmail.googleapis.com/gmail/v1/users/me/profile"
 
 
 def _read_stream(stream_name, sync_mode, config, state=None):
@@ -31,6 +34,126 @@ def _read_stream(stream_name, sync_mode, config, state=None):
 
 def _gmail_calls(requests_mock, url_prefix):
     return [r for r in requests_mock.request_history if r.url.startswith(url_prefix)]
+
+
+def test_check_retries_profile_after_429(base_config, requests_mock, mocker):
+    mocker.patch("time.sleep")
+    requests_mock.get(
+        _PROFILE_URL,
+        [
+            {"status_code": 429, "headers": {"Retry-After": "0"}, "json": {"error": {"message": "rate limit"}}},
+            {"status_code": 200, "json": {"emailAddress": "user@example.com"}},
+        ],
+    )
+
+    status = build_source(base_config).check(logging.getLogger("test"), base_config)
+
+    assert status.status == Status.SUCCEEDED
+    assert len(_gmail_calls(requests_mock, _PROFILE_URL)) == 2
+
+
+def test_check_retries_profile_after_user_rate_limit_exceeded(base_config, requests_mock, mocker):
+    mocker.patch("time.sleep")
+    requests_mock.get(
+        _PROFILE_URL,
+        [
+            {
+                "status_code": 403,
+                "headers": {"Retry-After": "0"},
+                "json": {"error": {"errors": [{"reason": "userRateLimitExceeded"}]}},
+            },
+            {"status_code": 200, "json": {"emailAddress": "user@example.com"}},
+        ],
+    )
+
+    status = build_source(base_config).check(logging.getLogger("test"), base_config)
+
+    assert status.status == Status.SUCCEEDED
+    assert len(_gmail_calls(requests_mock, _PROFILE_URL)) == 2
+
+
+@pytest.mark.parametrize(
+    ("reason", "message"),
+    [
+        (
+            "accessNotConfigured",
+            "The Gmail API is not enabled for this Google Cloud project. Enable it at https://console.cloud.google.com/apis/library/gmail.googleapis.com and retry.",
+        ),
+        (
+            "insufficientPermissions",
+            "The authorized account lacks the required Gmail scope. Re-authenticate and grant gmail.readonly (self-managed / service account) or gmail.modify (Airbyte Cloud).",
+        ),
+    ],
+)
+def test_gmail_api_configuration_errors_are_actionable(reason, message, base_config, requests_mock):
+    error_response = {
+        "status_code": 403,
+        "json": {"error": {"errors": [{"reason": reason}]}},
+    }
+    requests_mock.get(_PROFILE_URL, [error_response, error_response])
+
+    check_status = build_source(base_config).check(logging.getLogger("test"), base_config)
+
+    assert check_status.status == Status.FAILED
+    assert message in (check_status.message or "")
+
+    output = _read_stream("profile", SyncMode.full_refresh, base_config)
+
+    assert not output.records
+    assert any(
+        msg.trace
+        and msg.trace.error
+        and msg.trace.error.failure_type
+        and msg.trace.error.failure_type.value == "config_error"
+        and message in msg.trace.error.message
+        for msg in output.trace_messages
+    )
+
+
+def test_profile_read_emits_record(base_config, requests_mock):
+    requests_mock.get(_PROFILE_URL, json={"emailAddress": "user@example.com", "historyId": "123"})
+
+    output = _read_stream("profile", SyncMode.full_refresh, base_config)
+
+    assert len(output.records) == 1
+
+
+def test_labels_read_emits_records(base_config, requests_mock):
+    requests_mock.get(_LABELS_LIST_URL, json={"labels": [{"id": "INBOX"}, {"id": "STARRED"}]})
+
+    output = _read_stream("labels", SyncMode.full_refresh, base_config)
+
+    assert len(output.records) == 2
+
+
+def test_labels_details_reads_each_parent_partition(base_config, requests_mock):
+    requests_mock.get(_LABELS_LIST_URL, json={"labels": [{"id": "label-1"}, {"id": "label-2"}]})
+    requests_mock.get(f"{_LABELS_LIST_URL}/label-1", json={"id": "label-1", "messagesTotal": 2})
+    requests_mock.get(f"{_LABELS_LIST_URL}/label-2", json={"id": "label-2", "messagesTotal": 3})
+
+    output = _read_stream("labels_details", SyncMode.full_refresh, base_config)
+
+    assert len(output.records) == 2
+    child_paths = {urlparse(request.url).path for request in requests_mock.request_history if "/labels/" in urlparse(request.url).path}
+    assert child_paths == {
+        "/gmail/v1/users/me/labels/label-1",
+        "/gmail/v1/users/me/labels/label-2",
+    }
+
+
+def test_threads_details_reads_each_parent_partition(base_config, requests_mock):
+    requests_mock.get(_THREADS_LIST_URL, json={"threads": [{"id": "thread-1"}, {"id": "thread-2"}]})
+    requests_mock.get(f"{_THREADS_LIST_URL}/thread-1", json={"id": "thread-1", "messages": [{"id": "message-1"}]})
+    requests_mock.get(f"{_THREADS_LIST_URL}/thread-2", json={"id": "thread-2", "messages": [{"id": "message-2"}]})
+
+    output = _read_stream("threads_details", SyncMode.full_refresh, base_config)
+
+    assert len(output.records) == 2
+    child_paths = {urlparse(request.url).path for request in requests_mock.request_history if "/threads/" in urlparse(request.url).path}
+    assert child_paths == {
+        "/gmail/v1/users/me/threads/thread-1",
+        "/gmail/v1/users/me/threads/thread-2",
+    }
 
 
 def test_public_messages_standalone_is_full_refresh_and_emits_records(base_config, requests_mock):
