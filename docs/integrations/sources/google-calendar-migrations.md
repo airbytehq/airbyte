@@ -4,7 +4,7 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 1.0.0
 
-Version 1.0.0 reads `events` from every calendar in the account when **Calendar Id** is empty, adds the `acl` and `freebusy` streams, and changes the `events`, `calendars` and `colors` streams.
+When **Calendar Id** is empty, version 1.0.0 reads every calendar in the account's calendar list, including hidden ones: `events` from the calendars the account can read, `acl` from those it owns, and `freebusy` from all of them. It adds the `acl` and `freebusy` streams, and changes the `events`, `calendars` and `colors` streams.
 
 :::danger Risk of permanent data loss
 Clearing the `events` stream deletes its destination rows and re-reads only what Google still returns. Events last modified before your Start Date are not re-read, events deleted in Google Calendar come back with at most their ID and a `cancelled` status (or not at all), and with an Append sync mode every earlier copy of each event is lost. Back up the `events` table before you clear it if you need that history.
@@ -25,7 +25,7 @@ With **Calendar Id** empty, `events` reads only the calendars the account can re
 
 ### `calendars`
 
-`calendars` used to return the same calendar-list entries as `calendarlist`. It now returns the calendar resource of each calendar in the calendar list that the account can read, hidden ones included: `id`, `summary`, `description`, `location`, `timeZone` and `conferenceProperties`. The per-user fields of a list entry (`accessRole`, colors, reminders, `primary`, `selected`) stay in `calendarlist`.
+`calendars` used to return the same calendar-list entries as `calendarlist`. It now returns the calendar resource of each calendar in the calendar list that the account can read, hidden ones included: `kind`, `etag`, `id`, `summary`, `description`, `location`, `timeZone`, `conferenceProperties`, `dataOwner`, `autoAcceptInvitations` and `labelProperties`. The per-user fields of a list entry (`accessRole`, colors, reminders, `primary`, `selected`) stay in `calendarlist`.
 
 ### `colors`
 
