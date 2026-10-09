@@ -117,7 +117,7 @@ Amounts on insights rows (`spend`, `cpc`, `cpm`, and the budget columns such as 
 
 | Version | Date       | Pull Request                                             | Subject                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------ |
-| 0.1.3   | 2026-10-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Skip `conversion_pixels` when pixel management is not enabled, report rate limiting, honor `Retry-After`, and correct the `spend_limit_windows` 403 message |
+| 0.1.3   | 2026-10-09 | [88394](https://github.com/airbytehq/airbyte/pull/88394) | Skip `conversion_pixels` when pixel management is not enabled, report rate limiting, honor `Retry-After`, and correct the `spend_limit_windows` 403 message |
 | 0.1.2   | 2026-10-08 | [88392](https://github.com/airbytehq/airbyte/pull/88392) | End report date ranges at the current date in UTC-12 so requests never end in the future, and raise the default lookback window to 32 days |
 | 0.1.1   | 2026-10-08 | [88389](https://github.com/airbytehq/airbyte/pull/88389) | Add mocked unit tests and fix README symlink, test config end date, and release date |
 | 0.1.0   | 2026-10-08 | [86351](https://github.com/airbytehq/airbyte/pull/86351) | Initial release by [@alexgreen496](https://github.com/alexgreen496) |
