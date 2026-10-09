@@ -884,7 +884,7 @@ class InvoiceLineItemsLegacyApiVersionTest(TestCase):
         assert all(record["unique_id"] == record["id"] for record in records)
 
     @HttpMocker()
-    def test_other_legacy_prefixes_remap_id_without_subscription_backfill(self, http_mocker: HttpMocker) -> None:
+    def test_other_legacy_prefixes_remap_id_and_backfill_su_subscription(self, http_mocker: HttpMocker) -> None:
         period_start = int(_STATE_DATE.timestamp())
         lines = [
             {
@@ -917,5 +917,5 @@ class InvoiceLineItemsLegacyApiVersionTest(TestCase):
         records_by_id = {record.record.data["id"]: record.record.data for record in output.records}
 
         assert set(records_by_id) == {"il_U1", "il_U2"}
-        assert records_by_id["il_U1"].get("subscription") is None
+        assert records_by_id["il_U1"]["subscription"] == "su_U1"
         assert records_by_id["il_U2"].get("subscription") is None
