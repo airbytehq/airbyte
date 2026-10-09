@@ -851,7 +851,6 @@ spec:
     properties:
       api_key:
         type: string
-        airbyte_secret: true
         title: API Key
         description: >-
           Your API Key. See <a

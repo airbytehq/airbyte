@@ -19,7 +19,6 @@
         "title": "Secret Key",
         "type": "string",
         "description": "Your bucket Secret Key.",
-        "airbyte_secret": true,
         "order": 2
       }
     }
