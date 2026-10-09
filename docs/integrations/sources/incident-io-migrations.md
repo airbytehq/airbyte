@@ -10,63 +10,27 @@ Clearing a stream truncates its destination data. Snapshot or back up affected t
 
 ### What changed
 
-Version 1.0.0 declares 49 existing fields as nullable date-time strings with Airbyte type `timestamp_with_timezone`. Their JSON Schema type remains `["string", "null"]`.
+Each field was a nullable string; it is now a nullable string with `format: date-time` and Airbyte type `timestamp_with_timezone`, so destinations that support it load a timestamp with time zone instead of text.
 
-| Stream | Field | Previous type | New type |
-| --- | --- | --- | --- |
-| actions | `completed_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| actions | `created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| actions | `updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| alerts | `created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| alerts | `resolved_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| alerts | `updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| catalog_types | `created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| catalog_types | `last_synced_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| catalog_types | `updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| custom_fields | `created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| custom_fields | `updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| escalations | `created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| escalations | `updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| escalations | `events[].occurred_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| escalations | `related_alerts[].created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| escalations | `related_alerts[].resolved_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| escalations | `related_alerts[].updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| follow-ups | `completed_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| follow-ups | `created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| follow-ups | `updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incident_roles | `created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incident_roles | `updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incident_statuses | `created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incident_statuses | `updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| severities | `created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| severities | `updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incident_updates | `created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incident_updates | `new_incident_status.created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incident_updates | `new_incident_status.updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incident_updates | `new_severity.created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incident_updates | `new_severity.updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incidents | `created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incidents | `updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incidents | `last_activity_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incidents | `incident_status.created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incidents | `incident_status.updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incidents | `incident_type.created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incidents | `incident_type.updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incidents | `severity.created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incidents | `severity.updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incidents | `incident_role_assignments[].role.created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incidents | `incident_role_assignments[].role.updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| incidents | `incident_timestamp_values[].value.value` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| schedules | `created_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| schedules | `updated_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| schedules | `config.rotations[].handover_start_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| schedules | `current_shifts[].start_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| schedules | `current_shifts[].end_at` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
-| workflows | `runs_from` | nullable `string` | nullable `string`, `format: date-time`, `timestamp_with_timezone` |
+| Stream | Fields |
+| --- | --- |
+| actions | `completed_at`, `created_at`, `updated_at` |
+| alerts | `created_at`, `resolved_at`, `updated_at` |
+| catalog_types | `created_at`, `last_synced_at`, `updated_at` |
+| custom_fields | `created_at`, `updated_at` |
+| escalations | `created_at`, `updated_at`, `events[].occurred_at`, `related_alerts[].created_at`, `related_alerts[].resolved_at`, `related_alerts[].updated_at` |
+| follow-ups | `completed_at`, `created_at`, `updated_at` |
+| incident_roles | `created_at`, `updated_at` |
+| incident_statuses | `created_at`, `updated_at` |
+| incident_updates | `created_at`, `new_incident_status.created_at`, `new_incident_status.updated_at`, `new_severity.created_at`, `new_severity.updated_at` |
+| incidents | `created_at`, `updated_at`, `last_activity_at`, `incident_status.created_at`, `incident_status.updated_at`, `incident_type.created_at`, `incident_type.updated_at`, `severity.created_at`, `severity.updated_at`, `incident_role_assignments[].role.created_at`, `incident_role_assignments[].role.updated_at`, `incident_timestamp_values[].value.value` |
+| schedules | `created_at`, `updated_at`, `config.rotations[].handover_start_at`, `current_shifts[].start_at`, `current_shifts[].end_at` |
+| severities | `created_at`, `updated_at` |
+| workflows | `runs_from` |
 
-The `catalog_types` stream now reads `/v3/catalog_types`. The v3 response no longer has `semantic_type`. The five new top-level fields are `engine_resource_type`, `estimated_count`, `is_team_type`, `owning_team_ids`, and `use_name_as_identifier`. The nested v3 additions are `schema.attributes[].backlink_attribute`, `schema.attributes[].path`, `schema.attributes[].path[].attribute_id`, and `schema.attributes[].path[].attribute_name`. These nine additions are nullable and intentionally do not constrain values with enums or required properties.
+The `catalog_types` stream now reads `/v3/catalog_types`. The v3 response no longer has `semantic_type`. The five new top-level fields are `engine_resource_type`, `estimated_count`, `is_team_type`, `owning_team_ids`, and `use_name_as_identifier`. The nested v3 additions are `schema.attributes[].backlink_attribute`, `schema.attributes[].path`, `schema.attributes[].path[].attribute_id`, and `schema.attributes[].path[].attribute_name`. All nine are nullable.
 
-The `incidents` stream now requests all five modes: `standard`, `retrospective`, `test`, `tutorial`, and `stream`. Its child stream `incident_attachments` follows the expanded parent scope and may also return more records. The manifest has no other child stream whose parent is `incidents`. In the sandbox precheck, the response contained 20 standard, 2 retrospective, 1 test, 2 tutorial, and 0 stream incidents.
+The `incidents` stream now requests all five modes: `standard`, `retrospective`, `test`, `tutorial`, and `stream`. Its child stream `incident_attachments` follows the expanded parent scope and may also return more records.
 
 ### Why
 
@@ -82,7 +46,7 @@ Connections that sync any of `actions`, `alerts`, `catalog_types`, `custom_field
 2. Refresh the source schema and accept the changes.
 3. For full-refresh streams using **Overwrite**, the next sync rebuilds the affected table, so no clear is needed. For full-refresh streams using **Append**, existing rows remain and new rows are appended; old timestamp values remain text unless the destination can evolve the column.
 4. For incremental streams (`actions`, `follow-ups`, `incidents`, `alerts`, and `escalations`), if your destination cannot change an existing column's type, clear only those incremental streams whose type change it cannot apply, then sync them again. A clear is destructive and truncates the destination data for that stream. If no clear is done on an append-mode stream, old rows keep the text values.
-5. A clear re-syncs from `start_date`. The default `2020-01-01T00:00:00Z` predates incident.io data. If you use a later `start_date`, records last updated before it will not be re-synced; snapshot or back up the destination first. Records no longer available from incident.io will not be restored by a clear. The incidents endpoint is limited to 60 requests per minute, so a full backfill can take time.
+5. A clear re-syncs from `start_date`. If you use a later `start_date`, records last updated before it will not be re-synced; snapshot or back up the destination first. Records no longer available from incident.io will not be restored by a clear. The incidents endpoint is limited to 60 requests per minute, so a full backfill can take time.
 
 ### Downstream changes
 

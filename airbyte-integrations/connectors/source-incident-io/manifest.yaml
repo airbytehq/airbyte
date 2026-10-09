@@ -1948,7 +1948,6 @@ schemas:
         type:
           - integer
           - "null"
-        format: int64
       annotations:
         type:
           - object
