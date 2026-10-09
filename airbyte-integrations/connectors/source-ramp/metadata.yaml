@@ -37,16 +37,18 @@ data:
     breakingChanges:
       1.0.0:
         message: >-
-          Version 1.0.0 declares 13 fields that were plain strings as timestamps or dates. These become
-          timestamps: `cards.created_at`; `transactions.accounting_date`, `settlement_date`, `synced_at`,
-          `updated_at` and `user_transaction_time`; and `reimbursements.accounting_date`, `approved_at`,
-          `created_at`, `submitted_at`, `synced_at` and `updated_at`. `reimbursements.transaction_date` becomes
-          a date. Destinations that type their columns change these columns from text to timestamp or date.
-          Connections that sync none of these three streams are not affected. After upgrading, and before the
-          next sync, refresh the source schema and clear the `cards`, `transactions` and `reimbursements`
-          streams. Clearing deletes their data in the destination and re-syncs it. See the migration guide:
+          Version 1.0.0 declares 13 fields that were plain strings as timestamps or dates, so you no longer
+          need to cast them. These become timestamps: `cards.created_at`; `transactions.accounting_date`,
+          `settlement_date`, `synced_at`, `updated_at` and `user_transaction_time`; and
+          `reimbursements.accounting_date`, `approved_at`, `created_at`, `submitted_at`, `synced_at` and
+          `updated_at`. `reimbursements.transaction_date` becomes a date. Destinations that type their columns
+          change these columns from text to timestamp or date. Connections that sync none of these three
+          streams are not affected. If you sync these streams with an Append mode and need the history it
+          kept, back up their tables first. After upgrading, and before the next sync, refresh the source
+          schema and clear the `cards`, `transactions` and `reimbursements` streams. Clearing deletes their
+          data in the destination and re-syncs it. See the migration guide:
           https://docs.airbyte.com/integrations/sources/ramp-migrations#upgrading-to-100
-        upgradeDeadline: "2026-10-26"
+        upgradeDeadline: "2026-11-08"
         deadlineAction: "disable"
         scopedImpact:
           - scopeType: stream

@@ -165,7 +165,7 @@ date-like fields stay plain strings: `cards.expiration` is `MMYY` (for example `
 `business_balance.next_billing_date` and `prev_billing_date` are `MM/DD/YYYY`.
 
 **Why this matters:** Adding, removing or changing `format` on an existing field retypes the column in
-typed destinations and fails schema evolution on existing connections, so it is a breaking change (1.0.0
-was exactly that change). A `format` that does not match the values is worse than none: destinations reject
+typed destinations. Not every destination can convert the existing values in place, so existing
+connections have to clear the stream, which makes it a breaking change (1.0.0 was exactly that change). A `format` that does not match the values is worse than none: destinations reject
 or null the values that do not parse. Type a new field when it is first declared, and check its values
 first.
