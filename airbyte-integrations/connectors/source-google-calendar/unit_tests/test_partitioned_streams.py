@@ -275,9 +275,9 @@ def test_freebusy_per_calendar_error_is_logged():
 
 def test_calendars_reads_the_calendar_resource_of_every_readable_listed_calendar():
     with HttpMocker() as http_mocker:
-        # Same calendars as `calendarlist` (no showHidden), narrowed to ones the account can read.
+        # Every listed calendar, hidden ones included, narrowed to ones the account can read.
         http_mocker.get(
-            HttpRequest(f"{_BASE_URL}/users/me/calendarList", query_params={"minAccessRole": "reader"}),
+            HttpRequest(f"{_BASE_URL}/users/me/calendarList", query_params={"showHidden": "true", "minAccessRole": "reader"}),
             _json(
                 {"kind": "calendar#calendarList", "items": [{"id": _ME, "accessRole": "owner"}, {"id": _HOLIDAYS, "accessRole": "reader"}]}
             ),

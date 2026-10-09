@@ -25,7 +25,7 @@ With **Calendar Id** empty, `events` reads only the calendars the account can re
 
 ### `calendars`
 
-`calendars` used to return the same calendar-list entries as `calendarlist`. It now returns the calendar resource of each calendar in the calendar list that the account can read: `id`, `summary`, `description`, `location`, `timeZone` and `conferenceProperties`. The per-user fields of a list entry (`accessRole`, colors, reminders, `primary`, `selected`) stay in `calendarlist`.
+`calendars` used to return the same calendar-list entries as `calendarlist`. It now returns the calendar resource of each calendar in the calendar list that the account can read, hidden ones included: `id`, `summary`, `description`, `location`, `timeZone` and `conferenceProperties`. The per-user fields of a list entry (`accessRole`, colors, reminders, `primary`, `selected`) stay in `calendarlist`.
 
 ### `colors`
 

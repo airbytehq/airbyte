@@ -95,8 +95,8 @@ definitions:
         schema:
           $ref: "#/schemas/calendarlist"
     calendars:
-      # The calendar resource of every calendar in `calendarlist` the account can read; the list
-      # entry's per-user fields (colors, reminders, accessRole) stay in `calendarlist`.
+      # The calendar resource of every calendar in `calendarlist` the account can read, hidden ones
+      # included; the list entry's per-user fields (colors, reminders, accessRole) stay in `calendarlist`.
       type: DeclarativeStream
       name: calendars
       primary_key:
@@ -125,6 +125,7 @@ definitions:
                   requester:
                     $ref: "#/definitions/streams/calendarlist/retriever/requester"
                     request_parameters:
+                      showHidden: "true"
                       minAccessRole: reader
               parent_key: id
               partition_field: calendar_id
@@ -1328,6 +1329,32 @@ schemas:
               type:
                 - string
                 - "null"
+      labelProperties:
+        type:
+          - object
+          - "null"
+        properties:
+          eventLabels:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                backgroundColor:
+                  type:
+                    - string
+                    - "null"
     required:
       - id
   events:
