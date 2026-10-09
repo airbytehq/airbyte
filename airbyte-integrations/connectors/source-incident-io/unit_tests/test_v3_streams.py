@@ -36,6 +36,57 @@ from airbyte_cdk.test.state_builder import StateBuilder
 _RECENT_CONFIG = {"api_key": "test-key", "start_date": "2026-10-06T00:00:00Z"}
 _MODES = ["standard", "retrospective", "test", "tutorial", "stream"]
 _STATUS_CATEGORIES = ["triage", "live", "learning", "paused", "closed", "declined", "canceled", "merged"]
+_TIMESTAMP_SCHEMA_PATHS = [
+    ("actions", "completed_at"),
+    ("actions", "created_at"),
+    ("actions", "updated_at"),
+    ("alerts", "created_at"),
+    ("alerts", "resolved_at"),
+    ("alerts", "updated_at"),
+    ("catalog_types", "created_at"),
+    ("catalog_types", "last_synced_at"),
+    ("catalog_types", "updated_at"),
+    ("custom_fields", "created_at"),
+    ("custom_fields", "updated_at"),
+    ("escalations", "created_at"),
+    ("escalations", "updated_at"),
+    ("escalations", "events[].occurred_at"),
+    ("escalations", "related_alerts[].created_at"),
+    ("escalations", "related_alerts[].resolved_at"),
+    ("escalations", "related_alerts[].updated_at"),
+    ("follow-ups", "completed_at"),
+    ("follow-ups", "created_at"),
+    ("follow-ups", "updated_at"),
+    ("incident_roles", "created_at"),
+    ("incident_roles", "updated_at"),
+    ("incident_statuses", "created_at"),
+    ("incident_statuses", "updated_at"),
+    ("severities", "created_at"),
+    ("severities", "updated_at"),
+    ("incident_updates", "created_at"),
+    ("incident_updates", "new_incident_status.created_at"),
+    ("incident_updates", "new_incident_status.updated_at"),
+    ("incident_updates", "new_severity.created_at"),
+    ("incident_updates", "new_severity.updated_at"),
+    ("incidents", "created_at"),
+    ("incidents", "updated_at"),
+    ("incidents", "last_activity_at"),
+    ("incidents", "incident_status.created_at"),
+    ("incidents", "incident_status.updated_at"),
+    ("incidents", "incident_type.created_at"),
+    ("incidents", "incident_type.updated_at"),
+    ("incidents", "severity.created_at"),
+    ("incidents", "severity.updated_at"),
+    ("incidents", "incident_role_assignments[].role.created_at"),
+    ("incidents", "incident_role_assignments[].role.updated_at"),
+    ("incidents", "incident_timestamp_values[].value.value"),
+    ("schedules", "created_at"),
+    ("schedules", "updated_at"),
+    ("schedules", "config.rotations[].handover_start_at"),
+    ("schedules", "current_shifts[].start_at"),
+    ("schedules", "current_shifts[].end_at"),
+    ("workflows", "runs_from"),
+]
 
 
 def _mock_empty(mocker, path, records_field):
@@ -183,6 +234,52 @@ def test_incidents_requests_all_status_categories():
     assert [message.record.data["id"] for message in output.records] == ["1"]
     assert requests_made
     assert all(request.qs["status_category[one_of]"] == _STATUS_CATEGORIES for request in requests_made)
+    assert all(request.qs["mode[one_of]"] == _MODES for request in requests_made)
+
+
+def _schema_field(schema, path):
+    field_schema = schema
+    for segment in path.split("."):
+        is_array = segment.endswith("[]")
+        name = segment[:-2] if is_array else segment
+        field_schema = field_schema["properties"][name]
+        if is_array:
+            field_schema = field_schema["items"]
+    return field_schema
+
+
+@pytest.mark.parametrize(("stream_name", "path"), _TIMESTAMP_SCHEMA_PATHS)
+def test_timestamp_fields_have_timezone_type(stream_name, path):
+    manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    field_schema = _schema_field(manifest["schemas"][stream_name], path)
+
+    assert field_schema["type"] == ["string", "null"]
+    assert field_schema["format"] == "date-time"
+    assert field_schema["airbyte_type"] == "timestamp_with_timezone"
+
+
+def test_catalog_types_uses_v3_schema():
+    manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    requester = manifest["definitions"]["streams"]["catalog_types"]["retriever"]["requester"]
+    properties = manifest["schemas"]["catalog_types"]["properties"]
+
+    assert requester["path"] == "/v3/catalog_types"
+    assert "semantic_type" not in properties
+    top_level_fields = {
+        "engine_resource_type",
+        "estimated_count",
+        "is_team_type",
+        "owning_team_ids",
+        "use_name_as_identifier",
+    }
+    assert top_level_fields <= properties.keys()
+    assert properties["use_name_as_identifier"]["type"] == ["boolean", "null"]
+    assert "format" not in properties["use_name_as_identifier"]
+    assert "airbyte_type" not in properties["use_name_as_identifier"]
+
+    attributes = properties["schema"]["properties"]["attributes"]["items"]["properties"]
+    assert {"backlink_attribute", "path"} <= attributes.keys()
+    assert {"attribute_id", "attribute_name"} <= attributes["path"]["items"]["properties"].keys()
 
 
 @pytest.mark.parametrize(
@@ -643,9 +740,7 @@ def test_incident_attachments_error_handler_reuses_base_filters():
     base_handler = base_requester_handlers[0]
 
     attachment_requester = definitions["streams"]["incident_attachments"]["retriever"]["requester"]
-    attachment_handlers = attachment_requester["error_handler"]["error_handlers"]
-    assert len(attachment_handlers) == 1
-    attachment_handler = attachment_handlers[0]
+    attachment_handler = attachment_requester["error_handler"]
     assert attachment_handler["type"] == "DefaultErrorHandler"
     assert attachment_handler["max_retries"] == base_handler["max_retries"]
 
@@ -661,7 +756,7 @@ def test_incident_attachments_error_handler_reuses_base_filters():
 
 def test_catalog_entries_partitions_and_follows_all_pages():
     with requests_mock.Mocker() as mocker:
-        mocker.get(f"{_BASE_URL}/v2/catalog_types", json={"catalog_types": [{"id": "catalog-type-1"}]})
+        mocker.get(f"{_BASE_URL}/v3/catalog_types", json={"catalog_types": [{"id": "catalog-type-1"}]})
         mocker.get(
             f"{_BASE_URL}/v3/catalog_entries",
             [

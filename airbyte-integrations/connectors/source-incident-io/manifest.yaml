@@ -82,7 +82,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/catalog_types
+          path: /v3/catalog_types
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -397,6 +397,7 @@ definitions:
           request_parameters:
             updated_at[date_range]: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d') }}~{{ format_datetime(stream_interval['end_time'], '%Y-%m-%d') }}"
             status_category[one_of]: "{{ ['triage', 'live', 'learning', 'paused', 'closed', 'declined', 'canceled', 'merged'] }}"
+            mode[one_of]: "{{ ['standard', 'retrospective', 'test', 'tutorial', 'stream'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -537,19 +538,17 @@ definitions:
           path: /v1/incident_attachments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - $ref: "#/definitions/base_error_handler"
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                  - $ref: "#/definitions/base_error_handler/response_filters/0"
-                  - $ref: "#/definitions/base_error_handler/response_filters/1"
-                  - $ref: "#/definitions/base_error_handler/response_filters/2"
-                  - $ref: "#/definitions/base_error_handler/response_filters/3"
-                  - $ref: "#/definitions/base_error_handler/response_filters/4"
+            $ref: "#/definitions/base_error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 404
+              - $ref: "#/definitions/base_error_handler/response_filters/0"
+              - $ref: "#/definitions/base_error_handler/response_filters/1"
+              - $ref: "#/definitions/base_error_handler/response_filters/2"
+              - $ref: "#/definitions/base_error_handler/response_filters/3"
+              - $ref: "#/definitions/base_error_handler/response_filters/4"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1800,6 +1799,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       creator:
         type:
           - object
@@ -1902,6 +1903,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       id:
         type: string
       incident_id:
@@ -1916,6 +1919,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
     required:
       - id
   catalog_types:
@@ -1927,6 +1932,10 @@ schemas:
         type:
           - string
           - "null"
+      engine_resource_type:
+        type:
+          - string
+          - "null"
       source_repo_url:
         type:
           - string
@@ -1935,6 +1944,11 @@ schemas:
         type:
           - string
           - "null"
+      estimated_count:
+        type:
+          - integer
+          - "null"
+        format: int64
       annotations:
         type:
           - object
@@ -1955,6 +1969,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       icon:
         type:
           - string
@@ -1965,14 +1981,28 @@ schemas:
         type:
           - boolean
           - "null"
+      is_team_type:
+        type:
+          - boolean
+          - "null"
       last_synced_at:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       name:
         type:
           - string
           - "null"
+      owning_team_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       ranked:
         type:
           - boolean
@@ -2027,10 +2057,27 @@ schemas:
                   type:
                     - string
                     - "null"
-      semantic_type:
-        type:
-          - string
-          - "null"
+                backlink_attribute:
+                  type:
+                    - string
+                    - "null"
+                path:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      attribute_id:
+                        type:
+                          - string
+                          - "null"
+                      attribute_name:
+                        type:
+                          - string
+                          - "null"
       type_name:
         type:
           - string
@@ -2038,6 +2085,12 @@ schemas:
       updated_at:
         type:
           - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      use_name_as_identifier:
+        type:
+          - boolean
           - "null"
     required:
       - id
@@ -2062,6 +2115,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       field_type:
         type:
           - string
@@ -2076,6 +2131,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
     required:
       - id
   follow-ups:
@@ -2100,6 +2157,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       creator:
         type:
           - object
@@ -2231,6 +2290,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       external_issue_reference:
         type:
           - object
@@ -2287,6 +2348,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
     required:
       - id
   incident_roles:
@@ -2302,6 +2365,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       id:
         type: string
       instructions:
@@ -2328,6 +2393,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
     required:
       - id
   incident_timestamps:
@@ -2360,6 +2427,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       id:
         type: string
       incident_id:
@@ -2387,6 +2456,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           id:
             type:
               - string
@@ -2403,6 +2474,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
       new_severity:
         type:
           - object
@@ -2416,6 +2489,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           id:
             type:
               - string
@@ -2432,6 +2507,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
       updater:
         type:
           - object
@@ -2480,6 +2557,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       id:
         type: string
       name:
@@ -2494,6 +2573,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
     required:
       - id
     additionalProperties: true
@@ -2630,6 +2711,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       runs_on_incident_modes:
         type:
           - array
@@ -2758,6 +2841,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       id:
         type: string
       name:
@@ -2772,6 +2857,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
     required:
       - id
     additionalProperties: true
@@ -2813,6 +2900,8 @@ schemas:
                   type:
                     - string
                     - "null"
+                  format: date-time
+                  airbyte_type: timestamp_with_timezone
                 handovers:
                   type:
                     - array
@@ -2859,6 +2948,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       current_shifts:
         type:
           - array
@@ -2872,6 +2963,8 @@ schemas:
               type:
                 - string
                 - "null"
+              format: date-time
+              airbyte_type: timestamp_with_timezone
             fingerprint:
               type:
                 - string
@@ -2884,6 +2977,8 @@ schemas:
               type:
                 - string
                 - "null"
+              format: date-time
+              airbyte_type: timestamp_with_timezone
       holidays_public_config:
         type:
           - object
@@ -2911,6 +3006,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
     required:
       - id
     additionalProperties: true
@@ -2927,6 +3024,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       postmortem_document_ids:
         type:
           - array
@@ -2955,6 +3054,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       creator:
         type:
           - object
@@ -3115,6 +3216,8 @@ schemas:
                   type:
                     - string
                     - "null"
+                  format: date-time
+                  airbyte_type: timestamp_with_timezone
                 id:
                   type:
                     - string
@@ -3143,6 +3246,8 @@ schemas:
                   type:
                     - string
                     - "null"
+                  format: date-time
+                  airbyte_type: timestamp_with_timezone
       incident_status:
         type:
           - object
@@ -3160,6 +3265,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           id:
             type:
               - string
@@ -3176,6 +3283,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
       incident_timestamp_values:
         type:
           - array
@@ -3211,6 +3320,8 @@ schemas:
                   type:
                     - string
                     - "null"
+                  format: date-time
+                  airbyte_type: timestamp_with_timezone
       incident_type:
         type:
           - object
@@ -3228,6 +3339,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           id:
             type:
               - string
@@ -3248,6 +3361,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
       mode:
         type:
           - string
@@ -3277,6 +3392,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           id:
             type:
               - string
@@ -3293,6 +3410,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
       slack_channel_id:
         type:
           - string
@@ -3313,6 +3432,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       visibility:
         type:
           - string
@@ -3437,6 +3558,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       deduplication_key:
         type:
           - string
@@ -3447,6 +3570,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       source_url:
         type:
           - string
@@ -3463,6 +3588,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
     required:
       - id
   escalations:
@@ -3478,6 +3605,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       creator:
         type:
           - object
@@ -3586,6 +3715,8 @@ schemas:
               type:
                 - string
                 - "null"
+              format: date-time
+              airbyte_type: timestamp_with_timezone
             urgency:
               type:
                 - string
@@ -3646,6 +3777,8 @@ schemas:
               type:
                 - string
                 - "null"
+              format: date-time
+              airbyte_type: timestamp_with_timezone
             deduplication_key:
               type:
                 - string
@@ -3662,6 +3795,8 @@ schemas:
               type:
                 - string
                 - "null"
+              format: date-time
+              airbyte_type: timestamp_with_timezone
             source_url:
               type:
                 - string
@@ -3678,6 +3813,8 @@ schemas:
               type:
                 - string
                 - "null"
+              format: date-time
+              airbyte_type: timestamp_with_timezone
       related_incidents:
         type:
           - array
@@ -3726,5 +3863,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
     required:
       - id
