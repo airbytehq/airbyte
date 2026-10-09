@@ -22,7 +22,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: "Version 1.0.0 types 49 timestamp fields across 13 streams as timestamps with time zone, and moves `catalog_types` to incident.io's v3 API, which removes `semantic_type` and adds five fields. Incidents of all five modes are now synced, so `incidents` and its child streams may return more records. If you sync any affected stream, refresh the source schema after upgrading. For incremental streams, destinations that can't change an existing column's type also need those streams cleared. See the migration guide for steps: https://docs.airbyte.com/integrations/sources/incident-io-migrations#upgrading-to-100"
+        message: "Version 1.0.0 types 49 timestamp fields across 13 streams as timestamps with time zone instead of text, moves `catalog_types` to incident.io's v3 API because v2 is deprecated (removing `semantic_type` and adding five fields), and syncs incidents of all five modes, so `incidents` and `incident_attachments` now include test, tutorial and stream incidents. Connections that sync none of the affected streams need no action. Otherwise, refresh the source schema after upgrading. For incremental streams, destinations that can't change an existing column's type also need those streams cleared; clearing deletes their destination data, so back it up first. See the migration guide: https://docs.airbyte.com/integrations/sources/incident-io-migrations#upgrading-to-100"
         upgradeDeadline: "2026-11-09"
         deadlineAction: "auto_upgrade"
         scopedImpact:
