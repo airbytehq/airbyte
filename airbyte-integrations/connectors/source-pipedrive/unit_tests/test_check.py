@@ -15,7 +15,7 @@ from conftest import get_source
 from airbyte_cdk.models import Status
 
 
-_CONFIG = {"api_token": "test-token", "replication_start_date": "2017-01-25 00:00:00Z"}
+_CONFIG = {"credentials": {"auth_type": "api_token", "api_token": "test-token"}, "replication_start_date": "2017-01-25 00:00:00Z"}
 _BASE_URL = "https://api.pipedrive.com"
 
 
@@ -34,7 +34,7 @@ def test_check_uses_currencies_stream():
 
         assert status.status == Status.SUCCEEDED
         assert [request.path for request in mocker.request_history] == ["/v1/currencies"]
-        assert "api_token=test-token" in mocker.request_history[0].query
+        assert mocker.request_history[0].headers["x-api-token"] == "test-token"
 
 
 def test_check_fails_on_invalid_token():

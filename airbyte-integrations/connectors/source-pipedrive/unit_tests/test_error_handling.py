@@ -53,6 +53,20 @@ def test_401_fails_as_config_error_with_pipedrive_error_text() -> None:
         http_mocker.assert_number_of_calls(deals, 1)
 
 
+def test_415_feature_not_enabled_fails_as_config_error() -> None:
+    with HttpMocker() as http_mocker:
+        deals = deals_request()
+        http_mocker.get(deals, pipedrive_error(415, "Feature is not enabled"))
+
+        output = read_stream("deals", expecting_exception=True)
+
+        error = _error_trace(output)
+        assert error.failure_type == FailureType.config_error
+        assert "415: Feature is not enabled" in error.message
+        assert "deselect the stream" in error.message
+        http_mocker.assert_number_of_calls(deals, 1)
+
+
 def test_check_with_invalid_token_returns_401_config_message() -> None:
     with HttpMocker() as http_mocker:
         # The check stream is `currencies` (#85764); `deals` is kept for manifests that still check on it.
@@ -191,6 +205,21 @@ def test_deal_products_skips_missing_or_forbidden_parent_deal(status_code: int, 
         assert [record.record.data["id"] for record in output.records] == [20]
         http_mocker.assert_number_of_calls(missing_deal, 1)
         assert output.is_in_logs(error)
+
+
+def test_deal_products_fails_loudly_when_the_oauth_app_lacks_the_scope() -> None:
+    with HttpMocker() as http_mocker:
+        http_mocker.get(deals_archived_request(), empty_v2_page())
+        http_mocker.get(deals_request(), collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}]))
+        http_mocker.get(_deal_products_request(1), pipedrive_error(403, "Scope and URL mismatch"))
+
+        output = read_stream("deal_products", expecting_exception=True)
+
+    # A missing app scope is a setup problem, so the per-parent 403 IGNORE must not swallow it.
+    assert output.records == []
+    error = _error_trace(output)
+    assert error.failure_type == FailureType.config_error
+    assert "scope" in error.message
 
 
 def test_deal_products_still_fails_on_401() -> None:
