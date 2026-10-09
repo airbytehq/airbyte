@@ -538,6 +538,34 @@ jobs:
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
           submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 0
+
+      - name: Add upstream remote (forks only)
+        # The version increment check diffs the connector against `upstream/<base>`
+        # when that remote exists, else `origin/<base>`. On a fork, `origin` is the
+        # fork itself, whose base branch can be ahead of upstream, so a test-only
+        # PR could skip the check while the diff hides a code change.
+        if: >
+          matrix.connector && (
+            (inputs.repo != '' &&
+             ! startswith(inputs.repo, 'airbytehq/')
+            ) ||
+            (github.event.pull_request.head.repo.full_name != '' &&
+             ! startswith(github.event.pull_request.head.repo.full_name, 'airbytehq/')
+            )
+          )
+        env:
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref || 'master' }}
+        run: |
+          # only add upstream if it doesn't already exist
+          if ! git remote | grep -q upstream; then
+            git remote add upstream https://github.com/airbytehq/airbyte.git
+          fi
+          # fetch the default branch, and the PR's base branch if it differs
+          git fetch --quiet upstream master
+          if [ "$BASE_BRANCH" != "master" ]; then
+            git fetch --quiet upstream "$BASE_BRANCH"
+          fi
+
       - name: Install uv
         if: matrix.connector
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
