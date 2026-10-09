@@ -12,6 +12,10 @@ on:
         type: string
         default: "airbyte"
 
+# All repo writes use GitHub App tokens, not GITHUB_TOKEN.
+permissions:
+  contents: read
+
 jobs:
   list-certified-connectors:
     name: List Certified Connectors
