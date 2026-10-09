@@ -2,6 +2,13 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 9, 2026
+
+Connections
+
+- When you create a new connection, the warning that your first sync replicates all historical data in your enabled streams now appears only if your organization is on the Standard plan, a Standard trial, or a Plus plan, which are billed based on data replicated. It no longer appears on capacity-based plans like Pro and Enterprise Flex, where it didn't apply.
+- On capacity-based plans (Pro and Enterprise Flex), the banner that appears on the Connections page when syncs are queued because a region has reached maximum capacity now tells you what you can do about it. Depending on your role and plan, it links to your organization's Usage page so you can allocate more capacity to that region, suggests asking an organization admin to do so, or links to on-demand capacity so your critical connections keep running.
+
 ## October 6, 2026
 
 Platform
