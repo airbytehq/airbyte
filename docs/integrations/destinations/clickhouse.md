@@ -72,7 +72,7 @@ Alternatively, you may also be able to [tune your merge settings](https://clickh
 To use the ClickHouse destination connector, you need:
 
 - A ClickHouse instance (ClickHouse Cloud or self-hosted)
-- ClickHouse server version 21.8.10.19 or later
+- ClickHouse server version 21.8.10.19 or later. The connector is tested against ClickHouse 26.7.
 - Network access from Airbyte to your ClickHouse instance
 - A ClickHouse user with appropriate permissions (see below)
 
