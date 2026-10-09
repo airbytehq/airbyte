@@ -111,6 +111,8 @@ efficient for incremental syncs because it supports `lastmodifieddate` filters, 
 
 **Why this matters:** These are two completely independent stream implementations that happen to share a name. They have different requesters, paginators, and record selectors, so a fix applied to one sub-stream will not carry over to the other. If you change how custom objects sync, you need to verify both the full-refresh and incremental paths separately.
 
+Custom objects whose name matches a built-in stream are exposed as `custom_object_<name>`. When adding a built-in stream, update the built-in name list in `definitions.custom_object_stream_name` in `manifest.yaml`; `test_custom_objects_never_collide_with_any_builtin_stream` guards it.
+
 ---
 
 ## 5. Property Chunking with Character-Based Limits
