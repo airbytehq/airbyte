@@ -292,10 +292,7 @@ def test_start_date_config_starts_the_first_window():
     with requests_mock.Mocker() as mocker:
         mocker.get(f"{_BASE_URL}/v2/incidents", json={"incidents": [], "pagination_meta": {}})
         read(source, config, catalog)
-        assert any(
-            request.qs["updated_at[date_range]"][0].startswith("2025-03-01~")
-            for request in mocker.request_history
-        )
+        assert any(request.qs["updated_at[date_range]"][0].startswith("2025-03-01~") for request in mocker.request_history)
 
 
 @pytest.mark.parametrize(
@@ -707,7 +704,12 @@ def test_custom_field_options_partitions_and_follows_all_pages():
                         "pagination_meta": {"after": "option-1"},
                     }
                 },
-                {"json": {"custom_field_options": [{"id": "option-2", "custom_field_id": "custom-field-1", "value": "two"}], "pagination_meta": {}}},
+                {
+                    "json": {
+                        "custom_field_options": [{"id": "option-2", "custom_field_id": "custom-field-1", "value": "two"}],
+                        "pagination_meta": {},
+                    }
+                },
             ],
         )
         output = _read_stream("custom_field_options")

@@ -70,8 +70,14 @@ to 25 if that field is ever added to the schema.
 `incident_attachments` sends one request per incident. As a full-refresh child, it re-reads the
 windowed `incidents` parent on every sync; the parent endpoint is limited to 60 requests per minute.
 A 2,000-incident account therefore needs about 2,000 attachment requests plus the `incidents` read.
-The attachment stream ignores a 404 because an incident can be deleted after the parent read and
-before its attachment partition runs.
+`incident_attachments` ignores 404 because an incident can be deleted after the parent read and
+before its attachment partition runs. A missing incident returns HTTP 404 with error code
+`resource_not_found` (confirmed live with a made-up incident ID), so a 404 here means a deleted or
+unknown incident and nothing else.
+
+`incident_attachments` uses the windowed `incidents` stream as its parent, so a later `start_date`
+also excludes attachments of incidents last updated before it. This is intentional: child streams
+follow their parent's scope, and an unfiltered second `incidents` read would cost every sync.
 
 `catalog_entries` sends one request per catalog type for each page of up to 250 entries.
 `custom_field_options` sends one request per custom field, with additional requests when a field has

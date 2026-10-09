@@ -867,7 +867,7 @@ spec:
       start_date:
         type: string
         title: Start Date
-        description: "Only sync records updated on or after this UTC date for the incremental streams (incidents, alerts, escalations, actions, follow-ups). The default predates all incident.io data, so everything is synced."
+        description: "Only sync records updated on or after this UTC date for the incremental streams (incidents, alerts, escalations, actions, follow-ups). The default predates all incident.io data, so everything is synced. Streams read per incident, such as `incident_attachments`, follow the same scope and only cover incidents updated on or after this date."
         format: date-time
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         default: "2020-01-01T00:00:00Z"
