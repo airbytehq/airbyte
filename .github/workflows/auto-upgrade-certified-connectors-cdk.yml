@@ -207,8 +207,12 @@ jobs:
           NEW_CDK_VERSION: ${{ steps.upgrade-cdk.outputs.new_cdk_version }}
           CONNECTOR_VERSION: ${{ steps.bump-version.outputs.new_version }}
           PR_URL: ${{ steps.create-pr.outputs.pull-request-url }}
+          JOB_STATUS: ${{ job.status }}
         run: |
-          if [[ -n "$PR_URL" ]]; then
+          # A PR can exist even when a later step (changelog, auto-merge) failed, so check the job status first.
+          if [[ "$JOB_STATUS" != "success" ]]; then
+            status=failed
+          elif [[ -n "$PR_URL" ]]; then
             status=upgraded
           elif [[ "$HAS_CHANGES" == "false" ]]; then
             status=up-to-date

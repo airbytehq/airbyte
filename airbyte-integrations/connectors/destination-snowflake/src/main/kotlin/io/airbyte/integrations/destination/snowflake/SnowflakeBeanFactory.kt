@@ -18,6 +18,7 @@ import io.airbyte.integrations.destination.snowflake.copy.EnabledSnowflakeS3Copy
 import io.airbyte.integrations.destination.snowflake.copy.SnowflakeS3Copy
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
+import io.airbyte.integrations.destination.snowflake.spec.ProgrammaticAccessTokenAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
@@ -168,6 +169,12 @@ class SnowflakeBeanFactory {
                     is UsernamePasswordAuthConfiguration -> {
                         username = snowflakeConfiguration.username
                         password = snowflakeConfiguration.authType.password
+                    }
+                    is ProgrammaticAccessTokenAuthConfiguration -> {
+                        // Snowflake accepts a programmatic access token in place of a password:
+                        // https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#using-a-programmatic-access-token-as-a-password
+                        username = snowflakeConfiguration.username
+                        password = snowflakeConfiguration.authType.programmaticAccessToken
                     }
                 }
 
