@@ -1,5 +1,32 @@
 # GitBook
-GitBook connector  enables seamless data integration from GitBook into your data pipelines. It efficiently extracts content, such as documentation and pages, allowing teams to sync and analyze information across platforms.
+
+This page contains the setup guide and reference information for the [GitBook](https://www.gitbook.com/) source connector.
+
+The GitBook source connector uses the [GitBook API](https://gitbook.com/docs/developers/gitbook-api/api-reference) to sync your user profile, the organizations you belong to, the members of those organizations, and the published page tree of one GitBook space.
+
+## Prerequisites
+
+- A GitBook account with access to the space you want to sync.
+- A GitBook personal access token. The token has the same access and privileges as the GitBook user account that created it, so the connector can only read organizations, members, and spaces that this user can see.
+- The ID of the GitBook space you want to sync.
+
+## Setup guide
+
+### Step 1: Create a personal access token
+
+1. Sign in to GitBook and open the [Developer settings](https://app.gitbook.com/account/developer) of your user account.
+2. Create a personal access token and copy it. For details, see [Authentication](https://gitbook.com/docs/developers/gitbook-api/authentication) in the GitBook documentation.
+
+### Step 2: Find your space ID
+
+Open the space in the GitBook app and look at the URL in your browser. It follows the pattern `https://app.gitbook.com/o/<organization_id>/s/<space_id>`. The value after `/s/` is your space ID. For details, see [Find your IDs](https://gitbook.com/docs/developers/gitbook-api/find-your-ids) in the GitBook documentation.
+
+### Step 3: Set up the connector in Airbyte
+
+1. In Airbyte, go to **Sources** and select **GitBook**.
+2. For **Access Token**, enter the personal access token from Step 1.
+3. For **Space Id**, enter the space ID from Step 2.
+4. Click **Set up source**.
 
 ## Configuration
 
@@ -8,13 +35,33 @@ GitBook connector  enables seamless data integration from GitBook into your data
 | `access_token` | `string` | Access Token. Personal access token for authenticating with the GitBook API. You can view and manage your access tokens in the Developer settings of your GitBook user account. |  |
 | `space_id` | `string` | Space Id.  |  |
 
-## Streams
+## Supported sync modes
+
+The GitBook source connector supports the following sync modes:
+
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
+
+The connector doesn't support incremental syncs.
+
+## Supported streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | users |  | DefaultPaginator | ✅ |  ❌  |
 | organizations | id | DefaultPaginator | ✅ |  ❌  |
 | content | id | DefaultPaginator | ✅ |  ❌  |
 | org_members | id | DefaultPaginator | ✅ |  ❌  |
+
+- `users`: The profile of the GitBook user who owns the access token, from [`GET /v1/user`](https://gitbook.com/docs/developers/gitbook-api/api-reference/users). This stream returns a single record and has no primary key.
+- `organizations`: The organizations that the authenticated user belongs to.
+- `content`: The pages in the current published revision of the configured space. Each record is a top-level page, and child pages are nested in the record's `pages` field. Unpublished edits, such as open change requests, aren't included.
+- `org_members`: The members of each organization returned by the `organizations` stream.
+
+## Limitations
+
+- The connector syncs content from one space per source. To sync several spaces, create a separate source for each space.
+- The GitBook API enforces rate limits and returns HTTP `429` responses when you exceed them. For details, see [Rate limiting](https://gitbook.com/docs/developers/gitbook-api/rate-limiting) in the GitBook documentation.
 
 ## Breaking changes
 
@@ -33,7 +80,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-10-07 | [88268](https://github.com/airbytehq/airbyte/pull/88268) | Breaking: remove the `insights_traffic` stream; GitBook removed the `GET /v1/spaces/{spaceId}/insights/traffic` endpoint. See the [migration guide](/integrations/sources/gitbook-migrations). |
+| 0.1.0 | 2026-10-09 | [88268](https://github.com/airbytehq/airbyte/pull/88268) | Breaking: remove the `insights_traffic` stream; GitBook removed the `GET /v1/spaces/{spaceId}/insights/traffic` endpoint. See the [migration guide](/integrations/sources/gitbook-migrations). |
 | 0.0.64 | 2026-10-06 | [87825](https://github.com/airbytehq/airbyte/pull/87825) | Update dependencies |
 | 0.0.63 | 2026-09-29 | [87183](https://github.com/airbytehq/airbyte/pull/87183) | Update dependencies |
 | 0.0.62 | 2026-09-22 | [86624](https://github.com/airbytehq/airbyte/pull/86624) | Update dependencies |
