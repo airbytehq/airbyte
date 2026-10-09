@@ -2,11 +2,11 @@
 
 ## Upgrading to 5.0.0
 
-This version deprecates username and password authentication. Username and password authentication will be removed in a future release. **Key pair authentication** is now the only recommended method for connecting to Snowflake. This aligns with [Snowflake's deprecation of single-factor password sign-ins](https://docs.snowflake.com/en/user-guide/security-mfa-rollout), which is enforcing strong authentication for all users on a rolling per-account basis between **August and October 2026**.
+This version deprecates username and password authentication. Username and password authentication will be removed in a future release. **Key pair authentication** or a **programmatic access token** is now the recommended method for connecting to Snowflake. This aligns with [Snowflake's deprecation of single-factor password sign-ins](https://docs.snowflake.com/en/user-guide/security-mfa-rollout), which is enforcing strong authentication for all users on a rolling per-account basis between **August and October 2026**.
 
 ### Who is affected
 
-If your Airbyte connection to Snowflake uses **username and password** credentials, you must migrate to key pair authentication before Snowflake enforces strong authentication on your account (rolling between August and October 2026). Connections that already use key pair authentication are not affected. No clear or refresh is required; existing destination data and sync state are unaffected.
+If your Airbyte connection to Snowflake uses **username and password** credentials, you must migrate to key pair authentication or a programmatic access token before Snowflake enforces strong authentication on your account (rolling between August and October 2026). Connections that already use key pair or programmatic access token authentication are not affected. No clear or refresh is required; existing destination data and sync state are unaffected.
 
 ### Migration steps
 
@@ -53,6 +53,8 @@ If your Airbyte connection to Snowflake uses **username and password** credentia
    ```sql
    ALTER USER <user_name> SET TYPE = SERVICE;
    ```
+
+If you prefer a programmatic access token instead of a key pair, follow [Programmatic access token authentication](./snowflake.md#programmatic-access-token-authentication) in the setup guide and select **Programmatic Access Token** as the authorization method. Note that tokens expire and must be rotated, whereas key pairs do not.
 
 If you're having trouble migrating to key pair authentication before Snowflake enforces strong authentication on your account, you can request an extension of the enforcement date from Snowflake. In Snowsight, go to **Trust Center** > **Strong Authentication** (`https://app.snowflake.com/<org_id>/<account>/#/trust-center/overview/strong-authentication`, replacing `<org_id>` and `<account>` with your Snowflake organization and account identifiers).
 
