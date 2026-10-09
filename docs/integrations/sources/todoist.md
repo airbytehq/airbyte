@@ -6,11 +6,7 @@ Version 0.4.0 moves the connector from the retired Todoist REST API v2 to the To
 
 ## Overview
 
-The Todoist source supports only `Full Refresh` syncs.
-
-### Output schema
-
-Two output streams are available from this source. A list of these streams can be found below in the [Streams](todoist.md#streams) section.
+The Todoist source connector syncs tasks and projects from your Todoist account using the [Todoist API v1](https://developer.todoist.com/api/v1/).
 
 ### Features
 
@@ -19,29 +15,34 @@ Two output streams are available from this source. A list of these streams can b
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | No         |
 
-## Getting started
+## Prerequisites
 
-### Requirements
+- A Todoist personal API token. The connector syncs the tasks and projects that the token's owner can access.
 
-- Todoist API token
+To find your API token:
 
-You can find your personal token in the [integrations settings view](https://todoist.com/prefs/integrations) of the Todoist web app and replace the token value in the samples.
+1. Log in to the [Todoist web app](https://app.todoist.com/).
+2. Click your avatar, then click **Settings**.
+3. Click the **Integrations** tab, then click the **Developer** tab.
+4. Click **Copy API token**.
 
-### Set up the Todoist connector in Airbyte
+For more details, see Todoist's [Find your API token](https://www.todoist.com/help/articles/find-your-api-token-Jpzx9IIlB) help article.
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account or navigate to the Airbyte Open Source dashboard.
+## Set up the Todoist connector in Airbyte
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Todoist** from the Source type dropdown.
 4. Enter the name for the Todoist connector.
-5. For **Token**, enter the [Todoist personal token](https://todoist.com/app/settings/integrations/).
+5. For **Token**, enter your Todoist API token.
 6. Click **Set up source**.
 
-## Streams
+## Supported streams
 
-List of available streams:
-
-- [Tasks](https://developer.todoist.com/api/v1/#tag/Tasks/operation/get_tasks_api_v1_tasks_get)
-- [Projects](https://developer.todoist.com/api/v1/#tag/Projects/operation/get_projects_api_v1_projects_get)
+| Stream     | API endpoint                                                                                                  | Description                                        |
+| :--------- | :------------------------------------------------------------------------------------------------------------ | :------------------------------------------------- |
+| `tasks`    | [Get Tasks](https://developer.todoist.com/api/v1/#tag/Tasks/operation/get_tasks_api_v1_tasks_get)             | Active tasks. Completed tasks are not synced.      |
+| `projects` | [Get Projects](https://developer.todoist.com/api/v1/#tag/Projects/operation/get_projects_api_v1_projects_get) | Active projects. Archived projects are not synced. |
 
 ## IP allow list
 
@@ -54,7 +55,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
-| 0.4.0 | 2026-10-07 | [88183](https://github.com/airbytehq/airbyte/pull/88183) | 🚨 Migrate from the retired Todoist REST API v2 (HTTP 410) to Todoist API v1: new base URL, cursor pagination, new `tasks` and `projects` schemas |
+| 0.4.0 | 2026-10-09 | [88183](https://github.com/airbytehq/airbyte/pull/88183) | 🚨 Migrate from the retired Todoist REST API v2 (HTTP 410) to Todoist API v1: new base URL, cursor pagination, new `tasks` and `projects` schemas |
 | 0.3.43 | 2026-02-03 | [72753](https://github.com/airbytehq/airbyte/pull/72753) | Update dependencies |
 | 0.3.42 | 2026-01-20 | [72017](https://github.com/airbytehq/airbyte/pull/72017) | Update dependencies |
 | 0.3.41 | 2026-01-14 | [71417](https://github.com/airbytehq/airbyte/pull/71417) | Update dependencies |
