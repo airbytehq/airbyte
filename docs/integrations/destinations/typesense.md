@@ -49,7 +49,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                             | Subject                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
-| 0.1.53 | 2026-10-09 | [88404](https://github.com/airbytehq/airbyte/pull/88404) | Mark `api_key` as `airbyte_secret` |
+| 0.1.53 | 2026-10-09 | [88404](https://github.com/airbytehq/airbyte/pull/88404) | Mark `api_key` as `airbyte_secret`; fix the image entrypoint |
 | 0.1.52 | 2025-05-17 | [60709](https://github.com/airbytehq/airbyte/pull/60709) | Update dependencies |
 | 0.1.51 | 2025-05-10 | [59776](https://github.com/airbytehq/airbyte/pull/59776) | Update dependencies |
 | 0.1.50 | 2025-05-03 | [59331](https://github.com/airbytehq/airbyte/pull/59331) | Update dependencies |
