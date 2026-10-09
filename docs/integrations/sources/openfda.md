@@ -7,6 +7,7 @@ Docs:https://open.fda.gov/apis/
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
+| `api_key` | `string` | API Key. Optional openFDA API key. Without a key openFDA allows 240 requests per minute and 1,000 requests per day per IP address; with a key the daily quota is 120,000 requests. Get a key at https://open.fda.gov/apis/authentication/. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -32,6 +33,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.67 | 2026-10-07 | [88214](https://github.com/airbytehq/airbyte/pull/88214) | Use openFDA `search_after` Link-header pagination so streams with more than 25,000 records no longer fail with `Skip value must 25000 or less`; use page size 1000; add optional `api_key` to raise rate limits |
 | 0.0.66 | 2026-10-06 | [87984](https://github.com/airbytehq/airbyte/pull/87984) | Update dependencies |
 | 0.0.65 | 2026-09-29 | [87291](https://github.com/airbytehq/airbyte/pull/87291) | Update dependencies |
 | 0.0.64 | 2026-09-22 | [86735](https://github.com/airbytehq/airbyte/pull/86735) | Update dependencies |

@@ -5,9 +5,9 @@ data:
       - api.height.app
   registryOverrides:
     oss:
-      enabled: true
+      enabled: false
     cloud:
-      enabled: true
+      enabled: false
   remoteRegistries:
     pypi:
       enabled: false
@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8f4b2d64-970a-4a6f-b316-3d1144c67be8
-  dockerImageTag: 0.0.68
+  dockerImageTag: 0.0.69
   dockerRepository: airbyte/source-height
   githubIssueLabel: source-height
   icon: icon.svg
@@ -25,7 +25,7 @@ data:
   name: Height
   releaseDate: 2024-08-31
   releaseStage: alpha
-  supportLevel: community
+  supportLevel: archived
   documentationUrl: https://docs.airbyte.com/integrations/sources/height
   tags:
     - language:manifest-only

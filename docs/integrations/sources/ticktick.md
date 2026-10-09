@@ -3,11 +3,17 @@ Source for the ticktick openapi endpoint at https://developer.ticktick.com/
 
 ## Configuration
 
-| Input           | Type     | Description                                                                                                                       | Default Value |
-| --------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| `client_id`     | `string` | Application client id created by going to the [ticktick application center](https://developer.ticktick.com/manage)                |
-| `client_secret` | `string` | Application client id                                                                                                             |
-| `api_key`       | `string` | (optional) token obtained from running the oauth workflow. Can use this value directly and bypasss `client_id` / `client_secret`. |
+The connector authenticates against the [TickTick Open API](https://developer.ticktick.com/docs/index.html#/openapi) with a Bearer access token. Two ways to provide it are supported:
+
+| Input                               | Type     | Description                                                                                                                                                      |
+| ----------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `authorization.auth_type`           | `string` | `Oauth` to authenticate through the OAuth2 flow with your own TickTick application, or `Token` to paste an access token directly.                                |
+| `authorization.client_id`           | `string` | (OAuth2) Client ID of the application created in the [TickTick developer center](https://developer.ticktick.com/manage).                                         |
+| `authorization.client_secret`       | `string` | (OAuth2) Client secret of that application.                                                                                                                      |
+| `authorization.client_access_token` | `string` | (OAuth2) Access token obtained by completing the OAuth2 flow (`tasks:read` scope). Filled automatically when authenticating through the Airbyte UI.              |
+| `authorization.bearer_token`        | `string` | (Token) An access token obtained from the OAuth2 flow, or a personal API token created in the TickTick web app under **Settings** > **Account** > **API Token**. |
+
+TickTick does not issue refresh tokens; when an access token expires (or is revoked), re-authenticate the source to obtain a new one.
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -26,6 +32,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.40 | 2026-10-07 | [88245](https://github.com/airbytehq/airbyte/pull/88245) | Fix OAuth2: request the documented `tasks:read` scope (was the malformed `tasks: read`) and use the OAuth access token directly instead of a misconfigured `OAuthAuthenticator` (invalid `client_secret` template, unsupported `client_credentials` grant, no refresh endpoint) |
 | 0.0.39 | 2026-10-06 | [88072](https://github.com/airbytehq/airbyte/pull/88072) | Update dependencies |
 | 0.0.38 | 2026-09-29 | [87380](https://github.com/airbytehq/airbyte/pull/87380) | Update dependencies |
 | 0.0.37 | 2026-09-22 | [86824](https://github.com/airbytehq/airbyte/pull/86824) | Update dependencies |
