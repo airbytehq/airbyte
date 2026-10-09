@@ -53,3 +53,11 @@ data:
     - title: Google Workspace Status
       url: https://www.google.com/appsstatus/
       type: status_page
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
