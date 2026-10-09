@@ -57,6 +57,16 @@ class PgSystemTypeTest {
     }
 
     @Test
+    fun `schema-qualified array with quotes or dots in the names is an array`() {
+        // The driver doesn't escape quotes inside quoted names: schema s"2 comes back as "s"2".
+        for (name in listOf("\"s\"2\".\"_kind\"", "\"Mixed.Case\".\"_Kind\"")) {
+            val type = pgType(name, JDBCType.ARRAY)
+            assertTrue(type.isArray, name)
+            assertEquals(JDBCType.OTHER, type.scalarJdbcType, name)
+        }
+    }
+
+    @Test
     fun `array type name that is neither underscore-prefixed nor schema-qualified throws`() {
         assertThrows<IllegalStateException> { pgType("kind", JDBCType.ARRAY) }
         assertThrows<IllegalStateException> { pgType("\"s2\".\"kind\"", JDBCType.ARRAY) }

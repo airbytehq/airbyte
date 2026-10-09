@@ -164,8 +164,9 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
         val precision = systemType.precision
 
         companion object {
-            // "<schema>"."_<element>"
-            private val SCHEMA_QUALIFIED_ARRAY_TYPE_NAME = Regex("""^"[^"]+"\."_[^"]+"$""")
+            // "<schema>"."_<element>". The driver doesn't escape quotes inside the names, so a schema
+            // named s"2 comes back as "s"2"."_kind"; allow any characters within the quotes.
+            private val SCHEMA_QUALIFIED_ARRAY_TYPE_NAME = Regex("""^".+"\."_.+"$""")
         }
 
         // Postgres reports the JDBC type of all arrays as JDBCType.ARRAY. Here, we use the
