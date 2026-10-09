@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 from requests_mock import ANY, Mocker
@@ -128,6 +129,27 @@ def test_spend_limit_windows_403_message_names_billing_permission_and_prints_the
     assert output.is_in_logs(f"Skipping spend_limit_windows: the API answered 403 \\({reason}\\)")
     assert output.is_in_logs("postpaid invoice billing")
     assert output.is_in_logs("permission to manage billing")
+
+
+@pytest.mark.parametrize(
+    ("body", "expected_reason"),
+    [
+        pytest.param({"json": {"error": "Forbidden"}}, "Forbidden", id="error_is_a_string"),
+        pytest.param({"json": {"error": {}}}, "no error message", id="error_without_message"),
+        pytest.param({"json": []}, "no error message", id="body_is_a_list"),
+        pytest.param({"text": "Forbidden"}, "no error message", id="body_is_not_json"),
+    ],
+)
+def test_spend_limit_windows_403_is_skipped_whatever_the_error_body_shape(
+    requests_mock: Mocker, body: dict[str, Any], expected_reason: str
+) -> None:
+    requests_mock.get(f"{_URL}/ad_account/spend_limit_windows", status_code=403, **body)
+
+    output = _read("spend_limit_windows")
+
+    assert output.errors == []
+    assert output.records == []
+    assert output.is_in_logs(f"Skipping spend_limit_windows: the API answered 403 \\({expected_reason}\\)")
 
 
 def test_a_404_on_another_stream_still_fails_the_sync(requests_mock: Mocker) -> None:
