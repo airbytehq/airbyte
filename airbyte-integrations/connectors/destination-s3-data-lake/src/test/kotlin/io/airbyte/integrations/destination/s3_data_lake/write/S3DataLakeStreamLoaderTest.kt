@@ -742,6 +742,7 @@ internal class S3DataLakeStreamLoaderTest {
                 any<Type.PrimitiveType>(),
             )
         } returns updateSchema
+        every { updateSchema.makeColumnOptional(any<String>()) } returns updateSchema
         every { updateSchema.requireColumn("id") } returns updateSchema
         every { updateSchema.setIdentifierFields(primaryKeys) } returns updateSchema
         every { updateSchema.commit() } just runs
@@ -784,7 +785,16 @@ internal class S3DataLakeStreamLoaderTest {
 
         verify(exactly = 0) { updateSchema.deleteColumn(any()) }
         verify(exactly = 0) { updateSchema.updateColumn(any(), any<Type.PrimitiveType>()) }
-        verify(exactly = 0) { updateSchema.makeColumnOptional(any()) }
+        verify(exactly = 1) { updateSchema.makeColumnOptional("_airbyte_meta.changes.element") }
+        verify(exactly = 1) {
+            updateSchema.makeColumnOptional("_airbyte_meta.changes.element.field")
+        }
+        verify(exactly = 1) {
+            updateSchema.makeColumnOptional("_airbyte_meta.changes.element.change")
+        }
+        verify(exactly = 1) {
+            updateSchema.makeColumnOptional("_airbyte_meta.changes.element.reason")
+        }
         verify(exactly = 0) {
             updateSchema.addColumn(any<String>(), any<String>(), any<Type.PrimitiveType>())
         }
