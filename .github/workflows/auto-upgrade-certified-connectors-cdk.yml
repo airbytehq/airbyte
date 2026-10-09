@@ -250,7 +250,7 @@ jobs:
       - name: Build Slack payload
         env:
           CONNECTORS_JSON: ${{ needs.list-certified-connectors.outputs.connectors || '[]' }}
-          SLACK_CHANNEL: C09H56MT8J2 # #move-destinations
+          SLACK_CHANNEL: C043JHEEYKG # #team-hydra-connectors
         run: |
           tools/bin/bulk-cdk/auto-upgrade/build-slack-summary.sh \
             cdk-upgrade-results \
