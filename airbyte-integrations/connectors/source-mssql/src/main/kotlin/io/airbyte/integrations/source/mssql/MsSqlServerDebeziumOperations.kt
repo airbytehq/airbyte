@@ -236,8 +236,9 @@ class MsSqlServerDebeziumOperations(
         offset: DebeziumOffset,
         schemaHistory: DebeziumSchemaHistory?
     ): JsonNode {
-        // Sanitize offset before saving to state to fix heartbeat corruption
-        val sanitizedOffset = sanitizeOffset(offset)
+        // Fix heartbeat corruption before saving. sanitizeOffset must run first: normalizing a
+        // mid-transaction offset would skip the rest of that transaction on resume.
+        val sanitizedOffset = normalizeHeartbeatChangeLsn(sanitizeOffset(offset))
 
         val stateNode: ObjectNode = Jsons.objectNode()
         // Serialize offset.
@@ -326,7 +327,7 @@ class MsSqlServerDebeziumOperations(
                     )
             }
 
-        val offset = DebeziumOffset(finalOffsetMap)
+        val offset = normalizeHeartbeatChangeLsn(DebeziumOffset(finalOffsetMap))
 
         // Check if the saved LSN is valid
         val savedLsn =
@@ -474,6 +475,33 @@ class MsSqlServerDebeziumOperations(
         }
 
         return DebeziumOffset(mapOf(offsetKey to sanitizedValue))
+    }
+
+    /**
+     * A heartbeat offset (poll window with no change rows) carries change_lsn = NULL. Debezium's
+     * SQL Server schema-history comparator orders records by change_lsn only, so resuming from such
+     * an offset skips every streamed ALTER record and recovers a stale table schema. Every change
+     * at or before commit_lsn has already been processed, so commit_lsn is a safe change_lsn for
+     * the resume position.
+     */
+    @VisibleForTesting
+    internal fun normalizeHeartbeatChangeLsn(offset: DebeziumOffset): DebeziumOffset {
+        if (offset.wrapped.size != 1) return offset
+        val (key, value) = offset.wrapped.entries.first()
+        val offsetValue = value as? ObjectNode ?: return offset
+        val commitLsn = offsetValue["commit_lsn"]
+        if (commitLsn == null || !commitLsn.isTextual || commitLsn.asText() == "NULL") return offset
+        val changeLsn = offsetValue["change_lsn"] ?: return offset
+        val changeLsnIsNull =
+            changeLsn.isNull || (changeLsn.isTextual && changeLsn.asText() == "NULL")
+        if (!changeLsnIsNull) return offset
+        log.debug {
+            "Heartbeat offset has change_lsn=NULL at commit_lsn=${commitLsn.asText()}; " +
+                "using commit_lsn as change_lsn."
+        }
+        val normalizedValue = offsetValue.deepCopy()
+        normalizedValue.put("change_lsn", commitLsn.asText())
+        return DebeziumOffset(mapOf(key to normalizedValue))
     }
 
     /**
