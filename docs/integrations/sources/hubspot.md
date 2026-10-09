@@ -215,7 +215,7 @@ Association stream records include:
 - `category`: The association category, such as `HUBSPOT_DEFINED` or `USER_DEFINED`.
 - `label`: The association label. This is `null` for unlabeled associations.
 
-Association streams sync incrementally. Only associations for records modified since the last sync are fetched.
+Association streams sync in Full Refresh mode: the stream itself tracks no incremental cursor. Because their parent object stream syncs incrementally, in practice each sync only re-reads associations for parent records modified since the last sync.
 
 If you authenticate with a Private App or Service Key, grant read scopes for both selected objects. For example, a tickets-to-companies association stream needs the `tickets` (or, for a Service Key, `crm.objects.tickets.read`) and `crm.objects.companies.read` scopes.
 
@@ -242,7 +242,7 @@ For custom objects, use either:
 
 You can use standard object names, such as `contacts`, `companies`, or `deals`, for the standard-object side of the relationship.
 
-Custom object association streams emit the same fields as standard association streams: `from_id`, `to_id`, `association_type_id`, `category`, and `label`. They also sync incrementally, the same way as standard association streams.
+Custom object association streams emit the same fields as standard association streams: `from_id`, `to_id`, `association_type_id`, `category`, and `label`. Like standard association streams, they sync in Full Refresh mode.
 
 If you authenticate with a Private App or Service Key, grant `crm.objects.custom.read` and the read scope for any standard object in the relationship.
 
@@ -306,8 +306,8 @@ The HubSpot source connector supports the following streams:
 - [Ticket Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines) \(Client-Side Incremental\)
 - [Workflows](https://developers.hubspot.com/docs/api/automation/workflows) \(Client-Side Incremental\)
 - [Account Details](https://developers.hubspot.com/docs/api-reference/account-account-info-v3/details/get-account-info-v3-details) \(Full Refresh\)
-- [Association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for standard objects, such as `associations_tickets_companies` \(Incremental\)
-- [Custom object association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for custom-to-standard or custom-to-custom associations \(Incremental\)
+- [Association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for standard objects, such as `associations_tickets_companies` \(Full Refresh\)
+- [Custom object association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for custom-to-standard or custom-to-custom associations \(Full Refresh\)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
@@ -475,6 +475,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.10.1 | 2026-10-07 | [88157](https://github.com/airbytehq/airbyte/pull/88157) | Fix custom object association streams with a `contacts` `from_object` to use the `lastmodifieddate` parent cursor (matching standard association streams); document association streams as Full Refresh. |
 | 6.10.0 | 2026-09-22 | [86415](https://github.com/airbytehq/airbyte/pull/86415) | Add new `engagements_task_pipelines` stream exposing HubSpot task pipelines and their stages, so `engagements_tasks.properties.hs_pipeline_stage` can be resolved to a stage label and open/closed state |
 | 6.9.3 | 2026-09-22 | [86682](https://github.com/airbytehq/airbyte/pull/86682) | Update dependencies |
 | 6.9.2 | 2026-09-16 | [86350](https://github.com/airbytehq/airbyte/pull/86350) | Report an invalid `from_object`/`to_object` identifier in `custom_object_association_streams` as a configuration error instead of a generic credentials error |
