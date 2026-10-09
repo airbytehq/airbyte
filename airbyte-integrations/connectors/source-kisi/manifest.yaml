@@ -545,6 +545,7 @@ spec:
     properties:
       api_key:
         type: string
+        airbyte_secret: true
         description: Your KISI API Key
         order: 0
         title: API Key
