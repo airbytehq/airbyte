@@ -16,7 +16,6 @@ catch-all.
 """
 
 import logging
-from datetime import date, datetime, timedelta, timezone
 from unittest import mock
 
 import jsonschema
@@ -314,60 +313,41 @@ def test_full_refresh_without_start_date_reads_everything(stream_name, path, rec
 
 
 @pytest.mark.parametrize(
-    ("stream_name", "path", "records_field"),
+    ("stream_name", "path", "records_field", "first_window", "second_window"),
     [
         # Timestamp-level streams: half-open [start, end) slices at microsecond precision.
         (
             "alerts",
             "/v2/alerts",
             "alerts",
+            "2020-01-01t00:00:00.000000z~2020-01-30t23:59:59.999999z",
+            "2020-01-31t00:00:00.000000z~2020-02-29t23:59:59.999999z",
         ),
         # Date-level streams: both bounds inclusive, formatted as dates.
         (
             "escalations",
             "/v2/escalations",
             "escalations",
+            "2020-01-01~2020-01-30",
+            "2020-01-31~2020-02-29",
         ),
     ],
 )
-def test_p30d_slices_tile_without_gaps(stream_name, path, records_field):
+def test_p30d_slices_tile_without_gaps(stream_name, path, records_field, first_window, second_window):
     """Consecutive P30D slices neither overlap nor gap: each slice ends one cursor_granularity tick
     before the next one starts."""
-    now = datetime.now(timezone.utc)
-    if stream_name == "alerts":
-        start_datetime = now.replace(microsecond=0) - timedelta(days=35)
-    else:
-        start_datetime = datetime.combine(now.date() - timedelta(days=35), datetime.min.time(), tzinfo=timezone.utc)
-    config = {**_CONFIG, "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")}
-
     with requests_mock.Mocker() as mocker:
         mocker.get(f"{_BASE_URL}{path}", json={records_field: [], "pagination_meta": {}})
-        _read_stream(stream_name, SyncMode.incremental, config=config)
+        _read_stream(stream_name, SyncMode.incremental)
 
         windows = sorted(
             [request.qs["updated_at[date_range]"][0].lower() for request in mocker.request_history],
-            key=lambda window: window.split("~")[0],
+            key=lambda w: w.split("~")[0],
         )
 
-    assert len(windows) == 2
-    first_start, first_end = windows[0].split("~")
-    second_start, _ = windows[1].split("~")
-
-    if stream_name == "alerts":
-        expected_start = start_datetime.strftime("%Y-%m-%dT%H:%M:%S.%fZ").lower()
-        expected_first_end = (start_datetime + timedelta(days=30, microseconds=-1)).strftime("%Y-%m-%dT%H:%M:%S.%fZ").lower()
-        assert first_start == expected_start
-        assert first_end == expected_first_end
-        first_end_datetime = datetime.strptime(first_end, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone.utc)
-        second_start_datetime = datetime.strptime(second_start, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone.utc)
-        assert first_end_datetime + timedelta(microseconds=1) == second_start_datetime
-    else:
-        start_date = start_datetime.date()
-        expected_start = start_date.isoformat()
-        expected_first_end = (start_date + timedelta(days=29)).isoformat()
-        assert first_start == expected_start
-        assert first_end == expected_first_end
-        assert date.fromisoformat(first_end) + timedelta(days=1) == date.fromisoformat(second_start)
+    assert len(windows) > 1
+    assert windows[0] == first_window
+    assert windows[1] == second_window
 
 
 def test_time_window_config_changes_the_slice_size():
