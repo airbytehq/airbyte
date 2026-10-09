@@ -17,18 +17,19 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 | ----------- | ----------- | ---------- | ------------------- | -------------------- |
-| colors | calendar.event | No pagination | ✅ | ❌ |
+| colors | kind | No pagination | ✅ | ❌ |
 | settings | id | DefaultPaginator | ✅ | ❌ |
 | calendarlist | id | DefaultPaginator | ✅ | ❌ |
-| calendars | id | DefaultPaginator | ✅ | ❌ |
+| calendars | id | No pagination | ✅ | ❌ |
 | events | calendar_id, id | DefaultPaginator | ✅ | ✅ |
 | acl | calendar_id, id | DefaultPaginator | ✅ | ❌ |
 | freebusy | calendar_id, start, end | No pagination | ✅ | ❌ |
 
-`events`, `acl` and `freebusy` are read per calendar: the configured `calendarid`, or every calendar in the calendar list when it is empty. Each record carries the calendar in `calendar_id`.
+`events`, `acl` and `freebusy` are read per calendar: the configured `calendarid`, or every calendar in the calendar list when it is empty. With it empty, `events` reads only calendars the account can read events from, `acl` only calendars it owns, and `freebusy` every listed calendar. Each record carries the calendar in `calendar_id`.
 
-- **`acl`** lists a calendar's sharing rules. It needs the `calendar.acls.readonly` OAuth scope (or `calendar.acls` / `calendar`); without it the stream fails with a configuration error, so re-authorize with that scope or deselect the stream. Google shows sharing rules only to a calendar's owner, so calendars the account does not own are skipped.
-- **`freebusy`** lists busy blocks from 30 days ago to 45 days ahead, recomputed on every sync; `start_date` does not apply to it. A calendar Google cannot compute free/busy for is skipped with a log message.
+- **`calendars`** returns the calendar resource (summary, description, location, time zone) of every calendar in the calendar list the account can read; the per-user list fields stay in `calendarlist`.
+- **`acl`** lists a calendar's sharing rules. It needs the `calendar.acls.readonly` OAuth scope (or `calendar.acls` / `calendar`); without it the stream fails with a configuration error, so generate a new refresh token for your OAuth client that includes the scope and paste it into **Refresh token**, or deselect the stream. If your connection adds new streams automatically, deselect `acl` until the token has the scope. Google shows sharing rules only to a calendar's owner, so calendars the account does not own are skipped.
+- **`freebusy`** lists busy blocks from 30 days ago to 45 days ahead, recomputed on every sync; `start_date` does not apply to it. A calendar Google cannot compute free/busy for is logged and contributes no rows, so it looks the same as a free calendar in the destination.
 - **Push notification channels** (`channels`) are intentionally not synced: they are write-only subscriptions the connector would have to create, not data it can read.
 
 ## Events sync behavior
@@ -54,8 +55,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
-| 1.0.0 | 2026-10-07 | [86470](https://github.com/airbytehq/airbyte/pull/86470) | Add `acl` and `freebusy` streams, read `events`/`acl`/`freebusy` from every calendar when `calendarid` is empty, change the `events` primary key to `[calendar_id, id]` (breaking, see the [migration guide](/integrations/sources/google-calendar-migrations)) |
-| 0.1.0 | 2026-10-06 | [86468](https://github.com/airbytehq/airbyte/pull/86468) | Add error handling, API budget, concurrency, incremental `events` (now includes cancelled events via `showDeleted=true`) with a `calendar_id` column and an optional `start_date`, and enable acceptance tests |
+| 1.0.0 | 2026-10-07 | [86470](https://github.com/airbytehq/airbyte/pull/86470) | Add `acl` and `freebusy` streams, read `events`/`acl`/`freebusy` from every calendar when `calendarid` is empty, change the `events` primary key to `[calendar_id, id]`, return calendar resources from `calendars`, change the `colors` primary key to `kind`, and type date and date-time fields (breaking, see the [migration guide](/integrations/sources/google-calendar-migrations)) |
+| 0.1.0 | 2026-10-07 | [86468](https://github.com/airbytehq/airbyte/pull/86468) | Add error handling, API budget, concurrency, incremental `events` (now includes cancelled events via `showDeleted=true`) with a `calendar_id` column and an optional `start_date`, and enable acceptance tests |
 | 0.0.55 | 2026-10-06 | [87901](https://github.com/airbytehq/airbyte/pull/87901) | Update dependencies |
 | 0.0.54 | 2026-09-29 | [87194](https://github.com/airbytehq/airbyte/pull/87194) | Update dependencies |
 | 0.0.53 | 2026-09-22 | [86679](https://github.com/airbytehq/airbyte/pull/86679) | Update dependencies |

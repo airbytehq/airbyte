@@ -18,13 +18,15 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: "The `events` stream now reads every calendar in the account when `Calendar Id` is empty, and its primary key changes from `id` to `[calendar_id, id]`, because Google keeps event ids unique per calendar only. `calendar_id` now holds the calendar's real ID: connections configured with the alias `primary` get the account's email address instead of the word `primary`. The stream state format also changes. Refresh the source schema and clear the `events` stream after upgrading. See https://docs.airbyte.com/integrations/sources/google-calendar-migrations#upgrading-to-100"
+        message: "Version 1.0.0 changes three streams. `events`: the primary key changes from `id` to `[calendar_id, id]`, because Google keeps event IDs unique per calendar only; `calendar_id` now holds the calendar's real ID, so connections configured with the alias `primary` get the account's email address; and date and date-time fields are typed as dates and timestamps. `calendars` now returns calendar resources instead of calendar-list entries. `colors` gets the primary key `kind`, and its `updated` field is typed as a timestamp. Leaving Calendar Id empty now reads every calendar in the account's calendar list, including hidden ones. After upgrading, refresh the source schema and clear the affected streams. See https://docs.airbyte.com/integrations/sources/google-calendar-migrations#upgrading-to-100"
         upgradeDeadline: "2026-11-07"
         deadlineAction: "disable"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
               - "events"
+              - "calendars"
+              - "colors"
   remoteRegistries:
     pypi:
       enabled: false
