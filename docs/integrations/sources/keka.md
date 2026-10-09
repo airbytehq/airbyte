@@ -1,45 +1,58 @@
 # Keka
 
-The Keka Connector for Airbyte allows seamless integration with the Keka platform, enabling users to automate the extraction and synchronization of employee management and payroll data into their preferred destinations for reporting, analytics, or further processing.
+The Keka connector syncs employee, attendance, leave, and project timesheet data from the [Keka API](https://developers.keka.com/) to your destination.
 
-## Configuration
+## Prerequisites
 
-Keka API access requires an API subscription. A Global admin can generate the client ID,
-client secret, and API key under **Global admin settings > Integrations & Automations >
-API access > API key**. Grant the API key access to the streams you want to sync.
-See [Keka's setup guide](https://developers.keka.com/docs/getting-started-for-customers).
+- A Keka API subscription. Keka API access is an add-on feature.
+- Global admin access in Keka. Only Global admins can generate and manage API keys.
+- Your company's Keka subdomain. For `https://acme.keka.com`, the subdomain is `acme`.
 
-Enter your company's subdomain: for `https://acme.keka.com`, enter `acme`.
-The connector reads from `https://<subdomain>.keka.com/api/v1` and authenticates at
-`https://login.keka.com/connect/token`.
+## Set up the Keka connector
 
-When upgrading from a version earlier than 0.1.0, follow the [migration guide](keka-migrations.md)
-to configure the company subdomain before syncing.
+### Step 1: Generate API credentials in Keka
 
-| Input           | Type     | Description                                                    | Default Value |
-| --------------- | -------- | -------------------------------------------------------------- | ------------- |
-| `subdomain`     | `string` | Required company subdomain, without `https://` or `.keka.com`. |               |
-| `scope`         | `string` | Enter `kekaapi`.                                               |               |
-| `api_key`       | `string` | API Key.                                                       |               |
-| `client_id`     | `string` | Client ID. Your client identifier for authentication.          |               |
-| `grant_type`    | `string` | Enter `kekaapi`.                                               |               |
-| `client_secret` | `string` | Client Secret. Your client secret for secure authentication.   |               |
+1. In Keka, go to **Global admin settings** > **Integrations & Automations** > **API access** > **API key**.
+2. Generate an API key. Keka shows the client ID, client secret, and API key for your account.
+3. Configure the API key's scopes to cover the data you want to sync. Keka assigns scopes per API key, and an access token can only read data that the key's scopes allow. The available scopes are Employee And Org Information, Leave, Attendance, Payroll, Timesheet, and Performance.
 
-## Streams
+For more information, see [Keka's getting started guide](https://developers.keka.com/docs/getting-started-for-customers).
 
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| Employees |  | DefaultPaginator | ✅ |  ❌  |
-| Attendance |  | DefaultPaginator | ✅ |  ❌  |
-| Clients |  | DefaultPaginator | ✅ |  ❌  |
-| Projects |  | DefaultPaginator | ✅ |  ❌  |
-| Project Timesheets |  | DefaultPaginator | ✅ |  ❌  |
-| Leave Type | identifier | DefaultPaginator | ✅ |  ❌  |
-| Leave Request |  | DefaultPaginator | ✅ |  ❌  |
+### Step 2: Configure the connector in Airbyte
 
-All streams use Keka's one-based pagination. Attendance, Leave Request, and Project
-Timesheets use the API's default date range: the last 30 days. Full refresh reads
-all pages within that range, not the complete historical dataset.
+| Input           | Type     | Description                                                    |
+| --------------- | -------- | -------------------------------------------------------------- |
+| `subdomain`     | `string` | Your company subdomain, without `https://` or `.keka.com`.     |
+| `client_id`     | `string` | The client ID from your Keka API key.                          |
+| `client_secret` | `string` | The client secret from your Keka API key.                      |
+| `api_key`       | `string` | Your Keka API key.                                             |
+| `grant_type`    | `string` | Enter `kekaapi`.                                               |
+| `scope`         | `string` | Enter `kekaapi`.                                               |
+
+The connector requests an access token from `https://login.keka.com/connect/token` and reads data from `https://<subdomain>.keka.com/api/v1`. Keka's sandbox environment (`kekademo.com`) isn't supported.
+
+If you're upgrading from a version earlier than 0.1.0, follow the [migration guide](keka-migrations.md) to configure the company subdomain before syncing.
+
+## Supported sync modes
+
+The Keka connector supports [Full Refresh](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) syncs only. It doesn't support incremental syncs.
+
+## Supported streams
+
+| Stream             | Keka API endpoint                                                                     | Primary key  |
+| ------------------ | ------------------------------------------------------------------------------------- | ------------ |
+| Employees          | [`/hris/employees`](https://developers.keka.com/reference/get_hris-employees)         |              |
+| Attendance         | [`/time/attendance`](https://developers.keka.com/reference/get_time-attendance-1)     |              |
+| Clients            | [`/psa/clients`](https://developers.keka.com/reference/get_psa-clients-1)             |              |
+| Projects           | [`/psa/projects`](https://developers.keka.com/reference/get_psa-projects-1)           |              |
+| Project Timesheets | [`/psa/timeentries`](https://developers.keka.com/reference/get_psa-timeentries)       |              |
+| Leave Type         | [`/time/leavetypes`](https://developers.keka.com/reference/get_time-leavetypes)       | `identifier` |
+| Leave Request      | [`/time/leaverequests`](https://developers.keka.com/reference/get_time-leaverequests) |              |
+
+## Limitations
+
+- **30-day window for date-based streams:** The connector doesn't send a date range, so the Attendance, Leave Request, and Project Timesheets streams return Keka's default: records from the last 30 days. Each sync reads all pages within that range, not the complete history.
+- **Rate limits:** Keka allows 50 API requests per minute and returns a `429` error when you exceed the limit. The connector retries rate-limited requests with backoff. For details, see [Keka's rate limit documentation](https://developers.keka.com/reference/rate-limit).
 
 ## IP allow list
 
@@ -52,7 +65,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 | ------- | ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| 0.1.0   | 2026-10-07 | [88299](https://github.com/airbytehq/airbyte/pull/88299) | Require the company subdomain, correct pagination, and allow authentication requests.               |
+| 0.1.0   | 2026-10-09 | [88299](https://github.com/airbytehq/airbyte/pull/88299) | Require the company subdomain, correct pagination, and allow authentication requests.               |
 | 0.0.56  | 2026-10-06 | [87915](https://github.com/airbytehq/airbyte/pull/87915) | Update dependencies                                                                                 |
 | 0.0.55  | 2026-09-29 | [87199](https://github.com/airbytehq/airbyte/pull/87199) | Update dependencies                                                                                 |
 | 0.0.54  | 2026-09-22 | [86688](https://github.com/airbytehq/airbyte/pull/86688) | Update dependencies                                                                                 |
