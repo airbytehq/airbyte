@@ -61,7 +61,7 @@ upgraded_lines=$(jq --raw-output '
   | join("\n")' <<< "$upgraded")
 up_to_date_lines=$(jq --raw-output 'map("`\(.connector)`") | join(", ")' <<< "$up_to_date")
 failed_lines=$(jq --raw-output --arg run_url "$run_url" '
-  map("• `\(.connector)` — <\($run_url)|see job logs>") | join("\n")' <<< "$failed")
+  map("• `\(.connector)` — <\($run_url)|see job logs>" + (if (.pr_url // "") != "" then " · <\(.pr_url)|draft PR>" else "" end)) | join("\n")' <<< "$failed")
 
 jq --null-input \
   --arg channel "$slack_channel" \
