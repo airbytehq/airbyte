@@ -981,4 +981,84 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 "to avoid TABLESAMPLE on views."
         )
     }
+
+    @Test
+    fun testEmptyObjectStateColdStartsCursorBasedStream() {
+        // {} is produced when the platform clears a stream's state (e.g. schema-change backfill).
+        // In cursor-based mode it must be treated like a cold start, not a completed sync.
+        val jdbcPartition =
+            msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, Jsons.objectNode()))
+        assertTrue(jdbcPartition is MsSqlServerJdbcSnapshotWithCursorPartition)
+        assertNull((jdbcPartition as MsSqlServerJdbcSnapshotWithCursorPartition).lowerBound)
+    }
+
+    @Test
+    fun testEmptyObjectStateColdStartsFullRefreshStreamWithOrderedColumn() {
+        val fullRefreshStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("dbo").withName("rfr_table")
+                    ),
+                schema = setOf(fieldId),
+                configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
+                configuredPrimaryKey = listOf(fieldId),
+                configuredCursor = null,
+            )
+
+        val factoryWithUpperBound =
+            object :
+                MsSqlServerJdbcPartitionFactory(
+                    sharedState,
+                    selectQueryGenerator,
+                    config,
+                    metadataQuerierFactory,
+                ) {
+                override fun findPkUpperBound(stream: Stream): JsonNode = Jsons.numberNode(100)
+            }
+
+        val partition =
+            factoryWithUpperBound.create(streamFeedBootstrap(fullRefreshStream, Jsons.objectNode()))
+        assertTrue(partition is MsSqlServerJdbcRfrSnapshotPartition)
+        partition as MsSqlServerJdbcRfrSnapshotPartition
+        assertNull(partition.lowerBound)
+        assertEquals(listOf(Jsons.numberNode(100)), partition.upperBound)
+    }
+
+    @Test
+    fun testUnknownLegacyStateColdStartsCursorBasedStream() {
+        val incomingStateValue: OpaqueStateValue =
+            Jsons.readTree(
+                """
+            {
+            "unknown_field": "unknown_value"
+            }
+            """.trimIndent()
+            )
+
+        val jdbcPartition =
+            msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
+        assertTrue(jdbcPartition is MsSqlServerJdbcSnapshotWithCursorPartition)
+        assertNull((jdbcPartition as MsSqlServerJdbcSnapshotWithCursorPartition).lowerBound)
+    }
+
+    @Test
+    fun testEmptyObjectStateInCdcModeIsSnapshotComplete() {
+        // In CDC (global) mode the CDK serializes a completed stream's null state as {},
+        // so {} keeps meaning "snapshot complete, nothing to do".
+        val jdbcPartition =
+            msSqlServerCdcJdbcPartitionFactory.create(
+                streamFeedBootstrap(stream, Jsons.objectNode())
+            )
+        assertNull(jdbcPartition)
+    }
+
+    @Test
+    fun testNullNodeStateCursorBasedIsComplete() {
+        // A nullNode state is the legit "sync already complete" marker
+        // (emitted for empty tables / all-NULL cursors).
+        val jdbcPartition =
+            msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, Jsons.nullNode()))
+        assertNull(jdbcPartition)
+    }
 }

@@ -35,8 +35,12 @@ data class LegacyCursorBasedStatus(
 /** Helper class to migrate legacy MSSQL connector states to the new v2 format */
 object MsSqlServerStateMigration {
 
-    /** Parses state value and handles backward compatibility with legacy formats */
-    fun parseStateValue(opaqueStateValue: OpaqueStateValue): MsSqlServerJdbcStreamStateValue {
+    /**
+     * Parses state value and handles backward compatibility with legacy formats. Returns null when
+     * the state has no recognizable resume point; callers should treat this as a cold start
+     * (re-read the stream from scratch).
+     */
+    fun parseStateValue(opaqueStateValue: OpaqueStateValue): MsSqlServerJdbcStreamStateValue? {
         // Check version to detect legacy state using centralized version constants
         val version = opaqueStateValue.get("version")?.asInt()
         val isLegacy = MsSqlServerJdbcStreamStateValue.isLegacy(version)
@@ -62,7 +66,7 @@ object MsSqlServerStateMigration {
     /** Migrates legacy state formats to new MsSqlServerJdbcStreamStateValue format */
     private fun migrateLegacyState(
         opaqueStateValue: OpaqueStateValue
-    ): MsSqlServerJdbcStreamStateValue {
+    ): MsSqlServerJdbcStreamStateValue? {
         val stateType = opaqueStateValue.get("state_type")?.asText()
 
         return when (stateType) {
@@ -77,9 +81,9 @@ object MsSqlServerStateMigration {
                         migrateCursorBasedStatus(opaqueStateValue)
                     else -> {
                         log.warn {
-                            "Unknown legacy state format, falling back to default: $opaqueStateValue"
+                            "Unknown legacy state format, the stream will be re-read from scratch: $opaqueStateValue"
                         }
-                        MsSqlServerJdbcStreamStateValue()
+                        null
                     }
                 }
             }
