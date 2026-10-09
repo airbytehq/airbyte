@@ -41,12 +41,12 @@ data:
           need to cast them. These become timestamps: `cards.created_at`; `transactions.accounting_date`,
           `settlement_date`, `synced_at`, `updated_at` and `user_transaction_time`; and
           `reimbursements.accounting_date`, `approved_at`, `created_at`, `submitted_at`, `synced_at` and
-          `updated_at`. `reimbursements.transaction_date` becomes a date. Destinations that type their columns
-          change these columns from text to timestamp or date. Connections that sync none of these three
-          streams are not affected. If you sync these streams with an Append mode and need the history it
-          kept, back up their tables first. After upgrading, and before the next sync, refresh the source
-          schema and clear the `cards`, `transactions` and `reimbursements` streams. Clearing deletes their
-          data in the destination and re-syncs it. See the migration guide:
+          `updated_at`. `reimbursements.transaction_date` becomes a date. Typed destinations change these
+          columns from text to timestamp or date. Connections that sync none of these three streams are not
+          affected. After upgrading, and before the next sync, refresh the source schema and clear the
+          `cards`, `transactions` and `reimbursements` streams. Clearing deletes their data in the
+          destination, and the next sync brings back only what Ramp still returns, so back up these tables
+          before you clear them if you need that data. See the migration guide:
           https://docs.airbyte.com/integrations/sources/ramp-migrations#upgrading-to-100
         upgradeDeadline: "2026-11-08"
         deadlineAction: "disable"
