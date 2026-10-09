@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 6.0.23
+  dockerImageTag: 7.0.0
   dockerRepository: airbyte/source-stripe
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   erdUrl: https://dbdocs.io/airbyteio/source-stripe?view=relationships
@@ -50,6 +50,12 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["refunds"]
+      7.0.0:
+        message: "Version 7.0.0 fixes `invoice_line_items` incremental syncs for Stripe accounts whose default Stripe API version is older than 2019-12-03. On those accounts, incremental syncs wrote legacy line item IDs (`ii_`, `sub_`, `sli_`) instead of Stripe's current `il_` IDs, so the primary key value of affected rows changes. Affected users must refresh the `invoice_line_items` stream and remove records after upgrading; refreshing and retaining records leaves the legacy rows in place. Most accounts aren't affected and need no action. See the [migration guide](https://docs.airbyte.com/integrations/sources/stripe-migrations#upgrading-to-700) to check whether you're affected."
+        upgradeDeadline: "2026-11-07"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["invoice_line_items"]
       6.0.0:
         message: "Version 6.0.0 fixes a bug where the `invoice_line_items` and `subscription_items` incremental streams emitted only one record per event instead of expanding nested line items. Previously synced data for these streams may be incomplete. Users can run a full refresh to recapture the correct values. If choosing Full Refresh, decide between Refresh and Retain (keeps existing destination data) or Refresh and Clear (replaces destination data but may lose events older than 30 days due to the Stripe Events API retention limit). See the [migration guide](https://docs.airbyte.com/integrations/sources/stripe-migrations#upgrading-to-600) for details."
         upgradeDeadline: "2026-05-12"
