@@ -263,7 +263,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             raise traced_exception(exc)
 
         self._completed_slices[account_id].add(job.interval.start)
-        if job.interval.start == self._next_cursor_values[account_id]:
+        if job.interval.start <= self._next_cursor_values[account_id]:
             self._advance_cursor(account_id)
 
     @property
@@ -273,10 +273,14 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         if self._cursor_values:
             for account_id in self._account_ids:
-                if account_id in self._cursor_values and self._cursor_values[account_id]:
-                    new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
+                cursor_value = self._cursor_values.get(account_id)
+                if cursor_value:
+                    new_state[account_id] = {self.cursor_field: cursor_value.isoformat()}
 
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                completed_slices = self._completed_slices[account_id]
+                if cursor_value:
+                    completed_slices = {d for d in completed_slices if d > cursor_value}
+                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in completed_slices}))
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
                 new_state["time_increment_period"] = self.time_increment_period.value
@@ -284,7 +288,11 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         if self._completed_slices:
             for account_id in self._account_ids:
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                cursor_value = (self._cursor_values or {}).get(account_id)
+                completed_slices = self._completed_slices[account_id]
+                if cursor_value:
+                    completed_slices = {d for d in completed_slices if d > cursor_value}
+                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in completed_slices}))
 
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
@@ -318,10 +326,13 @@ class AdsInsights(FBMarketingIncrementalStream):
             )
             for account_id in self._account_ids
         }
-        self._completed_slices = {
-            account_id: set(ab_datetime_parse(v).date() for v in transformed_state.get(account_id, {}).get("slices", []))
-            for account_id in self._account_ids
-        }
+        self._completed_slices = {}
+        for account_id in self._account_ids:
+            cursor_value = self._cursor_values.get(account_id)
+            completed_slices = {ab_datetime_parse(value).date() for value in transformed_state.get(account_id, {}).get("slices", [])}
+            self._completed_slices[account_id] = {
+                slice_date for slice_date in completed_slices if cursor_value is None or slice_date > cursor_value
+            }
 
         self._next_cursor_values = self._get_start_date()
 
@@ -411,16 +422,17 @@ class AdsInsights(FBMarketingIncrementalStream):
                 current_date += timedelta(days=self.time_increment)
 
     def _advance_cursor(self, account_id: str):
-        """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
+        """Walk completed contiguous slices and advance the cursor without regressing it."""
         for ts_start in self._date_intervals(account_id):
             if ts_start not in self._completed_slices[account_id]:
                 self._next_cursor_values[account_id] = ts_start
                 break
             self._completed_slices[account_id].remove(ts_start)
-            if self._cursor_values:
-                self._cursor_values[account_id] = ts_start
-            else:
-                self._cursor_values = {account_id: ts_start}
+            cursor_value = (self._cursor_values or {}).get(account_id)
+            self._cursor_values = {
+                **(self._cursor_values or {}),
+                account_id: max(cursor_value, ts_start) if cursor_value is not None else ts_start,
+            }
 
     def _generate_async_jobs(self, params: Mapping, account_id: str) -> Iterator[AsyncJob]:
         """Generator of async jobs

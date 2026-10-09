@@ -6,7 +6,7 @@ API Reference: https://api.svix.com/docs#section/Introduction
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key. API key or access token |  |
+| `api_key` | `string` | API Key. Svix API key. The region suffix of the key (for example `.us` or `.eu`) is used to pick the regional API server (`api.<region>.svix.com`), as the official Svix SDKs do. |  |
 | `start_date` | `string` | Start date.  |  |
 
 ## Streams
@@ -32,6 +32,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.47 | 2026-10-07 | [88278](https://github.com/airbytehq/airbyte/pull/88278) | Select the Svix regional API server from the API key region suffix instead of always using the EU server; accept `updatedAt`/`createdAt` values without fractional seconds |
 | 0.0.46 | 2026-10-06 | [88060](https://github.com/airbytehq/airbyte/pull/88060) | Update dependencies |
 | 0.0.45 | 2026-09-29 | [87387](https://github.com/airbytehq/airbyte/pull/87387) | Update dependencies |
 | 0.0.44 | 2026-09-22 | [86825](https://github.com/airbytehq/airbyte/pull/86825) | Update dependencies |

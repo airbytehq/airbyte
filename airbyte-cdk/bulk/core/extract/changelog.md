@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.14 — 2026-10-07
+
+[#88342](https://github.com/airbytehq/airbyte/pull/88342) — Accept `{"type": "array"}` fields without `items` in READ-time catalog validation (mapped to an array of JSONB) instead of failing with a NullPointerException.
+
 ### 1.1.13 — 2026-10-05
 
 [#86976](https://github.com/airbytehq/airbyte/pull/86976) — Protobuf record consumer: set the stream namespace only when present instead of failing with a NullPointerException, restore the default data slots before every record so sparse payloads do not inherit the previous record's values, and clear the record meta before every record so field changes do not leak into the following records.

@@ -17,12 +17,33 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7926da90-399e-4f9f-9833-52d8dc3fcb29
-  dockerImageTag: 0.1.42
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-incident-io
   githubIssueLabel: source-incident-io
   icon: icon.svg
   license: ELv2
+  maxSecondsBetweenMessages: 3600
   name: Incident.io
+  suggestedStreams:
+    streams:
+      - incidents
+      - incident_updates
+      - follow-ups
+      - alerts
+      - escalations
+      - users
+      - severities
+      - incident_statuses
+      - schedules
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-INCIDENT-IO__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   releaseDate: 2024-10-03
   releaseStage: alpha
   supportLevel: community

@@ -65,6 +65,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -478,6 +479,7 @@ class BigqueryBatchStandardInsertCopyTest {
         assertEquals(1, fixture.batch.closes)
         loader.close()
         assertEquals(1, fixture.batch.closes)
+        verify(exactly = if (stage == LoadFailure.CREATE) 0 else 1) { fixture.writer.close() }
     }
 
     @Test
@@ -529,29 +531,28 @@ class BigqueryBatchStandardInsertCopyTest {
     }
 
     @Test
-    fun `append failure closes active writer even if both cleanup operations fail`() = runTest {
-        val fixture = Fixture()
-        val loader = fixture.loader()
-        loader.accept(fixture.record("x".repeat(15 * 1024 * 1024)))
-        val primary = IOException("append failed")
-        val archiveCleanup = IOException("archive close failed")
-        val writerCleanup = IOException("writer close failed")
-        fixture.batch.appendFailure = primary
-        fixture.batch.closeFailure = archiveCleanup
-        every { fixture.writer.close() } throws writerCleanup
-        val bytesBefore = fixture.written.size()
-        assertSame(primary, assertThrows<IOException> { loader.accept(fixture.record()) })
-        assertEquals(bytesBefore, fixture.written.size())
-        assertArrayEquals(arrayOf(archiveCleanup, writerCleanup), primary.suppressed)
-        assertEquals(1, fixture.batch.closes)
-        loader.close()
-        verify(exactly = 1) { fixture.writer.close() }
-        assertThrows<IllegalStateException> { loader.finish() }
-        assertTrue(fixture.batch.completions.isEmpty())
-    }
+    fun `append failure abandons active writer without committing and keeps primary error`() =
+        runTest {
+            val fixture = Fixture()
+            val loader = fixture.loader()
+            loader.accept(fixture.record("x".repeat(15 * 1024 * 1024)))
+            val primary = IOException("append failed")
+            val archiveCleanup = IOException("archive close failed")
+            fixture.batch.appendFailure = primary
+            fixture.batch.closeFailure = archiveCleanup
+            val bytesBefore = fixture.written.size()
+            assertSame(primary, assertThrows<IOException> { loader.accept(fixture.record()) })
+            assertEquals(bytesBefore, fixture.written.size())
+            assertArrayEquals(arrayOf(archiveCleanup), primary.suppressed)
+            assertEquals(1, fixture.batch.closes)
+            loader.close()
+            verify(exactly = 0) { fixture.writer.close() }
+            assertThrows<IllegalStateException> { loader.finish() }
+            assertTrue(fixture.batch.completions.isEmpty())
+        }
 
     @Test
-    fun `transition write failure cleans up both resources`() = runTest {
+    fun `transition write failure cleans up archive without committing BigQuery`() = runTest {
         val fixture = Fixture()
         val failure = IOException("write failed")
         every { fixture.writer.write(any()) } throws failure
@@ -563,7 +564,7 @@ class BigqueryBatchStandardInsertCopyTest {
             },
         )
         assertEquals(1, fixture.batch.closes)
-        verify(exactly = 1) { fixture.writer.close() }
+        verify(exactly = 0) { fixture.writer.close() }
         assertTrue(fixture.batch.completions.isEmpty())
     }
 
@@ -576,6 +577,7 @@ class BigqueryBatchStandardInsertCopyTest {
         loader.accept(fixture.record())
         assertThrows<IOException> { loader.finish() }
         verify(exactly = 3) { fixture.writer.write(any()) }
+        verify(exactly = 0) { fixture.writer.close() }
         assertEquals(1, fixture.batch.closes)
         assertTrue(fixture.batch.completions.isEmpty())
     }
@@ -602,9 +604,116 @@ class BigqueryBatchStandardInsertCopyTest {
             loader.close()
             assertEquals(1, fixture.batch.closes)
             assertTrue(fixture.batch.completions.isEmpty())
-            verify(exactly = if (streaming) 1 else 0) { fixture.writer.close() }
+            verify(exactly = 0) { fixture.writer.close() }
+            verify(exactly = 0) { fixture.job.waitFor(any<RetryOption>()) }
             assertThrows<IllegalStateException> { loader.finish() }
         }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `close after partial accept without archive never commits BigQuery load`(
+        streaming: Boolean
+    ) = runTest {
+        val fixture = Fixture()
+        val loader = fixture.disabledLoader()
+        loader.accept(fixture.record(if (streaming) "x".repeat(15 * 1024 * 1024) else "small"))
+        loader.accept(fixture.record())
+        verify(exactly = if (streaming) 1 else 0) { fixture.bigquery.writer(any<JobId>(), any()) }
+        loader.close()
+        verify(exactly = 0) { fixture.writer.close() }
+        verify(exactly = 0) { fixture.job.waitFor(any<RetryOption>()) }
+        assertEquals(0, fixture.batch.closes)
+    }
+
+    @Test
+    fun `close does not throw archive cleanup failure so CDK keeps original error`() = runTest {
+        val fixture = Fixture()
+        val loader = fixture.loader()
+        loader.accept(fixture.record("x".repeat(15 * 1024 * 1024)))
+        fixture.batch.closeFailure = IOException("abort multipart upload failed")
+        val original = IllegalStateException("another task failed")
+        // Mirrors LoadPipelineStepTask's failure path, which rethrows any close() failure.
+        val thrown =
+            assertThrows<IllegalStateException> {
+                try {
+                    throw original
+                } catch (t: Throwable) {
+                    listOf(loader).map { runCatching { it.close() } }.forEach { it.getOrThrow() }
+                    throw t
+                }
+            }
+        assertSame(original, thrown)
+        assertEquals(1, fixture.batch.closes)
+        verify(exactly = 0) { fixture.writer.close() }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `write failure without archive propagates without committing BigQuery load`(
+        inFinish: Boolean
+    ) = runTest {
+        val fixture = Fixture()
+        val failure = IOException("write failed")
+        val loader = fixture.disabledLoader()
+        // In finish(), the buffered batch is written to a new channel just before the commit.
+        loader.accept(fixture.record(if (inFinish) "small" else "x".repeat(15 * 1024 * 1024)))
+        every { fixture.writer.write(any()) } throws failure
+        assertSame(
+            failure,
+            assertThrows<IOException> {
+                if (inFinish) loader.finish() else loader.accept(fixture.record())
+            },
+        )
+        assertTrue(failure.suppressed.isEmpty())
+        loader.close()
+        verify(exactly = 0) { fixture.writer.close() }
+        verify(exactly = 0) { fixture.job.waitFor(any<RetryOption>()) }
+    }
+
+    @Test
+    fun `cancelled accept propagates cancellation without committing BigQuery load`() = runTest {
+        val fixture = Fixture()
+        val loader = fixture.loader()
+        loader.accept(fixture.record("x".repeat(15 * 1024 * 1024)))
+        val cancellation = CancellationException("sync cancelled")
+        var thrown: Throwable? = null
+        launch {
+                coroutineContext.cancel(cancellation)
+                try {
+                    loader.accept(fixture.record())
+                } catch (t: Throwable) {
+                    thrown = t
+                }
+            }
+            .join()
+        assertSame(cancellation, thrown)
+        assertEquals(1, fixture.batch.closes)
+        loader.close()
+        verify(exactly = 0) { fixture.writer.close() }
+        assertTrue(fixture.batch.completions.isEmpty())
+    }
+
+    @Test
+    fun `cancelled finish before commit propagates cancellation without committing`() = runTest {
+        val fixture = Fixture()
+        val loader = fixture.disabledLoader()
+        loader.accept(fixture.record("x".repeat(15 * 1024 * 1024)))
+        val cancellation = CancellationException("sync cancelled")
+        var thrown: Throwable? = null
+        launch {
+                coroutineContext.cancel(cancellation)
+                try {
+                    loader.finish()
+                } catch (t: Throwable) {
+                    thrown = t
+                }
+            }
+            .join()
+        assertSame(cancellation, thrown)
+        loader.close()
+        verify(exactly = 0) { fixture.writer.close() }
+        verify(exactly = 0) { fixture.job.waitFor(any<RetryOption>()) }
+    }
 
     @Test
     fun `empty finish completes archive with BigQuery zero count`() = runTest {
@@ -631,6 +740,10 @@ class BigqueryBatchStandardInsertCopyTest {
         assertArrayEquals(fixture.expectedBytes(), fixture.written.toByteArray())
         assertTrue(fixture.batch.appended.isEmpty())
         assertEquals(0, fixture.batch.closes)
+        verify(exactly = 1) { fixture.writer.close() }
+        verify(exactly = 1) { fixture.job.waitFor(any<RetryOption>()) }
+        loader.close()
+        verify(exactly = 1) { fixture.writer.close() }
     }
 
     @ParameterizedTest
@@ -786,6 +899,9 @@ class BigqueryBatchStandardInsertCopyTest {
 
         fun loader(formatter: RecordFormatter = this.formatter) =
             BigqueryBatchStandardInsertsLoader(bigquery, configuration, jobId, formatter, batch)
+
+        fun disabledLoader() =
+            BigqueryBatchStandardInsertsLoader(bigquery, configuration, jobId, formatter)
 
         fun record(value: String = "hello ☃"): DestinationRecordRaw {
             val source =
