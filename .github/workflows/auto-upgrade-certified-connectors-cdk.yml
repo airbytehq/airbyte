@@ -85,10 +85,12 @@ jobs:
         id: upgrade-cdk
         run: |
           set -euo pipefail
-          ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:upgradeCdk
           # --quiet disables all of gradle's normal logging, so we only get the CDK version number
+          old_cdk_version=$(./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:getCdkVersion --quiet)
+          echo "old_cdk_version=$old_cdk_version" | tee -a $GITHUB_OUTPUT
+          ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:upgradeCdk
           new_cdk_version=$(./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:getCdkVersion --quiet)
-          echo "new_cdk_version=$new_cdk_version" >> $GITHUB_OUTPUT
+          echo "new_cdk_version=$new_cdk_version" | tee -a $GITHUB_OUTPUT
 
       - name: Check for changes
         id: check-changes
@@ -190,3 +192,77 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.admin-token.outputs.token }}
           PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+
+      # Record the outcome for this connector so the summary job can report on it.
+      - name: Record result
+        if: always()
+        env:
+          CONNECTOR: ${{ matrix.connector }}
+          HAS_CHANGES: ${{ steps.check-changes.outputs.has_changes }}
+          OLD_CDK_VERSION: ${{ steps.upgrade-cdk.outputs.old_cdk_version }}
+          NEW_CDK_VERSION: ${{ steps.upgrade-cdk.outputs.new_cdk_version }}
+          CONNECTOR_VERSION: ${{ steps.bump-version.outputs.new_version }}
+          PR_URL: ${{ steps.create-pr.outputs.pull-request-url }}
+        run: |
+          if [[ -n "$PR_URL" ]]; then
+            status=upgraded
+          elif [[ "$HAS_CHANGES" == "false" ]]; then
+            status=up-to-date
+          else
+            status=failed
+          fi
+          mkdir -p cdk-upgrade-results
+          jq --null-input \
+            --arg connector "$CONNECTOR" \
+            --arg status "$status" \
+            --arg old_cdk_version "$OLD_CDK_VERSION" \
+            --arg new_cdk_version "$NEW_CDK_VERSION" \
+            --arg connector_version "$CONNECTOR_VERSION" \
+            --arg pr_url "$PR_URL" \
+            '$ARGS.named' | tee "cdk-upgrade-results/$CONNECTOR.json"
+
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cdk-upgrade-result-${{ matrix.connector }}
+          path: cdk-upgrade-results/
+          retention-days: 7
+
+  notify-slack:
+    name: Post Slack summary
+    needs: [list-certified-connectors, upgrade-connector-cdk]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          sparse-checkout: tools/bin/bulk-cdk/auto-upgrade
+
+      - name: Download connector results
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          pattern: cdk-upgrade-result-*
+          path: cdk-upgrade-results
+          merge-multiple: true
+
+      - name: Build Slack payload
+        env:
+          CONNECTORS_JSON: ${{ needs.list-certified-connectors.outputs.connectors || '[]' }}
+          SLACK_CHANNEL: C09H56MT8J2 # #move-destinations
+        run: |
+          tools/bin/bulk-cdk/auto-upgrade/build-slack-summary.sh \
+            cdk-upgrade-results \
+            "$CONNECTORS_JSON" \
+            "$SLACK_CHANNEL" \
+            slack-payload.json
+
+      - name: Post to Slack
+        # Not every repo that calls this workflow has the Slack token, so don't fail the run over a missed notification.
+        continue-on-error: true
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload-file-path: slack-payload.json
