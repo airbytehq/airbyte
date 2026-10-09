@@ -41,7 +41,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                        |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------- |
-| 0.2.14 | 2026-10-09 | [88404](https://github.com/airbytehq/airbyte/pull/88404) | Mark `api_key` as `airbyte_secret` |
+| 0.2.14 | 2026-10-09 | [88414](https://github.com/airbytehq/airbyte/pull/88414) | Mark `api_key` as `airbyte_secret` |
 | 0.2.13 | 2025-05-24 | [60716](https://github.com/airbytehq/airbyte/pull/60716) | Update dependencies |
 | 0.2.12 | 2025-05-10 | [59781](https://github.com/airbytehq/airbyte/pull/59781) | Update dependencies |
 | 0.2.11 | 2025-05-03 | [58794](https://github.com/airbytehq/airbyte/pull/58794) | Update dependencies |
