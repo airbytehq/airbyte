@@ -82,20 +82,20 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 
 ## Supported Streams
 
-- [Campaigns](https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns)
-- [Campaigns Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns)
-- [Campaign Values Reports](https://developers.klaviyo.com/en/v2024-10-15/reference/query_campaign_values) - Analytics stream for campaign performance metrics
-- [Email Templates](https://developers.klaviyo.com/en/v2024-10-15/reference/get_templates)
-- [Events](https://developers.klaviyo.com/en/v2024-10-15/reference/get_events)
-- [Events Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_event)
-- [Flows](https://developers.klaviyo.com/en/v2024-10-15/reference/get_flows)
-- [Flow Series Reports](https://developers.klaviyo.com/en/v2024-10-15/reference/query_flow_series) - Analytics stream for automated flow performance over time
-- [GlobalExclusions](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
-- [Lists](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
-- [Lists Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
-- [Metrics](https://developers.klaviyo.com/en/v2024-10-15/reference/get_metrics)
-- [Profiles](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
-- [Segments](https://developers.klaviyo.com/en/v2024-10-15/reference/get_segments)
+- [Campaigns](https://developers.klaviyo.com/en/v2026-01-15/reference/get_campaigns)
+- [Campaigns Detailed](https://developers.klaviyo.com/en/v2026-01-15/reference/get_campaigns)
+- [Campaign Values Reports](https://developers.klaviyo.com/en/v2026-01-15/reference/query_campaign_values) - Analytics stream for campaign performance metrics
+- [Email Templates](https://developers.klaviyo.com/en/v2026-01-15/reference/get_templates)
+- [Events](https://developers.klaviyo.com/en/v2026-01-15/reference/get_events)
+- [Events Detailed](https://developers.klaviyo.com/en/v2026-01-15/reference/get_event)
+- [Flows](https://developers.klaviyo.com/en/v2026-01-15/reference/get_flows)
+- [Flow Series Reports](https://developers.klaviyo.com/en/v2026-01-15/reference/query_flow_series) - Analytics stream for automated flow performance over time
+- [GlobalExclusions](https://developers.klaviyo.com/en/v2026-01-15/reference/get_profiles)
+- [Lists](https://developers.klaviyo.com/en/v2026-01-15/reference/get_lists)
+- [Lists Detailed](https://developers.klaviyo.com/en/v2026-01-15/reference/get_lists)
+- [Metrics](https://developers.klaviyo.com/en/v2026-01-15/reference/get_metrics)
+- [Profiles](https://developers.klaviyo.com/en/v2026-01-15/reference/get_profiles)
+- [Segments](https://developers.klaviyo.com/en/v2026-01-15/reference/get_segments)
 
 ### Metrics stream
 
@@ -199,6 +199,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.0 | 2026-10-07 | [85352](https://github.com/airbytehq/airbyte/pull/85352) | Upgrade to Klaviyo API revision `2026-01-15` ahead of the `2024-10-15` retirement. Syncs and destinations are not affected, and the connector auto-upgrades at the deadline; only downstream consumers of `campaigns` and `campaigns_detailed` need to move to new nested paths. In `campaigns` and `campaigns_detailed`, `attributes.send_strategy.options_static.datetime`/`is_local`/`send_past_recipients_immediately`, `options_throttled.datetime`/`throttle_percentage` and `options_sto.date` move to `attributes.send_strategy.datetime`, `.options.is_local`, `.options.send_past_recipients_immediately`, `.throttle_percentage` and `.date`. In `campaigns_detailed`, `campaign_messages[].attributes.channel`/`label`/`content`/`render_options` move to `campaign_messages[].attributes.definition.*`. SMS messages no longer carry a `label` (Klaviyo stopped generating one). Refresh the source schema to pick up the new fields. See the [migration guide](https://docs.airbyte.com/integrations/sources/klaviyo-migrations#upgrading-to-400) |
+| 3.0.6 | 2026-10-06 | [87223](https://github.com/airbytehq/airbyte/pull/87223) | Update dependencies |
 | 3.0.5 | 2026-09-22 | [86678](https://github.com/airbytehq/airbyte/pull/86678) | Update dependencies |
 | 3.0.4 | 2026-09-15 | [86109](https://github.com/airbytehq/airbyte/pull/86109) | Update dependencies |
 | 3.0.3 | 2026-09-10 | [85217](https://github.com/airbytehq/airbyte/pull/85217) | Send the `global_exclusions` cursor filter to Klaviyo, with a one-hour lookback window, so incremental syncs no longer re-page all profiles; a first/stateless sync still returns the full suppression list. |

@@ -1,33 +1,40 @@
 # Google Tasks
-This page contains the setup guide and reference information for the [Google Tasks](https://tasksboard.com/app) source connector.
+This page contains the setup guide and reference information for the [Google Tasks](https://tasks.google.com/) source connector.
 
 ## Documentation reference:
 Visit `https://developers.google.com/tasks/reference/rest` for API documentation
 
 ## Authentication setup
-`Source-productive` uses bearer token authentication,
-Visit `https://support.google.com/googleapi/answer/6158849?hl=en&amp;ref_topic=7013279` for getting bearer token via OAuth2.0
+The Google Tasks API only accepts OAuth 2.0 user credentials (it does not support API keys). The connector supports two authentication options:
 
-## Setting postman for getting bearer token
-Currently Code granted OAuth 2.0 is not directly supported by airbyte, thus you could setup postman for getting the bearer token which could be used as `api_key`,
-Steps:
-- Visit google cloud `https://console.cloud.google.com/apis/api/tasks.googleapis.com/metrics` and enable the tasks api service
-- Go to the consent screen `https://console.cloud.google.com/apis/credentials/consent` and add your email for enabling postman testing access
-- Visit `https://console.cloud.google.com/apis/credentials` and create new credentails for OAuth 2.0 and copy client id and client secret 
-- Add callback url `https://oauth.pstmn.io/v1/callback` while credential creation
-- Goto postman client and select new tab for setting authorization to OAuth 2.0
-  - Set scope as `https://www.googleapis.com/auth/tasks https://www.googleapis.com/auth/tasks.readonly`
-  - Set access token URL as `https://accounts.google.com/o/oauth2/token`
-  - Set auth URL as `https://accounts.google.com/o/oauth2/v2/auth`
+- **Authenticate via Google (OAuth)** (recommended): provide a Google OAuth 2.0 **Client ID**, **Client Secret** and **Refresh Token**. The connector exchanges the refresh token for a new access token at the start of every sync, so scheduled syncs keep working.
+- **Access Token**: a raw Google OAuth 2.0 access token. Google access tokens expire after about one hour, so this option is only suitable for one-off tests.
+
+Connections created before version 0.0.71 used a single `api_key` field holding an access token; such configurations are migrated automatically to the **Access Token** option. Because that token has long expired, edit the source and switch to the **Authenticate via Google (OAuth)** option to resume syncing.
+
+### Obtaining OAuth credentials
+- Visit google cloud `https://console.cloud.google.com/apis/api/tasks.googleapis.com/metrics` and enable the Tasks API service
+- Go to the consent screen `https://console.cloud.google.com/apis/credentials/consent` and add your email as a test user
+- Visit `https://console.cloud.google.com/apis/credentials` and create new credentials for OAuth 2.0 and copy the client id and client secret
+- Obtain a refresh token for your account, for example with Postman:
+  - Add callback url `https://oauth.pstmn.io/v1/callback` while creating the credentials
+  - Go to the postman client and select a new tab for setting authorization to OAuth 2.0
+  - Set scope as `https://www.googleapis.com/auth/tasks.readonly`
+  - Set access token URL as `https://oauth2.googleapis.com/token`
+  - Set auth URL as `https://accounts.google.com/o/oauth2/v2/auth` and add the advanced parameters `access_type=offline` and `prompt=consent` so a refresh token is returned
   - Click `Get New Access Token` and authorize via your google account
-  - Copy the resulted bearer token and use it as credential for the connector
+  - Copy the resulting refresh token (and the client id and client secret) into the connector configuration
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
-| `start_date` | `string` | Start date.  |  |
+| `credentials` | `object` | Authentication. Credentials for connecting to the Google Tasks API. |  |
+| `credentials.client_id` | `string` | Client ID of the Google OAuth 2.0 application (OAuth option). |  |
+| `credentials.client_secret` | `string` | Client Secret of the Google OAuth 2.0 application (OAuth option). |  |
+| `credentials.refresh_token` | `string` | Refresh token obtained with the `https://www.googleapis.com/auth/tasks.readonly` scope (OAuth option). |  |
+| `credentials.access_token` | `string` | Short-lived Google OAuth 2.0 access token (Access Token option). |  |
+| `start_date` | `string` | Start date. Only task lists and tasks last updated on or after this date are synced. |  |
 | `records_limit` | `string` | Records Limit. The maximum number of records to be returned per request | 50 |
 
 ## Streams
@@ -47,6 +54,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.71 | 2026-10-07 | [88270](https://github.com/airbytehq/airbyte/pull/88270) | Add OAuth (refresh token) authentication so access tokens are refreshed every sync; migrate legacy `api_key` configs |
+| 0.0.70 | 2026-10-06 | [87907](https://github.com/airbytehq/airbyte/pull/87907) | Update dependencies |
 | 0.0.69 | 2026-09-29 | [87191](https://github.com/airbytehq/airbyte/pull/87191) | Update dependencies |
 | 0.0.68 | 2026-09-22 | [86671](https://github.com/airbytehq/airbyte/pull/86671) | Update dependencies |
 | 0.0.67 | 2026-09-15 | [86084](https://github.com/airbytehq/airbyte/pull/86084) | Update dependencies |

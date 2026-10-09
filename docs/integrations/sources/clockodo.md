@@ -20,15 +20,15 @@ The Airbyte connector for Clockodo enables seamless data integration between Clo
 | entries | id | DefaultPaginator | ✅ |  ✅  |
 | holidays_carry | id | No pagination | ✅ |  ❌  |
 | holidays_quota | id | No pagination | ✅ |  ❌  |
-| lumpsum_services | id | No pagination | ✅ |  ❌  |
+| lumpsum_services | id | DefaultPaginator | ✅ |  ❌  |
 | non_business_days | id | No pagination | ✅ |  ❌  |
 | overtime_carry | id | No pagination | ✅ |  ❌  |
 | services | id | DefaultPaginator | ✅ |  ❌  |
 | surcharges | id | No pagination | ✅ |  ❌  |
 | target_hours | id | No pagination | ✅ |  ❌  |
-| teams | id | No pagination | ✅ |  ❌  |
+| teams | id | DefaultPaginator | ✅ |  ❌  |
 | user_reports |  | No pagination | ✅ |  ❌  |
-| users | id | No pagination | ✅ |  ❌  |
+| users | id | DefaultPaginator | ✅ |  ❌  |
 | customers_projects | user_id | No pagination | ✅ |  ❌  |
 | access_services | user_id | No pagination | ✅ |  ❌  |
 | work_times |  | DefaultPaginator | ✅ |  ❌  |
@@ -44,6 +44,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.68 | 2026-10-07 | [88255](https://github.com/airbytehq/airbyte/pull/88255) | Migrate streams off the retired Clockodo v2/legacy endpoints (HTTP 410) to the current v2/v3/v4 endpoints, fix `work_times` date parameters, and stop pagination on empty result sets |
+| 0.0.67 | 2026-10-06 | [87783](https://github.com/airbytehq/airbyte/pull/87783) | Update dependencies |
 | 0.0.66 | 2026-09-29 | [87110](https://github.com/airbytehq/airbyte/pull/87110) | Update dependencies |
 | 0.0.65 | 2026-09-22 | [86558](https://github.com/airbytehq/airbyte/pull/86558) | Update dependencies |
 | 0.0.64 | 2026-09-15 | [85963](https://github.com/airbytehq/airbyte/pull/85963) | Update dependencies |

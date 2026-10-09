@@ -26,14 +26,13 @@ The connector only reads boards that the token's user has access to in the team 
 | board_users | id, board_id | DefaultPaginator | ✅ |  ❌  |
 | board_items |  | DefaultPaginator | ✅ |  ❌  |
 | board_tags |  | DefaultPaginator | ✅ |  ❌  |
-| board_groups |  | No pagination | ✅ |  ❌  |
+| board_groups |  | DefaultPaginator | ✅ |  ❌  |
 | board_connectors | id | DefaultPaginator | ✅ |  ❌  |
 
 The `boards` stream lists every board the token can access. The other streams are child streams that make requests for each board in the `boards` stream and add a `board_id` field to every record.
 
 ## Limitations
 
-- The connector doesn't paginate the `board_groups` stream, so it only syncs the first page of groups that Miro returns for each board.
 - Miro [rate limits](https://developers.miro.com/reference/rate-limiting) API requests per user and per app using a credit system, with a global limit of 100,000 credits per minute. Because the child streams make requests for every board, syncs of accounts with many boards can reach this limit. When that happens, Miro returns a `429 Too Many Requests` error and the connector retries the request after waiting.
 
 ## IP allow list
@@ -47,6 +46,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.71 | 2026-10-07 | [88181](https://github.com/airbytehq/airbyte/pull/88181) | Use cursor pagination for `board_items`, `board_connectors`, and `board_groups` to match the Miro API |
+| 0.0.70 | 2026-10-06 | [87950](https://github.com/airbytehq/airbyte/pull/87950) | Update dependencies |
 | 0.0.69 | 2026-10-03 | [87649](https://github.com/airbytehq/airbyte/pull/87649) | Document that the API key is a Miro OAuth access token |
 | 0.0.68 | 2026-09-29 | [87236](https://github.com/airbytehq/airbyte/pull/87236) | Update dependencies |
 | 0.0.67 | 2026-09-22 | [86693](https://github.com/airbytehq/airbyte/pull/86693) | Update dependencies |

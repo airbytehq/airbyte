@@ -11,12 +11,12 @@ API Reference: https://developers.printify.com/#catalog
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| shops | id | DefaultPaginator | ✅ |  ❌  |
+| shops | id | No pagination | ✅ |  ❌  |
 | shop_orders | id | DefaultPaginator | ✅ |  ❌  |
-| catalog_blueprints | id | DefaultPaginator | ✅ |  ❌  |
-| catalog_print_providers | id | DefaultPaginator | ✅ |  ❌  |
+| catalog_blueprints | id | No pagination | ✅ |  ❌  |
+| catalog_print_providers | id | No pagination | ✅ |  ❌  |
 | shop_products | id | DefaultPaginator | ✅ |  ❌  |
-| catalog_blueprint_print_providers | uuid | DefaultPaginator | ✅ |  ❌  |
+| catalog_blueprint_print_providers | uuid | No pagination | ✅ |  ❌  |
 
 ## IP allow list
 
@@ -29,6 +29,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.53 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88215) | Fix pagination for `shop_orders`/`shop_products` (relative `next_page_url` was used as the request path); stop partitioning global catalog streams by shop |
+| 0.0.52 | 2026-10-06 | [87957](https://github.com/airbytehq/airbyte/pull/87957) | Update dependencies |
 | 0.0.51 | 2026-09-29 | [87306](https://github.com/airbytehq/airbyte/pull/87306) | Update dependencies |
 | 0.0.50 | 2026-09-22 | [86769](https://github.com/airbytehq/airbyte/pull/86769) | Update dependencies |
 | 0.0.49 | 2026-09-15 | [86189](https://github.com/airbytehq/airbyte/pull/86189) | Update dependencies |
