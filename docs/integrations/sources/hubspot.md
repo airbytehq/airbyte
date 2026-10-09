@@ -488,7 +488,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.11.0 | 2026-10-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add `call_recordings` and `meeting_recordings` streams that download HubSpot call and meeting recordings using file transfer |
+| 6.11.0 | 2026-10-09 | [88436](https://github.com/airbytehq/airbyte/pull/88436) | Add `call_recordings` and `meeting_recordings` streams that download HubSpot call and meeting recordings using file transfer |
 | 6.10.0 | 2026-09-22 | [86415](https://github.com/airbytehq/airbyte/pull/86415) | Add new `engagements_task_pipelines` stream exposing HubSpot task pipelines and their stages, so `engagements_tasks.properties.hs_pipeline_stage` can be resolved to a stage label and open/closed state |
 | 6.9.3 | 2026-09-22 | [86682](https://github.com/airbytehq/airbyte/pull/86682) | Update dependencies |
 | 6.9.2 | 2026-09-16 | [86350](https://github.com/airbytehq/airbyte/pull/86350) | Report an invalid `from_object`/`to_object` identifier in `custom_object_association_streams` as a configuration error instead of a generic credentials error |
