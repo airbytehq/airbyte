@@ -93,8 +93,8 @@ definitions:
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+            type: DpathExtractor
+            field_path: []
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -116,14 +116,21 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/responses"
+      transformations:
+        - type: AddFields
+          condition: "{{ record.get('answered_questions') is mapping }}"
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - answered_questions
+              value: "{{ record['answered_questions'].values() | list if record.get('answered_questions') is mapping else [] }}"
   base_requester:
     type: HttpRequester
     url_base: https://api.qualaroo.com/api/v1/
     authenticator:
-      type: CustomAuthenticator
-      class_name: source_declarative_manifest.components.CustomAuthenticator
-      username: "{{config['key']}}"
-      password: "{{config['token']}}"
+      type: BasicHttpAuthenticator
+      username: "{{ config['key'] }}"
+      password: "{{ config['token'] }}"
 
 streams:
   - $ref: "#/definitions/streams/surveys"
@@ -184,12 +191,6 @@ metadata:
   autoImportSchema:
     surveys: false
     responses: false
-  yamlComponents:
-    streams:
-      responses:
-        - recordSelector
-    global:
-      - authenticator
   testedStreams: {}
   assist: {}
 
