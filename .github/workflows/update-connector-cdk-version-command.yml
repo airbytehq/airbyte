@@ -36,7 +36,7 @@ jobs:
 
       - name: Append comment with job run link
         id: first-comment-action
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           issue-number: ${{ github.event.inputs.pr }}
@@ -98,7 +98,7 @@ jobs:
           git push
 
       - name: Append success comment
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         if: steps.git-diff.outputs.changes == 'true'
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
@@ -107,7 +107,7 @@ jobs:
             > ✅ Successfully updated CDK version for `${{ github.event.inputs.connector }}`.
 
       - name: Append success comment (no-op)
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         if: steps.git-diff.outputs.changes != 'true'
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
@@ -116,7 +116,7 @@ jobs:
             > ✅ CDK version for `${{ github.event.inputs.connector }}` was already up to date (no changes made).
 
       - name: Append validation failure comment
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         if: failure() && steps.validate-connector.outputs.error
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
@@ -125,7 +125,7 @@ jobs:
             > 🔴 **Validation Error**: ${{ steps.validate-connector.outputs.error }}
 
       - name: Append failure comment
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         if: failure() && !steps.validate-connector.outputs.error
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
