@@ -1,5 +1,9 @@
 # Todoist
 
+:::info
+Version 0.4.0 moves the connector from the retired Todoist REST API v2 to the Todoist API v1. See the [migration guide](todoist-migrations.md) if you are upgrading from an earlier version.
+:::
+
 ## Overview
 
 The Todoist source supports only `Full Refresh` syncs.
@@ -36,8 +40,8 @@ You can find your personal token in the [integrations settings view](https://tod
 
 List of available streams:
 
-- [Tasks](https://developer.todoist.com/rest/v2/#tasks)
-- [Projects](https://developer.todoist.com/rest/v2/#projects)
+- [Tasks](https://developer.todoist.com/api/v1/#tag/Tasks/operation/get_tasks_api_v1_tasks_get)
+- [Projects](https://developer.todoist.com/api/v1/#tag/Projects/operation/get_projects_api_v1_projects_get)
 
 ## IP allow list
 
@@ -50,6 +54,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.4.0 | 2026-10-07 | [88183](https://github.com/airbytehq/airbyte/pull/88183) | 🚨 Migrate from the retired Todoist REST API v2 (HTTP 410) to Todoist API v1: new base URL, cursor pagination, new `tasks` and `projects` schemas |
 | 0.3.43 | 2026-02-03 | [72753](https://github.com/airbytehq/airbyte/pull/72753) | Update dependencies |
 | 0.3.42 | 2026-01-20 | [72017](https://github.com/airbytehq/airbyte/pull/72017) | Update dependencies |
 | 0.3.41 | 2026-01-14 | [71417](https://github.com/airbytehq/airbyte/pull/71417) | Update dependencies |
