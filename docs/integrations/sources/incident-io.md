@@ -49,7 +49,7 @@ The `start_date` filter applies to these five streams in every sync mode, includ
 | alerts | `/v2/alerts` | id | DefaultPaginator | ✅ | ✅ |
 | catalog_entries | `/v3/catalog_entries` | id | DefaultPaginator | ✅ | ❌ |
 | catalog_resources | `/v3/catalog_resources` | type | No pagination | ✅ | ❌ |
-| catalog_types | `/v2/catalog_types` | id | No pagination | ✅ | ❌ |
+| catalog_types | `/v3/catalog_types` | id | No pagination | ✅ | ❌ |
 | custom_field_options | `/v1/custom_field_options` | id | DefaultPaginator | ✅ | ❌ |
 | custom_fields | `/v2/custom_fields` | id | No pagination | ✅ | ❌ |
 | escalations | `/v2/escalations` | id | DefaultPaginator | ✅ | ✅ |
@@ -70,7 +70,7 @@ The `start_date` filter applies to these five streams in every sync mode, includ
 
 The `incidents` stream includes incidents in every status category, including `declined`, `canceled` and `merged`, which the API leaves out by default.
 
-The `actions` and `follow-ups` streams include records from incidents in every incident mode: `standard`, `retrospective`, `test`, `tutorial`, and `stream`. By default, the API only returns records from `standard` and `retrospective` incidents. To exclude records from test or tutorial incidents, join on `incident_id` to the `incidents` stream and filter on its `mode` field.
+The `incidents`, `actions`, and `follow-ups` streams include records from incidents in every incident mode: `standard`, `retrospective`, `test`, `tutorial`, and `stream`. By default, the API only returns records from `standard` and `retrospective` incidents. To exclude test or tutorial incidents, filter on the `mode` field of `incidents`; for `actions` and `follow-ups`, join on `incident_id` to `incidents` first.
 
 The `users` stream includes deactivated and not-yet-active users. Use the `is_active` field to filter them.
 
@@ -93,6 +93,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --------- | ------ | -------------- | --------- |
+| 1.0.0 | 2026-10-09 | [88437](https://github.com/airbytehq/airbyte/pull/88437) | Type timestamp fields, move catalog_types to /v3, sync all incident modes. See the [migration guide](/integrations/sources/incident-io-migrations#upgrading-to-100) |
 | 0.4.1 | 2026-10-09 | [88435](https://github.com/airbytehq/airbyte/pull/88435) | Declare `external_issue_reference` on incidents and `holidays_public_config` on schedules; update base image to 7.35.0 |
 | 0.4.0 | 2026-10-09 | [88418](https://github.com/airbytehq/airbyte/pull/88418) | Add five alerting and escalation path streams |
 | 0.3.0 | 2026-10-09 | [88416](https://github.com/airbytehq/airbyte/pull/88416) | Add five incident and catalog streams |
