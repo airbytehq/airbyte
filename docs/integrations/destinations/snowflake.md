@@ -367,7 +367,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.0           | 2026-10-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)     | Add Programmatic Access Token as an authorization method. The token is passed to Snowflake in place of a password. |
+| 5.2.0           | 2026-10-09 | [88417](https://github.com/airbytehq/airbyte/pull/88417) | Add Programmatic Access Token as an authorization method. The token is passed to Snowflake in place of a password. |
 | 5.1.2           | 2026-10-05 | [87720](https://github.com/airbytehq/airbyte/pull/87720) | Allow custom domains in destination connections, consistent with Snowflake sources. |
 | 5.1.1           | 2026-10-06 | [88143](https://github.com/airbytehq/airbyte/pull/88143)   | Fix `HikariPool` "Connection is not available" failures during the final flush by restoring bounded concurrency for Snowflake PUT/COPY operations.                                     |
 | 5.1.0           | 2026-10-01 | [87611](https://github.com/airbytehq/airbyte/pull/87611)   | Add optional Fusion S3 sync copies of loaded batches (off by default; enabled through environment configuration). |
