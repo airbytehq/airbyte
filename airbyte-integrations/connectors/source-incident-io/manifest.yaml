@@ -540,12 +540,6 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-              - type: DefaultErrorHandler
                 max_retries: 5
                 backoff_strategies:
                   - type: WaitTimeFromHeader
@@ -554,6 +548,10 @@ definitions:
                   - type: ExponentialBackoffStrategy
                     factor: 5
                 response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
                   - type: HttpResponseFilter
                     action: FAIL
                     failure_type: config_error
@@ -585,7 +583,6 @@ definitions:
                     failure_type: system_error
                     http_codes:
                       - 400
-                      - 404
                       - 405
                       - 406
                       - 409

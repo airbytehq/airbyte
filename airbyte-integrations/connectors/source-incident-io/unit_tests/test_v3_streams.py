@@ -613,18 +613,47 @@ def test_incident_attachments_partitions_by_incident_and_ignores_404():
     with requests_mock.Mocker() as mocker:
         mocker.get(f"{_BASE_URL}/v2/incidents", json=incidents)
         mocker.get(
-            f"{_BASE_URL}/v1/incident_attachments",
-            [
-                {"status_code": 404, "json": {"errors": [{"message": "Incident was deleted"}]}},
-                {"json": attachment},
-            ],
+            f"{_BASE_URL}/v1/incident_attachments?incident_id=incident-1",
+            complete_qs=True,
+            status_code=404,
+            json={"errors": [{"message": "Incident was deleted"}]},
+        )
+        mocker.get(
+            f"{_BASE_URL}/v1/incident_attachments?incident_id=incident-2",
+            complete_qs=True,
+            json=attachment,
         )
         output = _read_stream("incident_attachments", config=_RECENT_CONFIG)
         attachment_requests = [request for request in mocker.request_history if request.path == "/v1/incident_attachments"]
 
     assert output.errors == []
     assert [message.record.data["id"] for message in output.records] == ["attachment-2"]
-    assert [request.qs["incident_id"] for request in attachment_requests] == [["incident-1"], ["incident-2"]]
+    assert sorted(request.qs["incident_id"][0] for request in attachment_requests) == ["incident-1", "incident-2"]
+
+
+def test_incident_attachments_retries_transient_errors():
+    incidents = {
+        "incidents": [{"id": "incident-1", "updated_at": "2026-10-08T00:00:00Z"}],
+        "pagination_meta": {},
+    }
+    attachment = {"incident_attachments": [{"id": "attachment-1", "incident_id": "incident-1"}]}
+
+    with mock.patch("time.sleep"), requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/incidents", json=incidents)
+        mocker.get(
+            f"{_BASE_URL}/v1/incident_attachments?incident_id=incident-1",
+            [
+                {"status_code": 503, "json": {"errors": [{"message": "Temporary service error"}]}},
+                {"json": attachment},
+            ],
+            complete_qs=True,
+        )
+        output = _read_stream("incident_attachments", config=_RECENT_CONFIG)
+        attachment_requests = [request for request in mocker.request_history if request.path == "/v1/incident_attachments"]
+
+    assert output.errors == []
+    assert [message.record.data["id"] for message in output.records] == ["attachment-1"]
+    assert len(attachment_requests) == 2
 
 
 def test_catalog_entries_partitions_and_follows_all_pages():
