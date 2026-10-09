@@ -115,16 +115,16 @@ The Gmail API enforces two simultaneous quota limits, measured in [quota units](
 | Limit type              | Limit                                  | Error code              |
 |-------------------------|----------------------------------------|-------------------------|
 | Per project rate limit  | 1,200,000 quota units per minute       | `rateLimitExceeded`     |
-| Per user rate limit     | 15,000 quota units per minute per user | `userRateLimitExceeded` |
+| Per user rate limit     | 6,000 quota units per minute per user  | `userRateLimitExceeded` |
 
-Each `messages.list` and `messages.get` call costs 5 units, and each `threads.list` and `threads.get` call costs 10 units. The `messages_details` and `threads_details` substreams issue one `get` call per parent record, so high-volume mailboxes consume quota quickly.
+Each `threads.get` call costs 40 units, `messages.get` 20, `threads.list` 10, `messages.list` and `drafts.list` 5, and `labels` and `profile` calls 1. The `messages_details` and `threads_details` substreams issue one `get` call per parent record, so high-volume mailboxes consume quota quickly. The connector budgets its own calls against the per-user limit by these costs, so it slows down before Gmail starts rejecting requests.
 
-The connector retries `429 Too Many Requests` and `403` quota-saturation errors with exponential backoff. If you see frequent rate-limit warnings in sync logs, lower the **Number of concurrent workers** setting.
+The connector retries `429 Too Many Requests` and `403` quota-saturation errors with backoff, up to 10 times within about 10 minutes. After a `429`, every request waits for the current one-minute quota window to clear. If you see frequent rate-limit warnings in sync logs, lower the **Number of concurrent workers** setting.
 
 ## Limitations & troubleshooting
 
 - **`messages` and `threads` are stub-only.** The Gmail API's `users.messages.list` and `users.threads.list` endpoints return only `{id, threadId}` (or `{id, historyId}`) per record. To replicate the full message body, headers, or labels, sync the `messages_details` or `threads_details` substream alongside its parent.
-- **Service account mailbox access requires domain-wide delegation.** A service account without domain-wide delegation has no Gmail mailbox of its own to read. Configure domain-wide delegation in your Workspace admin console so the service account can impersonate Workspace users.
+- **Service account mailbox access requires domain-wide delegation.** A service account without domain-wide delegation has no Gmail mailbox of its own to read. Configure domain-wide delegation in your Workspace admin console so the service account can impersonate Workspace users. If delegation is missing, or does not authorize the `https://www.googleapis.com/auth/gmail.readonly` scope, the connection check fails with `Provider error: unauthorized_client`.
 - **The Cloud consent screen asks for more access than the connector uses.** `https://www.googleapis.com/auth/gmail.modify` lets an app read, compose, and send mail, change labels, and trash messages. This connector only issues GET requests. To grant the narrower `https://www.googleapis.com/auth/gmail.readonly` scope instead, use your own OAuth client or a service account on a self-managed Airbyte instance.
 
 ## Configuration
@@ -151,7 +151,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.20 | 2026-10-08 | [88403](https://github.com/airbytehq/airbyte/pull/88403) | Check connection via profile and retry rate limits; add actionable Gmail API errors, API budget and missing schema fields |
+| 0.1.20 | 2026-10-09 | [88403](https://github.com/airbytehq/airbyte/pull/88403) | Check connection via profile and retry rate limits; add actionable Gmail API errors, API budget and missing schema fields |
 | 0.1.19 | 2026-10-06 | [87854](https://github.com/airbytehq/airbyte/pull/87854) | Update dependencies |
 | 0.1.18 | 2026-09-29 | [87179](https://github.com/airbytehq/airbyte/pull/87179) | Update dependencies |
 | 0.1.17 | 2026-09-22 | [86632](https://github.com/airbytehq/airbyte/pull/86632) | Update dependencies |

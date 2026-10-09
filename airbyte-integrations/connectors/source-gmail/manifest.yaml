@@ -11,16 +11,34 @@ check:
 
 api_budget:
   type: HTTPAPIBudget
+  # Gmail allows 6,000 quota units per user per minute; each matcher weighs a call by its unit cost
+  # (https://developers.google.com/workspace/gmail/api/reference/quota). On a 429 the budget treats the
+  # window as spent and every worker waits for it to drain (up to a minute), whatever Retry-After says.
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 1500
+        - limit: 6000
           interval: PT1M
       matchers:
         - type: HttpRequestRegexMatcher
           url_base: https://gmail.googleapis.com
-  status_codes_for_ratelimit_hit:
-    - 429
+          url_path_pattern: /users/me/threads/[^/]+$
+          weight: 40
+        - type: HttpRequestRegexMatcher
+          url_base: https://gmail.googleapis.com
+          url_path_pattern: /users/me/messages/[^/]+$
+          weight: 20
+        - type: HttpRequestRegexMatcher
+          url_base: https://gmail.googleapis.com
+          url_path_pattern: /users/me/threads$
+          weight: 10
+        - type: HttpRequestRegexMatcher
+          url_base: https://gmail.googleapis.com
+          url_path_pattern: /users/me/(messages|drafts)$
+          weight: 5
+        - type: HttpRequestRegexMatcher
+          url_base: https://gmail.googleapis.com
+          weight: 1
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -332,6 +350,15 @@ definitions:
     refresh_request_headers:
       Content-Type: application/x-www-form-urlencoded
     use_profile_assertion: true
+    # A service account without domain-wide delegation for the gmail.readonly scope gets
+    # `unauthorized_client`; surface it as a config error instead of a bare HTTP 401.
+    refresh_token_error_status_codes:
+      - 400
+      - 401
+    refresh_token_error_key: error
+    refresh_token_error_values:
+      - unauthorized_client
+      - invalid_grant
     profile_assertion:
       $ref: "#/definitions/jwt_authenticator"
   authenticator:
@@ -346,6 +373,9 @@ definitions:
     authenticator: "#/definitions/authenticator"
     error_handler:
       type: DefaultErrorHandler
+      # The CDK also stops retrying after 600 s (not configurable in the manifest). With the API budget's
+      # one-minute wait after each 429, the 10 retries fit in that window; when Gmail sends no Retry-After,
+      # the exponential fallback below reaches the 600 s limit after 6 retries.
       max_retries: 10
       backoff_strategies:
         # Gmail usually returns a `Retry-After` header on 429 and on 403
@@ -395,7 +425,7 @@ definitions:
         - type: HttpResponseFilter
           action: FAIL
           failure_type: config_error
-          error_message: "The authorized account lacks the required Gmail scope. Re-authenticate and grant gmail.readonly (self-managed / service account) or gmail.modify (Airbyte Cloud)."
+          error_message: "The authorized account lacks the required Gmail scope. Re-authenticate and grant gmail.readonly (service account or a refresh token you obtained yourself) or gmail.modify (the Authenticate your account flow)."
           predicate: >-
             {{ ((response.get('error', {}).get('errors', [{}]) | first).get('reason', '')) in ['insufficientPermissions'] }}
 
@@ -720,25 +750,9 @@ schemas:
         type:
           - string
           - "null"
-      messagesTotal:
-        type:
-          - integer
-          - "null"
-      messagesUnread:
-        type:
-          - integer
-          - "null"
       name:
         type:
           - string
-          - "null"
-      threadsTotal:
-        type:
-          - integer
-          - "null"
-      threadsUnread:
-        type:
-          - integer
           - "null"
     required:
       - id

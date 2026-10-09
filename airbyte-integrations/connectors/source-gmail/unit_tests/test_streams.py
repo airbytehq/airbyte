@@ -6,12 +6,19 @@ the incremental cursor, `start_date` server-side filtering, and rate-limit
 backoff behaviour end-to-end.
 """
 
+import json
 import logging
 from urllib.parse import parse_qs, urlparse
 
 import pytest
+import requests
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 from airbyte_cdk.models import Status, SyncMode
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import HTTPAPIBudget as HTTPAPIBudgetModel
+from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
+from airbyte_cdk.sources.streams.call_rate import HttpAPIBudget
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -36,7 +43,88 @@ def _gmail_calls(requests_mock, url_prefix):
     return [r for r in requests_mock.request_history if r.url.startswith(url_prefix)]
 
 
-def test_check_retries_profile_after_429(base_config, requests_mock, mocker):
+@pytest.fixture
+def budget_ignores_429(mocker):
+    """On a 429 the API budget marks its window as spent and waits for it to drain. With `time.sleep`
+    mocked the window never drains, so tests of the retry logic stop the budget from reacting."""
+    mocker.patch.object(HttpAPIBudget, "update_from_response")
+
+
+def _stream_schema(config, stream_name):
+    catalog = build_source(config).discover(logging.getLogger("test"), config)
+    return next(stream.json_schema for stream in catalog.streams if stream.name == stream_name)
+
+
+def _schema_at(schema, *path):
+    """Walk properties (and array items) of a JSON schema; fails if a field on the path is undeclared."""
+    node = schema
+    for key in path:
+        if "properties" not in node:
+            node = node["items"]
+        node = node["properties"][key]
+    return node
+
+
+def test_api_budget_weighs_each_call_by_its_gmail_quota_cost(manifest, base_config):
+    # https://developers.google.com/workspace/gmail/api/reference/quota
+    assert manifest["api_budget"]["policies"][0]["rates"] == [{"limit": 6000, "interval": "PT1M"}]
+    budget = ModelToComponentFactory().create_component(HTTPAPIBudgetModel, manifest["api_budget"], base_config)
+    expected = {
+        "threads/t1": 40,
+        "messages/m1": 20,
+        "threads": 10,
+        "messages": 5,
+        "drafts": 5,
+        "labels": 1,
+        "labels/l1": 1,
+        "profile": 1,
+    }
+    for path, weight in expected.items():
+        request = requests.Request("GET", f"https://gmail.googleapis.com/gmail/v1/users/me/{path}?maxResults=100").prepare()
+        assert budget.get_matching_policy(request).get_weight(request) == weight, path
+
+
+def test_check_retries_profile_up_to_ten_times(base_config, requests_mock, mocker, budget_ignores_429):
+    mocker.patch("time.sleep")
+    rate_limited = {"status_code": 429, "headers": {"Retry-After": "0"}, "json": {"error": {"code": 429}}}
+    requests_mock.get(_PROFILE_URL, [rate_limited] * 10 + [{"status_code": 200, "json": {"emailAddress": "user@example.com"}}])
+
+    status = build_source(base_config).check(logging.getLogger("test"), base_config)
+
+    assert status.status == Status.SUCCEEDED
+    assert len(_gmail_calls(requests_mock, _PROFILE_URL)) == 11
+
+
+def test_service_account_without_domain_wide_delegation_is_a_config_error(requests_mock):
+    private_key = (
+        rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        .private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption())
+        .decode()
+    )
+    service_account_info = {
+        "type": "service_account",
+        "client_email": "sa@project.iam.gserviceaccount.com",
+        "private_key": private_key,
+        "token_uri": "https://oauth2.googleapis.com/token",
+    }
+    config = {
+        "credentials": {"auth_type": "Service", "service_account_info": json.dumps(service_account_info)},
+        "include_spam_and_trash": False,
+    }
+    requests_mock.post(
+        "https://oauth2.googleapis.com/token",
+        status_code=401,
+        json={"error": "unauthorized_client", "error_description": "Client is unauthorized to retrieve access tokens using this method."},
+    )
+
+    status = build_source(config).check(logging.getLogger("test"), config)
+
+    assert status.status == Status.FAILED
+    assert "unauthorized_client" in (status.message or "")
+    assert not _gmail_calls(requests_mock, _PROFILE_URL)
+
+
+def test_check_retries_profile_after_429(base_config, requests_mock, mocker, budget_ignores_429):
     mocker.patch("time.sleep")
     requests_mock.get(
         _PROFILE_URL,
@@ -81,7 +169,7 @@ def test_check_retries_profile_after_user_rate_limit_exceeded(base_config, reque
         ),
         (
             "insufficientPermissions",
-            "The authorized account lacks the required Gmail scope. Re-authenticate and grant gmail.readonly (self-managed / service account) or gmail.modify (Airbyte Cloud).",
+            "The authorized account lacks the required Gmail scope. Re-authenticate and grant gmail.readonly (service account or a refresh token you obtained yourself) or gmail.modify (the Authenticate your account flow).",
         ),
     ],
 )
@@ -96,10 +184,12 @@ def test_gmail_api_configuration_errors_are_actionable(reason, message, base_con
 
     assert check_status.status == Status.FAILED
     assert message in (check_status.message or "")
+    assert len(_gmail_calls(requests_mock, _PROFILE_URL)) == 1, "a configuration error must not be retried"
 
     output = _read_stream("profile", SyncMode.full_refresh, base_config)
 
     assert not output.records
+    assert len(_gmail_calls(requests_mock, _PROFILE_URL)) == 2, "a configuration error must not be retried"
     assert any(
         msg.trace
         and msg.trace.error
@@ -119,21 +209,28 @@ def test_profile_read_emits_record(base_config, requests_mock):
 
 
 def test_labels_read_emits_records(base_config, requests_mock):
-    requests_mock.get(_LABELS_LIST_URL, json={"labels": [{"id": "INBOX"}, {"id": "STARRED"}]})
+    color = {"backgroundColor": "#16a766", "textColor": "#ffffff"}
+    requests_mock.get(_LABELS_LIST_URL, json={"labels": [{"id": "INBOX"}, {"id": "Label_1", "type": "user", "color": color}]})
 
     output = _read_stream("labels", SyncMode.full_refresh, base_config)
 
-    assert len(output.records) == 2
+    assert [record.record.data.get("color") for record in output.records] == [None, color]
+    schema = _stream_schema(base_config, "labels")
+    assert "string" in _schema_at(schema, "color", "backgroundColor")["type"]
+    assert "string" in _schema_at(schema, "color", "textColor")["type"]
 
 
 def test_labels_details_reads_each_parent_partition(base_config, requests_mock):
     requests_mock.get(_LABELS_LIST_URL, json={"labels": [{"id": "label-1"}, {"id": "label-2"}]})
-    requests_mock.get(f"{_LABELS_LIST_URL}/label-1", json={"id": "label-1", "messagesTotal": 2})
+    color = {"backgroundColor": "#16a766", "textColor": "#ffffff"}
+    requests_mock.get(f"{_LABELS_LIST_URL}/label-1", json={"id": "label-1", "messagesTotal": 2, "color": color})
     requests_mock.get(f"{_LABELS_LIST_URL}/label-2", json={"id": "label-2", "messagesTotal": 3})
 
     output = _read_stream("labels_details", SyncMode.full_refresh, base_config)
 
     assert len(output.records) == 2
+    assert {record.record.data["id"]: record.record.data.get("color") for record in output.records} == {"label-1": color, "label-2": None}
+    assert "string" in _schema_at(_stream_schema(base_config, "labels_details"), "color", "backgroundColor")["type"]
     child_paths = {urlparse(request.url).path for request in requests_mock.request_history if "/labels/" in urlparse(request.url).path}
     assert child_paths == {
         "/gmail/v1/users/me/labels/label-1",
@@ -143,17 +240,46 @@ def test_labels_details_reads_each_parent_partition(base_config, requests_mock):
 
 def test_threads_details_reads_each_parent_partition(base_config, requests_mock):
     requests_mock.get(_THREADS_LIST_URL, json={"threads": [{"id": "thread-1"}, {"id": "thread-2"}]})
-    requests_mock.get(f"{_THREADS_LIST_URL}/thread-1", json={"id": "thread-1", "messages": [{"id": "message-1"}]})
+    classification = [{"labelId": "cl-1", "fields": [{"fieldId": "f-1", "selection": "s-1"}]}]
+    message_1 = {
+        "id": "message-1",
+        "classificationLabelValues": classification,
+        "payload": {"body": {"attachmentId": "att-1", "size": 10}, "parts": [{"body": {"attachmentId": "att-2", "size": 20}}]},
+    }
+    requests_mock.get(f"{_THREADS_LIST_URL}/thread-1", json={"id": "thread-1", "messages": [message_1]})
     requests_mock.get(f"{_THREADS_LIST_URL}/thread-2", json={"id": "thread-2", "messages": [{"id": "message-2"}]})
 
     output = _read_stream("threads_details", SyncMode.full_refresh, base_config)
 
     assert len(output.records) == 2
+    thread_1 = next(record.record.data for record in output.records if record.record.data["id"] == "thread-1")
+    assert thread_1["messages"][0] == message_1
+    schema = _stream_schema(base_config, "threads_details")
+    assert "string" in _schema_at(schema, "messages", "classificationLabelValues", "fields", "selection")["type"]
+    assert "string" in _schema_at(schema, "messages", "payload", "body", "attachmentId")["type"]
+    assert "string" in _schema_at(schema, "messages", "payload", "parts", "body", "attachmentId")["type"]
     child_paths = {urlparse(request.url).path for request in requests_mock.request_history if "/threads/" in urlparse(request.url).path}
     assert child_paths == {
         "/gmail/v1/users/me/threads/thread-1",
         "/gmail/v1/users/me/threads/thread-2",
     }
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        ("messages_details", "classificationLabelValues", "labelId"),
+        ("messages_details", "classificationLabelValues", "fields", "fieldId"),
+        ("messages_details", "payload", "body", "attachmentId"),
+        ("messages_details", "payload", "parts", "body", "attachmentId"),
+        ("threads_details", "messages", "classificationLabelValues", "labelId"),
+        ("threads_details", "messages", "payload", "body", "attachmentId"),
+        ("threads_details", "messages", "payload", "parts", "body", "attachmentId"),
+    ],
+)
+def test_message_schemas_declare_gmail_fields(base_config, path):
+    stream, *field_path = path
+    assert "string" in _schema_at(_stream_schema(base_config, stream), *field_path)["type"]
 
 
 def test_public_messages_standalone_is_full_refresh_and_emits_records(base_config, requests_mock):
@@ -185,9 +311,9 @@ def test_public_messages_standalone_is_full_refresh_and_emits_records(base_confi
     calls = _gmail_calls(requests_mock, _MESSAGES_LIST_URL)
     assert calls, "Expected at least one call to the messages list endpoint"
     qs = parse_qs(urlparse(calls[0].url).query)
-    assert "q" not in qs or qs.get("q") == [
-        ""
-    ], f"Public `messages` must not inject a `q=after:` filter without a configured `start_date`; got {qs.get('q')!r}"
+    assert "q" not in qs or qs.get("q") == [""], (
+        f"Public `messages` must not inject a `q=after:` filter without a configured `start_date`; got {qs.get('q')!r}"
+    )
 
 
 def test_public_messages_injects_after_unix_seconds_when_start_date_set(config_with_start_date, requests_mock):
@@ -262,9 +388,9 @@ def test_messages_details_parent_omits_q_when_no_start_date(base_config, request
     list_calls = [c for c in _gmail_calls(requests_mock, _MESSAGES_LIST_URL) if urlparse(c.url).path.endswith("/messages")]
     assert list_calls, "Expected at least one call to the messages list endpoint"
     qs = parse_qs(urlparse(list_calls[0].url).query)
-    assert "q" not in qs or qs.get("q") == [
-        ""
-    ], f"Parent `messages` list call must not inject `q=after:` without a configured `start_date`; got {qs.get('q')!r}"
+    assert "q" not in qs or qs.get("q") == [""], (
+        f"Parent `messages` list call must not inject `q=after:` without a configured `start_date`; got {qs.get('q')!r}"
+    )
 
 
 def test_messages_details_parent_injects_after_from_start_date(config_with_start_date, requests_mock):
@@ -365,7 +491,7 @@ def test_threads_injects_after_unix_seconds_when_start_date_set(config_with_star
     assert qs.get("q") == ["after:1704067200"], f"Expected q=after:1704067200, got {qs.get('q')!r}"
 
 
-def test_retry_after_on_429_is_honoured(base_config, requests_mock, mocker):
+def test_retry_after_on_429_is_honoured(base_config, requests_mock, mocker, budget_ignores_429):
     """When Gmail returns a 429 with a `Retry-After` header, the
     `DefaultErrorHandler` on `base_requester` (with `WaitTimeFromHeader`
     backoff) must sleep for that duration and then retry the request.
@@ -444,9 +570,9 @@ def test_retry_after_on_403_rate_limit_exceeded_is_honoured(reason, base_config,
     output = _read_stream("messages_details", SyncMode.full_refresh, base_config)
 
     sleep_durations = [call.args[0] for call in sleep_mock.call_args_list if call.args]
-    assert any(
-        5 <= duration <= 8 for duration in sleep_durations
-    ), f"Expected a backoff honouring Retry-After=5s on 403 {reason}; got {sleep_durations!r}"
+    assert any(5 <= duration <= 8 for duration in sleep_durations), (
+        f"Expected a backoff honouring Retry-After=5s on 403 {reason}; got {sleep_durations!r}"
+    )
     assert output.records, f"Expected the retry to succeed and produce a record for reason={reason!r}"
     # Sanity: the sync must not have failed — a 403 without the predicate match
     # would have produced no records and an auth/config error trace.
@@ -491,7 +617,7 @@ def test_non_rate_limit_403_is_not_retried(base_config, requests_mock, mocker):
     output = _read_stream("messages_details", SyncMode.full_refresh, base_config)
 
     sleep_durations = [call.args[0] for call in sleep_mock.call_args_list if call.args]
-    assert not any(
-        d >= 5 for d in sleep_durations
-    ), f"Insufficient-permission 403 must not trigger a Retry-After backoff; got {sleep_durations!r}"
+    assert not any(d >= 5 for d in sleep_durations), (
+        f"Insufficient-permission 403 must not trigger a Retry-After backoff; got {sleep_durations!r}"
+    )
     assert not output.records, "Insufficient-permission 403 must not yield records"
