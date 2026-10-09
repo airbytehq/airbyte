@@ -57,8 +57,12 @@ default relative to "now".
 ## Page sizes
 
 Each paginated stream uses the largest `page_size` the API serves (`incidents` 250,
-`incident_updates` 250, `users` 10000, `alerts` 50, `escalations` 50, `actions` and `follow-ups` 250,
-`catalog_entries` 250, `custom_field_options` 250).
+`incident_updates` 250, `users` 10000, `alerts` 50, `alert_routes` 50, `incident_alerts` 50,
+`escalations` 50, `escalation_paths` 25, `actions` and `follow-ups` 250, `catalog_entries` 250,
+`custom_field_options` 250).
+`alert_routes` returns a `pagination_meta.after` cursor even on its last page, so each sync makes one
+extra request that returns an empty page; the paginator stops on that response because it has no
+`after`.
 For `incidents` the OpenAPI spec allows 500, but the API caps it at 250: a request for 500 comes back
 with `pagination_meta.page_size: 250`. One exception: `schedules` stays at 100 because the vendor
 documents that `next_shifts` is only
