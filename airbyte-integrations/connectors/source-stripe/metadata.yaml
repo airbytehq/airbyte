@@ -59,6 +59,7 @@ data:
       7.0.0:
         message: "Version 7.0.0 fixes `invoice_line_items` incremental syncs for Stripe accounts whose default Stripe API version is older than 2019-12-03. On those accounts, incremental syncs wrote legacy line item IDs (`ii_`, `sub_`, `sli_`) instead of Stripe's current `il_` IDs, so the primary key value of affected rows changes. Affected users must refresh the `invoice_line_items` stream and remove records after upgrading; refreshing and retaining records leaves the legacy rows in place. Most accounts aren't affected and need no action. See the [migration guide](https://docs.airbyte.com/integrations/sources/stripe-migrations#upgrading-to-700) to check whether you're affected."
         upgradeDeadline: "2026-11-07"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["invoice_line_items"]
