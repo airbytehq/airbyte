@@ -14,9 +14,9 @@ definitions:
     colors:
       type: DeclarativeStream
       name: colors
+      # The response is a single `calendar#colors` object.
       primary_key:
-        - calendar
-        - event
+        - kind
       retriever:
         type: SimpleRetriever
         requester:
@@ -95,6 +95,8 @@ definitions:
         schema:
           $ref: "#/schemas/calendarlist"
     calendars:
+      # The calendar resource of every calendar in `calendarlist` the account can read, hidden ones
+      # included; the list entry's per-user fields (colors, reminders, accessRole) stay in `calendarlist`.
       type: DeclarativeStream
       name: calendars
       primary_key:
@@ -103,24 +105,30 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: users/me/calendarList
+          path: calendars/{{ stream_partition.calendar_id | urlencode }}
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - items
+            field_path: []
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: pageToken
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('nextPageToken') }}"
-            stop_condition: "{{ response.get('nextPageToken') is not defined }}"
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/calendarlist"
+                retriever:
+                  $ref: "#/definitions/streams/calendarlist/retriever"
+                  requester:
+                    $ref: "#/definitions/streams/calendarlist/retriever/requester"
+                    request_parameters:
+                      showHidden: "true"
+                      minAccessRole: reader
+              parent_key: id
+              partition_field: calendar_id
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -143,6 +151,8 @@ definitions:
           http_method: GET
           request_parameters:
             showHidden: "{{ '' if config.get('calendarid') else 'true' }}"
+            # Set per router; an empty value drops the parameter.
+            minAccessRole: "{{ '' if config.get('calendarid') else parameters.get('min_access_role', '') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -233,7 +243,7 @@ definitions:
                 predicate: "{{ response.get('error', {}).get('code') in (403, '403') and ('insufficientPermissions' in response.get('error', {}) | string or 'ACCESS_TOKEN_SCOPE_INSUFFICIENT' in response.get('error', {}) | string or 'accessNotConfigured' in response.get('error', {}) | string or 'SERVICE_DISABLED' in response.get('error', {}) | string) }}"
                 action: FAIL
                 failure_type: config_error
-                error_message: "Reading the acl stream needs the calendar.acls.readonly OAuth scope (or calendar.acls / calendar) and an enabled Calendar API. Re-authorize the connector with that scope, or deselect the acl stream."
+                error_message: "Reading the acl stream needs the calendar.acls.readonly OAuth scope (or calendar.acls / calendar) and an enabled Calendar API. Generate a new refresh token that includes that scope and paste it into Refresh token, or deselect the acl stream."
               - type: HttpResponseFilter
                 http_codes:
                   - 403
@@ -263,7 +273,7 @@ definitions:
             cursor_value: "{{ response.get('nextPageToken') }}"
             stop_condition: "{{ response.get('nextPageToken') is not defined }}"
         partition_router:
-          $ref: "#/definitions/calendar_partition_router"
+          $ref: "#/definitions/owned_calendar_partition_router"
       transformations:
         - type: AddFields
           fields:
@@ -304,7 +314,7 @@ definitions:
             response_filters:
               - type: HttpResponseFilter
                 # Google answers 200 and reports a calendar it could not compute under
-                # calendars.<id>.errors; without this the calendar would look free.
+                # calendars.<id>.errors, next to an empty busy list; this only logs it.
                 # The `string` filter JSON-encodes the mapping, so match the JSON form of the key.
                 predicate: "{{ '\\\"errors\\\": [' in response.get('calendars', {}) | string }}"
                 action: IGNORE
@@ -354,6 +364,9 @@ definitions:
       # One cursor for every calendar. The StateDelegatingStream retention check reads only the
       # global cursor, so per-calendar cursors would let a quiet calendar send an updatedMin
       # older than Google's 29-day window and fail with a 410 on every sync.
+      # The flat 0.1.0 state ({"updated": ...}) is dropped only because that retention check cannot
+      # parse it and falls back to a full re-read; the cursor alone would accept it as its global
+      # cursor (test_legacy_flat_state_is_not_carried_over).
       global_substream_cursor: true
       cursor_field: updated
       cursor_datetime_formats:
@@ -397,7 +410,7 @@ definitions:
           cursor_value: "{{ response.get('nextPageToken') }}"
           stop_condition: "{{ response.get('nextPageToken') is not defined }}"
       partition_router:
-        $ref: "#/definitions/calendar_partition_router"
+        $ref: "#/definitions/readable_calendar_partition_router"
     transformations:
       # Cancelled events arrive as stubs without `updated`, the cursor. Destinations dedup on the
       # cursor with NULLS LAST and only replace a row when the incoming cursor is non-null, so an
@@ -421,10 +434,32 @@ definitions:
       schema:
         $ref: "#/schemas/events"
   calendar_partition_router:
+    # Every listed calendar: free/busy works for any access role.
     type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream:
           $ref: "#/definitions/streams/calendar_partitions"
+        parent_key: id
+        partition_field: calendar_id
+  readable_calendar_partition_router:
+    # Excludes free/busy-only calendars, whose events Google strips of details and expands.
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream:
+          $ref: "#/definitions/streams/calendar_partitions"
+          $parameters:
+            min_access_role: reader
+        parent_key: id
+        partition_field: calendar_id
+  owned_calendar_partition_router:
+    # Google shows sharing rules only to owners. `calendar.acls.readonly` covers "calendars you own",
+    # so a writer's refusal could look like a scope error and fail the stream.
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream:
+          $ref: "#/definitions/streams/calendar_partitions"
+          $parameters:
+            min_access_role: owner
         parent_key: id
         partition_field: calendar_id
   error_filters:
@@ -611,7 +646,7 @@ spec:
         type: string
         order: 3
         title: Calendar Id
-        description: The ID of a single calendar to sync events, acl and freebusy from, found in the calendar's settings in Google Calendar (for the primary calendar this is the account's email address). The alias 'primary' also works; it is resolved to the calendar's real ID, which is what the calendar_id column holds. Leave empty to sync every calendar in the account's calendar list, hidden ones included. Calendars added to the list later are synced from the stream's current cursor, so reset the events stream to backfill them.
+        description: The ID of a single calendar to sync events, acl and freebusy from, found in the calendar's settings in Google Calendar (for the primary calendar this is the account's email address). The alias 'primary' also works; it is resolved to the calendar's real ID, which is what the calendar_id column holds. Leave empty to sync every calendar in the account's calendar list, hidden ones included; events are read from calendars the account can read, acl from calendars it owns, and freebusy from all of them. Calendars added to the list later are synced from the stream's current cursor, so reset the events stream to backfill them.
       start_date:
         type: string
         order: 4
@@ -1231,6 +1266,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
     required:
       - calendar
       - event
@@ -1365,21 +1402,39 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      kind:
+        type:
+          - string
+          - "null"
+      etag:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      summary:
+        type:
+          - string
+          - "null"
       description:
         type:
           - string
           - "null"
-      accessRole:
+      location:
         type:
           - string
           - "null"
-      backgroundColor:
+      timeZone:
         type:
           - string
           - "null"
-      colorId:
+      dataOwner:
         type:
           - string
+          - "null"
+      autoAcceptInvitations:
+        type:
+          - boolean
           - "null"
       conferenceProperties:
         type:
@@ -1394,43 +1449,12 @@ schemas:
               type:
                 - string
                 - "null"
-      defaultReminders:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            method:
-              type:
-                - string
-                - "null"
-            minutes:
-              type:
-                - number
-                - "null"
-      etag:
-        type:
-          - string
-          - "null"
-      foregroundColor:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      kind:
-        type:
-          - string
-          - "null"
-      notificationSettings:
+      labelProperties:
         type:
           - object
           - "null"
         properties:
-          notifications:
+          eventLabels:
             type:
               - array
               - "null"
@@ -1439,30 +1463,18 @@ schemas:
                 - object
                 - "null"
               properties:
-                type:
+                id:
                   type:
                     - string
                     - "null"
-                method:
+                name:
                   type:
                     - string
                     - "null"
-      primary:
-        type:
-          - boolean
-          - "null"
-      selected:
-        type:
-          - boolean
-          - "null"
-      summary:
-        type:
-          - string
-          - "null"
-      timeZone:
-        type:
-          - string
-          - "null"
+                backgroundColor:
+                  type:
+                    - string
+                    - "null"
     required:
       - id
   events:
@@ -1714,6 +1726,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       creator:
         type:
           - object
@@ -1740,10 +1754,13 @@ schemas:
             type:
               - string
               - "null"
+            format: date
           dateTime:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           timeZone:
             type:
               - string
@@ -1838,10 +1855,17 @@ schemas:
           - object
           - "null"
         properties:
+          date:
+            type:
+              - string
+              - "null"
+            format: date
           dateTime:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           timeZone:
             type:
               - string
@@ -1897,10 +1921,13 @@ schemas:
             type:
               - string
               - "null"
+            format: date
           dateTime:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           timeZone:
             type:
               - string
@@ -1921,6 +1948,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       visibility:
         type:
           - string
@@ -1976,9 +2005,11 @@ schemas:
       start:
         type: string
         format: date-time
+        airbyte_type: timestamp_with_timezone
       end:
         type: string
         format: date-time
+        airbyte_type: timestamp_with_timezone
     required:
       - calendar_id
       - start

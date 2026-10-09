@@ -225,6 +225,22 @@ def test_incremental_stale_state_drops_updated_min_and_resets_state():
         assert _RECORD["updated"] in emitted_states[-1]["state"]["updated"]
 
 
+def test_legacy_flat_state_is_not_carried_over():
+    # 0.1.0 saved a flat {"updated": ...}. The retention check cannot parse it and re-reads; the
+    # cursor alone would accept it as its global cursor and send it as updatedMin under the new key.
+    state = StateBuilder().with_stream_state("events", {"updated": _days_ago(2)}).build()
+    with HttpMocker() as http_mocker:
+        request = _events_request()
+        http_mocker.get(request, _items_response(_RECORD))
+
+        output = _read_events(http_mocker, SyncMode.incremental, state=state)
+
+        assert output.errors == []
+        assert _record_ids(output) == ["e1"]
+        assert _stream_state(output.state_messages[0]) == {}, "the 0.1.0 cursor is cleared before the full re-read"
+        http_mocker.assert_number_of_calls(request, 1)
+
+
 def test_incremental_fresh_start_date_sends_updated_min():
     start_date = _days_ago(7)
     recent = {"id": "recent", "updated": _days_ago(3)}

@@ -6,8 +6,10 @@
 
 With `calendarid` set, the only partition is that calendar, read through `calendars/{id}` so the
 `primary` alias resolves to the real id and the calendar list is never requested. With it unset,
-every calendar in the list is a partition, hidden ones included. Calendar ids are URL-encoded in
-paths (holiday calendars contain `#`). `events` keeps one cursor for every calendar.
+every calendar in the list is a partition, hidden ones included, narrowed per stream by the
+account's access role: `events` reads calendars it can read, `acl` calendars it owns, `freebusy`
+every calendar. Calendar ids are URL-encoded in paths (holiday calendars contain `#`). `events`
+keeps one cursor for every calendar.
 """
 
 import json
@@ -61,8 +63,11 @@ def _error(status_code: int, reason: str) -> HttpResponse:
     return _json({"error": {"code": status_code, "message": "error", "errors": [{"reason": reason, "domain": "global"}]}}, status_code)
 
 
-def _mock_calendar_list(http_mocker: HttpMocker, *calendar_ids: str) -> HttpRequest:
-    request = HttpRequest(f"{_BASE_URL}/users/me/calendarList", query_params={"showHidden": "true"})
+def _mock_calendar_list(http_mocker: HttpMocker, *calendar_ids: str, min_access_role: Optional[str] = None) -> HttpRequest:
+    params = {"showHidden": "true"}
+    if min_access_role:
+        params["minAccessRole"] = min_access_role
+    request = HttpRequest(f"{_BASE_URL}/users/me/calendarList", query_params=params)
     http_mocker.get(request, _json({"kind": "calendar#calendarList", "items": [{"id": c} for c in calendar_ids]}))
     return request
 
@@ -89,7 +94,7 @@ def _stream_state(output) -> Mapping[str, Any]:
 
 def test_events_read_every_calendar_when_calendarid_is_unset():
     with HttpMocker() as http_mocker:
-        _mock_calendar_list(http_mocker, _ME, _HOLIDAYS)
+        _mock_calendar_list(http_mocker, _ME, _HOLIDAYS, min_access_role="reader")
         http_mocker.get(_events_request(_ME), _json({"items": [{"id": "e1", "updated": _days_ago(1)}]}))
         http_mocker.get(_events_request(_HOLIDAYS), _json({"items": [{"id": "e1", "updated": _days_ago(3)}]}))
 
@@ -124,7 +129,7 @@ def test_every_calendar_sends_the_global_cursor_so_a_quiet_calendar_is_not_stale
         StateBuilder().with_stream_state("events", {"use_global_cursor": True, "state": {"updated": cursor}, "lookback_window": 0}).build()
     )
     with HttpMocker() as http_mocker:
-        _mock_calendar_list(http_mocker, _ME, _HOLIDAYS)
+        _mock_calendar_list(http_mocker, _ME, _HOLIDAYS, min_access_role="reader")
         me = _events_request(_ME, updated_min=cursor)
         holidays = _events_request(_HOLIDAYS, updated_min=cursor)
         http_mocker.get(me, _json({"items": [{"id": "e2", "updated": _days_ago(1)}]}))
@@ -143,6 +148,18 @@ def test_events_primary_key_includes_the_calendar():
     assert events.source_defined_primary_key == [["calendar_id"], ["id"]]
 
 
+def test_configured_calendar_ignores_the_access_role_filter():
+    # With calendarid set, acl reads that calendar directly, whatever the account's role on it.
+    with HttpMocker() as http_mocker:
+        http_mocker.get(HttpRequest(f"{_BASE_URL}/calendars/{_ENCODED[_ME]}"), _json({"kind": "calendar#calendar", "id": _ME}))
+        http_mocker.get(_acl_request(_ME), _json({"items": [{"id": "user:a"}]}))
+
+        output = _read(http_mocker, "acl", SyncMode.full_refresh, _config(calendarid=_ME))
+
+        assert output.errors == []
+        assert [r.record.data["id"] for r in output.records] == ["user:a"]
+
+
 # --- acl ----------------------------------------------------------------------------------
 
 
@@ -155,7 +172,7 @@ def _acl_request(calendar_id: str, page_token: Optional[str] = None) -> HttpRequ
 
 def test_acl_paginates_and_adds_calendar_id():
     with HttpMocker() as http_mocker:
-        _mock_calendar_list(http_mocker, _ME)
+        _mock_calendar_list(http_mocker, _ME, min_access_role="owner")
         http_mocker.get(_acl_request(_ME), _json({"items": [{"id": "user:a"}], "nextPageToken": "p2"}))
         http_mocker.get(_acl_request(_ME, page_token="p2"), _json({"items": [{"id": "user:b"}]}))
 
@@ -168,7 +185,7 @@ def test_acl_paginates_and_adds_calendar_id():
 @pytest.mark.parametrize(("status_code", "reason"), [(403, "forbidden"), (404, "notFound")])
 def test_acl_of_a_calendar_the_account_does_not_own_is_skipped(status_code, reason):
     with HttpMocker() as http_mocker:
-        _mock_calendar_list(http_mocker, _ME, _HOLIDAYS)
+        _mock_calendar_list(http_mocker, _ME, _HOLIDAYS, min_access_role="owner")
         http_mocker.get(_acl_request(_ME), _json({"items": [{"id": "user:a"}]}))
         http_mocker.get(_acl_request(_HOLIDAYS), _error(status_code, reason))
 
@@ -181,7 +198,7 @@ def test_acl_of_a_calendar_the_account_does_not_own_is_skipped(status_code, reas
 @pytest.mark.parametrize("reason", ["insufficientPermissions", "accessNotConfigured"])
 def test_acl_missing_scope_fails_with_a_config_error_naming_the_scope(reason):
     with HttpMocker() as http_mocker:
-        _mock_calendar_list(http_mocker, _ME)
+        _mock_calendar_list(http_mocker, _ME, min_access_role="owner")
         http_mocker.get(_acl_request(_ME), _error(403, reason))
 
         output = _read(http_mocker, "acl", SyncMode.full_refresh, _config())
@@ -193,7 +210,7 @@ def test_acl_missing_scope_fails_with_a_config_error_naming_the_scope(reason):
 
 def test_acl_quota_403_is_not_ignored():
     with HttpMocker() as http_mocker:
-        _mock_calendar_list(http_mocker, _ME)
+        _mock_calendar_list(http_mocker, _ME, min_access_role="owner")
         http_mocker.get(_acl_request(_ME), _error(403, "quotaExceeded"))
 
         output = _read(http_mocker, "acl", SyncMode.full_refresh, _config())
@@ -203,7 +220,7 @@ def test_acl_quota_403_is_not_ignored():
 
 def test_acl_rate_limit_403_is_retried():
     with HttpMocker() as http_mocker:
-        _mock_calendar_list(http_mocker, _ME)
+        _mock_calendar_list(http_mocker, _ME, min_access_role="owner")
         request = _acl_request(_ME)
         http_mocker.get(request, [_error(403, "rateLimitExceeded"), _json({"items": [{"id": "user:a"}]})])
 
@@ -238,7 +255,7 @@ def test_freebusy_queries_a_fixed_window_and_ignores_start_date():
 
 
 @freezegun.freeze_time("2026-10-07T12:00:00Z")
-def test_freebusy_per_calendar_error_is_logged_not_reported_as_free():
+def test_freebusy_per_calendar_error_is_logged():
     with HttpMocker() as http_mocker:
         _mock_calendar_list(http_mocker, _ME)
         http_mocker.post(
@@ -251,3 +268,61 @@ def test_freebusy_per_calendar_error_is_logged_not_reported_as_free():
         assert output.errors == []
         assert output.records == []
         assert any("could not compute free/busy" in log.log.message for log in output.logs)
+
+
+# --- calendars and colors -----------------------------------------------------------------
+
+
+def test_calendars_reads_the_calendar_resource_of_every_readable_listed_calendar():
+    with HttpMocker() as http_mocker:
+        # Every listed calendar, hidden ones included, narrowed to ones the account can read.
+        http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/users/me/calendarList", query_params={"showHidden": "true", "minAccessRole": "reader"}),
+            _json(
+                {"kind": "calendar#calendarList", "items": [{"id": _ME, "accessRole": "owner"}, {"id": _HOLIDAYS, "accessRole": "reader"}]}
+            ),
+        )
+        for calendar_id in (_ME, _HOLIDAYS):
+            http_mocker.get(
+                HttpRequest(f"{_BASE_URL}/calendars/{_ENCODED[calendar_id]}"),
+                _json({"kind": "calendar#calendar", "id": calendar_id, "summary": calendar_id, "timeZone": "UTC"}),
+            )
+
+        output = _read(http_mocker, "calendars", SyncMode.full_refresh, _config(calendarid=_ME))
+
+        assert output.errors == []
+        assert sorted(r.record.data["id"] for r in output.records) == [_HOLIDAYS, _ME]
+        assert {r.record.data["kind"] for r in output.records} == {"calendar#calendar"}
+        assert all("accessRole" not in r.record.data for r in output.records)
+
+
+def test_colors_primary_key_is_the_scalar_kind():
+    catalog = get_source(_config()).discover(logger=None, config=_config())
+    colors = next(stream for stream in catalog.streams if stream.name == "colors")
+    assert colors.source_defined_primary_key == [["kind"]]
+
+
+@pytest.mark.parametrize(
+    ("stream", "path", "fmt"),
+    [
+        ("events", ["updated"], "date-time"),
+        ("events", ["created"], "date-time"),
+        ("events", ["start", "dateTime"], "date-time"),
+        ("events", ["start", "date"], "date"),
+        ("events", ["end", "dateTime"], "date-time"),
+        ("events", ["end", "date"], "date"),
+        ("events", ["originalStartTime", "dateTime"], "date-time"),
+        ("events", ["originalStartTime", "date"], "date"),
+        ("colors", ["updated"], "date-time"),
+        ("freebusy", ["start"], "date-time"),
+        ("freebusy", ["end"], "date-time"),
+    ],
+)
+def test_date_and_datetime_fields_are_typed(stream, path, fmt):
+    catalog = get_source(_config()).discover(logger=None, config=_config())
+    node = next(s for s in catalog.streams if s.name == stream).json_schema
+    for key in path:
+        node = node["properties"][key]
+    assert node["format"] == fmt
+    if fmt == "date-time":
+        assert node["airbyte_type"] == "timestamp_with_timezone"
