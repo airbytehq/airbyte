@@ -44,7 +44,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
     fun testHostDomains(host: String) {
         val supplier = SnowflakeMigratingConfigurationSpecificationSupplier()
         val hostPattern = supplier.jsonSchema["properties"]["host"]["pattern"].asText().toRegex()
-        for (prefix in listOf("", "http://", "https://")) {
+        for (prefix in listOf("", "http://", "https://")) { // # ignore-https-check
             val endpoint = prefix + host
             assertTrue(hostPattern.matches(endpoint), endpoint)
             for (fixture in
