@@ -57,6 +57,8 @@ acceptance_tests:
             bypass_reason: "Since we don't have subscriptions anymore, we can't get child records of subscriptions"
           - name: "usage_records"
             bypass_reason: "Since we don't have subscriptions_items anymore which depend on subscriptions, we can't get child records for usage_records"
+          - name: "invoice_payments"
+            bypass_reason: "Requires a Basil-era (2025-03-31+) account with invoice payments; the sandbox account is on an older API version and holds no InvoicePayment data"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
   incremental:
