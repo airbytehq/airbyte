@@ -188,9 +188,9 @@ definitions:
     type: HttpRequester
     url_base: https://my.fastbill.com/api/1.0
     authenticator:
-      class_name: source_declarative_manifest.components.CustomAuthenticator
-      password: "{{ config[\"api_key\"] }}"
-      username: "{{ config[\"username\"] }}"
+      type: BasicHttpAuthenticator
+      username: "{{ config['username'] }}"
+      password: "{{ config['api_key'] }}"
 
 streams:
   - $ref: "#/definitions/streams/invoices"
@@ -228,9 +228,6 @@ metadata:
     products: false
     revenues: false
     customers: false
-  yamlComponents:
-    global:
-      - authenticator
   testedStreams:
     invoices:
       streamHash: 20857ec38cdfc474738705385285d6859e74866e
