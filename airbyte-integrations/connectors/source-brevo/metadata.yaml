@@ -39,6 +39,12 @@ data:
     - title: Brevo API reference
       url: https://developers.brevo.com/reference
       type: api_reference
+    - title: Brevo API changelog
+      url: https://developers.brevo.com/changelog
+      type: api_release_history
+    - title: Brevo OAuth 2.0 guide
+      url: https://developers.brevo.com/docs/oauth
+      type: authentication_guide
     - title: Brevo authentication guide
       url: https://developers.brevo.com/docs/getting-started
       type: authentication_guide
