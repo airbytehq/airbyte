@@ -43,7 +43,13 @@ If the query returns a count greater than zero:
 
 You must remove records. The legacy rows have a different primary key from the new `il_...` rows, so refreshing and retaining records leaves the legacy rows in your destination alongside the new ones.
 
-Refreshing and removing records deletes this stream's existing data in your destination before syncing it again. The refreshed stream is rebuilt from the Invoices endpoints, not from the 30-day Events API window, so it restores line items for invoices from your configured start date onward. Rows that recorded deleted draft invoices (`is_deleted` is `true`) aren't recreated. If you need those rows or the legacy IDs, back up the `invoice_line_items` table before you refresh.
+Refreshing and removing records deletes this stream's existing data in your destination before syncing it again. The refreshed stream is rebuilt from the Invoices endpoints, not from the 30-day Events API window, but only for invoices **created** on or after your configured start date. The refresh doesn't recreate:
+
+- Line items of invoices created before your start date. Earlier incremental syncs picked these up whenever such an invoice changed. To keep them, set the start date on or before your oldest invoice's creation date before you refresh. Changing the start date also affects other streams.
+- Rows that recorded deleted draft invoices (`is_deleted` is `true`).
+- In an Incremental | Append destination, the earlier versions of each line item. The refresh writes only each line item's current state.
+
+Back up the `invoice_line_items` table before you refresh if you need any of these rows or the legacy IDs.
 
 ### If you don't refresh
 
