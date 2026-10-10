@@ -101,6 +101,7 @@ Entra
 Slack
 Jira
 Fargate
+Backblaze
 MinIO
 Pydantic
 LangChain
