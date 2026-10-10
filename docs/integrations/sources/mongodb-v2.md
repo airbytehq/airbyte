@@ -247,6 +247,7 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.1.2 | 2026-10-09 | [80213](https://github.com/airbytehq/airbyte/pull/80213) | Fix spurious sync failures caused by Debezium's replicator-fetcher thread triggering orphaned thread force-exit |
 | 2.1.1 | 2026-09-26 | [87019](https://github.com/airbytehq/airbyte/pull/87019) | Harden initial load iterator: surface sub-query failures instead of silently ending the stream, and fail with the intended transient error on CDC initial-load timeout. |
 | 2.1.0 | 2026-09-02 | [83705](https://github.com/airbytehq/airbyte/pull/83705) | Support sharded clusters and object-type `_id` fields; detect `_id` types with index seeks instead of a full collection scan; bump Debezium to 3.6.2 and base image to 2.0.4 |
 | 2.0.7 | 2026-01-21 | [71049](https://github.com/airbytehq/airbyte/pull/71049) | Use debezium's own token validation logic to ensure that the saved resume token is present on the server (h/t @ed-kyu) |
