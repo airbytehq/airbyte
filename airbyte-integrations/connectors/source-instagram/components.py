@@ -270,11 +270,17 @@ class InstagramBreakDownResultsTransformation(RecordTransformation):
           "Sydney, New South Wales": 467,
         }
     The nested 'results' array is transformed into a 'value' dictionary where each key is a dimension and each value is the corresponding value.
+    For breakdowns with several dimension keys (e.g. "age,gender"), the dimension values are joined with a comma, so a result with
+    dimension_values ["25-34", "F"] becomes the key "25-34,F".
     """
 
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record_total_value = record.pop("total_value")
-        record["value"] = {res.get("dimension_values", [""])[0]: res.get("value") for res in record_total_value["breakdowns"][0]["results"]}
+        # Multi-dimension breakdowns (e.g. "age,gender") return several dimension values
+        # per result; join them so that no dimension is dropped and keys stay unique.
+        record["value"] = {
+            ",".join(res.get("dimension_values", [""])): res.get("value") for res in record_total_value["breakdowns"][0]["results"]
+        }
         return record
 
 

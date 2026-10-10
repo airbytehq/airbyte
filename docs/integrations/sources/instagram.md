@@ -119,6 +119,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.46 | 2026-10-06 | [88126](https://github.com/airbytehq/airbyte/pull/88126) | Fix `user_lifetime_insights` dropping the gender dimension of the `age,gender` breakdown |
 | 4.2.45 | 2026-10-06 | [87887](https://github.com/airbytehq/airbyte/pull/87887) | Update dependencies |
 | 4.2.44 | 2026-09-29 | [87211](https://github.com/airbytehq/airbyte/pull/87211) | Update dependencies |
 | 4.2.43 | 2026-09-22 | [86691](https://github.com/airbytehq/airbyte/pull/86691) | Update dependencies |
