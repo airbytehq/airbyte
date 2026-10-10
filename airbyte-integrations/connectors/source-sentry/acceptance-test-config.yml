@@ -7,6 +7,8 @@ acceptance_tests:
             bypass_reason: "Project issues are not being returned by the Sentry API."
           - name: events
             bypass_reason: "No event records exist for the test project."
+          - name: releases
+            bypass_reason: "The test organization has no releases left: the releases API returns none."
         timeout_seconds: 1200
         expect_records:
           path: "integration_tests/expected_records.jsonl"
