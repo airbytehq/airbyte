@@ -18,7 +18,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 57e906dd-03c3-4d2a-8b4c-e3334acaf8b4
-  dockerImageTag: 0.3.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-ramp
   githubIssueLabel: source-ramp
   maxSecondsBetweenMessages: 3600
@@ -33,6 +33,29 @@ data:
       - transactions
       - cards
       - reimbursements
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          Version 1.0.0 declares 13 fields that were plain strings as timestamps or dates, so you no longer
+          need to cast them. These become timestamps: `cards.created_at`; `transactions.accounting_date`,
+          `settlement_date`, `synced_at`, `updated_at` and `user_transaction_time`; and
+          `reimbursements.accounting_date`, `approved_at`, `created_at`, `submitted_at`, `synced_at` and
+          `updated_at`. `reimbursements.transaction_date` becomes a date. Typed destinations change these
+          columns from text to timestamp or date. Connections that sync none of these three streams are not
+          affected. After upgrading, and before the next sync, refresh the source schema and clear the
+          `cards`, `transactions` and `reimbursements` streams. Clearing deletes their data in the
+          destination, and the next sync brings back only what Ramp still returns, so back up these tables
+          before you clear them if you need that data. See the migration guide:
+          https://docs.airbyte.com/integrations/sources/ramp-migrations#upgrading-to-100
+        upgradeDeadline: "2026-11-08"
+        deadlineAction: "disable"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "cards"
+              - "transactions"
+              - "reimbursements"
   documentationUrl: https://docs.airbyte.com/integrations/sources/ramp
   tags:
     - language:manifest-only
