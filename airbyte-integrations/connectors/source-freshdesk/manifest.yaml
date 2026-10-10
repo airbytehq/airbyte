@@ -1095,6 +1095,12 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+      transformations:
+        # The API now returns the SLA policy id as a string; keep the integer the schema declares.
+        - type: AddFields
+          fields:
+            - path: ["id"]
+              value: "{{ record['id'] | int if record.get('id') is not none else none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
