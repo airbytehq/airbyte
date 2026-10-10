@@ -32,7 +32,7 @@ To check your destination, run this query, replacing `<schema>` with your destin
 SELECT COUNT(*) FROM <schema>.invoice_line_items WHERE SUBSTR(id, 1, 3) <> 'il_';
 ```
 
-If the count is `0`, or you don't meet both conditions above, you don't need to do anything. The upgrade doesn't change your data.
+If the count is `0`, you don't need to do anything. The upgrade doesn't change your data. Rely on the count rather than your account's current default API version: events keep the API version that was your default when Stripe created them, so an account that has since upgraded its API version can still have legacy rows from earlier syncs.
 
 ### Migration steps
 
