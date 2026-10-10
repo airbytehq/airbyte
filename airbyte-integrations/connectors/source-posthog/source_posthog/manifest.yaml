@@ -17,6 +17,9 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_key'] }}"
+    error_handler:
+      type: CustomErrorHandler
+      class_name: source_posthog.components.PosthogErrorHandler
 
   retriever:
     type: SimpleRetriever
@@ -170,4 +173,4 @@ streams:
 
 check:
   type: CheckStream
-  stream_names: ["projects"]
+  stream_names: ["projects", "events"]
