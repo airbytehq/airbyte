@@ -1607,14 +1607,24 @@ definitions:
         - auth_type
       authenticators:
         oauth2.0:
-          type: CustomAuthenticator
-          class_name: source_declarative_manifest.components.SingleUseOauth2Authenticator
+          type: OAuthAuthenticator
           client_id: "{{ config['credentials']['client_id'] }}"
           client_secret: "{{ config['credentials']['client_secret'] }}"
           refresh_token: "{{ config['credentials']['refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://accounts.salesloft.com/oauth/token
           grant_type: refresh_token
+          refresh_token_updater:
+            refresh_token_name: refresh_token
+            access_token_config_path:
+              - credentials
+              - access_token
+            refresh_token_config_path:
+              - credentials
+              - refresh_token
+            token_expiry_date_config_path:
+              - credentials
+              - token_expiry_date
         api_key:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['api_key'] }}"
