@@ -164,7 +164,7 @@ uv run --python 3.11 --no-project --with airbyte-cdk==6.48.10 --with pytest --wi
 
 | Version | Date       | Pull Request                                             | Subject        |
 |:--------|:-----------| :------------------------------------------------------- | :------------- |
-| 0.4.0 | 2026-10-10 | TBD | Add opt-in versioned metadata and bounded reporting streams |
+| 0.4.0 | 2026-10-10 | [88451](https://github.com/airbytehq/airbyte/pull/88451) | Add opt-in versioned metadata and bounded reporting streams |
 | 0.3.11 | 2025-05-10 | [60078](https://github.com/airbytehq/airbyte/pull/60078) | Update dependencies |
 | 0.3.10 | 2025-05-03 | [59470](https://github.com/airbytehq/airbyte/pull/59470) | Update dependencies |
 | 0.3.9 | 2025-04-27 | [59086](https://github.com/airbytehq/airbyte/pull/59086) | Update dependencies |
