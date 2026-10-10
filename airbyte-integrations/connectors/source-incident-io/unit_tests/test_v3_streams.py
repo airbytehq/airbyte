@@ -340,7 +340,10 @@ def test_p30d_slices_tile_without_gaps(stream_name, path, records_field, first_w
         mocker.get(f"{_BASE_URL}{path}", json={records_field: [], "pagination_meta": {}})
         _read_stream(stream_name, SyncMode.incremental)
 
-        windows = [request.qs["updated_at[date_range]"][0].lower() for request in mocker.request_history]
+        windows = sorted(
+            [request.qs["updated_at[date_range]"][0].lower() for request in mocker.request_history],
+            key=lambda w: w.split("~")[0],
+        )
 
     assert len(windows) > 1
     assert windows[0] == first_window
