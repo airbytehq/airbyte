@@ -27,6 +27,8 @@ public class MongoConstants {
   public static final String DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY = "discover_sample_size";
   public static final Integer DEFAULT_STREAM_DISCOVER_TIMEOUT_SEC = 600;
   public static final String STREAM_DISCOVER_TIMEOUT_CONFIGURATION_KEY = "discover_timeout_seconds";
+  public static final Integer DEFAULT_DISCOVER_PARALLELISM = 5;
+  public static final String DISCOVER_PARALLELISM_CONFIGURATION_KEY = "discover_parallelism";
   public static final String DRIVER_NAME = "Airbyte";
   public static final String ID_FIELD = "_id";
   public static final String IS_TEST_CONFIGURATION_KEY = "is_test";
