@@ -3381,6 +3381,14 @@ definitions:
                   type:
                   - 'null'
                   - string
+          address:
+            type:
+            - 'null'
+            - string
+          locationName:
+            type:
+            - 'null'
+            - string
   checklists_stream:
     type: DeclarativeStream
     name: checklists
@@ -8843,6 +8851,14 @@ streams:
                 type:
                 - 'null'
                 - string
+        address:
+          type:
+          - 'null'
+          - string
+        locationName:
+          type:
+          - 'null'
+          - string
 - type: DeclarativeStream
   name: checklists
   primary_key: id
