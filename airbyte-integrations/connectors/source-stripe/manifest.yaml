@@ -1510,6 +1510,24 @@ definitions:
           schema:
             $ref: "#/schemas/invoice_line_items"
         transformations:
+          # Events render lines at the account's default Stripe API version. Before 2019-12-03, line ids are legacy
+          # (ii_/sub_/su_/sli_; sub_ and su_ are the subscription id) and the il_ id is in `unique_id`.
+          # Keep `unique_id` and `unique_line_item_id` on the record (undeclared, so the platform drops them).
+          # Pinned-version /lines records have no `unique_id` (no-op).
+          - type: AddFields
+            fields:
+              - path:
+                  - subscription
+                value: "{{ record.get('id') }}"
+                value_type: string
+            condition: "{{ record.get('unique_id') and record.get('type') == 'subscription' and not record.get('subscription') and (record.get('id') or '').startswith(('sub_', 'su_')) }}"
+          - type: AddFields
+            fields:
+              - path:
+                  - id
+                value: "{{ record.get('unique_id') }}"
+                value_type: string
+            condition: "{{ record.get('unique_id') }}"
           - type: AddFields
             fields:
               - path:
