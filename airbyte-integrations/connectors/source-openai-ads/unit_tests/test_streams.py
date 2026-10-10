@@ -5,6 +5,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
+from freezegun import freeze_time
 from requests_mock import ANY, Mocker
 
 from airbyte_cdk.models import Status, SyncMode
@@ -66,6 +67,10 @@ def _mock_campaign_ad_group_ad(requests_mock: Mocker) -> None:
 
 def _mock_insights(requests_mock: Mocker, *rows: dict) -> None:
     requests_mock.get(f"{_URL}/ad_account/insights", [{"json": {**_page(list(rows)), "count": len(rows)}}, _UNEXPECTED_REQUEST])
+
+
+def _mock_empty_insights(requests_mock: Mocker) -> None:
+    requests_mock.get(f"{_URL}/ad_account/insights", json={**_page([]), "count": 0})
 
 
 def _insights_query(requests_mock: Mocker) -> dict:
@@ -195,3 +200,72 @@ def test_spend_limit_windows_reads_data_and_skips_a_403(requests_mock: Mocker) -
 
     assert _records(_read("spend_limit_windows")) == [window]
     assert _records(_read("spend_limit_windows")) == []
+
+
+@freeze_time("2026-09-15T06:00:00Z")
+@pytest.mark.parametrize(
+    "end_date,expected_end",
+    [
+        ("2026-12-31", "2026-09-14"),
+        (None, "2026-09-14"),
+        ("2026-09-10", "2026-09-10"),
+    ],
+    ids=["future-end-date-is-clamped", "default-end-date-uses-utc-minus-12", "past-end-date-is-honoured"],
+)
+def test_incremental_insights_end_date_controls_all_slices(requests_mock: Mocker, end_date: str | None, expected_end: str) -> None:
+    _mock_empty_insights(requests_mock)
+    config = {"api_key": "test-key", "start_date": "2026-08-25"}
+    if end_date is not None:
+        config["end_date"] = end_date
+
+    _read("campaign_insights", SyncMode.incremental, config=config)
+
+    actual_time_ranges = [
+        value for request in requests_mock.request_history for value in parse_qs(urlsplit(request.url).query).get("time_ranges[]", [])
+    ]
+    assert sorted(actual_time_ranges) == sorted(
+        [
+            '{"type":"date_range","since":"2026-08-25","until":"2026-09-07"}',
+            f'{{"type":"date_range","since":"2026-09-08","until":"{expected_end}"}}',
+        ]
+    )
+
+
+@freeze_time("2026-09-15T06:00:00Z")
+def test_incremental_conversions_end_date_is_clamped_and_state_stays_in_range(requests_mock: Mocker) -> None:
+    _mock_page(requests_mock, "/campaigns?limit=500", "cmpn_1")
+    row = {"entity_id": "cmpn_1", "date": "2026-09-13", "conversions": 3}
+    requests_mock.post(
+        f"{_URL}/conversions/insights",
+        json={"object": "list", "data": [row], "count": 1, "account_currency": "USD"},
+    )
+    config = {"api_key": "test-key", "start_date": "2026-09-01", "end_date": "2026-12-31"}
+
+    output = _read("campaign_conversions", SyncMode.incremental, config=config)
+
+    actual_time_ranges = [
+        value for request in requests_mock.request_history if request.method == "POST" for value in request.json()["time_ranges"]
+    ]
+    assert actual_time_ranges == ['{"type":"date_range","since":"2026-09-01","until":"2026-09-14"}']
+    [partition_state] = output.most_recent_state.stream_state.states
+    assert partition_state["cursor"]["date"] <= "2026-09-14"
+
+
+@freeze_time("2026-09-15T06:00:00Z")
+def test_incremental_insights_default_lookback_is_32_days(requests_mock: Mocker) -> None:
+    _mock_empty_insights(requests_mock)
+    state = StateBuilder().with_stream_state("campaign_insights", {"readable_time": "2026-09-13"}).build()
+    config = {"api_key": "test-key"}
+
+    _read("campaign_insights", SyncMode.incremental, state, config)
+
+    actual_time_ranges = [
+        value for request in requests_mock.request_history for value in parse_qs(urlsplit(request.url).query).get("time_ranges[]", [])
+    ]
+    assert sorted(actual_time_ranges) == sorted(
+        [
+            '{"type":"date_range","since":"2026-08-12","until":"2026-08-25"}',
+            '{"type":"date_range","since":"2026-08-26","until":"2026-09-08"}',
+            '{"type":"date_range","since":"2026-09-09","until":"2026-09-14"}',
+        ]
+    )
