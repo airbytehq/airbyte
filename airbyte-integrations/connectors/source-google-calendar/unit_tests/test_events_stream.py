@@ -32,9 +32,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 
 _CONFIG = {
-    "client_id": "id",
-    "client_secret": "secret",
-    "client_refresh_token_2": "rt",
+    "credentials": {"auth_type": "manual", "client_id": "id", "client_secret": "secret", "refresh_token": "rt"},
     "calendarid": "primary",
 }
 
@@ -45,6 +43,7 @@ _TOKEN_REQUEST = HttpRequest(
 )
 _TOKEN_RESPONSE = HttpResponse(json.dumps({"access_token": "at", "expires_in": 3600}))
 _EVENTS_URL = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
+_CALENDAR_URL = "https://www.googleapis.com/calendar/v3/calendars/primary"
 _BASE_PARAMS = {"showDeleted": "true", "maxResults": "2500", "singleEvents": "false"}
 _DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
@@ -101,11 +100,25 @@ def _config(**overrides) -> Mapping[str, Any]:
     return config
 
 
+def _mock_parent_partitions(http_mocker: HttpMocker) -> None:
+    """Mock the partition parent: with `calendarid` set, only the configured calendar is read."""
+    http_mocker.get(HttpRequest(_CALENDAR_URL), HttpResponse(json.dumps({"id": "primary"})))
+
+
 def _read_events(http_mocker: HttpMocker, sync_mode: SyncMode, state=None, config=None, expecting_exception=False):
     http_mocker.post(_TOKEN_REQUEST, _TOKEN_RESPONSE)
+    _mock_parent_partitions(http_mocker)
     config = config or _config()
     source = get_source(config, state=state)
     return read(source, config, _catalog(sync_mode), state=state, expecting_exception=expecting_exception)
+
+
+def _partition_state(cursor: str):
+    """Stream state with one cursor for every calendar, under "state" where the
+    StateDelegatingStream's retention check reads it."""
+    return (
+        StateBuilder().with_stream_state("events", {"use_global_cursor": True, "state": {"updated": cursor}, "lookback_window": 0}).build()
+    )
 
 
 def _stream_state(state_message) -> Mapping[str, Any]:
@@ -145,14 +158,14 @@ def test_incremental_no_state_no_start_date_sends_no_updated_min():
 
         assert output.errors == []
         assert _record_ids(output) == ["e1"]
-        assert _RECORD["updated"] in _stream_state(output.state_messages[-1])["updated"]
+        assert _RECORD["updated"] in _stream_state(output.state_messages[-1])["state"]["updated"]
         http_mocker.assert_number_of_calls(request, 1)
 
 
 def test_incremental_fresh_state_sends_updated_min():
     cursor = _days_ago(2)
     newer = {"id": "e2", "updated": _days_ago(1)}
-    state = StateBuilder().with_stream_state("events", {"updated": cursor}).build()
+    state = _partition_state(cursor)
     with HttpMocker() as http_mocker:
         request = _events_request(updated_min=cursor)
         http_mocker.get(request, _items_response(newer))
@@ -161,13 +174,13 @@ def test_incremental_fresh_state_sends_updated_min():
 
         assert output.errors == []
         assert _record_ids(output) == ["e2"]
-        assert newer["updated"] in _stream_state(output.state_messages[-1])["updated"]
+        assert newer["updated"] in _stream_state(output.state_messages[-1])["state"]["updated"]
         http_mocker.assert_number_of_calls(request, 1)
 
 
 def test_incremental_state_just_inside_retention_sends_updated_min():
     cursor = _days_ago(20)
-    state = StateBuilder().with_stream_state("events", {"updated": cursor}).build()
+    state = _partition_state(cursor)
     with HttpMocker() as http_mocker:
         request = _events_request(updated_min=cursor)
         http_mocker.get(request, _items_response(_RECORD))
@@ -182,7 +195,7 @@ def test_incremental_state_just_inside_retention_sends_updated_min():
 @pytest.mark.parametrize("age_days", [21.5, 22, 28], ids=["21.5d", "22d", "28d"])
 def test_incremental_state_just_past_retention_drops_updated_min_and_resets_state(age_days):
     # Google's measured cut-off is 29 days; the connector keeps a week of margin at 21.
-    state = StateBuilder().with_stream_state("events", {"updated": _days_ago(age_days)}).build()
+    state = _partition_state(_days_ago(age_days))
     with HttpMocker() as http_mocker:
         request = _events_request()
         http_mocker.get(request, _items_response(_RECORD))
@@ -193,12 +206,12 @@ def test_incremental_state_just_past_retention_drops_updated_min_and_resets_stat
         assert _record_ids(output) == ["e1"]
         emitted_states = [_stream_state(message) for message in output.state_messages]
         assert emitted_states[0] == {}, "the stale cursor is cleared before the full re-read"
-        assert _RECORD["updated"] in emitted_states[-1]["updated"]
+        assert _RECORD["updated"] in emitted_states[-1]["state"]["updated"]
         http_mocker.assert_number_of_calls(request, 1)
 
 
 def test_incremental_stale_state_drops_updated_min_and_resets_state():
-    state = StateBuilder().with_stream_state("events", {"updated": _days_ago(60)}).build()
+    state = _partition_state(_days_ago(60))
     with HttpMocker() as http_mocker:
         request = _events_request()
         http_mocker.get(request, _items_response(_RECORD))
@@ -209,7 +222,23 @@ def test_incremental_stale_state_drops_updated_min_and_resets_state():
         assert _record_ids(output) == ["e1"]
         emitted_states = [_stream_state(message) for message in output.state_messages]
         assert emitted_states[0] == {}, "the stale cursor is cleared before the full re-read"
-        assert _RECORD["updated"] in emitted_states[-1]["updated"]
+        assert _RECORD["updated"] in emitted_states[-1]["state"]["updated"]
+
+
+def test_legacy_flat_state_is_not_carried_over():
+    # 0.1.0 saved a flat {"updated": ...}. The retention check cannot parse it and re-reads; the
+    # cursor alone would accept it as its global cursor and send it as updatedMin under the new key.
+    state = StateBuilder().with_stream_state("events", {"updated": _days_ago(2)}).build()
+    with HttpMocker() as http_mocker:
+        request = _events_request()
+        http_mocker.get(request, _items_response(_RECORD))
+
+        output = _read_events(http_mocker, SyncMode.incremental, state=state)
+
+        assert output.errors == []
+        assert _record_ids(output) == ["e1"]
+        assert _stream_state(output.state_messages[0]) == {}, "the 0.1.0 cursor is cleared before the full re-read"
+        http_mocker.assert_number_of_calls(request, 1)
 
 
 def test_incremental_fresh_start_date_sends_updated_min():
@@ -316,7 +345,7 @@ def test_seconds_precision_updated_is_parsed_and_kept():
 
         assert output.errors == []
         assert _record_ids(output) == ["s"]
-        assert seconds_only["updated"][:19] in _stream_state(output.state_messages[-1])["updated"]
+        assert seconds_only["updated"][:19] in _stream_state(output.state_messages[-1])["state"]["updated"]
 
 
 def test_record_updated_slightly_in_the_future_is_kept():
@@ -332,7 +361,7 @@ def test_record_updated_slightly_in_the_future_is_kept():
 
 def test_incremental_branch_does_not_filter_client_side():
     cursor = _days_ago(2)
-    state = StateBuilder().with_stream_state("events", {"updated": cursor}).build()
+    state = _partition_state(cursor)
     server_filtered = {"id": "from_server", "updated": _days_ago(400)}
     with HttpMocker() as http_mocker:
         http_mocker.get(_events_request(updated_min=cursor), _items_response(server_filtered))
@@ -359,7 +388,7 @@ def test_pagination_follows_next_page_token_and_adds_calendar_id():
         assert output.errors == []
         assert _record_ids(output) == ["a", "b"]
         assert {message.record.data["calendar_id"] for message in output.records} == {"primary"}
-        assert second["updated"] in _stream_state(output.state_messages[-1])["updated"]
+        assert second["updated"] in _stream_state(output.state_messages[-1])["state"]["updated"]
         http_mocker.assert_number_of_calls(page_1, 1)
         http_mocker.assert_number_of_calls(page_2, 1)
 
@@ -372,7 +401,7 @@ def test_cancelled_stub_is_stamped_with_a_cursor_that_out_dates_live_rows():
     cancelled = {"id": "x", "status": "cancelled"}
     record = {"id": "e1", "updated": _days_ago(1)}
     cursor = _days_ago(5)
-    cursor_state = StateBuilder().with_stream_state("events", {"updated": cursor}).build()
+    cursor_state = _partition_state(cursor)
     with HttpMocker() as http_mocker:
         http_mocker.get(_events_request(updated_min=cursor), _items_response(cancelled, record))
 
@@ -385,13 +414,13 @@ def test_cancelled_stub_is_stamped_with_a_cursor_that_out_dates_live_rows():
         stamp = _parse(stub["updated"])
         assert timedelta(minutes=59) <= before - stamp <= timedelta(minutes=61), "stub is stamped one hour before the sync"
         assert stamp > _parse(record["updated"]) > _parse(cursor)
-        assert _stream_state(output.state_messages[-1])["updated"] == stub["updated"], "the stamp becomes the cursor"
+        assert _stream_state(output.state_messages[-1])["state"]["updated"] == stub["updated"], "the stamp becomes the cursor"
 
 
 def test_cancelled_stub_only_sync_moves_the_cursor_past_the_input_state():
     cancelled = {"id": "gone", "status": "cancelled"}
     cursor = _days_ago(2)
-    cursor_state = StateBuilder().with_stream_state("events", {"updated": cursor}).build()
+    cursor_state = _partition_state(cursor)
     with HttpMocker() as http_mocker:
         http_mocker.get(_events_request(updated_min=cursor), _items_response(cancelled))
 
@@ -400,13 +429,13 @@ def test_cancelled_stub_only_sync_moves_the_cursor_past_the_input_state():
         assert output.errors == []
         stub = output.records[0].record.data
         assert _parse(stub["updated"]) > _parse(cursor)
-        assert _stream_state(output.state_messages[-1])["updated"] == stub["updated"]
+        assert _stream_state(output.state_messages[-1])["state"]["updated"] == stub["updated"]
 
 
 def test_cancelled_stub_with_a_fresh_cursor_takes_the_cursor_not_the_clock():
     cancelled = {"id": "gone", "status": "cancelled"}
     cursor = (datetime.now(timezone.utc) - timedelta(minutes=30)).strftime(_DATETIME_FORMAT)
-    cursor_state = StateBuilder().with_stream_state("events", {"updated": cursor}).build()
+    cursor_state = _partition_state(cursor)
     with HttpMocker() as http_mocker:
         http_mocker.get(_events_request(updated_min=cursor), _items_response(cancelled))
 
@@ -414,7 +443,7 @@ def test_cancelled_stub_with_a_fresh_cursor_takes_the_cursor_not_the_clock():
 
         assert output.errors == []
         assert output.records[0].record.data["updated"] == cursor
-        assert _stream_state(output.state_messages[-1])["updated"] == cursor
+        assert _stream_state(output.state_messages[-1])["state"]["updated"] == cursor
 
 
 # --- error handling ---------------------------------------------------------------------
@@ -467,7 +496,11 @@ def test_server_error_retries_then_succeeds(status_code):
             FailureType.config_error,
             ("rejected the OAuth credentials", "Re-authorize the connector"),
         ),
-        (_error_response(403, message="Forbidden"), FailureType.config_error, ("lacks access to the configured calendar",)),
+        (
+            _error_response(403, message="Forbidden"),
+            FailureType.config_error,
+            ("lacks access to this calendar", "Calendar API is disabled"),
+        ),
         (_error_response(403, "quotaExceeded"), FailureType.transient_error, ("quota for this project or user is exhausted",)),
         (_error_response(403, "dailyLimitExceeded"), FailureType.transient_error, ("quota for this project or user is exhausted",)),
         (
@@ -480,7 +513,11 @@ def test_server_error_retries_then_succeeds(status_code):
             FailureType.transient_error,
             ("quota for this project or user is exhausted",),
         ),
-        (_error_response(404, message="Not Found"), FailureType.config_error, ('"Calendar Id" was not found', "or use 'primary'")),
+        (
+            _error_response(404, message="Not Found"),
+            FailureType.config_error,
+            ("was not found", "or use 'primary'", "re-sync if a listed calendar was removed"),
+        ),
     ],
     ids=["401", "403-plain", "403-quotaExceeded", "403-dailyLimitExceeded", "403-quota-string-code", "403-quota-no-code", "404"],
 )
@@ -500,7 +537,7 @@ def test_non_retryable_errors_are_classified(response, failure_type, message_fra
 
 def test_410_updated_min_too_long_ago_is_transient():
     cursor = _days_ago(2)
-    state = StateBuilder().with_stream_state("events", {"updated": cursor}).build()
+    state = _partition_state(cursor)
     with HttpMocker() as http_mocker:
         http_mocker.get(_events_request(updated_min=cursor), _error_response(410, "updatedMinTooLongAgo"))
 

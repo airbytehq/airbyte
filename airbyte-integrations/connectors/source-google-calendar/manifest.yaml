@@ -14,9 +14,9 @@ definitions:
     colors:
       type: DeclarativeStream
       name: colors
+      # The response is a single `calendar#colors` object.
       primary_key:
-        - calendar
-        - event
+        - kind
       retriever:
         type: SimpleRetriever
         requester:
@@ -95,6 +95,8 @@ definitions:
         schema:
           $ref: "#/schemas/calendarlist"
     calendars:
+      # The calendar resource of every calendar in `calendarlist` the account can read, hidden ones
+      # included; the list entry's per-user fields (colors, reminders, accessRole) stay in `calendarlist`.
       type: DeclarativeStream
       name: calendars
       primary_key:
@@ -103,14 +105,68 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: users/me/calendarList
+          path: calendars/{{ stream_partition.calendar_id | urlencode }}
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - items
+            field_path: []
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/calendarlist"
+                retriever:
+                  $ref: "#/definitions/streams/calendarlist/retriever"
+                  requester:
+                    $ref: "#/definitions/streams/calendarlist/retriever/requester"
+                    request_parameters:
+                      showHidden: "true"
+                      minAccessRole: reader
+              parent_key: id
+              partition_field: calendar_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/calendars"
+    calendar_partitions:
+      # One parent for every partitioned stream. With `calendarid` set it reads only that calendar
+      # through `calendars/{id}` (which resolves the `primary` alias to the real id and also works for
+      # calendars that are readable but not in the calendar list); otherwise it pages through the
+      # calendar list, hidden calendars included. The expander takes `items` from a list page and
+      # emits the body itself for a single calendar, which has no `items`.
+      type: DeclarativeStream
+      name: calendar_partitions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ 'calendars/' ~ (config['calendarid'] | urlencode) if config.get('calendarid') else 'users/me/calendarList' }}"
+          http_method: GET
+          request_parameters:
+            showHidden: "{{ '' if config.get('calendarid') else 'true' }}"
+            # Set per router; an empty value drops the parameter.
+            minAccessRole: "{{ '' if config.get('calendarid') else parameters.get('min_access_role', '') }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+            record_expander:
+              type: RecordExpander
+              expand_records_from_field:
+                - items
+              on_no_records: emit_parent
+          record_filter:
+            type: RecordFilter
+            # An empty list page would otherwise be emitted as a parent with no calendar id.
+            condition: "{{ record.get('id') }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -124,7 +180,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/calendars"
+          $ref: "#/schemas/calendarlist"
     events:
       type: StateDelegatingStream
       name: events
@@ -158,13 +214,160 @@ definitions:
               maxResults: "2500"
               singleEvents: "false"
               updatedMin: "{{ stream_slice['start_time'] }}"
+    acl:
+      type: DeclarativeStream
+      name: acl
+      primary_key:
+        - calendar_id
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: calendars/{{ stream_partition.calendar_id | urlencode }}/acl
+          http_method: GET
+          request_parameters:
+            maxResults: "250"
+          error_handler:
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+            response_filters:
+              - $ref: "#/definitions/error_filters/unauthorized"
+              - $ref: "#/definitions/error_filters/rate_limited"
+              - $ref: "#/definitions/error_filters/quota_exhausted"
+              - type: HttpResponseFilter
+                # Missing scope or disabled API: every calendar would answer 403, so ignoring it would
+                # report an empty, successful stream.
+                predicate: "{{ response.get('error', {}).get('code') in (403, '403') and ('insufficientPermissions' in response.get('error', {}) | string or 'ACCESS_TOKEN_SCOPE_INSUFFICIENT' in response.get('error', {}) | string or 'accessNotConfigured' in response.get('error', {}) | string or 'SERVICE_DISABLED' in response.get('error', {}) | string) }}"
+                action: FAIL
+                failure_type: config_error
+                error_message: "Reading the acl stream needs the calendar.acls.readonly OAuth scope (or calendar.acls / calendar) and an enabled Calendar API. Generate a new refresh token that includes that scope and paste it into Refresh token, or deselect the acl stream."
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: IGNORE
+                error_message: "Skipped the ACL of a calendar the account does not own; Google only shows sharing rules to calendar owners."
+              - type: HttpResponseFilter
+                http_codes:
+                  - 404
+                action: IGNORE
+                error_message: "Skipped the ACL of a calendar that no longer exists or is no longer shared with the account."
+              - $ref: "#/definitions/error_filters/too_many_requests"
+              - $ref: "#/definitions/error_filters/server_errors"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken') }}"
+            stop_condition: "{{ response.get('nextPageToken') is not defined }}"
+        partition_router:
+          $ref: "#/definitions/owned_calendar_partition_router"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - calendar_id
+              value: "{{ stream_partition.calendar_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/acl"
+    freebusy:
+      type: DeclarativeStream
+      name: freebusy
+      primary_key:
+        - calendar_id
+        - start
+        - end
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: freeBusy
+          http_method: POST
+          # A fixed window around now: Google rejects longer spans (timeRangeTooLong), and start_date,
+          # which bounds event modification times, has no meaning for a point-in-time availability query.
+          request_body:
+            type: RequestBodyJsonObject
+            value:
+              timeMin: "{{ (now_utc() - duration('P30D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+              timeMax: "{{ (now_utc() + duration('P45D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+              items:
+                - id: "{{ stream_partition.calendar_id }}"
+          error_handler:
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+            response_filters:
+              - type: HttpResponseFilter
+                # Google answers 200 and reports a calendar it could not compute under
+                # calendars.<id>.errors, next to an empty busy list; this only logs it.
+                # The `string` filter JSON-encodes the mapping, so match the JSON form of the key.
+                predicate: "{{ '\\\"errors\\\": [' in response.get('calendars', {}) | string }}"
+                action: IGNORE
+                error_message: "Google could not compute free/busy for this calendar (for example notFound or internalError); no busy blocks were synced for it."
+              - $ref: "#/definitions/error_filters/unauthorized"
+              - $ref: "#/definitions/error_filters/rate_limited"
+              - $ref: "#/definitions/error_filters/quota_exhausted"
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                action: FAIL
+                failure_type: config_error
+                error_message: "The authorized Google account lacks access to free/busy information or the Calendar API is disabled."
+              - $ref: "#/definitions/error_filters/too_many_requests"
+              - $ref: "#/definitions/error_filters/server_errors"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - calendars
+              - "*"
+              - busy
+              - "*"
+        partition_router:
+          $ref: "#/definitions/calendar_partition_router"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - calendar_id
+              value: "{{ stream_partition.calendar_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/freebusy"
   events_stream_base:
     type: DeclarativeStream
     name: events
+    # Google keeps event ids unique per calendar only: an invitation shares its id with the
+    # organiser's copy, so the key needs the calendar.
     primary_key:
+      - calendar_id
       - id
     incremental_sync:
       type: DatetimeBasedCursor
+      # One cursor for every calendar. The StateDelegatingStream retention check reads only the
+      # global cursor, so per-calendar cursors would let a quiet calendar send an updatedMin
+      # older than Google's 29-day window and fail with a 410 on every sync.
+      # The flat 0.1.0 state ({"updated": ...}) is dropped only because that retention check cannot
+      # parse it and falls back to a full re-read; the cursor alone would accept it as its global
+      # cursor (test_legacy_flat_state_is_not_carried_over).
+      global_substream_cursor: true
       cursor_field: updated
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -182,7 +385,7 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/base_requester"
-        path: calendars/{{ config['calendarid'] }}/events
+        path: calendars/{{ stream_partition.calendar_id | urlencode }}/events
         http_method: GET
         request_parameters:
           showDeleted: "true"
@@ -206,6 +409,8 @@ definitions:
           type: CursorPagination
           cursor_value: "{{ response.get('nextPageToken') }}"
           stop_condition: "{{ response.get('nextPageToken') is not defined }}"
+      partition_router:
+        $ref: "#/definitions/readable_calendar_partition_router"
     transformations:
       # Cancelled events arrive as stubs without `updated`, the cursor. Destinations dedup on the
       # cursor with NULLS LAST and only replace a row when the incoming cursor is non-null, so an
@@ -223,20 +428,84 @@ definitions:
         fields:
           - path:
               - calendar_id
-            value: "{{ config['calendarid'] }}"
+            value: "{{ stream_partition.calendar_id }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/events"
+  calendar_partition_router:
+    # Every listed calendar: free/busy works for any access role.
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream:
+          $ref: "#/definitions/streams/calendar_partitions"
+        parent_key: id
+        partition_field: calendar_id
+  readable_calendar_partition_router:
+    # Excludes free/busy-only calendars, whose events Google strips of details and expands.
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream:
+          $ref: "#/definitions/streams/calendar_partitions"
+          $parameters:
+            min_access_role: reader
+        parent_key: id
+        partition_field: calendar_id
+  owned_calendar_partition_router:
+    # Google shows sharing rules only to owners. `calendar.acls.readonly` covers "calendars you own",
+    # so a writer's refusal could look like a scope error and fail the stream.
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream:
+          $ref: "#/definitions/streams/calendar_partitions"
+          $parameters:
+            min_access_role: owner
+        parent_key: id
+        partition_field: calendar_id
+  error_filters:
+    unauthorized:
+      type: HttpResponseFilter
+      http_codes:
+        - 401
+      action: FAIL
+      failure_type: config_error
+      error_message: "Google rejected the OAuth credentials for the Calendar API. Re-authorize the connector or generate a new refresh token for the configured client."
+    rate_limited:
+      type: HttpResponseFilter
+      predicate: "{{ 'rateLimitExceeded' in response.get('error', {}) | string or 'userRateLimitExceeded' in response.get('error', {}) | string }}"
+      action: RATE_LIMITED
+    quota_exhausted:
+      type: HttpResponseFilter
+      # 403 usageLimits errors that do not clear within the sync (project or user quota).
+      # Excludes the body's 429 status so a 429 with the same reason still goes to RATE_LIMITED; a string
+      # or missing code is tolerated. http_codes would OR with the predicate and catch every 403, and the
+      # CDK's `string` filter wraps non-strings in triple quotes, so the code is compared as int or str.
+      predicate: "{{ response.get('error', {}).get('code') not in (429, '429') and ('quotaExceeded' in response.get('error', {}) | string or 'dailyLimitExceeded' in response.get('error', {}) | string) }}"
+      action: FAIL
+      failure_type: transient_error
+      error_message: "The Google Calendar API quota for this project or user is exhausted. The sync will succeed once the quota resets; no configuration change is needed."
+    too_many_requests:
+      type: HttpResponseFilter
+      http_codes:
+        - 429
+      action: RATE_LIMITED
+    server_errors:
+      type: HttpResponseFilter
+      http_codes:
+        - 500
+        - 502
+        - 503
+        - 504
+      action: RETRY
   base_requester:
     type: HttpRequester
     url_base: https://www.googleapis.com/calendar/v3/
     authenticator:
       type: OAuthAuthenticator
-      client_id: "{{ config['client_id'] }}"
+      client_id: "{{ config['credentials']['client_id'] }}"
       grant_type: refresh_token
-      client_secret: "{{ config['client_secret'] }}"
-      refresh_token: "{{ config['client_refresh_token_2'] }}"
+      client_secret: "{{ config['credentials']['client_secret'] }}"
+      refresh_token: "{{ config['credentials']['refresh_token'] }}"
       refresh_request_body: {}
       token_refresh_endpoint: https://oauth2.googleapis.com/token
     error_handler:
@@ -247,36 +516,21 @@ definitions:
             - type: ExponentialBackoffStrategy
               factor: 5
           response_filters:
-            - type: HttpResponseFilter
-              http_codes:
-                - 401
-              action: FAIL
-              failure_type: config_error
-              error_message: "Google rejected the OAuth credentials for the Calendar API. Re-authorize the connector or generate a new refresh token for the configured client."
-            - type: HttpResponseFilter
-              predicate: "{{ 'rateLimitExceeded' in response.get('error', {}) | string or 'userRateLimitExceeded' in response.get('error', {}) | string }}"
-              action: RATE_LIMITED
-            - type: HttpResponseFilter
-              # 403 usageLimits errors that do not clear within the sync (project or user quota).
-              # Excludes the body's 429 status so a 429 with the same reason still goes to RATE_LIMITED; a string
-              # or missing code is tolerated. http_codes would OR with the predicate and catch every 403, and the
-              # CDK's `string` filter wraps non-strings in triple quotes, so the code is compared as int or str.
-              predicate: "{{ response.get('error', {}).get('code') not in (429, '429') and ('quotaExceeded' in response.get('error', {}) | string or 'dailyLimitExceeded' in response.get('error', {}) | string) }}"
-              action: FAIL
-              failure_type: transient_error
-              error_message: "The Google Calendar API quota for this project or user is exhausted. The sync will succeed once the quota resets; no configuration change is needed."
+            - $ref: "#/definitions/error_filters/unauthorized"
+            - $ref: "#/definitions/error_filters/rate_limited"
+            - $ref: "#/definitions/error_filters/quota_exhausted"
             - type: HttpResponseFilter
               http_codes:
                 - 403
               action: FAIL
               failure_type: config_error
-              error_message: "The authorized Google account lacks access to the configured calendar or the Calendar API is disabled."
+              error_message: "The authorized Google account lacks access to this calendar (the one set in \"Calendar Id\", or one listed in the account's calendar list) or the Calendar API is disabled."
             - type: HttpResponseFilter
               http_codes:
                 - 404
               action: FAIL
               failure_type: config_error
-              error_message: "The calendar configured in \"Calendar Id\" was not found by the Google Calendar API. Check the ID in the calendar's settings, or use 'primary'."
+              error_message: "A calendar was not found by the Google Calendar API: check the ID set in \"Calendar Id\" (or use 'primary'), or re-sync if a listed calendar was removed."
             - type: HttpResponseFilter
               # 410 with reason `deleted` (calendar removed) or `fullSyncRequired` (only possible with
               # syncToken, which this connector does not send): the user must act, not wait.
@@ -294,17 +548,8 @@ definitions:
               action: FAIL
               failure_type: transient_error
               error_message: "Google Calendar rejected the saved sync position of the events stream as too old. The next sync re-reads the calendar automatically; reset the events stream to do it now."
-            - type: HttpResponseFilter
-              http_codes:
-                - 429
-              action: RATE_LIMITED
-            - type: HttpResponseFilter
-              http_codes:
-                - 500
-                - 502
-                - 503
-                - 504
-              action: RETRY
+            - $ref: "#/definitions/error_filters/too_many_requests"
+            - $ref: "#/definitions/error_filters/server_errors"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -326,6 +571,8 @@ streams:
   - $ref: "#/definitions/streams/calendarlist"
   - $ref: "#/definitions/streams/calendars"
   - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/acl"
+  - $ref: "#/definitions/streams/freebusy"
 
 spec:
   type: Spec
@@ -333,34 +580,73 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - client_id
-      - client_secret
-      - client_refresh_token_2
-      - calendarid
+      - credentials
     properties:
-      client_id:
-        type: string
+      credentials:
+        type: object
         order: 0
-        title: Client ID
-        description: The client ID of the Google Cloud OAuth 2.0 application used to access the Calendar API.
-        airbyte_secret: true
-      client_secret:
-        type: string
-        order: 1
-        title: Client secret
-        description: The client secret of the Google Cloud OAuth 2.0 application.
-        airbyte_secret: true
-      client_refresh_token_2:
-        type: string
-        order: 2
-        title: Refresh token
-        description: A refresh token obtained for the OAuth application with the Calendar API scope. It is exchanged for an access token at the start of every sync.
-        airbyte_secret: true
+        title: Authentication
+        oneOf:
+          - title: Authenticate via Google (OAuth)
+            type: object
+            description: Sign in with Google using Airbyte's OAuth app (Cloud).
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The OAuth 2.0 client ID from your Google Cloud project.
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The OAuth 2.0 client secret from your Google Cloud project.
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: Refresh token obtained from the Google OAuth consent flow.
+                airbyte_secret: true
+          - title: Authenticate with custom app (client ID / secret)
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: manual
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The OAuth 2.0 client ID from your own Google Cloud OAuth app.
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The OAuth 2.0 client secret from your own Google Cloud OAuth app.
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: Refresh token obtained from your own Google Cloud OAuth app with the calendar.readonly scope.
+                airbyte_secret: true
       calendarid:
         type: string
         order: 3
         title: Calendar Id
-        description: The ID of the calendar to sync events from, found in the calendar's settings in Google Calendar (for the primary calendar this is the account's email address). The alias 'primary' also works, but it is stored verbatim in the events' calendar_id column, so prefer the real ID when that column should join to calendarlist.
+        description: The ID of a single calendar to sync events, acl and freebusy from, found in the calendar's settings in Google Calendar (for the primary calendar this is the account's email address). The alias 'primary' also works; it is resolved to the calendar's real ID, which is what the calendar_id column holds. Leave empty to sync every calendar in the account's calendar list, hidden ones included; events are read from calendars the account can read, acl from calendars it owns, and freebusy from all of them. Calendars added to the list later are synced from the stream's current cursor, so reset the events stream to backfill them.
       start_date:
         type: string
         order: 4
@@ -377,6 +663,85 @@ spec:
         default: 3
     additionalProperties: true
 
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "https://www.googleapis.com/auth/calendar.readonly"
+          - scope: "https://www.googleapis.com/auth/calendar.acls.readonly"
+        consent_url: "https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent"
+        access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
+        extract_output:
+          - refresh_token
+      complete_oauth_output_specification:
+        type: object
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Move flat OAuth credentials under `credentials` as the custom-app option
+        transformations:
+          - type: ConfigAddFields
+            condition: "{{ 'client_refresh_token_2' in config }}"
+            fields:
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - auth_type
+                value: "manual"
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - client_id
+                value: "{{ config['client_id'] }}"
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - client_secret
+                value: "{{ config['client_secret'] }}"
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - refresh_token
+                value: "{{ config['client_refresh_token_2'] }}"
+          - type: ConfigRemoveFields
+            condition: "{{ 'credentials' in config }}"
+            field_pointers:
+              - - client_id
+              - - client_secret
+              - - client_refresh_token_2
+
 
 metadata:
   autoImportSchema:
@@ -385,6 +750,8 @@ metadata:
     calendarlist: true
     calendars: true
     events: true
+    acl: true
+    freebusy: true
   testedStreams:
     colors:
       streamHash: 861414b167a55e3fbe46e2f2cee347da33929c29
@@ -899,6 +1266,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
     required:
       - calendar
       - event
@@ -1033,21 +1402,39 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      kind:
+        type:
+          - string
+          - "null"
+      etag:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      summary:
+        type:
+          - string
+          - "null"
       description:
         type:
           - string
           - "null"
-      accessRole:
+      location:
         type:
           - string
           - "null"
-      backgroundColor:
+      timeZone:
         type:
           - string
           - "null"
-      colorId:
+      dataOwner:
         type:
           - string
+          - "null"
+      autoAcceptInvitations:
+        type:
+          - boolean
           - "null"
       conferenceProperties:
         type:
@@ -1062,43 +1449,12 @@ schemas:
               type:
                 - string
                 - "null"
-      defaultReminders:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            method:
-              type:
-                - string
-                - "null"
-            minutes:
-              type:
-                - number
-                - "null"
-      etag:
-        type:
-          - string
-          - "null"
-      foregroundColor:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      kind:
-        type:
-          - string
-          - "null"
-      notificationSettings:
+      labelProperties:
         type:
           - object
           - "null"
         properties:
-          notifications:
+          eventLabels:
             type:
               - array
               - "null"
@@ -1107,30 +1463,18 @@ schemas:
                 - object
                 - "null"
               properties:
-                type:
+                id:
                   type:
                     - string
                     - "null"
-                method:
+                name:
                   type:
                     - string
                     - "null"
-      primary:
-        type:
-          - boolean
-          - "null"
-      selected:
-        type:
-          - boolean
-          - "null"
-      summary:
-        type:
-          - string
-          - "null"
-      timeZone:
-        type:
-          - string
-          - "null"
+                backgroundColor:
+                  type:
+                    - string
+                    - "null"
     required:
       - id
   events:
@@ -1382,6 +1726,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       creator:
         type:
           - object
@@ -1408,10 +1754,13 @@ schemas:
             type:
               - string
               - "null"
+            format: date
           dateTime:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           timeZone:
             type:
               - string
@@ -1506,10 +1855,17 @@ schemas:
           - object
           - "null"
         properties:
+          date:
+            type:
+              - string
+              - "null"
+            format: date
           dateTime:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           timeZone:
             type:
               - string
@@ -1565,10 +1921,13 @@ schemas:
             type:
               - string
               - "null"
+            format: date
           dateTime:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           timeZone:
             type:
               - string
@@ -1589,9 +1948,69 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       visibility:
         type:
           - string
           - "null"
     required:
+      - calendar_id
       - id
+  acl:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      kind:
+        type:
+          - string
+          - "null"
+      etag:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      scope:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      role:
+        type:
+          - string
+          - "null"
+      calendar_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  freebusy:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      calendar_id:
+        type: string
+      start:
+        type: string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      end:
+        type: string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+    required:
+      - calendar_id
+      - start
+      - end
