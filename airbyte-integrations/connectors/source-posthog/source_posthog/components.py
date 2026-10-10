@@ -4,18 +4,36 @@
 
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from urllib.parse import parse_qs, urlparse
 
-from airbyte_cdk.sources.declarative.incremental import Cursor
+from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from airbyte_cdk.sources.streams.checkpoint.cursor import Cursor
+from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
 
 @dataclass
 class EventsSimpleRetriever(SimpleRetriever):
+    record_selector: RecordSelector
+
     def __post_init__(self, parameters: Mapping[str, Any]):
+        if self.record_selector.transformations and isinstance(self.record_selector.transformations[0], dict):
+            self.record_selector.transformations = []
         super().__post_init__(parameters)
         self.cursor = self.stream_slicer if isinstance(self.stream_slicer, Cursor) else None
+
+    def _request_params(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        params = super()._request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        if next_page_token:
+            encoded_params = parse_qs(urlparse(self._paginator_path() or "").query)
+            return {key: value for key, value in params.items() if key not in encoded_params}
+        return params
 
     def request_params(
         self,
@@ -81,6 +99,9 @@ class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
     def get_stream_state(self) -> Mapping[str, Any]:
         return self._cursor or {}
 
+    def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
+        return self.get_stream_state()
+
     def set_initial_state(self, stream_state: StreamState) -> None:
         self._cursor = stream_state
 
@@ -112,7 +133,7 @@ class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
 
             # Each project should have own datetime slices depends on its state
             datetime_slicer.set_initial_state(project_state)
-            project_datetime_slices = datetime_slicer.stream_slices()
+            project_datetime_slices = [dict(datetime_slice) for datetime_slice in datetime_slicer.stream_slices()]
 
             # fix date ranges: start_time of next slice must be equal to end_time of previous slice
             if project_datetime_slices and project_state:
