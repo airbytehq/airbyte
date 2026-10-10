@@ -13,17 +13,30 @@ data:
       enabled: false
       packageName: airbyte-source-employment-hero
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.32.0@sha256:0fd296fcebe643f973e64cb55dab3c7443d00496897ebd2b682b29332a660780
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.33.0@sha256:3343cc05b79b9a3c07fa90152bd5348da7154b44f63521857bd2a745883d85cd
   connectorSubtype: api
   connectorType: source
   definitionId: e2db518e-ef68-40bb-a2b6-b9f9aabbadb3
-  dockerImageTag: 0.0.65
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-employment-hero
   githubIssueLabel: source-employment-hero
   icon: icon.svg
   license: ELv2
   name: Employment-Hero
   releaseDate: 2024-09-25
+  releases:
+    breakingChanges:
+      0.1.0:
+        message: >-
+          Authentication now uses the Employment Hero OAuth 2.0 refresh-token flow
+          instead of a static access token. Employment Hero access tokens expire
+          after 15 minutes, so every existing connection using the `API Key`
+          field fails with `Unauthorized`. All users must edit the source and
+          enter the OAuth application's Client ID, Client Secret and a Refresh
+          Token. See the [Employment Hero migration guide](https://docs.airbyte.com/integrations/sources/employment-hero-migrations)
+          for details.
+        upgradeDeadline: "2026-10-21"
+        deadlineAction: "disable"
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/employment-hero
@@ -38,5 +51,5 @@ data:
       url: https://developer.employmenthero.com/
       type: api_reference
     - title: Employment Hero authentication
-      url: https://developer.employmenthero.com/api-references/authentication/
+      url: https://developer.employmenthero.com/api-references/authentication
       type: authentication_guide

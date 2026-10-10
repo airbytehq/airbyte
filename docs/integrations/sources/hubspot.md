@@ -85,6 +85,7 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 | `email_subscriptions`       | `content`                                                                                                    |
 | `engagements`               | `crm.objects.companies.read`, `crm.objects.contacts.read`, `crm.objects.deals.read`, `tickets`, `e-commerce` |
 | `engagements_emails`        | `sales-email-read`                                                                                           |
+| `engagements_task_pipelines` | `crm.objects.contacts.read`                                                                                  |
 | `forms`                     | `forms`                                                                                                      |
 | `form_submissions`          | `forms`                                                                                                      |
 | `goals`                     | `crm.objects.goals.read`                                                                                     |
@@ -284,6 +285,7 @@ The HubSpot source connector supports the following streams:
 - [Engagements Meetings](https://developers.hubspot.com/docs/api/crm/meetings) \(Incremental\)
 - [Engagements Notes](https://developers.hubspot.com/docs/api/crm/notes) \(Incremental\)
 - [Engagements Tasks](https://developers.hubspot.com/docs/api/crm/tasks) \(Incremental\)
+- [Engagements Task Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines) \(Client-Side Incremental\)
 - [Forms](https://developers.hubspot.com/docs/api/marketing/forms) \(Client-Side Incremental\)
 - [Form Submissions](https://developers.hubspot.com/docs/api/marketing/forms) \(Client-Side Incremental\)
 - [Goals](https://developers.hubspot.com/docs/api/crm/goals) \(Incremental\)
@@ -317,6 +319,8 @@ The property history streams (`contacts_property_history`, `companies_property_h
 HubSpot calculated properties — formula fields, rollup summaries, and analytics properties such as `hs_analytics_*` — always have a timestamp that mirrors the time of the latest sync, not the time of the last user-initiated change. This causes the sync cursor to advance past records that have not yet been synced, which can result in missing records.
 
 To mitigate this, configure the **Property History Lookback Window** in the source settings. A value of `43200` (30 days) is a reasonable starting point. Because these streams use Append + Deduped sync mode, duplicate records from the lookback period are handled automatically.
+
+By default, these streams request history for every property on the object, which can generate many API requests and a large volume of records. To limit this, configure **Deals Property History Properties**, **Contacts Property History Properties**, or **Companies Property History Properties** with a list of property internal names (for example, `["dealstage"]`). Only history for the listed properties is then synced for the corresponding stream. See HubSpot's default [deal](https://knowledge.hubspot.com/properties/hubspots-default-deal-properties), [contact](https://knowledge.hubspot.com/properties/hubspots-default-contact-properties), and [company](https://knowledge.hubspot.com/properties/hubspot-crm-default-company-properties) properties for the internal names. If a list is empty or not set, history for all properties is synced.
 
 ### Notes on the `engagements` stream
 
@@ -473,6 +477,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.11.0 | 2026-10-01 | [87604](https://github.com/airbytehq/airbyte/pull/87604) | Add `deals_property_history_properties`, `contacts_property_history_properties`, and `companies_property_history_properties` config options to limit property history streams to a configured list of properties |
+| 6.10.0 | 2026-09-22 | [86415](https://github.com/airbytehq/airbyte/pull/86415) | Add new `engagements_task_pipelines` stream exposing HubSpot task pipelines and their stages, so `engagements_tasks.properties.hs_pipeline_stage` can be resolved to a stage label and open/closed state |
 | 6.9.3 | 2026-09-22 | [86682](https://github.com/airbytehq/airbyte/pull/86682) | Update dependencies |
 | 6.9.2 | 2026-09-16 | [86350](https://github.com/airbytehq/airbyte/pull/86350) | Report an invalid `from_object`/`to_object` identifier in `custom_object_association_streams` as a configuration error instead of a generic credentials error |
 | 6.9.1 | 2026-09-15 | [86075](https://github.com/airbytehq/airbyte/pull/86075) | Update dependencies |

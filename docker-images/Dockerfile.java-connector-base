@@ -12,19 +12,28 @@ RUN set -o xtrace && \
     rm -rf /var/cache/dnf
 
 # Set-up groups, users, and directories
+#
+# Normally the connector runs as the airbyte user (UID 1000), which owns these directories.
+# OpenShift instead runs the container as an arbitrary UID that is not the owner but is always a
+# member of group 0. For that UID to use them, two things must be true:
+#   1. group 0 must be the files' group      -> chown airbyte:0  (owner stays airbyte)
+#   2. the group must be allowed to write    -> chmod g=u        (give the group the owner's permissions)
+# u+w is needed first because some trust store files ship read-only even for the owner, and
+# g=u can only copy a write bit that exists.
 RUN groupadd --gid 1000 airbyte && \
     useradd --uid 1000 --gid airbyte --shell /bin/bash --create-home airbyte && \
     mkdir /secrets && \
     mkdir /config && \
     mkdir --mode 755 /airbyte && \
     mkdir --mode 755 /custom_cache && \
-    chown -R airbyte:airbyte /airbyte && \
-    chown -R airbyte:airbyte /custom_cache && \
-    chown -R airbyte:airbyte /secrets && \
-    chown -R airbyte:airbyte /config && \
-    chown -R airbyte:airbyte /usr/share/pki/ca-trust-source && \
-    chown -R airbyte:airbyte /etc/pki/ca-trust && \
+    for dir in /airbyte /custom_cache /secrets /config /home/airbyte /usr/share/pki/ca-trust-source /etc/pki/ca-trust; do \
+        chown -R airbyte:0 "$dir" && \
+        chmod -R u+w,g=u "$dir"; \
+    done && \
     chown -R airbyte:airbyte /tmp
+
+# The arbitrary UID has no passwd entry, so nothing else sets HOME.
+ENV HOME=/home/airbyte
 
 # Set environment variables that the Java connector bootstrap script will expect
 ENV AIRBYTE_SPEC_CMD="/airbyte/javabase.sh --spec"
@@ -41,5 +50,5 @@ ADD https://raw.githubusercontent.com/airbytehq/airbyte/6d8a3a2bc4f4ca79f1016444
 ADD https://raw.githubusercontent.com/airbytehq/airbyte/6d8a3a2bc4f4ca79f10164447a90fdce5c9ad6f9/airbyte-integrations/bases/base-java/javabase.sh \
     /airbyte/javabase.sh
 
-RUN chown airbyte:airbyte /airbyte/base.sh /airbyte/javabase.sh && \
-    chmod 750 /airbyte/base.sh /airbyte/javabase.sh
+RUN chown airbyte:0 /airbyte/base.sh /airbyte/javabase.sh && \
+    chmod 755 /airbyte/base.sh /airbyte/javabase.sh

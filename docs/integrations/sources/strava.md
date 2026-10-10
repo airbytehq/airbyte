@@ -8,6 +8,12 @@ Scopes:
 
 - `activity:read_all`
 
+The authorized athlete must grant this scope during authorization. Refreshing a token does not add missing permissions. If you receive an `activity:read_permission` error, reauthorize the application with `activity:read_all` and update the source credentials. The connection check validates access to both athlete stats and activities.
+
+Strava access tokens expire after six hours. Airbyte automatically refreshes them and saves the latest refresh token. If you exchange tokens outside Airbyte, use the latest refresh token when updating the source because Strava invalidates older refresh tokens when it rotates them.
+
+If Strava returns `Application` / `Status` / `Inactive`, the developer application is inactive. Restore its access with Strava before retrying; changing the athlete ID or start date will not resolve this error.
+
 ## Setup guide
 
 ### Step 1: Set up Strava
@@ -129,8 +135,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                         |
+| Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.0 | 2026-10-07 | [88212](https://github.com/airbytehq/airbyte/pull/88212) | Fix OAuth token expiry and refresh-token rotation; validate activity permissions during setup. See the [migration guide](strava-migrations.md). |
 | 0.3.52 | 2026-06-30 | [81265](https://github.com/airbytehq/airbyte/pull/81265) | Update dependencies |
 | 0.3.51 | 2026-06-23 | [80672](https://github.com/airbytehq/airbyte/pull/80672) | Update dependencies |
 | 0.3.50 | 2026-06-16 | [80056](https://github.com/airbytehq/airbyte/pull/80056) | Update dependencies |

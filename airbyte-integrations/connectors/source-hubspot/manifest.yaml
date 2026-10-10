@@ -420,6 +420,9 @@ definitions:
                   extractor:
                     type: DpathExtractor
                     field_path: []
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ not config.get('companies_property_history_properties') or record.get('name') in config.get('companies_property_history_properties') }}"
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -511,6 +514,9 @@ definitions:
                   extractor:
                     type: DpathExtractor
                     field_path: []
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ not config.get('contacts_property_history_properties') or record.get('name') in config.get('contacts_property_history_properties') }}"
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -634,6 +640,9 @@ definitions:
                   extractor:
                     type: DpathExtractor
                     field_path: []
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ not config.get('deals_property_history_properties') or record.get('name') in config.get('deals_property_history_properties') }}"
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -1821,6 +1830,35 @@ definitions:
           $ref: "#/schemas/engagements_tasks"
       - $ref: "#/definitions/base_dynamic_schema_loader"
 
+  engagements_task_pipelines_stream:
+    $ref: "#/definitions/stream_base"
+    name: engagements_task_pipelines
+    primary_key:
+      - id
+    $parameters:
+      name: engagements_task_pipelines
+      required_scopes: crm.objects.contacts.read
+    retriever:
+      # `/crm/v3/pipelines/tasks` returns every pipeline in a single response, so the shared
+      # offset paginator would only add a meaningless `limit` parameter to the request.
+      $ref: "#/definitions/retriever_without_pagination"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/pipelines/tasks
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record['createdAt'] }}"
+        condition: "{{ record.get('updatedAt') is none }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/engagements_task_pipelines"
+
   subscription_changes_stream:
     $ref: "#/definitions/stream_base"
     name: subscription_changes
@@ -2729,6 +2767,7 @@ streams:
   - "#/definitions/engagements_meetings_stream"
   - "#/definitions/engagements_notes_stream"
   - "#/definitions/engagements_tasks_stream"
+  - "#/definitions/engagements_task_pipelines_stream"
   - "#/definitions/form_submissions_stream"
   - "#/definitions/forms_stream"
   - "#/definitions/goals_stream"
@@ -3064,6 +3103,42 @@ spec:
         minimum: 0
         title: Property History Lookback Window (minutes)
         type: integer
+      deals_property_history_properties:
+        type: array
+        items:
+          type: string
+        title: Deals Property History Properties
+        description: >-
+          Optional list of property internal names whose history to sync for the
+          `deals_property_history` stream. If empty or not set, history for all
+          properties is synced. See HubSpot's
+          <a href="https://knowledge.hubspot.com/properties/hubspots-default-deal-properties">default deals properties</a> for the internal names.
+        examples:
+          - ["dealstage"]
+      contacts_property_history_properties:
+        type: array
+        items:
+          type: string
+        title: Contacts Property History Properties
+        description: >-
+          Optional list of property internal names whose history to sync for the
+          `contacts_property_history` stream. If empty or not set, history for all
+          properties is synced. See HubSpot's
+          <a href="https://knowledge.hubspot.com/properties/hubspots-default-contact-properties">default contacts properties</a> for the internal names.
+        examples:
+          - ["lifecyclestage"]
+      companies_property_history_properties:
+        type: array
+        items:
+          type: string
+        title: Companies Property History Properties
+        description: >-
+          Optional list of property internal names whose history to sync for the
+          `companies_property_history` stream. If empty or not set, history for all
+          properties is synced. See HubSpot's
+          <a href="https://knowledge.hubspot.com/properties/hubspot-crm-default-company-properties">default companies properties</a> for the internal names.
+        examples:
+          - ["lifecyclestage"]
       credentials:
         title: Authentication
         description: Choose how to authenticate to HubSpot.
@@ -5514,6 +5589,124 @@ schemas:
           type:
             - "null"
             - string
+
+  engagements_task_pipelines:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      label:
+        description: The label or name of the task pipeline.
+        type:
+          - "null"
+          - string
+      displayOrder:
+        description: The order in which the task pipeline is displayed.
+        type:
+          - "null"
+          - integer
+      id:
+        description: The unique identifier of the task pipeline.
+        type:
+          - "null"
+          - string
+      archived:
+        description: Indicates if the task pipeline is archived or not.
+        type:
+          - "null"
+          - boolean
+      stages:
+        description:
+          List of stages within the task pipeline. Join `stages[].id` against
+          `engagements_tasks.properties.hs_pipeline_stage` to resolve a task's stage label and
+          its open/closed state.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            label:
+              description: The label or name of the stage.
+              type:
+                - "null"
+                - string
+            displayOrder:
+              description: The order in which the stage is displayed.
+              type:
+                - "null"
+                - integer
+            metadata:
+              description:
+                Additional metadata related to the stage. HubSpot returns these values as
+                strings rather than native booleans or enums.
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                isClosed:
+                  description:
+                    Whether a task in this stage counts as closed, returned as the string
+                    "true" or "false".
+                  type:
+                    - "null"
+                    - string
+                state:
+                  description:
+                    The open/closed state of the stage, returned as the string "OPEN" or
+                    "CLOSED". Task stages use `state`, unlike ticket stages, which use
+                    `ticketState`.
+                  type:
+                    - "null"
+                    - string
+            id:
+              description:
+                The unique identifier of the stage. Always typed as a string. HubSpot's default
+                task stages use UUIDs while stages created later in the UI get numeric IDs
+                (for example `5996839954`), and `engagements_tasks.properties.hs_pipeline_stage`
+                is itself a string, so the join key must not be narrowed to an integer.
+              type:
+                - "null"
+                - string
+            createdAt:
+              description: The date and time when the stage was created.
+              type:
+                - "null"
+                - string
+              format: date-time
+            updatedAt:
+              description: The date and time when the stage was last updated.
+              type:
+                - "null"
+                - string
+              format: date-time
+            archived:
+              description: Indicates if the stage is archived or not.
+              type:
+                - "null"
+                - boolean
+            writePermissions:
+              description: Permissions for writing/modifying the stage.
+              type:
+                - "null"
+                - string
+      createdAt:
+        description: The date and time when the task pipeline was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: The date and time when the task pipeline was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
 
   form_submissions:
     $schema: http://json-schema.org/schema#
