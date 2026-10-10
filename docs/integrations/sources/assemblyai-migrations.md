@@ -6,7 +6,7 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 :::danger Optional backfill can delete historical data
 
-Clearing `transcripts` deletes destination data. Back up the affected tables before an optional backfill: AssemblyAI's listing API cannot recover transcripts older than 90 days.
+Clearing `transcripts` deletes destination data. Back up the affected tables before an optional backfill: AssemblyAI's listing API only returns transcripts from the last 30 days of usage, so older transcripts can't be re-synced.
 
 :::
 
@@ -29,7 +29,7 @@ Connections that select `lemur_response` must update their configured catalog. C
 3. Remove `request_id` from manually managed source configurations. Existing configurations containing it remain accepted, but it is no longer used.
 4. Run a sync of the remaining streams. No data reset is required to remove LeMUR; existing destination data is not a source for new LLM Gateway responses.
 
-An **optional** backfill can recover transcripts missed by the previous pagination bug. Back up the destination tables first, then clear and resync the `transcripts` stream if needed. The re-sync is bounded by `start_date` and AssemblyAI's 90-day listing retention; older history cannot be recovered from this API. Skipping the backfill leaves previously missed records before the saved cursor absent from the destination.
+An **optional** backfill can recover transcripts missed by the previous pagination bug. Back up the destination tables first, then clear and resync the `transcripts` stream if needed. The re-sync is bounded by `start_date` and AssemblyAI's 30-day listing window; older history cannot be recovered from this API. Skipping the backfill leaves previously missed records before the saved cursor absent from the destination.
 
 ### Downstream consumers
 
