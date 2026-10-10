@@ -42,13 +42,13 @@ enum class ColumnTypeChangeBehavior {
 }
 
 /**
- * Applies schema changes to an Iceberg [Table], including nested columns (struct fields).
+ * Applies schema changes to an Iceberg [Table], including nested struct fields and list elements.
  *
  * Supports:
  * - Adding new columns (possibly nested).
  * - Removing top-level columns.
  * - Updating types (finding a supertype).
- * - Marking columns newly optional.
+ * - Marking top-level columns, nested struct fields, and list elements newly optional.
  *
  * @property comparator Used to compare schemas and find differences.
  * @property superTypeFinder Used to find a common supertype when data types differ.
@@ -63,7 +63,8 @@ class IcebergTableSynchronizer(
      *
      * 1. Remove columns that are no longer in the incoming schema.
      * 2. Update column types to a common supertype if they differ.
-     * 3. Mark columns newly optional if changed from required.
+     * 3. Mark columns, nested struct fields, and list elements newly optional if changed from
+     * required.
      * 4. Add columns that don't exist in the existing schema.
      *
      * @param table The Iceberg table to update.
