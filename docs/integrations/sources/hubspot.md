@@ -71,6 +71,7 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 
 | Stream                      | Required Scope                                                                                               |
 | :-------------------------- | :----------------------------------------------------------------------------------------------------------- |
+| `call_recordings`           | `crm.objects.contacts.read`                                                                                  |
 | `campaigns`                 | `content`                                                                                                    |
 | `companies`                 | `crm.objects.companies.read`, `crm.schemas.companies.read`                                                   |
 | `contact_lists`             | `crm.lists.read`                                                                                             |
@@ -92,6 +93,7 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 | `leads`                     | `crm.objects.leads.read`, `crm.schemas.leads.read`                                                   |
 | `list_memberships`          | `crm.lists.read`                                                                                             |
 | `line_items`                | `e-commerce`                                                                                                 |
+| `meeting_recordings`        | `crm.objects.contacts.read`                                                                                  |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
 | `contacts_property_history` | `crm.objects.contacts.read`                                                                                  |
@@ -268,6 +270,7 @@ There are two types of incremental sync:
 
 The HubSpot source connector supports the following streams:
 
+- [Call Recordings](https://developers.hubspot.com/docs/api/crm/calls) \(Incremental, file transfer\)
 - [Campaigns](https://developers.hubspot.com/docs/api/marketing/campaigns) \(Client-Side Incremental\)
 - [Companies](https://developers.hubspot.com/docs/api/crm/companies) \(Incremental\)
 - [Contact Lists](https://developers.hubspot.com/docs/reference/api/crm/lists#post-%2Fcrm%2Fv3%2Flists%2Fsearch) \(Incremental\)
@@ -293,6 +296,7 @@ The HubSpot source connector supports the following streams:
 - [List Memberships](https://developers.hubspot.com/docs/reference/api/crm/lists#retrieve-records-with-list-memberships) \(Full Refresh\)
 - [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
 - [Marketing Emails](https://developers.hubspot.com/docs/api-reference/marketing-marketing-emails-v3-v3/marketing-emails/get-marketing-v3-emails-) \(Incremental\)
+- [Meeting Recordings](https://developers.hubspot.com/docs/api/crm/meetings) \(Incremental, file transfer\)
 - [Owners](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental\)
 - [Owners Archived](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental)
 - [Users](https://developers.hubspot.com/docs/api-reference/settings-user-provisioning-v3/users/get-settings-v3-users-) \(Full-Refresh\)
@@ -352,6 +356,15 @@ The `list_memberships` stream reads memberships for every list returned by the `
 - The stream only supports full refresh. HubSpot's memberships endpoint doesn't expose a cursor suitable for incremental sync.
 - Records are keyed by the composite primary key `(recordId, listId)`. `listId` is emitted as a string so records serialize cleanly to Avro destinations.
 - Some lists returned by `contact_lists` reference an `objectTypeId` that isn't active for your portal (for example, Leads lists with `objectTypeId` `0-136`). HubSpot's memberships endpoint rejects those lists with a 400 `VALIDATION_ERROR / ListError.INVALID_OBJECT_TYPE_FOR_LIST`. The connector skips those lists so they don't fail the sync, and logs an entry for each one. If you need memberships for those object types, enable the corresponding object in HubSpot or sync the object directly from its own stream (for example, `leads`).
+
+### Notes on the `call_recordings` and `meeting_recordings` streams
+
+These streams download the recording files of calls and meetings so a destination that supports file transfer can copy them as raw files. Each record carries the ID of the call or meeting the recording belongs to: `call_id`, which joins to `engagements_calls.id`, or `meeting_id`, which joins to `engagements_meetings.id`. It also carries the `recording_url` the file was downloaded from and the `file_name` of the downloaded file (`<call_id>.<extension>` or `<meeting_id>.<extension>`).
+
+- The streams only return calls and meetings that have a recording URL (`hs_call_recording_url` or `hs_call_video_recording_url` for calls, `hs_meeting_recording_url` for meetings). For calls with both, the audio recording is downloaded.
+- Recordings hosted outside HubSpot (any host other than `hubspot.com` or `hubapi.com`, for example Zoom or a calling provider) are skipped, because the HubSpot access token is sent with the download request.
+- If HubSpot refuses to serve a recording (HTTP 403, 404 or 410, for example a deleted or expired recording), the sync continues. The record is still emitted, and the file written for it holds HubSpot's error body instead of media.
+- Recordings are held in memory while they are written, so large recordings combined with a high **Number of concurrent threads** setting increase memory usage.
 
 ### Notes on the `Custom CRM` Objects
 
@@ -477,6 +490,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.12.0 | 2026-10-10 | [88436](https://github.com/airbytehq/airbyte/pull/88436) | Add `call_recordings` and `meeting_recordings` streams that download HubSpot call and meeting recordings using file transfer |
 | 6.11.0 | 2026-10-01 | [87604](https://github.com/airbytehq/airbyte/pull/87604) | Add `deals_property_history_properties`, `contacts_property_history_properties`, and `companies_property_history_properties` config options to limit property history streams to a configured list of properties |
 | 6.10.0 | 2026-09-22 | [86415](https://github.com/airbytehq/airbyte/pull/86415) | Add new `engagements_task_pipelines` stream exposing HubSpot task pipelines and their stages, so `engagements_tasks.properties.hs_pipeline_stage` can be resolved to a stage label and open/closed state |
 | 6.9.3 | 2026-09-22 | [86682](https://github.com/airbytehq/airbyte/pull/86682) | Update dependencies |
