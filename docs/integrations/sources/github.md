@@ -236,6 +236,10 @@ GitHub Enterprise Server ships with HTTP API rate limiting turned off, and an in
 
 The Releases stream uses the GitHub GraphQL API and fetches up to 100 assets per release. Releases with more than 100 assets will only include the first 100. Sub-pagination for release assets is not currently supported.
 
+#### Stargazers stream requires admin or collaborator access
+
+Since July 2026, GitHub only lists a repository's stargazers to the repository's admins and collaborators ([GitHub changelog](https://github.blog/changelog/2026-06-30-upcoming-access-restrictions-to-public-api-endpoints-and-ui-views/)). For a repository where the authenticated user or app is neither, GitHub answers the stargazers listing with `404` or `403`. The connector skips that repository for the `stargazers` stream only, logs a message naming this restriction, and the sync still succeeds; the other streams for that repository are unaffected. Expect the `stargazers` stream to be empty for public or third-party repositories you do not collaborate on. The aggregate star count is still available in the `stargazers_count` field of the `repositories` stream.
+
 #### Unreadable repositories and repeated server errors
 
 When a repository cannot be read for a reason that is specific to that repository, the connector logs a message and moves on to the next one, so a single bad repository does not fail the whole stream. This covers a repository that was deleted or renamed (`404`), one your token cannot access (`403`), one with no commits yet (`409`), and one where the feature backing the stream is turned off — for example the `issue_labels` stream on a repository with Issues disabled (`410`).
@@ -288,6 +292,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.7.6 | 2026-10-07 | [88163](https://github.com/airbytehq/airbyte/pull/88163) | When GitHub refuses to list a repository's stargazers because the token is not an admin or collaborator, the `stargazers` stream now says so in the skip message instead of reporting a missing repository or missing token scopes |
 | 2.7.5 | 2026-10-06 | [87862](https://github.com/airbytehq/airbyte/pull/87862) | Update dependencies |
 | 2.7.4 | 2026-09-29 | [86932](https://github.com/airbytehq/airbyte/pull/86932) | Replace custom extractors of `reviews`, `issue_reactions` and `pull_request_comment_reactions` and the custom `workflow_runs` paginator with airbyte-cdk 7.31.0 features. Records are unchanged |
 | 2.7.3 | 2026-09-29 | [87172](https://github.com/airbytehq/airbyte/pull/87172) | Update dependencies |
