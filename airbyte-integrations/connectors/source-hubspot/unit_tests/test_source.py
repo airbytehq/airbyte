@@ -10,6 +10,7 @@ from urllib.parse import urlencode
 import freezegun
 import mock
 import pytest
+import requests_cache
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models.airbyte_protocol import Status as ConnectionStatus
@@ -17,7 +18,13 @@ from airbyte_cdk.test.entrypoint_wrapper import discover
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
-from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, mock_v3_properties, read_from_stream
+from .conftest import (
+    find_stream,
+    get_source,
+    mock_dynamic_schema_requests_with_skip,
+    mock_v3_properties,
+    read_from_stream,
+)
 from .utils import run_read
 
 
@@ -116,6 +123,76 @@ def test_streams_ok_with_one_custom_stream(requests_mock, config, mock_dynamic_s
     streams = discover(get_source(config), config).catalog.catalog.streams
     assert adapter.called
     assert len(streams) == 38
+
+
+def test_custom_object_colliding_with_builtin_stream_name_is_prefixed(requests_mock, config, mock_dynamic_schema_requests):
+    requests_mock.get(
+        "https://api.hubapi.com/crm/v3/schemas",
+        json={
+            "results": [
+                {"name": "form_submissions", "fullyQualifiedName": "p123_form_submissions", "properties": []},
+                {"name": "cars", "fullyQualifiedName": "p123_cars", "properties": []},
+            ]
+        },
+        status_code=200,
+    )
+
+    names = [stream.name for stream in discover(get_source(config), config).catalog.catalog.streams]
+
+    assert len(names) == len(set(names))
+    assert names.count("form_submissions") == 1
+    assert "custom_object_form_submissions" in names
+    assert "cars" in names
+    assert len(names) == 39
+
+
+def test_custom_object_prefixed_stream_reads_from_fully_qualified_entity(requests_mock, config, mock_dynamic_schema_requests):
+    requests_mock.get(
+        "https://api.hubapi.com/crm/v3/schemas",
+        json={
+            "results": [
+                {"name": "form_submissions", "fullyQualifiedName": "p123_form_submissions", "properties": []},
+            ]
+        },
+        status_code=200,
+    )
+    requests_mock.get(
+        "https://api.hubapi.com/crm/v3/objects/p123_form_submissions",
+        json={
+            "results": [
+                {
+                    "id": "1",
+                    "createdAt": "2024-01-01T00:00:00Z",
+                    "updatedAt": "2024-01-02T00:00:00Z",
+                    "properties": {},
+                }
+            ]
+        },
+        status_code=200,
+    )
+
+    output = read_from_stream(config, "custom_object_form_submissions", SyncMode.full_refresh)
+
+    assert len(output.records) == 1
+    assert output.records[0].record.stream == "custom_object_form_submissions"
+
+
+def test_custom_objects_never_collide_with_any_builtin_stream(requests_mock, config):
+    config["enable_experimental_streams"] = True
+    schemas_url = "https://api.hubapi.com/crm/v3/schemas"
+    requests_mock.get(schemas_url, json={}, status_code=200)
+    builtin_names = [stream.name for stream in get_source(config).streams(config)]
+
+    requests_cache.SQLiteCache("file::memory:?cache=shared").clear()
+    requests_mock.get(
+        schemas_url,
+        json={"results": [{"name": name, "fullyQualifiedName": f"p123_{name}", "properties": []} for name in builtin_names]},
+        status_code=200,
+    )
+    names = [stream.name for stream in get_source(config).streams(config)]
+
+    assert len(names) == len(set(names))
+    assert all(names.count(name) == 1 for name in builtin_names)
 
 
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):

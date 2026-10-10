@@ -382,6 +382,7 @@ The `list_memberships` stream reads memberships for every list returned by the `
 ### Notes on the `Custom CRM` Objects
 
 Custom CRM Objects will appear as streams available for sync, alongside the standard objects listed above.
+Custom objects whose name matches a built-in stream are exposed as `custom_object_<name>`.
 
 If you set up your connections before April 15th, 2023 (on Airbyte Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
 
@@ -505,6 +506,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.12.1 | 2026-10-09 | [88415](https://github.com/airbytehq/airbyte/pull/88415) | Prefix custom object streams with `custom_object_` when their name collides with a built-in stream (e.g. a custom object named `form_submissions`), preventing duplicate stream names that blocked connection creation. Existing connections that synced the built-in stream while a colliding custom object existed were receiving the custom object's records under the built-in name; they now receive the built-in stream's data, so reset that stream and refresh the schema to add `custom_object_<name>` |
 | 6.12.0 | 2026-09-12 | [85854](https://github.com/airbytehq/airbyte/pull/85854) | Add the `flows` stream, which syncs full workflow definitions (action graph, enrollment criteria, data sources, schedules) from HubSpot's Automation v4 Flows API. Each flow summary from `GET /automation/v4/flows` is enriched with `GET /automation/v4/flows/{flowId}`. Requires the `automation` scope and is gated behind `enable_experimental_streams` because the upstream API is a HubSpot developer preview. The legacy `workflows` stream is unchanged. |
 | 6.11.0 | 2026-10-01 | [87604](https://github.com/airbytehq/airbyte/pull/87604) | Add `deals_property_history_properties`, `contacts_property_history_properties`, and `companies_property_history_properties` config options to limit property history streams to a configured list of properties |
 | 6.10.0 | 2026-09-22 | [86415](https://github.com/airbytehq/airbyte/pull/86415) | Add new `engagements_task_pipelines` stream exposing HubSpot task pipelines and their stages, so `engagements_tasks.properties.hs_pipeline_stage` can be resolved to a stage label and open/closed state |
