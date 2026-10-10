@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.2 — 2026-10-09
+
+[#88400](https://github.com/airbytehq/airbyte/pull/88400) - Fix: `IcebergTableCleaner.clearTable` deletes only the table's directory instead of every key prefixed by the table location.
+
 ### 1.1.1 — 2026-09-24
 
 Add the Fusion archive toolkit to the published bulk load CDK toolkits.
