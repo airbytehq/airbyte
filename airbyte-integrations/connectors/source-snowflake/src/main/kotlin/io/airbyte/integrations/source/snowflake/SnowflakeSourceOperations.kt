@@ -21,7 +21,6 @@ import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.jdbc.LocalDateFieldType
-import io.airbyte.cdk.jdbc.LocalTimeFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
@@ -105,7 +104,7 @@ class SnowflakeSourceOperations() :
             "DOUBLE PRECISION",
             "REAL", -> DoubleFieldType
             "DATE", -> LocalDateFieldType
-            "TIME", -> LocalTimeFieldType
+            "TIME", -> SnowflakeLocalTimeFieldType
             "TIMESTAMP_LTZ",
             "TIMESTAMP_TZ",
             "TIMESTAMPLTZ",

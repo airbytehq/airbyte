@@ -43,12 +43,15 @@ airbyte:
             output: Connection to database closed unexpectedly (TCP socket was closed). This is often a temporary network issue.
 
           - pattern: (?i)JWT token is invalid
-            input-example: "JWT token is invalid."
-            error: transient
+            # Snowflake rejects the key pair login: the private key does not match the RSA public key
+            # registered on the user, or the username or account is wrong. The driver has already
+            # retried the login by the time this surfaces, so it is not transient.
+            input-example: "JWT token is invalid. [0f811342-c5de-47a0-bd01-f2228f082876]"
+            error: config
             group: Authentication Error
-            output: The session token has expired. This is a temporary issue and the connection will be re-established automatically.
+            output: Key pair authentication failed. Check that the username is correct and that the private key matches the RSA public key registered on that user (DESCRIBE USER shows RSA_PUBLIC_KEY_FP; ALTER USER ... SET RSA_PUBLIC_KEY registers a new one).
             reference-links:
-              - https://docs.snowflake.com/en/user-guide/jdbc-configure
+              - https://docs.snowflake.com/en/user-guide/key-pair-auth
 
       jdbc:
         # The following rules are for the JdbcExceptionClassifier and are based on
@@ -56,8 +59,14 @@ airbyte:
         rules:
           # --- Configuration Errors ---
 
+          - code: 390100
+            # Incorrect username or password was specified (observed from snowflake-jdbc 4.x).
+            error: config
+            group: Connection Error
+            output: Invalid credentials. Please check your username and password.
+
           - code: 260004
-            # Incorrect username or password was specified.
+            # Incorrect username or password was specified (legacy code).
             error: config
             group: Connection Error
             output: Invalid credentials. Please check your username and password.
