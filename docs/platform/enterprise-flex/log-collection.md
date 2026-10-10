@@ -15,7 +15,7 @@ In Enterprise Flex, the control plane Airbyte manages never has direct access to
 
 | Option | Where logs are stored | Who can see them | How to set it up |
 | --- | --- | --- | --- |
-| [View job logs in Airbyte](#airbyte-ui) | Airbyte-managed storage in the control plane | You, in Airbyte's UI and API. Airbyte's support team, when you ask for help. | Contact Airbyte support to enable it for your organization. Off by default. |
+| [View job logs in Airbyte](#airbyte-ui) | Airbyte-managed storage in the control plane | You, in Airbyte's UI and API. Airbyte's support team, when you ask for help. | Upgrade your data plane to version 2.4 or later, then contact Airbyte support to enable it for your organization. Off by default. |
 | [Keep logs in your own infrastructure](#own-infrastructure) | Your object storage bucket, your observability backend, or both | Only you. Airbyte can't see them. | Configure a `storage` bucket in your data plane's `values.yaml`, run a log collector in your cluster, or both. |
 
 Whichever option you choose, logging never causes a job to fail. If the data plane can't deliver a job's logs, the job continues and only the logs are affected.
@@ -42,8 +42,8 @@ Job logs leave your environment and are stored in Airbyte's control plane. Logs 
 - Airbyte enables this option per organization, on request. It's off by default, and it never turns on without you asking for it.
 - Your data plane authenticates to Airbyte's control plane as usual. For each eligible job, the control plane issues the workload a short-lived credential that can only create objects under that job's own path in Airbyte's log storage. The credential can't read, list, or delete anything, and it can't touch other jobs' logs.
 - The workload uploads its logs directly to Airbyte's log storage. Log data doesn't pass through the control plane's API, and the credential is held only in memory by the orchestrator or sidecar container, never in your connector containers.
-- If the workload can't get a credential or can't upload, it falls back to logging the way it did before, and the job continues.
-- You don't add any storage credentials or Helm values for this option. Airbyte turns it on for you.
+- If the workload can't get a credential or can't upload, it falls back to your own infrastructure for that job: it writes logs to your `storage` bucket if you configured one, and always to container stdout. The job continues. Keep a `storage` bucket configured so you don't lose logs for a job that falls back.
+- You don't add any storage credentials or Helm values for this option. Airbyte turns it on for you. Your data plane must be version 2.4 or later.
 
 ### Request or disable it
 
