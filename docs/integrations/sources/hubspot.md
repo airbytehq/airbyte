@@ -324,6 +324,8 @@ HubSpot calculated properties — formula fields, rollup summaries, and analytic
 
 To mitigate this, configure the **Property History Lookback Window** in the source settings. A value of `43200` (30 days) is a reasonable starting point. Because these streams use Append + Deduped sync mode, duplicate records from the lookback period are handled automatically.
 
+By default, these streams request history for every property on the object, which can generate many API requests and a large volume of records. To limit this, configure **Deals Property History Properties**, **Contacts Property History Properties**, or **Companies Property History Properties** with a list of property internal names (for example, `["dealstage"]`). Only history for the listed properties is then synced for the corresponding stream. See HubSpot's default [deal](https://knowledge.hubspot.com/properties/hubspots-default-deal-properties), [contact](https://knowledge.hubspot.com/properties/hubspots-default-contact-properties), and [company](https://knowledge.hubspot.com/properties/hubspot-crm-default-company-properties) properties for the internal names. If a list is empty or not set, history for all properties is synced.
+
 ### Notes on the `engagements` stream
 
 1. Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`. Depending on the type of engagement, different properties are set for that object in the `engagements_metadata` table in the destination:
@@ -488,7 +490,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.11.0 | 2026-10-09 | [88436](https://github.com/airbytehq/airbyte/pull/88436) | Add `call_recordings` and `meeting_recordings` streams that download HubSpot call and meeting recordings using file transfer |
+| 6.12.0 | 2026-10-10 | [88436](https://github.com/airbytehq/airbyte/pull/88436) | Add `call_recordings` and `meeting_recordings` streams that download HubSpot call and meeting recordings using file transfer |
+| 6.11.0 | 2026-10-01 | [87604](https://github.com/airbytehq/airbyte/pull/87604) | Add `deals_property_history_properties`, `contacts_property_history_properties`, and `companies_property_history_properties` config options to limit property history streams to a configured list of properties |
 | 6.10.0 | 2026-09-22 | [86415](https://github.com/airbytehq/airbyte/pull/86415) | Add new `engagements_task_pipelines` stream exposing HubSpot task pipelines and their stages, so `engagements_tasks.properties.hs_pipeline_stage` can be resolved to a stage label and open/closed state |
 | 6.9.3 | 2026-09-22 | [86682](https://github.com/airbytehq/airbyte/pull/86682) | Update dependencies |
 | 6.9.2 | 2026-09-16 | [86350](https://github.com/airbytehq/airbyte/pull/86350) | Report an invalid `from_object`/`to_object` identifier in `custom_object_association_streams` as a configuration error instead of a generic credentials error |

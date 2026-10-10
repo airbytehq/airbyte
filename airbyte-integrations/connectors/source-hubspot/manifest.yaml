@@ -420,6 +420,9 @@ definitions:
                   extractor:
                     type: DpathExtractor
                     field_path: []
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ not config.get('companies_property_history_properties') or record.get('name') in config.get('companies_property_history_properties') }}"
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -511,6 +514,9 @@ definitions:
                   extractor:
                     type: DpathExtractor
                     field_path: []
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ not config.get('contacts_property_history_properties') or record.get('name') in config.get('contacts_property_history_properties') }}"
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -634,6 +640,9 @@ definitions:
                   extractor:
                     type: DpathExtractor
                     field_path: []
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ not config.get('deals_property_history_properties') or record.get('name') in config.get('deals_property_history_properties') }}"
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -3350,6 +3359,42 @@ spec:
         minimum: 0
         title: Property History Lookback Window (minutes)
         type: integer
+      deals_property_history_properties:
+        type: array
+        items:
+          type: string
+        title: Deals Property History Properties
+        description: >-
+          Optional list of property internal names whose history to sync for the
+          `deals_property_history` stream. If empty or not set, history for all
+          properties is synced. See HubSpot's
+          <a href="https://knowledge.hubspot.com/properties/hubspots-default-deal-properties">default deals properties</a> for the internal names.
+        examples:
+          - ["dealstage"]
+      contacts_property_history_properties:
+        type: array
+        items:
+          type: string
+        title: Contacts Property History Properties
+        description: >-
+          Optional list of property internal names whose history to sync for the
+          `contacts_property_history` stream. If empty or not set, history for all
+          properties is synced. See HubSpot's
+          <a href="https://knowledge.hubspot.com/properties/hubspots-default-contact-properties">default contacts properties</a> for the internal names.
+        examples:
+          - ["lifecyclestage"]
+      companies_property_history_properties:
+        type: array
+        items:
+          type: string
+        title: Companies Property History Properties
+        description: >-
+          Optional list of property internal names whose history to sync for the
+          `companies_property_history` stream. If empty or not set, history for all
+          properties is synced. See HubSpot's
+          <a href="https://knowledge.hubspot.com/properties/hubspot-crm-default-company-properties">default companies properties</a> for the internal names.
+        examples:
+          - ["lifecyclestage"]
       credentials:
         title: Authentication
         description: Choose how to authenticate to HubSpot.

@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dcb2f998-6493-4078-8390-e320487157a0
-  dockerImageTag: 0.0.44
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-assemblyai
   githubIssueLabel: source-assemblyai
   icon: icon.svg
@@ -25,6 +25,15 @@ data:
   name: AssemblyAI
   releaseDate: 2025-04-05
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: AssemblyAI has deprecated LeMUR, so the lemur_response stream and its request_id setting have been removed. Connections selecting lemur_response must refresh the source schema and deselect it; transcript-only connections need no migration. No data clear is required. See the <a href='https://docs.airbyte.com/integrations/sources/assemblyai-migrations#upgrading-to-100'>migration guide</a>.
+        upgradeDeadline: "2026-10-21"
+        deadlineAction: disable
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["lemur_response"]
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/assemblyai
   tags:
