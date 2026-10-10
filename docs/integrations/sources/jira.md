@@ -262,6 +262,7 @@ The connector uses these configuration fields for programmatic setup with PyAirb
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.4 | 2026-10-09 | [88409](https://github.com/airbytehq/airbyte/pull/88409) | Type rendered comment bodies in `issues` (`renderedFields.comment.comments[].body`) as HTML strings |
 | 6.0.3 | 2026-09-17 | [86357](https://github.com/airbytehq/airbyte/pull/86357) | Fix `issues` stream failing with `UndefinedError` when an issue has no `fields.project` |
 | 6.0.2 | 2026-09-10 | [85802](https://github.com/airbytehq/airbyte/pull/85802) | Stop config migration from adding empty `api_token`, `email`, and `domain` fields to OAuth or partially-migrated configs |
 | 6.0.1 | 2026-07-27 | [82702](https://github.com/airbytehq/airbyte/pull/82702) | Increase `issue_worklogs` page size to 5000 to reduce the number of paginated requests |

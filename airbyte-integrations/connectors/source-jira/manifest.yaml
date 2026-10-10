@@ -12739,47 +12739,10 @@ definitions:
                               - 'null'
                               - string
                         body:
-                          description: Details of the body of the comment.
+                          description: The comment body rendered as HTML.
                           type:
                           - 'null'
-                          - object
-                          properties:
-                            version:
-                              type:
-                              - 'null'
-                              - integer
-                            type:
-                              type:
-                              - 'null'
-                              - string
-                            content:
-                              type:
-                              - 'null'
-                              - array
-                              items:
-                                type:
-                                - 'null'
-                                - object
-                                properties:
-                                  type:
-                                    type:
-                                    - 'null'
-                                    - string
-                                  content:
-                                    type: array
-                                    items:
-                                      type:
-                                      - 'null'
-                                      - object
-                                      properties:
-                                        type:
-                                          type:
-                                          - 'null'
-                                          - string
-                                        text:
-                                          type:
-                                          - 'null'
-                                          - string
+                          - string
                         updateAuthor:
                           description: Details of the author who updated the comment.
                           type:
