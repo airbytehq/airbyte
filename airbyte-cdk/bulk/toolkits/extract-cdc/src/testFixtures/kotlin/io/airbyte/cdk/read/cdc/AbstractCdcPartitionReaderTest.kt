@@ -48,6 +48,7 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -96,17 +97,17 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
 
     @BeforeEach
     fun setup() {
-        setOutputConsumers()
+        setOutputConsumers(shouldSlow = false)
         every { feedBootstrap.dataChannelMedium } returns DataChannelMedium.STDIO
         every { feedBootstrap.dataChannelFormat } returns DataChannelFormat.JSONL
         every { feedBootstrap.outputConsumer } returns outputConsumer
-        every { feedBootstrap.streamRecordConsumers() } returns streamRecordConsumers
+        every { feedBootstrap.streamRecordConsumers() } answers { streamRecordConsumers }
         every { feedBootstrap.feeds } returns listOf(global, stream)
         every { resourceAcquirer.tryAcquire(any()) } returns
             mapOf(RESOURCE_DB_CONNECTION to ConcurrencyResource.AcquiredThread {})
     }
 
-    private fun setOutputConsumers() {
+    private fun setOutputConsumers(shouldSlow: Boolean) {
         outputConsumer = BufferingOutputConsumer(ClockFactory().fixed())
         streamRecordConsumers =
             mapOf(
@@ -123,6 +124,13 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
                                     .withNamespace(stream.namespace)
                                     .withData(recordData.toJson())
                             )
+                            if (shouldSlow) {
+                                // Delay here so that Dbz will paused while sending us records so we
+                                // can
+                                // go to the logic after the engine stopped and events are still
+                                // coming.
+                                Thread.sleep(1000)
+                            }
                         }
 
                         override fun close() {}
@@ -139,7 +147,7 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
      * While doing so, it creates several [CdcPartitionReader] instances using [currentPosition],
      * [syntheticInput] and [debeziumProperties], and exercises all [PartitionReader] methods.
      */
-    fun integrationTest() {
+    open fun integrationTest() {
         container.createStream()
         val i0 =
             ReadInput(
@@ -211,11 +219,64 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
         )
     }
 
+    @Test
+    /**
+     * Insert multiple rows in a single transaction. The first row reaches the target and triggers
+     * the target-lsn close while the remaining rows are still being delivered, so they go through
+     * the shutdown path of [CdcPartitionReader.emitRecord]. Record writes are slowed down so that
+     * the close happens while a write is in progress.
+     *
+     * Checks that the STATE count matches the records written (asserted in [read]).
+     */
+    fun testRecordsCountAfterShutdown() {
+        container.createStream()
+        val i0 =
+            ReadInput(
+                cdcPartitionsCreatorDbzOps.generateColdStartProperties(listOf(stream)),
+                cdcPartitionsCreatorDbzOps.generateColdStartOffset(),
+                schemaHistory = null,
+                isSynthetic = true,
+            )
+        val p0: T = cdcPartitionsCreatorDbzOps.position(i0.offset)
+        val r0: ReadResult = read(i0, p0, false)
+        Assertions.assertEquals(emptyList<Record>(), r0.records)
+        Assertions.assertNotEquals(
+            CdcPartitionReader.CloseReason.RECORD_REACHED_TARGET_POSITION,
+            r0.closeReason,
+        )
+
+        // LSN position before we run the insert to mimic the saved LSN
+        val p1: T =
+            cdcPartitionsCreatorDbzOps.position(
+                cdcPartitionsCreatorDbzOps.generateColdStartOffset()
+            )
+        container.insertMultipleInOneTransaction(5)
+        val insert = (1..5).map { Insert(it, it) }
+
+        Assertions.assertTrue(r0.state is ValidDebeziumWarmStartState)
+        val i1 =
+            ReadInput(
+                cdcPartitionsCreatorDbzOps.generateWarmStartProperties(listOf(stream)),
+                (r0.state as ValidDebeziumWarmStartState).offset,
+                r0.state.schemaHistory,
+                isSynthetic = false,
+            )
+        val r1: ReadResult = read(i1, p1, true)
+        Assertions.assertEquals(
+            CdcPartitionReader.CloseReason.RECORD_REACHED_TARGET_POSITION,
+            r1.closeReason
+        )
+        Assertions.assertTrue(r1.state is ValidDebeziumWarmStartState)
+        Assertions.assertTrue(r1.records.size >= 2)
+        Assertions.assertEquals(insert.take(r1.records.size), r1.records)
+    }
+
     private fun read(
         input: ReadInput,
         upperBound: T,
+        shouldSlow: Boolean = false,
     ): ReadResult {
-        setOutputConsumers()
+        setOutputConsumers(shouldSlow)
         val reader =
             CdcPartitionReader(
                 resourceAcquirer,
@@ -289,6 +350,13 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
     data class Insert(override val id: Int, val v: Int) : Record
     data class Update(override val id: Int, val v: Int) : Record
     data class Delete(override val id: Int, val ignore: Boolean = false) : Record
+
+    open fun C.insertMultipleInOneTransaction(n: Int) {
+        Assumptions.assumeTrue(
+            false,
+            "insertMultipleInOneTransaction is not implemented for this database"
+        )
+    }
 
     abstract inner class AbstractCdcPartitionsCreatorDbzOps<T : PartiallyOrdered<T>> :
         CdcPartitionsCreatorDebeziumOperations<T> {

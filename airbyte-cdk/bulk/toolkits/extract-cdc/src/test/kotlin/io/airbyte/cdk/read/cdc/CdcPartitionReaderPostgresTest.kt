@@ -61,6 +61,16 @@ class CdcPartitionReaderPostgresTest :
         }
     }
 
+    override fun PostgreSQLContainer<*>.insertMultipleInOneTransaction(n: Int) {
+        withStatement {
+            it.execute("BEGIN")
+            for (i in 1..n) {
+                it.execute("INSERT INTO tbl (v) VALUES ($i)")
+            }
+            it.execute("COMMIT")
+        }
+    }
+
     override fun PostgreSQLContainer<*>.update135() {
         withStatement { it.execute("UPDATE tbl SET v = 6 WHERE id = 1") }
         withStatement { it.execute("UPDATE tbl SET v = 7 WHERE id = 3") }
