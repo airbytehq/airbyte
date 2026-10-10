@@ -1,5 +1,14 @@
 # CI Credentials
 
+> [!WARNING]
+> **Deprecated.** `ci_credentials` is no longer invoked by CI and is kept only for reference.
+> Use the Airbyte Ops CLI instead (`uv tool install airbyte-internal-ops`):
+>
+> - `airbyte-ops secrets fetch` replaces `write-to-storage`
+> - `airbyte-ops secrets push` replaces `update-secrets`
+>
+> From a connector directory, `poe fetch-secrets` and `poe push-secrets` wrap the same commands.
+
 CLI tooling to read and manage GSM secrets:
 
 - `write-to-storage` download a connector's secrets locally in the connector's `secrets` folder

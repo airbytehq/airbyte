@@ -6,10 +6,11 @@ test_strictness_level: "high"
 # - config_client_credentials.json: a static, read-only Harvest v3 custom integration
 #   credential on the test account. It doesn't rotate, so it survives consecutive runs.
 # - config_oauth.json: the Airbyte partner app's Authorization Code grant. Greenhouse
-#   refresh tokens are single-use, and CI never writes the rotated token back to GSM
-#   (airbytehq/airbyte-internal-issues#17023). This lane only passes while the stored
-#   access token is valid (1 hour after a re-mint) and fails after that until the secret
-#   is re-minted by hand.
+#   refresh tokens are single-use, so every run rotates the stored credential. The CDK
+#   test harness persists the rotated config under secrets/updated_configurations/ and
+#   CI writes it back to GSM after the tests (`airbyte-ops secrets push`), so consecutive
+#   runs keep working (airbytehq/airbyte-internal-issues#17023). If the secret still
+#   drifts (e.g. a run was killed before the push step), re-mint it by hand.
 acceptance_tests:
   spec:
     tests:
