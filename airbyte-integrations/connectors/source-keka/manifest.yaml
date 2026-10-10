@@ -320,6 +320,7 @@ spec:
         title: Scope
       api_key:
         type: string
+        airbyte_secret: true
         order: 2
         title: API Key
       client_id:

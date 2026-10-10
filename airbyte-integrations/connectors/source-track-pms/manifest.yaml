@@ -6719,6 +6719,7 @@ spec:
     properties:
       api_key:
         type: string
+        airbyte_secret: true
         order: 1
         title: API Key
       api_secret:
