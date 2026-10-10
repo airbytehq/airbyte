@@ -74,7 +74,6 @@ class BigqueryBatchStandardInsertsLoader(
     // so we can't just flush+close a TableDataWriteChannel as soon as we reach 15MB.
     private var buffer: ByteArrayOutputStream? = ByteArrayOutputStream()
     private lateinit var writer: TableDataWriteChannel
-    private var writerClosed = false
     private var closed = false
 
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
@@ -119,7 +118,6 @@ class BigqueryBatchStandardInsertsLoader(
                 switchToWriteChannel()
             }
             writer.close()
-            writerClosed = true
             val loadJob = checkNotNull(writer.job) { "BigQuery load job is missing" }
             BigQueryUtils.waitForJobFinish(loadJob)
             val completedJob = checkNotNull(loadJob.reload()) { "BigQuery load job disappeared" }
@@ -149,13 +147,19 @@ class BigqueryBatchStandardInsertsLoader(
         }
     }
 
-    override fun close() = closeResources()
+    // The CDK only reaches close() without a successful finish() when it is abandoning this batch
+    // (e.g. another task failed or the sync was cancelled), and it rethrows anything close() throws
+    // in place of the original failure. So log cleanup failures here instead of throwing.
+    override fun close() {
+        try {
+            closeResources()
+        } catch (t: Throwable) {
+            logger.warn(t) {
+                "Failed to clean up abandoned batch for table ${writeChannelConfiguration.destinationTable.toPrettyString()}"
+            }
+        }
+    }
 
-    @SuppressFBWarnings(
-        value = ["RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"],
-        justification =
-            "The lateinit channel is intentionally absent for buffered or failed batches",
-    )
     private fun closeResources(primary: Throwable? = null) {
         if (closed) return
         closed = true
@@ -166,16 +170,9 @@ class BigqueryBatchStandardInsertsLoader(
         } catch (t: Throwable) {
             if (failure == null) failure = t else if (failure !== t) failure.addSuppressed(t)
         }
-        try {
-            // Closing an active channel may load partial data. This loader is abandoned and must
-            // never complete its archive or report success to the CDK in that case.
-            if (this::writer.isInitialized && !writerClosed) {
-                writer.close()
-                writerClosed = true
-            }
-        } catch (t: Throwable) {
-            if (failure == null) failure = t else if (failure !== t) failure.addSuppressed(t)
-        }
+        // Never close an unfinished BigQuery write channel here: TableDataWriteChannel.close()
+        // commits the resumable upload, which starts a load job for the partial batch. Dropping
+        // the channel instead leaves the upload session unfinalized, so no load job is created.
         if (primary == null) failure?.let { throw it }
     }
 

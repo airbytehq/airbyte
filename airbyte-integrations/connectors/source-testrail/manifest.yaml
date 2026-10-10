@@ -383,7 +383,8 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - suites
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -532,7 +533,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: index.php?/api/v2/get_users
+          path: index.php?/api/v2/get_users/{{ stream_partition.project_id }}
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -568,6 +569,14 @@ definitions:
             type: OffsetIncrement
             page_size: 50
             inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -582,7 +591,7 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            index.php?/api/v2/get_sections/{{ stream_partition.project_id
+            index.php?/api/v2/get_sections/{{ stream_slice.extra_fields['project_id']
             }}&suite_id={{ stream_partition.suite_id }}
           http_method: GET
           error_handler:
@@ -620,20 +629,15 @@ definitions:
             page_size: 50
             inject_on_first_request: true
         partition_router:
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: id
-                partition_field: project_id
-                stream:
-                  $ref: "#/definitions/streams/projects"
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: id
-                partition_field: suite_id
-                stream:
-                  $ref: "#/definitions/streams/suites"
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: suite_id
+              extra_fields:
+                - - project_id
+              stream:
+                $ref: "#/definitions/streams/suites"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -984,7 +988,7 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            index.php?/api/v2/get_cases/{{ stream_partition.project_id
+            index.php?/api/v2/get_cases/{{ stream_slice.extra_fields['project_id']
             }}&suite_id={{ stream_partition.suite_id }}
           http_method: GET
           error_handler:
@@ -1022,20 +1026,15 @@ definitions:
             page_size: 50
             inject_on_first_request: true
         partition_router:
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: id
-                partition_field: project_id
-                stream:
-                  $ref: "#/definitions/streams/projects"
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: id
-                partition_field: suite_id
-                stream:
-                  $ref: "#/definitions/streams/suites"
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: suite_id
+              extra_fields:
+                - - project_id
+              stream:
+                $ref: "#/definitions/streams/suites"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_on

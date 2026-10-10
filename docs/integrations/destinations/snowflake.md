@@ -9,11 +9,11 @@ connector using the Airbyte UI.
 This page describes the step-by-step process of setting up the Snowflake destination connector.
 
 :::danger Username and Password Authentication Deprecated
-Starting with version **5.0.0**, username and password authentication is **deprecated** and will be removed in a future release. **Key pair authentication** is now the only recommended method for connecting to Snowflake.
+Starting with version **5.0.0**, username and password authentication is **deprecated** and will be removed in a future release. **Key pair authentication** or a **programmatic access token** is now the recommended method for connecting to Snowflake.
 
 This change aligns with [Snowflake's deprecation of single-factor password sign-ins](https://docs.snowflake.com/en/user-guide/security-mfa-rollout). Snowflake is enforcing strong authentication for all users on a rolling per-account basis between **August and October 2026**; once enforced on your account, password-only logins from Airbyte will fail.
 
-If you are currently using username and password authentication, see the [Snowflake Migration Guide](./snowflake-migrations.md) for instructions on migrating to key pair authentication.
+If you are currently using username and password authentication, see the [Snowflake Migration Guide](./snowflake-migrations.md) for instructions on migrating to key pair authentication or a programmatic access token.
 :::
 
 ## Prerequisites
@@ -158,7 +158,8 @@ Make sure the database and schema have the `USAGE` privilege.
 ### Step 5: Set up Snowflake as a destination in Airbyte
 
 Navigate to the Airbyte UI to set up Snowflake as a destination. Use the private key you generated
-in [Step 1](#step-1-set-up-key-pair-authentication) to authenticate.
+in [Step 1](#step-1-set-up-key-pair-authentication) to authenticate, or a
+[programmatic access token](#programmatic-access-token-authentication) if you prefer.
 
 | Field | Description |
 | :---- | :---------- |
@@ -168,8 +169,10 @@ in [Step 1](#step-1-set-up-key-pair-authentication) to authenticate.
 | [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The database you created in Step 2 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE` |
 | [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. |
 | Username | The service user you created in Step 2 to allow Airbyte to access the database. Example: `AIRBYTE_USER` |
-| Private Key | The private key from the key pair you generated in Step 1. Paste the full contents of your `rsa_key.p8` file, including the `-----BEGIN ... PRIVATE KEY-----` header and footer. |
-| Passphrase (Optional) | The passphrase for the private key, if the key was generated with encryption. Leave blank if the key is unencrypted. |
+| Authorization Method | How Airbyte authenticates as the user above. Choose **Key Pair Authentication** (recommended) or **Programmatic Access Token**. **Username and Password** is deprecated; see the [migration guide](./snowflake-migrations.md). |
+| Private Key | For **Key Pair Authentication**. The private key from the key pair you generated in Step 1. Paste the full contents of your `rsa_key.p8` file, including the `-----BEGIN ... PRIVATE KEY-----` header and footer. |
+| Passphrase (Optional) | For **Key Pair Authentication**. The passphrase for the private key, if the key was generated with encryption. Leave blank if the key is unencrypted. |
+| Programmatic Access Token | For **Programmatic Access Token** authentication. The token secret generated for the user above. See [Programmatic access token authentication](#programmatic-access-token-authentication). |
 | CDC deletion mode | Whether to execute CDC deletions as hard deletes or soft deletes. Hard deletes propagate source deletions to the destination. Soft deletes leave a tombstone record in the destination. Defaults to hard deletes. |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3` |
 | Legacy raw tables (Optional) | Write the legacy raw tables format for backwards compatibility with older versions of this connector. See [Output schema](#output-schema). The data format in `_airbyte_data` is fairly stable but there are no guarantees that other metadata columns will remain the same in future versions. |
@@ -177,6 +180,32 @@ in [Step 1](#step-1-set-up-key-pair-authentication) to authenticate.
 | Trim Whitespace from String Fields (Optional) | Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if leading or trailing whitespace in string fields is meaningful and should be preserved. |
 | [Data Retention Period](https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period) (Optional) | The number of days of Snowflake Time Travel to enable on tables. A nonzero value incurs increased storage costs in your Snowflake instance. Defaults to `1`. |
 | Decimal Data Type (Optional) | Determines which Snowflake data type Airbyte uses for columns with the Airbyte `number` type: `NUMBER(38,9)` (recommended) or `FLOAT` (default). See [Data type map](#data-type-map) for guidance on choosing between them. |
+
+#### Programmatic access token authentication
+
+Instead of key pair authentication, you can authenticate with a Snowflake
+[programmatic access token](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) (PAT).
+Airbyte presents the token to Snowflake
+[in place of a password](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#using-a-programmatic-access-token-as-a-password)
+for the user you enter in **Username**.
+
+1. Create a PAT for the Airbyte user in Snowflake:
+
+   ```sql
+   ALTER USER <user_name> ADD PROGRAMMATIC ACCESS TOKEN <token_name>
+     ROLE_RESTRICTION = '<airbyte_role>'
+     DAYS_TO_EXPIRY = <days>;
+   ```
+
+   Snowflake only shows the token secret when you create the token. Store it securely before closing the result.
+
+2. In Airbyte, select **Programmatic Access Token** as the authorization method. Enter the Snowflake username in **Username** and paste the token secret into **Programmatic Access Token**.
+
+Keep the following in mind when you use a PAT:
+
+- **Tokens expire.** A PAT expires after the number of days you set with `DAYS_TO_EXPIRY` (15 days by default, up to 365). When the token expires, syncs fail until you create a new token and update the **Programmatic Access Token** field. Plan to rotate the token before it expires. Key pair authentication doesn't have this limitation.
+- **Network policy.** By default, Snowflake requires a [network policy](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#label-pat-prerequisites-network) on the user to generate or use a PAT. If you're using Airbyte Cloud, make sure that policy allows Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist). See [Step 3](#step-3-configure-network-policies).
+- **Service users.** For users with `TYPE = SERVICE`, Snowflake requires `ROLE_RESTRICTION` when you create the token. If an authentication policy restricts the allowed methods, include `PROGRAMMATIC_ACCESS_TOKEN` in `AUTHENTICATION_METHODS`.
 
 ## Output schema
 
@@ -338,6 +367,9 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.0           | 2026-10-09 | [88417](https://github.com/airbytehq/airbyte/pull/88417) | Add Programmatic Access Token as an authorization method. The token is passed to Snowflake in place of a password. |
+| 5.1.2           | 2026-10-05 | [87720](https://github.com/airbytehq/airbyte/pull/87720) | Allow custom domains in destination connections, consistent with Snowflake sources. |
+| 5.1.1           | 2026-10-06 | [88143](https://github.com/airbytehq/airbyte/pull/88143)   | Fix `HikariPool` "Connection is not available" failures during the final flush by restoring bounded concurrency for Snowflake PUT/COPY operations.                                     |
 | 5.1.0           | 2026-10-01 | [87611](https://github.com/airbytehq/airbyte/pull/87611)   | Add optional Fusion S3 sync copies of loaded batches (off by default; enabled through environment configuration). |
 | 5.0.1           | 2026-09-09 | [84953](https://github.com/airbytehq/airbyte/pull/84953)   | Add missing Airbyte meta columns (`_airbyte_meta`, `_airbyte_generation_id`) to tables created by connector versions prior to 3.10.0 when the `AIRBYTE_DESTINATION_SNOWFLAKE_META_COLUMN_REPAIR` env var is set to `true` (off by default), fixing "invalid identifier" sync failures after upgrading to 4.x. |
 | 5.0.0           | 2026-09-02 | [85314](https://github.com/airbytehq/airbyte/pull/85314)   | Deprecate username/password authentication; key pair authentication is now the only recommended auth method. Username/password will be removed in a future release.                      |

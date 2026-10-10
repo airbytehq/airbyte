@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6aa362e3-6107-4fdc-9209-130a60e8725c
-  dockerImageTag: 0.0.57
+  dockerImageTag: 0.0.58
   dockerRepository: airbyte/source-bunny-inc
   githubIssueLabel: source-bunny-inc
   icon: icon.svg
@@ -34,9 +34,9 @@ data:
     ql: 100
     sl: 100
   externalDocumentationUrls:
-    - title: Bunny.net API documentation
-      url: https://docs.bunny.net/reference/bunnynet-api-overview
+    - title: Bunny GraphQL API reference
+      url: https://docs.bunny.com/developer/api-reference/queries
       type: api_reference
-    - title: Bunny.net authentication
-      url: https://docs.bunny.net/reference/authentication
+    - title: Bunny API authentication
+      url: https://docs.bunny.com/developer/using-the-graphql-api/authorizing-api-requests
       type: authentication_guide

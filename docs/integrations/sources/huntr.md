@@ -27,9 +27,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.1.0 | 2025-01-29 | Add new streams |
-| 0.0.1 | 2025-01-15 | Initial release by [@krokrob](https://github.com/krokrob) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.1.1 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88309) | Update base image to `source-declarative-manifest:7.33.0` so the connector image builds again |
+| 0.1.0 | 2025-01-29 | | Add new streams |
+| 0.0.1 | 2025-01-15 | | Initial release by [@krokrob](https://github.com/krokrob) via Connector Builder|
 
 </details>
