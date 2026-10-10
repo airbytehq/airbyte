@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.15 — 2026-10-08
+
+[#88175](https://github.com/airbytehq/airbyte/pull/88175) — Restore null-safe JDBC `DateAccessor`/`TimestampAccessor` getters and revert `OffsetDateTimeFieldType` to `ObjectGetter`, removing the Postgres-specific `infinity`/`-infinity` checks from the shared accessors (source-postgres handles them in its own field types). MySQL zero dates read with `zeroDateTimeBehavior=convertToNull` now become null without a WARN stack trace or a `RETRIEVAL_FAILURE_TOTAL` change.
+
 ### 1.1.14 — 2026-10-07
 
 [#88342](https://github.com/airbytehq/airbyte/pull/88342) — Accept `{"type": "array"}` fields without `items` in READ-time catalog validation (mapped to an array of JSONB) instead of failing with a NullPointerException.
