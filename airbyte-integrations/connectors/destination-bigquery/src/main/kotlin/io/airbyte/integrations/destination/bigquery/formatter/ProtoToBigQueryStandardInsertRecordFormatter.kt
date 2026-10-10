@@ -47,6 +47,7 @@ import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 
 class ProtoToBigQueryStandardInsertRecordFormatter(
@@ -285,7 +286,10 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                 val timestampValue = proxy.getTimestampWithTimezone(accessor)
                 if (timestampValue != null) {
                     try {
-                        val parsedTimestamp = OffsetDateTime.parse(timestampValue)
+                        // Truncate to microseconds: BigQuery TIMESTAMP only supports
+                        // 6 fractional digits; sources like Snowflake may send 7+.
+                        val parsedTimestamp =
+                            OffsetDateTime.parse(timestampValue).truncatedTo(ChronoUnit.MICROS)
                         if (
                             parsedTimestamp < BigQueryRecordFormatter.TIMESTAMP_MIN_VALUE ||
                                 parsedTimestamp > BigQueryRecordFormatter.TIMESTAMP_MAX_VALUE
@@ -325,7 +329,10 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                 val timestampValue = proxy.getTimestampWithoutTimezone(accessor)
                 if (timestampValue != null) {
                     try {
-                        val parsedDateTime = LocalDateTime.parse(timestampValue)
+                        // Truncate to microseconds: BigQuery DATETIME only supports
+                        // 6 fractional digits; sources like Snowflake may send 7+.
+                        val parsedDateTime =
+                            LocalDateTime.parse(timestampValue).truncatedTo(ChronoUnit.MICROS)
                         if (
                             parsedDateTime < BigQueryRecordFormatter.DATETIME_MIN_VALUE ||
                                 parsedDateTime > BigQueryRecordFormatter.DATETIME_MAX_VALUE
@@ -559,9 +566,11 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                 }
             }
             is TimestampWithTimezoneValue -> {
+                // Truncate to microseconds for BigQuery compatibility
+                val truncatedValue = coercedValue.value.truncatedTo(ChronoUnit.MICROS)
                 if (
-                    coercedValue.value < BigQueryRecordFormatter.TIMESTAMP_MIN_VALUE ||
-                        coercedValue.value > BigQueryRecordFormatter.TIMESTAMP_MAX_VALUE
+                    truncatedValue < BigQueryRecordFormatter.TIMESTAMP_MIN_VALUE ||
+                        truncatedValue > BigQueryRecordFormatter.TIMESTAMP_MAX_VALUE
                 ) {
                     ExtractionResult(
                         null,
@@ -574,15 +583,17 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                 } else {
                     val formattedValue =
                         BigQueryRecordFormatter.DATETIME_WITH_TIMEZONE_FORMATTER.format(
-                            coercedValue.value
+                            truncatedValue
                         )
                     ExtractionResult(formattedValue, null)
                 }
             }
             is TimestampWithoutTimezoneValue -> {
+                // Truncate to microseconds for BigQuery compatibility
+                val truncatedValue = coercedValue.value.truncatedTo(ChronoUnit.MICROS)
                 if (
-                    coercedValue.value < BigQueryRecordFormatter.DATETIME_MIN_VALUE ||
-                        coercedValue.value > BigQueryRecordFormatter.DATETIME_MAX_VALUE
+                    truncatedValue < BigQueryRecordFormatter.DATETIME_MIN_VALUE ||
+                        truncatedValue > BigQueryRecordFormatter.DATETIME_MAX_VALUE
                 ) {
                     ExtractionResult(
                         null,
@@ -595,7 +606,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                 } else {
                     val formattedValue =
                         BigQueryRecordFormatter.DATETIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                            coercedValue.value
+                            truncatedValue
                         )
                     ExtractionResult(formattedValue, null)
                 }
