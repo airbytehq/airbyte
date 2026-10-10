@@ -33,6 +33,22 @@ acceptance_tests:
             bypass_reason: "Airbyte sandbox account does not have data for this stream"
           - name: videos
             bypass_reason: "Airbyte sandbox account does not have data for this stream"
+          - name: ad_member_company_analytics
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: ad_member_company_size_analytics
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: ad_member_country_analytics
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: ad_member_industry_analytics
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: ad_member_job_function_analytics
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: ad_member_job_title_analytics
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: ad_member_region_analytics
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: ad_member_seniority_analytics
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
         expect_records:
           path: "integration_tests/expected_records.jsonl"
         fail_on_extra_columns: true
