@@ -48,6 +48,12 @@ data:
     - title: Okta API reference
       url: https://developer.okta.com/docs/reference/
       type: api_reference
+    - title: Okta developer release notes
+      url: https://developer.okta.com/docs/release-notes/
+      type: api_release_history
+    - title: Okta API release lifecycle
+      url: https://developer.okta.com/docs/api/openapi/okta-management/guides/release-lifecycle/
+      type: api_deprecations
     - title: Okta authentication
       url: https://developer.okta.com/docs/guides/implement-oauth-for-okta/main/
       type: authentication_guide
