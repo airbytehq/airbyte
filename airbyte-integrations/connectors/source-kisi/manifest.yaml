@@ -480,49 +480,12 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/scheduled_reports"
-    user_export_reporters:
-      type: DeclarativeStream
-      name: user_export_reporters
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /user_export_reporters
-          http_method: GET
-          request_headers:
-            Authorization: KISI-LOGIN {{ config["api_key"] }}
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/user_export_reporters"
   base_requester:
     type: HttpRequester
     url_base: https://api.kisi.io
 
 streams:
   - $ref: "#/definitions/streams/users"
-  - $ref: "#/definitions/streams/user_export_reporters"
   - $ref: "#/definitions/streams/scheduled_reports"
   - $ref: "#/definitions/streams/role_assignments"
   - $ref: "#/definitions/streams/places"
@@ -638,13 +601,6 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    user_export_reporters:
-      hasRecords: true
-      streamHash: 273e9e4392cdf0d6b16d09f6377f631d95238767
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
   autoImportSchema:
     locks: true
     users: true
@@ -658,7 +614,6 @@ metadata:
     organizations: true
     role_assignments: true
     scheduled_reports: true
-    user_export_reporters: true
 
 schemas:
   locks:
@@ -1508,44 +1463,6 @@ schemas:
         type:
           - string
           - "null"
-      organization_id:
-        type:
-          - number
-          - "null"
-    additionalProperties: true
-  user_export_reporters:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      id:
-        type: number
-      created_at:
-        type:
-          - string
-          - "null"
-      updated_at:
-        type:
-          - string
-          - "null"
-      organization:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          domain:
-            type:
-              - string
-              - "null"
       organization_id:
         type:
           - number

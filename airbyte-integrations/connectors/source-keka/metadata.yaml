@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "master.keka.com"
+      - "*.keka.com"
   registryOverrides:
     oss:
       enabled: true
@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 54664ae8-39aa-467f-9703-9b343ee23b9b
-  dockerImageTag: 0.0.57
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-keka
   githubIssueLabel: source-keka
   icon: icon.svg
@@ -25,6 +25,26 @@ data:
   name: Keka
   releaseDate: 2025-01-29
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      0.1.0:
+        message: >-
+          All Keka sources must now configure their company subdomain instead of using
+          the hard-coded master host. Set the subdomain before the first sync after
+          upgrading. See https://docs.airbyte.com/integrations/sources/keka-migrations
+          for instructions.
+        upgradeDeadline: "2026-10-22"
+        deadlineAction: disable
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - Employees
+              - Attendance
+              - Clients
+              - Projects
+              - Project Timesheets
+              - Leave Type
+              - Leave Request
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/keka
   tags:

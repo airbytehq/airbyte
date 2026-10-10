@@ -17,12 +17,29 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7706728b-f644-456e-8dd4-ac92c4d8f31a
-  dockerImageTag: 0.0.74
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-kisi
   githubIssueLabel: source-kisi
   icon: icon.svg
   license: ELv2
   name: Kisi
+  releases:
+    breakingChanges:
+      0.1.0:
+        message: >-
+          The `user_export_reporters` stream has been removed because Kisi removed the
+          `GET /user_export_reporters` endpoint from its API (it now returns HTTP 404 and is no
+          longer listed in the Kisi OpenAPI specification), which caused every sync that included
+          this stream to fail. Users who sync this stream must deselect it: refresh the source
+          schema and remove `user_export_reporters` from the connection, then run a sync. Users who
+          do not sync this stream are not affected. See the
+          [migration guide](https://docs.airbyte.com/integrations/sources/kisi-migrations#upgrading-to-010)
+          for details.
+        upgradeDeadline: "2026-10-21"
+        deadlineAction: "disable"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["user_export_reporters"]
   releaseDate: 2024-10-18
   releaseStage: alpha
   supportLevel: community

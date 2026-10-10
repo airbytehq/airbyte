@@ -73,37 +73,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/organizations"
-    insights_traffic:
-      type: DeclarativeStream
-      name: insights_traffic
-      primary_key:
-        - timestamp
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /v1/spaces/{{ config["space_id"] }}/insights/traffic
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - views
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('next', {}).get('page') }}"
-            stop_condition: "{{ response.get('next') is none }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/insights_traffic"
     content:
       type: DeclarativeStream
       name: content
@@ -184,7 +153,6 @@ definitions:
 streams:
   - $ref: "#/definitions/streams/users"
   - $ref: "#/definitions/streams/organizations"
-  - $ref: "#/definitions/streams/insights_traffic"
   - $ref: "#/definitions/streams/content"
   - $ref: "#/definitions/streams/org_members"
 
@@ -217,7 +185,6 @@ metadata:
   autoImportSchema:
     users: true
     organizations: true
-    insights_traffic: true
     content: true
     org_members: true
   testedStreams:
@@ -230,13 +197,6 @@ metadata:
       primaryKeysAreUnique: true
     organizations:
       streamHash: 9ab2877e203852d0f3f72d1b43efdebe30b191e8
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    insights_traffic:
-      streamHash: f592e43057580e07f97dd3533c7570c7ba8ef156
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -352,19 +312,6 @@ schemas:
           - "null"
     required:
       - id
-  insights_traffic:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      count:
-        type:
-          - number
-          - "null"
-      timestamp:
-        type: string
-    required:
-      - timestamp
   content:
     type: object
     $schema: http://json-schema.org/schema#
