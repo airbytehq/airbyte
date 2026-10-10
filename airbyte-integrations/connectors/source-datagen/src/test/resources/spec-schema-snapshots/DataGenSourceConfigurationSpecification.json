@@ -1,0 +1,75 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "title" : "Data Gen Source Configuration Specification",
+  "type" : "object",
+  "additionalProperties" : true,
+  "properties" : {
+    "concurrency" : {
+      "type" : "integer",
+      "description" : "Maximum number of concurrent data generators. Leave empty to let Airbyte optimize performance.",
+      "title" : "Max Concurrency"
+    },
+    "max_records" : {
+      "type" : "integer",
+      "description" : "The number of record messages to emit from this connector. Min 1. Max 100 billion.",
+      "title" : "Max Record",
+      "default" : "100"
+    },
+    "flavor" : {
+      "oneOf" : [ {
+        "title" : "Incremental",
+        "type" : "object",
+        "additionalProperties" : true,
+        "description" : "Generates incrementally increasing numerical data for the source.",
+        "properties" : {
+          "data_type" : {
+            "type" : "string",
+            "enum" : [ "increment" ],
+            "default" : "increment"
+          }
+        },
+        "required" : [ "data_type" ]
+      }, {
+        "title" : "All Types",
+        "type" : "object",
+        "additionalProperties" : true,
+        "description" : "Generates one column of each Airbyte data type.",
+        "properties" : {
+          "data_type" : {
+            "type" : "string",
+            "enum" : [ "types" ],
+            "default" : "types"
+          }
+        },
+        "required" : [ "data_type" ]
+      }, {
+        "title" : "Wide",
+        "type" : "object",
+        "additionalProperties" : true,
+        "description" : "Generates a wide schema with a configurable number of columns using a mix of Airbyte data types.",
+        "properties" : {
+          "data_type" : {
+            "type" : "string",
+            "enum" : [ "wide" ],
+            "default" : "wide"
+          },
+          "column_count" : {
+            "type" : "integer",
+            "description" : "Number of columns to generate (including the id column). Min 1. Max 1000.",
+            "title" : "Column Count",
+            "default" : 50,
+            "minimum" : 1,
+            "maximum" : 1000
+          }
+        },
+        "required" : [ "data_type", "column_count" ]
+      } ],
+      "description" : "Different patterns for generating data",
+      "title" : "Data Generation Type",
+      "default" : "increment",
+      "display_type" : "radio",
+      "type" : "object"
+    }
+  },
+  "required" : [ "max_records", "flavor" ]
+}
