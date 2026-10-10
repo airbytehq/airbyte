@@ -860,6 +860,18 @@ schemas:
         type:
           - string
           - 'null'
+      legal_name:
+        type:
+          - string
+          - 'null'
+      account_name:
+        type:
+          - string
+          - 'null'
+      brand_name:
+        type:
+          - string
+          - 'null'
       url:
         type:
           - string
@@ -1090,6 +1102,11 @@ schemas:
           - object
           - 'null'
         additionalProperties: true
+        properties:
+          query_string_template:
+            type:
+              - string
+              - 'null'
   ad_groups:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -1150,6 +1167,15 @@ schemas:
             items:
               type: object
               additionalProperties: true
+              properties:
+                custom_audience_id:
+                  type:
+                    - string
+                    - 'null'
+                bid_multiplier_micros:
+                  type:
+                    - integer
+                    - 'null'
           strategy:
             type:
               - string
@@ -1171,11 +1197,31 @@ schemas:
             items:
               type: object
               additionalProperties: true
+              properties:
+                field:
+                  type:
+                    - string
+                    - 'null'
+                operator:
+                  type:
+                    - string
+                    - 'null'
+                values:
+                  type:
+                    - array
+                    - 'null'
+                  items:
+                    type: string
       landing_page_configuration:
         type:
           - object
           - 'null'
         additionalProperties: true
+        properties:
+          query_string_template:
+            type:
+              - string
+              - 'null'
       user_external_id:
         type:
           - string
@@ -1284,6 +1330,11 @@ schemas:
           - object
           - 'null'
         additionalProperties: true
+        properties:
+          query_string_template:
+            type:
+              - string
+              - 'null'
       user_external_id:
         type:
           - string
@@ -1346,6 +1397,15 @@ schemas:
         items:
           type: object
           additionalProperties: true
+          properties:
+            id:
+              type:
+                - string
+                - 'null'
+            name:
+              type:
+                - string
+                - 'null'
       archived:
         type:
           - boolean
@@ -2345,6 +2405,50 @@ schemas:
     properties:
       id:
         type: string
+      created_at:
+        type:
+          - integer
+          - 'null'
+      updated_at:
+        type:
+          - integer
+          - 'null'
+      name:
+        type:
+          - string
+          - 'null'
+      description:
+        type:
+          - string
+          - 'null'
+      status:
+        type:
+          - string
+          - 'null'
+      hash_spec_version:
+        type:
+          - string
+          - 'null'
+      uploaded_identifier_count_range:
+        type:
+          - string
+          - 'null'
+      matched_identifier_count_range:
+        type:
+          - string
+          - 'null'
+      matched_user_count_range:
+        type:
+          - string
+          - 'null'
+      invalid_identifier_count_range:
+        type:
+          - string
+          - 'null'
+      membership_revision:
+        type:
+          - integer
+          - 'null'
   conversion_pixels:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
