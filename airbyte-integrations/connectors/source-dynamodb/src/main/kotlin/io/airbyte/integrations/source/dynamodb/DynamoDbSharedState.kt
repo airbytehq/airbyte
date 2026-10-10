@@ -65,6 +65,9 @@ constructor(
 
     val client: DynamoDbClient by clientDelegate
 
+    /** Retries the `Scan` requests that DynamoDB throttles; shared by the rounds of a READ. */
+    val throttlingBackoff = DynamoDbThrottlingBackoff()
+
     private val completedStreams: MutableSet<StreamIdentifier> = ConcurrentHashMap.newKeySet()
 
     private val tableScans: MutableMap<StreamIdentifier, DynamoDbTableScan> = ConcurrentHashMap()
