@@ -85,13 +85,13 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 | `email_subscriptions`       | `content`                                                                                                    |
 | `engagements`               | `crm.objects.companies.read`, `crm.objects.contacts.read`, `crm.objects.deals.read`, `tickets`, `e-commerce` |
 | `engagements_emails`        | `sales-email-read`                                                                                           |
-| `engagements_task_pipelines` | `crm.objects.contacts.read`                                                                                  |
+| `engagements_task_pipelines` | `crm.objects.contacts.read`                                                                                 |
 | `forms`                     | `forms`                                                                                                      |
 | `form_submissions`          | `forms`                                                                                                      |
 | `goals`                     | `crm.objects.goals.read`                                                                                     |
 | `leads`                     | `crm.objects.leads.read`, `crm.schemas.leads.read`                                                   |
 | `list_memberships`          | `crm.lists.read`                                                                                             |
-| `line_items`                | `e-commerce`                                                                                                 |
+| `line_items`                | `e-commerce`, `crm.objects.line_items.read`                                                                  |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
 | `contacts_property_history` | `crm.objects.contacts.read`                                                                                  |
@@ -104,7 +104,7 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 | `deal_splits`               | `crm.objects.deals.read`                                                                                     |
 | `properties`                | No additional scopes required                                                                                |
 | `workflows`                 | `automation`                                                                                                 |
-| `flows`                     | `automation` (plus `*.sensitive.read` for flows touching sensitive data)                                     |
+| `flows`                     | `automation`. Flows that reference sensitive data properties also need the matching sensitive data read scope. See [Flows vs. workflows](#flows-vs-workflows). |
 | `contacts_web_analytics`    | `business-intelligence`, `crm.objects.contacts.read`                                                         |
 | `companies_web_analytics`   | `business-intelligence`, `crm.objects.companies.read`                                                        |
 | `deals_web_analytics`       | `business-intelligence`, `crm.objects.deals.read`                                                            |
@@ -148,8 +148,10 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 
 7. (Optional) Set the **CRM Search Lookback Window** in minutes to re-fetch data for CRM Search streams (e.g. contacts, companies, deals, tickets) for a specified number of minutes before the state from the previous sync. This helps capture missing records in CRM Search streams.
 8. (Optional) Set the **Property History Lookback Window** in minutes to re-fetch data for property history streams (`deals_property_history`, `contacts_property_history`, `companies_property_history`). This helps capture records that may be missed due to cursor drift caused by HubSpot calculated properties. A value of `43200` (30 days) is a reasonable starting point.
-9. (Optional) Enable **Treat dynamic number and boolean properties as strings** if your destination rejects records because HubSpot returns values that don't match the declared `number` or `boolean` type. See [Destination type conversion errors](#limitations--troubleshooting) in Troubleshooting for details.
-10. Click **Set up source** and wait for the tests to complete.
+9. (Optional) To sync history for only some properties, list their internal names in **Deals Property History Properties**, **Contacts Property History Properties**, or **Companies Property History Properties**. See [Notes on the `property_history` streams](#notes-on-the-property_history-streams).
+10. (Optional) Enable **Treat dynamic number and boolean properties as strings** if your destination rejects records because HubSpot returns values that don't match the declared `number` or `boolean` type. See [Destination type conversion errors](#limitations--troubleshooting) in Troubleshooting for details.
+11. (Optional) Set the **Number of concurrent threads** between 1 and 40. The default is 10. See [Sync concurrency](#sync-concurrency).
+12. Click **Set up source** and wait for the tests to complete.
 
 <!-- markdownlint-enable MD029 -->
 <!-- /env:cloud -->
@@ -168,31 +170,74 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
    `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (HubSpot creation date) will be used as start date. It's recommended to provide a start date relevant to your data to optimize synchronization.
 6. (Optional) Set the **CRM Search Lookback Window** in minutes to re-fetch data for CRM Search streams (e.g. contacts, companies, deals, tickets) for a specified number of minutes before the state from the previous sync. This helps capture missing records in CRM Search streams.
 7. (Optional) Set the **Property History Lookback Window** in minutes to re-fetch data for property history streams (`deals_property_history`, `contacts_property_history`, `companies_property_history`). This helps capture records that may be missed due to cursor drift caused by HubSpot calculated properties. A value of `43200` (30 days) is a reasonable starting point.
-8. (Optional) Enable **Treat dynamic number and boolean properties as strings** if your destination rejects records because HubSpot returns values that don't match the declared `number` or `boolean` type. See [Destination type conversion errors](#limitations--troubleshooting) in Troubleshooting for details.
-9. Click **Set up source** and wait for the tests to complete.
+8. (Optional) To sync history for only some properties, list their internal names in **Deals Property History Properties**, **Contacts Property History Properties**, or **Companies Property History Properties**. See [Notes on the `property_history` streams](#notes-on-the-property_history-streams).
+9. (Optional) Enable **Treat dynamic number and boolean properties as strings** if your destination rejects records because HubSpot returns values that don't match the declared `number` or `boolean` type. See [Destination type conversion errors](#limitations--troubleshooting) in Troubleshooting for details.
+10. (Optional) Set the **Number of concurrent threads** between 1 and 40. The default is 10. See [Sync concurrency](#sync-concurrency).
+11. Click **Set up source** and wait for the tests to complete.
+
+<!-- /env:oss -->
+
+<FieldAnchor field="num_worker">
+
+### Sync concurrency
+
+**Number of concurrent threads** sets how many streams and partitions the connector reads at the same time. It accepts a value from 1 to 40, and defaults to 10.
+
+The connector paces its own requests to stay inside HubSpot's limits: 5 requests per second for CRM search endpoints, and 10 per second for everything else. More threads don't raise those ceilings, so they help most on streams whose runtime is dominated by HubSpot's response times rather than by the request budget. That includes streams that make extra requests behind each page or record, such as `deals` and the other CRM search streams, which fetch associations for every page, and `campaigns` and `flows`, which fetch details for every record.
+
+Lower the value if other integrations share the same HubSpot account and you see repeated 429 responses in your sync logs. Fewer threads spread the same requests over a longer time, but they don't change how many requests a sync makes, so lowering this value won't help if you're exhausting your account's [daily request limit](#rate-limiting). Enable fewer streams or shorten the backfill window instead.
+
+Versions before 6.8.1 ignored this field and always used 10 threads, so upgrade before you tune it.
+
+</FieldAnchor>
 
 <FieldAnchor field="enable_experimental_streams">
 
 ### Experimental streams
 
-Enable the **Enable experimental streams** toggle to sync the Web Analytics streams. These read HubSpot's [Events API](https://developers.hubspot.com/docs/api/events/web-analytics) (`/events/event-occurrences/2026-03`) and emit web analytics events (page views and form submissions) for each parent object:
+Enable the **Enable experimental streams** toggle to add the `flows` stream and 12 Web Analytics streams to the catalog.
 
-- `contacts_web_analytics`
-- `companies_web_analytics`
-- `deals_web_analytics`
-- `tickets_web_analytics`
-- `engagements_calls_web_analytics`
-- `engagements_emails_web_analytics`
-- `engagements_meetings_web_analytics`
-- `engagements_notes_web_analytics`
-- `engagements_tasks_web_analytics`
-- `goals_web_analytics`
-- `line_items_web_analytics`
-- `products_web_analytics`
+The `flows` stream syncs full workflow definitions from HubSpot's [Automation v4 workflows API](https://developers.hubspot.com/docs/reference/api/automation/create-manage-workflows). See [Flows vs. workflows](#flows-vs-workflows).
 
-These streams require HubSpot Marketing Hub Enterprise and the `business-intelligence` scope in addition to each stream's parent-object read scope (see the scopes table in [Step 2](#step-2-configure-the-scopes-for-your-streams-private-app-only)). They begin syncing from the configured **Start date** with fresh state.
+The rest of this section covers the Web Analytics streams. Each Web Analytics stream reads HubSpot's [event occurrences endpoint](https://developers.hubspot.com/docs/api-reference/latest/events/retrieve-events/get-events) (`GET /events/event-occurrences/2026-03`) and emits the page views (`e_visited_page`) and form submissions (`e_submitted_form`) that HubSpot attributes to records of one CRM object type.
 
-The same toggle also enables the `flows` stream, which syncs **full workflow definitions** from HubSpot's [Automation v4 Flows API](https://developers.hubspot.com/docs/reference/api/automation/create-manage-workflows). See [Flows vs. workflows](#flows-vs-workflows) below.
+| Stream                               | Records read for each                | HubSpot `objectType` |
+| :----------------------------------- | :----------------------------------- | :------------------- |
+| `contacts_web_analytics`             | record in `contacts`                 | `contact`            |
+| `companies_web_analytics`            | record in `companies`                | `company`            |
+| `deals_web_analytics`                | record in `deals`                    | `deal`               |
+| `tickets_web_analytics`              | record in `tickets`                  | `ticket`             |
+| `engagements_calls_web_analytics`    | record in `engagements_calls`        | `calls`              |
+| `engagements_emails_web_analytics`   | record in `engagements_emails`       | `emails`             |
+| `engagements_meetings_web_analytics` | record in `engagements_meetings`     | `meetings`           |
+| `engagements_notes_web_analytics`    | record in `engagements_notes`        | `notes`              |
+| `engagements_tasks_web_analytics`    | record in `engagements_tasks`        | `tasks`              |
+| `goals_web_analytics`                | record in `goals`                    | `goal_targets`       |
+| `line_items_web_analytics`           | record in `line_items`               | `line_item`          |
+| `products_web_analytics`             | record in `products`                 | `product`            |
+
+#### Access requirements
+
+HubSpot documents the event occurrences endpoint as an Enterprise feature. Reading these events requires an Enterprise subscription to Marketing Hub, Sales Hub, Service Hub, or Content Hub. Accounts on lower tiers can still see the event types in HubSpot's API responses, but they can't read the occurrences.
+
+These streams need the `business-intelligence` scope in addition to the parent object's read scope, which the connector uses to list the parent records. See the scopes table in [Step 2](#step-2-configure-the-scopes-for-your-streams-private-app-only) for the exact scope per stream.
+
+If you authenticate with OAuth, `business-intelligence` and `crm.objects.line_items.read` were added to the scopes Airbyte requests in version 6.8.0. Sources authorized before that version don't have them. Open the HubSpot source's settings and re-authenticate, then refresh the source schema, or these streams return 403 errors.
+
+#### Sync behavior
+
+These streams sync incrementally on the `occurredAt` timestamp, and Airbyte keeps a separate cursor for each parent record. Because HubSpot returns events for one object at a time, the initial backfill issues at least one request per parent record, per event type, per 30-day window between your **Start date** and now. On a portal with tens of thousands of contacts, that first sync adds up quickly against your account's [daily API limit](#rate-limiting). Later syncs resume from each parent record's saved cursor, so they only request the windows after that record's last event.
+
+To keep the volume manageable:
+
+- Enable only the Web Analytics streams you plan to use. All 12 appear in the catalog once the toggle is on, and each one fans out over its own parent object.
+- Set **Start date** to the earliest date you actually need events for. If you leave it empty, the connector backfills from `2006-06-01T00:00:00Z`. Keep in mind that **Start date** also limits which parent records the connector finds: it lists parents from the parent object stream, which filters on the parent's own last-modified date, so a recent **Start date** omits events for older records that haven't been modified since then.
+
+These streams don't reuse state from connector versions 5.7.0 and earlier, so the first sync after you enable them backfills from **Start date** even if the same stream synced before version 5.8.0 removed it.
+
+#### Record shape
+
+Each record contains the event's `id`, `objectId`, `objectType`, `eventType`, and `occurredAt`, plus the event's `hs_` properties flattened to the top level as `properties_hs_page_url`, `properties_hs_referrer`, `properties_hs_utm_source`, and so on. Unlike other HubSpot streams, which keep both the nested `properties` object and its flattened copies, these streams emit only the flattened fields.
 
 </FieldAnchor>
 
@@ -242,6 +287,8 @@ For custom objects, use either:
 
 - The custom object's `fullyQualifiedName`, such as `p_my_custom_object`.
 - The custom object's `objectTypeId`, such as `2-12345`.
+
+Don't use the custom object's display name or the bare name without the `p_` prefix. HubSpot can't resolve those, and the sync fails with a configuration error that names the `from_object` or `to_object` field. To find both identifiers, call HubSpot's [`GET /crm/v3/schemas`](https://developers.hubspot.com/docs/api-reference/crm-schemas-v3/core/get-crm-v3-schemas) endpoint, which returns `objectTypeId` and `fullyQualifiedName` for every custom object in your account.
 
 You can use standard object names, such as `contacts`, `companies`, or `deals`, for the standard-object side of the relationship.
 
@@ -309,6 +356,7 @@ The HubSpot source connector supports the following streams:
 - [Ticket Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines) \(Client-Side Incremental\)
 - [Workflows](https://developers.hubspot.com/docs/api/automation/workflows) \(Client-Side Incremental\)
 - [Flows](https://developers.hubspot.com/docs/reference/api/automation/create-manage-workflows) \(Client-Side Incremental, experimental\)
+- [Web Analytics](https://developers.hubspot.com/docs/api-reference/latest/events/retrieve-events/get-events) for contacts, companies, deals, tickets, goals, line items, products, and each engagement type, such as `contacts_web_analytics` \(Incremental\). These streams only appear when you enable [experimental streams](#experimental-streams).
 - [Account Details](https://developers.hubspot.com/docs/api-reference/account-account-info-v3/details/get-account-info-v3-details) \(Full Refresh\)
 - [Association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for standard objects, such as `associations_tickets_companies` \(Incremental\)
 - [Custom object association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for custom-to-standard or custom-to-custom associations \(Incremental\)
@@ -333,10 +381,10 @@ Use `flows` when you need the workflow definition itself rather than an inventor
 A few things to know about the `flows` stream:
 
 - **It costs one extra API call per flow.** The list endpoint returns summaries only, so the connector fetches `GET /automation/v4/flows/{flowId}` for every flow it emits. Because filtering happens before enrichment, incremental syncs only pay this cost for flows that changed since the previous sync.
-- **It covers more than workflows.** The v4 API also returns platform flows and action sets (`flowType` of `ACTION_SET`), so `flows` typically contains more records than `workflows`. Filter on `flowType` and `type` downstream if you only want contact workflows.
+- **It covers more than contact-based workflows.** The v4 API returns contact-based workflows (`type` of `CONTACT_FLOW`), workflows based on other objects such as deals or tickets (`type` of `PLATFORM_FLOW`), and action sets (`flowType` of `ACTION_SET`). Filter on `type` and `flowType` downstream if you only want some of them.
 - **Flows are not joinable to workflows by `id`.** The two APIs use different identifier spaces. HubSpot exposes `POST /automation/v4/workflow-id-mappings/batch/read` to translate between them; the connector does not call it.
-- **Inaccessible flows degrade rather than fail.** HubSpot requires additional `*.sensitive.read` scopes for flows that reference sensitive data. If a detail request fails, the connector logs a warning naming the flow and emits its summary fields, so one restricted flow does not fail the whole stream.
-- **The upstream API is a developer preview.** HubSpot documents Automation v4 as subject to change, which is why the stream sits behind the experimental toggle. The `actions`, `enrollmentCriteria`, `dataSources`, and filter-branch fields are typed as free-form objects so that new HubSpot action or criteria subtypes do not break syncs.
+- **Inaccessible flows degrade rather than fail.** HubSpot requires a sensitive data read scope for workflows that reference [sensitive data](https://knowledge.hubspot.com/account-security/store-sensitive-data) properties: `crm.objects.contacts.sensitive.read`, `crm.objects.companies.sensitive.read`, `crm.objects.deals.sensitive.read`, or `crm.objects.custom.sensitive.read`, depending on the workflow's object type. If a detail request fails for any reason, the connector logs a warning naming the flow and emits only the summary fields from the list endpoint (`id`, `name`, `flowType`, `isEnabled`, `objectTypeId`, `revisionId`, `createdAt`, `updatedAt`, `uuid`), so one restricted flow doesn't fail the whole stream. To get the full definition, add the missing scope to your app and sync again.
+- **The upstream API is in beta.** HubSpot documents the v4 workflows API as a beta that's subject to change, which is why the stream sits behind the experimental toggle. The `actions`, `enrollmentCriteria`, `dataSources`, and filter-branch fields are typed as free-form objects so that new HubSpot action or criteria subtypes do not break syncs.
 
 ### Notes on the `property_history` streams
 
@@ -346,7 +394,11 @@ HubSpot calculated properties — formula fields, rollup summaries, and analytic
 
 To mitigate this, configure the **Property History Lookback Window** in the source settings. A value of `43200` (30 days) is a reasonable starting point. Because these streams use Append + Deduped sync mode, duplicate records from the lookback period are handled automatically.
 
-By default, these streams request history for every property on the object, which can generate many API requests and a large volume of records. To limit this, configure **Deals Property History Properties**, **Contacts Property History Properties**, or **Companies Property History Properties** with a list of property internal names (for example, `["dealstage"]`). Only history for the listed properties is then synced for the corresponding stream. See HubSpot's default [deal](https://knowledge.hubspot.com/properties/hubspots-default-deal-properties), [contact](https://knowledge.hubspot.com/properties/hubspots-default-contact-properties), and [company](https://knowledge.hubspot.com/properties/hubspot-crm-default-company-properties) properties for the internal names. If a list is empty or not set, history for all properties is synced.
+By default, these streams request history for every property on the object, which can generate many API requests and a large volume of records. To sync history for only the properties you need, set **Deals Property History Properties**, **Contacts Property History Properties**, or **Companies Property History Properties** to a list of property internal names, such as `dealstage` or `lifecyclestage`. Each setting applies only to its own stream. If a list is empty or not set, that stream syncs history for all properties.
+
+- Use the property's internal name, not its label. Names must match exactly, including case. Custom properties work the same way as default properties. For default internal names, see HubSpot's default [deal](https://knowledge.hubspot.com/properties/hubspots-default-deal-properties), [contact](https://knowledge.hubspot.com/properties/hubspots-default-contact-properties), and [company](https://knowledge.hubspot.com/properties/hubspot-crm-default-company-properties) properties.
+- The connector drops any name that doesn't match a property on the object. If none of the names match, the sync doesn't fail, but the stream emits no property history.
+- If you add a property to the list after the stream has already synced, the connector only emits that property's changes that are newer than the saved cursor, minus any **Property History Lookback Window**. To backfill the full history of a newly added property, clear the stream's data or run a **Refresh data** sync for it.
 
 ### Notes on the `engagements` stream
 
@@ -366,6 +418,15 @@ By default, these streams request history for every property on the object, whic
 - **EngagementsAll** if either of these criteria are not met.
 
 Because of this, the `engagements` stream can be slow to sync if it hasn't synced within the last 30 days and/or is generating large volumes of new data. To accommodate for this limitation, we recommend scheduling more frequent syncs.
+
+### Notes on the `engagements_task_pipelines` stream
+
+The `engagements_task_pipelines` stream reads HubSpot's `GET /crm/v3/pipelines/tasks` endpoint and emits one record per task pipeline, with that pipeline's stages nested in the `stages` array. Tasks in `engagements_tasks` only store a stage ID in the `hs_pipeline_stage` property, so use this stream to look up each task's stage label and whether the stage counts as open or closed:
+
+- Join `stages[].id` to `properties_hs_pipeline_stage` (or `properties.hs_pipeline_stage`) on `engagements_tasks`. Both are strings. HubSpot's default task stages have UUID IDs, but stages you add later in HubSpot get numeric IDs such as `5996831934`, so don't cast the join key to an integer.
+- Each stage's `metadata` object stores its state as strings, not booleans or enums: `isClosed` is `"true"` or `"false"`, and `state` is `"OPEN"` or `"CLOSED"`. Task stages don't use the `ticketState` key that ticket stages use.
+
+The connector requests all task pipelines in a single call on every sync. In incremental mode, it then emits only the pipelines whose `updatedAt` is newer than the saved cursor, and uses `createdAt` for any pipeline that HubSpot returns without an `updatedAt`.
 
 ### Notes on the `Forms` and `Form Submissions` stream
 
@@ -466,11 +527,11 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
     `feedback_submissions`: Service Hub Professional account
 
-    `marketing_emails`: Market Hub Starter account
+    `marketing_emails`: Marketing Hub Starter account
 
     `workflows`: Sales, Service, and Marketing Hub Professional accounts
 
-    `flows`: Sales, Service, and Marketing Hub Professional accounts
+    `flows`: a Professional or Enterprise subscription to Marketing Hub, Sales Hub, Service Hub, Content Hub, Commerce Hub, or Data Hub
 
 - Check out common troubleshooting issues for the HubSpot source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
@@ -481,6 +542,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 - **Missing records** in property history streams (`deals_property_history`, `contacts_property_history`, `companies_property_history`):
   - HubSpot calculated properties (formula fields, rollup summaries, analytics properties) can emit timestamps ahead of user-initiated changes, causing the sync cursor to advance past records that have not yet been synced.
   - To mitigate this, configure the **Property History Lookback Window** in the source settings. A value of `43200` (30 days) is recommended. Since these streams use Append + Deduped sync mode, duplicate records from the lookback period are handled automatically.
+  - If you don't need the history of calculated properties, leave them out of **Deals Property History Properties**, **Contacts Property History Properties**, or **Companies Property History Properties** so their timestamps don't advance the cursor. See [Notes on the `property_history` streams](#notes-on-the-property_history-streams).
 
 - **Destination type conversion errors on dynamic `number` / `boolean` properties** (for example, `JSON → NUMERIC`, `JSON → BOOL`, or decimal-precision / scale errors on fields like `hs_hd_ticket_ids`, `zendesk_requester_id`, `hs_task_send_default_reminder`, or any `companies.properties.*` field):
   - HubSpot sometimes declares a property as `number` or `boolean` but returns values that cannot be cast to that type — for example, semicolon-separated IDs (`"3092727991;3881228353;15895321999"`) in a `number` field, multi-value text in a `boolean` field, or numbers beyond the declared precision. When that happens the connector emits the raw string, but because the published schema still says `number` / `boolean`, strict destinations reject the record.
@@ -491,6 +553,14 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
     2. Click **Refresh source schema** and save the updated catalog — the affected columns should now be `string`.
     3. Trigger a **Refresh data** sync (or clear the affected streams and run a new sync) so the destination tables are rewritten with the new column type and previously-rejected records are re-emitted as strings.
   - The same steps apply if you later disable the toggle — refresh the schema and the data so the destination column types match the new catalog.
+
+- **`ValueError: No format in [...] matching True` before any records sync**:
+  - Versions 6.6.0 through 6.8.1 crash at startup, failing the whole sync, if a connection previously synced an association stream in full refresh mode and that stream no longer syncs as full refresh — for example, because you deselected it, or because its sync mode changed to incremental. The connector seeds the parent object stream's incremental cursor from the association stream's saved state, and a full refresh stream's saved state isn't a valid cursor value.
+  - Upgrade the source to version 6.8.2 or later. Affected connections recover on their next sync, with no configuration or catalog change needed.
+
+- **Missing `testing.isAbVariation` or `teams[].primary` columns in Avro or Parquet output**:
+  - Destinations that build records from the declared stream schema, such as S3 or GCS with Avro or Parquet output, drop any field the schema doesn't declare, and the drop isn't reported in `_airbyte_meta.changes`. Before version 6.9.0, the `marketing_emails` schema omitted `testing.isAbVariation` and the `owners` and `owners_archived` schemas omitted `teams[].primary`, even though HubSpot returns them.
+  - Upgrade the source to version 6.9.0 or later, then click **Refresh source schema** on the connection so the new columns reach the destination.
 
 </details>
 
@@ -505,17 +575,17 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.12.0 | 2026-09-12 | [85854](https://github.com/airbytehq/airbyte/pull/85854) | Add the `flows` stream, which syncs full workflow definitions (action graph, enrollment criteria, data sources, schedules) from HubSpot's Automation v4 Flows API. Each flow summary from `GET /automation/v4/flows` is enriched with `GET /automation/v4/flows/{flowId}`. Requires the `automation` scope and is gated behind `enable_experimental_streams` because the upstream API is a HubSpot developer preview. The legacy `workflows` stream is unchanged. |
-| 6.11.0 | 2026-10-01 | [87604](https://github.com/airbytehq/airbyte/pull/87604) | Add `deals_property_history_properties`, `contacts_property_history_properties`, and `companies_property_history_properties` config options to limit property history streams to a configured list of properties |
-| 6.10.0 | 2026-09-22 | [86415](https://github.com/airbytehq/airbyte/pull/86415) | Add new `engagements_task_pipelines` stream exposing HubSpot task pipelines and their stages, so `engagements_tasks.properties.hs_pipeline_stage` can be resolved to a stage label and open/closed state |
+| 6.12.0 | 2026-10-10 | [85854](https://github.com/airbytehq/airbyte/pull/85854) | Add experimental `flows` stream that syncs full workflow definitions from HubSpot's Automation v4 API. Available when `enable_experimental_streams` is on. The `workflows` stream is unchanged |
+| 6.11.0 | 2026-10-09 | [87604](https://github.com/airbytehq/airbyte/pull/87604) | Add `deals_property_history_properties`, `contacts_property_history_properties`, and `companies_property_history_properties` config options to limit property history streams to a configured list of properties |
+| 6.10.0 | 2026-10-05 | [86415](https://github.com/airbytehq/airbyte/pull/86415) | Add new `engagements_task_pipelines` stream exposing HubSpot task pipelines and their stages, so `engagements_tasks.properties.hs_pipeline_stage` can be resolved to a stage label and open/closed state |
 | 6.9.3 | 2026-09-22 | [86682](https://github.com/airbytehq/airbyte/pull/86682) | Update dependencies |
-| 6.9.2 | 2026-09-16 | [86350](https://github.com/airbytehq/airbyte/pull/86350) | Report an invalid `from_object`/`to_object` identifier in `custom_object_association_streams` as a configuration error instead of a generic credentials error |
+| 6.9.2 | 2026-09-17 | [86350](https://github.com/airbytehq/airbyte/pull/86350) | Report an invalid `from_object`/`to_object` identifier in `custom_object_association_streams` as a configuration error instead of a generic credentials error |
 | 6.9.1 | 2026-09-15 | [86075](https://github.com/airbytehq/airbyte/pull/86075) | Update dependencies |
 | 6.9.0 | 2026-09-14 | [82769](https://github.com/airbytehq/airbyte/pull/82769) | Declare `marketing_emails` `testing.isAbVariation` and `teams[].primary` on `owners` and `owners_archived`, returned by the API but missing from the schemas |
 | 6.8.3 | 2026-09-08 | [85528](https://github.com/airbytehq/airbyte/pull/85528) | Update dependencies |
-| 6.8.2 | 2026-08-20 | [84917](https://github.com/airbytehq/airbyte/pull/84917) | Update CDK to 7.28.0 to fix a startup crash (`ValueError: No format in [...] matching True`) when a full-refresh association stream with an `incremental_dependency` parent is deselected. |
-| 6.8.1 | 2026-08-14 | [84411](https://github.com/airbytehq/airbyte/pull/84411) | Fix the `Number of concurrent threads` setting being ignored: read the `num_worker` config key emitted by the spec instead of `num_workers` |
-| 6.8.0 | 2026-06-24 | [80806](https://github.com/airbytehq/airbyte/pull/80806) | Restore 12 Web Analytics streams removed during the v5.8.0 manifest-only migration. Uses HubSpot's latest 2026-03 Events API endpoint with explicit `eventType` fanout. Streams require the `business-intelligence` scope (Marketing Hub Enterprise) plus each parent stream's read scope. Gated behind `enable_experimental_streams` with fresh state from `start_date`. |
+| 6.8.2 | 2026-08-21 | [84917](https://github.com/airbytehq/airbyte/pull/84917) | Update CDK to 7.28.0 to fix a startup crash (`ValueError: No format in [...] matching True`) when a full-refresh association stream with an `incremental_dependency` parent is deselected. |
+| 6.8.1 | 2026-08-18 | [84411](https://github.com/airbytehq/airbyte/pull/84411) | Fix the **Number of concurrent threads** setting being ignored. Earlier versions read a `num_workers` config key that the connector never wrote, so every sync ran with the default 10 threads. |
+| 6.8.0 | 2026-07-28 | [80806](https://github.com/airbytehq/airbyte/pull/80806) | Restore the 12 Web Analytics streams removed in 5.8.0, using the 2026-03 Events API endpoint. The streams are gated behind `enable_experimental_streams`, require the `business-intelligence` scope plus each parent object's read scope, and start from `start_date` with fresh state. |
 | 6.7.0 | 2026-06-11 | [76396](https://github.com/airbytehq/airbyte/pull/76396) | Add `treat_numbers_and_booleans_as_strings` config toggle to coerce dynamic `number`/`boolean` properties to `string` |
 | 6.6.1 | 2026-06-10 | [79636](https://github.com/airbytehq/airbyte/pull/79636) | Add configurable `property_history_lookback_window` (minutes) to property history streams (deals, contacts, companies) to prevent silent record loss caused by cursor drift from HubSpot calculated properties. Clarify existing `lookback_window` field as CRM Search-specific. |
 | 6.6.0 | 2026-06-08 | [71259](https://github.com/airbytehq/airbyte/pull/71259) | Add association streams for standard and custom objects, including optional OAuth scopes needed to support them |
