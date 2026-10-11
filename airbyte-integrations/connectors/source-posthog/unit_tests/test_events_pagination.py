@@ -9,10 +9,15 @@ PostHog caps `GET /api/projects/:id/events/` at 1000 rows per request and return
 previous page>`, keeping the slice's `after`). The `events` stream has to follow that
 URL: an offset paginator stops as soon as a page is shorter than `page_size`, which
 silently truncated every slice to PostHog's 1000 row page cap.
+
+The stream also has to request ascending order: in descending order PostHog computes
+`has_more` inside a probe window, so a window holding fewer rows than the page size ends
+the slice early even when older rows exist.
 """
 
 import json
 import logging
+import urllib.parse
 from datetime import datetime, timedelta, timezone
 from typing import Any, List, Mapping
 
@@ -36,6 +41,7 @@ PAGE_SIZE = 1000
 # PostHog page size cap; the first two pages are full, then the slice runs out of records.
 FULL_PAGES = 2
 LAST_PAGE_RECORDS = 500
+ORDER_BY = '["timestamp"]'
 
 CONFIG = {
     "api_key": "test_api_key",
@@ -57,15 +63,19 @@ def _records(page_index: int, count: int) -> List[Mapping[str, Any]]:
     ]
 
 
-def _next_url(page_index: int) -> str:
-    return f"{BASE_URL}/api/projects/{PROJECT_ID}/events?after=SLICE_START&before=PAGE_BOUNDARY_{page_index}&limit={PAGE_SIZE}"
+def _next_url(page_index: int, include_order_by: bool = True) -> str:
+    url = f"{BASE_URL}/api/projects/{PROJECT_ID}/events?after=SLICE_START&before=PAGE_BOUNDARY_{page_index}&limit={PAGE_SIZE}"
+    if include_order_by:
+        url = f"{url}&orderBy=%5B%22timestamp%22%5D"
+    return url
 
 
 class _PosthogMock:
     """Serves `projects` and, for `events`, one full page per call with a `next` link."""
 
-    def __init__(self) -> None:
+    def __init__(self, include_order_by: bool = True) -> None:
         self.events_urls: List[str] = []
+        self.include_order_by = include_order_by
 
     def __call__(self, request: Any, context: Any) -> str:
         url = request.url
@@ -75,7 +85,7 @@ class _PosthogMock:
         page_index = len(self.events_urls)
         self.events_urls.append(url)
         if page_index < FULL_PAGES:
-            results, next_page = _records(page_index, PAGE_SIZE), _next_url(page_index)
+            results, next_page = _records(page_index, PAGE_SIZE), _next_url(page_index, self.include_order_by)
         elif page_index == FULL_PAGES:
             results, next_page = _records(page_index, LAST_PAGE_RECORDS), None
         else:
@@ -99,8 +109,8 @@ def _configured_catalog(source: SourcePosthog) -> ConfiguredAirbyteCatalog:
     )
 
 
-def _read_events() -> "tuple[List[Mapping[str, Any]], _PosthogMock]":
-    mock = _PosthogMock()
+def _read_events(include_order_by: bool = True) -> "tuple[List[Mapping[str, Any]], _PosthogMock]":
+    mock = _PosthogMock(include_order_by)
     with requests_mock.Mocker() as mocker:
         mocker.get(f"{BASE_URL}/api/projects", text=json.dumps({"results": [{"id": PROJECT_ID}], "next": None}))
         mocker.get(f"{BASE_URL}/api/projects/{PROJECT_ID}/events/", text=mock)
@@ -139,3 +149,24 @@ def test_events_pagination_requests_the_page_size_the_api_actually_honors():
 
     # PostHog clamps `limit` to 1000, so asking for more truncates the slice
     assert f"limit={PAGE_SIZE}" in mock.events_urls[0]
+
+
+def test_events_are_requested_in_ascending_order():
+    _, mock = _read_events()
+
+    # descending order lets PostHog end a slice inside its probe window even when older rows exist
+    first_page = urllib.parse.parse_qs(urllib.parse.urlparse(mock.events_urls[0]).query)
+    assert first_page["orderBy"] == [ORDER_BY]
+
+    for page_url in mock.events_urls[1:]:
+        page = urllib.parse.parse_qs(urllib.parse.urlparse(page_url).query)
+        assert page["orderBy"] == [ORDER_BY]
+
+
+def test_events_pagination_restores_the_ascending_order_when_the_next_url_omits_it():
+    _, mock = _read_events(include_order_by=False)
+
+    query = urllib.parse.parse_qs(urllib.parse.urlparse(mock.events_urls[1]).query)
+    assert query["orderBy"] == [ORDER_BY]
+    assert query["after"] == ["SLICE_START"]
+    assert query["before"] == ["PAGE_BOUNDARY_0"]

@@ -11,6 +11,8 @@ from airbyte_cdk.sources.declarative.requesters.http_requester import HttpReques
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
+EVENTS_ORDER_BY = '["timestamp"]'
+
 
 @dataclass
 class EventsRequester(HttpRequester):
@@ -30,12 +32,21 @@ class EventsRequester(HttpRequester):
     own boundaries must not be sent along with it: they would be appended as duplicate query parameters
     and the slice boundaries would override the keyset cursor, which makes the connector re-read the
     first page of the slice instead of moving on to older records.
+
+    Requests also ask for ascending order through `orderBy`. In descending order PostHog computes
+    `has_more` inside a probe window that it grows until a page is at least half full, so a window
+    that returns fewer than the page size rows ends the slice early even when older rows exist.
+    Ascending requests skip that probe and paginate the whole slice. The value has to be a
+    pre-serialized string: the CDK rejects list-valued request parameters.
     """
 
     def deduplicate_query_params(self, url: str, params: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
         params = super().deduplicate_query_params(url, params)
         url_query_keys = set(urllib.parse.parse_qs(urllib.parse.urlparse(url).query))
-        return {key: value for key, value in params.items() if key not in url_query_keys}
+        filtered = {key: value for key, value in params.items() if key not in url_query_keys}
+        if "orderBy" not in url_query_keys:
+            filtered["orderBy"] = EVENTS_ORDER_BY
+        return filtered
 
 
 @dataclass
