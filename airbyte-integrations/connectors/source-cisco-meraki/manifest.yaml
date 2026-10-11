@@ -31,11 +31,23 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            secureConnect/v1/organizations/{{ stream_partition['org_id']
+            api/secureConnect/v1/organizations/{{ stream_partition['org_id']
             }}/datacenters
           http_method: GET
           request_headers:
             Accept: application/json
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 400
+                  - 403
+                  - 404
+                action: IGNORE
+                error_message: >-
+                  Secure Connect is not enabled for this organization, so the
+                  datacenters stream was skipped for it.
         record_selector:
           type: RecordSelector
           extractor:

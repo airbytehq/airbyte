@@ -15,6 +15,7 @@ check:
   type: CheckStream
   stream_names:
     - instruments
+    - locations
 
 definitions:
   streams:
@@ -139,6 +140,16 @@ definitions:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 5
                 response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    failure_type: config_error
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      OpenAQ rejected the configured Countries value. Use numeric
+                      OpenAQ country IDs (e.g. 155 for the United States), not
+                      ISO country codes such as "FR". Look up IDs at
+                      https://docs.openaq.org/resources/countries
                   - type: HttpResponseFilter
                     action: RETRY
                     http_codes:
@@ -665,8 +676,14 @@ spec:
       country_ids:
         type: array
         description: >-
-          The list of IDs of countries (comma separated) you need the data for,
-          check more: https://docs.openaq.org/resources/countries
+          The list of numeric OpenAQ country IDs (e.g. 155 for the United
+          States) you need the data for. ISO country codes such as "FR" are
+          not accepted by the API; look up the numeric IDs at
+          https://docs.openaq.org/resources/countries or via the countries
+          stream.
+        examples:
+          - - 155
+            - 22
         order: 1
         title: Countries
     additionalProperties: true

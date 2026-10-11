@@ -125,3 +125,4 @@ jobs:
           tags: |
             ai-oncall
             pr-review
+            airbyte-pr-${{ inputs.pr }}

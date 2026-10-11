@@ -16,11 +16,15 @@ Your API key must have read permissions enabled for the modules that correspond 
 | Ashby permission module | Streams |
 | :--- | :--- |
 | Candidates | `applications`, `application_criteria_evaluations`, `application_feedback`, `application_history`, `candidates` |
-| Interviews | `interviews`, `interview_stages`, `interview_schedules` |
-| Jobs | `jobs`, `job_postings` |
-| Hiring Process | `archive_reasons`, `candidate_tags`, `custom_fields`, `feedback_form_definitions`, `sources` |
+| Interviews | `interviews`, `interview_plans`, `interview_schedules`, `interview_stage_groups`, `interview_stages` |
+| Jobs | `job_boards`, `job_postings`, `job_templates`, `jobs`, `openings` |
+| Hiring Process | `archive_reasons`, `candidate_tags`, `custom_fields`, `feedback_form_definitions`, `interviewer_pools`, `source_tracking_links`, `sources`, `survey_form_definitions` |
 | Organization *(always required)* | `departments`, `locations`, `users` — The connection check validates connectivity using the `users` stream, so you must enable this permission even if you only intend to sync streams from other modules. Without it, the check fails with a `403 missing_endpoint_permission` error. |
 | Offers | `offers` |
+| Approvals | `approvals` |
+| Projects or Candidates | `projects` (Ashby accepts either permission) |
+
+By default, Ashby API keys can't read confidential jobs and projects. To sync them, enable **Allow access to confidential jobs and projects?** on the API key.
 
 :::note
 The `application_criteria_evaluations` stream requires the AI Application Review feature to be enabled for your Ashby organization. If this feature is not enabled, the stream returns empty results.
@@ -54,20 +58,30 @@ This source syncs the following streams:
 - [application_criteria_evaluations](https://developers.ashbyhq.com/reference/applicationlistcriteriaevaluations) (substream of applications)
 - [application_feedback](https://developers.ashbyhq.com/reference/applicationfeedbacklist)
 - [application_history](https://developers.ashbyhq.com/reference/applicationlisthistory) (substream of applications)
+- [approvals](https://developers.ashbyhq.com/reference/approvallist)
 - [archive_reasons](https://developers.ashbyhq.com/reference/archivereasonlist)
 - [candidate_tags](https://developers.ashbyhq.com/reference/candidatetaglist)
 - [candidates](https://developers.ashbyhq.com/reference/candidatelist)
 - [custom_fields](https://developers.ashbyhq.com/reference/customfieldlist)
 - [departments](https://developers.ashbyhq.com/reference/departmentlist)
 - [feedback_form_definitions](https://developers.ashbyhq.com/reference/feedbackformdefinitionlist)
+- [interview_plans](https://developers.ashbyhq.com/reference/interviewplanlist)
 - [interview_schedules](https://developers.ashbyhq.com/reference/interviewschedulelist)
+- [interview_stage_groups](https://developers.ashbyhq.com/reference/interviewstagegrouplist)
 - [interviews](https://developers.ashbyhq.com/reference/interviewlist)
 - [interview_stages](https://developers.ashbyhq.com/reference/interviewstagelist)
+- [interviewer_pools](https://developers.ashbyhq.com/reference/interviewerpoollist)
+- [job_boards](https://developers.ashbyhq.com/reference/jobboardlist)
 - [job_postings](https://developers.ashbyhq.com/reference/jobpostinglist)
+- [job_templates](https://developers.ashbyhq.com/reference/jobtemplatelist)
 - [jobs](https://developers.ashbyhq.com/reference/joblist)
 - [locations](https://developers.ashbyhq.com/reference/locationlist)
 - [offers](https://developers.ashbyhq.com/reference/offerlist)
+- [openings](https://developers.ashbyhq.com/reference/openinglist-1)
+- [projects](https://developers.ashbyhq.com/reference/projectlist-1)
+- [source_tracking_links](https://developers.ashbyhq.com/reference/sourcetrackinglinklist-1)
 - [sources](https://developers.ashbyhq.com/reference/sourcelist)
+- [survey_form_definitions](https://developers.ashbyhq.com/reference/surveyformdefinitionlist)
 - [users](https://developers.ashbyhq.com/reference/userlist)
 
 The `application_criteria_evaluations` stream is a substream of `applications`. The connector requests evaluations only for applications whose current interview stage has the type `PreInterviewScreen` and whose status is neither `Archived` nor `Hired`, so it doesn't cover every application in your account. Each record carries an `application_id` field copied from the parent application, which is how you join evaluations back to `applications`. This stream has no primary key. Starting in version 1.4.0, the connector pages through every evaluation for each application. Earlier versions synced only the first page. Like `application_history`, this stream makes at least one request per application, so the connector caps `application.listCriteriaEvaluations` at 100 requests per minute and skips applications for which Ashby returns `application_not_found`.
@@ -84,7 +98,7 @@ If Ashby returns an `application_not_found` error for an application, which happ
 
 The `application_feedback` stream returns submitted interview scorecards, one record per feedback form submission, with the `submittedValues` an interviewer entered and the `formDefinition` that was in effect when the form was submitted. Join `applicationId` to `applications.id`, `interviewId` to `interviews.id`, and `feedbackFormDefinitionId` to `feedback_form_definitions.id`. `submittedValues` is a free-form object keyed by each field's `path`, so the connector doesn't declare its keys. For select fields, it holds the stored option value, such as `hire`, rather than the display label, such as `Hire`. To get labels, map each value through `formDefinition.sections[].fields[].field.selectableValues` on the same record, not through the current `feedback_form_definitions` stream, because a form definition can change after feedback is submitted. The `creditedToUser` field was added to the Ashby API on 2026-07-21 and may be null on older records. This endpoint requires the **Candidates** read permission.
 
-The `interview_stages` stream is a substream of Ashby's interview plans. Ashby's `interviewStage.list` endpoint returns stages for one interview plan at a time, so starting in version 1.4.0 the connector lists your interview plans, including archived ones, and then requests the stages of each plan. Versions before 1.4.0 didn't send an interview plan ID and synced no stages. Each record carries `interviewPlanId` and an `interview_plan_is_archived` flag copied from the parent plan. Ashby's `interviewPlan.list` doesn't return draft plans, and it returns job-specific plans only when your API key can read the associated job, so grant the **Jobs** read permission if you need stages from job-specific plans.
+The `interview_stages` stream is a substream of Ashby's interview plans. Ashby's `interviewStage.list` endpoint returns stages for one interview plan at a time, so starting in version 1.4.0 the connector lists your interview plans, including archived ones, and then requests the stages of each plan. Versions before 1.4.0 didn't send an interview plan ID and synced no stages. Each record carries `interviewPlanId` and an `interview_plan_is_archived` flag copied from the parent plan. Join `interviewPlanId` to `interview_plans.id` and `interviewStageGroupId` to `interview_stage_groups.id`. Ashby's `interviewPlan.list` doesn't return draft plans, and it returns job-specific plans only when your API key can read the associated job, so grant the **Jobs** read permission if you need job-specific plans in `interview_plans` or their stages in `interview_stages`.
 
 The `interviews` stream returns interview definitions, which are the interview types configured in your Ashby account, such as a technical phone screen. It doesn't return scheduled interviews. Each record carries the definition's `title`, `externalTitle`, instructions, feedback settings, and `feedbackFormDefinitionId`. For interviews that were actually scheduled, along with their times and interviewers, use `interview_schedules`.
 
@@ -92,9 +106,17 @@ Starting in version 1.2.0, the connector sends `includeNonSharedInterviews: true
 
 Version 1.2.0 also declared the fields `interview.list` returns, which the schema previously omitted. Refresh the source schema and enable the new columns in your connection to replicate them. The stream keeps declaring twelve fields that describe a scheduled interview rather than a definition: `applicationId`, `interviewScheduleId`, `interviewStageId`, `status`, `createdAt`, `updatedAt`, `cancelledAt`, `startTime`, `endTime`, `interviewerUserIds`, `meetingLink`, and `feedbackLink`. Ashby's `interview.list` endpoint doesn't return them, so those columns are always null. They stay in the schema so that removing them can be released as a breaking change later.
 
+The `openings` stream returns headcount openings. Each record's `latestVersion` object holds the opening's current details, including `jobIds` and `locationIds`, which join to `jobs.id` and `locations.id`.
+
+The `approvals` stream returns approval processes for offers, jobs, and openings. The connector doesn't filter by entity, so every approval in your organization syncs. Use `entityType` to tell which kind of record `entityId` refers to, then join `entityId` to `offers.id`, `jobs.id`, or `openings.id`.
+
 ### Archived and deactivated records
 
 Starting in version 1.4.0, the connector asks Ashby to include archived records for `archive_reasons`, `candidate_tags`, `custom_fields`, `departments`, `feedback_form_definitions`, `interviews`, `locations`, and `sources`, and deactivated users for `users`. Earlier versions synced only active records from these streams, so your first sync after upgrading can return more rows. Filter on `isArchived`, or on `isEnabled` for `users`, if you only want active records.
+
+The streams added in version 1.6.0 also include inactive records. `interview_plans` includes archived plans, and `interviewer_pools` includes archived pools and archived training stages. Filter on `isArchived` to exclude them. `source_tracking_links` includes disabled links, so filter on `enabled` to exclude them.
+
+Of the streams added in version 1.7.0, `job_templates` returns both active and inactive templates, so filter on `status` if you only want active ones. Ashby's `jobBoard.list` returns only enabled job boards, so `job_boards` doesn't include disabled ones.
 
 ## Performance considerations
 
@@ -125,6 +147,9 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
+| 1.7.1 | 2026-10-06 | [87745](https://github.com/airbytehq/airbyte/pull/87745) | Update dependencies |
+| 1.7.0 | 2026-10-05 | [87590](https://github.com/airbytehq/airbyte/pull/87590) | Add openings, job templates, job boards, approvals, and projects streams |
+| 1.6.0 | 2026-10-05 | [87587](https://github.com/airbytehq/airbyte/pull/87587) | Add interview plans, interview stage groups, interviewer pools, survey form definitions, and source tracking links streams |
 | 1.5.0 | 2026-10-02 | [87597](https://github.com/airbytehq/airbyte/pull/87597) | Add incremental sync to `applications` and `application_history`, so incremental syncs request history only for applications updated since the previous sync, with a 1-day lookback |
 | 1.4.0 | 2026-09-30 | [87051](https://github.com/airbytehq/airbyte/pull/87051) | Fail syncs on Ashby `success: false` errors, sync `interview_stages` per interview plan, paginate `application_criteria_evaluations`, and include archived and deactivated records in lookup streams |
 | 1.3.4 | 2026-09-29 | [87080](https://github.com/airbytehq/airbyte/pull/87080) | Update dependencies |

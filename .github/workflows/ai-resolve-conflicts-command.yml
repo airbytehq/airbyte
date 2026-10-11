@@ -87,3 +87,4 @@ jobs:
           tags: |
             ai-oncall
             conflict-resolution
+            ${{ inputs.pr && format('airbyte-pr-{0}', inputs.pr) || '' }}

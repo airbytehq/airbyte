@@ -8,7 +8,7 @@ The Zoho Campaigns connector enables seamless integration of mailing lists, camp
 | `client_id_2` | `string` | Client ID.  |  |
 | `client_secret_2` | `string` | Client secret.  |  |
 | `client_refresh_token` | `string` | Refresh token.  |  |
-| `domain` | `string` | Domain.  |  |
+| `data_center` | `string` | Data Center. The Zoho data center your account belongs to: `com`, `eu`, `in`, `com.au`, `jp` or `com.cn`.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -20,10 +20,9 @@ The Zoho Campaigns connector enables seamless integration of mailing lists, camp
 | recent_sent_campaigns | campaign_key | DefaultPaginator | ✅ |  ❌  |
 | mailing_lists | listunino | DefaultPaginator | ✅ |  ❌  |
 | subscribers | contact_email |  DefaultPaginator | ✅ |  ❌  |
-| lists | listkey | No pagination | ✅ |  ❌  |
-| total_contacts |  | No pagination | ✅ |  ❌  |
+| totalcontacts |  | No pagination | ✅ |  ❌  |
 | topics | topicId | No pagination | ✅ |  ❌  |
-| all_tags |  | No pagination | ✅ |  ❌  |
+| all_tags | tag_id | No pagination | ✅ |  ❌  |
 
 ## IP allow list
 
@@ -36,6 +35,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.69 | 2026-10-07 | [88274](https://github.com/airbytehq/airbyte/pull/88274) | Reuse the Zoho access token across streams and syncs to stop hitting Zoho's 10-refreshes-per-10-minutes limit; flatten `all_tags` records and add a `tag_id` primary key; fix the `jp` / `com.cn` data center values |
+| 0.0.68 | 2026-10-06 | [88095](https://github.com/airbytehq/airbyte/pull/88095) | Update dependencies |
 | 0.0.67 | 2026-09-29 | [87428](https://github.com/airbytehq/airbyte/pull/87428) | Update dependencies |
 | 0.0.66 | 2026-09-22 | [86877](https://github.com/airbytehq/airbyte/pull/86877) | Update dependencies |
 | 0.0.65 | 2026-09-15 | [86303](https://github.com/airbytehq/airbyte/pull/86303) | Update dependencies |

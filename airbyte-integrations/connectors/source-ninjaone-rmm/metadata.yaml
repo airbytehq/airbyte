@@ -3,6 +3,10 @@ data:
   allowedHosts:
     hosts:
       - "app.ninjarmm.com"
+      - "us2.ninjarmm.com"
+      - "eu.ninjarmm.com"
+      - "ca.ninjarmm.com"
+      - "oc.ninjarmm.com"
   registryOverrides:
     oss:
       enabled: true
@@ -13,11 +17,11 @@ data:
       enabled: false
       packageName: airbyte-source-ninjaone-rmm
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.32.0@sha256:0fd296fcebe643f973e64cb55dab3c7443d00496897ebd2b682b29332a660780
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.33.0@sha256:3343cc05b79b9a3c07fa90152bd5348da7154b44f63521857bd2a745883d85cd
   connectorSubtype: api
   connectorType: source
   definitionId: 49897212-53be-4898-ba2e-b73e72d645ef
-  dockerImageTag: 0.0.50
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-ninjaone-rmm
   githubIssueLabel: source-ninjaone-rmm
   icon: icon.svg
@@ -25,6 +29,19 @@ data:
   name: NinjaOne RMM
   releaseDate: 2025-04-04
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      0.1.0:
+        message: >-
+          The connector now authenticates with NinjaOne OAuth2 client credentials
+          instead of a static API token (NinjaOne access tokens expire after one
+          hour, so syncs could not run on a schedule). All users must create a
+          NinjaOne API application with the Client Credentials grant and enter
+          its Client ID and Client Secret (and, if applicable, their NinjaOne
+          region) in the source configuration. Migration guide:
+          https://docs.airbyte.com/integrations/sources/ninjaone-rmm-migrations#upgrading-to-010
+        upgradeDeadline: "2026-10-21"
+        deadlineAction: "disable"
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/ninjaone-rmm
   tags:

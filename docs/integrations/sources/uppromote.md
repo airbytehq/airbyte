@@ -14,6 +14,10 @@ The Uppromote Connector for Airbyte enables seamless data integration between Up
 | coupons | id | DefaultPaginator | ✅ |  ❌  |
 | referrals | id | DefaultPaginator | ✅ |  ✅  |
 
+## Rate limits
+
+The UpPromote API allows 60 requests per minute per store and reports rate-limit errors as `HTTP 400` responses with the message `Too Many Attempts.`. The connector requests 100 records per page (the API maximum) and waits 60 seconds before retrying when this limit is reached, so large syncs may take several minutes.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -25,6 +29,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.70 | 2026-10-07 | [88225](https://github.com/airbytehq/airbyte/pull/88225) | Fix syncs failing with `Too Many Attempts`: retry UpPromote rate-limit errors (returned as HTTP 400) and request 100 records per page |
+| 0.0.69 | 2026-10-06 | [88057](https://github.com/airbytehq/airbyte/pull/88057) | Update dependencies |
 | 0.0.68 | 2026-09-29 | [87398](https://github.com/airbytehq/airbyte/pull/87398) | Update dependencies |
 | 0.0.67 | 2026-09-22 | [86835](https://github.com/airbytehq/airbyte/pull/86835) | Update dependencies |
 | 0.0.66 | 2026-09-15 | [86262](https://github.com/airbytehq/airbyte/pull/86262) | Update dependencies |

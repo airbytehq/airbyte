@@ -1,23 +1,40 @@
 # Xsolla
+
 The Xsolla Airbyte Connector enables seamless integration between Xsolla and various data destinations. This connector allows you to extract data from Xsolla’s APIs, such as Game Catalog, Virtual Items, Virtual Currency and more.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `api_key` | `string` | API Key. Go to Xsolla Dashboard and from company setting get the api_key |  |
-| `project_id` | `number` | Project Id. You can find this parameter in your Publisher Account next to the name of the project . Example: 44056 |  |
+| --- | --- | --- | --- |
+| `api_key` | `string` | Xsolla user JWT for the project, without the `Bearer` prefix. This is not a Publisher Account API key. | |
+| `project_id` | `number` | Project Id. You can find this parameter in your Publisher Account next to the name of the project . Example: 44056 | |
+
+### Authentication
+
+The connector reads Xsolla's client-facing catalog and reward-chain endpoints using
+[user JWT authentication](https://developers.xsolla.com/api/catalog/authentication-using-users-jwt).
+Obtain a user token through [Xsolla Login](https://developers.xsolla.com/api/login/authentication-schemes#getting-user-token)
+or use a token for opening the payment UI, then enter it in the existing `api_key` field.
+Do not use an API key from **Publisher Account > Company settings > API keys**:
+those keys are used for HTTP Basic authentication on server-side endpoints, not
+the bearer authentication used by this connector.
+
+The token must belong to the configured project. Replace it when it expires;
+the connector does not automatically refresh tokens. Catalog personalization and
+[reward chains](https://developers.xsolla.com/api/liveops/reward-chain-client/get-reward-chains-list)
+are scoped to the token's user, not all users in the project.
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| Games Catalog | item_id | DefaultPaginator | ✅ |  ❌  |
-| DRM | drm_id | No pagination | ✅ |  ❌  |
-| Virtual Items | item_id | DefaultPaginator | ✅ |  ❌  |
-| Virtual Currency | item_id | DefaultPaginator | ✅ |  ❌  |
-| Virtual Currency Package | item_id | DefaultPaginator | ✅ |  ❌  |
-| Bundles | item_id | DefaultPaginator | ✅ |  ❌  |
-| Reward Chains | reward_chain_id | DefaultPaginator | ✅ |  ❌  |
+| --- | --- | --- | --- | --- |
+| Games Catalog | item_id | DefaultPaginator | ✅ | ❌ |
+| DRM | drm_id | No pagination | ✅ | ❌ |
+| Virtual Items | item_id | DefaultPaginator | ✅ | ❌ |
+| Virtual Currency | item_id | DefaultPaginator | ✅ | ❌ |
+| Virtual Currency Package | item_id | DefaultPaginator | ✅ | ❌ |
+| Bundles | item_id | DefaultPaginator | ✅ | ❌ |
+| Reward Chains | reward_chain_id | DefaultPaginator | ✅ | ❌ |
 
 ## IP allow list
 
@@ -28,8 +45,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date | Pull Request | Subject |
+| --- | --- | --- | --- |
+| 0.0.71 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88291) | Correct user JWT authentication instructions without changing existing configuration fields. |
+| 0.0.70 | 2026-10-06 | [88121](https://github.com/airbytehq/airbyte/pull/88121) | Update dependencies |
 | 0.0.69 | 2026-09-29 | [87427](https://github.com/airbytehq/airbyte/pull/87427) | Update dependencies |
 | 0.0.68 | 2026-09-22 | [86873](https://github.com/airbytehq/airbyte/pull/86873) | Update dependencies |
 | 0.0.67 | 2026-09-15 | [86236](https://github.com/airbytehq/airbyte/pull/86236) | Update dependencies |
