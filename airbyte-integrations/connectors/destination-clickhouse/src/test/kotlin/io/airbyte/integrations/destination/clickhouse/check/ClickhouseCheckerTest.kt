@@ -67,6 +67,34 @@ class ClickhouseCheckerTest {
     }
 
     @Test
+    fun `check with cluster config - creates check table with ON CLUSTER and ReplicatedMergeTree`() {
+        val clusterConfig = Fixtures.config(clusterName = "my_cluster", useReplicatedEngines = true)
+        val clusterChecker = ClickhouseChecker(clock, clusterConfig, client)
+
+        clusterChecker.check()
+
+        verify {
+            client.execute(
+                "CREATE TABLE IF NOT EXISTS ${clusterConfig.database}.${clusterChecker.tableName} ON CLUSTER `my_cluster` (test UInt8) ENGINE = ReplicatedMergeTree ORDER BY ()"
+            )
+        }
+    }
+
+    @Test
+    fun `cleanup with cluster config - drops check table with ON CLUSTER`() {
+        val clusterConfig = Fixtures.config(clusterName = "my_cluster")
+        val clusterChecker = ClickhouseChecker(clock, clusterConfig, client)
+
+        clusterChecker.cleanup()
+
+        verify {
+            client.execute(
+                "DROP TABLE IF EXISTS ${clusterConfig.database}.${clusterChecker.tableName} ON CLUSTER `my_cluster`"
+            )
+        }
+    }
+
+    @Test
     fun `check happy path - table name differs between instantiations to prevent collision`() {
         every { clock.millis() } returns 123L
         val checker1 = ClickhouseChecker(clock, config, client)
@@ -145,6 +173,8 @@ class ClickhouseCheckerTest {
             password: String = "password",
             enableJson: Boolean = false,
             recordWindow: Long = 42000,
+            useReplicatedEngines: Boolean = ClickhouseConfiguration.Defaults.USE_REPLICATED_ENGINES,
+            clusterName: String = ClickhouseConfiguration.Defaults.DEFAULT_CLUSTER_NAME,
         ): ClickhouseConfiguration =
             ClickhouseConfiguration(
                 hostname = hostname,
@@ -156,6 +186,8 @@ class ClickhouseCheckerTest {
                 enableJson = enableJson,
                 tunnelConfig = SshNoTunnelMethod,
                 recordWindowSize = recordWindow,
+                useReplicatedEngines = useReplicatedEngines,
+                clusterName = clusterName,
             )
     }
 }

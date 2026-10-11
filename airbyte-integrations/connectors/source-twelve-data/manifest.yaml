@@ -15,7 +15,7 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - stocks
+    - countries
 
 definitions:
   streams:
@@ -32,6 +32,8 @@ definitions:
           http_method: GET
           request_parameters:
             country: "{{ config['country'] }}"
+            exchange: "{{ config['exchange'] }}"
+            symbol: "{{ config['symbol'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -440,16 +442,28 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
-                    action: FAIL
+                    action: RATE_LIMITED
                     http_codes:
-                      - 404
-                    error_message: Please ennter the symbol and interval
+                      - 429
+                    error_message: >-
+                      Your request failed as you ran out of API credits for the
+                      current minute.
                     error_message_contains: >-
-                      **symbol** or **figi** parameter is missing or invalid.
-                      Please provide a valid symbol according to API
-                      documentation
+                      Wait for the next minute or consider switching to a higher
+                      tier plan at https://twelvedata.com/pricing
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 404
+                    error_message: >-
+                      Symbol is not available on your Twelve Data plan or was not
+                      found; skipping it.
         record_selector:
           type: RecordSelector
           extractor:
@@ -503,6 +517,14 @@ definitions:
                     error_message_contains: >-
                       Wait for the next minute or consider switching to a higher
                       tier plan at https://twelvedata.com/pricing
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 404
+                    error_message: >-
+                      Symbol is not available on your Twelve Data plan or was not
+                      found; skipping it.
         record_selector:
           type: RecordSelector
           extractor:
@@ -549,6 +571,14 @@ definitions:
                     error_message_contains: >-
                       Wait for the next minute or consider switching to a higher
                       tier plan at https://twelvedata.com/pricing
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 404
+                    error_message: >-
+                      Symbol is not available on your Twelve Data plan or was not
+                      found; skipping it.
         record_selector:
           type: RecordSelector
           extractor:
@@ -595,6 +625,14 @@ definitions:
                     error_message_contains: >-
                       Wait for the next minute or consider switching to a higher
                       tier plan at https://twelvedata.com/pricing
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 404
+                    error_message: >-
+                      Symbol is not available on your Twelve Data plan or was not
+                      found; skipping it.
         record_selector:
           type: RecordSelector
           extractor:
@@ -652,6 +690,14 @@ definitions:
                     error_message_contains: >-
                       Wait for the next minute or consider switching to a higher
                       tier plan at https://twelvedata.com/pricing
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 404
+                    error_message: >-
+                      Symbol is not available on your Twelve Data plan or was not
+                      found; skipping it.
         record_selector:
           type: RecordSelector
           extractor:

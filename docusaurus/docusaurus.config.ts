@@ -20,7 +20,6 @@ const getRemarkPlugins = () => ({
   npm2yarn: require("@docusaurus/remark-plugin-npm2yarn"),
   agentConnectorHeaderDecoration: require("./src/remark/agentConnectorHeaderDecoration"),
   planInformation: require("./src/remark/planInformation"),
-  connectorTypeBanner: require("./src/remark/connectorTypeBanner"),
   codeBlockTabs: require("./src/remark/codeBlockTabs"),
 });
 
@@ -79,13 +78,6 @@ const config: Config = {
       type: "module",
       id: "unifytag",
       "data-api-key": "wk_BEtrdAz2_2qgdexg5KRa6YWLWVwDdieFC7CAHkDKz",
-    },
-    {
-      src: "https://cdn.jsdelivr.net/npm/hockeystack@latest/hockeystack.min.js",
-      async: true,
-      "data-apikey": "2094e2379643f69f7aec647a15f786",
-      "data-cookieless": "1",
-      "data-auto-identify": "1",
     },
   ],
   headTags: [
@@ -248,7 +240,6 @@ const config: Config = {
           plugins.docsHeaderDecoration,
           plugins.enterpriseDocsHeaderInformation,
           plugins.productInformation,
-          plugins.connectorTypeBanner,
           plugins.docMetaTags,
         ],
       },
@@ -353,10 +344,20 @@ const config: Config = {
     require.resolve("./src/scripts/cloudStatus.js"),
     require.resolve("./src/scripts/download-abctl-buttons.js"),
     require.resolve("./src/scripts/fontAwesomeIcons.js"),
-    require.resolve("./src/scripts/kapaWithOsanoConsent.js"),
+    require.resolve("./src/scripts/kapaWithDataGrailConsent.js"),
   ],
 
   themeConfig: {
+    // Default social card for og:image/twitter:image on every page. Per-page
+    // front matter `image` still takes precedence.
+    image: "img/airbyte-docs-social-card.png",
+    metadata: [
+      // Docs pages override this with "article" in src/theme/DocItem/Metadata.
+      { property: "og:type", content: "website" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "Airbyte Documentation" },
+    ],
     colorMode: {
       disableSwitch: false,
     },
@@ -377,9 +378,9 @@ const config: Config = {
       indexName: "airbyte",
     },
     announcementBar: {
-      id: "try_airbyte_agents",
+      id: "try_airbyte_cloud",
       content:
-        '<a target="_blank" rel="noopener noreferrer" href="https://app.airbyte.ai?utm_source=docs&utm_medium=banner&utm_campaign=airbyte_agents_docs_banner">Try Airbyte Agents</a>! No credit card needed.',
+        '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.com/signup?utm_source=docs&utm_medium=banner&utm_campaign=airbyte_cloud_docs_banner">Try Airbyte Cloud!</a> Free trial for 14 days, no credit card needed.',
       backgroundColor: "#615eff",
       textColor: "#ffffff",
       isCloseable: false,

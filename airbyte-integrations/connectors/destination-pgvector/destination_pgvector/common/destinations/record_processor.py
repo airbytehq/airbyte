@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import abc
 import io
+import json
 import queue
 import sys
 import warnings
@@ -15,9 +16,12 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, cast, final
 
 from airbyte import exceptions as exc
+from airbyte import progress
+from airbyte.records import StreamRecordHandler
 from airbyte.strategies import WriteStrategy
 from airbyte_cdk.models import (
     AirbyteMessage,
+    AirbyteMessageSerializer,
     AirbyteRecordMessage,
     AirbyteStateMessage,
     AirbyteStateType,
@@ -67,6 +71,11 @@ class RecordProcessorBase(abc.ABC):
             str,
             list[AirbyteStateMessage],
         ] = defaultdict(list, {})
+        self.progress_tracker = progress.ProgressTracker(
+            source=None,
+            cache=None,
+            destination=None,
+        )
 
         self._setup()
 
@@ -135,7 +144,7 @@ class RecordProcessorBase(abc.ABC):
         buffer: io.TextIOBase,
     ) -> Iterator[AirbyteMessage]:
         """Yield messages from a buffer."""
-        yield from (AirbyteMessage.parse_raw(line) for line in buffer)
+        yield from (AirbyteMessageSerializer.load(json.loads(line)) for line in buffer)
 
     @final
     def process_input_stream(
@@ -158,7 +167,8 @@ class RecordProcessorBase(abc.ABC):
     def process_record_message(
         self,
         record_msg: AirbyteRecordMessage,
-        stream_schema: dict,
+        stream_record_handler: StreamRecordHandler,
+        progress_tracker: progress.ProgressTracker,
     ) -> None:
         """Write a record.
 
@@ -224,7 +234,7 @@ class RecordProcessorBase(abc.ABC):
                 context={"write_strategy": write_strategy},
             )
 
-        stream_schemas: dict[str, dict] = {}
+        stream_record_handlers: dict[str, StreamRecordHandler] = {}
 
         # Process messages, writing to batches as we go
         for message in messages:
@@ -232,14 +242,19 @@ class RecordProcessorBase(abc.ABC):
                 record_msg = cast(AirbyteRecordMessage, message.record)
                 stream_name = record_msg.stream
 
-                if stream_name not in stream_schemas:
-                    stream_schemas[stream_name] = self.catalog_provider.get_stream_json_schema(
-                        stream_name=stream_name
+                if stream_name not in stream_record_handlers:
+                    stream_record_handlers[stream_name] = StreamRecordHandler(
+                        json_schema=self.catalog_provider.get_stream_json_schema(
+                            stream_name=stream_name,
+                        ),
+                        normalize_keys=True,
+                        prune_extra_fields=True,
                     )
 
                 self.process_record_message(
                     record_msg,
-                    stream_schema=stream_schemas[stream_name],
+                    stream_record_handler=stream_record_handlers[stream_name],
+                    progress_tracker=self.progress_tracker,
                 )
 
             elif message.type is Type.STATE:
@@ -266,16 +281,22 @@ class RecordProcessorBase(abc.ABC):
         # Finalize all received records and state messages:
         self.write_all_stream_data(
             write_strategy=write_strategy,
+            progress_tracker=self.progress_tracker,
         )
 
         self.cleanup_all()
 
-    def write_all_stream_data(self, write_strategy: WriteStrategy) -> None:
+    def write_all_stream_data(
+        self,
+        write_strategy: WriteStrategy,
+        progress_tracker: progress.ProgressTracker,
+    ) -> None:
         """Finalize any pending writes."""
         for stream_name in self.catalog_provider.stream_names:
             self.write_stream_data(
                 stream_name,
                 write_strategy=write_strategy,
+                progress_tracker=progress_tracker,
             )
 
     @abc.abstractmethod
@@ -283,6 +304,7 @@ class RecordProcessorBase(abc.ABC):
         self,
         stream_name: str,
         write_strategy: WriteStrategy,
+        progress_tracker: progress.ProgressTracker,
     ) -> list[BatchHandle]:
         """Write pending stream data to the cache."""
         ...

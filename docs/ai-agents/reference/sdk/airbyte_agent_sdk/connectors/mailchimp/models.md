@@ -74,6 +74,7 @@ Classes
     * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[SegmentsSearchData]
     * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[TagsSearchData]
     * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[UnsubscribesSearchData]
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

@@ -65,9 +65,12 @@ transformation or the stream will emit invalid metric types.
 ## 4. Rate Limit Detection via Response Body Code
 
 TikTok's API does not use standard HTTP 429 status codes for rate limiting. Instead, it returns HTTP
-200 with a `code` field in the JSON response body set to `40100`. The error handler uses a predicate
-(`response.get('code') == 40100`) to detect rate limiting, and a separate predicate
-(`response.get('code') != 0`) to detect general API errors.
+200 with a `code` field in the JSON response body set to `40100` or `40016` (app-level limits) or `40133`
+(advertiser-level limit). The error handler uses a predicate
+(`response.get('code') in [40016, 40100, 40133]`) to detect rate limiting, and separate predicates
+(`response.get('code') == 50000`, `response.get('code') == 51041`,
+`response.get('code') == 51004`, and `response.get('code') == 51002`) retry transient server-side errors, while
+(`response.get('code') != 0`) detects general API errors.
 
 **Why this matters:** Standard HTTP status code-based rate limit detection will not work with TikTok's
 API. If you modify the error handler, make sure the response body code checks remain intact. The error
@@ -76,7 +79,31 @@ rate limits are per-access-token.
 
 ---
 
-## 5. Smart+ Ads Missing modify_time Filter
+## 5. Daily Report Window Splitting (40067)
+
+TikTok rejects a daily report request that is too large with HTTP 200 and body `code` 40067 ("Your query
+is too large, please reduce the query size..."). `report_daily_error_handler` maps it to
+`SPLIT_REQUEST_WINDOW`, so the CDK re-reads that advertiser's rejected window as two halves, recursively.
+
+- The 40067 filter is predicate-only on purpose: the error arrives with HTTP 200, and `HttpResponseFilter`
+  ORs its conditions, so adding `http_codes` would split every page.
+- All 19 `*_daily` streams get it through `base_report_retriever` and `audience_base_report_retriever`,
+  which share `report_daily_request_window_splitting`.
+- The floor is one day, from `cursor_granularity: P1D` on `report_daily_incremental_sync` (no
+  `min_split_window`). A single day that is still rejected fails the stream with a `transient_error`
+  (CDK behavior), followed by the block's `failure_message`.
+- Any retriever that `$ref`s `report_daily_error_handler` must also `$ref`
+  `report_daily_request_window_splitting`, or the manifest fails to load (the CDK rejects a
+  `SPLIT_REQUEST_WINDOW` filter on a retriever without `request_window_splitting`).
+- Hourly retrievers must not get it: hourly requests always cover one day, so halving the window would
+  repeat the same request.
+
+**Why this matters:** A new daily report retriever or a copied error handler that misses one of these
+rules either fails to load or fails on 40067 instead of splitting.
+
+---
+
+## 6. Smart+ Ads Missing modify_time Filter
 
 The `ads` stream includes a `RecordFilter` that drops records where `modify_time` is `None`. This is
 specifically to handle TikTok's Smart+ Ad records, which can be returned by the API without a
@@ -89,7 +116,7 @@ trade-off to maintain incremental sync reliability.
 
 ---
 
-## 6. Sandbox Account Rate Limit and Credential Restriction
+## 7. Sandbox Account Rate Limit and Credential Restriction
 
 The TikTok Sandbox account has a rate limit of 10 requests per second. If you run CATs in CI while simultaneously testing locally with the same credentials, you will exceed this limit and the credentials may be temporarily restricted — preventing **all** requests from succeeding. The restriction appears to last a couple of hours, and there is evidence that continued request attempts during the restriction period extend the lockout duration. There is no official TikTok documentation on this restriction behavior or its exact duration.
 
