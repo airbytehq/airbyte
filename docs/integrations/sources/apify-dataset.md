@@ -58,6 +58,10 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
   - Dataset ID (check the [docs](https://docs.apify.com/platform/storage/dataset))
 - Limitations:
   - The stream uses a dynamic schema (all the data are stored under the `"data"` key), so it should support all the Apify Datasets (produced by whatever Actor).
+  - Each item must be a JSON object. Since version 2.2.62:
+    - An item nested more than 200 levels deep, or containing a number that does not fit in a 64-bit float (for example `1e400`) or `NaN`/`Infinity`, is emitted with `"data"` set to a string representation of the item instead of an object.
+    - A dataset containing non-object items (for example numbers or strings) fails the stream with a `TypeError`.
+    - An item with a top-level `__airbyte_apify_wrapped_item` key is emitted with that key's contents merged into the top level of the record.
 
 ### `item_collection_website_content_crawler`
 
@@ -76,6 +80,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                 | Subject                                                                         |
 | :------ | :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 2.2.62 | 2026-10-06 | [88134](https://github.com/airbytehq/airbyte/pull/88134) | Replace the custom `item_collection` record extractor with built-in declarative transformations; record output is unchanged |
+| 2.2.61 | 2026-10-06 | [87770](https://github.com/airbytehq/airbyte/pull/87770) | Update dependencies |
 | 2.2.60 | 2026-09-29 | [87064](https://github.com/airbytehq/airbyte/pull/87064) | Update dependencies |
 | 2.2.59 | 2026-09-22 | [86526](https://github.com/airbytehq/airbyte/pull/86526) | Update dependencies |
 | 2.2.58 | 2026-09-15 | [85955](https://github.com/airbytehq/airbyte/pull/85955) | Update dependencies |

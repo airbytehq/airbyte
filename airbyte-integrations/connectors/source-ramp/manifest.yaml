@@ -267,6 +267,11 @@ definitions:
                 - string
                 - "null"
               description: Legal name of the vendor.
+            net_payment_terms:
+              type:
+                - integer
+                - "null"
+              description: Number of days after receipt that payment is due. 0 means due on receipt.
             parent_vendor_id:
               type:
                 - string
@@ -451,9 +456,11 @@ streams:
           $ref: "#/definitions/linked/HttpRequester/error_handler"
         request_headers:
           $ref: "#/definitions/linked/HttpRequester/request_headers"
-        # Ramp omits declined transactions unless `state=ALL` is sent.
+        # Ramp omits declined transactions unless `state=ALL` is sent, and returns `merchant_data` as null
+        # unless `include_merchant_data=true` is sent.
         request_parameters:
           state: ALL
+          include_merchant_data: "true"
       record_selector:
         type: RecordSelector
         extractor:
@@ -654,6 +661,27 @@ streams:
             type:
               - string
               - "null"
+          merchant_data:
+            type:
+              - object
+              - "null"
+            description: >-
+              Purchase data provided by the merchant - auto_rental, flight, lodging, receipt (itemised
+              lines) and reference. Null when the merchant sends none.
+          attendees:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+            description: Attendees of the transaction - name, and user_id when the attendee is a Ramp user.
+          requires_accounting_vendor_creation_to_sync:
+            type:
+              - boolean
+              - "null"
+            description: >-
+              Whether an accounting vendor must be created and coded to the transaction before it can sync.
+              Ramp omits it unless vendor creation on sync is enabled.
     transformations:
       - type: KeysToSnakeCase
     incremental_sync:
@@ -874,6 +902,40 @@ streams:
             type:
               - string
               - "null"
+          funding_source:
+            type:
+              - string
+              - "null"
+            description: >-
+              NOT_RAMP_FUNDED, PAID_OUTSIDE_RAMP, PENDING (not known before payment) or RAMP_FUNDED (does not
+              confirm settlement). Null when Ramp cannot determine it.
+          employee_id:
+            type:
+              - string
+              - "null"
+            description: Employee ID of the person who made the reimbursement.
+          distance:
+            type:
+              - number
+              - "null"
+            description: Trip distance in miles, for mileage reimbursements.
+          start_location:
+            type:
+              - string
+              - "null"
+            description: Starting location of the trip, for mileage reimbursements.
+          end_location:
+            type:
+              - string
+              - "null"
+            description: Ending location of the trip, for mileage reimbursements.
+          waypoints:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+            description: Intermediate stops during the trip, for mileage reimbursements.
     transformations:
       - type: KeysToSnakeCase
     incremental_sync:
@@ -1617,6 +1679,13 @@ streams:
               - "null"
             format: date-time
             description: The datetime the bill was archived.
+          attachments:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+            description: Bill attachments visible to the business - id, attachment_type and a pre-signed download url.
           bill_owner:
             type:
               - object

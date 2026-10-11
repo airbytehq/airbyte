@@ -324,12 +324,17 @@ class StateManagerFactory(
 
     /**
      * Recursively re-generates the original [AirbyteSchemaType] from a catalog stream field's JSON
-     * schema.
+     * schema. An `array` without `items` (any element type) maps to an array of
+     * [LeafAirbyteSchemaType.JSONB].
      */
     private fun airbyteTypeFromJsonSchema(jsonSchema: JsonNode): AirbyteSchemaType {
         fun value(key: String): String = jsonSchema[key]?.asText() ?: ""
         return when (value("type")) {
-            "array" -> ArrayAirbyteSchemaType(airbyteTypeFromJsonSchema(jsonSchema["items"]))
+            "array" ->
+                ArrayAirbyteSchemaType(
+                    jsonSchema["items"]?.let { airbyteTypeFromJsonSchema(it) }
+                        ?: LeafAirbyteSchemaType.JSONB,
+                )
             "null" -> LeafAirbyteSchemaType.NULL
             "boolean" -> LeafAirbyteSchemaType.BOOLEAN
             "number" ->

@@ -2556,9 +2556,44 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/product_replenishment_methods"
+  base_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+        max_waiting_time_in_seconds: 600
+      - type: WaitTimeFromHeader
+        header: RateLimit-Reset
+        max_waiting_time_in_seconds: 600
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 60
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes:
+          - 429
+        action: RATE_LIMITED
+        failure_type: transient_error
+        error_message: Rate limit exceeded for Retail Express API.
+      - type: HttpResponseFilter
+        http_codes:
+          - 403
+        action: FAIL
+        failure_type: config_error
+        error_message: API key does not have access to the requested Retail Express resource.
+      - type: HttpResponseFilter
+        http_codes:
+          - 500
+          - 502
+          - 503
+          - 504
+        action: RETRY
+        failure_type: transient_error
   base_requester:
     type: HttpRequester
     url_base: https://api.retailexpress.com.au/v2.1
+    error_handler:
+      $ref: "#/definitions/base_error_handler"
     authenticator:
       type: SessionTokenAuthenticator
       login_requester:
@@ -2575,6 +2610,8 @@ definitions:
             inject_into: header
         request_headers: {}
         request_parameters: {}
+        error_handler:
+          $ref: "#/definitions/base_error_handler"
       session_token_path:
         - access_token
       expiration_duration: PT1H

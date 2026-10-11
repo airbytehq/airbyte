@@ -1,11 +1,23 @@
 # Breezy HR
 An Airbyte source for Breezy applicant tracking system.
+
+## Prerequisites
+
+- A Breezy HR **Personal Access Token** (recommended; starts with `breezy_pat_`). Create one in the Breezy HR app under **My Settings > API Keys**. A session `access_token` from `POST https://api.breezy.hr/v3/signin` also works, but it expires and the connector will then fail with an authentication error. See the [Breezy HR authentication docs](https://developer.breezy.hr/reference/authorization).
+- Your Breezy HR **Company ID**: the company `_id` (a 12-14 character hex string), not the company name or URL slug. Retrieve it with:
+
+  ```bash
+  curl https://api.breezy.hr/v3/companies -H "Authorization: breezy_pat_your_token_here"
+  ```
+
+  The user who created the token must be a member of that company, otherwise Breezy HR returns `403 companyMembershipRequired`.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
-| `company_id` | `string` | Company ID.  |  |
+| `api_key` | `string` | Breezy HR Personal Access Token (or session access token).  |  |
+| `company_id` | `string` | The `_id` of your Breezy HR company, as returned by `GET /v3/companies`.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -25,6 +37,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.62 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88238) | Surface Breezy HR authentication/authorization errors (400/401/403) as config errors instead of silently ignoring them; document how to obtain the API Key and Company ID |
+| 0.0.61 | 2026-10-06 | [87762](https://github.com/airbytehq/airbyte/pull/87762) | Update dependencies |
 | 0.0.60 | 2026-09-29 | [87089](https://github.com/airbytehq/airbyte/pull/87089) | Update dependencies |
 | 0.0.59 | 2026-09-22 | [86550](https://github.com/airbytehq/airbyte/pull/86550) | Update dependencies |
 | 0.0.58 | 2026-09-15 | [85976](https://github.com/airbytehq/airbyte/pull/85976) | Update dependencies |

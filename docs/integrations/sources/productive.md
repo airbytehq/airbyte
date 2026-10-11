@@ -1,80 +1,114 @@
 # Productive
-This page contains the setup guide and reference information for the [Productive](https://app.productive.io/) source connector.
 
-## Documentation reference:
-Visit `https://developer.productive.io/index.html#top` for API documentation
+This page contains the setup guide and reference information for the [Productive](https://app.productive.io/) source connector. The connector reads data from the [Productive API](https://developer.productive.io/reference) (`https://api.productive.io/api/v2/`).
 
-## Authentication setup
-`Source-productive` uses api key authentication,
-Visit `https://app.productive.io/ORG_ID-UUID/settings/api-integrations` for getting your API Key and organization ID
+## Prerequisites
 
-## Configuration
+- A Productive account with access to **Settings** > **API integrations**
+- A Productive API token
+- Your Productive organization ID
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
-| `organization_id` | `string` | Organization ID. The organization ID which could be seen from `https://app.productive.io/xxxx-xxxx/settings/api-integrations` page |  |
+## Setup guide
 
-## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| activities | id | DefaultPaginator | ✅ |  ❌  |
-| approval_policies |  | DefaultPaginator | ✅ |  ❌  |
-| workflows | id | DefaultPaginator | ✅ |  ❌  |
-| boards | id | DefaultPaginator | ✅ |  ❌  |
-| attachments | id | DefaultPaginator | ✅ |  ❌  |
-| bookings | id | DefaultPaginator | ✅ |  ❌  |
-| comments | id | DefaultPaginator | ✅ |  ❌  |
-| companies | id | DefaultPaginator | ✅ |  ❌  |
-| contact_entries | id | DefaultPaginator | ✅ |  ❌  |
-| custom_field_options | id | DefaultPaginator | ✅ |  ❌  |
-| custom_fields | id | DefaultPaginator | ✅ |  ❌  |
-| dashboards | id | DefaultPaginator | ✅ |  ❌  |
-| deal_statuses | id | DefaultPaginator | ✅ |  ❌  |
-| deals | id | DefaultPaginator | ✅ |  ❌  |
-| document_types | id | DefaultPaginator | ✅ |  ❌  |
-| entitlements | id | DefaultPaginator | ✅ |  ❌  |
-| events | id | DefaultPaginator | ✅ |  ❌  |
-| exchange_rates | id | DefaultPaginator | ✅ |  ❌  |
-| expenses | id | DefaultPaginator | ✅ |  ❌  |
-| filters | id | DefaultPaginator | ✅ |  ❌  |
-| holiday_calendars | id | DefaultPaginator | ✅ |  ❌  |
-| holidays | id | DefaultPaginator | ✅ |  ❌  |
-| invoice_attributions | id | DefaultPaginator | ✅ |  ❌  |
-| invoices | id | DefaultPaginator | ✅ |  ❌  |
-| line_items | id | DefaultPaginator | ✅ |  ❌  |
-| lost_reasons | id | DefaultPaginator | ✅ |  ❌  |
-| memberships | id | DefaultPaginator | ✅ |  ❌  |
-| organizations | id | DefaultPaginator | ✅ |  ❌  |
-| organization_memberships | id | DefaultPaginator | ✅ |  ❌  |
-| pages | id | DefaultPaginator | ✅ |  ❌  |
-| page_versions | id | DefaultPaginator | ✅ |  ❌  |
-| payment_reminder_sequences | id | DefaultPaginator | ✅ |  ❌  |
-| payment_reminders | id | DefaultPaginator | ✅ |  ❌  |
-| payments | id | DefaultPaginator | ✅ |  ❌  |
-| pipelines | id | DefaultPaginator | ✅ |  ❌  |
-| prices | id | DefaultPaginator | ✅ |  ❌  |
-| project_assignments | id | DefaultPaginator | ✅ |  ❌  |
-| projects | id | DefaultPaginator | ✅ |  ❌  |
-| rate_cards | id | DefaultPaginator | ✅ |  ❌  |
-| reports_booking-reports | id | DefaultPaginator | ✅ |  ❌  |
-| salaries | id | DefaultPaginator | ✅ |  ❌  |
-| sections | id | DefaultPaginator | ✅ |  ❌  |
-| services | id | DefaultPaginator | ✅ |  ❌  |
-| service_types | id | DefaultPaginator | ✅ |  ❌  |
-| sessions | id | DefaultPaginator | ✅ |  ❌  |
-| subsidiaries | id | DefaultPaginator | ✅ |  ❌  |
-| tags | id | DefaultPaginator | ✅ |  ❌  |
-| task_lists | id | DefaultPaginator | ✅ |  ❌  |
-| tax_rates | id | DefaultPaginator | ✅ |  ❌  |
-| tasks | id | DefaultPaginator | ✅ |  ❌  |
-| time_entries | id | DefaultPaginator | ✅ |  ❌  |
-| time_entry_versions | id | DefaultPaginator | ✅ |  ❌  |
-| timers | id | DefaultPaginator | ✅ |  ❌  |
-| reports_timesheet_reports | id | DefaultPaginator | ✅ |  ❌  |
-| users | id | DefaultPaginator | ✅ |  ❌  |
-| widgets | id | DefaultPaginator | ✅ |  ❌  |
-| workflow_statuses | id | DefaultPaginator | ✅ |  ❌  |
+### Step 1: Get your API token and organization ID
+
+1. Sign in to Productive.
+2. Go to **Settings** > **API integrations**. The page URL has the form `https://app.productive.io/<organization>/settings/api-integrations`.
+3. Click **Generate new token** and copy the token.
+4. Copy your organization ID from the same page.
+
+Productive returns data based on the token's permissions. If a resource isn't visible to the token, the API returns a `403` error for that stream. For details, see Productive's [authorization guide](https://developer.productive.io/guides/authorization).
+
+### Step 2: Set up the connector in Airbyte
+
+1. In Airbyte, create a new source and select **Productive**.
+2. Enter your API token in **API Key**.
+3. Enter your organization ID in **Organization ID**.
+4. Click **Set up source**.
+
+The connector sends the API key in the `X-Auth-Token` header and the organization ID in the `X-Organization-Id` header on every request, as Productive requires.
+
+## Supported sync modes
+
+All streams support [Full Refresh](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) syncs only. The connector doesn't support incremental syncs.
+
+## Supported streams
+
+Each stream reads one Productive API endpoint, relative to `https://api.productive.io/api/v2/`.
+
+Starting with version 0.1.0, the `project_assignments` stream is no longer available because Productive retired that endpoint. Use `memberships` for project access data instead. The `boards` stream keeps its name but reads Productive's `folders` endpoint, so its records have `type: folders`. See the [migration guide](productive-migrations.md) before you upgrade connections that use either stream.
+
+| Stream name | API endpoint | Primary key |
+| ----------- | ------------ | ----------- |
+| `activities` | `activities` | `id` |
+| `approval_policies` | `approval_policies` | None |
+| `attachments` | `attachments` | `id` |
+| `boards` | `folders` | `id` |
+| `bookings` | `bookings` | `id` |
+| `comments` | `comments` | `id` |
+| `companies` | `companies` | `id` |
+| `contact_entries` | `contact_entries` | `id` |
+| `custom_field_options` | `custom_field_options` | `id` |
+| `custom_fields` | `custom_fields` | `id` |
+| `dashboards` | `dashboards` | `id` |
+| `deal_statuses` | `deal_statuses` | `id` |
+| `deals` | `deals` | `id` |
+| `document_types` | `document_types` | `id` |
+| `entitlements` | `entitlements` | `id` |
+| `events` | `events` | `id` |
+| `exchange_rates` | `exchange_rates` | `id` |
+| `expenses` | `expenses` | `id` |
+| `filters` | `filters` | `id` |
+| `holiday_calendars` | `holiday_calendars` | `id` |
+| `holidays` | `holidays` | `id` |
+| `invoice_attributions` | `invoice_attributions` | `id` |
+| `invoices` | `invoices` | `id` |
+| `line_items` | `line_items` | `id` |
+| `lost_reasons` | `lost_reasons` | `id` |
+| `memberships` | `memberships` | `id` |
+| `organization_memberships` | `organization_memberships` | `id` |
+| `organizations` | `organizations` | `id` |
+| `page_versions` | `page_versions` | `id` |
+| `pages` | `pages` | `id` |
+| `payment_reminder_sequences` | `payment_reminder_sequences` | `id` |
+| `payment_reminders` | `payment_reminders` | `id` |
+| `payments` | `payments` | `id` |
+| `pipelines` | `pipelines` | `id` |
+| `prices` | `prices` | `id` |
+| `projects` | `projects` | `id` |
+| `rate_cards` | `rate_cards` | `id` |
+| `reports_booking-reports` | `reports/booking_reports` | `id` |
+| `reports_timesheet_reports` | `reports/timesheet_reports` | `id` |
+| `salaries` | `salaries` | `id` |
+| `sections` | `sections` | `id` |
+| `service_types` | `service_types` | `id` |
+| `services` | `services` | `id` |
+| `sessions` | `sessions` | `id` |
+| `subsidiaries` | `subsidiaries` | `id` |
+| `tags` | `tags` | `id` |
+| `task_lists` | `task_lists` | `id` |
+| `tasks` | `tasks` | `id` |
+| `tax_rates` | `tax_rates` | `id` |
+| `time_entries` | `time_entries` | `id` |
+| `time_entry_versions` | `time_entry_versions` | `id` |
+| `timers` | `timers` | `id` |
+| `users` | `users` | `id` |
+| `widgets` | `widgets` | `id` |
+| `workflow_statuses` | `workflow_statuses` | `id` |
+| `workflows` | `workflows` | `id` |
+
+## Limitations
+
+### Rate limits
+
+Productive enforces these [rate limits](https://developer.productive.io/guides/rate-limits):
+
+- 100 requests per 10 seconds per API token
+- 4,000 requests per 30 minutes per organization
+- 10 requests per 30 seconds per API token for `/reports` endpoints, which the `reports_booking-reports` and `reports_timesheet_reports` streams use
+- 30 minutes of server processing time per hour and 6 hours per day per organization
+
+The connector requests 10 records per page, so each page of every stream counts as one request against these limits. Large organizations can reach the per-organization limit during a sync, especially when you select many streams. When Productive returns a `429 Too Many Requests` response, the connector retries up to four times with exponential backoff. If syncs still fail with rate limit errors, select fewer streams or schedule syncs less often.
 
 ## IP allow list
 
@@ -87,6 +121,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | -- | ---------------- |
+| 0.1.0 | 2026-10-09 | [88227](https://github.com/airbytehq/airbyte/pull/88227) | Remove retired project assignments, read boards from folders, and fix organization header |
+| 0.0.63 | 2026-10-06 | [87985](https://github.com/airbytehq/airbyte/pull/87985) | Update dependencies |
 | 0.0.62 | 2026-09-29 | [87303](https://github.com/airbytehq/airbyte/pull/87303) | Update dependencies |
 | 0.0.61 | 2026-09-22 | [86746](https://github.com/airbytehq/airbyte/pull/86746) | Update dependencies |
 | 0.0.60 | 2026-09-15 | [86175](https://github.com/airbytehq/airbyte/pull/86175) | Update dependencies |

@@ -27,6 +27,8 @@ Add a new destination connector to Airbyte.
     - If you use a self-managed version of Airbyte, or if you prefer the traditional setup experience, you see a setup form and documentation. In this case, fill out the form to setup your connector, then click **Set up destination**. Airbyte tests the destination to ensure it can make a connection.
     Once the test completes, Airbyte takes you to that connector's Connections page, which is empty at this point.
 
+    - If you can't finish the form right now, click **Save draft** to keep your progress. Airbyte marks the destination as **Draft** in the Status column on the Destinations page, and you can't use it in a connection until you finish setting it up.
+
 <Navattic id="cmhfhih81000204la4795erqd" />
 
 ## Modify a destination connector
@@ -40,6 +42,8 @@ After you set up a destination connector, you can modify it.
 3. Configure your connector using the form on the left side of your screen. Every connector has different options and settings, but you normally enter things like authentication information and the location where you store your data. Use the documentation panel on the right side of your screen for help populating the form.
 
 4. Click **Test and save**. Airbyte tests the destination to ensure it can make a connection.
+
+If the destination is a draft, click **Set up destination** instead. Once the connection test succeeds, the destination is no longer a draft and you can use it in connections.
 
 ## Delete a destination connector
 

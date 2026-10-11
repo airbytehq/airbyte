@@ -105,7 +105,7 @@ The set of notes the connector can read depends on the key you configure:
 | Key type | Data scope |
 | :--- | :--- |
 | **Personal API key** | The scopes selected when the key was created. **Personal notes** covers notes you own, notes shared directly with you, and notes in private folders shared with you. **Public notes** covers notes visible to everyone in the workspace, such as notes in the Team space. |
-| **Workspace API key** | Public notes in the workspace, plus notes in spaces where **Allow Granola API access** is turned on. Granola turns this setting on by default for new spaces, and administrators can change it in **Settings > Spaces**. If an administrator turned off **Allow public folders** for the workspace, the key can't read public notes. Private notes and folders that weren't shared this way are excluded. |
+| **Workspace API key** | Public notes in the workspace, plus notes in spaces where **Allow Granola API access** is turned on. Granola turns this setting on by default for new spaces. For an existing space, a workspace administrator can open the space, click **Integrations** in the space header, choose **Granola API**, and switch on **Allow access with a workspace API key**. Folders inherit this setting from their space. If an administrator turned off **Allow public folders** for the workspace, the key can't read public notes. Private notes and folders that weren't shared this way are excluded. |
 
 Notes in Granola are private by default, so a key with only **Public notes** access returns nothing until notes are placed in a folder that everyone in the workspace can see. If a sync returns no records, check the key's scopes first. For more information, refer to the [Granola API documentation](https://docs.granola.ai/help-center/sharing/integrations/granola-api).
 
@@ -164,6 +164,8 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.0.2 | 2026-10-06 | [87885](https://github.com/airbytehq/airbyte/pull/87885) | Update dependencies |
+| 1.0.1 | 2026-10-05 | [87682](https://github.com/airbytehq/airbyte/pull/87682) | Promote to certified |
 | 1.0.0 | 2026-10-02 | [87011](https://github.com/airbytehq/airbyte/pull/87011) | Sync notes incrementally on updated_at so edited notes are replicated. Append-mode `notes` connections get duplicates on the first sync; see the migration guide |
 | 0.3.5 | 2026-09-29 | [86915](https://github.com/airbytehq/airbyte/pull/86915) | Add Granola-specific messages for 401, 403, 429, and 5xx errors, add heartbeat timeout, suggest `notes` and `detailed_notes`, and fix icon dimensions |
 | 0.3.4 | 2026-09-29 | [87192](https://github.com/airbytehq/airbyte/pull/87192) | Update dependencies |
