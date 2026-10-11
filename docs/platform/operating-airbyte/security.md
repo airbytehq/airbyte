@@ -123,6 +123,10 @@ Airbyte Cloud supports [user management](/platform/using-airbyte/core-concepts/)
 
 In addition, Airbyte Cloud and  Airbyte Enterprise support [role-based access control](/platform/access-management/rbac) allowing admins to manage varying access levels across users in their instance.
 
+### Audit logging
+
+Pro and Enterprise Flex organizations have [audit logs](/platform/access-management/audit-logs) that record who changed workspaces, connections, connectors, users, permissions, and settings. Airbyte stores these logs in the control plane and retains them for 365 days.
+
 ### Compliance
 
 Our compliance efforts for Airbyte Cloud include:

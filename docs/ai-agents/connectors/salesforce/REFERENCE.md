@@ -9,20 +9,20 @@ The Salesforce connector supports the following entities and actions.
 | Entity | Actions |
 |--------|---------|
 | Sobjects | [List](#sobjects-list), [Create](#sobjects-create), [Get](#sobjects-get), [Update](#sobjects-update), [Delete](#sobjects-delete) |
-| Accounts | [List](#accounts-list), [Create](#accounts-create), [Get](#accounts-get), [Update](#accounts-update), [Delete](#accounts-delete), [API Search](#accounts-api-search), [Context Store Search](#accounts-context-store-search) |
-| Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [Delete](#contacts-delete), [API Search](#contacts-api-search), [Context Store Search](#contacts-context-store-search) |
-| Leads | [List](#leads-list), [Create](#leads-create), [Get](#leads-get), [Update](#leads-update), [Delete](#leads-delete), [API Search](#leads-api-search), [Context Store Search](#leads-context-store-search) |
-| Opportunities | [List](#opportunities-list), [Create](#opportunities-create), [Get](#opportunities-get), [Update](#opportunities-update), [Delete](#opportunities-delete), [API Search](#opportunities-api-search), [Context Store Search](#opportunities-context-store-search) |
-| Tasks | [List](#tasks-list), [Create](#tasks-create), [Get](#tasks-get), [Update](#tasks-update), [Delete](#tasks-delete), [API Search](#tasks-api-search), [Context Store Search](#tasks-context-store-search) |
-| Events | [List](#events-list), [Create](#events-create), [Get](#events-get), [Update](#events-update), [Delete](#events-delete), [API Search](#events-api-search) |
-| Campaigns | [List](#campaigns-list), [Create](#campaigns-create), [Get](#campaigns-get), [Update](#campaigns-update), [Delete](#campaigns-delete), [API Search](#campaigns-api-search) |
-| Cases | [List](#cases-list), [Create](#cases-create), [Get](#cases-get), [Update](#cases-update), [Delete](#cases-delete), [API Search](#cases-api-search) |
-| Notes | [List](#notes-list), [Create](#notes-create), [Get](#notes-get), [Update](#notes-update), [Delete](#notes-delete), [API Search](#notes-api-search) |
+| Accounts | [List](#accounts-list), [Create](#accounts-create), [Get](#accounts-get), [Update](#accounts-update), [Delete](#accounts-delete), [Search](#accounts-search), [Context Store Search](#accounts-context-store-search), [Context Store SQL Query](#accounts-context-store-sql-query) |
+| Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [Delete](#contacts-delete), [Search](#contacts-search), [Context Store Search](#contacts-context-store-search), [Context Store SQL Query](#contacts-context-store-sql-query) |
+| Leads | [List](#leads-list), [Create](#leads-create), [Get](#leads-get), [Update](#leads-update), [Delete](#leads-delete), [Search](#leads-search), [Context Store Search](#leads-context-store-search), [Context Store SQL Query](#leads-context-store-sql-query) |
+| Opportunities | [List](#opportunities-list), [Create](#opportunities-create), [Get](#opportunities-get), [Update](#opportunities-update), [Delete](#opportunities-delete), [Search](#opportunities-search), [Context Store Search](#opportunities-context-store-search), [Context Store SQL Query](#opportunities-context-store-sql-query) |
+| Tasks | [List](#tasks-list), [Create](#tasks-create), [Get](#tasks-get), [Update](#tasks-update), [Delete](#tasks-delete), [Search](#tasks-search), [Context Store Search](#tasks-context-store-search), [Context Store SQL Query](#tasks-context-store-sql-query) |
+| Events | [List](#events-list), [Create](#events-create), [Get](#events-get), [Update](#events-update), [Delete](#events-delete), [Search](#events-search) |
+| Campaigns | [List](#campaigns-list), [Create](#campaigns-create), [Get](#campaigns-get), [Update](#campaigns-update), [Delete](#campaigns-delete), [Search](#campaigns-search) |
+| Cases | [List](#cases-list), [Create](#cases-create), [Get](#cases-get), [Update](#cases-update), [Delete](#cases-delete), [Search](#cases-search) |
+| Notes | [List](#notes-list), [Create](#notes-create), [Get](#notes-get), [Update](#notes-update), [Delete](#notes-delete), [Search](#notes-search) |
 | Content Versions | [List](#content-versions-list), [Get](#content-versions-get), [Download](#content-versions-download) |
 | Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download) |
 | Reports | [List](#reports-list), [Get](#reports-get) |
-| Users | [List](#users-list), [Create](#users-create), [Get](#users-get), [Update](#users-update), [Context Store Search](#users-context-store-search) |
-| Opportunity Stages | [List](#opportunity-stages-list), [Get](#opportunity-stages-get), [Context Store Search](#opportunity-stages-context-store-search) |
+| Users | [List](#users-list), [Create](#users-create), [Get](#users-get), [Update](#users-update), [Context Store Search](#users-context-store-search), [Context Store SQL Query](#users-context-store-sql-query) |
+| Opportunity Stages | [List](#opportunity-stages-list), [Get](#opportunity-stages-get), [Context Store Search](#opportunity-stages-context-store-search), [Context Store SQL Query](#opportunity-stages-context-store-sql-query) |
 | Query | [List](#query-list) |
 
 ## Sobjects
@@ -32,6 +32,17 @@ The Salesforce connector supports the following entities and actions.
 Returns a list of all available Salesforce objects (sObjects) in the organization.
 This endpoint is used for health checks to verify authentication and connectivity.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "sobjects",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -83,6 +94,20 @@ Pass the SObject's API name in the `sobjectType` path parameter and the
 field values as a free-form JSON body.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "sobjects",
+  "action": "create",
+  "params": {
+    "sobjectType": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -119,6 +144,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Fetch a single record from any SObject by id. Works for standard and
 custom objects.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "sobjects",
+  "action": "get",
+  "params": {
+    "sobjectType": "<str>",
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -161,6 +201,21 @@ Update fields on an existing record. Pass only the fields you want to
 change in the JSON body; Salesforce leaves the rest untouched.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "sobjects",
+  "action": "update",
+  "params": {
+    "sobjectType": "<str>",
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -200,6 +255,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Delete a record by id. Salesforce moves the record to the Recycle Bin
 (15-day retention) for most objects.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "sobjects",
+  "action": "delete",
+  "params": {
+    "sobjectType": "<str>",
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -248,6 +318,20 @@ available. If no better org-specific field is visible, `AnnualRevenue` is the st
 fallback. Do not use `NumberOfEmployees` unless the user asks for employee count, headcount,
 company size, or largest employer.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "accounts",
+  "action": "list",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -316,6 +400,35 @@ fields inline instead of returning raw IDs.
 ### Accounts Create
 
 Create an account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "accounts",
+  "action": "create",
+  "params": {
+    "Name": "<str>",
+    "AccountNumber": "<str>",
+    "Type": "<str>",
+    "Industry": "<str>",
+    "Phone": "<str>",
+    "Website": "<str>",
+    "BillingStreet": "<str>",
+    "BillingCity": "<str>",
+    "BillingState": "<str>",
+    "BillingPostalCode": "<str>",
+    "BillingCountry": "<str>",
+    "AnnualRevenue": 0.0,
+    "NumberOfEmployees": 0,
+    "Description": "<str>",
+    "OwnerId": "<str>",
+    "ParentId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -413,6 +526,20 @@ Get a single account by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "accounts",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -464,6 +591,36 @@ Example: "Id,Name,Industry,AnnualRevenue,Website"
 ### Accounts Update
 
 Update an account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "accounts",
+  "action": "update",
+  "params": {
+    "Name": "<str>",
+    "AccountNumber": "<str>",
+    "Type": "<str>",
+    "Industry": "<str>",
+    "Phone": "<str>",
+    "Website": "<str>",
+    "BillingStreet": "<str>",
+    "BillingCity": "<str>",
+    "BillingState": "<str>",
+    "BillingPostalCode": "<str>",
+    "BillingCountry": "<str>",
+    "AnnualRevenue": 0.0,
+    "NumberOfEmployees": 0,
+    "Description": "<str>",
+    "OwnerId": "<str>",
+    "ParentId": "<str>",
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -548,6 +705,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Delete an account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "accounts",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -579,17 +750,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Accounts API Search
+### Accounts Search
 
 Search for accounts using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields and objects.
 Use SOQL (list action) for structured queries with specific field conditions.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "accounts",
+  "action": "search",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
-await salesforce.accounts.api_search(
+await salesforce.accounts.search(
     q="<str>"
 )
 ```
@@ -602,7 +787,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "accounts",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -638,6 +823,26 @@ Examples:
 
 Search and filter accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "accounts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "Id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -665,7 +870,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -750,6 +955,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Accounts Context Store SQL Query
+
+Run a SQL query against accounts records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "accounts",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await salesforce.accounts.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "accounts",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Contacts
 
 ### Contacts List
@@ -757,6 +1025,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Returns a list of contacts via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "contacts",
+  "action": "list",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -823,6 +1105,34 @@ relationship fields inline instead of returning raw IDs.
 ### Contacts Create
 
 Create a contact
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "contacts",
+  "action": "create",
+  "params": {
+    "FirstName": "<str>",
+    "LastName": "<str>",
+    "Email": "<str>",
+    "Phone": "<str>",
+    "MobilePhone": "<str>",
+    "Title": "<str>",
+    "Department": "<str>",
+    "AccountId": "<str>",
+    "MailingStreet": "<str>",
+    "MailingCity": "<str>",
+    "MailingState": "<str>",
+    "MailingPostalCode": "<str>",
+    "MailingCountry": "<str>",
+    "Description": "<str>",
+    "OwnerId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -917,6 +1227,20 @@ Get a single contact by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "contacts",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -968,6 +1292,35 @@ Example: "Id,FirstName,LastName,Email,Phone,AccountId"
 ### Contacts Update
 
 Update a contact
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "contacts",
+  "action": "update",
+  "params": {
+    "FirstName": "<str>",
+    "LastName": "<str>",
+    "Email": "<str>",
+    "Phone": "<str>",
+    "MobilePhone": "<str>",
+    "Title": "<str>",
+    "Department": "<str>",
+    "AccountId": "<str>",
+    "MailingStreet": "<str>",
+    "MailingCity": "<str>",
+    "MailingState": "<str>",
+    "MailingPostalCode": "<str>",
+    "MailingCountry": "<str>",
+    "Description": "<str>",
+    "OwnerId": "<str>",
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1049,6 +1402,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Delete a contact
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "contacts",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1080,16 +1447,30 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Contacts API Search
+### Contacts Search
 
 Search for contacts using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "contacts",
+  "action": "search",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
-await salesforce.contacts.api_search(
+await salesforce.contacts.search(
     q="<str>"
 )
 ```
@@ -1102,7 +1483,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -1137,6 +1518,26 @@ Examples:
 
 Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "contacts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "Id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1164,7 +1565,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1241,6 +1642,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Contacts Context Store SQL Query
+
+Run a SQL query against contacts records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "contacts",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await salesforce.contacts.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Leads
 
 ### Leads List
@@ -1248,6 +1712,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Returns a list of leads via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "leads",
+  "action": "list",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1314,6 +1792,40 @@ ConvertedOpportunity.Name) to resolve relationship fields inline instead of retu
 ### Leads Create
 
 Create a lead
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "leads",
+  "action": "create",
+  "params": {
+    "FirstName": "<str>",
+    "LastName": "<str>",
+    "Company": "<str>",
+    "Title": "<str>",
+    "Email": "<str>",
+    "Phone": "<str>",
+    "MobilePhone": "<str>",
+    "Website": "<str>",
+    "Status": "<str>",
+    "LeadSource": "<str>",
+    "Industry": "<str>",
+    "Rating": "<str>",
+    "AnnualRevenue": 0.0,
+    "NumberOfEmployees": 0,
+    "Street": "<str>",
+    "City": "<str>",
+    "State": "<str>",
+    "PostalCode": "<str>",
+    "Country": "<str>",
+    "Description": "<str>",
+    "OwnerId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1426,6 +1938,20 @@ Get a single lead by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "leads",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1477,6 +2003,41 @@ Example: "Id,FirstName,LastName,Email,Company,Status,LeadSource"
 ### Leads Update
 
 Update a lead
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "leads",
+  "action": "update",
+  "params": {
+    "FirstName": "<str>",
+    "LastName": "<str>",
+    "Company": "<str>",
+    "Title": "<str>",
+    "Email": "<str>",
+    "Phone": "<str>",
+    "MobilePhone": "<str>",
+    "Website": "<str>",
+    "Status": "<str>",
+    "LeadSource": "<str>",
+    "Industry": "<str>",
+    "Rating": "<str>",
+    "AnnualRevenue": 0.0,
+    "NumberOfEmployees": 0,
+    "Street": "<str>",
+    "City": "<str>",
+    "State": "<str>",
+    "PostalCode": "<str>",
+    "Country": "<str>",
+    "Description": "<str>",
+    "OwnerId": "<str>",
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1576,6 +2137,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Delete a lead
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "leads",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1607,16 +2182,30 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Leads API Search
+### Leads Search
 
 Search for leads using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "leads",
+  "action": "search",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
-await salesforce.leads.api_search(
+await salesforce.leads.search(
     q="<str>"
 )
 ```
@@ -1629,7 +2218,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "leads",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -1664,6 +2253,26 @@ Examples:
 
 Search and filter leads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "leads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "Id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1691,7 +2300,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1784,6 +2393,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Leads Context Store SQL Query
+
+Run a SQL query against leads records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "leads",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await salesforce.leads.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "leads",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Opportunities
 
 ### Opportunities List
@@ -1794,6 +2466,20 @@ For "top", "largest", or "highest-value" opportunity requests, first choose a
 visible financial opportunity field. Standard candidates include `Amount` for
 total deal value and `ExpectedRevenue` for expected, weighted, or forecast revenue.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "opportunities",
+  "action": "list",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1862,6 +2548,32 @@ relationship fields inline instead of returning raw IDs.
 ### Opportunities Create
 
 Create an opportunity
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "opportunities",
+  "action": "create",
+  "params": {
+    "Name": "<str>",
+    "AccountId": "<str>",
+    "StageName": "<str>",
+    "CloseDate": "<str>",
+    "Amount": 0.0,
+    "Probability": 0.0,
+    "Type": "<str>",
+    "LeadSource": "<str>",
+    "NextStep": "<str>",
+    "CampaignId": "<str>",
+    "ForecastCategoryName": "<str>",
+    "Description": "<str>",
+    "OwnerId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1950,6 +2662,20 @@ Get a single opportunity by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "opportunities",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2001,6 +2727,33 @@ Example: "Id,Name,Amount,StageName,CloseDate,AccountId"
 ### Opportunities Update
 
 Update an opportunity
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "opportunities",
+  "action": "update",
+  "params": {
+    "Name": "<str>",
+    "AccountId": "<str>",
+    "StageName": "<str>",
+    "CloseDate": "<str>",
+    "Amount": 0.0,
+    "Probability": 0.0,
+    "Type": "<str>",
+    "LeadSource": "<str>",
+    "NextStep": "<str>",
+    "CampaignId": "<str>",
+    "ForecastCategoryName": "<str>",
+    "Description": "<str>",
+    "OwnerId": "<str>",
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2076,6 +2829,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Delete an opportunity
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "opportunities",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2107,16 +2874,30 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Opportunities API Search
+### Opportunities Search
 
 Search for opportunities using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "opportunities",
+  "action": "search",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
-await salesforce.opportunities.api_search(
+await salesforce.opportunities.search(
     q="<str>"
 )
 ```
@@ -2129,7 +2910,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "opportunities",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -2164,6 +2945,26 @@ Examples:
 
 Search and filter opportunities records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "opportunities",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "Id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2191,7 +2992,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2268,6 +3069,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Opportunities Context Store SQL Query
+
+Run a SQL query against opportunities records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "opportunities",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await salesforce.opportunities.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "opportunities",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Tasks
 
 ### Tasks List
@@ -2275,6 +3139,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Returns a list of tasks via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "tasks",
+  "action": "list",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2342,6 +3220,30 @@ polymorphic WhoId/WhatId references to the related record's name.
 ### Tasks Create
 
 Create a task
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "tasks",
+  "action": "create",
+  "params": {
+    "Subject": "<str>",
+    "Status": "<str>",
+    "Priority": "<str>",
+    "ActivityDate": "<str>",
+    "WhoId": "<str>",
+    "WhatId": "<str>",
+    "Description": "<str>",
+    "Type": "<str>",
+    "IsReminderSet": true,
+    "ReminderDateTime": "2025-01-01T00:00:00Z",
+    "OwnerId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2424,6 +3326,20 @@ Get a single task by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "tasks",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2475,6 +3391,31 @@ Example: "Id,Subject,Status,Priority,ActivityDate,WhoId,WhatId"
 ### Tasks Update
 
 Update a task
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "tasks",
+  "action": "update",
+  "params": {
+    "Subject": "<str>",
+    "Status": "<str>",
+    "Priority": "<str>",
+    "ActivityDate": "<str>",
+    "WhoId": "<str>",
+    "WhatId": "<str>",
+    "Description": "<str>",
+    "Type": "<str>",
+    "IsReminderSet": true,
+    "ReminderDateTime": "2025-01-01T00:00:00Z",
+    "OwnerId": "<str>",
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2544,6 +3485,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Delete a task
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "tasks",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2575,16 +3530,30 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Tasks API Search
+### Tasks Search
 
 Search for tasks using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "tasks",
+  "action": "search",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
-await salesforce.tasks.api_search(
+await salesforce.tasks.search(
     q="<str>"
 )
 ```
@@ -2597,7 +3566,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tasks",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -2632,6 +3601,26 @@ Examples:
 
 Search and filter tasks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "tasks",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "Id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2659,7 +3648,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -2732,6 +3721,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Tasks Context Store SQL Query
+
+Run a SQL query against tasks records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "tasks",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await salesforce.tasks.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tasks",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Events
 
 ### Events List
@@ -2739,6 +3791,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Returns a list of events via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "events",
+  "action": "list",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2806,6 +3872,30 @@ polymorphic WhoId/WhatId references to the related record's name.
 ### Events Create
 
 Create an event
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "events",
+  "action": "create",
+  "params": {
+    "Subject": "<str>",
+    "StartDateTime": "2025-01-01T00:00:00Z",
+    "EndDateTime": "2025-01-01T00:00:00Z",
+    "DurationInMinutes": 0,
+    "Location": "<str>",
+    "Description": "<str>",
+    "WhoId": "<str>",
+    "WhatId": "<str>",
+    "IsAllDayEvent": true,
+    "ShowAs": "<str>",
+    "OwnerId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2888,6 +3978,20 @@ Get a single event by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "events",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2939,6 +4043,31 @@ Example: "Id,Subject,StartDateTime,EndDateTime,Location,WhoId,WhatId"
 ### Events Update
 
 Update an event
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "events",
+  "action": "update",
+  "params": {
+    "Subject": "<str>",
+    "StartDateTime": "2025-01-01T00:00:00Z",
+    "EndDateTime": "2025-01-01T00:00:00Z",
+    "DurationInMinutes": 0,
+    "Location": "<str>",
+    "Description": "<str>",
+    "WhoId": "<str>",
+    "WhatId": "<str>",
+    "IsAllDayEvent": true,
+    "ShowAs": "<str>",
+    "OwnerId": "<str>",
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3008,6 +4137,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Delete an event
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "events",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3039,16 +4182,30 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Events API Search
+### Events Search
 
 Search for events using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "events",
+  "action": "search",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
-await salesforce.events.api_search(
+await salesforce.events.search(
     q="<str>"
 )
 ```
@@ -3061,7 +4218,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "events",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -3099,6 +4256,20 @@ Examples:
 Returns a list of campaigns via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "campaigns",
+  "action": "list",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3165,6 +4336,33 @@ instead of returning raw IDs.
 ### Campaigns Create
 
 Create a campaign
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "campaigns",
+  "action": "create",
+  "params": {
+    "Name": "<str>",
+    "Type": "<str>",
+    "Status": "<str>",
+    "StartDate": "<str>",
+    "EndDate": "<str>",
+    "IsActive": true,
+    "Description": "<str>",
+    "ExpectedRevenue": 0.0,
+    "BudgetedCost": 0.0,
+    "ActualCost": 0.0,
+    "ExpectedResponse": 0.0,
+    "NumberSent": 0.0,
+    "ParentId": "<str>",
+    "OwnerId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3256,6 +4454,20 @@ Get a single campaign by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "campaigns",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3307,6 +4519,34 @@ Example: "Id,Name,Type,Status,StartDate,EndDate,IsActive"
 ### Campaigns Update
 
 Update a campaign
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "campaigns",
+  "action": "update",
+  "params": {
+    "Name": "<str>",
+    "Type": "<str>",
+    "Status": "<str>",
+    "StartDate": "<str>",
+    "EndDate": "<str>",
+    "IsActive": true,
+    "Description": "<str>",
+    "ExpectedRevenue": 0.0,
+    "BudgetedCost": 0.0,
+    "ActualCost": 0.0,
+    "ExpectedResponse": 0.0,
+    "NumberSent": 0.0,
+    "ParentId": "<str>",
+    "OwnerId": "<str>",
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3385,6 +4625,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Delete a campaign
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "campaigns",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3416,16 +4670,30 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Campaigns API Search
+### Campaigns Search
 
 Search for campaigns using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "campaigns",
+  "action": "search",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
-await salesforce.campaigns.api_search(
+await salesforce.campaigns.search(
     q="<str>"
 )
 ```
@@ -3438,7 +4706,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -3476,6 +4744,20 @@ Examples:
 Returns a list of cases via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "cases",
+  "action": "list",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3543,6 +4825,34 @@ relationship fields inline instead of returning raw IDs.
 ### Cases Create
 
 Create a case
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "cases",
+  "action": "create",
+  "params": {
+    "Subject": "<str>",
+    "Status": "<str>",
+    "Priority": "<str>",
+    "Origin": "<str>",
+    "Type": "<str>",
+    "Reason": "<str>",
+    "Description": "<str>",
+    "AccountId": "<str>",
+    "ContactId": "<str>",
+    "SuppliedName": "<str>",
+    "SuppliedEmail": "<str>",
+    "SuppliedPhone": "<str>",
+    "SuppliedCompany": "<str>",
+    "OwnerId": "<str>",
+    "ParentId": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3637,6 +4947,20 @@ Get a single case by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "cases",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3689,6 +5013,35 @@ Example: "Id,CaseNumber,Subject,Status,Priority,ContactId,AccountId"
 ### Cases Update
 
 Update a case
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "cases",
+  "action": "update",
+  "params": {
+    "Subject": "<str>",
+    "Status": "<str>",
+    "Priority": "<str>",
+    "Origin": "<str>",
+    "Type": "<str>",
+    "Reason": "<str>",
+    "Description": "<str>",
+    "AccountId": "<str>",
+    "ContactId": "<str>",
+    "SuppliedName": "<str>",
+    "SuppliedEmail": "<str>",
+    "SuppliedPhone": "<str>",
+    "SuppliedCompany": "<str>",
+    "OwnerId": "<str>",
+    "ParentId": "<str>",
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3770,6 +5123,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Delete a case
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "cases",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3801,16 +5168,30 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Cases API Search
+### Cases Search
 
 Search for cases using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "cases",
+  "action": "search",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
-await salesforce.cases.api_search(
+await salesforce.cases.search(
     q="<str>"
 )
 ```
@@ -3823,7 +5204,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "cases",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -3861,6 +5242,20 @@ Examples:
 Returns a list of notes via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "notes",
+  "action": "list",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3930,6 +5325,24 @@ Create a classic Salesforce Note attached to a parent record (Account, Contact,
 Lead, Opportunity, Case, custom object, etc.). `Title` and `ParentId` are required.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "notes",
+  "action": "create",
+  "params": {
+    "Title": "<str>",
+    "Body": "<str>",
+    "ParentId": "<str>",
+    "IsPrivate": true,
+    "OwnerId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3993,6 +5406,20 @@ Get a single note by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "notes",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4045,6 +5472,24 @@ Example: "Id,Title,Body,ParentId,OwnerId"
 
 Update a note
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "notes",
+  "action": "update",
+  "params": {
+    "Title": "<str>",
+    "Body": "<str>",
+    "IsPrivate": true,
+    "OwnerId": "<str>",
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4092,6 +5537,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Delete a note
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "notes",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4123,16 +5582,30 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Notes API Search
+### Notes Search
 
 Search for notes using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "notes",
+  "action": "search",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
-await salesforce.notes.api_search(
+await salesforce.notes.search(
     q="<str>"
 )
 ```
@@ -4145,7 +5618,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "notes",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -4184,6 +5657,20 @@ Returns a list of content versions (file metadata) via SOQL query. Default retur
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 Note: ContentVersion does not support FIELDS(STANDARD), so specific fields must be listed.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "content_versions",
+  "action": "list",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4251,6 +5738,20 @@ Get a single content version's metadata by ID. Returns file metadata, not the fi
 Use the download action to retrieve the actual file binary.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "content_versions",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4312,6 +5813,20 @@ then use this action to download the actual file content.
 The response is the raw binary file data.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "content_versions",
+  "action": "download",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4355,6 +5870,20 @@ Returns a list of attachments (legacy) via SOQL query. Default returns up to 200
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 Note: Attachments are a legacy feature; consider using ContentVersion (Salesforce Files) for new implementations.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "attachments",
+  "action": "list",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4421,6 +5950,20 @@ Use the download action to retrieve the actual file binary.
 Note: Attachments are a legacy feature; consider using ContentVersion for new implementations.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "attachments",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4480,6 +6023,20 @@ then use this action to download the actual file content.
 Note: Attachments are a legacy feature; consider using ContentVersion for new implementations.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "attachments",
+  "action": "download",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4524,6 +6081,17 @@ Each report includes metadata such as Id, Name, Format, Description, and URL.
 This uses the Analytics REST API, not SOQL.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "reports",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4567,6 +6135,20 @@ Returns both metadata and the executed data including fact maps, aggregates, and
 First use the list action to find available reports, then use this action to run a report and get its data.
 Note: Large reports may be truncated. For reports with more than 2,000 detail rows, consider using async report runs.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "reports",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4630,6 +6212,20 @@ Set to false to get only summary/aggregate data.
 Returns a list of users via SOQL query. Default returns up to 200 records.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "users",
+  "action": "list",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4698,6 +6294,36 @@ relationship fields inline instead of returning raw IDs.
 Create a Salesforce User. Consumes a paid user-license seat. Requires the
 "Manage Internal Users" permission on the running OAuth identity.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "users",
+  "action": "create",
+  "params": {
+    "Username": "<str>",
+    "FirstName": "<str>",
+    "LastName": "<str>",
+    "Email": "<str>",
+    "Alias": "<str>",
+    "ProfileId": "<str>",
+    "UserRoleId": "<str>",
+    "ManagerId": "<str>",
+    "TimeZoneSidKey": "<str>",
+    "LocaleSidKey": "<str>",
+    "EmailEncodingKey": "<str>",
+    "LanguageLocaleKey": "<str>",
+    "IsActive": true,
+    "Title": "<str>",
+    "Department": "<str>",
+    "Phone": "<str>",
+    "MobilePhone": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4798,6 +6424,20 @@ Get a single user by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4851,6 +6491,37 @@ Example: "Id,Name,Email,Username,IsActive,ProfileId,UserRoleId"
 Update a Salesforce User. To deactivate a user (Salesforce does not allow
 delete), send `\{ "IsActive": false \}`.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "users",
+  "action": "update",
+  "params": {
+    "Username": "<str>",
+    "FirstName": "<str>",
+    "LastName": "<str>",
+    "Email": "<str>",
+    "Alias": "<str>",
+    "ProfileId": "<str>",
+    "UserRoleId": "<str>",
+    "ManagerId": "<str>",
+    "TimeZoneSidKey": "<str>",
+    "LocaleSidKey": "<str>",
+    "EmailEncodingKey": "<str>",
+    "LanguageLocaleKey": "<str>",
+    "IsActive": true,
+    "Title": "<str>",
+    "Department": "<str>",
+    "Phone": "<str>",
+    "MobilePhone": "<str>",
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4938,6 +6609,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "Id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4965,7 +6656,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -5054,6 +6745,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Users Context Store SQL Query
+
+Run a SQL query against users records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "users",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await salesforce.users.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Opportunity Stages
 
 ### Opportunity Stages List
@@ -5061,6 +6815,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Returns a list of opportunity stages via SOQL query. Default returns all stages.
 OpportunityStage defines the sales process stages that opportunities move through.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "opportunity_stages",
+  "action": "list",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -5129,6 +6897,20 @@ Get a single opportunity stage by ID. Returns all accessible fields by default.
 Use the `fields` parameter to retrieve only specific fields for better performance.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "opportunity_stages",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -5181,6 +6963,26 @@ Example: "Id,MasterLabel,ApiName,DefaultProbability,IsClosed,IsWon,IsActive"
 
 Search and filter opportunity stages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "opportunity_stages",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "Id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -5208,7 +7010,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -5265,6 +7067,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Opportunity Stages Context Store SQL Query
+
+Run a SQL query against opportunity stages records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "opportunity_stages",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await salesforce.opportunity_stages.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "opportunity_stages",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Query
 
 ### Query List
@@ -5272,6 +7137,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Execute a custom SOQL query and return results. Use this for querying any Salesforce object.
 For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "query",
+  "action": "list",
+  "params": {
+    "q": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 

@@ -8,7 +8,7 @@ The Amazon-Ads connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Profiles | [List](#profiles-list), [Get](#profiles-get), [Context Store Search](#profiles-context-store-search) |
+| Profiles | [List](#profiles-list), [Get](#profiles-get), [Context Store Search](#profiles-context-store-search), [Context Store SQL Query](#profiles-context-store-sql-query) |
 | Portfolios | [List](#portfolios-list), [Get](#portfolios-get) |
 | Sponsored Product Campaigns | [List](#sponsored-product-campaigns-list), [Get](#sponsored-product-campaigns-get) |
 | Sponsored Product Ad Groups | [List](#sponsored-product-ad-groups-list) |
@@ -29,6 +29,17 @@ Profiles represent an advertiser's account in a specific marketplace. Advertiser
 may have a single profile if they advertise in only one marketplace, or a separate
 profile for each marketplace if they advertise regionally or globally.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "profiles",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -80,6 +91,20 @@ Valid values: seller, vendor, agency
 Retrieves a single advertising profile by its ID. The profile contains
 information about the advertiser's account in a specific marketplace.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "profiles",
+  "action": "get",
+  "params": {
+    "profileId": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -133,6 +158,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter profiles records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "profiles",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "accountInfo": {}
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -160,7 +205,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -197,6 +242,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Profiles Context Store SQL Query
+
+Run a SQL query against profiles records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "profiles",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await amazon_ads.profiles.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "profiles",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Portfolios
 
 ### Portfolios List
@@ -204,6 +312,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Returns a list of portfolios for the specified profile. Portfolios are used to
 group campaigns together for organizational and budget management purposes.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "portfolios",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -248,6 +367,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single portfolio by its ID using the v2 API.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "portfolios",
+  "action": "get",
+  "params": {
+    "portfolioId": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -307,6 +440,17 @@ Returns a list of sponsored product campaigns for the specified profile.
 Sponsored Products campaigns promote individual product listings on Amazon.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "sponsored_product_campaigns",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -353,6 +497,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves a single sponsored product campaign by its ID using the v2 API.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "sponsored_product_campaigns",
+  "action": "get",
+  "params": {
+    "campaignId": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -421,6 +579,17 @@ Returns a list of sponsored product ad groups for the specified profile.
 Ad groups are used to organize ads and targeting within a campaign.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "sponsored_product_ad_groups",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -470,6 +639,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Returns a list of sponsored product keywords for the specified profile.
 Keywords are used in manual targeting campaigns to match shopper search queries.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "sponsored_product_keywords",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -521,6 +701,17 @@ Returns a list of sponsored product ads for the specified profile.
 Product ads associate an advertised product with an ad group.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "sponsored_product_product_ads",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -570,6 +761,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Returns a list of sponsored product targeting clauses for the specified profile.
 Targeting clauses define product or category targeting for ad groups.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "sponsored_product_targets",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -621,6 +823,17 @@ Returns a list of sponsored product negative keywords for the specified profile.
 Negative keywords prevent ads from showing for specific search terms.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "sponsored_product_negative_keywords",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -670,6 +883,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Returns a list of sponsored product negative targeting clauses for the specified profile.
 Negative targeting clauses exclude specific products or categories from targeting.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "sponsored_product_negative_targets",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -721,6 +945,17 @@ Returns a list of sponsored brands campaigns for the specified profile.
 Sponsored Brands campaigns help drive discovery and sales with creative ad experiences.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "sponsored_brands_campaigns",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -770,6 +1005,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Returns a list of sponsored brands ad groups for the specified profile.
 Ad groups organize ads and targeting within a Sponsored Brands campaign.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amazon-ads",
+  "entity": "sponsored_brands_ad_groups",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 

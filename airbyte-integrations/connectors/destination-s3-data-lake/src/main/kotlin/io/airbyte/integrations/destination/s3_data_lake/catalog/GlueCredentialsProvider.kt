@@ -46,7 +46,7 @@ class GlueCredentialsProvider private constructor(private val delegate: AwsCrede
                                 AwsBasicCredentials.create(accessKey, secretKey)
                             )
                         } else {
-                            DefaultCredentialsProvider.create()
+                            DefaultCredentialsProvider.builder().build()
                         }
                     }
                     AWS_CREDENTIALS_MODE_ASSUME_ROLE -> {

@@ -2,6 +2,7 @@
 package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.output.BufferingCatalogValidationFailureHandler
@@ -96,6 +97,62 @@ class StateManagerGlobalStatesTest {
             checkpoint.map { Jsons.valueToTree<JsonNode>(it) },
         )
         Assertions.assertEquals(emptyList<AirbyteStateMessage>(), stateManager.checkpoint())
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
+    @Property(
+        name = "airbyte.connector.state.json",
+        value =
+            """[{"type": "STREAM", "stream": {
+    "stream_descriptor": { "name": "KV", "namespace": "PUBLIC" },
+    "stream_state": {}
+}}, {"type": "STREAM", "stream": {
+    "stream_descriptor": { "name": "EVENTS", "namespace": "PUBLIC" },
+    "stream_state": {}
+}}]""",
+    )
+    fun testEmptyStreamStateIsIgnored() {
+        val streams: Streams = prelude()
+        Assertions.assertNull(stateManager.scoped(streams.global).current())
+        Assertions.assertNull(stateManager.scoped(streams.kv).current())
+        Assertions.assertNull(stateManager.scoped(streams.events).current())
+        Assertions.assertEquals(listOf<CatalogValidationFailure>(), handler.get())
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
+    @Property(
+        name = "airbyte.connector.state.json",
+        value =
+            """
+{"type": "STREAM", "stream": {
+    "stream_descriptor": { "name": "BAR", "namespace": "FOO" },
+    "stream_state": {}
+}}""",
+    )
+    fun testEmptyStreamStateForStreamNotInCatalog() {
+        val streams: Streams = prelude()
+        Assertions.assertNull(stateManager.scoped(streams.global).current())
+        Assertions.assertNull(stateManager.scoped(streams.kv).current())
+        Assertions.assertNull(stateManager.scoped(streams.events).current())
+        Assertions.assertEquals(listOf<CatalogValidationFailure>(), handler.get())
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
+    @Property(
+        name = "airbyte.connector.state.json",
+        value =
+            """
+{"type": "STREAM", "stream": {
+    "stream_descriptor": { "name": "KV", "namespace": "PUBLIC" },
+    "stream_state": { "cursor": "1" }
+}}""",
+    )
+    fun testNonEmptyStreamStateThrows() {
+        val exception = Assertions.assertThrows(ConfigErrorException::class.java) { stateManager }
+        Assertions.assertTrue(exception.message!!.contains("configured to use global state"))
     }
 
     @Test

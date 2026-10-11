@@ -67,6 +67,18 @@ class GoogleDriveRemoteFile(RemoteFile):
     # Only populated for items in shared drives.
     drive_id: Optional[str] = None
     created_at: datetime
+    # Set during enumeration for Google-native documents in file-transfer mode; None otherwise.
+    export_extension: Optional[str] = None
+
+    @property
+    def source_file_relative_path(self) -> str:
+        """Returns the source path used for file transfer.
+
+        The export extension is appended unconditionally, so `Report.docx` can become
+        `Report.docx.docx`. Different Drive files can resolve to the same path; duplicate
+        handling is tracked in https://github.com/airbytehq/oncall/issues/12872.
+        """
+        return f"{self.uri}{self.export_extension or ''}"
 
     @property
     def url(self) -> str:
@@ -178,8 +190,14 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                             if self._is_exportable_document(original_mime_type)
                             else original_mime_type
                         )
+                        export_extension = (
+                            DOWNLOADABLE_DOCUMENTS_MIME_TYPES[original_mime_type][DOCUMENT_FILE_EXTENSION_KEY]
+                            if self.use_file_transfer() and self._is_exportable_document(original_mime_type)
+                            else None
+                        )
                         remote_file = GoogleDriveRemoteFile(
                             uri=file_name,
+                            export_extension=export_extension,
                             last_modified=last_modified,
                             created_at=created_at,
                             id=new_file["id"],
@@ -281,18 +299,15 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
 
         try:
-            file_paths = self._get_file_transfer_paths(source_file_relative_path=file.uri, staging_directory=local_directory)
+            file_paths = self._get_file_transfer_paths(
+                source_file_relative_path=file.source_file_relative_path, staging_directory=local_directory
+            )
             local_file_path = file_paths[self.LOCAL_FILE_PATH]
             file_relative_path = file_paths[self.FILE_RELATIVE_PATH]
             file_name = file_paths[self.FILE_NAME]
 
             if self._is_exportable_document(file.original_mime_type):
                 request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=file.mime_type)
-
-                file_extension = DOWNLOADABLE_DOCUMENTS_MIME_TYPES[file.original_mime_type][DOCUMENT_FILE_EXTENSION_KEY]
-                local_file_path += file_extension
-                file_relative_path += file_extension
-                file_name += file_extension
             else:
                 request = self.google_drive_service.files().get_media(fileId=file.id)
 

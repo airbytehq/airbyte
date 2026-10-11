@@ -2073,16 +2073,15 @@ spec:
         order: 3
       num_workers:
         type: integer
-        title: Number of Concurrent Workers
-        minimum: 2
+        title: Number of concurrent threads
+        minimum: 1
         maximum: 50
-        default: 5
-        examples: [2, 5, 10]
+        default: 3
+        examples: [1, 2, 3]
         description: >-
-          Number of concurrent threads for syncing. Higher values can speed up syncs but may
-          provoke rate-limit errors on lower-tier Chargebee plans. The default of 5 is based on
-          observed sync behavior during rollout. More info about the rate limit plan tiers can be found on
-          Chargebee's <a href="https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits">API docs</a>.
+          The number of worker threads to use for the sync.
+          The performance upper boundary is based on the limit of your Chargebee plan.
+          More info about the rate limit plan tiers can be found on Chargebee's API <a href="https://support.chargebee.com/support/solutions/articles/243576-what-are-the-chargebee-api-limits-">docs</a>.
         order: 4
     additionalProperties: true
 
@@ -11813,20 +11812,14 @@ schemas:
         description: The timestamp when the differential price data was last updated.
 
 
-# Rate limits: https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits
-# Chargebee offers three tiers of rate limits (all endpoints share a single global limit):
+# Chargebee offers three tiers of rate limits:
 # - Starter: 150 req/min (2.5 req/sec)
 # - Performance: 1000 req/min (16 req/sec)
-# - Enterprise (default): 3500 req/min (58 req/sec)
-# - Enterprise (custom): no upper limit.
-# TEST sites are always capped at 150 req/min regardless of plan.
-# Rate-limit errors return HTTP 429 with a Retry-After header.
-# default_concurrency is set to 5 — calibrated against observed sync behavior at 100% TIER_2.
-# It is intentionally a single value, not tier-aware: tuning is performed empirically against
-# this baseline and the same value applies to all customers. Higher-tier customers (Performance,
-# Enterprise) can raise num_workers in their connection config to fully exploit their plan;
-# unconfigured users on lower tiers stay safe at the lowest-tier-aware default.
+# - Enterprise: 3500 req/min (58 req/sec)
+#
+# We use defer to a level of 3 because we assume by default that customers are on the Starter tier, but
+# customers can specify a higher concurrency level as needed up to the theoretical max rate limit.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
   max_concurrency: 50

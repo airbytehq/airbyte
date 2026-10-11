@@ -16,12 +16,15 @@ from overrides import overrides
 from pydantic import Field
 from sqlalchemy import Executable, TextClause, create_engine, text
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
+from sqlalchemy.types import JSON
 
 from airbyte_cdk import DestinationSyncMode
 from airbyte_cdk.sql import exceptions as exc
+from airbyte_cdk.sql._util.name_normalizers import NameNormalizerBase
 from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, DEBUG_MODE
 from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase, SQLRuntimeError
+from airbyte_cdk.sql.types import SQLTypeConverter
 
 
 if TYPE_CHECKING:
@@ -36,16 +39,23 @@ logger = logging.getLogger(__name__)
 def _serialize_object_columns(
     buffer_data: Dict[str, List[Any]],
     json_schema: dict,
+    normalizer: type[NameNormalizerBase],
 ) -> Dict[str, List[Any]]:
     """
-    Convert object-fields columns into JSON strings. This prevents PyArrow from
-    inferring struct types, which can cause issues with empty structs when the
-    data contains empty dicts {}. PyArrow will then infer a string type for
-    these columns that will convert to JSON again once it is imported into
-    DuckDB because in the destination schema, object-fields columns have JSON
-    as their type.
+    Convert columns stored as JSON in the destination into JSON strings. This
+    prevents PyArrow from inferring struct or list-of-struct types, which break
+    when the data contains empty dicts {} or lists of empty dicts [{}]: PyArrow
+    infers a fieldless `struct<>` (or `list<struct<>>`) type that DuckDB rejects
+    with "Attempted to convert a STRUCT with no fields to DuckDB".
+
+    Both `object` and `array` JSON-schema types map to the SQL JSON type in the
+    CDK type mapping, so both are pre-serialized here. PyArrow then infers a
+    string type for these columns, which DuckDB converts back to JSON on import
+    because the destination column type is JSON.
     """
-    properties = json_schema.get("properties", {})
+    # Buffer keys are normalized column names (see _get_sql_column_definitions), while schema
+    # properties carry the source's original names
+    properties = {normalizer.normalize(name): prop for name, prop in json_schema.get("properties", {}).items()}
     result = {}
 
     for col_name, values in buffer_data.items():
@@ -54,17 +64,17 @@ def _serialize_object_columns(
         if col_name not in properties:  # Probably an "Airbyte column"
             continue
 
-        schema_type = properties[col_name].get("type")
-        if isinstance(schema_type, list):  # For nullable types this is a list. We want the first type that is not null
-            schema_type = next((t for t in schema_type if t != "null"), None)
-
-        if schema_type != "object":  # This only applies to properties of type "object"
+        # Serialize the column only if its destination SQL type is JSON. This covers both
+        # `object` and `array` (of objects or scalars) properties while leaving e.g. vector
+        # arrays, which map to a native SQL ARRAY type, untouched.
+        sql_type = SQLTypeConverter().to_sql_type(properties[col_name])
+        if not isinstance(sql_type, JSON):
             continue
 
-        # Convert dicts to JSON strings. Note that `values` is a list of column values. Since Airbyte works with JSON
-        # schemas, we do not have the issue of e.g. having to convert datetimes objects - these will just be passed as
-        # formatted date-time strings.
-        result[col_name] = [orjson.dumps(v).decode() if isinstance(v, dict) else v for v in values]
+        # Convert dicts and lists to JSON strings. Note that `values` is a list of column values. Since Airbyte works
+        # with JSON schemas, we do not have the issue of e.g. having to convert datetime objects - these will just be
+        # passed as formatted date-time strings. `None` and already-serialized values are left as-is.
+        result[col_name] = [orjson.dumps(v).decode() if isinstance(v, (dict, list)) else v for v in values]
 
     return result
 
@@ -392,7 +402,9 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         temp_table_name = self._create_table_for_loading(stream_name, batch_id=None)
         try:
             serialized_buffer = _serialize_object_columns(
-                buffer[stream_name], self.catalog_provider.get_configured_stream_info(stream_name).stream.json_schema
+                buffer[stream_name],
+                self.catalog_provider.get_configured_stream_info(stream_name).stream.json_schema,
+                self.normalizer,
             )
             pa_table = pa.Table.from_pydict(serialized_buffer)
         except Exception:

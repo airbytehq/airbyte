@@ -21,7 +21,7 @@ You need the following information to configure the destination:
 
 - **Embedding service API Key** - The API key for your embedding provider account.
 - **Pinecone API Key** - The API key for your Pinecone project. You can find this in the [Pinecone console](https://docs.pinecone.io/guides/get-started/authentication).
-- **Pinecone Environment** - The environment for your Pinecone project (for example, `us-east-1-aws`).
+- **Pinecone Environment** - The environment of your Pinecone project, such as `us-west1-gcp` for a pod-based index. The connector looks up the index host with your API key rather than this value, but Airbyte only allows traffic to `*.{environment}.pinecone.io`, so it must match the environment segment of the index host shown in the Pinecone console. A mismatch causes connection failures.
 - **Pinecone Index name** - The name of the Pinecone index to load data into.
 
 ## Supported sync modes
@@ -43,19 +43,33 @@ All fields specified as metadata fields will be stored in the metadata object of
 - Booleans (true, false)
 - List of String
 
-All other fields are ignored.
+All other fields are ignored. If the metadata for a record exceeds the size limit described in [Processing](#processing), the connector drops the fields that don't fit instead of failing the sync.
 
 ## Configuration
 
 ### Processing
 
-Each record is split into text fields and metadata fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of the configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Metadata fields can only be used for filtering, not for retrieval, and must be of type string, number, boolean, or list of strings. All other values are ignored. Pinecone limits total metadata to 40 KB per record. The connector reserves approximately 10 KB for internal fields, leaving about 30 KB for user-defined metadata per entry. The chunking process uses the [LangChain Python library](https://python.langchain.com/docs/get_started/introduction).
+Each record is split into text fields and metadata fields as configured in the **Processing** section. All text fields are concatenated into a single string and then split into chunks of the configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Metadata fields can only be used for filtering, not for retrieval, and must be of type string, number, boolean, or list of strings. All other values are ignored. Pinecone limits total metadata to 40 KB per record. The connector reserves approximately 10 KB for internal fields, leaving about 30 KB for your own metadata per entry. The chunking process uses the [LangChain Python library](https://python.langchain.com/docs/get_started/introduction).
 
 When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.
 
-The chunk length is measured in tokens produced by the `tiktoken` library. The maximum is 8191 tokens, which is the maximum length supported by the `text-embedding-ada-002` model.
+The chunk length is measured in tokens produced by the `tiktoken` library. The maximum is 8191 tokens, which is the maximum length supported by the `text-embedding-ada-002` model. Set **Chunk overlap** to repeat part of the preceding chunk in each new chunk, which helps preserve context that spans a chunk boundary.
 
-The stream name gets added as a metadata field `_ab_stream` to each document. If available, the primary key of the record is used to identify the document to avoid duplications when updated versions of records are indexed. It is added as the `_ab_record_id` metadata field.
+Choose how text is split with the **Text splitter** option:
+
+- **By Separator** (default) - Splits on a list of separator strings, falling back to later separators when a chunk is still too long. The default list splits on paragraphs, then lines, then words, then characters.
+- **By Markdown header** - Splits at Markdown headings, down to the heading level you choose.
+- **By Programming Language** - Splits at boundaries that suit the language you choose, such as functions and classes.
+
+Use **Field name mappings** to rename a field before it's written to Pinecone. Mappings apply to top-level field names, including names already flattened with dot notation.
+
+Each chunk is written with these metadata fields:
+
+- `text` - The chunk text that was embedded. Enable **Do not store raw text** in the **Advanced** section to store only the vector and the metadata. Retrieval augmentation then has to fetch the text from elsewhere.
+- `_ab_stream` - The stream the record came from. Streams with a namespace use `{namespace}_{stream_name}`.
+- `_ab_record_id` - The primary key of the record, if the stream has one. The connector uses this field to remove earlier versions of a record, which is what makes deduplication and incremental deletes work.
+
+Vector IDs are generated as `{stream_name}#{uuid}`.
 
 ### Embedding
 
@@ -85,6 +99,10 @@ Before running the destination, use the [Pinecone console or API](https://docs.p
 
 All streams are indexed into the same index. The `_ab_stream` metadata field distinguishes between streams. The connector supports both serverless and pod-based indexes.
 
+`check` fails if the index doesn't exist or if its dimension doesn't match the dimension your embedding configuration produces, so a mismatch surfaces when you set up the connection rather than mid-sync.
+
+A full refresh overwrite sync clears the stream's existing vectors before writing new ones. On a serverless index, the connector deletes by the `{stream_name}#` ID prefix. On a pod-based index, it deletes by a metadata filter on `_ab_stream`.
+
 ## Namespace support
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
@@ -96,6 +114,9 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.51 | 2026-08-13 | [84344](https://github.com/airbytehq/airbyte/pull/84344) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
+| 0.1.50 | 2026-07-02 | [81382](https://github.com/airbytehq/airbyte/pull/81382) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
+| 0.1.49 | 2026-07-02 | [81396](https://github.com/airbytehq/airbyte/pull/81396) | Bump aiohttp to >= 3.13.3 to resolve GHSA-6mq8-rvhq-8wgg |
 | 0.1.48 | 2026-03-17 | [75170](https://github.com/airbytehq/airbyte/pull/75170) | Add logging to check and write operations and fix `__init__` bug |
 | 0.1.47 | 2026-03-17 | [75136](https://github.com/airbytehq/airbyte/pull/75136) | Emit TRACE error instead of LOG on write failure for proper error surfacing |
 | 0.1.46 | 2025-10-21 | [68334](https://github.com/airbytehq/airbyte/pull/68334) | Update dependencies |
