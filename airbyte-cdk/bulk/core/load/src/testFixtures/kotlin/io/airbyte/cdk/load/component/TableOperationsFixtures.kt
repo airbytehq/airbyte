@@ -33,6 +33,7 @@ import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.util.invert
 import java.util.UUID
@@ -681,10 +682,9 @@ object TableOperationsFixtures {
     }
 
     fun generateTestNamespace(prefix: String): String {
-        return "$prefix-${UUID.randomUUID()}"
-        // this is a hack for now - eventually we probably want to plumb in a TableNameGenerator,
-        // but until then - underscores are generally nicer than hyphens.
-        .replace('-', '_')
+        val base = IntegrationTest.generateRandomNamespace()
+        val sanitizedPrefix = prefix.replace('-', '_')
+        return "${base}_$sanitizedPrefix"
     }
 
     // Create common destination stream configurations

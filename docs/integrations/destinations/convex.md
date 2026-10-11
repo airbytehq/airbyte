@@ -15,6 +15,8 @@ Each stream will be output into a table in Convex. Convex's table naming rules a
 
 Each record is a [document](https://docs.convex.dev/using/types) in Convex and is assigned `_id` and `_creationTime` fields during sync.
 
+For Incremental Dedup, primary key field names must start with a letter and contain only letters, digits, and underscores. Source primary keys such as `_id` are not supported by Convex's streaming import API; select a compatible primary key or use Append mode.
+
 ### Performance considerations
 
 Take care to use the appropriate sync method and frequency for the quantity of data streaming from the source. Performance may suffer with large, frequent syncs with Full Refresh. Prefer Incremental modes when they are supported and especially for large tables.
@@ -46,7 +48,7 @@ On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the projec
 
 1. Navigate to the Settings tab.
 2. Copy the "Deployment URL" from the settings page to the `deployment_url` field in Airbyte.
-3. Click "Generate a deploy key".
+3. Click "Generate a deploy key". Ensure the key has the `deployment:backups:import` permission, as described in the [Convex streaming import documentation](https://docs.convex.dev/production/integrations/streaming-import-export).
 4. Copy the generated deploy key into the `access_key` field in Airbyte.
 
 ## Namespace support
@@ -60,6 +62,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 |:--------| :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 0.2.19 | 2026-10-07 | [88204](https://github.com/airbytehq/airbyte/pull/88204) | Preserve checkpoint IDs and fix namespaced overwrite and dedup setup |
 | 0.2.18 | 2025-05-10 | [59863](https://github.com/airbytehq/airbyte/pull/59863) | Update dependencies |
 | 0.2.17 | 2025-05-03 | [59357](https://github.com/airbytehq/airbyte/pull/59357) | Update dependencies |
 | 0.2.16 | 2025-04-26 | [58683](https://github.com/airbytehq/airbyte/pull/58683) | Update dependencies |

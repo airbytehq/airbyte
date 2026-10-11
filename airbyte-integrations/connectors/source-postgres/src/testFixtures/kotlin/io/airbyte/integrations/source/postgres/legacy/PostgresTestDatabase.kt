@@ -8,8 +8,6 @@ import io.airbyte.cdk.test.fixtures.legacy.DatabaseDriver
 import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils
 import io.airbyte.cdk.test.fixtures.legacy.Jsons
 import io.airbyte.cdk.test.fixtures.legacy.TestDatabase
-import io.airbyte.integrations.source.postgres.legacy.PostgresSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY
-import io.airbyte.integrations.source.postgres.legacy.PostgresSpecConstants.RESYNC_DATA_OPTION
 import java.io.IOException
 import java.io.UncheckedIOException
 import java.util.stream.Stream
@@ -196,8 +194,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
 
         @JvmOverloads
         fun withCdcReplication(
-            LsnCommitBehaviour: String = "While reading Data",
-            cdcCursorFailBehaviour: String = RESYNC_DATA_OPTION
+            LsnCommitBehaviour: String = "While reading Data"
         ): PostgresConfigBuilder {
             return this.with("is_test", true)
                 .with(
@@ -210,7 +207,6 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
                             "initial_waiting_seconds" to
                                 DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds(),
                             "lsn_commit_behaviour" to LsnCommitBehaviour,
-                            INVALID_CDC_CURSOR_POSITION_PROPERTY to cdcCursorFailBehaviour,
                         ),
                     ),
                 )

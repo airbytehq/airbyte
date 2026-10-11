@@ -105,11 +105,13 @@ class SalesforceStream(HttpStream, ABC):
         sobject_options: Mapping[str, Any] = None,
         schema: dict = None,
         start_date=None,
+        preserve_na_values: bool = False,
         **kwargs,
     ):
         self.stream_name = stream_name
         self.pk = pk
         self.sf_api = sf_api
+        self._preserve_na_values = preserve_na_values
         super().__init__(**kwargs)
         self.schema: Mapping[str, Any] = schema  # type: ignore[assignment]
         self.sobject_options = sobject_options
@@ -594,7 +596,7 @@ class BulkSalesforceStream(SalesforceStream):
             config=config,
             parameters=parameters,
         )
-        error_handler = SalesforceErrorHandler(token_provider=token_provider)
+        error_handler = SalesforceErrorHandler(token_provider=token_provider, stream_name=self.name)
         select_fields = self.get_query_select_fields()
         query = f"SELECT {select_fields} FROM {self.name}"  # FIXME "def request_params" is also handling `next_token` (I don't know why, I think it's always None) and parent streams
         if self.cursor_field and self._stream_slicer_cursor:
@@ -693,7 +695,7 @@ class BulkSalesforceStream(SalesforceStream):
         download_retriever = SimpleRetriever(
             requester=download_requester,
             record_selector=RecordSelector(
-                extractor=ResponseToFileExtractor(parameters={}),
+                extractor=ResponseToFileExtractor(parameters={}, preserve_na_values=self._preserve_na_values),
                 record_filter=None,
                 transformations=[],
                 schema_normalization=TypeTransformer(TransformConfig.NoTransform),

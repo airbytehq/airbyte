@@ -57,11 +57,14 @@ data:
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: Orb API reference
-      url: https://docs.withorb.com/reference/api-reference
+      url: https://docs.withorb.com/api-reference
       type: api_reference
     - title: Orb authentication
-      url: https://docs.withorb.com/reference/authentication
+      url: https://docs.withorb.com/essentials/authentication
       type: authentication_guide
+    - title: Orb changelog
+      url: https://changelog.withorb.com
+      type: api_release_history
     - title: Orb Status
       url: https://status.withorb.com/
       type: status_page

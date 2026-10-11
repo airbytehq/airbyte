@@ -8,7 +8,7 @@ import json
 import logging
 import tempfile
 import urllib.parse
-from datetime import datetime, timedelta
+from datetime import datetime
 from io import IOBase, StringIO
 from typing import Iterable, List, Optional
 
@@ -104,12 +104,17 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
                     if not start_date or last_modified >= start_date:
+                        # gs:// URI keeps query parameters out of the CDK Parquet
+                        # parser, which would otherwise interpret them as Hive
+                        # partition columns (issue #80940).  For Service Account
+                        # auth, displayed_uri carries the canonical HTTPS path so
+                        # the Cursor state key is byte-identical to the pre-fix
+                        # value (signed-URL path, percent-encoded, no query string).
+                        uri = f"gs://{blob.bucket.name}/{blob.name}"
                         if self.config.credentials.auth_type == "Client":
-                            uri = f"gs://{blob.bucket.name}/{blob.name}"
                             displayed_uri = None
                         else:
-                            uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
-                            displayed_uri = uri.split("?")[0] if self.config.sanitize_signed_urls else None
+                            displayed_uri = f"https://storage.googleapis.com/{blob.bucket.name}/{urllib.parse.quote(blob.name, safe='/~')}"
 
                         remote_file = GCSUploadableRemoteFile(
                             uri=uri,
