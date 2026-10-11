@@ -12,6 +12,9 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.copy.CsvCopyContext
+import io.airbyte.integrations.destination.snowflake.copy.DisabledSnowflakeS3Copy
+import io.airbyte.integrations.destination.snowflake.copy.SnowflakeS3Copy
 import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
@@ -22,6 +25,9 @@ import java.nio.file.Path
 import java.util.zip.GZIPOutputStream
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.pathString
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 
 private val logger = KotlinLogging.logger {}
 
@@ -43,6 +49,8 @@ class SnowflakeInsertBuffer(
     private val columnManager: SnowflakeColumnManager,
     private val snowflakeRecordFormatter: SnowflakeRecordFormatter,
     private val flushLimit: Int = DEFAULT_FLUSH_LIMIT,
+    private val s3Copy: SnowflakeS3Copy = DisabledSnowflakeS3Copy,
+    private val copyContext: CsvCopyContext? = null,
 ) {
 
     @VisibleForTesting internal var csvFilePath: Path? = null
@@ -82,15 +90,32 @@ class SnowflakeInsertBuffer(
                 logger.info {
                     "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}..."
                 }
-                // Next, put the CSV file into the staging table
-                snowflakeClient.putInStage(tableName, filePath.pathString)
-                logger.info {
-                    "Copying staging data into ${tableName.toPrettyString(quote = QUOTE)}..."
+                val context = copyContext
+                if (context == null) {
+                    putAndCopy(filePath)
+                } else {
+                    // PUT/COPY stays in the calling coroutine so the caller's dispatcher (e.g. the
+                    // CDK's bounded final-flush dispatcher) keeps limiting concurrent use of the
+                    // Snowflake connection pool. Only the Fusion S3 upload runs alongside it. The
+                    // upload blocks uncancellably once started, so it is always awaited rather than
+                    // cancelled: the file must outlive its reader either way.
+                    coroutineScope {
+                        val archive =
+                            async(Dispatchers.IO) { s3Copy.upload(filePath, context, recordCount) }
+                        var failure: Throwable? = null
+                        try {
+                            putAndCopy(filePath)
+                        } catch (t: Throwable) {
+                            failure = t
+                        }
+                        try {
+                            archive.await()
+                        } catch (t: Throwable) {
+                            if (failure == null) failure = t else failure.addSuppressed(t)
+                        }
+                        failure?.let { throw it }
+                    }
                 }
-                // Finally, copy the data from the staging table to the final table
-                // Pass column names to ensure correct mapping even after ALTER TABLE operations
-                val columnNames = columnManager.getTableColumnNames(columnSchema)
-                snowflakeClient.copyFromStage(tableName, filePath.fileName.toString(), columnNames)
                 logger.info {
                     "Finished insert of $recordCount row(s) into ${tableName.toPrettyString(quote = QUOTE)}."
                 }
@@ -105,6 +130,16 @@ class SnowflakeInsertBuffer(
             }
         }
             ?: logger.warn { "CSV file path is not set: nothing to upload to staging." }
+    }
+
+    private fun putAndCopy(filePath: Path) {
+        snowflakeClient.putInStage(tableName, filePath.pathString)
+        logger.info { "Copying staging data into ${tableName.toPrettyString(quote = QUOTE)}..." }
+        snowflakeClient.copyFromStage(
+            tableName,
+            filePath.fileName.toString(),
+            columnManager.getTableColumnNames(columnSchema)
+        )
     }
 
     private fun createCsvFile(): File {

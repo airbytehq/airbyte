@@ -20,8 +20,6 @@ import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.jdbc.ArrayFieldType
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
-import io.airbyte.cdk.jdbc.DoubleFieldType
-import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
@@ -43,6 +41,8 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcConnectionFactory
 import io.airbyte.integrations.source.postgres.config.CdcIncrementalConfiguration
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
+import io.airbyte.integrations.source.postgres.operations.types.PostgresDoubleFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresFloatFieldType
 import io.debezium.connector.postgresql.PostgresConnector
 import io.debezium.connector.postgresql.connection.Lsn
 import io.debezium.time.Conversions
@@ -142,8 +142,6 @@ class PostgresSourceDebeziumOperations(
     override fun startup(offset: DebeziumOffset) {
         // Need to validate replication slot even on cold start.
         // Debezium will retry in a loop if its invalid.
-        // TODO: Honor configured InvalidCdcCursorPositionBehavior
-        //  https://github.com/airbytehq/airbyte-internal-issues/issues/15680
         validate(offset)
         advanceReplicationSlot(offset)
     }
@@ -236,8 +234,12 @@ class PostgresSourceDebeziumOperations(
             var mappedValue: JsonNode?
             if (field.type is ArrayFieldType<*>) {
                 val rawArray = data[field.id]
+                // on the socket/protobuf path a field missing from the payload leaves the reused
+                // protobuf builder's slot untouched, i.e. holding the previous record's value.
+                // A NULL array and an array whose key is absent from the Debezium image, must both
+                // map to an explicit null.
                 mappedValue =
-                    if (rawArray == null || rawArray is NullNode) null
+                    if (rawArray == null || rawArray is NullNode) NullNode.getInstance()
                     else {
                         Jsons.arrayNode().also { arr ->
                             (rawArray as ArrayNode).forEach {
@@ -260,48 +262,41 @@ class PostgresSourceDebeziumOperations(
                 }
             }
 
-            if (mappedValue != null) {
-                when (mappedValue) {
-                    is NullNode -> {
-                        resultRow[field.id] = FieldValueEncoder(null, NullCodec)
-                    }
-                    else -> {
-                        if (field.type is ArrayFieldType<*>) {
-                            // ArrayEncoder needs a List<T>; decode the JSON array using the
-                            // element type's decoder before passing to the encoder.
-                            val elementDecoder =
-                                (field.type as ArrayFieldType<*>).elementFieldType.jsonEncoder
-                                    as JsonDecoder<Any?>
-                            val arrayDecoder = ArrayDecoder(elementDecoder)
-                            var decoded: List<Any?>? = null
-                            try {
-                                decoded = arrayDecoder.decode(mappedValue)
-                            } catch (_: Exception) {
-                                changes[EmittedField(field.id, field.type)] =
-                                    FieldValueChange.DESERIALIZATION_FAILURE_TOTAL
-                            }
-                            resultRow[field.id] =
-                                FieldValueEncoder(
-                                    decoded,
-                                    field.type.jsonEncoder as JsonEncoder<Any?>
-                                )
-                        } else {
-                            val decoder = field.type.jsonEncoder as JsonDecoder<Any?>
-                            var decoded: Any? = null
-                            try {
-                                decoded = decoder.decode(mappedValue)
-                            } catch (_: Exception) {
-                                changes[EmittedField(field.id, field.type)] =
-                                    FieldValueChange.DESERIALIZATION_FAILURE_TOTAL
-                            }
-                            resultRow[field.id] =
-                                FieldValueEncoder(
-                                    decoded,
-                                    decoder as JsonEncoder<Any?>,
-                                )
-                        }
-                    }
+            if (mappedValue == null || mappedValue is NullNode) {
+                // `null` means the column key was absent from the image, or that mapValue()
+                // failed. `NullNode` means SQL NULL. Both must be written into resultRow,
+                // never skipped, for the reason given above.
+                resultRow[field.id] = FieldValueEncoder(null, NullCodec)
+            } else if (field.type is ArrayFieldType<*>) {
+                // ArrayEncoder needs a List<T>; decode the JSON array using the
+                // element type's decoder before passing to the encoder.
+                val elementDecoder =
+                    (field.type as ArrayFieldType<*>).elementFieldType.jsonEncoder
+                        as JsonDecoder<Any?>
+                val arrayDecoder = ArrayDecoder(elementDecoder)
+                var decoded: List<Any?>? = null
+                try {
+                    decoded = arrayDecoder.decode(mappedValue)
+                } catch (_: Exception) {
+                    changes[EmittedField(field.id, field.type)] =
+                        FieldValueChange.DESERIALIZATION_FAILURE_TOTAL
                 }
+                resultRow[field.id] =
+                    FieldValueEncoder(decoded, field.type.jsonEncoder as JsonEncoder<Any?>)
+            } else {
+                val decoder = field.type.jsonEncoder as JsonDecoder<Any?>
+                var decoded: Any? = null
+                try {
+                    decoded = decoder.decode(mappedValue)
+                } catch (_: Exception) {
+                    changes[EmittedField(field.id, field.type)] =
+                        FieldValueChange.DESERIALIZATION_FAILURE_TOTAL
+                }
+                resultRow[field.id] =
+                    FieldValueEncoder(
+                        decoded,
+                        decoder as JsonEncoder<Any?>,
+                    )
             }
         }
 
@@ -340,8 +335,15 @@ class PostgresSourceDebeziumOperations(
         try {
             val mappedValue =
                 when (fieldType) {
-                    FloatFieldType -> Jsons.numberNode(input.floatValue())
-                    DoubleFieldType -> Jsons.numberNode(input.asDouble())
+                    // Narrow numeric nodes to the right precision so the codec's
+                    // IEEE-754 roundtrip check passes (Debezium emits float4 values as
+                    // DoubleNode in JSON). For non-numeric forms — e.g. TextNode("Infinity")
+                    // from non-finite values — pass through so the codec rejects them and
+                    // the framework records DESERIALIZATION_FAILURE_TOTAL.
+                    PostgresFloatFieldType ->
+                        if (input.isNumber) Jsons.numberNode(input.floatValue()) else input
+                    PostgresDoubleFieldType ->
+                        if (input.isNumber) Jsons.numberNode(input.asDouble()) else input
                     BigDecimalFieldType -> {
                         if (input.isNumber) input
                         else Jsons.numberNode(BigDecimal(input.textValue()).stripTrailingZeros())
@@ -350,9 +352,13 @@ class PostgresSourceDebeziumOperations(
                         if (input.isNumber && input.canConvertToExactIntegral()) input
                         else Jsons.numberNode(BigDecimal(input.textValue()))
                     }
-                    // Debezium may emit non-textual nodes for columns that map to StringFieldType
+                    // Debezium may emit non-textual nodes for columns that map to StringFieldType.
+                    // asText() only yields a valid representation for value nodes; anything else
+                    // has to be serialized, otherwise its content is silently lost.
                     StringFieldType ->
-                        if (input.isTextual) input else Jsons.textNode(input.asText())
+                        if (input.isTextual) input
+                        else if (input.isValueNode) Jsons.textNode(input.asText())
+                        else Jsons.textNode(Jsons.writeValueAsString(input))
                     else -> input
                 }
             return Result.success(mappedValue)

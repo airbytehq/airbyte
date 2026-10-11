@@ -336,8 +336,7 @@ class ClickhouseDataCoercionTest(
                 }
                 .toArgs()
 
-        // We use DateTime64 for date rather than the Date type.
-        // Apply basically the same changes here.
+        // We use Date32 for dates, which shares DateTime64's 1900..2299 range.
         @JvmStatic
         fun date() =
             DataCoercionDateFixtures.commonWarehouse
@@ -358,15 +357,10 @@ class ClickhouseDataCoercionTest(
                         else -> fixture
                     }
                 }
+                // clickhouse client returns Date32 values as LocalDate
                 .map { fixture ->
                     fixture.copy(
-                        outputValue =
-                            fixture.outputValue?.let {
-                                LocalDate.parse(it as String)
-                                    .atTime(0, 0)
-                                    .atOffset(ZoneOffset.UTC)
-                                    .atZoneSameInstant(ZoneId.of("UTC"))
-                            }
+                        outputValue = fixture.outputValue?.let { LocalDate.parse(it as String) }
                     )
                 }
                 .toArgs()

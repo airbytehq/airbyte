@@ -35,6 +35,20 @@ acceptance_tests:
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: attribution_report_performance_campaign
             bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_brands_campaigns_report_stream
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_brands_campaigns_report_stream_daily
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_brands_adgroups_report_stream
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_brands_adgroups_report_stream_daily
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_brands_ads
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_brands_ads_report_stream
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_brands_ads_report_stream_daily
+            bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_brands_v3_report_stream
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_display_campaigns_report_stream
@@ -54,6 +68,8 @@ acceptance_tests:
           - name: sponsored_products_keywords_report_stream
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_products_targets_report_stream
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_products_search_terms_report_stream
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_products_productads_report_stream
             bypass_reason: "can't populate stream because it requires real ad campaign"
@@ -90,6 +106,8 @@ acceptance_tests:
           - name: sponsored_display_adgroups_report_stream_daily
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_products_targets_report_stream_daily
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_products_search_terms_report_stream_daily
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: attribution_report_products
             bypass_reason: "Our test account profile is not authorized to use Amazon Attribution"

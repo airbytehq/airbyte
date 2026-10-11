@@ -8,10 +8,10 @@ The Slack connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
-| Channels | [List](#channels-list), [Get](#channels-get), [Create](#channels-create), [Update](#channels-update), [Context Store Search](#channels-context-store-search) |
-| Channel Messages | [List](#channel-messages-list), [Context Store Search](#channel-messages-context-store-search) |
-| Threads | [List](#threads-list), [Context Store Search](#threads-context-store-search) |
+| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search), [Context Store SQL Query](#users-context-store-sql-query) |
+| Channels | [List](#channels-list), [Get](#channels-get), [Create](#channels-create), [Update](#channels-update), [Context Store Search](#channels-context-store-search), [Context Store SQL Query](#channels-context-store-sql-query) |
+| Channel Messages | [List](#channel-messages-list), [Context Store Search](#channel-messages-context-store-search), [Context Store SQL Query](#channel-messages-context-store-sql-query), [Semantic Search](#channel-messages-semantic-search) |
+| Threads | [List](#threads-list), [Context Store Search](#threads-context-store-search), [Context Store SQL Query](#threads-context-store-sql-query), [Semantic Search](#threads-semantic-search) |
 | Messages | [Create](#messages-create), [Update](#messages-update), [Delete](#messages-delete) |
 | Channel Topics | [Create](#channel-topics-create) |
 | Channel Purposes | [Create](#channel-purposes-create) |
@@ -21,6 +21,7 @@ The Slack connector supports the following entities and actions.
 | Scheduled Messages | [Create](#scheduled-messages-create) |
 | Channel Archives | [Create](#channel-archives-create) |
 | Channel Kicks | [Create](#channel-kicks-create) |
+| Channel Joins | [Create](#channel-joins-create) |
 | Pins | [Create](#pins-create) |
 | Bookmarks | [Create](#bookmarks-create) |
 
@@ -29,6 +30,17 @@ The Slack connector supports the following entities and actions.
 ### Users List
 
 Returns a list of all users in the Slack workspace
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "users",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -98,6 +110,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get information about a single user by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "user": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -164,6 +190,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "color": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -191,7 +237,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -262,11 +308,85 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Users Context Store SQL Query
+
+Run a SQL query against users records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "users",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.users.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Channels
 
 ### Channels List
 
 Returns a list of all channels in the Slack workspace
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channels",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -349,6 +469,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get information about a single channel by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channels",
+  "action": "get",
+  "params": {
+    "channel": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -425,6 +559,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Channels Create
 
 Creates a new public or private channel
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channels",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "is_private": true
+  }
+}'
+```
 
 #### Python SDK
 
@@ -506,6 +655,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Renames an existing channel
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channels",
+  "action": "update",
+  "params": {
+    "channel": "<str>",
+    "name": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -586,6 +750,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter channels records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channels",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "context_team_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -613,7 +797,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -700,11 +884,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Channels Context Store SQL Query
+
+Run a SQL query against channels records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channels",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.channels.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channels",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Channel Messages
 
 ### Channel Messages List
 
 Returns messages from a channel
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_messages",
+  "action": "list",
+  "params": {
+    "channel": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -823,6 +1084,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter channel messages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_messages",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "type": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -850,7 +1131,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -864,6 +1145,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `type` | `string` | Message type. |
 | `subtype` | `string` | Message subtype. |
 | `ts` | `string` | Message timestamp (unique identifier). |
+| `float_ts` | `number` | Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API. |
 | `user` | `string` | User ID who sent the message. |
 | `text` | `string` | Message text content. |
 | `thread_ts` | `string` | Thread parent timestamp. |
@@ -878,7 +1160,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `blocks` | `array` | Block kit blocks. |
 | `bot_id` | `string` | Bot ID if message was sent by a bot. |
 | `bot_profile` | `object` | Bot profile information. |
+| `username` | `string` | Display name stamped on the message by incoming webhooks and legacy bot posts; absent on ordinary user messages and on most modern app messages, which carry bot_profile instead. |
 | `team` | `string` | Team ID. |
+| `channel_id` | `string` | Channel ID the message was posted in. Added by the Airbyte Slack source; not returned by the Slack API. |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -893,6 +1177,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].type` | `string` | Message type. |
 | `data[].subtype` | `string` | Message subtype. |
 | `data[].ts` | `string` | Message timestamp (unique identifier). |
+| `data[].float_ts` | `number` | Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API. |
 | `data[].user` | `string` | User ID who sent the message. |
 | `data[].text` | `string` | Message text content. |
 | `data[].thread_ts` | `string` | Thread parent timestamp. |
@@ -907,7 +1192,166 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].blocks` | `array` | Block kit blocks. |
 | `data[].bot_id` | `string` | Bot ID if message was sent by a bot. |
 | `data[].bot_profile` | `object` | Bot profile information. |
+| `data[].username` | `string` | Display name stamped on the message by incoming webhooks and legacy bot posts; absent on ordinary user messages and on most modern app messages, which carry bot_profile instead. |
 | `data[].team` | `string` | Team ID. |
+| `data[].channel_id` | `string` | Channel ID the message was posted in. Added by the Airbyte Slack source; not returned by the Slack API. |
+
+</details>
+
+### Channel Messages Context Store SQL Query
+
+Run a SQL query against channel messages records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_messages",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.channel_messages.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channel_messages",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+### Channel Messages Semantic Search
+
+Search channel messages records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_messages",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "text", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `channel_messages.context_store_search` helper only accepts `query`.
+
+```python
+await slack.execute(
+    "channel_messages",
+    "context_store_search",
+    {"semantic": {"field": "text", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channel_messages",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "text", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `text` | 2048 | Message text content. |
+
+Each result is also enriched with the following related fields (returned only; not filterable): `authorName`, `authorDisplayName`, `channelName`.
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.ts` | `string` | Source record field |
+| `data[].entity.float_ts` | `string` | Source record field |
+| `data[].entity.channel_id` | `string` | Source record field |
+| `data[].entity.thread_ts` | `string` | Source record field |
+| `data[].entity.user` | `string` | Source record field |
+| `data[].entity.subtype` | `string` | Source record field |
+| `data[].entity.botName` | `string` | Source record field |
+| `data[].entity.webhookName` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `data[].metadata.authorName` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `data[].metadata.authorDisplayName` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `data[].metadata.channelName` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -916,6 +1360,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Threads List
 
 Returns messages in a thread (thread replies from conversations.replies endpoint)
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "threads",
+  "action": "list",
+  "params": {
+    "channel": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1036,6 +1494,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter threads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "threads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "type": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1063,7 +1541,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1077,6 +1555,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `type` | `string` | Message type. |
 | `subtype` | `string` | Message subtype. |
 | `ts` | `string` | Message timestamp (unique identifier). |
+| `float_ts` | `number` | Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API. |
 | `user` | `string` | User ID who sent the message. |
 | `text` | `string` | Message text content. |
 | `thread_ts` | `string` | Thread parent timestamp. |
@@ -1090,6 +1569,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `blocks` | `array` | Block kit blocks. |
 | `bot_id` | `string` | Bot ID if message was sent by a bot. |
 | `team` | `string` | Team ID. |
+| `channel_id` | `string` | Channel ID the thread lives in. Added by the Airbyte Slack source; not returned by the Slack API. |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -1104,6 +1584,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].type` | `string` | Message type. |
 | `data[].subtype` | `string` | Message subtype. |
 | `data[].ts` | `string` | Message timestamp (unique identifier). |
+| `data[].float_ts` | `number` | Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API. |
 | `data[].user` | `string` | User ID who sent the message. |
 | `data[].text` | `string` | Message text content. |
 | `data[].thread_ts` | `string` | Thread parent timestamp. |
@@ -1117,6 +1598,162 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].blocks` | `array` | Block kit blocks. |
 | `data[].bot_id` | `string` | Bot ID if message was sent by a bot. |
 | `data[].team` | `string` | Team ID. |
+| `data[].channel_id` | `string` | Channel ID the thread lives in. Added by the Airbyte Slack source; not returned by the Slack API. |
+
+</details>
+
+### Threads Context Store SQL Query
+
+Run a SQL query against threads records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "threads",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.threads.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "threads",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
+### Threads Semantic Search
+
+Search threads records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "threads",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "text", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `threads.context_store_search` helper only accepts `query`.
+
+```python
+await slack.execute(
+    "threads",
+    "context_store_search",
+    {"semantic": {"field": "text", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "threads",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "text", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `text` | 2048 | Message text content. |
+
+Each result is also enriched with the following related fields (returned only; not filterable): `authorName`, `authorDisplayName`, `channelName`.
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.ts` | `string` | Source record field |
+| `data[].entity.float_ts` | `string` | Source record field |
+| `data[].entity.channel_id` | `string` | Source record field |
+| `data[].entity.thread_ts` | `string` | Source record field |
+| `data[].entity.user` | `string` | Source record field |
+| `data[].entity.subtype` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `data[].metadata.authorName` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `data[].metadata.authorDisplayName` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `data[].metadata.channelName` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1125,6 +1762,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Messages Create
 
 Posts a message to a public channel, private channel, or direct message conversation
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "messages",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "text": "<str>",
+    "thread_ts": "<str>",
+    "reply_broadcast": true,
+    "unfurl_links": true,
+    "unfurl_media": true,
+    "blocks": [],
+    "mrkdwn": true
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1202,6 +1860,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Updates an existing message in a channel
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "messages",
+  "action": "update",
+  "params": {
+    "channel": "<str>",
+    "ts": "<str>",
+    "text": "<str>",
+    "blocks": []
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1266,6 +1941,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Deletes a message from a channel. When used with a bot token, may only delete messages posted by that bot.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "messages",
+  "action": "delete",
+  "params": {
+    "channel": "<str>",
+    "ts": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1319,6 +2009,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Channel Topics Create
 
 Sets the topic for a channel
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_topics",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "topic": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1402,6 +2107,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Sets the purpose for a channel
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_purposes",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "purpose": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1483,6 +2203,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Channel Invites Create
 
 Invites one or more users to a public or private channel
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_invites",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "users": "<str>",
+    "force": true
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1569,6 +2305,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Adds a reaction (emoji) to a message
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "reactions",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "timestamp": "<str>",
+    "name": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1621,6 +2373,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Reactions Delete
 
 Removes a reaction (emoji) from a message
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "reactions",
+  "action": "delete",
+  "params": {
+    "channel": "<str>",
+    "timestamp": "<str>",
+    "name": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1676,6 +2444,25 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ephemeral Messages Create
 
 Sends an ephemeral message to a user in a channel. Ephemeral messages are visible only to the target user and do not persist across sessions.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "ephemeral_messages",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "user": "<str>",
+    "text": "<str>",
+    "thread_ts": "<str>",
+    "blocks": [],
+    "mrkdwn": true
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1741,6 +2528,28 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Scheduled Messages Create
 
 Schedules a message for delivery to a channel at a specified time in the future. Messages can be scheduled up to 120 days in advance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "scheduled_messages",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "text": "<str>",
+    "post_at": 0,
+    "thread_ts": "<str>",
+    "reply_broadcast": true,
+    "unfurl_links": true,
+    "unfurl_media": true,
+    "blocks": [],
+    "mrkdwn": true
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1819,6 +2628,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Archives a conversation. Not all types of conversations can be archived.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_archives",
+  "action": "create",
+  "params": {
+    "channel": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1868,6 +2691,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Removes a user from a public or private channel
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_kicks",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "user": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1915,11 +2753,119 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+## Channel Joins
+
+### Channel Joins Create
+
+Joins an existing public channel. The calling bot or user token will be added as a member of the channel.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_joins",
+  "action": "create",
+  "params": {
+    "channel": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.channel_joins.create(
+    channel="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channel_joins",
+    "action": "create",
+    "params": {
+        "channel": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | ID of the channel to join |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `is_channel` | `boolean \| null` |  |
+| `is_group` | `boolean \| null` |  |
+| `is_im` | `boolean \| null` |  |
+| `is_mpim` | `boolean \| null` |  |
+| `is_private` | `boolean \| null` |  |
+| `created` | `integer \| null` |  |
+| `is_archived` | `boolean \| null` |  |
+| `is_general` | `boolean \| null` |  |
+| `unlinked` | `integer \| null` |  |
+| `name_normalized` | `string \| null` |  |
+| `is_shared` | `boolean \| null` |  |
+| `is_org_shared` | `boolean \| null` |  |
+| `is_pending_ext_shared` | `boolean \| null` |  |
+| `pending_shared` | `array \| null` |  |
+| `context_team_id` | `string \| null` |  |
+| `updated` | `integer \| null` |  |
+| `creator` | `string \| null` |  |
+| `is_ext_shared` | `boolean \| null` |  |
+| `shared_team_ids` | `array \| null` |  |
+| `pending_connected_team_ids` | `array \| null` |  |
+| `is_member` | `boolean \| null` |  |
+| `topic` | `object \| any` |  |
+| `purpose` | `object \| any` |  |
+| `previous_names` | `array \| null` |  |
+| `num_members` | `integer \| null` |  |
+| `parent_conversation` | `string \| null` |  |
+| `properties` | `object \| null` |  |
+| `is_thread_only` | `boolean \| null` |  |
+| `is_read_only` | `boolean \| null` |  |
+
+
+</details>
+
 ## Pins
 
 ### Pins Create
 
 Pins a message to a particular channel. Both channel and timestamp are required.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "pins",
+  "action": "create",
+  "params": {
+    "channel": "<str>",
+    "timestamp": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1972,6 +2918,24 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Bookmarks Create
 
 Adds a bookmark (link) to a channel. Bookmarks appear in the channel header for easy access.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "bookmarks",
+  "action": "create",
+  "params": {
+    "channel_id": "<str>",
+    "title": "<str>",
+    "type": "<str>",
+    "link": "<str>",
+    "emoji": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 

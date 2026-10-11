@@ -1,0 +1,18 @@
+{
+  "bucket": "sample-bucket-gzip-csv",
+  "service_account": "{}",
+  "streams": [
+    {
+      "name": "test_gzip_csv",
+      "globs": ["**/*.csv.gz"],
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "csv"
+      }
+    }
+  ],
+  "credentials": {
+    "service_account": "{}",
+    "auth_type": "Service"
+  }
+}

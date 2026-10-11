@@ -23,9 +23,33 @@ jobs:
               - 'docusaurus/**'
               - '.markdownlint.jsonc'
 
+      # The merge commit's first parent is the base branch tip, so `HEAD^1` diffs
+      # exactly the PR's changes.
+      - name: Checkout Merge Commit
+        if: steps.detect-changes.outputs.docs == 'true'
+        continue-on-error: true
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 2
+
+      # If this step fails (e.g. the merge commit can't be checked out), the output
+      # stays empty and the Vercel preview runs as usual.
+      - name: Check For Changelog-Only Docs Changes
+        id: changelog-only
+        if: steps.detect-changes.outputs.docs == 'true'
+        continue-on-error: true
+        run: |
+          if ./.github/scripts/docs-changelog-only.sh HEAD^1 HEAD; then
+            echo changelog-only=true | tee -a "$GITHUB_OUTPUT"
+          else
+            echo changelog-only=false | tee -a "$GITHUB_OUTPUT"
+          fi
+
     outputs:
       # 'true' if any of the docs files have changed, 'false' otherwise.
       changed: ${{ steps.detect-changes.outputs.docs }}
+      # 'true' if the only docs changes are connector changelog rows, which don't need a preview.
+      changelog-only: ${{ steps.changelog-only.outputs.changelog-only }}
 
   build-docs:
     name: Build Airbyte Docs
@@ -62,7 +86,7 @@ jobs:
         if: steps.check-skip.outputs.skip-build != 'true'
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: "20"
+          node-version-file: "docusaurus/.nvmrc"
 
       - name: Set Up pnpm
         if: steps.check-skip.outputs.skip-build != 'true'
@@ -92,6 +116,7 @@ jobs:
     if: >
       github.event.pull_request.head.repo.full_name == github.repository
       && needs.detect-changes.outputs.changed == 'true'
+      && needs.detect-changes.outputs.changelog-only != 'true'
     runs-on: ubuntu-latest
     # This workflow deploys preview builds to Vercel on pull requests.
     # Pull requests from forks are ignored.

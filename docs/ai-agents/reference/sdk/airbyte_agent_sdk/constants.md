@@ -40,6 +40,12 @@ Variables
 `DEFAULT_WRITE_TIMEOUT`
 :   Default timeout for writing request data (seconds).
 
+`INTENT_MAX_LENGTH`
+:   Maximum length of the execution ``intent`` string.
+    
+    Mirrors the backend request-schema cap so oversized intents fail locally
+    instead of after an HTTP round trip.
+
 `MILLISECONDS_PER_SECOND`
 :   Conversion factor from seconds to milliseconds.
 

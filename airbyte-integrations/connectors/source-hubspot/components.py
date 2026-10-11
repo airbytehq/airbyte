@@ -273,6 +273,52 @@ class MarketingEmailStatisticsTransformation(RecordTransformation):
 
 
 @dataclass
+class HubspotFlowDetailsTransformation(RecordTransformation):
+    """
+    Custom transformation for the `flows` stream that fetches a full workflow definition.
+
+    HubSpot's Flows v4 list endpoint (GET /automation/v4/flows) only returns a summary of each
+    flow (`id`, `name`, `flowType`, `isEnabled`, `objectTypeId`, `revisionId`, `createdAt`,
+    `updatedAt`, `uuid`). The action graph, enrollment criteria, data sources and scheduling
+    settings are only available from GET /automation/v4/flows/{flowId}, so this transformation
+    makes one detail request per flow and merges the response into the listing record.
+
+    Unlike `AddFieldsFromEndpointTransformation`, a failed detail request does not abort the sync.
+    HubSpot requires additional `*.sensitive.read` scopes for flows that touch sensitive data, so a
+    single inaccessible flow in an otherwise readable portal would otherwise fail the whole stream.
+    When the detail request fails, the summary record from the listing endpoint is emitted as-is and
+    a warning naming the flow is logged.
+    """
+
+    requester: Requester
+    record_selector: HttpSelector
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        flow_id = record.get("id")
+        try:
+            details_response = self.requester.send_request(stream_slice=StreamSlice(partition={"parent_id": flow_id}, cursor_slice={}))
+            details = self.record_selector.select_records(response=details_response, stream_state={}, records_schema={})
+
+            for detail in details:
+                record.update(detail)
+
+        except Exception as exception:
+            # Emit the listing-level record rather than failing the stream. The most common cause is a
+            # 403 for a flow that requires sensitive-data scopes the connector was not granted.
+            logger.warning(
+                f"Failed to fetch the full definition for flow {flow_id}: {exception}. "
+                f"Emitting summary fields only. If this flow contains sensitive data, grant the matching "
+                f"'*.sensitive.read' scopes to the HubSpot app and re-run the sync."
+            )
+
+
+@dataclass
 class HubspotSchemaExtractor(RecordExtractor):
     """
     Transformation that encapsulates the list of properties under a single object because DynamicSchemaLoader only
@@ -848,6 +894,7 @@ class HubspotCustomObjectsSchemaLoader(SchemaLoader):
 
     def _field_to_property_schema(self, field: Mapping[str, Any]) -> Mapping[str, Any]:
         field_type = field["type"]
+        treat_as_string = bool(self.config.get("treat_numbers_and_booleans_as_strings", False))
 
         if field_type in ["string", "enumeration", "phone_number", "object_coordinates", "json"]:
             return {"type": ["null", "string"]}
@@ -856,8 +903,12 @@ class HubspotCustomObjectsSchemaLoader(SchemaLoader):
         elif field_type == "date":
             return {"type": ["null", "string"], "format": "date"}
         elif field_type == "number":
+            if treat_as_string:
+                return {"type": ["null", "string"]}
             return {"type": ["null", "number"]}
         elif field_type == "boolean" or field_type == "bool":
+            if treat_as_string:
+                return {"type": ["null", "string"]}
             return {"type": ["null", "boolean"]}
         else:
             logger.warn(f"Field {field['name']} has unrecognized type: {field['type']} casting to string.")
@@ -883,6 +934,82 @@ class HubspotCustomObjectsSchemaLoader(SchemaLoader):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._schema
+
+
+@dataclass
+class HubspotAssociationStreamExtractor(RecordExtractor):
+    """
+    Flattens HubSpot association batch/read responses into individual records.
+
+    Transforms nested structure:
+    {
+      "results": [
+        {
+          "from": {"id": "123"},
+          "to": [
+            {
+              "toObjectId": 456,
+              "associationTypes": [
+                {"typeId": 3, "category": "HUBSPOT_DEFINED", "label": null}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+
+    Into flat records:
+    {"from_id": "123", "to_id": "456", "association_type_id": 3, "category": "HUBSPOT_DEFINED", "label": null}
+    """
+
+    from_object: Union[InterpolatedString, str]
+    to_object: Union[InterpolatedString, str]
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        if isinstance(self.from_object, str):
+            self._from_object = InterpolatedString.create(self.from_object, parameters=parameters)
+        else:
+            self._from_object = self.from_object
+
+        if isinstance(self.to_object, str):
+            self._to_object = InterpolatedString.create(self.to_object, parameters=parameters)
+        else:
+            self._to_object = self.to_object
+
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        """
+        Extract and flatten association records from HubSpot batch/read API response.
+
+        Yields one record per association type (not per to_object).
+        Handles empty responses gracefully.
+        Ensures string IDs for schema consistency.
+        """
+        # Parse response JSON directly
+        body = response.json()
+        results = body.get("results", [])
+
+        for result in results:
+            from_obj = result.get("from", {})
+            from_id = str(from_obj.get("id", ""))
+
+            to_list = result.get("to", [])
+
+            for to_obj in to_list:
+                to_id = str(to_obj.get("toObjectId", ""))
+                association_types = to_obj.get("associationTypes", [])
+
+                # Emit one record per association type
+                for assoc_type in association_types:
+                    yield {
+                        "from_id": from_id,
+                        "to_id": to_id,
+                        "association_type_id": assoc_type.get("typeId"),
+                        "category": assoc_type.get("category"),
+                        "label": assoc_type.get("label"),
+                    }
 
 
 _TRUTHY_STRINGS = ("y", "yes", "t", "true", "on", "1")
