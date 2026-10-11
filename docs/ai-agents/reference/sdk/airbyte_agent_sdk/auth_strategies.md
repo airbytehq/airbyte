@@ -10,6 +10,28 @@ Authentication strategy pattern implementation for HTTP client.
 Functions
 ---------
 
+<a id="build_jwt_bearer_assertion"></a>
+
+`build_jwt_bearer_assertion(credentials_json: str, scopes: list[str], audience: str) ‑> str`
+:   Build a signed RS256 JWT assertion for the RFC 7523 jwt-bearer grant.
+    
+    Used by service account authentication flows (e.g., Google service account
+    keys) where the client proves its identity by signing a JWT with the
+    service account's private key instead of presenting a refresh token.
+    
+    Args:
+        credentials_json: Service account key as a JSON string. Must contain
+            'client_email' (JWT issuer) and 'private_key' (PEM RSA key).
+        scopes: OAuth scopes for the assertion's 'scope' claim
+        audience: Token endpoint URL for the 'aud' claim
+    
+    Returns:
+        Signed JWT string (header.payload.signature)
+    
+    Raises:
+        AuthenticationError: If credentials_json is malformed, missing required
+            fields, or its private key cannot be loaded as an RSA PEM key
+
 <a id="extract_secret_value"></a>
 
 `extract_secret_value(value: SecretStr | str | None) ‑> str`
@@ -379,6 +401,16 @@ Classes
             - "json": application/json (some APIs prefer this)
             Default: "form"
     
+        grant_type: OAuth2 grant used to obtain access tokens
+            - "refresh_token": standard refresh-token grant (default)
+            - "jwt_bearer": RFC 7523 JWT-bearer grant for service accounts
+              (e.g., Google service account keys). Requires 'credentials_json'
+              in secrets and 'scopes' in config.
+            Default: "refresh_token"
+    
+        scopes: OAuth scopes for the JWT-bearer assertion's 'scope' claim.
+            Only used when grant_type is "jwt_bearer".
+    
         subdomain: Template variable for multi-tenant APIs (e.g., Zendesk)
             Used in refresh_url templates like "https://\{\{subdomain\}\}.example.com"
             If not provided and used in template, renders as empty string.
@@ -432,6 +464,9 @@ Classes
     `body_format: Literal['form', 'json']`
     :   The type of the None singleton.
 
+    `grant_type: Literal['refresh_token', 'jwt_bearer']`
+    :   The type of the None singleton.
+
     `header: str`
     :   The type of the None singleton.
 
@@ -439,6 +474,9 @@ Classes
     :   The type of the None singleton.
 
     `refresh_url: str`
+    :   The type of the None singleton.
+
+    `scopes: list[str]`
     :   The type of the None singleton.
 
     `subdomain: str`
@@ -492,7 +530,7 @@ Classes
             secrets: OAuth2 credentials (including optional refresh fields)
         
         Returns:
-            True if refresh_token is available, False otherwise
+            True if refresh_token or credentials_json is available, False otherwise
 
     `ensure_credentials(self, config: dict[str, Any], secrets: dict[str, Any], config_values: dict[str, str] | None = None, http_client: httpx.AsyncClient | None = None) ‑> airbyte_agent_sdk.auth_strategies.TokenRefreshResult | None`
     :   Proactively refresh OAuth2 tokens if access_token is missing.
@@ -556,10 +594,10 @@ Classes
         
         Returns True if:
         - access_token is missing (None, empty, or not present)
-        - refresh_token is present
+        - refresh_token or credentials_json is present
         
-        This indicates "refresh-token-only" mode where we need to obtain
-        an access_token before making API requests.
+        This indicates "refresh-token-only" or service-account mode where we
+        need to obtain an access_token before making API requests.
         
         Args:
             secrets: OAuth2 credentials
@@ -572,13 +610,14 @@ Classes
         
         Validates that either:
         1. access_token is present, OR
-        2. refresh_token is present (for refresh-token-only mode)
+        2. refresh_token is present (for refresh-token-only mode), OR
+        3. credentials_json is present (for service-account jwt-bearer mode)
         
         Args:
             secrets: OAuth2 credentials to validate
         
         Raises:
-            AuthenticationError: If neither access_token nor refresh_token is present
+            AuthenticationError: If no usable credential is present
 
 <a id="OAuth2RefreshSecrets"></a>
 
@@ -616,6 +655,11 @@ Classes
             Usually "Bearer" per RFC 6750.
             Some APIs use different types like "Token" or "MAC".
     
+        credentials_json (optional): Service account key JSON string.
+            Required for the "jwt_bearer" grant type. Must contain
+            'client_email' and 'private_key' fields (Google service
+            account key format).
+    
     Examples:
         Full refresh capability:
             \{
@@ -651,6 +695,9 @@ Classes
     :   The type of the None singleton.
 
     `client_secret: pydantic.types.SecretStr | str`
+    :   The type of the None singleton.
+
+    `credentials_json: pydantic.types.SecretStr | str`
     :   The type of the None singleton.
 
     `refresh_token: pydantic.types.SecretStr | str`

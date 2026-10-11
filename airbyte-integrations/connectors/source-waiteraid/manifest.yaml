@@ -18,13 +18,22 @@ definitions:
           http_method: POST
           request_parameters:
             date: "{{ config['start_date'] }}"
+            dateto: "{{ today_utc() }}"
             auth_hash: "{{ config['auth_hash'] }}"
             restid: "{{ config['restid'] }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                predicate: "{{ response.get('status') == 'ERROR' }}"
+                error_message: "Waiteraid API returned an error: {{ response.get('message') }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - bookings
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -237,13 +246,22 @@ streams:
         http_method: POST
         request_parameters:
           date: "{{ config['start_date'] }}"
+          dateto: "{{ today_utc() }}"
           auth_hash: "{{ config['auth_hash'] }}"
           restid: "{{ config['restid'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              predicate: "{{ response.get('status') == 'ERROR' }}"
+              error_message: "Waiteraid API returned an error: {{ response.get('message') }}"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: []
+          field_path:
+            - bookings
     schema_loader:
       type: InlineSchemaLoader
       schema:

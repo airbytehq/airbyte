@@ -41,31 +41,13 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 20
-            start_from_page: 1
+            page_size: 100
+            start_from_page: 0
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/courses"
-    screen_types:
-      type: DeclarativeStream
-      name: screen_types
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v1/headless/screen/types
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/screen_types"
     trackings:
       type: DeclarativeStream
       name: trackings
@@ -92,9 +74,28 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 20
-            start_from_page: 1
+            page_size: 100
+            start_from_page: 0
             inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/courses"
+              parent_key: id
+              partition_field: course_id
+              request_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: id
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - course_id
+              value: "{{ stream_partition.course_id }}"
+              value_type: integer
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -104,9 +105,7 @@ definitions:
     url_base: https://api.coassemble.com
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: >-
-        COASSEMBLE-V1-SHA256 UserId={{ config["user_id"] }}, UserToken={{
-        config["user_token"] }}
+      api_token: 'COASSEMBLE:{{ config["workspace_id"] }}:{{ config["api_key"] }}'
       inject_into:
         type: RequestOption
         field_name: Authorization
@@ -114,7 +113,6 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/courses"
-  - $ref: "#/definitions/streams/screen_types"
   - $ref: "#/definitions/streams/trackings"
 
 spec:
@@ -123,26 +121,30 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - user_token
-      - user_id
+      - workspace_id
+      - api_key
     properties:
-      user_token:
+      workspace_id:
         type: string
-        name: api_key
         order: 0
-        title: User Token
-        airbyte_secret: true
-      user_id:
+        title: Workspace ID
+        description: >-
+          The ID of your Coassemble workspace. Shown next to your API key in
+          the Developer section of your workspace settings.
+      api_key:
         type: string
         order: 1
-        title: User ID
+        title: API Key
+        description: >-
+          Workspace API key generated in the Developer section of your
+          Coassemble workspace settings. Sent as
+          `Authorization: COASSEMBLE:<workspace_id>:<api_key>`.
         airbyte_secret: true
     additionalProperties: true
 
 metadata:
   autoImportSchema:
     courses: true
-    screen_types: false
     trackings: false
   yamlComponents:
     global:
@@ -155,8 +157,6 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    screen_types:
-      streamHash: null
     trackings:
       streamHash: null
   assist:
@@ -481,13 +481,12 @@ schemas:
           - "null"
     required:
       - id
-  screen_types:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
   trackings:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      course_id:
+        type:
+          - integer
+          - "null"

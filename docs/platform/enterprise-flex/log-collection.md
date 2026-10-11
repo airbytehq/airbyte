@@ -7,6 +7,8 @@ sidebar_label: Log Collection
 
 This guide explains how to collect logs from an Airbyte Flex data plane running in your Kubernetes cluster.
 
+These logs describe the work your data plane does: sync, check, discover, and spec jobs. To review who changed your Airbyte configuration, see [Audit logs](/platform/access-management/audit-logs) instead.
+
 :::info
 Requires data plane Helm chart version **2.1.0** or later. Structured JSON logging to stdout is enabled by default starting in 2.1.0. Earlier chart versions emit plaintext logs and do not propagate the log format setting to all containers.
 :::

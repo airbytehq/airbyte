@@ -322,6 +322,18 @@ definitions:
       schema_pointer:
         - properties
       types_mapping:
+        # When `treat_numbers_and_booleans_as_strings` is enabled, coerce dynamic
+        # `number` and `bool` properties to `string` so destinations do not reject
+        # non-numeric / non-boolean values returned by HubSpot (for example,
+        # semicolon-separated IDs in a `number` field).
+        - type: TypesMap
+          target_type: string
+          current_type: number
+          condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
+        - type: TypesMap
+          target_type: string
+          current_type: bool
+          condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
         - type: TypesMap
           target_type: boolean
           current_type: bool
@@ -408,6 +420,9 @@ definitions:
                   extractor:
                     type: DpathExtractor
                     field_path: []
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ not config.get('companies_property_history_properties') or record.get('name') in config.get('companies_property_history_properties') }}"
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -449,6 +464,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
       is_client_side_incremental: true
+      lookback_window: PT{{ config.get('property_history_lookback_window', 0) }}M
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.MigrateEmptyStringState
@@ -498,6 +514,9 @@ definitions:
                   extractor:
                     type: DpathExtractor
                     field_path: []
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ not config.get('contacts_property_history_properties') or record.get('name') in config.get('contacts_property_history_properties') }}"
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -539,6 +558,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%ms"
       is_client_side_incremental: true
+      lookback_window: PT{{ config.get('property_history_lookback_window', 0) }}M
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.MigrateEmptyStringState
@@ -620,6 +640,9 @@ definitions:
                   extractor:
                     type: DpathExtractor
                     field_path: []
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ not config.get('deals_property_history_properties') or record.get('name') in config.get('deals_property_history_properties') }}"
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -661,6 +684,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
       is_client_side_incremental: true
+      lookback_window: PT{{ config.get('property_history_lookback_window', 0) }}M
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.MigrateEmptyStringState
@@ -1422,6 +1446,76 @@ definitions:
         cursor_field: updatedAt
         cursor_format: "%ms"
 
+  # ── Flows (Automation v4) ─────────────────────────────────────────
+  # Full workflow definitions from HubSpot's Flows v4 API, the successor to the legacy
+  # /automation/v3/workflows endpoint backing the `workflows` stream. `workflows` is left untouched:
+  # its records keep the legacy shape (integer `id`, epoch-ms cursor) and the two streams can be
+  # synced side by side.
+  #
+  # GET /automation/v4/flows returns summaries only (id, name, flowType, isEnabled, objectTypeId,
+  # revisionId, createdAt, updatedAt, uuid), so each record is enriched with a per-flow request to
+  # GET /automation/v4/flows/{flowId} to pick up the action graph and enrollment criteria.
+  # `transform_before_filtering: false` keeps the client-side incremental filter ahead of that
+  # enrichment, so unchanged flows cost no detail request.
+  #
+  # Gated behind `enable_experimental_streams`: HubSpot ships Automation v4 as a developer preview
+  # and documents it as "subject to change".
+  flows_stream:
+    type: DeclarativeStream
+    name: flows
+    primary_key:
+      - id
+    $parameters:
+      name: flows
+      required_scopes: automation
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /automation/v4/flows
+      record_selector:
+        type: RecordSelector
+        transform_before_filtering: false
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      decoder:
+        type: JsonDecoder
+    incremental_sync:
+      # The list endpoint accepts no date filter (only `after`/`limit`), so filtering is client-side.
+      type: DatetimeBasedCursor
+      cursor_field: updatedAt
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      is_client_side_incremental: true
+    transformations:
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.HubspotFlowDetailsTransformation
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/automation/v4/flows/{{ stream_slice['parent_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        $parameters:
+          # Requester and Selector require stream name as a param.
+          name: flows
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/flows"
+
   email_events_stream:
     $ref: "#/definitions/stream_base"
     name: email_events
@@ -1806,6 +1900,35 @@ definitions:
           $ref: "#/schemas/engagements_tasks"
       - $ref: "#/definitions/base_dynamic_schema_loader"
 
+  engagements_task_pipelines_stream:
+    $ref: "#/definitions/stream_base"
+    name: engagements_task_pipelines
+    primary_key:
+      - id
+    $parameters:
+      name: engagements_task_pipelines
+      required_scopes: crm.objects.contacts.read
+    retriever:
+      # `/crm/v3/pipelines/tasks` returns every pipeline in a single response, so the shared
+      # offset paginator would only add a meaningless `limit` parameter to the request.
+      $ref: "#/definitions/retriever_without_pagination"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/pipelines/tasks
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record['createdAt'] }}"
+        condition: "{{ record.get('updatedAt') is none }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/engagements_task_pipelines"
+
   subscription_changes_stream:
     $ref: "#/definitions/stream_base"
     name: subscription_changes
@@ -1950,6 +2073,18 @@ definitions:
         type_pointer: ["type"]
         schema_pointer: ["properties"]
         types_mapping:
+          # When `treat_numbers_and_booleans_as_strings` is enabled, coerce dynamic
+          # `number` and `bool` properties to `string` so destinations do not reject
+          # non-numeric / non-boolean values returned by HubSpot (for example,
+          # semicolon-separated IDs in a `number` field).
+          - type: TypesMap
+            target_type: string
+            current_type: number
+            condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
+          - type: TypesMap
+            target_type: string
+            current_type: bool
+            condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
           - type: TypesMap
             target_type: string
             current_type: enumeration
@@ -2152,6 +2287,61 @@ definitions:
       from_object: ""
       to_object: ""
 
+  # Error handler shared by every request made on behalf of a custom object association stream: the association
+  # batch read as well as the parent `/crm/v3/objects/{from_object}/search` request. Both return 400 when the
+  # configured object identifier is not a fullyQualifiedName (`p_...`) or objectTypeId (`2-...`).
+  # Same as base_error_handler except for the custom-object-specific 400 and 403 messages.
+  custom_object_association_error_handler:
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes:
+          - 429
+        error_message: >-
+          HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 502
+          - 503
+        error_message: >-
+          HubSpot server error (5xx). Retrying with exponential backoff...
+      - type: HttpResponseFilter
+        action: REFRESH_TOKEN_THEN_RETRY
+        http_codes:
+          - 401
+        error_message: >-
+          Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 530
+        error_message: >-
+          The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 400
+        error_message: >-
+          Custom object identifier in 'from_object' or 'to_object' is not a valid HubSpot
+          fullyQualifiedName (for example 'p_my_custom_object') or objectTypeId (for example '2-12345').
+          You can find your custom object identifiers in HubSpot Settings or via the /crm/v3/schemas API.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 403
+        error_message: >-
+          Access denied (403). Credentials lack the read scope for the object in 'from_object' or 'to_object'
+          ('crm.objects.custom.read' for custom objects, or the standard object's read scope such as 'crm.objects.deals.read').
+
   # Custom object association stream - extends base_association_stream with error handling for invalid custom object names
   base_custom_object_association_stream:
     $ref: "#/definitions/base_association_stream"
@@ -2160,41 +2350,27 @@ definitions:
       requester:
         $ref: "#/definitions/base_association_stream/retriever/requester"
         error_handler:
-          type: DefaultErrorHandler
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: Retry-After
-            - type: ExponentialBackoffStrategy
-          response_filters:
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
-                - 429
-              error_message: >-
-                HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
-                - 502
-                - 503
-              error_message: >-
-                HubSpot server error (5xx). Retrying with exponential backoff...
-            - type: HttpResponseFilter
-              action: FAIL
-              http_codes:
-                - 400
-              error_message: >-
-                Bad request (400). The custom object name provided in the configuration is invalid.
-                Please verify that 'from_object' and 'to_object' values are correct custom object
-                identifiers (e.g., the fullyQualifiedName like 'p_my_custom_object' or the objectTypeId like '2-12345').
-                You can find your custom object identifiers in HubSpot Settings or via the /crm/v3/schemas API.
-            - type: HttpResponseFilter
-              action: FAIL
-              http_codes:
-                - 403
-              error_message: >-
-                Access denied (403). The authenticated user does not have permissions to access the custom object associations.
-                Ensure the 'crm.objects.custom.read' scope is granted for your OAuth or Private App credentials.
+          $ref: "#/definitions/custom_object_association_error_handler"
+      partition_router:
+        $ref: "#/definitions/base_association_stream/retriever/partition_router"
+        underlying_partition_router:
+          $ref: "#/definitions/base_association_stream/retriever/partition_router/underlying_partition_router"
+          parent_stream_configs:
+            - stream:
+                $ref: "#/definitions/base_crm_search_incremental_parent_stream"
+                $parameters:
+                  entity: from_object_name
+                  cursor_filter_property_field: hs_lastmodifieddate
+                name: stream_name
+                retriever:
+                  $ref: "#/definitions/base_crm_search_incremental_parent_stream/retriever"
+                  requester:
+                    $ref: "#/definitions/base_crm_search_incremental_parent_stream/retriever/requester"
+                    error_handler:
+                      $ref: "#/definitions/custom_object_association_error_handler"
+              parent_key: id
+              partition_field: id
+              incremental_dependency: true
 
   properties_stream:
     type: DeclarativeStream
@@ -2269,6 +2445,377 @@ definitions:
       path: /account-info/v3/details
       required_scopes: oauth
 
+  # ── Web Analytics base definition ─────────────────────────────────
+  # Restored in v6.8.0 (removed during manifest-only migration in v5.8.0).
+  # Each stream fans out over parent-object IDs and queries the Events API
+  # with 30-day datetime windows.  Records are flattened so that
+  # `properties.hs_*` becomes `properties_hs_*`, matching v5.7.0 output.
+  # Gated behind `enable_experimental_streams`.
+  web_analytics_base_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/base_requester"
+      path: "/events/event-occurrences/2026-03"
+      request_parameters:
+        objectType: "{{ parameters['object_type'] }}"
+        objectId: "{{ stream_partition['parent_id'] }}"
+    record_selector:
+      $ref: "#/definitions/base_selector"
+      schema_normalization: Default
+    paginator:
+      $ref: "#/definitions/cursor_paginator"
+
+  web_analytics_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: occurredAt
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+    cursor_granularity: PT0.001S
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    end_datetime:
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+    step: P30D
+    start_time_option:
+      type: RequestOption
+      field_name: occurredAfter
+      inject_into: request_parameter
+    end_time_option:
+      type: RequestOption
+      field_name: occurredBefore
+      inject_into: request_parameter
+
+  web_analytics_schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: "#/schemas/web_analytics"
+
+  web_analytics_transformations:
+    - type: DpathFlattenFields
+      field_path:
+        - properties
+      delete_origin_value: true
+      key_transformation:
+        type: KeyTransformation
+        prefix: properties_
+
+  web_analytics_event_type_router:
+    type: ListPartitionRouter
+    values:
+      - "e_visited_page"
+      - "e_submitted_form"
+    cursor_field: event_type
+    request_option:
+      type: RequestOption
+      field_name: eventType
+      inject_into: request_parameter
+
+  # ── 12 Web Analytics stream definitions ────────────────────────────
+
+  contacts_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/contacts_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: contacts_web_analytics
+      primary_key: id
+      object_type: contact
+      required_scopes: business-intelligence, crm.objects.contacts.read
+
+  companies_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/companies_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: companies_web_analytics
+      primary_key: id
+      object_type: company
+      required_scopes: business-intelligence, crm.objects.companies.read
+
+  deals_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/deals_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: deals_web_analytics
+      primary_key: id
+      object_type: deal
+      required_scopes: business-intelligence, crm.objects.deals.read
+
+  tickets_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/tickets_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: tickets_web_analytics
+      primary_key: id
+      object_type: ticket
+      required_scopes: business-intelligence, tickets
+
+  engagements_calls_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/engagements_calls_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: engagements_calls_web_analytics
+      primary_key: id
+      object_type: calls
+      required_scopes: business-intelligence, crm.objects.contacts.read
+
+  engagements_emails_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/engagements_emails_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: engagements_emails_web_analytics
+      primary_key: id
+      object_type: emails
+      required_scopes: business-intelligence, crm.objects.contacts.read, sales-email-read
+
+  engagements_meetings_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/engagements_meetings_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: engagements_meetings_web_analytics
+      primary_key: id
+      object_type: meetings
+      required_scopes: business-intelligence, crm.objects.contacts.read
+
+  engagements_notes_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/engagements_notes_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: engagements_notes_web_analytics
+      primary_key: id
+      object_type: notes
+      required_scopes: business-intelligence, crm.objects.contacts.read
+
+  engagements_tasks_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/engagements_tasks_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: engagements_tasks_web_analytics
+      primary_key: id
+      object_type: tasks
+      required_scopes: business-intelligence, crm.objects.contacts.read
+
+  goals_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/goals_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: goals_web_analytics
+      primary_key: id
+      object_type: goal_targets
+      required_scopes: business-intelligence, crm.objects.goals.read
+
+  line_items_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/line_items_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: line_items_web_analytics
+      primary_key: id
+      object_type: line_item
+      required_scopes: business-intelligence, e-commerce, crm.objects.line_items.read
+
+  products_web_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/web_analytics_base_retriever"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/products_stream"
+              parent_key: id
+              partition_field: parent_id
+        - type: ListPartitionRouter
+          $ref: "#/definitions/web_analytics_event_type_router"
+    incremental_sync:
+      $ref: "#/definitions/web_analytics_incremental_sync"
+    transformations:
+      $ref: "#/definitions/web_analytics_transformations"
+    schema_loader:
+      $ref: "#/definitions/web_analytics_schema_loader"
+    $parameters:
+      name: products_web_analytics
+      primary_key: id
+      object_type: product
+      required_scopes: business-intelligence, e-commerce
+
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/companies_stream"
@@ -2290,6 +2837,7 @@ streams:
   - "#/definitions/engagements_meetings_stream"
   - "#/definitions/engagements_notes_stream"
   - "#/definitions/engagements_tasks_stream"
+  - "#/definitions/engagements_task_pipelines_stream"
   - "#/definitions/form_submissions_stream"
   - "#/definitions/forms_stream"
   - "#/definitions/goals_stream"
@@ -2306,6 +2854,22 @@ streams:
   - "#/definitions/workflows_stream"
   - "#/definitions/properties_stream"
   - "#/definitions/account_details_stream"
+  - type: ConditionalStreams
+    condition: "{{ config.get('enable_experimental_streams', false) }}"
+    streams:
+      - "#/definitions/contacts_web_analytics_stream"
+      - "#/definitions/companies_web_analytics_stream"
+      - "#/definitions/deals_web_analytics_stream"
+      - "#/definitions/tickets_web_analytics_stream"
+      - "#/definitions/engagements_calls_web_analytics_stream"
+      - "#/definitions/engagements_emails_web_analytics_stream"
+      - "#/definitions/engagements_meetings_web_analytics_stream"
+      - "#/definitions/engagements_notes_web_analytics_stream"
+      - "#/definitions/engagements_tasks_web_analytics_stream"
+      - "#/definitions/goals_web_analytics_stream"
+      - "#/definitions/line_items_web_analytics_stream"
+      - "#/definitions/products_web_analytics_stream"
+      - "#/definitions/flows_stream"
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -2586,15 +3150,66 @@ spec:
       lookback_window:
         default: 0
         description: >-
-          How far back (in minutes) to re-fetch records during incremental syncs. 
-          Set this if you notice missing records in CRMSearch streams to recover data 
-          that may be delayed by the HubSpot API.
+          How far back (in minutes) to re-fetch records during incremental syncs
+          for CRM Search streams (e.g. contacts, companies, deals, tickets).
+          Set this if you notice missing records in CRM Search streams to recover
+          data that may be delayed by the HubSpot API. Does not affect property
+          history streams.
         examples:
           - 60
         maximum: 576000
         minimum: 0
-        title: Lookback window
+        title: CRM Search Lookback Window (minutes)
         type: integer
+      property_history_lookback_window:
+        default: 0
+        description: >-
+          How far back (in minutes) to re-fetch records during incremental syncs
+          for property history streams (deals, contacts, companies property
+          history). Set this if you notice missing records in property history
+          streams caused by cursor drift from HubSpot calculated properties.
+        examples:
+          - 43200
+        maximum: 576000
+        minimum: 0
+        title: Property History Lookback Window (minutes)
+        type: integer
+      deals_property_history_properties:
+        type: array
+        items:
+          type: string
+        title: Deals Property History Properties
+        description: >-
+          Optional list of property internal names whose history to sync for the
+          `deals_property_history` stream. If empty or not set, history for all
+          properties is synced. See HubSpot's
+          <a href="https://knowledge.hubspot.com/properties/hubspots-default-deal-properties">default deals properties</a> for the internal names.
+        examples:
+          - ["dealstage"]
+      contacts_property_history_properties:
+        type: array
+        items:
+          type: string
+        title: Contacts Property History Properties
+        description: >-
+          Optional list of property internal names whose history to sync for the
+          `contacts_property_history` stream. If empty or not set, history for all
+          properties is synced. See HubSpot's
+          <a href="https://knowledge.hubspot.com/properties/hubspots-default-contact-properties">default contacts properties</a> for the internal names.
+        examples:
+          - ["lifecyclestage"]
+      companies_property_history_properties:
+        type: array
+        items:
+          type: string
+        title: Companies Property History Properties
+        description: >-
+          Optional list of property internal names whose history to sync for the
+          `companies_property_history` stream. If empty or not set, history for all
+          properties is synced. See HubSpot's
+          <a href="https://knowledge.hubspot.com/properties/hubspot-crm-default-company-properties">default companies properties</a> for the internal names.
+        examples:
+          - ["lifecyclestage"]
       credentials:
         title: Authentication
         description: Choose how to authenticate to HubSpot.
@@ -2666,6 +3281,17 @@ spec:
       enable_experimental_streams:
         title: Enable experimental streams
         description: If enabled then experimental streams become available for sync.
+        type: boolean
+        default: false
+      treat_numbers_and_booleans_as_strings:
+        title: Treat dynamic number and boolean properties as strings
+        description: >-
+          If enabled, HubSpot dynamic `number` and `boolean` properties are
+          exposed as `string`. Useful when HubSpot returns values that do not
+          match the declared type and the destination rejects the records.
+          After changing this setting, refresh the source schema and refresh
+          the affected stream data. See the connector documentation for
+          details.
         type: boolean
         default: false
       num_worker:
@@ -2841,6 +3467,7 @@ spec:
           - scope: "crm.objects.goals.read"
           - scope: "crm.objects.invoices.read"
           - scope: "crm.objects.leads.read"
+          - scope: "crm.objects.line_items.read"
           - scope: "crm.objects.listings.read"
           - scope: "crm.objects.marketing_events.read"
           - scope: "crm.objects.orders.read"
@@ -2853,6 +3480,7 @@ spec:
           - scope: "crm.schemas.companies.read"
           - scope: "crm.schemas.custom.read"
           - scope: "crm.schemas.deals.read"
+          - scope: "business-intelligence"
           - scope: "settings.users.read"
         extract_output:
           - refresh_token
@@ -2915,10 +3543,215 @@ api_budget:
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  default_concurrency: "{{ config.get('num_worker', 10) }}"
   max_concurrency: 40
 
 schemas:
+  web_analytics:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      objectId:
+        type:
+          - "null"
+          - string
+      objectType:
+        type:
+          - "null"
+          - string
+      eventType:
+        type:
+          - "null"
+          - string
+      occurredAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      properties_hs_asset_description:
+        type:
+          - "null"
+          - string
+      properties_hs_asset_type:
+        type:
+          - "null"
+          - string
+      properties_hs_browser:
+        type:
+          - "null"
+          - string
+      properties_hs_campaign_id:
+        type:
+          - "null"
+          - string
+      properties_hs_city:
+        type:
+          - "null"
+          - string
+      properties_hs_country:
+        type:
+          - "null"
+          - string
+      properties_hs_device_name:
+        type:
+          - "null"
+          - string
+      properties_hs_device_type:
+        type:
+          - "null"
+          - string
+      properties_hs_title:
+        type:
+          - "null"
+          - string
+      properties_hs_form_correlation_id:
+        type:
+          - "null"
+          - string
+      properties_hs_element_class:
+        type:
+          - "null"
+          - string
+      properties_hs_element_id:
+        type:
+          - "null"
+          - string
+      properties_hs_element_text:
+        type:
+          - "null"
+          - string
+      properties_hs_language:
+        type:
+          - "null"
+          - string
+      properties_hs_document_id:
+        type:
+          - "null"
+          - string
+      properties_hs_presentation_id:
+        type:
+          - "null"
+          - string
+      properties_hs_user_id:
+        type:
+          - "null"
+          - string
+      properties_hs_link_href:
+        type:
+          - "null"
+          - string
+      properties_hs_operating_system:
+        type:
+          - "null"
+          - string
+      properties_hs_operating_version:
+        type:
+          - "null"
+          - string
+      properties_hs_page_content_type:
+        type:
+          - "null"
+          - string
+      properties_hs_page_id:
+        type:
+          - "null"
+          - string
+      properties_hs_page_title:
+        type:
+          - "null"
+          - string
+      properties_hs_page_url:
+        type:
+          - "null"
+          - string
+      properties_hs_parent_module_id:
+        type:
+          - "null"
+          - string
+      properties_hs_referrer:
+        type:
+          - "null"
+          - string
+      properties_hs_region:
+        type:
+          - "null"
+          - string
+      properties_hs_url:
+        type:
+          - "null"
+          - string
+      properties_hs_screen_height:
+        type:
+          - "null"
+          - string
+      properties_hs_screen_width:
+        type:
+          - "null"
+          - string
+      properties_hs_touchpoint_source:
+        type:
+          - "null"
+          - string
+      properties_hs_tracking_name:
+        type:
+          - "null"
+          - string
+      properties_hs_user_agent:
+        type:
+          - "null"
+          - string
+      properties_hs_utm_campaign:
+        type:
+          - "null"
+          - string
+      properties_hs_utm_content:
+        type:
+          - "null"
+          - string
+      properties_hs_utm_medium:
+        type:
+          - "null"
+          - string
+      properties_hs_utm_source:
+        type:
+          - "null"
+          - string
+      properties_hs_utm_term:
+        type:
+          - "null"
+          - string
+      properties_hs_base_url:
+        type:
+          - "null"
+          - string
+      properties_hs_form_id:
+        type:
+          - "null"
+          - string
+      properties_hs_form_type:
+        type:
+          - "null"
+          - string
+      properties_hs_url_domain:
+        type:
+          - "null"
+          - string
+      properties_hs_url_path:
+        type:
+          - "null"
+          - string
+      properties_hs_visitor_type:
+        type:
+          - "null"
+          - string
+
   base_association:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -4828,6 +5661,124 @@ schemas:
             - "null"
             - string
 
+  engagements_task_pipelines:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      label:
+        description: The label or name of the task pipeline.
+        type:
+          - "null"
+          - string
+      displayOrder:
+        description: The order in which the task pipeline is displayed.
+        type:
+          - "null"
+          - integer
+      id:
+        description: The unique identifier of the task pipeline.
+        type:
+          - "null"
+          - string
+      archived:
+        description: Indicates if the task pipeline is archived or not.
+        type:
+          - "null"
+          - boolean
+      stages:
+        description:
+          List of stages within the task pipeline. Join `stages[].id` against
+          `engagements_tasks.properties.hs_pipeline_stage` to resolve a task's stage label and
+          its open/closed state.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            label:
+              description: The label or name of the stage.
+              type:
+                - "null"
+                - string
+            displayOrder:
+              description: The order in which the stage is displayed.
+              type:
+                - "null"
+                - integer
+            metadata:
+              description:
+                Additional metadata related to the stage. HubSpot returns these values as
+                strings rather than native booleans or enums.
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                isClosed:
+                  description:
+                    Whether a task in this stage counts as closed, returned as the string
+                    "true" or "false".
+                  type:
+                    - "null"
+                    - string
+                state:
+                  description:
+                    The open/closed state of the stage, returned as the string "OPEN" or
+                    "CLOSED". Task stages use `state`, unlike ticket stages, which use
+                    `ticketState`.
+                  type:
+                    - "null"
+                    - string
+            id:
+              description:
+                The unique identifier of the stage. Always typed as a string. HubSpot's default
+                task stages use UUIDs while stages created later in the UI get numeric IDs
+                (for example `5996839954`), and `engagements_tasks.properties.hs_pipeline_stage`
+                is itself a string, so the join key must not be narrowed to an integer.
+              type:
+                - "null"
+                - string
+            createdAt:
+              description: The date and time when the stage was created.
+              type:
+                - "null"
+                - string
+              format: date-time
+            updatedAt:
+              description: The date and time when the stage was last updated.
+              type:
+                - "null"
+                - string
+              format: date-time
+            archived:
+              description: Indicates if the stage is archived or not.
+              type:
+                - "null"
+                - boolean
+            writePermissions:
+              description: Permissions for writing/modifying the stage.
+              type:
+                - "null"
+                - string
+      createdAt:
+        description: The date and time when the task pipeline was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: The date and time when the task pipeline was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+
   form_submissions:
     $schema: http://json-schema.org/schema#
     type:
@@ -5535,6 +6486,11 @@ schemas:
             type:
               - "null"
               - string
+          isAbVariation:
+            description: Whether this email is the variation of an A/B test.
+            type:
+              - "null"
+              - boolean
       updatedById:
         type:
           - "null"
@@ -6126,6 +7082,11 @@ schemas:
               type:
                 - "null"
                 - string
+            primary:
+              description: Whether this team is the owner's primary team.
+              type:
+                - "null"
+                - boolean
 
   owners_archived:
     $schema: http://json-schema.org/schema#
@@ -6206,6 +7167,11 @@ schemas:
               type:
                 - "null"
                 - string
+            primary:
+              description: Whether this team is the owner's primary team.
+              type:
+                - "null"
+                - boolean
 
   users:
     $schema: http://json-schema.org/schema#
@@ -6561,6 +7527,189 @@ schemas:
         type:
           - "null"
           - integer
+
+  # Full workflow definitions from the Automation v4 Flows API.
+  # Top-level fields are the union of HubSpot's `ApiContactFlow` and `ApiPlatformFlow` schemas plus
+  # the `ApiFlowListing` fields returned by the list endpoint. The deeply polymorphic sub-trees
+  # (`actions`, `enrollmentCriteria`, `dataSources`, filter branches, schedules) are intentionally
+  # left as untyped objects with `additionalProperties: true`: HubSpot models them as `oneOf` over
+  # many action/criteria subtypes and the API is still a developer preview, so enumerating them here
+  # would break syncs whenever HubSpot adds a subtype.
+  flows:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: Unique identifier of the flow. Note this is a string, unlike the integer `id` of the legacy `workflows` stream.
+        type:
+          - "null"
+          - string
+      uuid:
+        description: Universally unique identifier of the flow.
+        type:
+          - "null"
+          - string
+      name:
+        description: Name assigned to the flow.
+        type:
+          - "null"
+          - string
+      description:
+        description: Description of the flow.
+        type:
+          - "null"
+          - string
+      flowType:
+        description: Type of the flow. One of ACTION_SET, WORKFLOW or UNKNOWN.
+        type:
+          - "null"
+          - string
+      type:
+        description: Discriminator of the flow definition. One of CONTACT_FLOW or PLATFORM_FLOW.
+        type:
+          - "null"
+          - string
+      isEnabled:
+        description: Whether the flow is currently active.
+        type:
+          - "null"
+          - boolean
+      objectTypeId:
+        description: ID of the CRM object type the flow operates on.
+        type:
+          - "null"
+          - string
+      revisionId:
+        description: Identifier of the current revision of the flow.
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Timestamp when the flow was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: Timestamp when the flow was last updated. Used as the cursor for this stream.
+        type:
+          - "null"
+          - string
+        format: date-time
+      startActionId:
+        description: ID of the first action executed by the flow.
+        type:
+          - "null"
+          - string
+      nextAvailableActionId:
+        description: Next unused action ID, used by HubSpot when appending actions.
+        type:
+          - "null"
+          - string
+      actions:
+        description: Ordered list of actions that make up the flow's action graph.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+      enrollmentCriteria:
+        description: Criteria that determine which records are enrolled into the flow.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      enrollmentSchedule:
+        description: Schedule controlling when enrollment evaluation runs.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      dataSources:
+        description: Data sources referenced by the flow's filters and actions.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+      timeWindows:
+        description: Time windows during which the flow is allowed to execute actions.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+      blockedDates:
+        description: Dates on which the flow is prevented from executing actions.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+      customProperties:
+        description: Free-form key/value metadata attached to the flow.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      crmObjectCreationStatus:
+        description: Status of the CRM object backing the flow. One of COMPLETE or PENDING.
+        type:
+          - "null"
+          - string
+      suppressionListIds:
+        description: IDs of lists whose members are suppressed from the flow. Contact flows only.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      canEnrollFromSalesforce:
+        description: Whether Salesforce can enroll records into the flow. Contact flows only.
+        type:
+          - "null"
+          - boolean
+      eventAnchor:
+        description: Anchor date used by date-based enrollment. Contact flows only.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      goalFilterBranch:
+        description: Filter branch describing the flow's goal criteria. Contact flows only.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      unEnrollmentSetting:
+        description: Settings controlling un-enrollment behaviour. Contact flows only.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      suppressionFilterBranch:
+        description: Filter branch describing suppression criteria. Platform flows only.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
 
   email_events:
     $schema: http://json-schema.org/draft-07/schema#

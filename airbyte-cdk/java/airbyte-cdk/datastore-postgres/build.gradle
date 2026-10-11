@@ -6,5 +6,5 @@ dependencies {
 
     testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
 
-    testFixturesApi 'org.testcontainers:postgresql:1.20.1'
+    testFixturesApi 'org.testcontainers:postgresql:1.21.4'
 }
