@@ -388,8 +388,8 @@ The `list_memberships` stream reads memberships for every list returned by the `
 These streams download the recording files of calls and meetings so a destination that supports file transfer can copy them as raw files. Each record carries the ID of the call or meeting the recording belongs to: `call_id`, which joins to `engagements_calls.id`, or `meeting_id`, which joins to `engagements_meetings.id`. It also carries the `recording_url` the file was downloaded from and the `file_name` of the downloaded file (`<call_id>.<extension>` or `<meeting_id>.<extension>`).
 
 - The streams only return calls and meetings that have a recording URL (`hs_call_recording_url` or `hs_call_video_recording_url` for calls, `hs_meeting_recording_url` for meetings). For calls with both, the audio recording is downloaded.
-- Recordings hosted outside HubSpot (any host other than `hubspot.com` or `hubapi.com`, for example Zoom or a calling provider) are skipped, because the HubSpot access token is sent with the download request.
-- If HubSpot refuses to serve a recording (HTTP 403, 404 or 410, for example a deleted or expired recording), the sync continues. The record is still emitted, and the file written for it holds HubSpot's error body instead of media.
+- Only recordings served by HubSpot's recording endpoint (`https://api-<hublet>.hubspot.com/...`, for example `api-na1.hubspot.com`) are downloaded. Recordings on any other host, for example Zoom or a calling provider, are skipped, because the HubSpot access token is sent with the download request.
+- If HubSpot refuses to serve a recording (HTTP 401, 403, 404 or 410, for example a deleted or expired recording, or a meeting-bot recording HubSpot never serves), the sync continues. The record is still emitted, and the file written for it holds HubSpot's error body instead of media.
 - Recordings are held in memory while they are written, so large recordings combined with a high **Number of concurrent threads** setting increase memory usage.
 
 ### Notes on the `Custom CRM` Objects

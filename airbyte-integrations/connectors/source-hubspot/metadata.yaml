@@ -5,8 +5,7 @@ data:
   allowedHosts:
     hosts:
       - api.hubapi.com
-      - "*.hubapi.com"
-      - "*.hubspot.com"
+      - api-*.hubspot.com
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.30.0@sha256:a249dd191ff2b4e5a7c6fd3749395d4a2f5beee988165ebabfacb17199e5b378
   connectorSubtype: api

@@ -1929,9 +1929,10 @@ definitions:
       schema:
         $ref: "#/schemas/engagements_task_pipelines"
 
+  # A 401 on a recording means HubSpot refuses that asset (for example some MEETING_BOT
+  # recordings), not an expired token: OAuthAuthenticator refreshes before the token expires.
   recording_download_error_handler:
-    type: CustomErrorHandler
-    class_name: source_declarative_manifest.components.HubspotErrorHandler
+    type: DefaultErrorHandler
     backoff_strategies:
       - type: WaitTimeFromHeader
         header: Retry-After
@@ -1953,19 +1954,14 @@ definitions:
         error_message: >-
           HubSpot server error (5xx) while downloading a recording. Retrying with exponential backoff...
       - type: HttpResponseFilter
-        action: REFRESH_TOKEN_THEN_RETRY
-        http_codes:
-          - 401
-        error_message: >-
-          Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot.
-      - type: HttpResponseFilter
         action: IGNORE
         http_codes:
+          - 401
           - 403
           - 404
           - 410
         error_message: >-
-          HubSpot refused to serve a recording (HTTP 403/404/410), skipping its content. The file written
+          HubSpot refused to serve a recording (HTTP 401/403/404/410), skipping its content. The file written
           for this record holds the HubSpot error body instead of media.
 
   recording_file_uploader:
@@ -2054,7 +2050,7 @@ definitions:
           type: RecordFilter
           condition: >-
             {{ (record.get('recording_url') or '') |
-            regex_search('^https://(?:[A-Za-z0-9-]+[.])*(hubspot|hubapi)[.]com(?:[/?#:]|$)') != '' }}
+            regex_search('^https://api-([A-Za-z0-9]+)[.]hubspot[.]com(?:[/?#:]|$)') != '' }}
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
       cursor_field: hs_lastmodifieddate

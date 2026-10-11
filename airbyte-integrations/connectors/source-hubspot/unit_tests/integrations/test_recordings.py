@@ -17,7 +17,7 @@ from . import HubspotTestCase
 
 
 SEARCH_URL = "https://api.hubapi.com/crm/v3/objects/{entity}/search"
-HUBSPOT_RECORDING_URL = "https://api.hubapi.com/engagements/v1/engagements/recordings/{id}"
+HUBSPOT_RECORDING_URL = "https://api-na1.hubspot.com/recording/auth/meeting/getAuthRecording/portal/123/engagement/{id}"
 UPDATED_AT = "2024-03-02T10:00:00.000Z"
 
 
@@ -102,7 +102,7 @@ class TestMeetingRecordingsStream(RecordingsStreamTestCase):
 
     def test_given_recordings_when_read_then_download_files_and_emit_join_keys(self, files_directory: Path):
         mp4_url = HUBSPOT_RECORDING_URL.format(id="101")
-        m4a_url = "https://app.hubspot.com/recordings/102/audio.M4A?token=abc"
+        m4a_url = "https://api-eu1.hubspot.com/recording/auth/102/audio.M4A?token=abc"
         with HttpMocker() as http_mocker:
             http_mocker.post(
                 self.search_request(),
@@ -146,7 +146,7 @@ class TestMeetingRecordingsStream(RecordingsStreamTestCase):
         assert (files_directory / "meeting_recordings" / "101.mp4").read_text() == "mp4-bytes"
         assert (files_directory / "meeting_recordings" / "102.m4a").read_text() == "m4a-bytes"
 
-    def test_given_non_hubspot_recording_url_when_read_then_skip_record_without_sending_token(self):
+    def test_given_recording_url_outside_hubspot_recording_hosts_when_read_then_skip_record_without_sending_token(self):
         hubspot_url = HUBSPOT_RECORDING_URL.format(id="101")
         with HttpMocker() as http_mocker:
             http_mocker.post(
@@ -156,8 +156,11 @@ class TestMeetingRecordingsStream(RecordingsStreamTestCase):
                         self.search_result("101", {"hs_meeting_recording_url": hubspot_url}),
                         # Third-party hosts never receive the HubSpot token, so no download is mocked for them.
                         self.search_result("102", {"hs_meeting_recording_url": "https://zoom.us/rec/share/102.mp4"}),
-                        self.search_result("103", {"hs_meeting_recording_url": "https://hubspot.com.evil.example/103.mp4"}),
-                        self.search_result("104", {"hs_meeting_recording_url": "http://api.hubapi.com/104.mp4"}),
+                        self.search_result("103", {"hs_meeting_recording_url": "https://api-na1.hubspot.com.evil.example/103.mp4"}),
+                        self.search_result("104", {"hs_meeting_recording_url": "http://api-na1.hubspot.com/104.mp4"}),
+                        # HubSpot hosts that do not serve recordings are outside allowedHosts.
+                        self.search_result("105", {"hs_meeting_recording_url": "https://app.hubspot.com/105.mp4"}),
+                        self.search_result("106", {"hs_meeting_recording_url": "https://api.hubapi.com/106.mp4"}),
                     ]
                 ),
             )
@@ -166,6 +169,8 @@ class TestMeetingRecordingsStream(RecordingsStreamTestCase):
             output = self.read(http_mocker)
 
         assert [message.record.data["meeting_id"] for message in output.records] == ["101"]
+        # A download attempt for a skipped host would fail on the unmocked request.
+        assert not output.errors
 
     def test_given_filtered_full_page_when_read_then_continue_to_next_page(self):
         """A page that the host filter shrinks below page_size must not end pagination."""
@@ -214,6 +219,28 @@ class TestMeetingRecordingsStream(RecordingsStreamTestCase):
         assert [message.record.data["meeting_id"] for message in output.records] == ["101", "102"]
         assert not output.errors
 
+    def test_given_recording_refused_with_401_when_read_then_emit_record_and_continue(self):
+        """HubSpot answers 401 for some MEETING_BOT recordings even with a valid token."""
+        refused_url = "https://api-eu1.hubspot.com/recording/auth/getAuthRecording/portal/123/objectTypeId/0-47/objectId/101/source/MEETING_BOT"
+        present_url = HUBSPOT_RECORDING_URL.format(id="102")
+        with HttpMocker() as http_mocker:
+            http_mocker.post(
+                self.search_request(),
+                self.search_response(
+                    [
+                        self.search_result("101", {"hs_meeting_recording_url": refused_url}),
+                        self.search_result("102", {"hs_meeting_recording_url": present_url}),
+                    ]
+                ),
+            )
+            self.mock_download(http_mocker, refused_url, HttpResponse(json.dumps({"message": "unauthorized"}), http.HTTPStatus.UNAUTHORIZED))
+            self.mock_download(http_mocker, present_url, HttpResponse("mp4-bytes", 200))
+
+            output = self.read(http_mocker)
+
+        assert [message.record.data["meeting_id"] for message in output.records] == ["101", "102"]
+        assert not output.errors
+
     def test_given_incremental_sync_when_read_then_state_is_latest_hs_lastmodifieddate(self):
         url = HUBSPOT_RECORDING_URL.format(id="101")
         with HttpMocker() as http_mocker:
@@ -243,7 +270,7 @@ class TestCallRecordingsStream(RecordingsStreamTestCase):
     RECORDING_PROPERTIES = ["hs_call_recording_url", "hs_call_video_recording_url"]
 
     def test_given_audio_and_video_recordings_when_read_then_prefer_audio(self, files_directory: Path):
-        audio_url = "https://api.hubapi.com/calling/v1/recordings/201.mp3"
+        audio_url = "https://api-na1.hubspot.com/recording/auth/call/201.mp3"
         video_url = HUBSPOT_RECORDING_URL.format(id="202")
         with HttpMocker() as http_mocker:
             http_mocker.post(
@@ -252,7 +279,7 @@ class TestCallRecordingsStream(RecordingsStreamTestCase):
                     [
                         self.search_result(
                             "201",
-                            {"hs_call_recording_url": audio_url, "hs_call_video_recording_url": "https://api.hubapi.com/unused.mp4"},
+                            {"hs_call_recording_url": audio_url, "hs_call_video_recording_url": "https://api-na1.hubspot.com/unused.mp4"},
                         ),
                         self.search_result("202", {"hs_call_recording_url": None, "hs_call_video_recording_url": video_url}),
                     ]
