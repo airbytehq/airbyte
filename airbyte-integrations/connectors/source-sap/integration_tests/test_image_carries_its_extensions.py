@@ -27,6 +27,10 @@ INVALID_CONFIG = HERE / "invalid_config.json"
 INIT_FAILURE = "Failed to initialise the ERPL extensions"
 
 
+def _image_exists(image: str) -> bool:
+    return subprocess.run(["docker", "image", "inspect", image], capture_output=True).returncode == 0
+
+
 def _messages(image: str) -> list[dict]:
     result = subprocess.run(
         [
@@ -44,14 +48,19 @@ def _messages(image: str) -> list[dict]:
         text=True,
         timeout=600,
     )
-    return [json.loads(line) for line in result.stdout.splitlines() if line.strip().startswith("{")]
+    messages = [json.loads(line) for line in result.stdout.splitlines() if line.strip().startswith("{")]
+    assert messages, f"the image produced no Airbyte messages at all (exit {result.returncode}): {result.stderr[-500:]}"
+    return messages
 
 
 @pytest.mark.image_tests
 def test_check_fails_at_sap_not_at_the_extensions(connector_image_override: str | None) -> None:
     # The CDK's plugin owns --connector-image; default to what bin/build-image.sh tags.
-    messages = _messages(connector_image_override or "airbyte/source-sap:dev")
-    assert messages, "the image produced no Airbyte messages at all"
+    image = connector_image_override or "airbyte/source-sap:dev"
+    # Airbyte's CI never runs bin/build-image.sh, so the tag may not exist there.
+    if not _image_exists(image):
+        pytest.skip(f"{image} is not built locally; run bin/build-image.sh first")
+    messages = _messages(image)
 
     text = json.dumps(messages)
     assert INIT_FAILURE not in text, (
