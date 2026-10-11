@@ -12,6 +12,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import java.sql.SQLException
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetTime
@@ -36,6 +37,8 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
     private val MONEY_ITEM_TYPE = "MONEY"
     private val GEOMETRICS_TYPES =
         setOf("BOX", "CIRCLE", "LINE", "LSEG", "POINT", "POLYGON", "PATH")
+    // PostGIS-extension types; plugin-specific.
+    private val GIS_TYPES = setOf("GEOMETRY", "GEOGRAPHY")
     private val TEXT_TYPES =
         setOf(
             "VARCHAR",
@@ -84,6 +87,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
         } else if (
             TEXT_TYPES.contains(upperType) ||
                 GEOMETRICS_TYPES.contains(upperType) ||
+                GIS_TYPES.contains(upperType) ||
                 BIT_TYPES.contains(upperType)
         ) {
             registerText(field, registration)
@@ -457,7 +461,18 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
                 return DateTimeConverter.convertToDate(x)
             }
             "TIME" -> return resolveTime(field, x)
-            "INTERVAL" -> return convertInterval((x as PGInterval?)!!)
+            "INTERVAL" -> {
+                return when (x) {
+                    is PGInterval -> convertInterval(x)
+                    is Number -> convertInterval(microsecondsToPgInterval(x))
+                    else -> {
+                        log.warn {
+                            "Unexpected interval value type: ${x::class.java.name}. Falling back to string conversion."
+                        }
+                        x.toString()
+                    }
+                }
+            }
             else ->
                 throw IllegalArgumentException(
                     "Unknown field type  " + field.typeName().uppercase(),
@@ -487,6 +502,23 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
 
         formatTimeValues(resultInterval, pgInterval)
         return resultInterval.toString()
+    }
+
+    internal fun microsecondsToPgInterval(value: Number): PGInterval {
+        // Debezium may surface interval defaults as microseconds; integer division below discards
+        // any sub-second remainder.
+        val duration = Duration.ofSeconds(value.toLong() / 1_000_000)
+
+        // Duration is a fixed-length amount and cannot be losslessly decomposed into calendar-aware
+        // months/years, so those PGInterval fields are intentionally set to zero.
+        return PGInterval(
+            0,
+            0,
+            duration.toDays().toInt(),
+            duration.toHoursPart(),
+            duration.toMinutesPart(),
+            duration.toSecondsPart().toDouble(),
+        )
     }
 
     private fun registerMoney(

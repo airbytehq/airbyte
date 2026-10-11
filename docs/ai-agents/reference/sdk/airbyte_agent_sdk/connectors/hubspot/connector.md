@@ -10,6 +10,92 @@ Hubspot connector.
 Classes
 -------
 
+<a id="AssociationsQuery"></a>
+
+`AssociationsQuery(connector: HubspotConnector)`
+:   Query class for Associations entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, association_category: str, association_type_id: int, from_object_type: str, from_object_id: str, to_object_type: str, to_object_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.AssociationResult`
+    :   Create a labeled association between two CRM records using the v4 associations API.
+        Labeled associations carry an association type ID and category that describe the relationship
+        (e.g., "Primary Company", "Billing Contact"). This is idempotent — calling it again with the same
+        IDs and label has no effect. Use the association type ID and category from the HubSpot association
+        definitions for the relevant object pair. Common association type IDs include:
+        - Contact to Company: 279 (HUBSPOT_DEFINED) for default, 1 (HUBSPOT_DEFINED) for Primary
+        - Company to Contact: 280 (HUBSPOT_DEFINED) for default, 2 (HUBSPOT_DEFINED) for Primary
+        - Contact to Deal: 4 (HUBSPOT_DEFINED) for default
+        - Deal to Contact: 3 (HUBSPOT_DEFINED) for default
+        - Deal to Company: 341 (HUBSPOT_DEFINED) for default, 5 (HUBSPOT_DEFINED) for Primary
+        - Company to Deal: 342 (HUBSPOT_DEFINED) for default, 6 (HUBSPOT_DEFINED) for Primary
+        - Contact to Ticket: 15 (HUBSPOT_DEFINED) for default
+        - Ticket to Contact: 16 (HUBSPOT_DEFINED) for default
+        - Ticket to Company: 339 (HUBSPOT_DEFINED) for default, 26 (HUBSPOT_DEFINED) for Primary
+        - Company to Ticket: 340 (HUBSPOT_DEFINED) for default, 25 (HUBSPOT_DEFINED) for Primary
+        
+        
+                Args:
+                    association_category: Category of the association type. Use HUBSPOT_DEFINED for standard HubSpot association
+        types (e.g., primary company, default contact-to-deal) or USER_DEFINED for custom
+        association labels created in your HubSpot portal.
+        
+                    association_type_id: Numeric identifier for the association type. Common IDs include:
+        279 = Contact to Company (default), 280 = Company to Contact (default),
+        4 = Contact to Deal (default), 3 = Deal to Contact (default),
+        341 = Deal to Company (default), 342 = Company to Deal (default),
+        1 = Contact to Primary Company, 2 = Company to Primary Contact,
+        5 = Deal to Primary Company, 6 = Primary Company to Deal,
+        15 = Contact to Ticket (default), 16 = Ticket to Contact (default),
+        339 = Ticket to Company (default), 340 = Company to Ticket (default),
+        26 = Ticket to Primary Company, 25 = Primary Company to Ticket.
+        Use the association definitions API to discover additional type IDs.
+        
+                    from_object_type: Object type of the source record (e.g., contacts, companies, deals, tickets, or a custom object type ID)
+                    from_object_id: ID of the source record to associate from
+                    to_object_type: Object type of the target record (e.g., contacts, companies, deals, tickets, or a custom object type ID)
+                    to_object_id: ID of the target record to associate to
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    AssociationResult
+
+    `delete(self, from_object_type: str, from_object_id: str, to_object_type: str, to_object_id: str, **kwargs) ‑> dict[str, typing.Any]`
+    :   Delete all associations between two specific CRM records using the v4 associations API.
+        This removes every association (both default and labeled) between the two specified records.
+        This operation is irreversible — deleted associations must be recreated manually.
+        
+        
+                Args:
+                    from_object_type: Object type of the source record (e.g., contacts, companies, deals, tickets, or a custom object type ID)
+                    from_object_id: ID of the source record
+                    to_object_type: Object type of the target record (e.g., contacts, companies, deals, tickets, or a custom object type ID)
+                    to_object_id: ID of the target record
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    dict[str, Any]
+
+    `list(self, from_object_type: str, from_object_id: str, to_object_type: str, after: str | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[AssociationListResult, AssociationsListResultMeta]`
+    :   Retrieve all associations between a specific CRM record and a target object type using
+        the v4 associations API. Returns up to 500 associations per call. Use the `after` cursor
+        for pagination when there are more results. For example, retrieve all companies associated
+        with a contact, or all deals associated with a company.
+        
+        
+                Args:
+                    from_object_type: Object type of the source record (e.g., contacts, companies, deals, tickets, or a custom object type ID)
+                    from_object_id: ID of the source record to retrieve associations for
+                    to_object_type: Object type of the target records to retrieve (e.g., contacts, companies, deals, tickets, or a custom object type ID)
+                    after: Paging cursor token from a previous response for retrieving subsequent pages of results
+                    limit: Maximum number of results to return per page (default 500, max 500)
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    AssociationsListResult
+
 <a id="CallsQuery"></a>
 
 `CallsQuery(connector: HubspotConnector)`
@@ -43,8 +129,9 @@ Classes
         - updated_at: Timestamp when the call record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -55,6 +142,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against calls records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, properties: CallsCreateParamsProperties, associations: list[CallsCreateParamsAssociationsItem] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Call`
     :   Create a new call engagement in HubSpot CRM. Calls can be associated with contacts,
@@ -133,22 +235,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, filter_groups: list[CompaniesApiSearchParamsFiltergroupsItem] | None = None, properties: list[str] | None = None, limit: int | None = None, after: str | None = None, sorts: list[CompaniesApiSearchParamsSortsItem] | None = None, query: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Company], CompaniesApiSearchResultMeta]`
-    :   Search for companies by filtering on properties, searching through associations, and sorting results.
-        
-        Args:
-            filter_groups: Up to 6 groups of filters defining additional query criteria.
-            properties: A list of property names to include in the response.
-            limit: Maximum number of results to return
-            after: A paging cursor token for retrieving subsequent pages.
-            sorts: Sort criteria
-            query: The search query string, up to 3000 characters.
-            **kwargs: Additional parameters
-        
-        Returns:
-            CompaniesApiSearchResult
-
-    `context_store_search(self, query: CompaniesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[CompaniesSearchData]`
+    `context_store_search(self, query: CompaniesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Company], CompaniesSearchResultMeta]`
     :   Search companies records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -169,8 +256,9 @@ Classes
         - updated_at: Timestamp when the company record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -181,6 +269,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against companies records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, properties: CompaniesCreateParamsProperties, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Company`
     :   Create a new company in HubSpot CRM with the provided properties.
@@ -222,6 +325,21 @@ Classes
         Returns:
             CompaniesListResult
 
+    `search(self, filter_groups: list[CompaniesSearchParamsFiltergroupsItem] | None = None, properties: list[str] | None = None, limit: int | None = None, after: str | None = None, sorts: list[CompaniesSearchParamsSortsItem] | None = None, query: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Company], CompaniesSearchResultMeta]`
+    :   Search for companies by filtering on properties, searching through associations, and sorting results.
+        
+        Args:
+            filter_groups: Up to 6 groups of filters defining additional query criteria.
+            properties: A list of property names to include in the response.
+            limit: Maximum number of results to return
+            after: A paging cursor token for retrieving subsequent pages.
+            sorts: Sort criteria
+            query: The search query string, up to 3000 characters.
+            **kwargs: Additional parameters
+        
+        Returns:
+            CompaniesSearchResult
+
     `update(self, properties: CompaniesUpdateParamsProperties, company_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Company`
     :   Update an existing company's properties by ID. Only the specified properties will be updated.
         
@@ -242,22 +360,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, filter_groups: list[ContactsApiSearchParamsFiltergroupsItem] | None = None, properties: list[str] | None = None, limit: int | None = None, after: str | None = None, sorts: list[ContactsApiSearchParamsSortsItem] | None = None, query: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Contact], ContactsApiSearchResultMeta]`
-    :   Search for contacts by filtering on properties, searching through associations, and sorting results.
-        
-        Args:
-            filter_groups: Up to 6 groups of filters defining additional query criteria.
-            properties: A list of property names to include in the response.
-            limit: Maximum number of results to return
-            after: A paging cursor token for retrieving subsequent pages.
-            sorts: Sort criteria
-            query: The search query string, up to 3000 characters.
-            **kwargs: Additional parameters
-        
-        Returns:
-            ContactsApiSearchResult
-
-    `context_store_search(self, query: ContactsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[ContactsSearchData]`
+    `context_store_search(self, query: ContactsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Contact], ContactsSearchResultMeta]`
     :   Search contacts records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -280,8 +383,9 @@ Classes
         - updated_at: Timestamp indicating when the contact record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -292,6 +396,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against contacts records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, properties: ContactsCreateParamsProperties, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Contact`
     :   Create a new contact in HubSpot CRM with the provided properties.
@@ -333,6 +452,21 @@ Classes
         Returns:
             ContactsListResult
 
+    `search(self, filter_groups: list[ContactsSearchParamsFiltergroupsItem] | None = None, properties: list[str] | None = None, limit: int | None = None, after: str | None = None, sorts: list[ContactsSearchParamsSortsItem] | None = None, query: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Contact], ContactsSearchResultMeta]`
+    :   Search for contacts by filtering on properties, searching through associations, and sorting results.
+        
+        Args:
+            filter_groups: Up to 6 groups of filters defining additional query criteria.
+            properties: A list of property names to include in the response.
+            limit: Maximum number of results to return
+            after: A paging cursor token for retrieving subsequent pages.
+            sorts: Sort criteria
+            query: The search query string, up to 3000 characters.
+            **kwargs: Additional parameters
+        
+        Returns:
+            ContactsSearchResult
+
     `update(self, properties: ContactsUpdateParamsProperties, contact_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Contact`
     :   Update an existing contact's properties by ID. Only the specified properties will be updated.
         
@@ -353,22 +487,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, filter_groups: list[DealsApiSearchParamsFiltergroupsItem] | None = None, properties: list[str] | None = None, limit: int | None = None, after: str | None = None, sorts: list[DealsApiSearchParamsSortsItem] | None = None, query: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Deal], DealsApiSearchResultMeta]`
-    :   Search deals with filters and sorting
-        
-        Args:
-            filter_groups: Up to 6 groups of filters defining additional query criteria.
-            properties: A list of property names to include in the response.
-            limit: Maximum number of results to return
-            after: A paging cursor token for retrieving subsequent pages.
-            sorts: Sort criteria
-            query: The search query string, up to 3000 characters.
-            **kwargs: Additional parameters
-        
-        Returns:
-            DealsApiSearchResult
-
-    `context_store_search(self, query: DealsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[DealsSearchData]`
+    `context_store_search(self, query: DealsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Deal], DealsSearchResultMeta]`
     :   Search deals records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -394,8 +513,9 @@ Classes
         - updated_at: Timestamp when the deal record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -406,6 +526,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against deals records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, properties: DealsCreateParamsProperties, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Deal`
     :   Create a new deal in HubSpot CRM with the provided properties.
@@ -446,6 +581,21 @@ Classes
         
         Returns:
             DealsListResult
+
+    `search(self, filter_groups: list[DealsSearchParamsFiltergroupsItem] | None = None, properties: list[str] | None = None, limit: int | None = None, after: str | None = None, sorts: list[DealsSearchParamsSortsItem] | None = None, query: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Deal], DealsSearchResultMeta]`
+    :   Search deals with filters and sorting
+        
+        Args:
+            filter_groups: Up to 6 groups of filters defining additional query criteria.
+            properties: A list of property names to include in the response.
+            limit: Maximum number of results to return
+            after: A paging cursor token for retrieving subsequent pages.
+            sorts: Sort criteria
+            query: The search query string, up to 3000 characters.
+            **kwargs: Additional parameters
+        
+        Returns:
+            DealsSearchResult
 
     `update(self, properties: DealsUpdateParamsProperties, deal_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Deal`
     :   Update an existing deal's properties by ID. Only the specified properties will be updated.
@@ -490,8 +640,9 @@ Classes
         - updated_at: Timestamp when the email record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -502,6 +653,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against emails records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, properties: EmailsCreateParamsProperties, associations: list[EmailsCreateParamsAssociationsItem] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Email`
     :   Create a new email engagement in HubSpot CRM. Emails can be associated with contacts,
@@ -624,48 +790,148 @@ Classes
 
     ### Static methods
 
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Decorator that adds tool utilities like docstring augmentation and output limits.
+    `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
+    :   Decorator for new user-written connector tool functions.
         
-        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
-        runtime wrapping (sync/async branch + output-size check + framework
-        signal translation + optional internal retry loop), and adds
-        connector-specific docstring augmentation on top of it.
+        Use this when a tool needs a custom body or the framework lacks a
+        native strategy. Instead of baking the full entity/action reference
+        into the docstring, it instructs the agent to call this connector's
+        inspect and docs tools before executing. Tool failures raise
+        :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        (``framework="none"``, no auto-detection) — pass ``framework=...`` to
+        translate to a supported framework's signal instead.
+        
+        Decorate three functions per connector — execute, inspect and docs.
+        The role is inferred from each function's signature (extra parameters
+        are allowed); a signature matching more than one role, a generic
+        ``(*args, **kwargs)`` wrapper, or a callable whose signature cannot
+        be read must pass the role explicitly:
+        
+        - ``(entity, action, ...)`` -> ``"execute"``
+        - ``(section, ...)``        -> ``"read_skill_docs"``
+        - ``()``                    -> ``"inspect_connector"``
         
         Usage:
-            @mcp.tool()
-            @HubspotConnector.tool_utils
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            connector = HubspotConnector(...)
         
-            @mcp.tool()
-            @HubspotConnector.tool_utils(update_docstring=False, max_output_chars=None)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            @HubspotConnector.agent_tool()
+            async def execute(entity: str, action: str, params: dict | None = None):
+                return await connector.execute(entity=entity, action=action, params=params or \{\})
         
-            @mcp.tool()
-            @HubspotConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            @HubspotConnector.agent_tool()
+            async def inspect_connector():
+                return await connector.inspect_connector()
+        
+            @HubspotConnector.agent_tool()
+            async def read_skill_docs(section: str | None = None):
+                return await connector.read_skill_docs(section)
         
         Args:
-            update_docstring: When True, append connector capabilities to __doc__.
-            max_output_chars: Max serialized output size before raising. Use None to disable.
-            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
-                Defaults to None → auto-detect by attempting each framework's canonical
-                import in order. Explicit always wins.
+            role: ``"execute" | "inspect_connector" | "read_skill_docs"``.
+                None (default) infers the role from the decorated function's
+                signature; an explicit role validates the canonical
+                parameters are present (functions accepting ``**kwargs``, or
+                callables whose signature cannot be read, pass validation).
+            inspect_tool: Exact registered name of the sibling inspect tool,
+                woven into the execute docstring for tighter steering.
+                Defaults to generic phrasing.
+            docs_tool: Exact registered name of the sibling docs tool (see
+                inspect_tool).
+            max_output_chars: Max serialized output size before failing.
+                Defaults per role: execute -> DEFAULT_MAX_OUTPUT_CHARS, docs
+                tools -> None.
+            framework: Translation target for tool failures. Defaults to
+                ``"none"`` (raise AirbyteToolError); never auto-detects.
+            internal_retries: How many transient runtime failures (429/5xx,
+                network, timeout) to retry silently before surfacing.
+                Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs)
+                -> bool`` further restricting which retryable errors are safe
+                for this specific tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback ``(error,
+                args, kwargs) -> str | None`` invoked after internal retries
+                are exhausted or skipped. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
+    :   Deprecated. Add connector-specific documentation and runtime safeguards to one tool.
+        
+        Kept for backwards compatibility with existing single-tool
+        integrations; it is not removed and does not warn at runtime, but new
+        code should use `build_connector_tools` or `agent_tool` below.
+        
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
+        
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
+        
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
+        
+        When a new integration needs custom tool bodies or a framework
+        without native support, use `agent_tool` instead.
+        
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = HubspotConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @HubspotConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @HubspotConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @HubspotConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
+        
+        Args:
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp" | "none"`.
+                Defaults to `None`, which auto-detects each framework's canonical
+                import in order and falls back to `"none"` with a warning when no
+                supported framework is installed. Explicit always wins, and an
+                explicit framework whose package is missing raises `RuntimeError`.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
-            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
                 further restricting which retryable errors are safe for this specific
-                tool. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
             exhausted_runtime_failure_message: Optional callback
-                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
-                are exhausted OR were skipped via ``should_internal_retry`` returning
-                False. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -710,7 +976,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'api_search', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'search', 'delete', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -736,6 +1002,17 @@ Classes
                 params=\{"id": "cus_123"\}
             )
 
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :   Inspect this connector's hosted metadata/readiness and resolve its docs skill id.
+        
+        Call this before read_skill_docs in the normal hosted flow. For
+        local/offline connectors this returns a local-mode payload with a
+        warning instead of a hosted inspection.
+        
+        Example:
+            info = await connector.inspect_connector()
+            print(info["docs_skill_id"])
+
     `list_entities(self) ‑> list[dict[str, typing.Any]]`
     :   Get structured data about available entities, actions, and parameters.
         
@@ -749,6 +1026,18 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+    `read_skill_docs(self, section: str | None = None) ‑> str`
+    :   Read this connector's usage docs, rendered to text.
+        
+        Omit section for the outline and general guidance; pass an exact
+        section id from the outline for full details. For local/offline
+        connectors the full generated docs are returned and section is
+        ignored.
+        
+        Example:
+            outline = await connector.read_skill_docs()
+            details = await connector.read_skill_docs(section="entity:contacts")
 
 <a id="MeetingsQuery"></a>
 
@@ -784,8 +1073,9 @@ Classes
         - updated_at: Timestamp when the meeting record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -796,6 +1086,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against meetings records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, properties: MeetingsCreateParamsProperties, associations: list[MeetingsCreateParamsAssociationsItem] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Meeting`
     :   Create a new meeting engagement in HubSpot CRM. Meetings can be associated with contacts,
@@ -894,8 +1199,9 @@ Classes
         - updated_at: Timestamp when the note record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -906,6 +1212,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against notes records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, properties: NotesCreateParamsProperties, associations: list[NotesCreateParamsAssociationsItem] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Note`
     :   Create a new note in HubSpot CRM. Notes can be associated with contacts,
@@ -1078,8 +1399,9 @@ Classes
         - updated_at: Timestamp when the task record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1090,6 +1412,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against tasks records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, properties: TasksCreateParamsProperties, associations: list[TasksCreateParamsAssociationsItem] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Task`
     :   Create a new task in HubSpot CRM. Tasks can be associated with contacts,
@@ -1168,22 +1505,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, filter_groups: list[TicketsApiSearchParamsFiltergroupsItem] | None = None, properties: list[str] | None = None, limit: int | None = None, after: str | None = None, sorts: list[TicketsApiSearchParamsSortsItem] | None = None, query: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Ticket], TicketsApiSearchResultMeta]`
-    :   Search for tickets by filtering on properties, searching through associations, and sorting results.
-        
-        Args:
-            filter_groups: Up to 6 groups of filters defining additional query criteria.
-            properties: A list of property names to include in the response.
-            limit: Maximum number of results to return
-            after: A paging cursor token for retrieving subsequent pages.
-            sorts: Sort criteria
-            query: The search query string, up to 3000 characters.
-            **kwargs: Additional parameters
-        
-        Returns:
-            TicketsApiSearchResult
-
-    `context_store_search(self, query: TicketsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[TicketsSearchData]`
+    `context_store_search(self, query: TicketsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Ticket], TicketsSearchResultMeta]`
     :   Search tickets records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -1208,8 +1530,9 @@ Classes
         - updated_at: Timestamp when the ticket record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1220,6 +1543,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against tickets records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, properties: TicketsCreateParamsProperties, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Ticket`
     :   Create a new support ticket in HubSpot CRM with the provided properties.
@@ -1260,6 +1598,21 @@ Classes
         
         Returns:
             TicketsListResult
+
+    `search(self, filter_groups: list[TicketsSearchParamsFiltergroupsItem] | None = None, properties: list[str] | None = None, limit: int | None = None, after: str | None = None, sorts: list[TicketsSearchParamsSortsItem] | None = None, query: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Ticket], TicketsSearchResultMeta]`
+    :   Search for tickets by filtering on properties, searching through associations, and sorting results.
+        
+        Args:
+            filter_groups: Up to 6 groups of filters defining additional query criteria.
+            properties: A list of property names to include in the response.
+            limit: Maximum number of results to return
+            after: A paging cursor token for retrieving subsequent pages.
+            sorts: Sort criteria
+            query: The search query string, up to 3000 characters.
+            **kwargs: Additional parameters
+        
+        Returns:
+            TicketsSearchResult
 
     `update(self, properties: TicketsUpdateParamsProperties, ticket_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.hubspot.models.Ticket`
     :   Update an existing ticket's properties by ID. Only the specified properties will be updated.

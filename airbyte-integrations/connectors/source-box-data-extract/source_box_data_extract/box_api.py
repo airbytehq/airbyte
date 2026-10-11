@@ -119,7 +119,7 @@ def box_file_text_extract(client: BoxClient, file_id: str) -> str:
 
     # Handle cases where the extracted text needs generation
     if extracted_text_entry.status.state == "none":
-        _do_request(extracted_text_entry.info.url)  # Trigger text generation
+        _do_request(client, extracted_text_entry.info.url)  # Trigger text generation
 
     # Construct the download URL and sanitize filename
     url = extracted_text_entry.content.url_template.replace("{+asset_path}", "")

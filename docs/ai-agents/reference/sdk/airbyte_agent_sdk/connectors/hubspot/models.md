@@ -71,6 +71,7 @@ Classes
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[NotesSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[TasksSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[TicketsSearchData]
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -138,29 +139,6 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="CompaniesSearchResult"></a>
-
-`CompaniesSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `AirbyteSearchResult[ContactsSearchData](**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -177,53 +155,7 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="ContactsSearchResult"></a>
-
-`ContactsSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `AirbyteSearchResult[DealsSearchData](**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="DealsSearchResult"></a>
-
-`DealsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -411,15 +343,11 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-    ### Class variables
+<a id="AssociationLabeledParams"></a>
 
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="TicketsSearchResult"></a>
-
-`TicketsSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
+`AssociationLabeledParams(**data: Any)`
+:   Array of association type specifications. Each item defines a labeled association type
+    to apply between the two records. Multiple labels can be set in a single call.
     
     Create a new model by parsing and validating input data from keyword arguments.
     
@@ -430,9 +358,318 @@ Classes
 
     ### Ancestors (in MRO)
 
-    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
     * pydantic.main.BaseModel
-    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="AssociationListResult"></a>
+
+`AssociationListResult(**data: Any)`
+:   Paginated list of associations for a CRM record
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `paging: airbyte_agent_sdk.connectors.hubspot.models.AssociationListResultPaging | None`
+    :   The type of the None singleton.
+
+    `results: list[airbyte_agent_sdk.connectors.hubspot.models.AssociationListResultResultsItem] | None`
+    :   The type of the None singleton.
+
+<a id="AssociationListResultPaging"></a>
+
+`AssociationListResultPaging(**data: Any)`
+:   Pagination information for retrieving additional results
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `additional_properties: typing.Any | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `next: airbyte_agent_sdk.connectors.hubspot.models.AssociationListResultPagingNext | None`
+    :   Cursor for the next page of results
+
+<a id="AssociationListResultPagingNext"></a>
+
+`AssociationListResultPagingNext(**data: Any)`
+:   Cursor for the next page of results
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `after: str | None`
+    :   Paging cursor token for retrieving the next page
+
+    `link: str | None`
+    :   URL for retrieving the next page of results
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="AssociationListResultResultsItem"></a>
+
+`AssociationListResultResultsItem(**data: Any)`
+:   Nested schema for AssociationListResult.results_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `association_types: list[airbyte_agent_sdk.connectors.hubspot.models.AssociationListResultResultsItemAssociationtypesItem] | None`
+    :   List of association types linking the two records
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `to_object_id: typing.Any | None`
+    :   ID of the associated target record
+
+<a id="AssociationListResultResultsItemAssociationtypesItem"></a>
+
+`AssociationListResultResultsItemAssociationtypesItem(**data: Any)`
+:   Nested schema for AssociationListResultResultsItem.associationTypes_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `category: str | None`
+    :   Category of the association (HUBSPOT_DEFINED, USER_DEFINED, or INTEGRATOR_DEFINED)
+
+    `label: str | None`
+    :   Human-readable label for the association type (e.g., "Primary Company")
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `type_id: int | None`
+    :   Numeric identifier for the association type
+
+<a id="AssociationResult"></a>
+
+`AssociationResult(**data: Any)`
+:   Result of creating an association between two CRM records
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `completed_at: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `requested_at: str | None`
+    :   The type of the None singleton.
+
+    `results: list[airbyte_agent_sdk.connectors.hubspot.models.AssociationResultResultsItem] | None`
+    :   The type of the None singleton.
+
+    `started_at: str | None`
+    :   The type of the None singleton.
+
+    `status: str | None`
+    :   The type of the None singleton.
+
+<a id="AssociationResultResultsItem"></a>
+
+`AssociationResultResultsItem(**data: Any)`
+:   Nested schema for AssociationResult.results_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `association_spec: airbyte_agent_sdk.connectors.hubspot.models.AssociationResultResultsItemAssociationspec | None`
+    :   Details about the association type
+
+    `from_: airbyte_agent_sdk.connectors.hubspot.models.AssociationResultResultsItemFrom | None`
+    :   The source record of the association
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `to: airbyte_agent_sdk.connectors.hubspot.models.AssociationResultResultsItemTo | None`
+    :   The target record of the association
+
+<a id="AssociationResultResultsItemAssociationspec"></a>
+
+`AssociationResultResultsItemAssociationspec(**data: Any)`
+:   Details about the association type
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `association_category: str | None`
+    :   Category of the association (HUBSPOT_DEFINED or USER_DEFINED)
+
+    `association_type_id: int | None`
+    :   Numeric ID of the association type
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="AssociationResultResultsItemFrom"></a>
+
+`AssociationResultResultsItemFrom(**data: Any)`
+:   The source record of the association
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str | None`
+    :   ID of the source record
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="AssociationResultResultsItemTo"></a>
+
+`AssociationResultResultsItemTo(**data: Any)`
+:   The target record of the association
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str | None`
+    :   ID of the target record
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="AssociationsListResultMeta"></a>
+
+`AssociationsListResultMeta(**data: Any)`
+:   Metadata for associations.Action.LIST operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `next_cursor: str | None`
+    :   The type of the None singleton.
+
+    `next_link: str | None`
+    :   The type of the None singleton.
 
 <a id="CRMObject"></a>
 
@@ -971,36 +1208,6 @@ Classes
     `updated_at: str | None`
     :   Timestamp when the call record was last modified
 
-<a id="CompaniesApiSearchResultMeta"></a>
-
-`CompaniesApiSearchResultMeta(**data: Any)`
-:   Metadata for companies.Action.API_SEARCH operation
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `next_cursor: str | None`
-    :   The type of the None singleton.
-
-    `next_link: str | None`
-    :   The type of the None singleton.
-
-    `total: int | None`
-    :   The type of the None singleton.
-
 <a id="CompaniesList"></a>
 
 `CompaniesList(**data: Any)`
@@ -1114,6 +1321,36 @@ Classes
 
     `updated_at: str | None`
     :   Timestamp when the company record was last modified
+
+<a id="CompaniesSearchResultMeta"></a>
+
+`CompaniesSearchResultMeta(**data: Any)`
+:   Metadata for companies.Action.SEARCH operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `next_cursor: str | None`
+    :   The type of the None singleton.
+
+    `next_link: str | None`
+    :   The type of the None singleton.
+
+    `total: int | None`
+    :   The type of the None singleton.
 
 <a id="Company"></a>
 
@@ -1610,36 +1847,6 @@ Classes
     `website: str | None`
     :   Contact website URL
 
-<a id="ContactsApiSearchResultMeta"></a>
-
-`ContactsApiSearchResultMeta(**data: Any)`
-:   Metadata for contacts.Action.API_SEARCH operation
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `next_cursor: str | None`
-    :   The type of the None singleton.
-
-    `next_link: str | None`
-    :   The type of the None singleton.
-
-    `total: int | None`
-    :   The type of the None singleton.
-
 <a id="ContactsList"></a>
 
 `ContactsList(**data: Any)`
@@ -1759,6 +1966,36 @@ Classes
 
     `updated_at: str | None`
     :   Timestamp indicating when the contact record was last modified
+
+<a id="ContactsSearchResultMeta"></a>
+
+`ContactsSearchResultMeta(**data: Any)`
+:   Metadata for contacts.Action.SEARCH operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `next_cursor: str | None`
+    :   The type of the None singleton.
+
+    `next_link: str | None`
+    :   The type of the None singleton.
+
+    `total: int | None`
+    :   The type of the None singleton.
 
 <a id="Deal"></a>
 
@@ -1994,36 +2231,6 @@ Classes
     `pipeline: str | None`
     :   Deal pipeline ID
 
-<a id="DealsApiSearchResultMeta"></a>
-
-`DealsApiSearchResultMeta(**data: Any)`
-:   Metadata for deals.Action.API_SEARCH operation
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `next_cursor: str | None`
-    :   The type of the None singleton.
-
-    `next_link: str | None`
-    :   The type of the None singleton.
-
-    `total: int | None`
-    :   The type of the None singleton.
-
 <a id="DealsList"></a>
 
 `DealsList(**data: Any)`
@@ -2152,6 +2359,36 @@ Classes
 
     `updated_at: str | None`
     :   Timestamp when the deal record was last modified
+
+<a id="DealsSearchResultMeta"></a>
+
+`DealsSearchResultMeta(**data: Any)`
+:   Metadata for deals.Action.SEARCH operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `next_cursor: str | None`
+    :   The type of the None singleton.
+
+    `next_link: str | None`
+    :   The type of the None singleton.
+
+    `total: int | None`
+    :   The type of the None singleton.
 
 <a id="Email"></a>
 
@@ -2680,25 +2917,71 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[AssociationListResult, AssociationsListResultMeta]
     * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[CRMObject], ObjectsListResultMeta]
     * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Call], CallsListResultMeta]
-    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Company], CompaniesApiSearchResultMeta]
     * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Company], CompaniesListResultMeta]
-    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Contact], ContactsApiSearchResultMeta]
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Company], CompaniesSearchResultMeta]
     * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Contact], ContactsListResultMeta]
-    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Deal], DealsApiSearchResultMeta]
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Contact], ContactsSearchResultMeta]
     * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Deal], DealsListResultMeta]
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Deal], DealsSearchResultMeta]
     * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Email], EmailsListResultMeta]
     * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Meeting], MeetingsListResultMeta]
     * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Note], NotesListResultMeta]
     * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Task], TasksListResultMeta]
-    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Ticket], TicketsApiSearchResultMeta]
     * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Ticket], TicketsListResultMeta]
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta[list[Ticket], TicketsSearchResultMeta]
 
     ### Class variables
 
     `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
+
+`HubspotExecuteResultWithMeta[AssociationListResult, AssociationsListResultMeta](**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="AssociationsListResult"></a>
+
+`AssociationsListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
 
 `HubspotExecuteResultWithMeta[list[CRMObject], ObjectsListResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
@@ -2790,51 +3073,6 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`HubspotExecuteResultWithMeta[list[Company], CompaniesApiSearchResultMeta](**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="CompaniesApiSearchResult"></a>
-
-`CompaniesApiSearchResult(**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `HubspotExecuteResultWithMeta[list[Company], CompaniesListResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2880,7 +3118,9 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`HubspotExecuteResultWithMeta[list[Contact], ContactsApiSearchResultMeta](**data: Any)`
+<a id="CompaniesSearchResult"></a>
+
+`CompaniesSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -2904,9 +3144,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-<a id="ContactsApiSearchResult"></a>
-
-`ContactsApiSearchResult(**data: Any)`
+`HubspotExecuteResultWithMeta[list[Company], CompaniesSearchResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -2970,7 +3208,9 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`HubspotExecuteResultWithMeta[list[Deal], DealsApiSearchResultMeta](**data: Any)`
+<a id="ContactsSearchResult"></a>
+
+`ContactsSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -2994,9 +3234,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-<a id="DealsApiSearchResult"></a>
-
-`DealsApiSearchResult(**data: Any)`
+`HubspotExecuteResultWithMeta[list[Contact], ContactsSearchResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -3042,6 +3280,51 @@ Classes
 <a id="DealsListResult"></a>
 
 `DealsListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="DealsSearchResult"></a>
+
+`DealsSearchResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+`HubspotExecuteResultWithMeta[list[Deal], DealsSearchResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -3240,51 +3523,6 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`HubspotExecuteResultWithMeta[list[Ticket], TicketsApiSearchResultMeta](**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="TicketsApiSearchResult"></a>
-
-`TicketsApiSearchResult(**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `HubspotExecuteResultWithMeta[list[Ticket], TicketsListResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3312,6 +3550,51 @@ Classes
 <a id="TicketsListResult"></a>
 
 `TicketsListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="TicketsSearchResult"></a>
+
+`TicketsSearchResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+`HubspotExecuteResultWithMeta[list[Ticket], TicketsSearchResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -5371,36 +5654,6 @@ Classes
     `subject: str | None`
     :   Ticket subject line
 
-<a id="TicketsApiSearchResultMeta"></a>
-
-`TicketsApiSearchResultMeta(**data: Any)`
-:   Metadata for tickets.Action.API_SEARCH operation
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `next_cursor: str | None`
-    :   The type of the None singleton.
-
-    `next_link: str | None`
-    :   The type of the None singleton.
-
-    `total: int | None`
-    :   The type of the None singleton.
-
 <a id="TicketsList"></a>
 
 `TicketsList(**data: Any)`
@@ -5526,3 +5779,33 @@ Classes
 
     `updated_at: str | None`
     :   Timestamp when the ticket record was last modified
+
+<a id="TicketsSearchResultMeta"></a>
+
+`TicketsSearchResultMeta(**data: Any)`
+:   Metadata for tickets.Action.SEARCH operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `next_cursor: str | None`
+    :   The type of the None singleton.
+
+    `next_link: str | None`
+    :   The type of the None singleton.
+
+    `total: int | None`
+    :   The type of the None singleton.

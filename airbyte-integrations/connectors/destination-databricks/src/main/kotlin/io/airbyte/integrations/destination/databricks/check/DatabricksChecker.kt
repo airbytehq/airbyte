@@ -18,11 +18,14 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.databricks.client.DatabricksAirbyteClient
 import io.airbyte.integrations.destination.databricks.spec.DatabricksConfiguration
 import io.airbyte.integrations.destination.databricks.write.load.DatabricksInsertBuffer
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.*
 import kotlinx.coroutines.runBlocking
+
+private val log = KotlinLogging.logger {}
 
 /**
  * Validates Databricks connectivity by running a full end-to-end mini-sync: namespace creation,
@@ -75,7 +78,22 @@ class DatabricksChecker(
     }
 
     override fun cleanup() {
-        checkTableName?.let { runBlocking { databricksClient.dropTable(it) } }
+        val tableName = checkTableName ?: return
+        val qualifiedPrefix = "`${config.database}`.`${tableName.namespace}`"
+        val qualifiedTableName = "$qualifiedPrefix.`${tableName.name}`"
+        val qualifiedStagingVolumeName = "$qualifiedPrefix.`${tableName.name}_staging`"
+
+        try {
+            databricksClient.dropStagingVolume(tableName)
+        } catch (e: Exception) {
+            log.warn(e) { "Failed to drop staging volume $qualifiedStagingVolumeName" }
+        }
+
+        try {
+            runBlocking { databricksClient.dropTable(tableName) }
+        } catch (e: Exception) {
+            log.warn(e) { "Failed to drop check table $qualifiedTableName" }
+        }
     }
 
     companion object {

@@ -17,7 +17,7 @@ def test_streams(config):
     source = get_source(config=config)
     migrated_config = source.configure(config=config, temp_dir="/not/a/real/path")
     streams = source.streams(migrated_config)
-    assert len(streams) == 23
+    assert len(streams) == 24
     assert all([isinstance(stream, DefaultStream) for stream in streams])
 
 
