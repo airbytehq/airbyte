@@ -63,8 +63,9 @@ transformation or the stream will emit invalid metric types.
 ## 4. Rate Limit Detection via Response Body Code
 
 TikTok's API does not use standard HTTP 429 status codes for rate limiting. Instead, it returns HTTP
-200 with a `code` field in the JSON response body set to `40100`. The error handler uses a predicate
-(`response.get('code') == 40100`) to detect rate limiting, and a separate predicate
+200 with a `code` field in the JSON response body set to `40100` or `40016` (app-level limits) or `40133`
+(advertiser-level limit). The error handler uses a predicate
+(`response.get('code') in [40016, 40100, 40133]`) to detect rate limiting, and a separate predicate
 (`response.get('code') == 50000`) retries transient server-side errors, while
 (`response.get('code') != 0`) detects general API errors.
 
@@ -75,7 +76,18 @@ rate limits are per-access-token.
 
 ---
 
-## 5. Smart+ Ads Missing modify_time Filter
+## 5. Daily Report Window Splitting (40067)
+
+When TikTok rejects a daily report request as too large (HTTP 200 with body `code` 40067), the connector
+re-reads that advertiser's date range in halves, down to one day, using the CDK's
+`request_window_splitting`; a single day that is still rejected fails the sync with a transient error.
+Keep the 40067 filter predicate-only, give any retriever that uses `report_daily_error_handler` the shared
+`report_daily_request_window_splitting` block (the manifest fails to load otherwise), and keep it off the
+hourly retrievers.
+
+---
+
+## 6. Smart+ Ads Missing modify_time Filter
 
 The `ads` stream includes a `RecordFilter` that drops records where `modify_time` is `None`. This is
 specifically to handle TikTok's Smart+ Ad records, which can be returned by the API without a
@@ -88,7 +100,7 @@ trade-off to maintain incremental sync reliability.
 
 ---
 
-## 6. Sandbox Account Rate Limit and Credential Restriction
+## 7. Sandbox Account Rate Limit and Credential Restriction
 
 The TikTok Sandbox account has a rate limit of 10 requests per second. If you run CATs in CI while simultaneously testing locally with the same credentials, you will exceed this limit and the credentials may be temporarily restricted — preventing **all** requests from succeeding. The restriction appears to last a couple of hours, and there is evidence that continued request attempts during the restriction period extend the lockout duration. There is no official TikTok documentation on this restriction behavior or its exact duration.
 

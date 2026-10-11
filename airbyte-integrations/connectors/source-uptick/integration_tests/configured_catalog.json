@@ -479,6 +479,186 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
       "cursor_field": ["updated"]
+    },
+    {
+      "stream": {
+        "name": "appointments",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated"]
+    },
+    {
+      "stream": {
+        "name": "billingcontracts",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated"]
+    },
+    {
+      "stream": {
+        "name": "billingcontractlineitems",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated"]
+    },
+    {
+      "stream": {
+        "name": "defectquotelineitems",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated"]
+    },
+    {
+      "stream": {
+        "name": "servicequotefixedlineitems",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated"]
+    },
+    {
+      "stream": {
+        "name": "servicequotedoandchargelineitems",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated"]
+    },
+    {
+      "stream": {
+        "name": "servicequoteproductlineitems",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated"]
+    },
+    {
+      "stream": {
+        "name": "remarkevents",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated"]
+    },
+    {
+      "stream": {
+        "name": "servicetasks",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated"]
+    },
+    {
+      "stream": {
+        "name": "routineservices",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated"]
+    },
+    {
+      "stream": {
+        "name": "routineservicelevels",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated"]
+    },
+    {
+      "stream": {
+        "name": "routineservicetypes",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated"]
+    },
+    {
+      "stream": {
+        "name": "routineserviceleveltypes",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated"]
+    },
+    {
+      "stream": {
+        "name": "subtasks",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated"]
+    },
+    {
+      "stream": {
+        "name": "task_profitability",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated"]
     }
   ]
 }

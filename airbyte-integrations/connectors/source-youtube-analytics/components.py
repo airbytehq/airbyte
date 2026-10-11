@@ -3,8 +3,10 @@
 #
 import csv
 import io
+from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Callable, Generator, Mapping, MutableMapping, Optional, Union
+from datetime import datetime
+from typing import Any, Callable, Generator, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 
@@ -147,21 +149,126 @@ class JobRequester(ContentOwnerRequester):
 
 
 class ReportsStateMigration(StateMigration):
+    """Rebuilds pre-1.1.0 (Python connector) state, ``{"date": 20251107}``, into the low-code shape.
+
+    The child keeps its `date` cursor: it is a real column in the downloaded CSV and part of
+    every child stream's primary key. The parent is seeded with the same value under the same
+    key so that `ReportsCreateTimeStateMigration` can re-key it like any other legacy state.
+    """
+
+    _CURSOR_FIELD = "date"
+
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return stream_state.get("state") or stream_state.get("date")
+        return bool(stream_state) and self._CURSOR_FIELD in stream_state and "state" not in stream_state
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        if stream_state.get("date"):
-            # old format state before migration to low code
-            cursor_value = str(stream_state["date"])
-            stream_state = {
-                "state": {"date": cursor_value},
-                "parent_state": {"report": {"state": {"date": cursor_value}, "lookback_window": 0}},
-            }
-            return stream_state
+        cursor_value = str(stream_state[self._CURSOR_FIELD])
+        return {
+            "state": {self._CURSOR_FIELD: cursor_value},
+            "parent_state": {"report": {"state": {self._CURSOR_FIELD: cursor_value}}},
+        }
 
-        cursor_value = stream_state["state"]
-        cursor_value["date"] = str(cursor_value["date"])
-        stream_state["parent_state"]["report"]["state"] = cursor_value
-        stream_state["parent_state"]["report"]["lookback_window"] = 0
-        return stream_state
+
+class ReportsCreateTimeStateMigration(StateMigration):
+    """Re-keys the `report` parent cursor from `date` onto `createTime`.
+
+    Two low-code saved-state shapes exist in the wild (pre-low-code state is rebuilt into the
+    first by `ReportsStateMigration` beforehand):
+
+    1. 1.1.0 through 1.3.4:
+       ``{"state": {"date": "20251107"},
+          "parent_state": {"report": {"state": {"date": "20251107"}, ...}}}``
+       The parent's `date` holds a `%Y%m%d` data day copied off the child. The parent's declared
+       cursor field did not exist on a report listing, so it never advanced on its own and many
+       connections have no parent cursor at all.
+    2. 1.3.5, if it reached any connection: as (1), but the parent's `date` holds a `createTime`
+       timestamp under the old key name.
+
+    Both convert to `parent_state.report.state.createTime`. The conversion can only move the
+    cursor backwards: for any report file `createTime > endTime > startTime >= midnight of the
+    data day`, so every legacy value is at or before the true `createTime`. A migrated connection
+    re-lists at most a day or two of report files once, and can never skip one -- which is why
+    re-keying the cursor is not a breaking change.
+
+    The child streams' own `state.date` is deliberately left alone: it is a real column in the
+    downloaded CSV and part of every child stream's primary key.
+    """
+
+    _LEGACY_CURSOR_FIELD = "date"
+    _CURSOR_FIELD = "createTime"
+    # `report.incremental_sync.datetime_format`.
+    _CURSOR_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+    _INPUT_FORMATS = ("%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ", "%Y%m%d")
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state or "state" not in stream_state:
+            return False
+        report_state = stream_state.get("parent_state", {}).get("report", {})
+        if any(self._LEGACY_CURSOR_FIELD in cursor for cursor in self._cursor_dicts(report_state)):
+            return True
+        # Nothing to re-key, but the parent has no cursor of its own to carry forward either.
+        # Seed it from the child so upgrading does not trigger a full re-read of everything
+        # YouTube still retains.
+        return not self._has_cursor(report_state) and bool(stream_state.get("state", {}).get(self._LEGACY_CURSOR_FIELD))
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        migrated = deepcopy(dict(stream_state))
+        child_state = migrated.get("state")
+        if isinstance(child_state, dict) and self._LEGACY_CURSOR_FIELD in child_state:
+            child_state[self._LEGACY_CURSOR_FIELD] = str(child_state[self._LEGACY_CURSOR_FIELD])
+
+        report_state = migrated.setdefault("parent_state", {}).setdefault("report", {})
+        for cursor in self._cursor_dicts(report_state):
+            legacy_value = cursor.pop(self._LEGACY_CURSOR_FIELD, None)
+            converted = self._to_cursor_value(legacy_value) if legacy_value is not None else None
+            if converted:
+                cursor[self._CURSOR_FIELD] = converted
+
+        if not self._has_cursor(report_state) and isinstance(child_state, dict) and child_state.get(self._LEGACY_CURSOR_FIELD):
+            seed = self._to_cursor_value(child_state[self._LEGACY_CURSOR_FIELD])
+            if seed:
+                report_state["state"] = {self._CURSOR_FIELD: seed}
+        if report_state.get("state") == {}:
+            del report_state["state"]
+        if not report_state:
+            del migrated["parent_state"]["report"]
+            if not migrated["parent_state"]:
+                del migrated["parent_state"]
+        return migrated
+
+    @staticmethod
+    def _cursor_dicts(report_state: Mapping[str, Any]) -> List[MutableMapping[str, Any]]:
+        """Every dict in the parent's state that holds a cursor value.
+
+        `ConcurrentPerPartitionCursor` keeps a global cursor under `state` and a per-partition
+        one under each entry of `states`. Both have to be re-keyed, or the stream reads a mix of
+        migrated and unmigrated partitions.
+        """
+        cursors = []
+        if isinstance(report_state.get("state"), dict):
+            cursors.append(report_state["state"])
+        for partition_state in report_state.get("states") or []:
+            if isinstance(partition_state.get("cursor"), dict):
+                cursors.append(partition_state["cursor"])
+        return cursors
+
+    @classmethod
+    def _has_cursor(cls, report_state: Mapping[str, Any]) -> bool:
+        return any(cursor.get(cls._CURSOR_FIELD) for cursor in cls._cursor_dicts(report_state))
+
+    @classmethod
+    def _to_cursor_value(cls, value: Any) -> Optional[str]:
+        """Normalise a legacy cursor value to the cursor's `datetime_format`.
+
+        Returns None if it cannot be parsed, in which case the caller omits the cursor and the
+        stream falls back to `start_datetime`: one wasteful full re-read, rather than a hard
+        failure or an unparseable value reaching the cursor. `integration_tests/
+        abnormal_state.json` carries `{"date": 99999999}`, which is exactly such a value.
+        """
+        text = str(value)
+        for input_format in cls._INPUT_FORMATS:
+            try:
+                return datetime.strptime(text, input_format).strftime(cls._CURSOR_FORMAT)
+            except ValueError:
+                continue
+        return None

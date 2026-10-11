@@ -79,7 +79,9 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 | [Keys](https://www.twilio.com/docs/usage/api/keys#read-a-key-resource) | Full refresh |
 | [Message Media](https://www.twilio.com/docs/sms/api/media-resource#read-multiple-media-resources) | Full refresh, incremental |
 | [Messages](https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources) | Full refresh, incremental |
+| [Messaging Pricing Countries](https://www.twilio.com/docs/messaging/api/pricing#fetch-a-countries-resource) | Full refresh |
 | [Outgoing Caller IDs](https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource) | Full refresh |
+| [Phone Number Pricing Countries](https://www.twilio.com/docs/phone-numbers/pricing#pricing-phone-numbers-country-instance-resource) | Full refresh |
 | [Queues](https://www.twilio.com/docs/voice/api/queue-resource#read-multiple-queue-resources) | Full refresh |
 | [Recordings](https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources) | Full refresh, incremental |
 | [Roles](https://www.twilio.com/docs/conversations/api/role-resource#read-multiple-role-resources) | Full refresh |
@@ -92,9 +94,11 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 | [User Conversations](https://www.twilio.com/docs/conversations/api/user-conversation-resource#list-all-of-a-users-conversations) | Full refresh |
 | [Users](https://www.twilio.com/docs/conversations/api/user-resource) | Full refresh |
 | [Verify Services](https://www.twilio.com/docs/verify/api/service#maincontent) | Full refresh |
-| [Voice Pricing Countries](https://www.twilio.com/docs/voice/pricing) | Full refresh |
-| [Messaging Pricing Countries](https://www.twilio.com/docs/messaging/api/pricing) | Full refresh |
-| [Phone Number Pricing Countries](https://www.twilio.com/docs/phone-numbers/pricing) | Full refresh |
+| [Voice Pricing Countries](https://www.twilio.com/docs/voice/pricing#pricing-voice-country-instance-resource) | Full refresh |
+
+### Pricing streams
+
+The `voice_pricing_countries`, `messaging_pricing_countries`, and `phone_number_pricing_countries` streams return per-country price lists from Twilio's Pricing API. Each stream first pages through the list of supported countries, then makes one additional request per country to fetch that country's prices, so a sync of these streams makes more API requests than there are supported countries. Prices are specific to the account you authenticate with: `base_price` is Twilio's list price and `current_price` includes any volume or custom discounts on your account. Each record is keyed by `iso_country`.
 
 ## Upgrading to 1.0.0
 
@@ -122,7 +126,7 @@ By default, the connector syncs with 3 concurrent threads. Increase **Number of 
 
 ### Alerts pagination limit
 
-The [Alerts API](https://www.twilio.com/docs/usage/monitor-alert) limits each request to 10,000 Alert resources. If the `alerts` stream fails because a time window contains more than 10,000 Alert records, reduce **Slice Step Duration** to sync fewer Alert records per request.
+The [Alerts API](https://www.twilio.com/docs/usage/monitor-alert) limits each request to 10,000 Alert resources. When a time window contains more than 10,000 Alert records, the connector splits the window in half and reads each half, repeating up to 10 times. Twilio rejects a window only after the connector has read its first 10,000 records, so each split re-emits up to 10,000 records. Sync modes that deduplicate by primary key (`sid`) remove these duplicates; Append and Overwrite sync modes keep them. Because splitting stops after 10 halvings, the smallest window depends on **Slice Step Duration**: about 43 minutes with the default **1 Month** and about 84 seconds with **1 Day**. If the `alerts` stream still fails after splitting, decrease **Slice Step Duration**. If it is already **1 Day**, deselect the `alerts` stream.
 
 ### Tuning the slice step duration
 
@@ -130,7 +134,7 @@ Incremental streams page the Twilio API in fixed-size time windows between the r
 
 | Option     | ISO 8601 value | When to use                                                                                                                                                                |
 | :--------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1 Day**  | `P1D`          | Very high volume accounts where monthly or weekly windows trigger Twilio timeouts or exceed the result size Twilio returns.                                                |
+| **1 Day**  | `P1D`          | Very high volume accounts where monthly or weekly windows trigger Twilio timeouts, or where `alerts` can't split a window within 10 splits.                                |
 | **1 Week** | `P1W`          | High volume accounts that still time out with monthly windows.                                                                                                             |
 | **1 Month**| `P1M`          | Default. Works well for most accounts and minimizes request count compared to shorter windows.                                                                             |
 | **1 Year** | `P1Y`          | Low volume accounts or short backfills where you want to minimize the number of slices per stream.                                                                         |
@@ -143,7 +147,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 ## Reference
 
-This connector uses REST APIs, including the `https://api.twilio.com/2010-04-01`, `https://monitor.twilio.com/v1`, `https://conversations.twilio.com/v1`, `https://studio.twilio.com/v1`, `https://trunking.twilio.com/v1`, and `https://verify.twilio.com/v2` API endpoints.
+This connector uses REST APIs, including the `https://api.twilio.com/2010-04-01`, `https://monitor.twilio.com/v1`, `https://conversations.twilio.com/v1`, `https://studio.twilio.com/v1`, `https://trunking.twilio.com/v1`, `https://verify.twilio.com/v2`, `https://pricing.twilio.com/v1`, and `https://pricing.twilio.com/v2` API endpoints.
 
 For programmatic configuration, use these parameter names:
 
@@ -163,7 +167,13 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.1.0-rc.1 | 2026-08-11 | [84203](https://github.com/airbytehq/airbyte/pull/84203) | Add voice, messaging, and phone number pricing country streams |
+| 1.1.5 | 2026-10-06 | [88048](https://github.com/airbytehq/airbyte/pull/88048) | Update dependencies |
+| 1.1.4 | 2026-10-05 | [87049](https://github.com/airbytehq/airbyte/pull/87049) | Automatically split Alerts time windows that exceed Twilio's 10,000-result limit instead of failing the sync |
+| 1.1.3 | 2026-09-29 | [87367](https://github.com/airbytehq/airbyte/pull/87367) | Update dependencies |
+| 1.1.2 | 2026-09-22 | [86857](https://github.com/airbytehq/airbyte/pull/86857) | Update dependencies |
+| 1.1.1 | 2026-09-15 | [84774](https://github.com/airbytehq/airbyte/pull/84774) | Update dependencies |
+| 1.1.0 | 2026-09-08 | [85748](https://github.com/airbytehq/airbyte/pull/85748) | Promoting release candidate 1.1.0-rc.1 to a main version. |
+| 1.1.0-rc.1 | 2026-08-13 | [84203](https://github.com/airbytehq/airbyte/pull/84203) | Add voice, messaging, and phone number pricing country streams |
 | 1.0.13 | 2026-08-11 | [84128](https://github.com/airbytehq/airbyte/pull/84128) | Update dependencies |
 | 1.0.12 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
 | 1.0.11 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 1.0.9 — 1.0.10 is built on SDM 7.23.7, which breaks bundled custom components |
@@ -182,11 +192,11 @@ For programmatic configuration, use these parameter names:
 | 0.17.10 | 2026-05-12 | [77988](https://github.com/airbytehq/airbyte/pull/77988) | Improve the Twilio Alerts pagination-limit error message. |
 | 0.17.9 | 2026-04-30 | [77593](https://github.com/airbytehq/airbyte/pull/77593) | Fix usage_records start_date schema format from date-time to date to prevent null primary key in Iceberg destination |
 | 0.17.8 | 2026-04-28 | [77453](https://github.com/airbytehq/airbyte/pull/77453) | Update dependencies |
-| 0.17.7 | 2026-04-21 | [72494](https://github.com/airbytehq/airbyte/pull/72494) | Add configurable slice step duration (default: 1 month) |
+| 0.17.7 | 2026-04-22 | [72494](https://github.com/airbytehq/airbyte/pull/72494) | Add configurable slice step duration (default: 1 month) |
 | 0.17.6 | 2026-04-21 | [76801](https://github.com/airbytehq/airbyte/pull/76801) | Update dependencies |
 | 0.17.5 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 0.17.4 | 2026-01-22 | [72260](https://github.com/airbytehq/airbyte/pull/72260) | Update CDK version from 7.0.1 to 7.6.5 |
-| 0.17.3 | 2025-11-14 | [68680](https://github.com/airbytehq/airbyte/pull/68680) | Handle 404 errors gracefully for date ranges with no data |
+| 0.17.3 | 2025-11-06 | [68680](https://github.com/airbytehq/airbyte/pull/68680) | Handle 404 errors gracefully for date ranges with no data |
 | 0.17.2 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
 | 0.17.1 | 2025-09-15 | [66090](https://github.com/airbytehq/airbyte/pull/66090) | Update to CDK v7 |
 | 0.17.0 | 2025-09-05 | [65955](https://github.com/airbytehq/airbyte/pull/65955) | Promoting release candidate 0.17.0-rc.2 to a main version. |
@@ -199,54 +209,54 @@ For programmatic configuration, use these parameter names:
 | 0.14.0 | 2025-08-18 | [65066](https://github.com/airbytehq/airbyte/pull/65066) | Promoting release candidate 0.14.0-rc.1 to a main version. |
 | 0.14.0-rc.1 | 2025-08-14 | [64880](https://github.com/airbytehq/airbyte/pull/64880) | Migrated all full refresh streams that have no parent streams |
 | 0.13.0 | 2025-08-14 | [64929](https://github.com/airbytehq/airbyte/pull/64929) | Promoting release candidate 0.13.0-rc.1 to a main version. |
-| 0.13.0-rc.1 | 2025-08-11 | [64877](https://github.com/airbytehq/airbyte/pull/64877) | Update CDK to v6 |
-| 0.12.1 | 2025-06-15 | [56258](https://github.com/airbytehq/airbyte/pull/56258) | Update dependencies |
-| 0.12.0 | 2025-05-13 | [49097](https://github.com/airbytehq/airbyte/pull/49097) | Fix per partition states for nested streams |
-| 0.11.17 | 2025-02-22 | [54486](https://github.com/airbytehq/airbyte/pull/54486) | Update dependencies |
-| 0.11.16 | 2025-01-22 | [52089](https://github.com/airbytehq/airbyte/pull/52089) | Fix typo to fix pagination for `TwilioStream` class |
-| 0.11.15 | 2025-01-18 | [51966](https://github.com/airbytehq/airbyte/pull/51966) | Update dependencies |
-| 0.11.14 | 2024-12-28 | [50803](https://github.com/airbytehq/airbyte/pull/50803) | Update dependencies |
+| 0.13.0-rc.1 | 2025-08-12 | [64877](https://github.com/airbytehq/airbyte/pull/64877) | Update CDK to v6 |
+| 0.12.1 | 2025-06-16 | [56258](https://github.com/airbytehq/airbyte/pull/56258) | Update dependencies |
+| 0.12.0 | 2025-06-02 | [49097](https://github.com/airbytehq/airbyte/pull/49097) | Fix per partition states for nested streams |
+| 0.11.17 | 2025-02-23 | [54486](https://github.com/airbytehq/airbyte/pull/54486) | Update dependencies |
+| 0.11.16 | 2025-01-24 | [52089](https://github.com/airbytehq/airbyte/pull/52089) | Fix typo to fix pagination for `TwilioStream` class |
+| 0.11.15 | 2025-01-19 | [51966](https://github.com/airbytehq/airbyte/pull/51966) | Update dependencies |
+| 0.11.14 | 2024-12-29 | [50803](https://github.com/airbytehq/airbyte/pull/50803) | Update dependencies |
 | 0.11.13 | 2024-11-25 | [43769](https://github.com/airbytehq/airbyte/pull/43769) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
-| 0.11.12 | 2024-08-03 | [43132](https://github.com/airbytehq/airbyte/pull/43132) | Update dependencies |
-| 0.11.11 | 2024-07-27 | [42593](https://github.com/airbytehq/airbyte/pull/42593) | Update dependencies |
-| 0.11.10 | 2024-07-20 | [42177](https://github.com/airbytehq/airbyte/pull/42177) | Update dependencies |
-| 0.11.9 | 2024-07-13 | [41845](https://github.com/airbytehq/airbyte/pull/41845) | Update dependencies |
-| 0.11.8 | 2024-07-10 | [41478](https://github.com/airbytehq/airbyte/pull/41478) | Update dependencies |
-| 0.11.7 | 2024-06-26 | [40527](https://github.com/airbytehq/airbyte/pull/40527) | Update dependencies |
-| 0.11.6 | 2024-06-22 | [40030](https://github.com/airbytehq/airbyte/pull/40030) | Update dependencies |
-| 0.11.5 | 2024-06-06 | [39252](https://github.com/airbytehq/airbyte/pull/39252) | [autopull] Upgrade base image to v1.2.2 |
+| 0.11.12 | 2024-08-04 | [43132](https://github.com/airbytehq/airbyte/pull/43132) | Update dependencies |
+| 0.11.11 | 2024-07-28 | [42593](https://github.com/airbytehq/airbyte/pull/42593) | Update dependencies |
+| 0.11.10 | 2024-07-21 | [42177](https://github.com/airbytehq/airbyte/pull/42177) | Update dependencies |
+| 0.11.9 | 2024-07-14 | [41845](https://github.com/airbytehq/airbyte/pull/41845) | Update dependencies |
+| 0.11.8 | 2024-07-11 | [41478](https://github.com/airbytehq/airbyte/pull/41478) | Update dependencies |
+| 0.11.7 | 2024-06-27 | [40527](https://github.com/airbytehq/airbyte/pull/40527) | Update dependencies |
+| 0.11.6 | 2024-06-23 | [40030](https://github.com/airbytehq/airbyte/pull/40030) | Update dependencies |
+| 0.11.5 | 2024-06-11 | [39252](https://github.com/airbytehq/airbyte/pull/39252) | [autopull] Upgrade base image to v1.2.2 |
 | 0.11.4 | 2024-05-22 | [38564](https://github.com/airbytehq/airbyte/pull/38564) | Migrate authenticator to `requests_native_auth` package |
 | 0.11.3 | 2024-05-20 | [38262](https://github.com/airbytehq/airbyte/pull/38262) | Replace AirbyteLogger with logging.Logger |
-| 0.11.2 | 2024-04-19 | [36666](https://github.com/airbytehq/airbyte/pull/36666) | Updating to 0.80.0 CDK |
-| 0.11.1 | 2024-04-12 | [36666](https://github.com/airbytehq/airbyte/pull/36666) | Schema descriptions |
-| 0.11.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
+| 0.11.2 | 2024-05-07 | [36666](https://github.com/airbytehq/airbyte/pull/36666) | Updating to 0.80.0 CDK |
+| 0.11.1 | 2024-05-07 | [36666](https://github.com/airbytehq/airbyte/pull/36666) | Schema descriptions |
+| 0.11.0 | 2024-03-21 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
 | 0.10.2 | 2024-02-12 | [35153](https://github.com/airbytehq/airbyte/pull/35153) | Manage dependencies with Poetry |
-| 0.10.1 | 2023-11-21 | [32718](https://github.com/airbytehq/airbyte/pull/32718) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.10.0 | 2023-07-28 | [27323](https://github.com/airbytehq/airbyte/pull/27323) | Add new stream `Step` |
-| 0.9.0 | 2023-06-27 | [27221](https://github.com/airbytehq/airbyte/pull/27221) | Add new stream `UserConversations` with parent `Users` |
+| 0.10.1 | 2023-11-27 | [32718](https://github.com/airbytehq/airbyte/pull/32718) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.10.0 | 2023-07-27 | [27323](https://github.com/airbytehq/airbyte/pull/27323) | Add new stream `Step` |
+| 0.9.0 | 2023-07-13 | [27221](https://github.com/airbytehq/airbyte/pull/27221) | Add new stream `UserConversations` with parent `Users` |
 | 0.8.1 | 2023-07-12 | [28216](https://github.com/airbytehq/airbyte/pull/28216) | Add property `channel_metadata` to `ConversationMessages` schema |
-| 0.8.0 | 2023-06-11 | [27231](https://github.com/airbytehq/airbyte/pull/27231) | Add new stream `VerifyServices` |
-| 0.7.0 | 2023-05-03 | [25781](https://github.com/airbytehq/airbyte/pull/25781) | Add new stream `Trunks` |
-| 0.6.0 | 2023-05-03 | [25783](https://github.com/airbytehq/airbyte/pull/25783) | Add new stream `Roles` with parent `Services` |
-| 0.5.0 | 2023-03-21 | [23995](https://github.com/airbytehq/airbyte/pull/23995) | Add new stream `Conversation Participants` |
-| 0.4.0 | 2023-03-18 | [23995](https://github.com/airbytehq/airbyte/pull/23995) | Add new stream `Conversation Messages` |
-| 0.3.0 | 2023-03-18 | [22874](https://github.com/airbytehq/airbyte/pull/22874) | Add new stream `Executions` with parent `Flows` |
-| 0.2.0 | 2023-03-16 | [24114](https://github.com/airbytehq/airbyte/pull/24114) | Add `Conversations` stream |
-| 0.1.16 | 2023-02-10 | [22825](https://github.com/airbytehq/airbyte/pull/22825) | Specified date formatting in specification |
-| 0.1.15 | 2023-01-27 | [22025](https://github.com/airbytehq/airbyte/pull/22025) | Set `AvailabilityStrategy` for streams explicitly to `None` |
-| 0.1.14 | 2022-11-16 | [19479](https://github.com/airbytehq/airbyte/pull/19479) | Fix date range slicing |
-| 0.1.13 | 2022-10-25 | [18423](https://github.com/airbytehq/airbyte/pull/18423) | Implement datetime slicing for streams supporting incremental syncs |
+| 0.8.0 | 2023-06-27 | [27231](https://github.com/airbytehq/airbyte/pull/27231) | Add new stream `VerifyServices` |
+| 0.7.0 | 2023-05-23 | [25781](https://github.com/airbytehq/airbyte/pull/25781) | Add new stream `Trunks` |
+| 0.6.0 | 2023-05-23 | [25783](https://github.com/airbytehq/airbyte/pull/25783) | Add new stream `Roles` with parent `Services` |
+| 0.5.0 | 2023-04-13 | [23995](https://github.com/airbytehq/airbyte/pull/23995) | Add new stream `Conversation Participants` |
+| 0.4.0 | 2023-04-11 | [22875](https://github.com/airbytehq/airbyte/pull/22875) | Add new stream `Conversation Messages` |
+| 0.3.0 | 2023-04-10 | [22874](https://github.com/airbytehq/airbyte/pull/22874) | Add new stream `Executions` with parent `Flows` |
+| 0.2.0 | 2023-03-21 | [24320](https://github.com/airbytehq/airbyte/pull/24320) | Add `Conversations` stream |
+| 0.1.16 | 2023-03-02 | [22825](https://github.com/airbytehq/airbyte/pull/22825) | Specified date formatting in specification |
+| 0.1.15 | 2023-01-30 | [22025](https://github.com/airbytehq/airbyte/pull/22025) | Set `AvailabilityStrategy` for streams explicitly to `None` |
+| 0.1.14 | 2022-11-29 | [19479](https://github.com/airbytehq/airbyte/pull/19479) | Fix date range slicing |
+| 0.1.13 | 2022-10-26 | [18423](https://github.com/airbytehq/airbyte/pull/18423) | Implement datetime slicing for streams supporting incremental syncs |
 | 0.1.11 | 2022-09-30 | [17478](https://github.com/airbytehq/airbyte/pull/17478) | Add lookback_window parameters |
-| 0.1.10 | 2022-09-29 | [17410](https://github.com/airbytehq/airbyte/pull/17410) | Migrate to per-stream states |
+| 0.1.10 | 2022-09-30 | [17410](https://github.com/airbytehq/airbyte/pull/17410) | Migrate to per-stream states |
 | 0.1.9 | 2022-09-26 | [17134](https://github.com/airbytehq/airbyte/pull/17134) | Add test data for Message Media and Conferences |
 | 0.1.8 | 2022-08-29 | [16110](https://github.com/airbytehq/airbyte/pull/16110) | Add state checkpoint interval |
-| 0.1.7 | 2022-08-26 | [15972](https://github.com/airbytehq/airbyte/pull/15972) | Shift start date for stream if it exceeds 400 days |
-| 0.1.6 | 2022-06-22 | [14000](https://github.com/airbytehq/airbyte/pull/14000) | Update Records stream schema and align tests with connectors' best practices |
+| 0.1.7 | 2022-08-29 | [15972](https://github.com/airbytehq/airbyte/pull/15972) | Shift start date for stream if it exceeds 400 days |
+| 0.1.6 | 2022-06-27 | [14000](https://github.com/airbytehq/airbyte/pull/14000) | Update Records stream schema and align tests with connectors' best practices |
 | 0.1.5 | 2022-06-22 | [13896](https://github.com/airbytehq/airbyte/pull/13896) | Add lookback window parameters to fetch messages with a rolling window and catch status updates |
 | 0.1.4 | 2022-04-22 | [12157](https://github.com/airbytehq/airbyte/pull/12157) | Use Retry-After header for backoff |
-| 0.1.3 | 2022-04-20 | [12183](https://github.com/airbytehq/airbyte/pull/12183) | Add new subresource on the call stream + declare a valid primary key for conference_participants stream |
-| 0.1.2 | 2021-12-23 | [9092](https://github.com/airbytehq/airbyte/pull/9092) | Correct specification doc URL |
+| 0.1.3 | 2022-04-21 | [12183](https://github.com/airbytehq/airbyte/pull/12183) | Add new subresource on the call stream + declare a valid primary key for conference_participants stream |
+| 0.1.2 | 2021-12-27 | [9092](https://github.com/airbytehq/airbyte/pull/9092) | Correct specification doc URL |
 | 0.1.1 | 2021-10-18 | [7034](https://github.com/airbytehq/airbyte/pull/7034) | Update schemas and transform data types according to the API schema |
-| 0.1.0 | 2021-07-02 | [4070](https://github.com/airbytehq/airbyte/pull/4070) | Native Twilio connector implemented |
+| 0.1.0 | 2021-07-03 | [4070](https://github.com/airbytehq/airbyte/pull/4070) | Native Twilio connector implemented |
 
 </details>

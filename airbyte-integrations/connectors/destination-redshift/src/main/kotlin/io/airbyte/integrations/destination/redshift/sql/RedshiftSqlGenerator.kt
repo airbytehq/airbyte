@@ -26,6 +26,9 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         get() = if (config.dropCascade) " CASCADE" else ""
 
     companion object {
+        /** Sentinel written to CSV for VARCHAR NULLs; mapped back to SQL NULL by `COPY NULL AS`. */
+        const val NULL_SENTINEL = "_AB_NULL_"
+
         private val EXTRACTED_AT_COLUMN_NAME = quoteIdentifier(COLUMN_NAME_AB_EXTRACTED_AT)
         private val DELETED_AT_COLUMN_NAME = quoteIdentifier(CDC_DELETED_AT_COLUMN)
 
@@ -48,12 +51,13 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
     fun createNamespace(namespace: String): String =
         "CREATE SCHEMA IF NOT EXISTS ${quoteIdentifier(namespace)};"
 
-    /** Generates a query to check if a schema exists via `information_schema.schemata`. */
+    /** Generates a query to check if a schema exists via `svv_all_schemas`. */
     fun namespaceExists(namespace: String): String =
         """
             |SELECT EXISTS(
-            |    SELECT 1 FROM information_schema.schemata
-            |    WHERE schema_name = '${RedshiftSqlEscapeUtils.escapeSqlString(namespace)}'
+            |    SELECT 1 FROM svv_all_schemas
+            |    WHERE database_name = current_database()
+            |    AND schema_name = '${RedshiftSqlEscapeUtils.escapeSqlString(namespace)}'
             |)
         """.trimMargin()
 
@@ -558,7 +562,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |STATUPDATE OFF
             |ROUNDEC
             |IGNOREHEADER 1
-            |EMPTYASNULL;
+            |NULL AS '$NULL_SENTINEL';
         """.trimMargin()
 
     // ================================================================

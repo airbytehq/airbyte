@@ -67,6 +67,7 @@ Classes
     * airbyte_agent_sdk.connectors.confluence.models.AirbyteSearchResult[GroupsSearchData]
     * airbyte_agent_sdk.connectors.confluence.models.AirbyteSearchResult[PagesSearchData]
     * airbyte_agent_sdk.connectors.confluence.models.AirbyteSearchResult[SpacesSearchData]
+    * airbyte_agent_sdk.connectors.confluence.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

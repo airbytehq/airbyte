@@ -77,8 +77,26 @@ internal class RedshiftAirbyteClientTest {
     // createNamespace
     // ================================================================
 
+    private fun stubNamespaceExists(exists: Boolean) {
+        every { sqlGenerator.namespaceExists("my_schema") } returns "NAMESPACE EXISTS SQL"
+        every { mockStatement.executeQuery("NAMESPACE EXISTS SQL") } returns mockResultSet
+        every { mockResultSet.next() } returns true
+        every { mockResultSet.getBoolean(1) } returns exists
+    }
+
     @Test
-    fun `createNamespace delegates to sqlGenerator`() = runTest {
+    fun `createNamespace skips CREATE SCHEMA when schema already exists`() = runTest {
+        stubNamespaceExists(exists = true)
+
+        client.createNamespace("my_schema")
+
+        verify(exactly = 0) { sqlGenerator.createNamespace(any()) }
+        verify(exactly = 0) { mockStatement.execute(any()) }
+    }
+
+    @Test
+    fun `createNamespace creates schema when missing`() = runTest {
+        stubNamespaceExists(exists = false)
         every { sqlGenerator.createNamespace("my_schema") } returns "CREATE SCHEMA SQL"
         every { mockStatement.execute("CREATE SCHEMA SQL") } returns true
 
@@ -90,6 +108,7 @@ internal class RedshiftAirbyteClientTest {
 
     @Test
     fun `createNamespace swallows already exists race condition`() = runTest {
+        stubNamespaceExists(exists = false)
         every { sqlGenerator.createNamespace("my_schema") } returns "CREATE SCHEMA SQL"
         every { mockStatement.execute("CREATE SCHEMA SQL") } throws
             SQLException("Schema my_schema already exists")
@@ -99,6 +118,7 @@ internal class RedshiftAirbyteClientTest {
 
     @Test
     fun `createNamespace rethrows non-race-condition errors`() = runTest {
+        stubNamespaceExists(exists = false)
         every { sqlGenerator.createNamespace("my_schema") } returns "CREATE SCHEMA SQL"
         every { mockStatement.execute("CREATE SCHEMA SQL") } throws
             SQLException("permission denied")

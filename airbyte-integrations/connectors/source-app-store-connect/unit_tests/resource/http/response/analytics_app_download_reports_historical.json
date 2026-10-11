@@ -1,0 +1,14 @@
+{
+  "data": [
+    {
+      "type": "analyticsReports",
+      "id": "report-1",
+      "attributes": {
+        "name": "App Downloads Standard"
+      }
+    }
+  ],
+  "links": {
+    "self": "https://api.appstoreconnect.apple.com/v1/analyticsReportRequests/request-1/reports"
+  }
+}

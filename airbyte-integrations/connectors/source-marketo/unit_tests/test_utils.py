@@ -36,6 +36,30 @@ def test_format_value(value, schema, expected_output_type):
     assert isinstance(test, expected_output_type)
 
 
+@pytest.mark.parametrize(
+    "value,schema,expected",
+    [
+        (1, {"type": ["boolean", "null"]}, True),
+        (0, {"type": ["boolean", "null"]}, False),
+        (1.0, {"type": "boolean"}, True),
+        (True, {"type": "boolean"}, True),
+        (False, {"type": ["boolean", "null"]}, False),
+        ("true", {"type": "boolean"}, True),
+        ("True", {"type": "boolean"}, True),
+        ("false", {"type": "boolean"}, False),
+        ("yes", {"type": "boolean"}, False),
+        (None, {"type": ["boolean", "null"]}, None),
+        ("", {"type": ["boolean", "null"]}, None),
+        ([1], {"type": ["boolean", "null"]}, None),
+        ({"a": 1}, {"type": ["boolean", "null"]}, None),
+    ],
+)
+def test_format_value_boolean_handles_non_string_values(value, schema, expected):
+    result = format_value(value, schema)
+
+    assert result is expected
+
+
 test_data = [
     ("api method name", "api_method_name"),
     ("API Method Name", "api_method_name"),

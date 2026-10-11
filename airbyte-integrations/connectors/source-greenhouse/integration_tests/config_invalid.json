@@ -1,3 +1,8 @@
 {
-  "api_key": "bla"
+  "credentials": {
+    "auth_type": "Client",
+    "client_id": "bla",
+    "client_secret": "bla",
+    "refresh_token": "bla"
+  }
 }

@@ -21,7 +21,7 @@ Many organizations collect data in all types of operational systems from users a
 
 While these requirements are critical, organizations also have finite time and expertise. Managing these operational and compliance requirements with more infrastructure often means increased maintenance commitments, higher spend, and greater complexity.
 
-Enterprise Flex addresses these needs by offering fully managed Cloud workspaces (a control plane) that connect to separate data planes you manage in your own infrastructure. You can also use fully managed data planes for less sensitive data that doesn't need to remain in your own infrastructure. Each Cloud workspace uses one region and data plane, so a single Airbyte instance with multiple workspaces is an ideal way to segregate data and connections. Enterprise Flex also supports other enterprise-grade abilities such as audit logging, external secrets managers, and AWS PrivateLink connectivity in addition to all other features in Cloud Pro.
+Enterprise Flex addresses these needs by offering fully managed Cloud workspaces (a control plane) that connect to separate data planes you manage in your own infrastructure. You can also use fully managed data planes for less sensitive data that doesn't need to remain in your own infrastructure. Each Cloud workspace uses one region and data plane, so a single Airbyte instance with multiple workspaces is an ideal way to segregate data and connections. Enterprise Flex also supports other enterprise-grade abilities such as external secrets managers and AWS PrivateLink connectivity in addition to all other features in Cloud Pro.
 
 | Feature             | Description                                                                                                                                                             |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -31,13 +31,13 @@ Enterprise Flex addresses these needs by offering fully managed Cloud workspaces
 | Role-Based Access   | Manage user permissions and access across workspaces from a single pane of glass.                                                                                       |
 | Column Hashing      | Protect sensitive information by hashing personally identifiable information (PII) as it moves through your pipelines.                                                  |
 | External Secrets    | Bring your own secrets manager to securely reference your credentials for data sources and destinations.                                                                |
-| Audit trail logs    | Store user and platform activity in your own bucket to maintain compliance while using Airbyte .                                                                        |
+| Audit logs          | Review [user and platform activity](/platform/access-management/audit-logs) to maintain compliance while using Airbyte.                                                 |
 | AWS PrivateLink     | Connect to data sources or destinations in your VPC securely to Airbyte data planes.                                                                                    |
 | Support with SLAs   | [Priority assistance](https://docs.airbyte.com/operator-guides/contact-support/#airbyte-enterprise-self-hosted-support) with deploying, managing and upgrading Airbyte. |
 
 ### Enterprise Flex versus Pro
 
-Enterprise Flex includes all features that are standard in Pro with the additional capabilities of running self-managed data planes, referencing your own secrets manager, PrivateLink support, and storing audit logs.
+Enterprise Flex includes all features that are standard in Pro with the additional capabilities of running self-managed data planes, referencing your own secrets manager, and PrivateLink support.
 
 Any Airbyte Cloud environment can be easily upgraded to Enterprise Flex. To learn more about upgrading to Enterprise Flex, [talk to sales](https://airbyte.com/company/talk-to-sales).
 

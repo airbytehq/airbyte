@@ -267,6 +267,10 @@ class DatabricksSqlGenerator(
     fun createStagingVolume(tableName: TableName): String =
         "CREATE VOLUME IF NOT EXISTS ${fullyQualifiedName(stagingVolumeName(tableName))}"
 
+    /** Drops the Unity Catalog Volume used for staging files for the given table. */
+    fun dropStagingVolume(tableName: TableName): String =
+        "DROP VOLUME IF EXISTS ${fullyQualifiedName(stagingVolumeName(tableName))}"
+
     /** load a staged Avro file from a Unity Catalog Volume into the target table */
     fun copyIntoFromVolume(
         tableName: TableName,

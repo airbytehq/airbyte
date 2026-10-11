@@ -346,6 +346,8 @@ definitions:
           parent_key: "id"
           stream: "#/definitions/pipelines_stream"
           partition_field: "id"
+          incremental_dependency: true
+          extra_fields: [["updated_at"]]
 
   # Transformations
   add_project_id_field:
@@ -362,6 +364,13 @@ definitions:
         path: ["group_id"]
         value: "{{ stream_slice.id }}"
 
+  add_pipeline_updated_at_field:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path: ["pipeline_updated_at"]
+        value: "{{ stream_slice.extra_fields['updated_at'] }}"
+
   # Service streams
   base_full_refresh_stream:
     type: DeclarativeStream
@@ -375,6 +384,12 @@ definitions:
     $ref: "#/definitions/base_full_refresh_stream"
     retriever: "#/definitions/projects_child_streams_retriever"
 
+  cursor_datetime_formats:
+    - "%Y-%m-%dT%H:%M:%S.%f%z"
+    - "%Y-%m-%dT%H:%M:%S.%fZ"
+    - "%Y-%m-%dT%H:%M:%S%z"
+    - "%Y-%m-%dT%H:%M:%SZ"
+
   base_projects_incremental_child_stream:
     $ref: "#/definitions/base_projects_child_stream"
     incremental_sync:
@@ -382,11 +397,7 @@ definitions:
       cursor_field: "{{ parameters.get('cursor_field', 'updated_at') }}"
       start_datetime: "{{ config.get('start_date', '2014-01-01T00:00:00Z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%f%z"
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-        - "%Y-%m-%dT%H:%M:%S%z"
-        - "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats: "#/definitions/cursor_datetime_formats"
       cursor_granularity: "PT1S"
       step: "P180DT1S"
       start_time_option:
@@ -397,6 +408,25 @@ definitions:
         type: RequestOption
         field_name: "{{ parameters.get('upper_bound_filter', 'updated_before') }}"
         inject_into: request_parameter
+
+  # Pipeline children are incremental only through the parent `pipelines` state (incremental_dependency).
+  # This cursor holds state and is never sent to GitLab. The far-future end_datetime stops it from
+  # skipping a pipeline the parent returned when the stored cursor is later than the worker clock.
+  pipelines_child_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "pipeline_updated_at"
+    start_datetime: "{{ config.get('start_date', '2014-01-01T00:00:00Z') }}"
+    end_datetime: "9999-12-31T00:00:00Z"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_datetime_formats: "#/definitions/cursor_datetime_formats"
+    global_substream_cursor: true
+
+  base_pipelines_incremental_child_stream:
+    $ref: "#/definitions/base_projects_child_stream"
+    retriever: "#/definitions/pipelines_child_streams_retriever"
+    incremental_sync: "#/definitions/pipelines_child_incremental_sync"
+    transformations:
+      - "#/definitions/add_pipeline_updated_at_field"
 
   groups_list_stream:
     name: "groups_list"
@@ -741,8 +771,7 @@ definitions:
 
   pipelines_extended_stream:
     name: "pipelines_extended"
-    $ref: "#/definitions/base_projects_child_stream"
-    retriever: "#/definitions/pipelines_child_streams_retriever"
+    $ref: "#/definitions/base_pipelines_incremental_child_stream"
     $parameters:
       path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}"
     schema_loader:
@@ -752,9 +781,9 @@ definitions:
 
   jobs_stream:
     name: "jobs"
-    $ref: "#/definitions/base_projects_child_stream"
-    retriever: "#/definitions/pipelines_child_streams_retriever"
+    $ref: "#/definitions/base_pipelines_incremental_child_stream"
     transformations:
+      - "#/definitions/add_pipeline_updated_at_field"
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -778,6 +807,35 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/jobs"
+
+  pipeline_trigger_jobs_stream:
+    name: "pipeline_trigger_jobs"
+    $ref: "#/definitions/base_pipelines_incremental_child_stream"
+    transformations:
+      - "#/definitions/add_pipeline_updated_at_field"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["project_id"]
+            value: "{{ stream_slice.parent_slice.id }}"
+          - type: AddedFieldDefinition
+            path: ["user_id"]
+            value: "{{ (record.get('user') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["pipeline_id"]
+            value: "{{ (record.get('pipeline') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["downstream_pipeline_id"]
+            value: "{{ (record.get('downstream_pipeline') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["commit_id"]
+            value: "{{ (record.get('commit') or {}).get('id') }}"
+    $parameters:
+      path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}/bridges"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/pipeline_trigger_jobs"
 
   # Incremental streams
   commits_stream:
@@ -870,9 +928,24 @@ definitions:
       schema:
         $ref: "#/schemas/merge_requests"
 
+  # GET /projects/:id/pipelines excludes child pipelines unless `source=parent_pipeline`
+  # is passed, and that filter returns only child pipelines, so each project is read twice.
   pipelines_stream:
     name: "pipelines"
     $ref: "#/definitions/base_projects_incremental_child_stream"
+    retriever:
+      $ref: "#/definitions/projects_child_streams_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters: "{{ {'source': 'parent_pipeline'} if stream_slice.pipeline_source == 'parent_pipeline' else {} }}"
+      partition_router:
+        - $ref: "#/definitions/projects_child_streams_retriever/partition_router"
+        - type: ListPartitionRouter
+          cursor_field: "pipeline_source"
+          values: ["default", "parent_pipeline"]
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.PipelinesSourcePartitionStateMigration
     $parameters:
       path: "projects/{{ stream_slice.id }}/pipelines"
     schema_loader:
@@ -969,6 +1042,7 @@ streams:
   - "#/definitions/pipelines_stream"
   - "#/definitions/pipelines_extended_stream"
   - "#/definitions/jobs_stream"
+  - "#/definitions/pipeline_trigger_jobs_stream"
 
 check:
   type: CheckStream
@@ -3254,6 +3328,12 @@ schemas:
         type:
         - 'null'
         - integer
+      pipeline_updated_at:
+        description: The `updated_at` of the parent pipeline; used as the incremental cursor.
+        type:
+        - 'null'
+        - string
+        format: date-time
       runner:
         description: Details of the runner on which the job is executed.
         type:
@@ -3303,6 +3383,156 @@ schemas:
             type:
             - 'null'
             - boolean
+  pipeline_trigger_jobs:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        description: Unique identifier for the trigger (bridge) job.
+        type:
+        - 'null'
+        - integer
+      status:
+        description: Current status of the trigger job.
+        type:
+        - 'null'
+        - string
+      stage:
+        description: Stage to which the trigger job belongs in the pipeline.
+        type:
+        - 'null'
+        - string
+      name:
+        description: Name of the trigger job.
+        type:
+        - 'null'
+        - string
+      ref:
+        description: Reference or branch for which the trigger job was run.
+        type:
+        - 'null'
+        - string
+      tag:
+        description: Indicates if the trigger job is tagged.
+        type:
+        - 'null'
+        - boolean
+      coverage:
+        description: Code coverage reported by the trigger job.
+        type:
+        - 'null'
+        - number
+        - string
+      allow_failure:
+        description: Specifies if the trigger job is allowed to fail.
+        type:
+        - 'null'
+        - boolean
+      created_at:
+        description: Date and time when the trigger job was created.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      started_at:
+        description: Date and time when the trigger job started.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      finished_at:
+        description: Date and time when the trigger job finished.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      erased_at:
+        description: Date and time when the trigger job was erased.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      duration:
+        description: Duration of the trigger job execution.
+        type:
+        - 'null'
+        - number
+      queued_duration:
+        description: Duration for which the trigger job was in the queue.
+        type:
+        - 'null'
+        - number
+      failure_reason:
+        description: Reason for trigger job failure, if applicable.
+        type:
+        - 'null'
+        - string
+      web_url:
+        description: URL to access the trigger job details on the web platform.
+        type:
+        - 'null'
+        - string
+      user:
+        description: Details of the user who triggered the job.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      user_id:
+        description: ID of the user who triggered the job.
+        type:
+        - 'null'
+        - integer
+      pipeline:
+        description: Details of the upstream pipeline that contains the trigger job.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      pipeline_id:
+        description: ID of the upstream pipeline that contains the trigger job.
+        type:
+        - 'null'
+        - integer
+      pipeline_updated_at:
+        description: The `updated_at` of the parent pipeline; used as the incremental cursor for trigger jobs.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      downstream_pipeline:
+        description: Details of the child (downstream) pipeline created by the trigger job.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      downstream_pipeline_id:
+        description: ID of the child (downstream) pipeline created by the trigger job.
+        type:
+        - 'null'
+        - integer
+      commit:
+        description: Details of the commit associated with the trigger job.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+      commit_id:
+        description: ID of the commit associated with the trigger job.
+        type:
+        - 'null'
+        - string
+      project_id:
+        description: ID of the project to which the trigger job belongs.
+        type:
+        - 'null'
+        - integer
+      project:
+        description: Details of the project to which the trigger job belongs.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
   merge_request_commits:
     $schema: https://json-schema.org/draft-07/schema#
     type: object
@@ -3803,6 +4033,12 @@ schemas:
         format: date-time
       updated_at:
         description: The date and time when pipeline information was last updated
+        type:
+        - 'null'
+        - string
+        format: date-time
+      pipeline_updated_at:
+        description: The `updated_at` of the pipeline as listed by the `pipelines` stream; used as the incremental cursor.
         type:
         - 'null'
         - string
