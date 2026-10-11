@@ -221,7 +221,9 @@ class TestMeetingRecordingsStream(RecordingsStreamTestCase):
 
     def test_given_recording_refused_with_401_when_read_then_emit_record_and_continue(self):
         """HubSpot answers 401 for some MEETING_BOT recordings even with a valid token."""
-        refused_url = "https://api-eu1.hubspot.com/recording/auth/getAuthRecording/portal/123/objectTypeId/0-47/objectId/101/source/MEETING_BOT"
+        refused_url = (
+            "https://api-eu1.hubspot.com/recording/auth/getAuthRecording/portal/123/objectTypeId/0-47/objectId/101/source/MEETING_BOT"
+        )
         present_url = HUBSPOT_RECORDING_URL.format(id="102")
         with HttpMocker() as http_mocker:
             http_mocker.post(
@@ -233,7 +235,9 @@ class TestMeetingRecordingsStream(RecordingsStreamTestCase):
                     ]
                 ),
             )
-            self.mock_download(http_mocker, refused_url, HttpResponse(json.dumps({"message": "unauthorized"}), http.HTTPStatus.UNAUTHORIZED))
+            self.mock_download(
+                http_mocker, refused_url, HttpResponse(json.dumps({"message": "unauthorized"}), http.HTTPStatus.UNAUTHORIZED)
+            )
             self.mock_download(http_mocker, present_url, HttpResponse("mp4-bytes", 200))
 
             output = self.read(http_mocker)
