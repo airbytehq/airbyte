@@ -190,7 +190,7 @@ public class MongoDbCdcEventUtils {
     final Map<String, JsonNode> fieldSchemas = new HashMap<>();
     final JsonNode properties = stream.getStream().getJsonSchema().get("properties");
     if (properties != null && properties.isObject()) {
-      properties.fields().forEachRemaining(entry -> fieldSchemas.put(entry.getKey(), entry.getValue()));
+      properties.properties().forEach(entry -> fieldSchemas.put(entry.getKey(), entry.getValue()));
     }
     return fieldSchemas;
   }

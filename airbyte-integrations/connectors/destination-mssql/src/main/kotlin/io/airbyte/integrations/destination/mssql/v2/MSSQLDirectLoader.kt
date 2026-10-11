@@ -15,6 +15,7 @@ import io.airbyte.integrations.destination.mssql.v2.config.MSSQLIsNotConfiguredF
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import java.sql.SQLException
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", "kotlin coroutines")
 class MSSQLDirectLoader(
@@ -65,7 +66,11 @@ class MSSQLDirectLoader(
         // This is to prevent deadlock errors that will nuke the transaction.
         // TODO: Promote direct loader to use suspend functions so this can use a suspending mutex
         synchronized(parent) {
-            preparedStatement.executeBatch()
+            try {
+                preparedStatement.executeBatch()
+            } catch (e: SQLException) {
+                MSSQLErrorClassifier.rethrowClassified(e)
+            }
             preparedStatement.clearBatch()
             preparedStatement.clearParameters()
             connection.commit()

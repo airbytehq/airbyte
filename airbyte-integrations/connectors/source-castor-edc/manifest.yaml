@@ -990,14 +990,14 @@ definitions:
           $ref: "#/schemas/study_visit"
   base_requester:
     type: HttpRequester
-    url_base: https://{{ config['url_region'] }}.castoredc.com/api/
+    url_base: https://{{ 'data' if config['url_region'] == 'nl' else config['url_region'] }}.castoredc.com/api/
     authenticator:
       type: OAuthAuthenticator
       client_id: "{{ config[\"client_id\"] }}"
       grant_type: client_credentials
       client_secret: "{{ config[\"client_secret\"] }}"
       refresh_request_body: {}
-      token_refresh_endpoint: https://{{ config['url_region'] }}.castoredc.com/oauth/token
+      token_refresh_endpoint: https://{{ 'data' if config['url_region'] == 'nl' else config['url_region'] }}.castoredc.com/oauth/token
 
 streams:
   - $ref: "#/definitions/streams/user"
@@ -1030,7 +1030,7 @@ spec:
     properties:
       url_region:
         type: string
-        description: The url region given at time of registration
+        description: The region where your study is stored. Use nl for the Netherlands (data.castoredc.com), uk for the United Kingdom, or us for the United States.
         enum:
           - uk
           - nl
@@ -1040,13 +1040,13 @@ spec:
         default: uk
       client_id:
         type: string
-        description: Visit `https://YOUR_REGION.castoredc.com/account/settings`
+        description: Generate API credentials in your Castor account settings. For nl, visit https://data.castoredc.com/account/settings; otherwise visit https://YOUR_REGION.castoredc.com/account/settings.
         order: 1
         title: Client ID
         airbyte_secret: true
       client_secret:
         type: string
-        description: Visit `https://YOUR_REGION.castoredc.com/account/settings`
+        description: Generate API credentials in your Castor account settings. For nl, visit https://data.castoredc.com/account/settings; otherwise visit https://YOUR_REGION.castoredc.com/account/settings.
         order: 2
         title: Client secret
         airbyte_secret: true

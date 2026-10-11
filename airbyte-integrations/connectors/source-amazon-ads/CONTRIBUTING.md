@@ -14,6 +14,18 @@ When a user syncs the same report type with different time granularities simulta
 
 **Why this matters:** HTTP 425 is extremely rare in REST APIs and is not handled by default error handlers. If you see a config error mentioning "duplicate report requests," it is not a credential or permission issue — it is a concurrency conflict that requires changing the source configuration or splitting into separate connections.
 
+## 3. Report Columns Are Opt-In
+
+Amazon's v3 reporting API returns only the columns listed in a report stream's `configuration.columns`. Leaving one out is not an error, so an under-specified stream syncs cleanly while withholding data. Streams here request the full documented column set for their report type, minus the handful Amazon rejects for that stream's `groupBy`; keep it that way when adding or editing one, and declare every requested column in the inline schema so users can see the record shape before syncing.
+
+Under-specified streams come from scoping a stream to a reporting need rather than to its report type. The Sponsored Brands campaign and ad group reports were added in [#78487](https://github.com/airbytehq/airbyte/pull/78487) for cost reporting and requested only that task's cost and conversion metrics, which is how every Sponsored Brands video metric went missing.
+
+Two rules to know. `DAILY` reports use the `date` column while `SUMMARY` reports use `startDate`/`endDate`. And Amazon rejects a column that is not valid for the stream's `groupBy` with a 400 or 422, failing the whole report rather than dropping the column, so the stream returns nothing at all — validate new column lists against the live API before merging.
+
+## 4. Sponsored Brands Creative Type Is Not a Report Column
+
+No v3 Sponsored Brands report exposes creative type or ad format. Sponsored Brands V4 moved creative type onto the ad entity, so identifying video ads means syncing `sponsored_brands_ads` and joining `creative.type` to report rows on `adId`. The video *metrics* are ordinary report columns, but the connector does not request them uniformly: `viewClickThroughRate` is requested on `sbCampaigns` only, and `viewableImpressions` is omitted on `sbAdGroup`. Amazon's report-type pages and its column reference disagree on those cells; the connector follows the report-type pages, because one unaccepted column fails the entire report request and returns no rows.
+
 ## Incremental Stream Considerations
 
 The Amazon Ads API uses report-based data access for most metrics. The `profiles` endpoint lists advertising profiles and does not support date-based filtering — it returns the current list of profiles. The connector already uses `DatetimeBasedCursor` for report streams (sponsored products, brands, display). The two FR parent streams (`profiles`, `profiles_filtered`) are small config-style lookups.

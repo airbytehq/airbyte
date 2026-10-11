@@ -18,5 +18,5 @@ application {
 dependencies {
     implementation 'org.postgresql:postgresql:42.6.0'
 
-    testImplementation 'org.testcontainers:cockroachdb:1.19.4'
+    testImplementation 'org.testcontainers:cockroachdb:1.21.4'
 }

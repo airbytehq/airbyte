@@ -2,7 +2,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created_at": "2024-01-01" },
+      "stream_state": { "updated_at": "2024-01-01T00:00:00Z" },
       "stream_descriptor": { "name": "notes" }
     }
   }
