@@ -156,7 +156,9 @@ open class PostgresSourceJdbcPartitionFactory(
             }
         val fileNodeChange: FilenodeChangeType = detectStreamFilenodeChange(streamState, filenode)
 
-        if (opaqueStateValue == null) {
+        // The CDK emits an empty object as the placeholder state for a stream that has not
+        // checkpointed yet; it carries no resume point, so treat it like no state at all.
+        if (opaqueStateValue == null || (opaqueStateValue.isObject && opaqueStateValue.isEmpty)) {
             return coldStart(streamState, filenode)
         }
 

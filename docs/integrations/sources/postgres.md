@@ -363,6 +363,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.8.8 | 2026-10-12 | [88485](https://github.com/airbytehq/airbyte/pull/88485) | Cold-start the CDC initial snapshot when the saved stream state is an empty object instead of skipping the stream; upgrade to Bulk CDK 1.1.15. |
 | 3.8.7 | 2026-10-09 | [88431](https://github.com/airbytehq/airbyte/pull/88431) | Upgrade to Bulk CDK 1.1.14. |
 | 3.8.6   | 2026-09-16 | [86369](https://github.com/airbytehq/airbyte/pull/86369) | Fix NULL array columns taking the previous record's value on the socket/protobuf CDC path.                                                                                 |
 | 3.8.5   | 2026-07-29 | [82773](https://github.com/airbytehq/airbyte/pull/82773) | Fix ClassCastException when an interval column has a default value during CDC.                                                                                             |
