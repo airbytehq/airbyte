@@ -243,6 +243,7 @@ definitions:
     use_cache: true
     error_handler:
       type: DefaultErrorHandler
+      max_retries: 10
       response_filters:
         - type: HttpResponseFilter
           action: IGNORE
@@ -258,6 +259,16 @@ definitions:
           action: FAIL
           http_codes: [404]
           error_message: Groups and/or projects that you provide are invalid or you don't have permission to view it.
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          http_codes: [429]
+          error_message: "Rate limit exceeded on the GitLab API. The connector waits for the time in the Retry-After header before retrying."
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+          max_waiting_time_in_seconds: 3600
+        - type: ExponentialBackoffStrategy
+          factor: 5
     request_parameters: "{{ parameters.get('request_parameters', {}) }}"
 
   # Selector

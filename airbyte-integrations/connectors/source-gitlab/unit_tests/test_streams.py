@@ -41,6 +41,57 @@ def test_should_retry(requests_mock, stream_name, extra_mocks):
     assert requests_mock.call_count == len(extra_mocks) + 1
 
 
+def test_retries_after_rate_limit_using_retry_after(requests_mock, mocker):
+    rate_limiting_time = mocker.patch("airbyte_cdk.sources.streams.http.rate_limiting.time")
+    sleep = rate_limiting_time.sleep
+    requests_mock.get(url=GROUPS_LIST_URL, json=[])
+    requests_mock.register_uri(
+        "GET",
+        "/api/v4/projects/p_1",
+        [
+            {
+                "status_code": 429,
+                "headers": {"Retry-After": "30", "RateLimit-Remaining": "1999"},
+            },
+            {"status_code": 200, "json": [{"id": "p_1"}]},
+        ],
+    )
+    source = get_source(config=CONFIG)
+    migrated_config = source.configure(config=CONFIG, temp_dir="/not/a/real/path")
+    stream = get_stream_by_name(source=source, stream_name="projects", config=migrated_config)
+
+    records = [
+        dict(record) for partition in stream.generate_partitions() for record in partition.read()
+    ]
+
+    assert records == [{"id": "p_1"}]
+    sleep.assert_called_once_with(31)
+
+
+def test_retries_after_rate_limit_without_retry_after(requests_mock, mocker):
+    rate_limiting_time = mocker.patch("airbyte_cdk.sources.streams.http.rate_limiting.time")
+    sleep = rate_limiting_time.sleep
+    requests_mock.get(url=GROUPS_LIST_URL, json=[])
+    requests_mock.register_uri(
+        "GET",
+        "/api/v4/projects/p_1",
+        [
+            {"status_code": 429, "headers": {"RateLimit-Remaining": "1999"}},
+            {"status_code": 200, "json": [{"id": "p_1"}]},
+        ],
+    )
+    source = get_source(config=CONFIG)
+    migrated_config = source.configure(config=CONFIG, temp_dir="/not/a/real/path")
+    stream = get_stream_by_name(source=source, stream_name="projects", config=migrated_config)
+
+    records = [
+        dict(record) for partition in stream.generate_partitions() for record in partition.read()
+    ]
+
+    assert records == [{"id": "p_1"}]
+    sleep.assert_called_once_with(11)
+
+
 test_cases = (
     (
         "jobs",
