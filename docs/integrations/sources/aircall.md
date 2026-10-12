@@ -77,7 +77,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                                   | Subject                     |
 | :------ | :--------- | :----------------------------------------------------------------------------- | :-------------------------- |
-| 0.4.27 | 2026-10-12 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Add Aircall API announcements page to external documentation URLs |
+| 0.4.27 | 2026-10-12 | [88457](https://github.com/airbytehq/airbyte/pull/88457) | Add Aircall API announcements page to external documentation URLs |
 | 0.4.26 | 2026-10-06 | [87742](https://github.com/airbytehq/airbyte/pull/87742) | Update dependencies |
 | 0.4.25 | 2026-09-29 | [87057](https://github.com/airbytehq/airbyte/pull/87057) | Update dependencies |
 | 0.4.24 | 2026-09-23 | [85909](https://github.com/airbytehq/airbyte/pull/85909) | Migrate the `users` stream to the Aircall User V2 API ahead of the V1 sunset and add pagination |
