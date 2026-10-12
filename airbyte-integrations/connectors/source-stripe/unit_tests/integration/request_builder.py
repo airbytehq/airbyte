@@ -109,6 +109,7 @@ class StripeRequestBuilder:
         self._starting_after_id: Optional[str] = None
         self._types: List[str] = []
         self._expands: List[str] = []
+        self._headers = {"Stripe-Account": self._account_id, "Authorization": f"Bearer {self._client_secret}"}
 
     def with_created_gte(self, created_gte: datetime) -> "StripeRequestBuilder":
         self._created_gte = created_gte
@@ -140,6 +141,10 @@ class StripeRequestBuilder:
 
     def with_expands(self, expands: List[str]) -> "StripeRequestBuilder":
         self._expands = expands
+        return self
+
+    def with_header(self, header_name: str, header_value: str) -> "StripeRequestBuilder":
+        self._headers[header_name] = header_value
         return self
 
     def with_payout(self, payout: str) -> "StripeRequestBuilder":
@@ -184,5 +189,5 @@ class StripeRequestBuilder:
         return HttpRequest(
             url=f"https://api.stripe.com/v1/{self._resource}",
             query_params=query_params,
-            headers={"Stripe-Account": self._account_id, "Authorization": f"Bearer {self._client_secret}"},
+            headers=dict(self._headers),
         )

@@ -1,0 +1,27 @@
+{
+  "object": "list",
+  "url": "/v1/invoice_payments",
+  "has_more": false,
+  "data": [
+    {
+      "id": "inpay_1Q8eB2P2ZVFp9y3SbnJV76dw",
+      "object": "invoice_payment",
+      "amount_paid": 1099,
+      "amount_requested": 1099,
+      "created": 1730384312,
+      "currency": "usd",
+      "invoice": "in_1Q8e95P2ZVFp9y3SvG3QdUuN",
+      "is_default": true,
+      "livemode": false,
+      "payment": {
+        "type": "payment_intent",
+        "payment_intent": "pi_3Q8e9rP2ZVFp9y3S1pmt4i3M"
+      },
+      "status": "paid",
+      "status_transitions": {
+        "canceled_at": null,
+        "paid_at": 1730384313
+      }
+    }
+  ]
+}

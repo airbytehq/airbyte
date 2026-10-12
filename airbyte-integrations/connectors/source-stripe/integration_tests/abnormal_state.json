@@ -87,6 +87,13 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "invoice_payments" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "invoice_items" }
     }
   },

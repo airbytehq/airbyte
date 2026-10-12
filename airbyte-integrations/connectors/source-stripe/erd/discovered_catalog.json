@@ -11641,6 +11641,100 @@
       "is_resumable": true
     },
     {
+      "name": "invoice_payments",
+      "json_schema": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "description": "The unique identifier for the invoice payment.",
+            "type": ["null", "string"]
+          },
+          "object": {
+            "description": "The object type, which is invoice_payment.",
+            "type": ["null", "string"]
+          },
+          "amount_paid": {
+            "description": "The amount that was paid against the invoice.",
+            "type": ["null", "integer"]
+          },
+          "amount_requested": {
+            "description": "The amount requested for the invoice payment.",
+            "type": ["null", "integer"]
+          },
+          "created": {
+            "description": "The timestamp when the invoice payment was created.",
+            "type": ["null", "integer"]
+          },
+          "updated": {
+            "description": "The timestamp when the invoice payment was last updated.",
+            "type": ["null", "integer"]
+          },
+          "currency": {
+            "description": "The currency of the invoice payment.",
+            "type": ["null", "string"]
+          },
+          "invoice": {
+            "description": "The invoice associated with the invoice payment.",
+            "type": ["null", "string"]
+          },
+          "is_default": {
+            "description": "Whether this is the default invoice payment.",
+            "type": ["null", "boolean"]
+          },
+          "livemode": {
+            "description": "Whether the invoice payment was created in live mode.",
+            "type": ["null", "boolean"]
+          },
+          "payment": {
+            "description": "The payment associated with the invoice payment.",
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "type": {
+                "description": "The payment type.",
+                "type": ["null", "string"]
+              },
+              "payment_intent": {
+                "description": "The PaymentIntent associated with the invoice payment.",
+                "type": ["null", "string"]
+              },
+              "charge": {
+                "description": "The Charge associated with the invoice payment.",
+                "type": ["null", "string"]
+              },
+              "payment_record": {
+                "description": "The PaymentRecord associated with the invoice payment.",
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "status": {
+            "description": "The status of the invoice payment.",
+            "type": ["null", "string"]
+          },
+          "status_transitions": {
+            "description": "Timestamps for invoice payment status transitions.",
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "canceled_at": {
+                "type": ["null", "integer"]
+              },
+              "paid_at": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["updated"],
+      "source_defined_primary_key": [["id"]],
+      "is_resumable": true
+    },
+    {
       "name": "payouts",
       "json_schema": {
         "properties": {

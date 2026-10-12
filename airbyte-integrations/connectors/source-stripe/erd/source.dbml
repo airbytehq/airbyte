@@ -667,6 +667,22 @@ Table "invoices" {
     "rendering" object
 }
 
+Table "invoice_payments" {
+    "id" string [pk]
+    "object" string
+    "amount_paid" integer
+    "amount_requested" integer
+    "created" integer
+    "updated" integer
+    "currency" string
+    "invoice" string
+    "is_default" boolean
+    "livemode" boolean
+    "payment" object
+    "status" string
+    "status_transitions" object
+}
+
 Table "invoice_items" {
     "amount" integer
     "metadata" object
@@ -1430,6 +1446,10 @@ Ref {
 
 Ref {
     "invoice_items"."customer" <> "customers"."id"
+}
+
+Ref {
+    "invoice_payments"."invoice" <> "invoices"."id"
 }
 
 Ref {
