@@ -412,7 +412,7 @@ def test_discover_lists_new_streams():
     catalog = get_source(CONFIG).discover(logging.getLogger(__name__), CONFIG)
     streams = {stream.name: stream for stream in catalog.streams}
 
-    assert len(streams) == 35
+    assert len(streams) == 36
     assert streams["deals_archived"].source_defined_primary_key == [["id"]]
     assert streams["deals_archived"].default_cursor_field == ["update_time"]
     assert streams["leads"].default_cursor_field == ["update_time"]
@@ -425,7 +425,9 @@ def test_discover_lists_new_streams():
         "deal_installments",
         "deal_flow",
         "permission_set_assignments",
+        "product_variations",
     }.issubset(streams)
+    assert streams["product_variations"].supported_sync_modes == [SyncMode.full_refresh]
     assert streams["deal_flow"].source_defined_primary_key == [["id"]]
     assert streams["deal_flow"].default_cursor_field == ["log_time"]
     assert streams["permission_set_assignments"].source_defined_primary_key == [["permission_set_id"], ["user_id"]]
@@ -828,6 +830,57 @@ def test_mail_skips_forbidden_parent_thread():
         )
 
         output = _read_stream("mail")
+
+    assert _ids(output) == [20]
+    assert output.errors == []
+
+
+# `products` without `updated_since`: the variations parent ignores the Start Date.
+_PRODUCTS_ALL_QUERY = {"api_token": "tok", "limit": "500", "sort_by": "update_time", "sort_direction": "asc"}
+
+
+def test_product_variations_reads_every_product_regardless_of_start_date():
+    with HttpMocker() as http_mocker:
+        http_mocker.get(
+            _request("api/v2/products", _PRODUCTS_ALL_QUERY),
+            _response({"data": [{"id": 1, "update_time": "2016-01-01T00:00:00Z"}, {"id": 2}], "additional_data": {"next_cursor": None}}),
+        )
+        http_mocker.get(
+            _request("api/v2/products/1/variations", {"api_token": "tok", "limit": "500"}),
+            _response({"data": [{"id": 10, "product_id": 1}], "additional_data": {"next_cursor": "c1"}}),
+        )
+        http_mocker.get(
+            _request("api/v2/products/1/variations", {"api_token": "tok", "limit": "500", "cursor": "c1"}),
+            _response({"data": [{"id": 11, "product_id": 1, "prices": [{"currency": "EUR", "price": 9.5}]}], "additional_data": {"next_cursor": None}}),
+        )
+        http_mocker.get(
+            _request("api/v2/products/2/variations", {"api_token": "tok", "limit": "500"}),
+            _response({"data": [], "additional_data": {"next_cursor": None}}),
+        )
+
+        output = _read_stream("product_variations")
+
+    # Product 1 predates the Start Date and is still expanded; its second page is read too.
+    assert _ids(output) == [10, 11]
+    assert output.errors == []
+
+
+def test_product_variations_skips_a_product_deleted_mid_sync():
+    with HttpMocker() as http_mocker:
+        http_mocker.get(
+            _request("api/v2/products", _PRODUCTS_ALL_QUERY),
+            _response({"data": [{"id": 1}, {"id": 2}], "additional_data": {"next_cursor": None}}),
+        )
+        http_mocker.get(
+            _request("api/v2/products/1/variations", {"api_token": "tok", "limit": "500"}),
+            _response({"success": False, "error": "Product not found", "code": "ERR_NOT_FOUND"}, status_code=404),
+        )
+        http_mocker.get(
+            _request("api/v2/products/2/variations", {"api_token": "tok", "limit": "500"}),
+            _response({"data": [{"id": 20, "product_id": 2}], "additional_data": {"next_cursor": None}}),
+        )
+
+        output = _read_stream("product_variations")
 
     assert _ids(output) == [20]
     assert output.errors == []

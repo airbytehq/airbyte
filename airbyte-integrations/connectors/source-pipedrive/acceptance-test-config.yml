@@ -36,6 +36,8 @@ acceptance_tests:
             bypass_reason: "Sandbox plan lacks the Projects suite: GET /api/v2/tasks answers 402, which the stream ignores."
           - name: deal_installments
             bypass_reason: "Sandbox plan has no access to installments: GET /api/v2/deals/installments answers 403, which the stream ignores."
+          - name: product_variations
+            bypass_reason: "Sandbox products have no variations: GET /api/v2/products/{id}/variations returns data: [] for all 11 products."
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
@@ -57,6 +59,8 @@ acceptance_tests:
             bypass_reason: "Sandbox plan lacks the Projects suite: GET /api/v2/tasks answers 402, which the stream ignores."
           - name: deal_installments
             bypass_reason: "Sandbox plan has no access to installments: GET /api/v2/deals/installments answers 403, which the stream ignores."
+          - name: product_variations
+            bypass_reason: "Sandbox products have no variations: GET /api/v2/products/{id}/variations returns data: [] for all 11 products."
 
   incremental:
     tests:
