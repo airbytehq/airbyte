@@ -71,8 +71,8 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 4. Enter a name for the Amazon Seller Partner connector.
 5. Click `Authenticate your account`.
 6. Log in and Authorize to your Amazon Seller Partner account.
-7. For `Start Date`, enter the date in `YYYY-MM-DD` format. The data added on and after this date will be replicated. This field is optional - if not provided or older than 2 years ago from today, the date 2 years ago from today will be used.
-8. For `End Date`, enter the date in `YYYY-MM-DD` format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
+7. Optionally, for **Start Date**, enter a UTC date and time in the format `2017-01-25T00:00:00Z`. Data added on and after this date is replicated. If you leave it empty or enter a date more than two years ago, the connector uses the date two years before today.
+8. Optionally, for **End Date**, enter a UTC date and time in the format `2017-01-25T00:00:00Z`. Data after this date isn't replicated. If you leave it empty, the connector syncs up to the time the sync runs, except for the vendor retail analytics streams described in [Data availability lag for vendor retail analytics reports](#data-availability-lag-for-vendor-retail-analytics-reports).
 9. **Financial Events Step Size**: Select the time window size for fetching financial events data for the ListFinancialEvents and ListFinancialEventGroups streams. Options include:
    - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
    - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
@@ -105,8 +105,8 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 2. On the Set up the source page, select Amazon Seller Partner from the Source type dropdown.
 3. Enter a name for the Amazon Seller Partner connector.
 4. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token.
-5. For Start Date, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided or older than 2 years ago from today, the date 2 years ago from today will be used.
-6. For End Date, enter the date in YYYY-MM-DD format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
+5. Optionally, for **Start Date**, enter a UTC date and time in the format `2017-01-25T00:00:00Z`. Data added on and after this date is replicated. If you leave it empty or enter a date more than two years ago, the connector uses the date two years before today.
+6. Optionally, for **End Date**, enter a UTC date and time in the format `2017-01-25T00:00:00Z`. Data after this date isn't replicated. If you leave it empty, the connector syncs up to the time the sync runs, except for the vendor retail analytics streams described in [Data availability lag for vendor retail analytics reports](#data-availability-lag-for-vendor-retail-analytics-reports).
 7. **Financial Events Step Size**: Select the time window size for fetching financial events data for the ListFinancialEvents and ListFinancialEventGroups streams. Options include:
    - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
    - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
@@ -167,7 +167,7 @@ The `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL
 - [Flat File Orders By Last Update Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 - [Flat File Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 - [Flat File Returns Report by Return Date](https://developer-docs.amazon.com/sp-api/docs/report-type-values-returns) \(incremental\)
-- [Flat File Settlement Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-settlement) \(incremental\) — this stream reads `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`, which Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) on March 17, 2025 and plans to remove on November 11, 2026
+- [Flat File Settlement Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-settlement) \(incremental\) — this stream reads `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`, which Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) on March 17, 2025 and plans to remove on November 11, 2026. See [Settlement reports](#settlement-reports).
 - [Inactive Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
 - [Inventory Ledger Report - Detailed View](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
 - [Inventory Ledger Report - Summary View](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
@@ -239,6 +239,16 @@ For more information about Amazon SP-API roles and permissions, see the [Amazon 
 
 The Financial Events stream reads the Finances v0 `listFinancialEvents` operation. Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) that operation on July 21, 2025 and plans to remove it on August 27, 2027. Amazon's replacement is the Finances v2024-06-19 [`listTransactions`](https://developer-docs.amazon.com/sp-api/docs/finances-api-v2024-06-19-reference) operation, which this connector doesn't use yet. Amazon's deprecation list doesn't include `listFinancialEventGroups`, so the Financial Event Groups stream isn't affected.
 
+### Settlement reports
+
+The Flat File Settlement Report stream (`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`) works differently from the other report streams. Amazon [generates settlement reports automatically](https://developer-docs.amazon.com/sp-api/docs/retrieve-automatically-generated-reports) and doesn't let applications request them. Instead of creating a report, the connector lists the settlement reports Amazon has already generated and downloads each report's file.
+
+- **History is limited to about 90 days.** Amazon [retains reports for a maximum of 90 days](https://developer-docs.amazon.com/sp-api/reference/getreports), so the connector lists reports created since your **Start Date** or 89 days ago, whichever is later. Older settlement reports can't be synced through the API.
+- **Each report is synced once.** The stream has no primary key, so the connector downloads each listed report exactly once. **Period In Days** and **Report Stream Lookback Window (Hours)** don't apply to this stream.
+- **Report status.** Reports that are still in progress are waited on until Amazon finishes them. Reports with a `CANCELLED` or `FATAL` status have no file and are skipped.
+
+Before 6.1.1, the stream read each report's metadata instead of its file, so syncs finished successfully but emitted no records. Version 6.1.1 also renamed the stream's internal listing checkpoint, so the first sync after you upgrade lists and downloads every settlement report in the available window. You don't need to refresh the stream.
+
 ### Daily report windows
 
 The daily report streams — Sales and Traffic Business Report (`GET_SALES_AND_TRAFFIC_REPORT`), Sales and Traffic Report By Date (`GET_SALES_AND_TRAFFIC_REPORT_BY_DATE`), Vendor Sales Report (`GET_VENDOR_SALES_REPORT`), Vendor Traffic Report (`GET_VENDOR_TRAFFIC_REPORT`), Net Pure Product Margin Report (`GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`), Vendor Inventory Report (`GET_VENDOR_INVENTORY_REPORT`), and Rapid Retail Analytics Inventory Report (`GET_VENDOR_REAL_TIME_INVENTORY_REPORT`) — request one report per UTC calendar day, with the report window anchored to `00:00:00Z`–`23:59:59Z`. Amazon rounds any report window that doesn't start and end at midnight outward to every calendar day it touches and sums the results, so anchoring each request to a single day keeps each record's metrics scoped to that day.
@@ -249,7 +259,7 @@ Earlier versions sent the wrong window on some of these streams, in two differen
 | --- | --- | --- | --- |
 | Sales and Traffic Business Report, Sales and Traffic Report By Date, Vendor Sales Report | before 5.9.2 | Off-midnight windows when a sync ended mid-day, inflating the metrics for the days those windows overlapped. Days look doubled. | 5.9.2 |
 | Vendor Traffic Report, Net Pure Product Margin Report, Rapid Retail Analytics Inventory Report | 5.8.0 through 5.10.0 | No report window was sent at all, so Amazon returned its own default reporting period and every daily record was labelled with a date the report didn't cover. | 5.10.1 |
-| Vendor Inventory Report | 5.0.0 through 6.0.x | No report window was sent at all. Amazon rejected every request with `dataStartTime and dataEndTime must be supplied`, so the stream returned no records. The stream was also full refresh only. | 6.1.0 |
+| Vendor Inventory Report | 5.2.0 through 6.0.6 | No report window was sent at all. Amazon rejected every request with `dataStartTime and dataEndTime must be supplied`, so the stream returned no records. The stream was also full refresh only. | 6.1.0 |
 
 ### Time zone of vendor retail analytics data
 
@@ -257,11 +267,11 @@ Amazon reports data in the vendor retail analytics reports (Vendor Sales, Vendor
 
 ### Data availability lag for vendor retail analytics reports
 
-Amazon publishes the vendor retail analytics reports (Vendor Sales, Vendor Traffic, and Net Pure Product Margin) [72 hours after the close of the period they cover](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports). Asking for a day it has not published yet makes the report fail with `The report data for the requested date range is not yet available`, which fails the whole stream rather than skipping that one day.
+Amazon publishes the vendor retail analytics reports (Vendor Sales, Vendor Inventory, Vendor Traffic, and Net Pure Product Margin) [72 hours after the close of the period they cover](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports). Asking for a day it has not published yet makes that day's report fail with `The report data for the requested date range is not yet available`. The connector reports that failure as a sync error instead of skipping the day, although the other days in the sync still load.
 
-From 6.0.4, these three streams stop four calendar days short of the present instead of syncing up to the moment the sync runs. Nothing is lost — each day is picked up by the first sync that runs after Amazon publishes it — but expect the most recent three to four days to be missing at any given time. If you set an explicit **End Date**, it is used as-is and this holdback is not applied, so a date range ending inside the last four days can still fail.
+From 6.0.4 (6.1.0 for Vendor Inventory), these four streams stop four calendar days short of the present instead of syncing up to the moment the sync runs. Nothing is lost — each day is picked up by the first sync that runs once that day falls outside the four-day window — but expect the most recent three to four days to be missing at any given time. If you set an explicit **End Date**, it is used as-is and this holdback is not applied, so a date range ending inside the last four days can still fail.
 
-Before 6.0.4, every sync of these streams failed on its newest day. Because a sync is marked failed after 20 partial failures, a long-running connection could be marked failed even though most of its data had loaded.
+Before 6.0.4, every sync of the Vendor Sales, Vendor Traffic, and Net Pure Product Margin streams failed on the days Amazon hadn't published yet. Because a sync is marked failed after 20 partial failures, a long-running connection could be marked failed even though most of its data had loaded.
 
 <HideInUI>
 
@@ -284,9 +294,14 @@ The **Report Options** setting takes a report type, a stream name, and a list of
 
 For the other report types the **Report Options** dropdown offers, the connector accepts your entries and validates them, but doesn't send them to Amazon. Those reports come back with Amazon's defaults. [Issue #77617](https://github.com/airbytehq/airbyte/issues/77617) tracks the remaining streams.
 
-For the four vendor retail analytics reports, the connector sends only what you configure. It supplies no default values of its own, because the right values depend on your vendor account. If you configure nothing, the request goes to Amazon without a `reportOptions` object, exactly as in earlier versions, and Amazon can reject it. If these streams fail, add the required options for each one, for example `reportPeriod` = `DAY`, `distributorView` = `MANUFACTURING` or `SOURCING`, and `sellingProgram` = `RETAIL`. Amazon's [vendor retail analytics documentation](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) lists the values each report accepts. Use `DAY` for `reportPeriod`: the sales, traffic, and net pure product margin streams request one calendar day per report. Option names and values are case-sensitive: enter `distributorView`, not `distributorview`.
+For the four vendor retail analytics reports, the connector sends only what you configure. It supplies no default values of its own, because the right values depend on your vendor account. If you configure nothing, the request goes to Amazon without a `reportOptions` object, exactly as in earlier versions, and Amazon can reject it. If these streams fail, add the required options for each one, for example `reportPeriod` = `DAY`, `distributorView` = `MANUFACTURING` or `SOURCING`, and `sellingProgram` = `RETAIL`. Amazon's [vendor retail analytics documentation](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) lists the values each report accepts. Use `DAY` for `reportPeriod`: all four streams request one calendar day per report. Option names and values are case-sensitive: enter `distributorView`, not `distributorview`.
 
-If Amazon can't generate one of these reports (`FATAL` status), the connector writes Amazon's explanation to the sync logs. When the explanation says a report option is missing, that stream stops right away without retrying, with an error that quotes Amazon's reason so you can add the missing options under **Report Options**. If Amazon's reason doesn't name the options, the error lists the ones Amazon documents as required for that report type. Other streams keep syncing, and the sync is marked failed when they finish. When Amazon rejects the value of an option you already set, the error quotes Amazon's reason and asks you to check that value instead. For any other reason, such as a reporting period that isn't available yet, the connector retries the report as before. If every retry fails, the sync ends with the same generic async-job error as before. Check the sync logs for Amazon's reason.
+If Amazon can't generate a report (`FATAL` status), the connector fetches Amazon's explanation and writes it to the sync logs. This applies to every report stream. For the six streams listed above, which send your Report Options, a reason that points at report options stops that stream right away without retrying, with a config error that quotes Amazon's reason:
+
+- If Amazon says an option is missing, the error asks you to add it under **Report Options**. For the four vendor retail analytics reports, if Amazon's reason doesn't name the options, the error also lists the ones Amazon documents as required for that report.
+- If Amazon rejects the value of an option you already set, the error asks you to check that value instead.
+
+Other streams keep syncing, and the sync is marked failed when they finish. For any other reason, such as a reporting period that isn't available yet, the connector retries the report as described in [Reports failing with FATAL status](#reports-failing-with-fatal-status). If every retry fails, the sync ends with a generic async-job error, so check the sync logs for Amazon's reason.
 
 If you already had report options configured for either ledger stream before 5.9.3, or for any of the four vendor retail analytics reports before 6.0.1, they take effect as soon as you upgrade, and the records change shape: a summary view aggregated `DAILY` returns one row per day where it previously returned one per month, and a detailed view filtered by `eventType` returns fewer rows. Refresh the stream if you need history to match the new options.
 
@@ -325,6 +340,7 @@ Other streams ignore **Period In Days** entirely:
 - The daily report streams listed in [Daily report windows](#daily-report-windows) always request a single calendar day per report, and Sales and Traffic Business Report (Monthly) always requests a single calendar month.
 - Vendor Orders, Vendor Order Status, and Vendor Direct Fulfillment Shipping always request 7 days at a time.
 - Financial Events and Financial Event Groups use **Financial Events Step Size** instead.
+- Flat File Settlement Report downloads one settlement report per job, regardless of the report's date range. See [Settlement reports](#settlement-reports).
 
 ## Performance considerations
 
@@ -500,11 +516,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 6.1.1 | 2026-10-08 | [85912](https://github.com/airbytehq/airbyte/pull/85912) | Fix `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` returning 0 records: download each settlement report document, paginate the report listing correctly, and resolve the pre-signed download URL just before use |
-| 6.1.0 | 2026-09-29 | [86943](https://github.com/airbytehq/airbyte/pull/86943) | Give `GET_VENDOR_INVENTORY_REPORT` the daily date window and `endDate` cursor its sibling reports already have, making it incremental; hold the cursor back four days for Amazon's publishing lag |
-| 6.0.6 | 2026-09-29 | [86941](https://github.com/airbytehq/airbyte/pull/86941) | Log Amazon's explanation when a report fails with `FATAL`, and fail fast with a config error that quotes it when the reason points at report options |
+| 6.1.1 | 2026-10-09 | [85912](https://github.com/airbytehq/airbyte/pull/85912) | Fix `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` returning 0 records: download each settlement report document, paginate the report listing correctly, and resolve the pre-signed download URL just before use |
+| 6.1.0 | 2026-10-08 | [86943](https://github.com/airbytehq/airbyte/pull/86943) | Give `GET_VENDOR_INVENTORY_REPORT` the daily date window and `endDate` cursor its sibling reports already have, making it incremental; hold the cursor back four days for Amazon's publishing lag |
+| 6.0.6 | 2026-10-07 | [86941](https://github.com/airbytehq/airbyte/pull/86941) | Log Amazon's explanation when a report fails with `FATAL`, and fail fast with a config error that quotes it when the reason points at report options |
 | 6.0.5 | 2026-10-06 | [87776](https://github.com/airbytehq/airbyte/pull/87776) | Update dependencies |
-| 6.0.4 | 2026-09-29 | [86942](https://github.com/airbytehq/airbyte/pull/86942) | Stop requesting vendor retail analytics days Amazon has not published yet by holding the Vendor Sales, Vendor Traffic and Net Pure Product Margin cursors four days back |
+| 6.0.4 | 2026-10-02 | [86942](https://github.com/airbytehq/airbyte/pull/86942) | Stop requesting vendor retail analytics days Amazon has not published yet by holding the Vendor Sales, Vendor Traffic and Net Pure Product Margin cursors four days back |
 | 6.0.2 | 2026-09-29 | [87083](https://github.com/airbytehq/airbyte/pull/87083) | Update dependencies |
 | 6.0.1 | 2026-09-28 | [86940](https://github.com/airbytehq/airbyte/pull/86940) | Send configured `reportOptions` for the vendor sales, inventory, traffic, and net pure product margin reports instead of validating and then dropping them |
 | 6.0.0 | 2026-09-24 | [85813](https://github.com/airbytehq/airbyte/pull/85813) | Remove primary key from `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` streams; these line-item reports have no proven, reliably unique identifier, so deduplicating on `amazon-order-id` dropped records |
