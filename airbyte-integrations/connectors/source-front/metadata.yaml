@@ -44,7 +44,7 @@ data:
       url: https://dev.frontapp.com/docs/rate-limiting
       type: rate_limits
     - title: Front Status
-      url: https://status.front.com/
+      url: https://www.frontstatus.com/
       type: status_page
     - title: Front API News & Updates
       url: https://community.front.com/api-news-updates-40
@@ -52,3 +52,6 @@ data:
     - title: Front deprecation policy
       url: https://dev.frontapp.com/docs/deprecation-policy
       type: api_deprecations
+    - title: Front API OpenAPI specs
+      url: https://github.com/frontapp/front-api-specs
+      type: spec_repository
