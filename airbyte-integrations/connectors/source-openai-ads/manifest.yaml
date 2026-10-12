@@ -24,17 +24,10 @@ definitions:
       type: DefaultErrorHandler
       max_retries: 5
       backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
         - type: ExponentialBackoffStrategy
           factor: 5
-      response_filters:
-        - type: HttpResponseFilter
-          action: RETRY
-          http_codes:
-            - 429
-            - 500
-            - 502
-            - 503
-            - 504
 
   record_selector:
     type: RecordSelector
@@ -241,6 +234,21 @@ definitions:
       schema:
         $ref: '#/schemas/custom_audiences'
 
+  pixel_management_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 404
+        error_message: Pixel management is not enabled for this ad account, so conversion pixels cannot be read. Contact your OpenAI partner representative to enable it. Stream skipped.
+
   conversion_pixels_stream:
     type: DeclarativeStream
     name: conversion_pixels
@@ -251,6 +259,8 @@ definitions:
       requester:
         $ref: '#/definitions/requester'
         path: /conversions/pixels
+        error_handler:
+          $ref: '#/definitions/pixel_management_error_handler'
       record_selector:
         $ref: '#/definitions/record_selector'
       paginator:
@@ -264,6 +274,8 @@ definitions:
     type: DefaultErrorHandler
     max_retries: 5
     backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
       - type: ExponentialBackoffStrategy
         factor: 5
     response_filters:
@@ -271,15 +283,11 @@ definitions:
         action: IGNORE
         http_codes:
           - 403
-        error_message: Spend limits can only be read with an ad account admin API key. Stream skipped.
-      - type: HttpResponseFilter
-        action: RETRY
-        http_codes:
-          - 429
-          - 500
-          - 502
-          - 503
-          - 504
+        error_message: >-
+          Skipping spend_limit_windows: the API answered 403
+          ({{ (response.error.message or "no error message") if response is mapping and response.error is mapping else (response.error if response is mapping and response.error is string and response.error else "no error message") }}).
+          OpenAI documents this endpoint only for ad accounts on postpaid invoice billing
+          and for API keys with permission to manage billing.
 
   spend_limit_windows_stream:
     type: DeclarativeStream
