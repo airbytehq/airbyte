@@ -53,9 +53,6 @@ data:
     - title: Lago product changelog
       url: https://getlago.com/docs/changelog/product
       type: api_release_history
-    - title: Lago migration guides
-      url: https://getlago.com/docs/guide/migration
-      type: api_release_history
     - title: Lago OpenAPI specification repository
       url: https://github.com/getlago/lago-openapi
       type: spec_repository
