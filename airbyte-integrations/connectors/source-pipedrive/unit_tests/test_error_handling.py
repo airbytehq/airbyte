@@ -9,9 +9,12 @@ user-facing messages include Pipedrive's `error` text when present, and that sub
 single missing or inaccessible parent instead of failing the whole sync.
 """
 
+import json
 import logging
 
 import pytest
+import requests
+import yaml
 from _helpers import (
     CONFIG,
     collection,
@@ -25,6 +28,8 @@ from _helpers import (
 )
 
 from airbyte_cdk.models import FailureType, Status
+from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 
 
@@ -99,7 +104,7 @@ def test_403_html_body_from_cloudflare_still_produces_readable_message() -> None
         error = _error_trace(read_stream("deals", expecting_exception=True))
 
         assert error.failure_type == FailureType.config_error
-        assert "Pipedrive refused the request (403)." in error.message
+        assert "Pipedrive refused the request (403: forbidden)." in error.message
         assert "Cloudflare" in error.message
 
 
@@ -226,3 +231,140 @@ def test_mail_skips_missing_parent_thread() -> None:
 
         assert not output.errors
         assert [record.record.data["id"] for record in output.records] == [110]
+
+
+@pytest.mark.parametrize(
+    "status_code, error, failure_type, hint",
+    [
+        # https://pipedrive.readme.io/docs/core-api-concepts-http-status-codes: 415 "Feature is not enabled"
+        (415, "Feature is not enabled", FailureType.config_error, "Enable the feature in Pipedrive company settings"),
+        # 501 "Non-existent functionality": the connector sent a request Pipedrive does not implement
+        (501, "Not implemented", FailureType.system_error, "connector defect"),
+        (410, "Gone", FailureType.system_error, "permanently removed"),
+    ],
+)
+def test_statuses_outside_the_cdk_mapping_fail_once_with_pipedrive_text(status_code, error, failure_type, hint) -> None:
+    with HttpMocker() as http_mocker:
+        deals = deals_request()
+        http_mocker.get(deals, pipedrive_error(status_code, error))
+
+        error_trace = _error_trace(read_stream("deals", expecting_exception=True))
+
+        assert error_trace.failure_type == failure_type
+        assert f"{status_code}: {error}" in error_trace.message
+        assert hint in error_trace.message
+        http_mocker.assert_number_of_calls(deals, 1)
+
+
+def test_child_stream_402_reaches_the_shared_handler_instead_of_retrying() -> None:
+    # The substream handler only ignores missing or hidden parents; a 402 must fall through to
+    # base_error_handler (config_error, no retries) instead of the CDK fallback retry.
+    with HttpMocker() as http_mocker:
+        http_mocker.get(deals_archived_request(), empty_v2_page())
+        http_mocker.get(deals_request(), collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}]))
+        child = _deal_products_request(1)
+        http_mocker.get(child, pipedrive_error(402, "Required suites missing"))
+
+        error = _error_trace(read_stream("deal_products", expecting_exception=True))
+
+        assert error.failure_type == FailureType.config_error
+        assert "402: Required suites missing" in error.message
+        http_mocker.assert_number_of_calls(child, 1)
+
+
+@pytest.mark.parametrize(
+    "stream, paths, query",
+    [
+        ("projects", ["api/v2/projects", "api/v2/projects/archived"], {"limit": "500", "status": "open,completed,canceled,deleted"}),
+        ("tasks", ["api/v2/tasks"], {"limit": "500"}),
+        ("legacy_teams", ["v1/legacyTeams"], {}),
+    ],
+)
+def test_feature_gated_streams_skip_415(stream, paths, query) -> None:
+    with HttpMocker() as http_mocker:
+        for path in paths:
+            http_mocker.get(request(path, query), pipedrive_error(415, "Feature is not enabled"))
+
+        output = read_stream(stream)
+
+        assert not output.errors
+        assert output.records == []
+
+
+def test_feature_gated_streams_skip_real_plan_responses() -> None:
+    # Bodies captured from the test account on 2026-10-12.
+    legacy_teams = '{"success":false,"error":"Teams feature is not enabled in your company","error_info":"Please check developers.pipedrive.com","additional_data":null}'
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request("v1/legacyTeams"), HttpResponse(body=legacy_teams, status_code=403))
+
+        output = read_stream("legacy_teams")
+
+        assert not output.errors
+        assert output.is_in_logs("Teams feature is not enabled in your company")
+
+
+def test_permission_set_without_assignments_is_skipped() -> None:
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request("v1/permissionSets", {"limit": "50"}), collection([{"id": "ps-1"}, {"id": "ps-2"}]))
+        empty = request("v1/permissionSets/ps-1/assignments", {"limit": "500"})
+        http_mocker.get(empty, HttpResponse(body='{"success":false,"error":"Permission set not found."}', status_code=404))
+        http_mocker.get(
+            request("v1/permissionSets/ps-2/assignments", {"limit": "500"}),
+            collection([{"permission_set_id": "ps-2", "user_id": 7}]),
+        )
+
+        output = read_stream("permission_set_assignments")
+
+        assert not output.errors
+        assert [record.record.data["user_id"] for record in output.records] == [7]
+        http_mocker.assert_number_of_calls(empty, 1)
+
+
+def _templated_response_filters():
+    from conftest import _YAML_FILE_PATH
+
+    manifest = ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(_YAML_FILE_PATH.read_text()))
+    found = {}
+
+    def walk(node):
+        if isinstance(node, dict):
+            if node.get("type") == "HttpResponseFilter" and "{{" in str(node.get("error_message", "")):
+                found[(tuple(node["http_codes"]), node["error_message"])] = node
+            for value in node.values():
+                walk(value)
+        elif isinstance(node, list):
+            for value in node:
+                walk(value)
+
+    walk(manifest)
+    return list(found.values())
+
+
+_UNEXPECTED_BODIES = {
+    "no_error_field": "{}",
+    "null_error": '{"success": false, "error": null}',
+    "long_error": json.dumps({"success": False, "error": "x" * 5000}),
+    "object_error": '{"success": false, "error": {"code": 1}}',
+    "list_body": "[1, 2]",
+    "null_body": "null",
+    "html_body": "<html><body>Access denied</body></html>",
+}
+
+
+@pytest.mark.parametrize("body", list(_UNEXPECTED_BODIES.values()), ids=list(_UNEXPECTED_BODIES))
+def test_every_error_message_template_survives_unexpected_bodies(body) -> None:
+    filters = _templated_response_filters()
+    assert len(filters) >= 15
+    for spec in filters:
+        response = requests.Response()
+        response.status_code = spec["http_codes"][0]
+        response._content = body.encode()
+        response_filter = HttpResponseFilter(
+            action=spec["action"], http_codes=set(spec["http_codes"]), error_message=spec["error_message"], config={}, parameters={}
+        )
+
+        message = response_filter.matches(response).error_message
+
+        assert "None" not in message, spec["error_message"]
+        # Pipedrive's own text is capped at 300 characters.
+        assert "x" * 301 not in message, spec["error_message"]

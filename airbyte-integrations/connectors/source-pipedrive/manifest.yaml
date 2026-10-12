@@ -1110,6 +1110,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                max_retries: 10
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -1117,7 +1118,12 @@ definitions:
                       - 403
                       - 404
                       - 410
-                    error_message: "The legacy Teams feature is disabled for this Pipedrive company or the endpoint has been retired ({{ response.get('error', 'not available') }}); skipping legacy_teams."
+                      - 415
+                    error_message: "The legacy Teams feature is disabled for this Pipedrive company or the endpoint has been retired ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping legacy_teams."
+                  # A status the CDK default mapping lacks would end the composite as a retry; failing hands it to base_error_handler.
+                  - type: HttpResponseFilter
+                    http_codes: [402, 501]
+                    action: FAIL
               - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
@@ -1149,6 +1155,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                max_retries: 10
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -1156,7 +1163,12 @@ definitions:
                       - 402
                       - 403
                       - 404
-                    error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read projects ({{ response.get('error', 'not available') }}); skipping projects."
+                      - 415
+                    error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read projects ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping projects."
+                  # A status the CDK default mapping lacks would end the composite as a retry; failing hands it to base_error_handler.
+                  - type: HttpResponseFilter
+                    http_codes: [410, 501]
+                    action: FAIL
               - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
@@ -1194,6 +1206,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                max_retries: 10
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -1201,7 +1214,12 @@ definitions:
                       - 402
                       - 403
                       - 404
-                    error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read tasks ({{ response.get('error', 'not available') }}); skipping tasks."
+                      - 415
+                    error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read tasks ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping tasks."
+                  # A status the CDK default mapping lacks would end the composite as a retry; failing hands it to base_error_handler.
+                  - type: HttpResponseFilter
+                    http_codes: [410, 501]
+                    action: FAIL
               - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
@@ -1234,13 +1252,19 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                max_retries: 10
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
                     http_codes:
                       - 402
                       - 403
-                    error_message: "Installments are not included in this Pipedrive plan or the token cannot read deals ({{ response.get('error', 'not available') }}); skipping deal_installments."
+                      - 415
+                    error_message: "Installments are not included in this Pipedrive plan or the token cannot read deals ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping deal_installments."
+                  # A status the CDK default mapping lacks would end the composite as a retry; failing hands it to base_error_handler.
+                  - type: HttpResponseFilter
+                    http_codes: [410, 501]
+                    action: FAIL
               - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
@@ -1359,12 +1383,23 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                max_retries: 10
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
                     http_codes:
                       - 403
-                    error_message: "Permission set assignments require an admin API token ({{ response.get('error', 'forbidden') }}); skipping permission_set_assignments."
+                    error_message: "Permission set assignments require an admin API token ({{ (((response if response is mapping else {}).get('error') or 'forbidden') ~ '')[:300] }}); skipping permission_set_assignments."
+                  # Pipedrive documents NotFound for a permission set without assignments (GET /permissionSets/{id}/assignments).
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: "Pipedrive has no assignments for this permission set ({{ (((response if response is mapping else {}).get('error') or 'not found') ~ '')[:300] }}); skipping it."
+                  # A status the CDK default mapping lacks would end the composite as a retry; failing hands it to base_error_handler.
+                  - type: HttpResponseFilter
+                    http_codes: [402, 410, 415, 501]
+                    action: FAIL
               - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
@@ -1413,7 +1448,7 @@ definitions:
         action: FAIL
         failure_type: config_error
         error_message: >-
-          Pipedrive rejected the API token (401: {{ response.get('error', 'unauthorized access') }}).
+          Pipedrive rejected the API token (401: {{ (((response if response is mapping else {}).get('error') or 'unauthorized access') ~ '')[:300] }}).
           In Pipedrive, open Company settings > Personal preferences > API, copy the current API token
           and update it in the connector configuration. If the API tab is missing, ask a Pipedrive
           company admin to enable API access for your user.
@@ -1422,7 +1457,7 @@ definitions:
         action: FAIL
         failure_type: config_error
         error_message: >-
-          Your Pipedrive company account is not active (402: {{ response.get('error', 'payment required') }}).
+          Your Pipedrive company account is not active (402: {{ (((response if response is mapping else {}).get('error') or 'payment required') ~ '')[:300] }}).
           The trial has expired or billing details are missing. Reactivate the company account in
           Pipedrive billing settings, then retry the sync.
       - type: HttpResponseFilter
@@ -1430,7 +1465,7 @@ definitions:
         action: FAIL
         failure_type: config_error
         error_message: >-
-          Pipedrive refused the request (403{{ ': ' ~ response['error'] if response.get('error') else '' }}).
+          Pipedrive refused the request (403: {{ (((response if response is mapping else {}).get('error') or 'forbidden') ~ '')[:300] }}).
           The token owner does not have permission to read this data, the Pipedrive plan does not include it,
           or Pipedrive's Cloudflare protection blocked the token after repeated rate-limit violations. Use an
           API token from a user with access to this data, upgrade the plan, or reduce the sync frequency and
@@ -1439,21 +1474,32 @@ definitions:
         http_codes: [410]
         action: FAIL
         error_message: >-
-          Pipedrive reports this resource as permanently removed (410{{ ': ' ~ response['error'] if response.get('error') else '' }}).
+          Pipedrive reports this resource as permanently removed (410: {{ (((response if response is mapping else {}).get('error') or 'gone') ~ '')[:300] }}).
           The endpoint may have been retired by Pipedrive. Upgrade to the latest connector version or
           disable the affected stream.
+      - type: HttpResponseFilter
+        http_codes: [415]
+        action: FAIL
+        failure_type: config_error
+        error_message: >-
+          Pipedrive reports that a feature this stream reads is not enabled for your company
+          (415: {{ (((response if response is mapping else {}).get('error') or 'feature is not enabled') ~ '')[:300] }}).
+          Enable the feature in Pipedrive company settings, or deselect the stream.
+      - type: HttpResponseFilter
+        http_codes: [501]
+        action: FAIL
+        failure_type: system_error
+        error_message: >-
+          Pipedrive does not support a request the connector sent (501: {{ (((response if response is mapping else {}).get('error') or 'not implemented') ~ '')[:300] }}).
+          This is a connector defect; report it to Airbyte with the stream name.
       - type: HttpResponseFilter
         http_codes: [429]
         action: RATE_LIMITED
         error_message: >-
-          Pipedrive rate limit reached (429: {{ response.get('error', 'request over limit') }}). Airbyte waits for
+          Pipedrive rate limit reached (429: {{ (((response if response is mapping else {}).get('error') or 'request over limit') ~ '')[:300] }}). Airbyte waits for
           the window reported by the x-ratelimit-reset header and retries. Burst limits are 20-120 requests
           per 2 seconds per token depending on plan. If every request is rejected, the daily API token budget
           is exhausted and resets at midnight (Pipedrive server time): reduce sync frequency or upgrade the plan.
-      - type: HttpResponseFilter
-        http_codes: [500, 502, 503, 504]
-        action: RETRY
-        error_message: Pipedrive returned a temporary server error; retrying.
   substream_missing_parent_error_handler:
     type: DefaultErrorHandler
     max_retries: 10
@@ -1462,15 +1508,19 @@ definitions:
         http_codes: [404, 410]
         action: IGNORE
         error_message: >-
-          Pipedrive no longer has the parent record for this request ({{ response.get('error', 'not found') }});
+          Pipedrive no longer has the parent record for this request ({{ (((response if response is mapping else {}).get('error') or 'not found') ~ '')[:300] }});
           it was deleted or merged after the parent stream was read. Skipping its child records and continuing.
       - type: HttpResponseFilter
         http_codes: [403]
         action: IGNORE
         error_message: >-
-          Pipedrive denied access to the parent record for this request ({{ response.get('error', 'forbidden') }});
+          Pipedrive denied access to the parent record for this request ({{ (((response if response is mapping else {}).get('error') or 'forbidden') ~ '')[:300] }});
           the API token owner cannot see it. Skipping its child records and continuing. Use a token from a user
           with wider visibility to sync these records.
+      # A status the CDK default mapping lacks would end the composite as a retry; failing here hands it to base_error_handler.
+      - type: HttpResponseFilter
+        http_codes: [402, 415, 501]
+        action: FAIL
   v2_cursor_paginator:
     type: DefaultPaginator
     page_token_option:
