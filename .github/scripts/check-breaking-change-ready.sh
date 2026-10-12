@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
+trap 'echo "::error::check-breaking-change-ready.sh failed at line $LINENO: $BASH_COMMAND"' ERR
 
 : "${REPO:?REPO is required}"
 : "${PR_NUMBER:?PR_NUMBER is required}"
@@ -14,13 +15,10 @@ set -euo pipefail
   exit 1
 }
 
-if [[ -n "${REVIEW_THREADS_FIXTURE:-}" ]]; then
-  response="$(jq -ce '.' "$REVIEW_THREADS_FIXTURE")"
-else
-  : "${GH_TOKEN:?GH_TOKEN is required}"
-  owner="${REPO%%/*}"
-  name="${REPO#*/}"
-  query=$(cat <<'GRAPHQL'
+: "${GH_TOKEN:?GH_TOKEN is required}"
+owner="${REPO%%/*}"
+name="${REPO#*/}"
+query=$(cat <<'GRAPHQL'
 query($owner: String!, $name: String!, $number: Int!, $after: String = null) {
   repository(owner: $owner, name: $name) {
     pullRequest(number: $number) {
@@ -67,28 +65,27 @@ query($owner: String!, $name: String!, $number: Int!, $after: String = null) {
 }
 GRAPHQL
 )
-  all_threads='[]'
-  cursor=''
+all_threads='[]'
+cursor=''
 
-  while true; do
-    api_args=(-f "query=$query" -F "owner=$owner" -F "name=$name" -F "number=$PR_NUMBER")
-    [[ -z "$cursor" ]] || api_args+=(-F "after=$cursor")
-    response="$(gh api graphql "${api_args[@]}")"
-    page_threads="$(jq -ce '.data.repository.pullRequest.reviewThreads.nodes' <<<"$response")"
-    all_threads="$(jq -cn --argjson all "$all_threads" --argjson page "$page_threads" '$all + $page')"
-    has_next="$(jq -er '.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage' <<<"$response")"
-    [[ "$has_next" == true ]] || break
-    cursor="$(jq -er '.data.repository.pullRequest.reviewThreads.pageInfo.endCursor | select(type == "string" and length > 0)' <<<"$response")"
-  done
+while true; do
+  api_args=(-f "query=$query" -F "owner=$owner" -F "name=$name" -F "number=$PR_NUMBER")
+  [[ -z "$cursor" ]] || api_args+=(-F "after=$cursor")
+  response="$(gh api graphql "${api_args[@]}")"
+  page_threads="$(jq -ce '.data.repository.pullRequest.reviewThreads.nodes' <<<"$response")"
+  all_threads="$(jq -cn --argjson all "$all_threads" --argjson page "$page_threads" '$all + $page')"
+  has_next="$(jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage' <<<"$response")"
+  [[ "$has_next" == true ]] || break
+  cursor="$(jq -er '.data.repository.pullRequest.reviewThreads.pageInfo.endCursor | select(type == "string" and length > 0)' <<<"$response")"
+done
 
-  review_summaries="$(jq -c '.data.repository.pullRequest.reviews.nodes // []' <<<"$response")"
-  issue_comments="$(jq -c '.data.repository.pullRequest.comments.nodes // []' <<<"$response")"
-  response="$(jq -cn \
-    --argjson nodes "$all_threads" \
-    --argjson reviews "$review_summaries" \
-    --argjson comments "$issue_comments" \
-    '{data:{repository:{pullRequest:{reviewThreads:{nodes:$nodes},reviews:{nodes:$reviews},comments:{nodes:$comments}}}}}')"
-fi
+review_summaries="$(jq -c '.data.repository.pullRequest.reviews.nodes // []' <<<"$response")"
+issue_comments="$(jq -c '.data.repository.pullRequest.comments.nodes // []' <<<"$response")"
+response="$(jq -cn \
+  --argjson nodes "$all_threads" \
+  --argjson reviews "$review_summaries" \
+  --argjson comments "$issue_comments" \
+  '{data:{repository:{pullRequest:{reviewThreads:{nodes:$nodes},reviews:{nodes:$reviews},comments:{nodes:$comments}}}}}')"
 
 threads="$(jq -ce '.data.repository.pullRequest.reviewThreads.nodes' <<<"$response")"
 jq -e 'all(.[]; (.comments.pageInfo.hasNextPage // false) == false)' <<<"$threads" >/dev/null || {

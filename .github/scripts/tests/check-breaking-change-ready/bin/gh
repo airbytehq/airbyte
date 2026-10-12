@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" != api || "${2:-}" != graphql ]]; then
+  echo "gh stub: expected 'gh api graphql'." >&2
+  exit 1
+fi
+shift 2
+
+cursor=""
+for argument in "$@"; do
+  if [[ "$argument" == after=* ]]; then
+    cursor="${argument#after=}"
+  fi
+done
+
+page="1"
+call="first"
+if [[ -n "$cursor" ]]; then
+  page="$cursor"
+  call="$cursor"
+fi
+printf '%s\n' "$call" >>"${GH_STUB_CALLS_LOG:?GH_STUB_CALLS_LOG is required}"
+
+fixture="${GH_STUB_FIXTURE_DIR:?GH_STUB_FIXTURE_DIR is required}/page-$page.json"
+if [[ ! -f "$fixture" ]]; then
+  printf 'gh stub: fixture page not found: %s\n' "$fixture" >&2
+  exit 1
+fi
+
+cat "$fixture"

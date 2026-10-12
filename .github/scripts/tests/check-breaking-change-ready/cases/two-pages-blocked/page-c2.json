@@ -1,0 +1,48 @@
+{
+  "data": {
+    "repository": {
+      "pullRequest": {
+        "reviewThreads": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          },
+          "nodes": [
+            {
+              "isResolved": false,
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false
+                },
+                "nodes": [
+                  {
+                    "body": "<!-- breaking-change-review:recommendation id=\"R2\" title=\"Second recommendation\" -->",
+                    "url": "https://github.com/airbytehq/airbyte/pull/1#discussion_r3",
+                    "author": {
+                      "__typename": "Bot",
+                      "login": "octavia"
+                    }
+                  },
+                  {
+                    "body": "I replied to the second recommendation.",
+                    "url": "https://github.com/airbytehq/airbyte/pull/1#discussion_r4",
+                    "author": {
+                      "__typename": "User",
+                      "login": "author"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "reviews": {
+          "nodes": []
+        },
+        "comments": {
+          "nodes": []
+        }
+      }
+    }
+  }
+}

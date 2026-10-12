@@ -1,0 +1,3 @@
+exit_code=nonzero
+pages_fetched=2
+output_contains=::error::check-breaking-change-ready.sh failed at line

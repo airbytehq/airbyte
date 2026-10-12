@@ -1,0 +1,21 @@
+{
+  "data": {
+    "repository": {
+      "pullRequest": {
+        "reviewThreads": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          },
+          "nodes": []
+        },
+        "reviews": {
+          "nodes": []
+        },
+        "comments": {
+          "nodes": []
+        }
+      }
+    }
+  }
+}
