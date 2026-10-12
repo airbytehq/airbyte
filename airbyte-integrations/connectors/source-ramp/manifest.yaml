@@ -417,6 +417,7 @@ streams:
             type:
               - string
               - "null"
+            format: date-time
           expiration:
             type:
               - string
@@ -514,11 +515,13 @@ streams:
             type:
               - string
               - "null"
+            format: date-time
             description: ERP sync time. Null if not yet synced.
           updated_at:
             type:
               - string
               - "null"
+            format: date-time
             description: >-
               When the transaction was last updated. Used as the incremental
               cursor.
@@ -526,11 +529,13 @@ streams:
             type:
               - string
               - "null"
+            format: date-time
             description: When the transaction occurred.
           accounting_date:
             type:
               - string
               - "null"
+            format: date-time
           merchant_id:
             type:
               - string
@@ -628,6 +633,7 @@ streams:
             type:
               - string
               - "null"
+            format: date-time
           minor_unit_conversion_rate:
             type:
               - integer
@@ -785,22 +791,27 @@ streams:
             type:
               - string
               - "null"
+            format: date-time
           submitted_at:
             type:
               - string
               - "null"
+            format: date-time
           approved_at:
             type:
               - string
               - "null"
+            format: date-time
           created_at:
             type:
               - string
               - "null"
+            format: date-time
           updated_at:
             type:
               - string
               - "null"
+            format: date-time
             description: >-
               When the reimbursement was last updated. Used as the incremental
               cursor.
@@ -808,10 +819,12 @@ streams:
             type:
               - string
               - "null"
+            format: date-time
           transaction_date:
             type:
               - string
               - "null"
+            format: date
           memo:
             type:
               - string
