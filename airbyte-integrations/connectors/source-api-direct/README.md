@@ -1,7 +1,7 @@
 # API Direct
 This directory contains the manifest-only connector for `source-api-direct`.
 
-Real-time public data from Twitter/X, Reddit, YouTube, Instagram, TikTok, Facebook, Threads, Bluesky, Truth Social, LinkedIn, Google Search, Google Maps, news sites, forums, Amazon and Trustpilot through API Direct (https://apidirect.io). Search streams run once per search term; account streams follow the usernames, pages and URLs you list. Pay per request with a free monthly tier per endpoint.
+Real-time public data from Twitter/X, Reddit, YouTube, Instagram, TikTok, Facebook, Threads, Bluesky, Substack, Truth Social, LinkedIn, Google Search, Google Maps, news sites, forums, Amazon and Trustpilot through API Direct (https://apidirect.io). Search streams run once per search term; account streams follow the usernames, pages and URLs you list. Pay per request with a free monthly tier per endpoint.
 
 ## Usage
 There are multiple ways to use this connector:

@@ -4,8 +4,8 @@ type: DeclarativeSource
 
 description: >-
   Real-time public data from Twitter/X, Reddit, YouTube, Instagram, TikTok,
-  Facebook, Threads, Bluesky, Truth Social, LinkedIn, Google Search, Google
-  Maps, news sites, forums, Amazon and Trustpilot through API Direct
+  Facebook, Threads, Bluesky, Substack, Truth Social, LinkedIn, Google Search,
+  Google Maps, news sites, forums, Amazon and Trustpilot through API Direct
   (https://apidirect.io). Search streams run once per search term; account
   streams follow the usernames, pages and URLs you list. Pay per request with a
   free monthly tier per endpoint.
@@ -1003,6 +1003,347 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/bluesky_users"
+    substack_posts:
+      type: DeclarativeStream
+      name: substack_posts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/substack/posts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - posts
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record.get('date') }}"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ (response.get('page') or 1) + 1 }}"
+            stop_condition: >-
+              {{ not response.get('has_next_page') or (response.get('page') or
+              1) >= ([config.get('pages', 1), 101] | min) }}
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: query
+          values: "{{ config.get('queries', []) }}"
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: query
+      primary_key:
+        - url
+        - query
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date') or day_delta(-30, format='%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        is_client_side_incremental: true
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ day_delta(1, format='%Y-%m-%d %H:%M:%S') }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - query
+              value: "{{ stream_partition['query'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/substack_posts"
+    substack_users:
+      type: DeclarativeStream
+      name: substack_users
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/substack/users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ (response.get('page') or 1) + 1 }}"
+            stop_condition: >-
+              {{ not response.get('has_next_page') or (response.get('page') or
+              1) >= ([config.get('pages', 1), 4] | min) }}
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: query
+          values: "{{ config.get('queries', []) }}"
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: query
+      primary_key:
+        - url
+        - query
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - query
+              value: "{{ stream_partition['query'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/substack_users"
+    substack_publications:
+      type: DeclarativeStream
+      name: substack_publications
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/substack/publications
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - publications
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ (response.get('page') or 1) + 1 }}"
+            stop_condition: >-
+              {{ not response.get('has_next_page') or (response.get('page') or
+              1) >= ([config.get('pages', 1), 4] | min) }}
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: query
+          values: "{{ config.get('queries', []) }}"
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: query
+      primary_key:
+        - publication_id
+        - query
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - query
+              value: "{{ stream_partition['query'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/substack_publications"
+    substack_notes:
+      type: DeclarativeStream
+      name: substack_notes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/substack/notes
+          http_method: GET
+          request_parameters:
+            pages: "{{ [config.get('pages', 1), 250] | min }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - notes
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record.get('date') }}"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: query
+          values: "{{ config.get('queries', []) }}"
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: query
+      primary_key:
+        - url
+        - query
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date') or day_delta(-30, format='%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        is_client_side_incremental: true
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ day_delta(1, format='%Y-%m-%d %H:%M:%S') }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - query
+              value: "{{ stream_partition['query'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/substack_notes"
+    substack_category_publications:
+      type: DeclarativeStream
+      name: substack_category_publications
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/substack/category/publications
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - publications
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ (response.get('page') or 1) + 1 }}"
+            stop_condition: >-
+              {{ not response.get('has_next_page') or (response.get('page') or
+              1) >= ([config.get('pages', 1), 21] | min) }}
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: category
+          values: "{{ config.get('substack_category_ids', []) }}"
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: category
+      primary_key:
+        - publication_id
+        - category
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - category
+              value: "{{ stream_partition['category'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/substack_category_publications"
+    substack_category_feed:
+      type: DeclarativeStream
+      name: substack_category_feed
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/substack/category/feed
+          http_method: GET
+          request_parameters:
+            pages: "{{ [config.get('pages', 1), 250] | min }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record.get('date') }}"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: category
+          values: "{{ config.get('substack_category_ids', []) }}"
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: category
+      primary_key:
+        - url
+        - category
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date') or day_delta(-30, format='%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        is_client_side_incremental: true
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ day_delta(1, format='%Y-%m-%d %H:%M:%S') }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - category
+              value: "{{ stream_partition['category'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/substack_category_feed"
     linkedin_posts:
       type: DeclarativeStream
       name: linkedin_posts
@@ -2000,6 +2341,317 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/bluesky_user_posts"
+    substack_user_profiles:
+      type: DeclarativeStream
+      name: substack_user_profiles
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/substack/user
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - user
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: account
+          values: "{{ config.get('substack_usernames', []) }}"
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: username
+      primary_key:
+        - username
+        - account
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - account
+              value: "{{ stream_partition['account'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/substack_user_profiles"
+    substack_user_posts:
+      type: DeclarativeStream
+      name: substack_user_posts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/substack/user/posts
+          http_method: GET
+          request_parameters:
+            pages: "{{ [config.get('pages', 1), 60] | min }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - posts
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record.get('date') }}"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: account
+          values: "{{ config.get('substack_usernames', []) }}"
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: username
+      primary_key:
+        - url
+        - account
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date') or day_delta(-30, format='%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        is_client_side_incremental: true
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ day_delta(1, format='%Y-%m-%d %H:%M:%S') }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - account
+              value: "{{ stream_partition['account'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/substack_user_posts"
+    substack_user_activity:
+      type: DeclarativeStream
+      name: substack_user_activity
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/substack/user/activity
+          http_method: GET
+          request_parameters:
+            pages: "{{ [config.get('pages', 1), 250] | min }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record.get('date') }}"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: account
+          values: "{{ config.get('substack_usernames', []) }}"
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: username
+      primary_key:
+        - url
+        - account
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date') or day_delta(-30, format='%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        is_client_side_incremental: true
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ day_delta(1, format='%Y-%m-%d %H:%M:%S') }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - account
+              value: "{{ stream_partition['account'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/substack_user_activity"
+    substack_publication_details:
+      type: DeclarativeStream
+      name: substack_publication_details
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/substack/publication
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - publication
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: publication_input
+          values: "{{ config.get('substack_publications', []) }}"
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: publication
+      primary_key:
+        - publication_id
+        - publication_input
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - publication_input
+              value: "{{ stream_partition['publication_input'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/substack_publication_details"
+    substack_publication_posts:
+      type: DeclarativeStream
+      name: substack_publication_posts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/substack/publication/posts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - posts
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record.get('date') }}"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ (response.get('page') or 1) + 1 }}"
+            stop_condition: >-
+              {{ not response.get('has_next_page') or (response.get('page') or
+              1) >= ([config.get('pages', 1), 1000] | min) }}
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: publication_input
+          values: "{{ config.get('substack_publications', []) }}"
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: publication
+      primary_key:
+        - url
+        - publication_input
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date') or day_delta(-30, format='%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        is_client_side_incremental: true
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ day_delta(1, format='%Y-%m-%d %H:%M:%S') }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - publication_input
+              value: "{{ stream_partition['publication_input'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/substack_publication_posts"
+    substack_publication_recommendations:
+      type: DeclarativeStream
+      name: substack_publication_recommendations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/substack/publication/recommendations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - recommends
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: publication_input
+          values: "{{ config.get('substack_publications', []) }}"
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: publication
+      primary_key:
+        - publication_id
+        - publication_input
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - publication_input
+              value: "{{ stream_partition['publication_input'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/substack_publication_recommendations"
     truthsocial_user_posts:
       type: DeclarativeStream
       name: truthsocial_user_posts
@@ -3919,6 +4571,185 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/bluesky_post_reposts"
+    substack_post_details:
+      type: DeclarativeStream
+      name: substack_post_details
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/substack/post
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - post
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: post_url
+          values: "{{ config.get('substack_post_urls', []) }}"
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: url
+      primary_key:
+        - url
+        - post_url
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - post_url
+              value: "{{ stream_partition['post_url'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/substack_post_details"
+    substack_post_comments:
+      type: DeclarativeStream
+      name: substack_post_comments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/substack/post/comments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - comments
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record.get('date') }}"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: post_url
+          values: "{{ config.get('substack_post_urls', []) }}"
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: url
+      primary_key:
+        - comment_id
+        - post_url
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date') or day_delta(-30, format='%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        is_client_side_incremental: true
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ day_delta(1, format='%Y-%m-%d %H:%M:%S') }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - post_url
+              value: "{{ stream_partition['post_url'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/substack_post_comments"
+    substack_post_likes:
+      type: DeclarativeStream
+      name: substack_post_likes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/substack/post/likes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - likes
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: post_url
+          values: "{{ config.get('substack_post_urls', []) }}"
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: url
+      primary_key:
+        - user_id
+        - post_url
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - post_url
+              value: "{{ stream_partition['post_url'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/substack_post_likes"
+    substack_note_details:
+      type: DeclarativeStream
+      name: substack_note_details
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/substack/note
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - note
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: note_url
+          values: "{{ config.get('substack_note_urls', []) }}"
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: url
+      primary_key:
+        - url
+        - note_url
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - note_url
+              value: "{{ stream_partition['note_url'] }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/substack_note_details"
     instagram_post_details:
       type: DeclarativeStream
       name: instagram_post_details
@@ -5218,6 +6049,12 @@ streams:
   - $ref: "#/definitions/streams/threads_users"
   - $ref: "#/definitions/streams/bluesky_posts"
   - $ref: "#/definitions/streams/bluesky_users"
+  - $ref: "#/definitions/streams/substack_posts"
+  - $ref: "#/definitions/streams/substack_users"
+  - $ref: "#/definitions/streams/substack_publications"
+  - $ref: "#/definitions/streams/substack_notes"
+  - $ref: "#/definitions/streams/substack_category_publications"
+  - $ref: "#/definitions/streams/substack_category_feed"
   - $ref: "#/definitions/streams/linkedin_posts"
   - $ref: "#/definitions/streams/linkedin_companies"
   - $ref: "#/definitions/streams/linkedin_jobs"
@@ -5237,6 +6074,12 @@ streams:
   - $ref: "#/definitions/streams/threads_user_posts"
   - $ref: "#/definitions/streams/bluesky_user_profiles"
   - $ref: "#/definitions/streams/bluesky_user_posts"
+  - $ref: "#/definitions/streams/substack_user_profiles"
+  - $ref: "#/definitions/streams/substack_user_posts"
+  - $ref: "#/definitions/streams/substack_user_activity"
+  - $ref: "#/definitions/streams/substack_publication_details"
+  - $ref: "#/definitions/streams/substack_publication_posts"
+  - $ref: "#/definitions/streams/substack_publication_recommendations"
   - $ref: "#/definitions/streams/truthsocial_user_posts"
   - $ref: "#/definitions/streams/youtube_channel_details"
   - $ref: "#/definitions/streams/youtube_video_details"
@@ -5277,6 +6120,10 @@ streams:
   - $ref: "#/definitions/streams/bluesky_post_quotes"
   - $ref: "#/definitions/streams/bluesky_post_likes"
   - $ref: "#/definitions/streams/bluesky_post_reposts"
+  - $ref: "#/definitions/streams/substack_post_details"
+  - $ref: "#/definitions/streams/substack_post_comments"
+  - $ref: "#/definitions/streams/substack_post_likes"
+  - $ref: "#/definitions/streams/substack_note_details"
   - $ref: "#/definitions/streams/instagram_post_details"
   - $ref: "#/definitions/streams/instagram_post_comments"
   - $ref: "#/definitions/streams/instagram_comment_replies"
@@ -5466,6 +6313,30 @@ spec:
         default: []
         group: accounts
         order: 14
+      substack_usernames:
+        type: array
+        description: Authors whose profile, posts and Notes to sync, without the @.
+        items:
+          type: string
+        title: Substack handles
+        examples:
+          - lenny
+        default: []
+        group: accounts
+        order: 15
+      substack_publications:
+        type: array
+        description: >-
+          Publications whose details, archive and recommendations to sync: a
+          subdomain (lenny), a host (www.lennysnewsletter.com) or a URL on it.
+        items:
+          type: string
+        title: Substack publications
+        examples:
+          - lenny
+        default: []
+        group: accounts
+        order: 16
       truthsocial_usernames:
         type: array
         description: Accounts whose posts to sync.
@@ -5476,7 +6347,7 @@ spec:
           - realDonaldTrump
         default: []
         group: accounts
-        order: 15
+        order: 17
       youtube_channel_urls:
         type: array
         description: Channels whose details to sync.
@@ -5487,7 +6358,7 @@ spec:
           - https://www.youtube.com/@mkbhd
         default: []
         group: accounts
-        order: 16
+        order: 18
       youtube_video_urls:
         type: array
         description: Videos whose details and comments to sync.
@@ -5498,7 +6369,7 @@ spec:
           - https://www.youtube.com/watch?v=dQw4w9WgXcQ
         default: []
         group: accounts
-        order: 17
+        order: 19
       facebook_page_urls:
         type: array
         description: Pages whose details, posts and reviews to sync.
@@ -5509,7 +6380,7 @@ spec:
           - https://www.facebook.com/nasa
         default: []
         group: accounts
-        order: 18
+        order: 20
       facebook_group_urls:
         type: array
         description: Public groups whose details and posts to sync.
@@ -5520,7 +6391,7 @@ spec:
           - https://www.facebook.com/groups/2200032550
         default: []
         group: accounts
-        order: 19
+        order: 21
       linkedin_company_urls:
         type: array
         description: Company pages whose details and posts to sync.
@@ -5531,7 +6402,7 @@ spec:
           - https://www.linkedin.com/company/microsoft
         default: []
         group: accounts
-        order: 20
+        order: 22
       linkedin_person_urls:
         type: array
         description: People whose profile and posts to sync.
@@ -5542,7 +6413,7 @@ spec:
           - https://www.linkedin.com/in/satyanadella
         default: []
         group: accounts
-        order: 21
+        order: 23
       trustpilot_domains:
         type: array
         description: Companies whose reviews to sync, by website domain.
@@ -5553,7 +6424,7 @@ spec:
           - apple.com
         default: []
         group: accounts
-        order: 22
+        order: 24
       google_place_ids:
         type: array
         description: >-
@@ -5566,7 +6437,7 @@ spec:
           - ChIJN1t_tDeuEmsRUsoyG83frY4
         default: []
         group: accounts
-        order: 23
+        order: 25
       amazon_seller_ids:
         type: array
         description: Sellers whose profile, products and reviews to sync.
@@ -5577,7 +6448,7 @@ spec:
           - A2L77EE7U53NWQ
         default: []
         group: accounts
-        order: 24
+        order: 26
       twitter_tweet_ids:
         type: array
         description: >-
@@ -5590,7 +6461,7 @@ spec:
           - "1631781099415257088"
         default: []
         group: items
-        order: 25
+        order: 27
       twitter_woeids:
         type: array
         description: >-
@@ -5603,7 +6474,7 @@ spec:
           - "1"
         default: []
         group: items
-        order: 26
+        order: 28
       bluesky_post_urls:
         type: array
         description: Posts whose details, replies, quotes, likes and reposts to sync.
@@ -5614,7 +6485,41 @@ spec:
           - https://bsky.app/profile/bsky.app/post/3l6oveex3ii2l
         default: []
         group: items
-        order: 27
+        order: 29
+      substack_post_urls:
+        type: array
+        description: Posts whose content, comments and likes to sync.
+        items:
+          type: string
+        title: Substack post URLs
+        examples:
+          - >-
+            https://www.lennysnewsletter.com/p/all-of-the-lenny-and-friends-summit
+        default: []
+        group: items
+        order: 30
+      substack_note_urls:
+        type: array
+        description: Notes whose text and replies to sync.
+        items:
+          type: string
+        title: Substack note URLs
+        examples:
+          - https://substack.com/@hamish/note/c-355659691
+        default: []
+        group: items
+        order: 31
+      substack_category_ids:
+        type: array
+        description: Categories whose leaderboard to sync, e.g. 4 or technology.
+        items:
+          type: string
+        title: Substack category IDs or slugs
+        examples:
+          - technology
+        default: []
+        group: items
+        order: 32
       instagram_post_urls:
         type: array
         description: Posts or reels whose details, comments and likes to sync.
@@ -5625,7 +6530,7 @@ spec:
           - https://www.instagram.com/reel/DaTSSukB-Lb/
         default: []
         group: items
-        order: 28
+        order: 33
       instagram_hashtags:
         type: array
         description: "Hashtags whose posts to sync, without the #."
@@ -5636,7 +6541,7 @@ spec:
           - summer
         default: []
         group: items
-        order: 29
+        order: 34
       facebook_post_ids:
         type: array
         description: >-
@@ -5650,7 +6555,7 @@ spec:
             pfbid02BzYRNmoznsZjci5FuztPUb9mKd9ameNVYSBweaBEvb8oEzSMjcs8nbXnMkYA5Benl
         default: []
         group: items
-        order: 30
+        order: 35
       linkedin_post_urls:
         type: array
         description: Posts whose details to sync.
@@ -5662,7 +6567,7 @@ spec:
             https://www.linkedin.com/feed/update/urn:li:activity:7219434359085252608
         default: []
         group: items
-        order: 31
+        order: 36
       linkedin_job_urls:
         type: array
         description: Job listings whose details to sync.
@@ -5673,7 +6578,7 @@ spec:
           - https://linkedin.com/jobs/view/4417833240
         default: []
         group: items
-        order: 32
+        order: 37
       tiktok_video_urls:
         type: array
         description: Videos whose details to sync.
@@ -5684,7 +6589,7 @@ spec:
           - https://www.tiktok.com/@tiktok/video/7516594811734854943
         default: []
         group: items
-        order: 33
+        order: 38
       amazon_asins:
         type: array
         description: Products whose details to sync.
@@ -5695,7 +6600,7 @@ spec:
           - B07ZPKN6YR
         default: []
         group: items
-        order: 34
+        order: 39
       amazon_best_seller_categories:
         type: array
         description: >-
@@ -5708,7 +6613,7 @@ spec:
           - software
         default: []
         group: items
-        order: 35
+        order: 40
       trustpilot_category_ids:
         type: array
         description: >-
@@ -5721,7 +6626,7 @@ spec:
           - electronics_technology
         default: []
         group: items
-        order: 36
+        order: 41
       trustpilot_user_ids:
         type: array
         description: >-
@@ -5734,7 +6639,7 @@ spec:
           - 5724f5f50000ff000a1c0f61
         default: []
         group: items
-        order: 37
+        order: 42
       ai_prompts:
         type: array
         description: Prompts to ask Google AI Mode, one record per prompt.
@@ -5745,7 +6650,7 @@ spec:
           - How do I make pizza?
         default: []
         group: items
-        order: 38
+        order: 43
     groups:
       - id: accounts
         title: Accounts to monitor
@@ -5773,6 +6678,12 @@ metadata:
     threads_users: false
     bluesky_posts: false
     bluesky_users: false
+    substack_posts: false
+    substack_users: false
+    substack_publications: false
+    substack_notes: false
+    substack_category_publications: false
+    substack_category_feed: false
     linkedin_posts: false
     linkedin_companies: false
     linkedin_jobs: false
@@ -5792,6 +6703,12 @@ metadata:
     threads_user_posts: false
     bluesky_user_profiles: false
     bluesky_user_posts: false
+    substack_user_profiles: false
+    substack_user_posts: false
+    substack_user_activity: false
+    substack_publication_details: false
+    substack_publication_posts: false
+    substack_publication_recommendations: false
     truthsocial_user_posts: false
     youtube_channel_details: false
     youtube_video_details: false
@@ -5832,6 +6749,10 @@ metadata:
     bluesky_post_quotes: false
     bluesky_post_likes: false
     bluesky_post_reposts: false
+    substack_post_details: false
+    substack_post_comments: false
+    substack_post_likes: false
+    substack_note_details: false
     instagram_post_details: false
     instagram_post_comments: false
     instagram_comment_replies: false
@@ -7189,6 +8110,947 @@ schemas:
           - "null"
           - string
       query:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  substack_posts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      subtitle:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      date:
+        type:
+          - "null"
+          - string
+      author:
+        type:
+          - "null"
+          - string
+      author_name:
+        type:
+          - "null"
+          - string
+      author_id:
+        type:
+          - "null"
+          - string
+      author_url:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      snippet:
+        type:
+          - "null"
+          - string
+      likes:
+        type:
+          - "null"
+          - number
+      comments:
+        type:
+          - "null"
+          - number
+      restacks:
+        type:
+          - "null"
+          - number
+      reactions:
+        type:
+          - "null"
+          - object
+        properties:
+          ❤:
+            type:
+              - "null"
+              - number
+        additionalProperties: true
+      is_paid:
+        type:
+          - "null"
+          - boolean
+      audience:
+        type:
+          - "null"
+          - string
+      wordcount:
+        type:
+          - "null"
+          - number
+      lang:
+        type:
+          - "null"
+          - string
+      cover_image_url:
+        type:
+          - "null"
+          - string
+      podcast_url:
+        type:
+          - "null"
+          - string
+      podcast_duration:
+        type:
+          - "null"
+          - number
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      publication:
+        type:
+          - "null"
+          - string
+      publication_id:
+        type:
+          - "null"
+          - string
+      publication_url:
+        type:
+          - "null"
+          - string
+      slug:
+        type:
+          - "null"
+          - string
+      post_id:
+        type:
+          - "null"
+          - string
+      authors:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            username:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            user_id:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      replies:
+        type:
+          - "null"
+          - number
+      audio_url:
+        type:
+          - "null"
+          - string
+      podcast_image_url:
+        type:
+          - "null"
+          - string
+      video_duration:
+        type:
+          - "null"
+          - number
+      query:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  substack_users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      username:
+        type:
+          - "null"
+          - string
+      full_name:
+        type:
+          - "null"
+          - string
+      user_id:
+        type:
+          - "null"
+          - string
+      biography:
+        type:
+          - "null"
+          - string
+      profile_pic_url:
+        type:
+          - "null"
+          - string
+      follower_count:
+        type:
+          - "null"
+          - number
+      subscriber_count:
+        type:
+          - "null"
+          - number
+      subscriber_count_label:
+        type:
+          - "null"
+          - string
+      bestseller_tier:
+        type:
+          - "null"
+          - number
+      is_bestseller:
+        type:
+          - "null"
+          - boolean
+      paid_subscriber_band:
+        type:
+          - "null"
+          - string
+      paid_subscriber_floor:
+        type:
+          - "null"
+          - number
+      leaderboard:
+        type:
+          - "null"
+          - object
+        properties:
+          board:
+            type:
+              - "null"
+              - string
+          category:
+            type:
+              - "null"
+              - string
+          category_id:
+            type:
+              - "null"
+              - number
+          rank:
+            type:
+              - "null"
+              - number
+        additionalProperties: true
+      twitter_handle:
+        type:
+          - "null"
+          - string
+      primary_publication:
+        type:
+          - "null"
+          - object
+        properties:
+          publication_id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          subdomain:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+          logo_url:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+      date_joined:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      query:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  substack_publications:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      author:
+        type:
+          - "null"
+          - string
+      author_id:
+        type:
+          - "null"
+          - string
+      author_name:
+        type:
+          - "null"
+          - string
+      author_url:
+        type:
+          - "null"
+          - string
+      bestseller_tier:
+        type:
+          - "null"
+          - number
+      cover_image_url:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      custom_domain:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      first_post_date:
+        type:
+          - "null"
+          - string
+      has_podcast:
+        type:
+          - "null"
+          - boolean
+      podcast: {}
+      sections:
+        type:
+          - "null"
+          - array
+        items: {}
+      author_pic_url:
+        type:
+          - "null"
+          - string
+      logo_url_wide:
+        type:
+          - "null"
+          - string
+      founding_plan_name:
+        type:
+          - "null"
+          - string
+      has_recommendations:
+        type:
+          - "null"
+          - boolean
+      has_chat:
+        type:
+          - "null"
+          - boolean
+      is_bestseller:
+        type:
+          - "null"
+          - boolean
+      language:
+        type:
+          - "null"
+          - string
+      logo_url:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      paid_enabled:
+        type:
+          - "null"
+          - boolean
+      paid_subscriber_band:
+        type:
+          - "null"
+          - string
+      paid_subscriber_floor:
+        type:
+          - "null"
+          - number
+      plans:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            amount:
+              type:
+                - "null"
+                - number
+            currency:
+              type:
+                - "null"
+                - string
+            interval:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      publication_id:
+        type:
+          - "null"
+          - string
+      ranking_detail:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+      subdomain:
+        type:
+          - "null"
+          - string
+      subscriber_count: {}
+      subscriber_count_label:
+        type:
+          - "null"
+          - string
+      twitter_handle:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      query:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  substack_notes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      attachments:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            height:
+              type:
+                - "null"
+                - number
+            url:
+              type:
+                - "null"
+                - string
+            width:
+              type:
+                - "null"
+                - number
+          additionalProperties: true
+      author:
+        type:
+          - "null"
+          - string
+      author_id:
+        type:
+          - "null"
+          - string
+      author_name:
+        type:
+          - "null"
+          - string
+      author_url:
+        type:
+          - "null"
+          - string
+      body:
+        type:
+          - "null"
+          - string
+      date:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      lang:
+        type:
+          - "null"
+          - string
+      likes:
+        type:
+          - "null"
+          - number
+      note_id:
+        type:
+          - "null"
+          - string
+      publication:
+        type:
+          - "null"
+          - string
+      replies:
+        type:
+          - "null"
+          - number
+      restacks:
+        type:
+          - "null"
+          - number
+      reactions:
+        type:
+          - "null"
+          - object
+        properties:
+          ❤:
+            type:
+              - "null"
+              - number
+        additionalProperties: true
+      author_pic_url:
+        type:
+          - "null"
+          - string
+      author_bestseller_tier:
+        type:
+          - "null"
+          - number
+      source:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      query:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  substack_category_publications:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      publication_id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      subdomain:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      custom_domain:
+        type:
+          - "null"
+          - string
+      logo_url:
+        type:
+          - "null"
+          - string
+      cover_image_url:
+        type:
+          - "null"
+          - string
+      author:
+        type:
+          - "null"
+          - string
+      author_name:
+        type:
+          - "null"
+          - string
+      author_id:
+        type:
+          - "null"
+          - string
+      author_url:
+        type:
+          - "null"
+          - string
+      subscriber_count: {}
+      subscriber_count_label:
+        type:
+          - "null"
+          - string
+      ranking_detail:
+        type:
+          - "null"
+          - string
+      paid_subscriber_band:
+        type:
+          - "null"
+          - string
+      paid_subscriber_floor:
+        type:
+          - "null"
+          - number
+      bestseller_tier:
+        type:
+          - "null"
+          - number
+      is_bestseller:
+        type:
+          - "null"
+          - boolean
+      paid_enabled:
+        type:
+          - "null"
+          - boolean
+      plans:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            interval:
+              type:
+                - "null"
+                - string
+            amount:
+              type:
+                - "null"
+                - number
+            currency:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      has_podcast:
+        type:
+          - "null"
+          - boolean
+      podcast: {}
+      sections:
+        type:
+          - "null"
+          - array
+        items: {}
+      author_pic_url:
+        type:
+          - "null"
+          - string
+      logo_url_wide:
+        type:
+          - "null"
+          - string
+      founding_plan_name:
+        type:
+          - "null"
+          - string
+      has_recommendations:
+        type:
+          - "null"
+          - boolean
+      has_chat:
+        type:
+          - "null"
+          - boolean
+      language:
+        type:
+          - "null"
+          - string
+      twitter_handle:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      first_post_date:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      rank:
+        type:
+          - "null"
+          - number
+      category:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  substack_category_feed:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      attachments:
+        type:
+          - "null"
+          - array
+        items: {}
+      author:
+        type:
+          - "null"
+          - string
+      author_id:
+        type:
+          - "null"
+          - string
+      author_name:
+        type:
+          - "null"
+          - string
+      author_url:
+        type:
+          - "null"
+          - string
+      body:
+        type:
+          - "null"
+          - string
+      date:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      lang:
+        type:
+          - "null"
+          - string
+      likes:
+        type:
+          - "null"
+          - number
+      note_id:
+        type:
+          - "null"
+          - string
+      publication:
+        type:
+          - "null"
+          - string
+      replies:
+        type:
+          - "null"
+          - number
+      restacks:
+        type:
+          - "null"
+          - number
+      reactions:
+        type:
+          - "null"
+          - object
+        properties:
+          ❤:
+            type:
+              - "null"
+              - number
+        additionalProperties: true
+      author_pic_url:
+        type:
+          - "null"
+          - string
+      author_bestseller_tier:
+        type:
+          - "null"
+          - number
+      source:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      audience:
+        type:
+          - "null"
+          - string
+      comments:
+        type:
+          - "null"
+          - number
+      cover_image_url:
+        type:
+          - "null"
+          - string
+      is_paid:
+        type:
+          - "null"
+          - boolean
+      podcast_duration:
+        type:
+          - "null"
+          - number
+      podcast_url:
+        type:
+          - "null"
+          - string
+      post_id:
+        type:
+          - "null"
+          - string
+      post_type:
+        type:
+          - "null"
+          - string
+      publication_id:
+        type:
+          - "null"
+          - string
+      publication_url:
+        type:
+          - "null"
+          - string
+      authors:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            username:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            user_id:
+              type:
+                - "null"
+                - string
+            url:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      audio_url:
+        type:
+          - "null"
+          - string
+      podcast_image_url:
+        type:
+          - "null"
+          - string
+      video_duration:
+        type:
+          - "null"
+          - number
+      slug:
+        type:
+          - "null"
+          - string
+      snippet:
+        type:
+          - "null"
+          - string
+      subtitle:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      title:
+        type:
+          - "null"
+          - string
+      wordcount:
+        type:
+          - "null"
+          - number
+      category:
         type:
           - "null"
           - string
@@ -9102,6 +10964,1023 @@ schemas:
           - "null"
           - boolean
       account:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  substack_user_profiles:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      username:
+        type:
+          - "null"
+          - string
+      full_name:
+        type:
+          - "null"
+          - string
+      user_id:
+        type:
+          - "null"
+          - string
+      biography:
+        type:
+          - "null"
+          - string
+      profile_pic_url:
+        type:
+          - "null"
+          - string
+      follower_count:
+        type:
+          - "null"
+          - number
+      subscriber_count:
+        type:
+          - "null"
+          - number
+      subscriber_count_label:
+        type:
+          - "null"
+          - string
+      bestseller_tier:
+        type:
+          - "null"
+          - number
+      is_bestseller:
+        type:
+          - "null"
+          - boolean
+      paid_subscriber_band:
+        type:
+          - "null"
+          - string
+      paid_subscriber_floor:
+        type:
+          - "null"
+          - number
+      primary_publication:
+        type:
+          - "null"
+          - object
+        properties:
+          publication_id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          subdomain:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+          logo_url:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+      date_joined:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      publications:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            publication_id:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            subdomain:
+              type:
+                - "null"
+                - string
+            url:
+              type:
+                - "null"
+                - string
+            logo_url:
+              type:
+                - "null"
+                - string
+            role:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      links:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            label:
+              type:
+                - "null"
+                - string
+            url:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      twitter_handle:
+        type:
+          - "null"
+          - string
+      leaderboard:
+        type:
+          - "null"
+          - object
+        properties:
+          category:
+            type:
+              - "null"
+              - string
+          category_id:
+            type:
+              - "null"
+              - number
+          rank:
+            type:
+              - "null"
+              - number
+          board:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+      subscriptions_count:
+        type:
+          - "null"
+          - number
+      slug:
+        type:
+          - "null"
+          - string
+      recommendation_count:
+        type:
+          - "null"
+          - number
+      has_guest_posts:
+        type:
+          - "null"
+          - boolean
+      subscriptions:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            publication_id:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            subdomain:
+              type:
+                - "null"
+                - string
+            url:
+              type:
+                - "null"
+                - string
+            logo_url:
+              type:
+                - "null"
+                - string
+            plan:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      has_posts:
+        type:
+          - "null"
+          - boolean
+      account:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  substack_user_posts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      subtitle:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      date:
+        type:
+          - "null"
+          - string
+      author:
+        type:
+          - "null"
+          - string
+      author_name:
+        type:
+          - "null"
+          - string
+      author_id:
+        type:
+          - "null"
+          - string
+      author_url:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      snippet:
+        type:
+          - "null"
+          - string
+      likes:
+        type:
+          - "null"
+          - number
+      comments:
+        type:
+          - "null"
+          - number
+      restacks:
+        type:
+          - "null"
+          - number
+      reactions:
+        type:
+          - "null"
+          - object
+        properties:
+          ❤:
+            type:
+              - "null"
+              - number
+        additionalProperties: true
+      is_paid:
+        type:
+          - "null"
+          - boolean
+      audience:
+        type:
+          - "null"
+          - string
+      wordcount:
+        type:
+          - "null"
+          - number
+      lang:
+        type:
+          - "null"
+          - string
+      cover_image_url:
+        type:
+          - "null"
+          - string
+      podcast_url:
+        type:
+          - "null"
+          - string
+      podcast_duration:
+        type:
+          - "null"
+          - number
+      tags:
+        type:
+          - "null"
+          - array
+        items: {}
+      publication:
+        type:
+          - "null"
+          - string
+      publication_id:
+        type:
+          - "null"
+          - string
+      publication_url:
+        type:
+          - "null"
+          - string
+      slug:
+        type:
+          - "null"
+          - string
+      post_id:
+        type:
+          - "null"
+          - string
+      authors:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            username:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            user_id:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      replies:
+        type:
+          - "null"
+          - number
+      audio_url:
+        type:
+          - "null"
+          - string
+      podcast_image_url:
+        type:
+          - "null"
+          - string
+      video_duration:
+        type:
+          - "null"
+          - number
+      account:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  substack_user_activity:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      note_id:
+        type:
+          - "null"
+          - string
+      body:
+        type:
+          - "null"
+          - string
+      date:
+        type:
+          - "null"
+          - string
+      author:
+        type:
+          - "null"
+          - string
+      author_name:
+        type:
+          - "null"
+          - string
+      author_id:
+        type:
+          - "null"
+          - string
+      author_url:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      likes:
+        type:
+          - "null"
+          - number
+      replies:
+        type:
+          - "null"
+          - number
+      restacks:
+        type:
+          - "null"
+          - number
+      reactions:
+        type:
+          - "null"
+          - object
+        properties:
+          ❤:
+            type:
+              - "null"
+              - number
+        additionalProperties: true
+      author_pic_url:
+        type:
+          - "null"
+          - string
+      author_bestseller_tier:
+        type:
+          - "null"
+          - number
+      lang:
+        type:
+          - "null"
+          - string
+      attachments:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            note_id:
+              type:
+                - "null"
+                - string
+            author:
+              type:
+                - "null"
+                - string
+            author_name:
+              type:
+                - "null"
+                - string
+            body:
+              type:
+                - "null"
+                - string
+            attachments:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  post_id:
+                    type:
+                      - "null"
+                      - string
+                  publication:
+                    type:
+                      - "null"
+                      - string
+                  title:
+                    type:
+                      - "null"
+                      - string
+                  url:
+                    type:
+                      - "null"
+                      - string
+                  duration:
+                    type:
+                      - "null"
+                      - number
+                  height:
+                    type:
+                      - "null"
+                      - number
+                  width:
+                    type:
+                      - "null"
+                      - number
+                additionalProperties: true
+            url:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      publication:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      activity:
+        type:
+          - "null"
+          - string
+      account:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  substack_publication_details:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      publication_id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      subdomain:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      custom_domain:
+        type:
+          - "null"
+          - string
+      logo_url:
+        type:
+          - "null"
+          - string
+      cover_image_url:
+        type:
+          - "null"
+          - string
+      author:
+        type:
+          - "null"
+          - string
+      author_name:
+        type:
+          - "null"
+          - string
+      author_id:
+        type:
+          - "null"
+          - string
+      author_url:
+        type:
+          - "null"
+          - string
+      subscriber_count:
+        type:
+          - "null"
+          - number
+      subscriber_count_label:
+        type:
+          - "null"
+          - string
+      ranking_detail:
+        type:
+          - "null"
+          - string
+      paid_subscriber_band:
+        type:
+          - "null"
+          - string
+      paid_subscriber_floor:
+        type:
+          - "null"
+          - number
+      bestseller_tier:
+        type:
+          - "null"
+          - number
+      is_bestseller:
+        type:
+          - "null"
+          - boolean
+      paid_enabled:
+        type:
+          - "null"
+          - boolean
+      plans:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            interval:
+              type:
+                - "null"
+                - string
+            amount:
+              type:
+                - "null"
+                - number
+            currency:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      has_podcast:
+        type:
+          - "null"
+          - boolean
+      podcast: {}
+      sections:
+        type:
+          - "null"
+          - array
+        items: {}
+      author_pic_url:
+        type:
+          - "null"
+          - string
+      logo_url_wide:
+        type:
+          - "null"
+          - string
+      founding_plan_name:
+        type:
+          - "null"
+          - string
+      has_recommendations:
+        type:
+          - "null"
+          - boolean
+      has_chat:
+        type:
+          - "null"
+          - boolean
+      language:
+        type:
+          - "null"
+          - string
+      twitter_handle:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      first_post_date:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      contributors:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            username:
+              type:
+                - "null"
+                - string
+            full_name:
+              type:
+                - "null"
+                - string
+            user_id:
+              type:
+                - "null"
+                - string
+            biography:
+              type:
+                - "null"
+                - string
+            profile_pic_url:
+              type:
+                - "null"
+                - string
+            bestseller_tier:
+              type:
+                - "null"
+                - number
+            is_byline_only:
+              type:
+                - "null"
+                - boolean
+            url:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      publication_input:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  substack_publication_posts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      subtitle:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      date:
+        type:
+          - "null"
+          - string
+      author:
+        type:
+          - "null"
+          - string
+      author_name:
+        type:
+          - "null"
+          - string
+      author_id:
+        type:
+          - "null"
+          - string
+      author_url:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      snippet:
+        type:
+          - "null"
+          - string
+      likes:
+        type:
+          - "null"
+          - number
+      comments:
+        type:
+          - "null"
+          - number
+      restacks:
+        type:
+          - "null"
+          - number
+      reactions:
+        type:
+          - "null"
+          - object
+        properties:
+          ❤:
+            type:
+              - "null"
+              - number
+        additionalProperties: true
+      is_paid:
+        type:
+          - "null"
+          - boolean
+      audience:
+        type:
+          - "null"
+          - string
+      wordcount:
+        type:
+          - "null"
+          - number
+      lang:
+        type:
+          - "null"
+          - string
+      cover_image_url:
+        type:
+          - "null"
+          - string
+      podcast_url:
+        type:
+          - "null"
+          - string
+      podcast_duration:
+        type:
+          - "null"
+          - number
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      publication:
+        type:
+          - "null"
+          - string
+      publication_id:
+        type:
+          - "null"
+          - string
+      publication_url:
+        type:
+          - "null"
+          - string
+      slug:
+        type:
+          - "null"
+          - string
+      post_id:
+        type:
+          - "null"
+          - string
+      authors:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            username:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            user_id:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      replies:
+        type:
+          - "null"
+          - number
+      audio_url:
+        type:
+          - "null"
+          - string
+      podcast_image_url:
+        type:
+          - "null"
+          - string
+      video_duration:
+        type:
+          - "null"
+          - number
+      publication_input:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  substack_publication_recommendations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      publication_id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      subdomain:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      logo_url:
+        type:
+          - "null"
+          - string
+      author:
+        type:
+          - "null"
+          - string
+      author_name:
+        type:
+          - "null"
+          - string
+      author_id:
+        type:
+          - "null"
+          - string
+      author_url:
+        type:
+          - "null"
+          - string
+      language:
+        type:
+          - "null"
+          - string
+      paid_enabled:
+        type:
+          - "null"
+          - boolean
+      blurb:
+        type:
+          - "null"
+          - string
+      date:
+        type:
+          - "null"
+          - string
+      publication_input:
         type:
           - "null"
           - string
@@ -12668,6 +15547,606 @@ schemas:
           - "null"
           - string
       post_url:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  substack_post_details:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      subtitle:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      date:
+        type:
+          - "null"
+          - string
+      author:
+        type:
+          - "null"
+          - string
+      author_name:
+        type:
+          - "null"
+          - string
+      author_id:
+        type:
+          - "null"
+          - string
+      author_url:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      snippet:
+        type:
+          - "null"
+          - string
+      likes:
+        type:
+          - "null"
+          - number
+      comments:
+        type:
+          - "null"
+          - number
+      restacks:
+        type:
+          - "null"
+          - number
+      authors:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            username:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            user_id:
+              type:
+                - "null"
+                - string
+            url:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      replies:
+        type:
+          - "null"
+          - number
+      audio_url:
+        type:
+          - "null"
+          - string
+      podcast_image_url:
+        type:
+          - "null"
+          - string
+      video_duration:
+        type:
+          - "null"
+          - number
+      reactions:
+        type:
+          - "null"
+          - object
+        properties:
+          ❤:
+            type:
+              - "null"
+              - number
+        additionalProperties: true
+      is_paid:
+        type:
+          - "null"
+          - boolean
+      audience:
+        type:
+          - "null"
+          - string
+      wordcount:
+        type:
+          - "null"
+          - number
+      lang:
+        type:
+          - "null"
+          - string
+      cover_image_url:
+        type:
+          - "null"
+          - string
+      podcast_url:
+        type:
+          - "null"
+          - string
+      podcast_duration:
+        type:
+          - "null"
+          - number
+      tags:
+        type:
+          - "null"
+          - array
+        items: {}
+      publication:
+        type:
+          - "null"
+          - string
+      publication_id:
+        type:
+          - "null"
+          - string
+      publication_url:
+        type:
+          - "null"
+          - string
+      slug:
+        type:
+          - "null"
+          - string
+      post_id:
+        type:
+          - "null"
+          - string
+      body_html:
+        type:
+          - "null"
+          - string
+      body_text:
+        type:
+          - "null"
+          - string
+      body_is_preview:
+        type:
+          - "null"
+          - boolean
+      updated_at:
+        type:
+          - "null"
+          - string
+      previous_post_slug:
+        type:
+          - "null"
+          - string
+      next_post_slug:
+        type:
+          - "null"
+          - string
+      publication_details:
+        type:
+          - "null"
+          - object
+        properties:
+          publication_id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          subdomain:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+          logo_url:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+      post_url:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  substack_post_comments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      comment_id:
+        type:
+          - "null"
+          - string
+      body:
+        type:
+          - "null"
+          - string
+      date:
+        type:
+          - "null"
+          - string
+      author:
+        type:
+          - "null"
+          - string
+      author_name:
+        type:
+          - "null"
+          - string
+      author_id:
+        type:
+          - "null"
+          - string
+      author_url:
+        type:
+          - "null"
+          - string
+      likes:
+        type:
+          - "null"
+          - number
+      replies:
+        type:
+          - "null"
+          - number
+      restacks:
+        type:
+          - "null"
+          - number
+      is_author:
+        type:
+          - "null"
+          - boolean
+      is_pinned:
+        type:
+          - "null"
+          - boolean
+      author_pic_url:
+        type:
+          - "null"
+          - string
+      reactions:
+        type:
+          - "null"
+          - object
+        properties:
+          ❤:
+            type:
+              - "null"
+              - number
+        additionalProperties: true
+      liked_by:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      status:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      children:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            comment_id:
+              type:
+                - "null"
+                - string
+            body:
+              type:
+                - "null"
+                - string
+            date:
+              type:
+                - "null"
+                - string
+            author:
+              type:
+                - "null"
+                - string
+            author_name:
+              type:
+                - "null"
+                - string
+            author_id:
+              type:
+                - "null"
+                - string
+            author_url:
+              type:
+                - "null"
+                - string
+            likes:
+              type:
+                - "null"
+                - number
+            replies:
+              type:
+                - "null"
+                - number
+            restacks:
+              type:
+                - "null"
+                - number
+            is_author:
+              type:
+                - "null"
+                - boolean
+            is_pinned:
+              type:
+                - "null"
+                - boolean
+            url:
+              type:
+                - "null"
+                - string
+            children:
+              type:
+                - "null"
+                - array
+              items: {}
+          additionalProperties: true
+      post_url:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  substack_post_likes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      full_name:
+        type:
+          - "null"
+          - string
+      user_id:
+        type:
+          - "null"
+          - string
+      profile_pic_url:
+        type:
+          - "null"
+          - string
+      bestseller_tier:
+        type:
+          - "null"
+          - number
+      is_bestseller:
+        type:
+          - "null"
+          - boolean
+      primary_publication:
+        type:
+          - "null"
+          - object
+        properties:
+          publication_id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          subdomain:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+          logo_url:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+      url:
+        type:
+          - "null"
+          - string
+      post_url:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  substack_note_details:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      note_id:
+        type:
+          - "null"
+          - string
+      body:
+        type:
+          - "null"
+          - string
+      date:
+        type:
+          - "null"
+          - string
+      author:
+        type:
+          - "null"
+          - string
+      author_name:
+        type:
+          - "null"
+          - string
+      author_id:
+        type:
+          - "null"
+          - string
+      author_url:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      likes:
+        type:
+          - "null"
+          - number
+      replies:
+        type:
+          - "null"
+          - number
+      restacks:
+        type:
+          - "null"
+          - number
+      reactions:
+        type:
+          - "null"
+          - object
+        properties:
+          ❤:
+            type:
+              - "null"
+              - number
+        additionalProperties: true
+      author_pic_url:
+        type:
+          - "null"
+          - string
+      author_bestseller_tier:
+        type:
+          - "null"
+          - number
+      lang:
+        type:
+          - "null"
+          - string
+      attachments:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            note_id:
+              type:
+                - "null"
+                - string
+            author:
+              type:
+                - "null"
+                - string
+            author_name:
+              type:
+                - "null"
+                - string
+            body:
+              type:
+                - "null"
+                - string
+            attachments:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  post_id:
+                    type:
+                      - "null"
+                      - string
+                  publication:
+                    type:
+                      - "null"
+                      - string
+                  title:
+                    type:
+                      - "null"
+                      - string
+                  url:
+                    type:
+                      - "null"
+                      - string
+                  duration:
+                    type:
+                      - "null"
+                      - number
+                  height:
+                    type:
+                      - "null"
+                      - number
+                  width:
+                    type:
+                      - "null"
+                      - number
+                additionalProperties: true
+            url:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      publication:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      note_url:
         type:
           - "null"
           - string

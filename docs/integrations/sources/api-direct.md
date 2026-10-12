@@ -1,5 +1,5 @@
 # API Direct
-Real-time public data from Twitter/X, Reddit, YouTube, Instagram, TikTok, Facebook, Threads, Bluesky, Truth Social, LinkedIn, Google Search, Google Maps, news sites, forums, Amazon and Trustpilot through API Direct (https://apidirect.io). Search streams run once per search term; account streams follow the usernames, pages and URLs you list. Pay per request with a free monthly tier per endpoint.
+Real-time public data from Twitter/X, Reddit, YouTube, Instagram, TikTok, Facebook, Threads, Bluesky, Substack, Truth Social, LinkedIn, Google Search, Google Maps, news sites, forums, Amazon and Trustpilot through API Direct (https://apidirect.io). Search streams run once per search term; account streams follow the usernames, pages and URLs you list. Pay per request with a free monthly tier per endpoint.
 
 ## Configuration
 
@@ -17,6 +17,8 @@ Real-time public data from Twitter/X, Reddit, YouTube, Instagram, TikTok, Facebo
 | `tiktok_usernames` | `array` | TikTok usernames. Accounts whose profile to sync, without the @. | [] |
 | `threads_usernames` | `array` | Threads usernames. Accounts whose posts and profile to sync. | [] |
 | `bluesky_usernames` | `array` | Bluesky handles. Accounts whose posts and profile to sync, e.g. bsky.app. | [] |
+| `substack_usernames` | `array` | Substack handles. Authors whose profile, posts and Notes to sync, without the @. | [] |
+| `substack_publications` | `array` | Substack publications. Publications whose details, archive and recommendations to sync: a subdomain (lenny), a host (www.lennysnewsletter.com) or a URL on it. | [] |
 | `truthsocial_usernames` | `array` | Truth Social usernames. Accounts whose posts to sync. | [] |
 | `youtube_channel_urls` | `array` | YouTube channel URLs. Channels whose details to sync. | [] |
 | `youtube_video_urls` | `array` | YouTube video URLs. Videos whose details and comments to sync. | [] |
@@ -30,6 +32,9 @@ Real-time public data from Twitter/X, Reddit, YouTube, Instagram, TikTok, Facebo
 | `twitter_tweet_ids` | `array` | Tweet IDs. Tweets whose details, replies, quotes and retweets to sync: the number at the end of the tweet URL. | [] |
 | `twitter_woeids` | `array` | Twitter trend locations. WOEIDs whose trending topics to sync, e.g. 1 for worldwide or 23424977 for the United States. | [] |
 | `bluesky_post_urls` | `array` | Bluesky post URLs. Posts whose details, replies, quotes, likes and reposts to sync. | [] |
+| `substack_post_urls` | `array` | Substack post URLs. Posts whose content, comments and likes to sync. | [] |
+| `substack_note_urls` | `array` | Substack note URLs. Notes whose text and replies to sync. | [] |
+| `substack_category_ids` | `array` | Substack category IDs or slugs. Categories whose leaderboard to sync, e.g. 4 or technology. | [] |
 | `instagram_post_urls` | `array` | Instagram post URLs. Posts or reels whose details, comments and likes to sync. | [] |
 | `instagram_hashtags` | `array` | Instagram hashtags. Hashtags whose posts to sync, without the #. | [] |
 | `facebook_post_ids` | `array` | Facebook post IDs. Posts whose comments to sync: the post_id from the Facebook post streams. | [] |
@@ -64,6 +69,12 @@ Real-time public data from Twitter/X, Reddit, YouTube, Instagram, TikTok, Facebo
 | threads_users | url.query | NoPagination | ✅ |  ❌  |
 | bluesky_posts | url.query | NoPagination | ✅ |  ✅  |
 | bluesky_users | url.query | NoPagination | ✅ |  ❌  |
+| substack_posts | url.query | DefaultPaginator | ✅ |  ✅  |
+| substack_users | url.query | DefaultPaginator | ✅ |  ❌  |
+| substack_publications | publication_id.query | DefaultPaginator | ✅ |  ❌  |
+| substack_notes | url.query | NoPagination | ✅ |  ✅  |
+| substack_category_publications | publication_id.category | DefaultPaginator | ✅ |  ❌  |
+| substack_category_feed | url.category | NoPagination | ✅ |  ✅  |
 | linkedin_posts | url.query | DefaultPaginator | ✅ |  ✅  |
 | linkedin_companies | url.query | DefaultPaginator | ✅ |  ❌  |
 | linkedin_jobs | url.query | DefaultPaginator | ✅ |  ✅  |
@@ -83,6 +94,12 @@ Real-time public data from Twitter/X, Reddit, YouTube, Instagram, TikTok, Facebo
 | threads_user_posts | url.account | NoPagination | ✅ |  ✅  |
 | bluesky_user_profiles | username.account | NoPagination | ✅ |  ❌  |
 | bluesky_user_posts | url.account | NoPagination | ✅ |  ✅  |
+| substack_user_profiles | username.account | NoPagination | ✅ |  ❌  |
+| substack_user_posts | url.account | NoPagination | ✅ |  ✅  |
+| substack_user_activity | url.account | NoPagination | ✅ |  ✅  |
+| substack_publication_details | publication_id.publication_input | NoPagination | ✅ |  ❌  |
+| substack_publication_posts | url.publication_input | DefaultPaginator | ✅ |  ✅  |
+| substack_publication_recommendations | publication_id.publication_input | NoPagination | ✅ |  ❌  |
 | truthsocial_user_posts | url.account | NoPagination | ✅ |  ✅  |
 | youtube_channel_details | url.channel_url | NoPagination | ✅ |  ❌  |
 | youtube_video_details | url.source_url | NoPagination | ✅ |  ❌  |
@@ -123,6 +140,10 @@ Real-time public data from Twitter/X, Reddit, YouTube, Instagram, TikTok, Facebo
 | bluesky_post_quotes | url.post_url | NoPagination | ✅ |  ✅  |
 | bluesky_post_likes | user_id.post_url | NoPagination | ✅ |  ❌  |
 | bluesky_post_reposts | user_id.post_url | NoPagination | ✅ |  ❌  |
+| substack_post_details | url.post_url | NoPagination | ✅ |  ❌  |
+| substack_post_comments | comment_id.post_url | NoPagination | ✅ |  ✅  |
+| substack_post_likes | user_id.post_url | NoPagination | ✅ |  ❌  |
+| substack_note_details | url.note_url | NoPagination | ✅ |  ❌  |
 | instagram_post_details | url.post_url | NoPagination | ✅ |  ❌  |
 | instagram_post_comments | comment_id.post_url | NoPagination | ✅ |  ✅  |
 | instagram_comment_replies | comment_id.parent_comment_id | NoPagination | ✅ |  ✅  |
