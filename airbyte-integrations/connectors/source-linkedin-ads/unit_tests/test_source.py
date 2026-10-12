@@ -26,13 +26,14 @@ from airbyte_cdk.sources.types import Record, StreamSlice
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.utils import run_read
 
-from .conftest import find_stream, get_source, load_json_file
+from .conftest import _YAML_FILE_PATH, find_stream, get_source, load_json_file
 
 
 logger = logging.getLogger("airbyte")
 
 
 LINKEDIN_VERSION_API = 202404
+EXPECTED_LINKEDIN_VERSION = "202609"
 
 TEST_OAUTH_CONFIG: dict = {
     "start_date": "2021-08-01",
@@ -147,6 +148,44 @@ class TestAllStreams:
                 isinstance(strategy, ExponentialBackoffStrategy) and float(strategy.factor) == 5
                 for strategy in linkedin_handler.backoff_strategies
             )
+
+    def test_all_streams_send_expected_linkedin_version_header(self):
+        """Verify every stream sends the pinned LinkedIn API version header."""
+        config = {
+            **TEST_CONFIG,
+            "ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}],
+        }
+        streams = get_source(config).streams(config=config)
+
+        assert {stream.name for stream in streams} >= {"ad_campaign_analytics", "creatives", "custom_ShareAdByMonth"}
+        for stream in streams:
+            requester = stream._stream_partition_generator._partition_factory._retriever.requester
+            headers = requester.get_request_headers(
+                stream_state={}, stream_slice=StreamSlice(partition={}, cursor_slice={}), next_page_token=None
+            )
+            header_lookup = {key.lower(): value for key, value in headers.items()}
+            assert str(header_lookup.get("linkedin-version")) == EXPECTED_LINKEDIN_VERSION, stream.name
+
+    def test_manifest_pins_single_linkedin_version(self):
+        """Verify every Linkedin-Version header in the manifest, including internal streams, uses the same version."""
+        manifest = yaml.safe_load(_YAML_FILE_PATH.read_text())
+
+        def collect_linkedin_version_values(node):
+            values = []
+            if isinstance(node, dict):
+                for key, value in node.items():
+                    if isinstance(key, str) and key.lower() == "linkedin-version":
+                        values.append(value)
+                    else:
+                        values.extend(collect_linkedin_version_values(value))
+            elif isinstance(node, list):
+                for item in node:
+                    values.extend(collect_linkedin_version_values(item))
+            return values
+
+        versions = collect_linkedin_version_values(manifest)
+        assert len(versions) >= 23
+        assert set(versions) == {EXPECTED_LINKEDIN_VERSION}
 
     def test_creatives_error_handler_maps_http_responses(self):
         """Verify creatives rate limits and server errors use the intended actions."""
