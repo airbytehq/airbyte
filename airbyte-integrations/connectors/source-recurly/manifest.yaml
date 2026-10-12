@@ -1224,6 +1224,18 @@ definitions:
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config['api_key'] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+            - 429
+          action: RATE_LIMITED
+          failure_type: transient_error
+          error_message: Recurly API rate limit exceeded.
+      backoff_strategies:
+        - type: WaitUntilTimeFromHeader
+          header: X-RateLimit-Reset
 
 streams:
   - $ref: "#/definitions/streams/accounts"
@@ -1406,7 +1418,10 @@ metadata:
 # If an API request exceeds the rate limit, the API returns a 429 Too Many Requests HTTP status. The rate limit is indicated by X-RateLimit-Limit, remaining requests by X-RateLimit-Remaining, and reset time by X-RateLimit-Reset (UNIX epoch seconds).
 #
 # We set default_concurrency to 10, assuming ~250ms per request (4 requests/sec per stream), resulting in 10 streams × 4 requests/sec = 2,400 requests/min. This exceeds the sandbox limit (400 requests/min) and production limit (1,000 GET requests/min),
-# but the api_budget throttles requests to stay within the 400 (sandbox) or 1,000 (production) requests per 5-minute window, with backoff handling for 429 errors.
+# so the api_budget throttles requests to Recurly's 5-minute sliding window: 2,000 (sandbox) or 5,000 (production) requests per 5 minutes.
+# The matcher deliberately has no url_base: matcher fields are not interpolated, and every request goes to the requester's url_base anyway.
+# MovingWindowCallRatePolicy cannot sync from X-RateLimit-Reset, so 429s (e.g. quota shared with other API clients) are handled by the
+# base_requester error_handler, which waits until X-RateLimit-Reset instead of the default ~31s of exponential backoff.
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 10) }}"
@@ -1420,11 +1435,10 @@ api_budget:
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: "{{ 400 if config.get('is_sandbox', false) else 1000 }}"
+        - limit: "{{ 2000 if config.get('is_sandbox', false) else 5000 }}"
           interval: "PT5M"  # 5-minute sliding window
       matchers:
         - method: "GET"
-          url_base: "{{ config['subdomain'] }}"
           url_path_pattern: ".*"  # Match all paths
 schemas:
   accounts:
