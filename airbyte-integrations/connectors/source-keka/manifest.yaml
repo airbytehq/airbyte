@@ -33,7 +33,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
-            start_from_page: 0
+            start_from_page: 1
             inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
@@ -67,7 +67,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
-            start_from_page: 0
+            start_from_page: 1
             inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
@@ -101,7 +101,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
-            start_from_page: 0
+            start_from_page: 1
             inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
@@ -135,7 +135,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
-            start_from_page: 0
+            start_from_page: 1
             inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
@@ -169,7 +169,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
-            start_from_page: 0
+            start_from_page: 1
             inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
@@ -205,7 +205,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
-            start_from_page: 0
+            start_from_page: 1
             inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
@@ -239,7 +239,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
-            start_from_page: 0
+            start_from_page: 1
             inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
@@ -257,7 +257,7 @@ definitions:
           $ref: "#/schemas/Project Timesheets"
   base_requester:
     type: HttpRequester
-    url_base: https://master.keka.com/api/v1
+    url_base: https://{{ config['subdomain'] }}.keka.com/api/v1
     authenticator:
       type: SessionTokenAuthenticator
       login_requester:
@@ -297,12 +297,23 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
+      - subdomain
       - client_id
       - client_secret
       - api_key
       - grant_type
       - scope
     properties:
+      subdomain:
+        type: string
+        order: 5
+        title: Company Subdomain
+        description: >-
+          Your company's Keka subdomain. For https://acme.keka.com, enter acme
+          without the protocol or .keka.com suffix.
+        pattern: "^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$"
+        examples:
+          - acme
       scope:
         type: string
         order: 4

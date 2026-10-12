@@ -31,7 +31,7 @@ application {
 }
 
 dependencies {
-    implementation 'com.clickhouse:client-v2:0.9.4'
+    implementation 'com.clickhouse:client-v2:0.10.0'
 
     testImplementation("io.mockk:mockk:1.14.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
@@ -40,5 +40,5 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
     integrationTestImplementation 'org.testcontainers:clickhouse:1.21.4'
-    integrationTestImplementation 'com.clickhouse:client-v2:0.9.4'
+    integrationTestImplementation 'com.clickhouse:client-v2:0.10.0'
 }

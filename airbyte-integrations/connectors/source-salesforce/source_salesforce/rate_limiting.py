@@ -169,6 +169,13 @@ class SalesforceErrorHandler(ErrorHandler):
                     'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.',
                 )
 
+        if not isinstance(response, requests.Response):
+            return ErrorResolution(
+                ResponseAction.RETRY,
+                FailureType.system_error,
+                f"Request for stream '{self._stream_name}' failed with {type(response).__name__}: {response}",
+            )
+
         return ErrorResolution(
             ResponseAction.FAIL,
             FailureType.system_error,
@@ -291,12 +298,13 @@ def default_backoff_handler(max_tries: int, retry_on=None):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")
 
     def should_give_up(exc):
-        give_up = (
-            SalesforceErrorHandler().interpret_response(exc if exc.response is None else exc.response).response_action
-            != ResponseAction.RETRY
-        )
+        response_or_exception = exc if exc.response is None else exc.response
+        give_up = SalesforceErrorHandler().interpret_response(response_or_exception).response_action != ResponseAction.RETRY
         if give_up:
-            logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}, body: {exc.response.text}")
+            if isinstance(response_or_exception, requests.Response):
+                logger.info(f"Giving up for returned HTTP status: {response_or_exception.status_code}, body: {response_or_exception.text}")
+            else:
+                logger.info(f"Giving up after {type(response_or_exception).__name__}: {response_or_exception}")
         return give_up
 
     return backoff.on_exception(

@@ -21,7 +21,8 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
   - `/ai-prove-fix` - Runs prerelease readiness checks, including testing against customer connections.
   - `/ai-canary-prerelease` - Rolls out prerelease to 5-10 connections for canary testing.
   - `/ai-review` - AI-powered PR review for connector safety and quality gates.
-  - `/ai-breaking-change-review` - Assists the breaking-change reviewers: whether the change needs to be breaking, destination data-loss risk, and whether the migration guide, metadata message, and docs let users upgrade safely.
+  - `/ai-breaking-change-review` - Step 1 for a connector breaking change. Reviews whether the change needs to be breaking, destination data-loss risk, and whether the migration guide, metadata message, and docs let users upgrade safely. Opens one conversation on the PR for each item the author needs to handle.
+  - `/ai-breaking-change-ready` - Step 2, after you've replied to and resolved each of those conversations. Checks that every one has a reply and is resolved, then pings the breaking-change reviewers in Slack for human review.
 - 📝 AI Documentation:
   - `/ai-docs-review` - AI-powered documentation review for PRs with connector changes.
   - `/ai-create-docs-pr` - Creates a documentation PR for connector changes, stacked on the current PR.

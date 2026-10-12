@@ -21,7 +21,9 @@ This source can sync data from the [Coinmarketcap API](https://coinmarketcap.com
 
 ### Performance considerations
 
-Coinmarketcap APIs are under rate limits for the number of API calls allowed per API keys per second. If you reach a rate limit, API will return a 429 HTTP error code. See [here](https://coinmarketcap.com/api/documentation/v1/#section/Errors-and-Rate-Limits)
+CoinMarketCap enforces both a per-minute request limit and a monthly API credit limit per API key, and both are returned as HTTP 429 errors. See [Errors and Rate Limits](https://coinmarketcap.com/api/documentation/v1/#section/Errors-and-Rate-Limits) and the [plan comparison](https://coinmarketcap.com/api/pricing/).
+
+Every sync is a full refresh, and the `listing` stream alone pages through every listed cryptocurrency (roughly 8,000 at the time of writing). CoinMarketCap charges 1 credit per 200 `listing` records, so a single sync of all streams uses roughly 45-50 credits. On the free Basic plan (10,000 credits per month) that is enough for about 200 syncs per month; scheduling syncs more often than every few hours will exhaust the monthly credits within the first days of the month, after which every sync fails with a 429 error until the credits reset. Lower the sync frequency, deselect the `listing` stream, or upgrade the plan if you hit this limit.
 
 ## Getting started
 
@@ -30,7 +32,8 @@ Coinmarketcap APIs are under rate limits for the number of API calls allowed per
 - [API token](https://coinmarketcap.com/api/documentation/v1/#section/Authentication)
 - Data Type:
   - latest
-  - historical
+  - historical (the historical `listing` and `quotes` endpoints are not included in the free Basic plan and return a 403 error on that plan)
+- Symbol: at least one cryptocurrency symbol (for example `BTC`) is required to sync the `quotes` stream. The other streams ignore this field.
 
 ## IP allow list
 
@@ -43,6 +46,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.2.51 | 2026-10-07 | [88251](https://github.com/airbytehq/airbyte/pull/88251) | Fail the `quotes` stream with a clear configuration error when no symbols are configured; document API credit usage and 429 rate limiting |
+| 0.2.50 | 2026-10-06 | [87805](https://github.com/airbytehq/airbyte/pull/87805) | Update dependencies |
+| 0.2.49 | 2026-09-29 | [87130](https://github.com/airbytehq/airbyte/pull/87130) | Update dependencies |
+| 0.2.48 | 2026-09-22 | [86586](https://github.com/airbytehq/airbyte/pull/86586) | Update dependencies |
+| 0.2.47 | 2026-09-15 | [85977](https://github.com/airbytehq/airbyte/pull/85977) | Update dependencies |
 | 0.2.46 | 2026-09-08 | [85435](https://github.com/airbytehq/airbyte/pull/85435) | Update dependencies |
 | 0.2.45 | 2026-08-18 | [84539](https://github.com/airbytehq/airbyte/pull/84539) | Update dependencies |
 | 0.2.44 | 2026-08-11 | [83883](https://github.com/airbytehq/airbyte/pull/83883) | Update dependencies |

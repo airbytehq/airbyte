@@ -294,8 +294,7 @@ definitions:
                 action: RETRY
                 failure_type: transient_error
                 error_message: >-
-                  Scroll already exists for this workspace. Retrying after backoff.
-                  Intercom API does not allow more than one scroll open per app at a time.
+                  Intercom allows only one active company scroll per app.
               - type: HttpResponseFilter
                 http_codes:
                   - 500

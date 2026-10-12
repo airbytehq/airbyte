@@ -396,3 +396,25 @@ def test_api_budget_auth_path(token_config, oauth_config, config_fixture, expect
         assert isinstance(api_budget._policies[0], UnlimitedCallRatePolicy)
     else:
         assert api_budget is None or len(api_budget._policies) == 0
+
+
+@pytest.mark.parametrize("use_global_cursor", [False, True])
+def test_threads_restart_preserves_parent_checkpoint(token_config, use_global_cursor):
+    parent_checkpoint = {
+        "states": [
+            {"partition": {"channel": "airbyte-for-beginners"}, "cursor": {"float_ts": 1753263869.0}},
+            {"partition": {"channel": "good-reads"}, "cursor": {"float_ts": 1753177470.0}},
+        ],
+        "state": {"float_ts": 1753177470.0},
+        "use_global_cursor": False,
+    }
+    state = {
+        "states": [],
+        "state": {"float_ts": "1753263870"},
+        "use_global_cursor": use_global_cursor,
+        "parent_state": {"channel_messages": parent_checkpoint},
+    }
+    if use_global_cursor:
+        del state["states"]
+    stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", state).build())
+    assert stream.cursor.state["parent_state"]["channel_messages"] == parent_checkpoint

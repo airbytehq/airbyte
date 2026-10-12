@@ -13,25 +13,25 @@ Docs : https://cloudapi.inflowinventory.com/docs/index.html#section/Overview
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| adjustment reasons | adjustmentReasonId | No pagination | ✅ |  ❌  |
-| categories | categoryId | No pagination | ✅ |  ❌  |
-| currencies | currencyId | No pagination | ✅ |  ❌  |
-| customers | customFieldsId | No pagination | ✅ |  ❌  |
-| locations | locationId | No pagination | ✅ |  ❌  |
-| operation types | operationTypeId | No pagination | ✅ |  ❌  |
-| payment terms | paymentTermsId | No pagination | ✅ |  ❌  |
-| pricing schemes | pricingSchemeId | No pagination | ✅ |  ❌  |
-| products | productId | No pagination | ✅ |  ❌  |
-| product cost adjustments | productCostAdjustmentId | No pagination | ✅ |  ❌  |
-| purchase orders | purchaseOrderId | No pagination | ✅ |  ❌  |
-| sales orders | salesOrderId | No pagination | ✅ |  ❌  |
-| stock adjustments | stockAdjustmentId | No pagination | ✅ |  ❌  |
-| stock counts | stockCountId | No pagination | ✅ |  ❌  |
-| stock transfers | stockTransferId | No pagination | ✅ |  ❌  |
-| tax codes | taxCodeId | No pagination | ✅ |  ❌  |
-| taxing schemes | taxingSchemeId | No pagination | ✅ |  ❌  |
-| team members | teamMemberId | No pagination | ✅ |  ❌  |
-| vendors | vendorId | No pagination | ✅ |  ❌  |
+| adjustment reasons | adjustmentReasonId | DefaultPaginator | ✅ |  ❌  |
+| categories | categoryId | DefaultPaginator | ✅ |  ❌  |
+| currencies | currencyId | DefaultPaginator | ✅ |  ❌  |
+| customers | customFieldsId | DefaultPaginator | ✅ |  ❌  |
+| locations | locationId | DefaultPaginator | ✅ |  ❌  |
+| operation types | operationTypeId | DefaultPaginator | ✅ |  ❌  |
+| payment terms | paymentTermsId | DefaultPaginator | ✅ |  ❌  |
+| pricing schemes | pricingSchemeId | DefaultPaginator | ✅ |  ❌  |
+| products | productId | DefaultPaginator | ✅ |  ❌  |
+| product cost adjustments | productCostAdjustmentId | DefaultPaginator | ✅ |  ❌  |
+| purchase orders | purchaseOrderId | DefaultPaginator | ✅ |  ❌  |
+| sales orders | salesOrderId | DefaultPaginator | ✅ |  ❌  |
+| stock adjustments | stockAdjustmentId | DefaultPaginator | ✅ |  ❌  |
+| stock counts | stockCountId | DefaultPaginator | ✅ |  ❌  |
+| stock transfers | stockTransferId | DefaultPaginator | ✅ |  ❌  |
+| tax codes | taxCodeId | DefaultPaginator | ✅ |  ❌  |
+| taxing schemes | taxingSchemeId | DefaultPaginator | ✅ |  ❌  |
+| team members | teamMemberId | DefaultPaginator | ✅ |  ❌  |
+| vendors | vendorId | DefaultPaginator | ✅ |  ❌  |
 
 ## IP allow list
 
@@ -44,6 +44,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.65 | 2026-10-07 | [88259](https://github.com/airbytehq/airbyte/pull/88259) | Fix authentication: send the API key as `Authorization: Bearer <key>` as required by the inFlow API; add `skip`/`count` pagination so all records are returned |
+| 0.0.64 | 2026-10-06 | [87896](https://github.com/airbytehq/airbyte/pull/87896) | Update dependencies |
+| 0.0.63 | 2026-09-29 | [87229](https://github.com/airbytehq/airbyte/pull/87229) | Update dependencies |
+| 0.0.62 | 2026-09-22 | [86687](https://github.com/airbytehq/airbyte/pull/86687) | Update dependencies |
+| 0.0.61 | 2026-09-15 | [86090](https://github.com/airbytehq/airbyte/pull/86090) | Update dependencies |
 | 0.0.60 | 2026-09-08 | [85522](https://github.com/airbytehq/airbyte/pull/85522) | Update dependencies |
 | 0.0.59 | 2026-08-18 | [84622](https://github.com/airbytehq/airbyte/pull/84622) | Update dependencies |
 | 0.0.58 | 2026-08-11 | [83977](https://github.com/airbytehq/airbyte/pull/83977) | Update dependencies |

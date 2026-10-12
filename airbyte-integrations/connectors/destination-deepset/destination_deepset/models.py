@@ -83,7 +83,7 @@ class FileData(BaseModel):
 class DeepsetCloudFile(BaseModel):
     name: str = Field(title="Name", description="File Name")
     content: bytes | str = Field(title="Content", description="File Content")
-    meta: dict[str, Any] = Field(default_factory={}, title="Meta Data", description="File Meta Data")
+    meta: dict[str, Any] = Field(default_factory=dict, title="Meta Data", description="File Meta Data")
 
     @property
     def meta_as_string(self) -> str:
