@@ -130,7 +130,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --------- | ------ | -------------- | --------- |
-| 0.4.1 | 2026-10-12 | TBD | Migrate `alert_routes` stream from deprecated `/v2/alert_routes` to `/v3/alert_routes` |
+| 0.4.1 | 2026-10-12 | [88470](https://github.com/airbytehq/airbyte/pull/88470) | Migrate `alert_routes` stream from deprecated `/v2/alert_routes` to `/v3/alert_routes` |
 | 0.4.0 | 2026-10-09 | [88418](https://github.com/airbytehq/airbyte/pull/88418) | Add five alerting and escalation path streams |
 | 0.3.0 | 2026-10-09 | [88416](https://github.com/airbytehq/airbyte/pull/88416) | Add five incident and catalog streams |
 | 0.2.0 | 2026-10-08 | [88150](https://github.com/airbytehq/airbyte/pull/88150) | Migrate actions and follow-ups to /v3; add incremental sync, rate limiting, clearer errors, time_window and num_workers options, and sync incidents in every status category |
