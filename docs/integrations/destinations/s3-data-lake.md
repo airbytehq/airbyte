@@ -302,6 +302,8 @@ This is the full mapping between Airbyte types and Iceberg types.
 
 *Airbyte converts the `time with timezone` and `timestamp with timezone` types to Coordinated Universal Time (UTC) before writing to the Iceberg file.
 
+Fields nested inside list columns, including the entries of `_airbyte_meta.changes`, are always written as optional, because Delta Lake and Databricks reject `NOT NULL` constraints nested inside arrays. As of version 0.4.2, the connector relaxes these fields in place on existing tables during the next sync. No action is needed to upgrade, but because Iceberg can't make an optional field required again, you can't downgrade the connector below 0.4.2 for streams that have synced on it.
+
 ### Managing schema evolution
 
 This connector never rewrites existing Iceberg data files. This means Airbyte can only handle specific source schema changes.
@@ -433,6 +435,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.2 | 2026-10-13 | [88436](https://github.com/airbytehq/airbyte/pull/88436) | Upgrade to Bulk CDK 1.1.2: write the fields inside `_airbyte_meta.changes` as optional so Databricks/Delta can query the tables. Existing tables are migrated in place; downgrading past this version afterwards is not supported. |
 | 0.4.1 | 2026-10-09 | [87621](https://github.com/airbytehq/airbyte/pull/87621) | Upgrade to Bulk CDK 1.1.1. |
 | 0.4.0 | 2026-09-15 | [85827](https://github.com/airbytehq/airbyte/pull/85827) | Add `normalize_column_names` option: lowercase column names, replace non-alphanumeric characters with underscores, and prefix SQL reserved keywords. |
 | 0.3.53 | 2026-08-24 | [84994](https://github.com/airbytehq/airbyte/pull/84994) | Upgrade to Bulk CDK 1.0.25. |

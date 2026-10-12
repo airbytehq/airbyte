@@ -37,7 +37,7 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorType: destination
   definitionId: 716ca874-520b-4902-9f80-9fad66754b89
-  dockerImageTag: 0.4.1
+  dockerImageTag: 0.4.2
   dockerRepository: airbyte/destination-s3-data-lake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3-data-lake
   githubIssueLabel: destination-s3-data-lake
@@ -53,6 +53,14 @@ data:
         autoStart: true
         autoPromoteStages: true
         strategy: fast
+    unsafeDowngrades:
+      0.4.2:
+        message:
+          'This version relaxes the fields nested inside `_airbyte_meta.changes` from required to
+          optional and migrates existing tables in place on their next sync. Iceberg does not allow
+          the reverse change, so earlier connector versions fail on migrated tables with `Schema
+          evolution for column "_airbyte_meta" ... is not allowed`. Do not pin streams that have
+          synced on this version back to an earlier version.'
   supportLevel: certified
   supportsRefreshes: true
   tags:
