@@ -12,7 +12,7 @@ To set up the Mixpanel source connector, you need:
 - Your project's data residency region (`US` or `EU`).
 
 :::note
-The connector also supports [Project Secret](https://developer.mixpanel.com/reference/project-secret) authentication, but Mixpanel has deprecated this method with an end-of-life date of **March 3, 2027**. Use Service Account authentication for new configurations.
+The connector also supports [Project Secret](https://developer.mixpanel.com/reference/project-secret) authentication, but Mixpanel has deprecated this method with an end-of-life date of **March 3, 2027**. Newly created Mixpanel projects no longer have a Project Secret, and existing connections that use one stop working on that date. Use Service Account authentication for new configurations and switch existing connections to it before March 3, 2027.
 :::
 
 ## Set up the Mixpanel connector in Airbyte
@@ -87,6 +87,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 4.0.2 | 2026-10-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Mark Project Secret authentication as deprecated in the spec (Mixpanel retires it on 2027-03-03) |
 | 4.0.1 | 2026-07-02 | [81392](https://github.com/airbytehq/airbyte/pull/81392) | Bump h11 0.14.0 to 0.16.0 to resolve GHSA-vqfr-h8mv-ghfj |
 | 4.0.0 | 2026-05-22 | [78271](https://github.com/airbytehq/airbyte/pull/78271) | Removed the Revenue stream because Mixpanel no longer provides a documented or working revenue Query API endpoint. |
 | 3.6.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
