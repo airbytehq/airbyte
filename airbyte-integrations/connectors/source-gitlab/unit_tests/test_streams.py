@@ -60,9 +60,7 @@ def test_retries_after_rate_limit_using_retry_after(requests_mock, mocker):
     migrated_config = source.configure(config=CONFIG, temp_dir="/not/a/real/path")
     stream = get_stream_by_name(source=source, stream_name="projects", config=migrated_config)
 
-    records = [
-        dict(record) for partition in stream.generate_partitions() for record in partition.read()
-    ]
+    records = [dict(record) for partition in stream.generate_partitions() for record in partition.read()]
 
     assert records == [{"id": "p_1"}]
     sleep.assert_called_once_with(31)
@@ -84,9 +82,7 @@ def test_retries_after_rate_limit_without_retry_after(requests_mock, mocker):
     migrated_config = source.configure(config=CONFIG, temp_dir="/not/a/real/path")
     stream = get_stream_by_name(source=source, stream_name="projects", config=migrated_config)
 
-    records = [
-        dict(record) for partition in stream.generate_partitions() for record in partition.read()
-    ]
+    records = [dict(record) for partition in stream.generate_partitions() for record in partition.read()]
 
     assert records == [{"id": "p_1"}]
     sleep.assert_called_once_with(11)
