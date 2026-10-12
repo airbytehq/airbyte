@@ -68,8 +68,8 @@ class Products(Stream, IncrementalMixin):
         # Emit the catalog in slices of `records_per_slice`, checkpointing after
         # each one, the same way the users and purchases streams do.
         page_size = max(1, min(self.records_per_slice, len(products)))
-        for page in range(len(products) // page_size):
-            for product in products[page * page_size : (page + 1) * page_size]:
+        for start in range(0, len(products), page_size):
+            for product in products[start : start + page_size]:
                 updated_at = format_airbyte_time(datetime.datetime.now())
                 product["updated_at"] = updated_at
                 yield product
