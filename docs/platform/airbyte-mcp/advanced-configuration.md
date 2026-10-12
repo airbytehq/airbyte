@@ -10,7 +10,7 @@ Your MCP client still controls tool approval. Most clients can require your appr
 
 ## Add headers to your client
 
-Add headers to your client's MCP configuration. Key names vary by client, so check your client's documentation.
+Add headers to your client's MCP configuration. Configuration syntax can vary by client, so check your client's documentation for the required JSON syntax.
 
 ```json
 {
