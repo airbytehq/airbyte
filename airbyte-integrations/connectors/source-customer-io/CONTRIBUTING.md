@@ -46,10 +46,11 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 5. **Substream Parents Are Inline Copies Without a Cursor** - the parent list each substream reads
    ignores Start Date on purpose, because a parent last updated before Start Date can still have
    child records that changed later. Details in AGENTS.md section 5.
-6. **Action IDs May Arrive as JSON Strings** - `campaigns_actions.id` is a JSON string although the
+6. **Some IDs Arrive as JSON Strings** - `campaigns_actions.id` is a JSON string although the
    [OpenAPI spec](https://docs.customer.io/files/journeys-app.json) documents an integer, so joins
    with `campaigns.actions[].id` need a cast; `broadcast_actions` casts its `id` to the documented
-   integer. `from_id` and `reply_to_id` are integers, as documented. Details in AGENTS.md section 6.
+   integer, and `campaigns` casts a `webhook_id` that arrives as a string of digits. `from_id` and
+   `reply_to_id` are integers, as documented. Details in AGENTS.md section 6.
 7. **Language and A/B Variants Are Separate Records** - `broadcast_actions` has one record per
    language variant of a message
    ([broadcastActions](https://docs.customer.io/integrations/api/app/tag/broadcasts/broadcastactions/)),
@@ -70,12 +71,12 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 10. **`campaigns_actions` Logs a Harmless Parent-State Warning** - "Parent state handling is not
     supported for CartesianProductStreamSlicer." comes from the one-element `partition_router` list
     and needs no action. Details in AGENTS.md section 10.
-11. **Four `campaigns` Fields Are Untyped** - `audience.person_filters`,
-    `audience.relationship_filters`, `object_attribute_triggers` and
-    `relationship_attribute_triggers` are typed `object` in the
-    [OpenAPI spec](https://docs.customer.io/files/journeys-app.json), but every example there is a
-    JSON string and no live record shows them, so the schema leaves them untyped. Details in
-    AGENTS.md section 11.
+11. **Five Fields Are Untyped** - `audience.person_filters`, `audience.relationship_filters`,
+    `object_attribute_triggers` and `relationship_attribute_triggers` on `campaigns` are typed
+    `object` in the [OpenAPI spec](https://docs.customer.io/files/journeys-app.json), but every
+    example there is a JSON string and no live record shows them; `campaigns_actions.payload_android`
+    is undocumented and absent from the test workspace. So the schema leaves all five untyped.
+    Details in AGENTS.md section 11.
 12. **`subscription_topics` Is Empty Until Topics Are Added** - the list is empty when the workspace
     has no topics ([getTopics](https://docs.customer.io/integrations/api/app/tag/subscription-center/gettopics/)),
     as in the test workspace. Topics exist before the subscription center can be enabled

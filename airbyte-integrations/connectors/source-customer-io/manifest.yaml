@@ -67,6 +67,17 @@ streams:
           type: DpathExtractor
           field_path:
             - "campaigns"
+    transformations:
+      # The spec types webhook_id as integer, but some automations return it as a string. Digit strings of up to 18
+      # digits, which always fit the int64 integers destinations use, are cast; any other value is left as returned.
+      - type: AddFields
+        condition: "{{ record.get('webhook_id') is string and record['webhook_id'].isdigit() and record['webhook_id'] | length <= 18 }}"
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - webhook_id
+            value: "{{ record['webhook_id'] }}"
+            value_type: integer
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated
@@ -1458,6 +1469,11 @@ schemas:
         type:
           - "null"
           - string
+      # Undocumented for actions; the spec types an automation's event_name as a string (campaignObject).
+      event_name:
+        type:
+          - "null"
+          - string
       fake_bcc:
         type:
           - "null"
@@ -1506,6 +1522,8 @@ schemas:
         type:
           - "null"
           - integer
+      # Undocumented and not seen in the test workspace, so its type is unknown and left open.
+      payload_android: {}
       preheader_text:
         type:
           - "null"
@@ -1599,6 +1617,15 @@ schemas:
         type:
           - "null"
           - string
+      # Typed after the createNewsletter request body; listNewsletters returns them undocumented.
+      rate_limit_spread:
+        type:
+          - "null"
+          - boolean
+      rate_limit_time_period:
+        type:
+          - "null"
+          - integer
       recipient_file_error:
         type:
           - "null"
@@ -1722,6 +1749,10 @@ schemas:
         type:
           - "null"
           - string
+      scheduled_stop_should_sunset:
+        type:
+          - "null"
+          - boolean
       state:
         type:
           - "null"
