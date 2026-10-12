@@ -2653,6 +2653,23 @@ definitions:
           grant_type: refresh_token
           client_secret: "{{ config.client_secret }}"
           refresh_token: "{{ config.refresh_token }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              predicate: >-
+                {{ response.get('error') == 'invalid_grant' and 'expired
+                access/refresh token' in (response.get('error_description') or '') }}
+              error_message: >-
+                The Salesforce refresh token is expired or revoked. Generate a new
+                refresh token and update it in the source configuration.
+            - type: HttpResponseFilter
+              action: RETRY
+              predicate: >-
+                {{ response.get('error') == 'invalid_grant' and 'token request is
+                already being processed' in (response.get('error_description') or '') }}
       session_token_path:
         - access_token
       expiration_duration: PT24H
