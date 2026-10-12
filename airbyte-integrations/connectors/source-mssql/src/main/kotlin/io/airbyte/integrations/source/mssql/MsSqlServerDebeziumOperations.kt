@@ -809,13 +809,13 @@ class MsSqlServerDebeziumOperations(
             .with("mssql_converter.type", MsSqlServerDebeziumConverter::class.java.name)
             .with("binary.handling.mode", "base64")
             .with("snapshot.locking.mode", "none")
-            // `poll.interval.ms`controls how often Debezium queries for new data
+            // `poll.interval.ms` controls how often Debezium queries for new data
             // This value is now configurable and validated to be smaller than heartbeat.interval.ms
             .with("poll.interval.ms", cdcConfiguration.pollIntervalMs.toString())
-            // `max.iteration.transactions` limit Debezium to query for n-th LSN. Helpful to reduce
-            // memory
-            // in small connections. However, it will slow performance on many CDC-enabled tables.
-            // 0 means unbounded: Debezium fetches everything up to the current max LSN in one pass.
+            // `max.iteration.transactions` limit how many transactions Debezium reads per streaming
+            // iteration, counted across every CDC-enabled table in the database. Lower values
+            // bound memory, higher values catch up faster. 0 means unbounded: Debezium reads up to
+            // the current max LSN in one pass.
             .with(
                 "max.iteration.transactions",
                 cdcConfiguration.maxIterationTransactions.toString()

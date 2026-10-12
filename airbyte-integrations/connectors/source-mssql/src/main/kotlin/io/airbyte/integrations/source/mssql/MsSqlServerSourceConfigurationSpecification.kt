@@ -387,7 +387,7 @@ class Cdc : IncrementalConfigurationSpecification {
     @JsonProperty("max_iteration_transactions")
     @JsonSchemaTitle("Max Transactions per CDC Iteration (Advanced)")
     @JsonPropertyDescription(
-        "The maximum number of transactions Debezium reads from the transaction log in each streaming iteration. The limit counts transactions across the entire database, not only the tables in this connection, so a database with many CDC-enabled tables outside the connection can fall behind at the default. Raise it, or set 0 for unbounded, to catch up faster on a large CDC backlog; higher values increase the connector's memory usage. Defaults to 500.",
+        "The maximum number of transactions Debezium reads from the CDC change tables in each streaming iteration. The limit counts transactions on every CDC-enabled table in the database, not only the tables in this connection, so busy CDC-enabled tables outside the connection can make syncs fall behind at the default. Raise it, or set 0 for no limit, to catch up faster on a large CDC backlog. Higher values can increase the connector's memory usage. Defaults to 500."
     )
     @JsonSchemaDefault("500")
     @JsonSchemaInject(json = """{"order":5, "min": 0, "always_show": true}""")
