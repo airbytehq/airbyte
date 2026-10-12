@@ -203,7 +203,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                     |
 |:--------|:-----------| :------------------------------------------------------------- |:--------------------------------------------|
-| 1.1.0 | 2026-10-12 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Re-read 7 days of `activities` on each incremental sync instead of 1 hour, add the Number of Concurrent Workers and Activities Lookback Window (Days) options, and update to source-declarative-manifest 7.35.0 |
+| 1.1.0 | 2026-10-12 | [88473](https://github.com/airbytehq/airbyte/pull/88473) | Re-read 7 days of `activities` on each incremental sync instead of 1 hour, add the Number of Concurrent Workers and Activities Lookback Window (Days) options, and update to source-declarative-manifest 7.35.0 |
 | 1.0.0 | 2026-10-09 | [88159](https://github.com/airbytehq/airbyte/pull/88159) | Declare `from_id`, `reply_to_id` and `sent_at` as integers and the item types of four ID and tag arrays |
 | 0.8.0 | 2026-10-08 | [88158](https://github.com/airbytehq/airbyte/pull/88158) | Add message, activity, people, segment membership and ESP suppression streams |
 | 0.7.0 | 2026-10-08 | [88135](https://github.com/airbytehq/airbyte/pull/88135) | Add subscription topic, object type, workspace, reporting webhook, snippet and collection streams |
