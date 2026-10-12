@@ -12,6 +12,7 @@ from .streams import Products, Purchases, Users
 
 
 DEFAULT_COUNT = 1_000
+DEFAULT_PRODUCTS_COUNT = 100
 
 
 class SourceFaker(AbstractSource):
@@ -27,9 +28,10 @@ class SourceFaker(AbstractSource):
         records_per_slice: int = config["records_per_slice"] if "records_per_slice" in config else 100
         always_updated: bool = config["always_updated"] if "always_updated" in config else True
         parallelism: int = config["parallelism"] if "parallelism" in config else 4
+        products_count: int = config["products_count"] if "products_count" in config else DEFAULT_PRODUCTS_COUNT
 
         return [
-            Products(count, seed, parallelism, records_per_slice, always_updated),
+            Products(count, seed, parallelism, records_per_slice, always_updated, products_count=products_count),
             Users(count, seed, parallelism, records_per_slice, always_updated),
             Purchases(count, seed, parallelism, records_per_slice, always_updated),
         ]
