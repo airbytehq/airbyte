@@ -1,11 +1,14 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import copy
 import json
+import logging
 from datetime import datetime, timezone
 from unittest import TestCase
 
 import freezegun
 from conftest import get_source
+from jsonschema import Draft7Validator
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -20,6 +23,10 @@ from mock_server.response_builder import JiraJqlResponseBuilder, JiraPaginatedRe
 _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "issues"
 _DOMAIN = "airbyteio.atlassian.net"
+
+
+def _rendered_comment_properties(schema: dict) -> dict:
+    return schema["properties"]["renderedFields"]["properties"]["comment"]["properties"]["comments"]["items"]["properties"]
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -86,6 +93,68 @@ class TestIssuesStream(TestCase):
         # Verify transformations are applied
         assert output.records[0].record.data["projectId"] == "10001"
         assert output.records[0].record.data["projectKey"] == "PROJ1"
+
+    @HttpMocker()
+    def test_rendered_comment_body_is_read_and_typed_as_html_string(self, http_mocker: HttpMocker):
+        """
+        Jira returns `renderedFields.comment.comments[].body` as an HTML string, not as an ADF object.
+
+        The stream must request `expand=renderedFields`, emit the body unchanged, and declare it as
+        `["null", "string"]` so the record validates against the discovered schema. The pre-6.0.4
+        object type rejects the same record.
+        """
+        config = ConfigBuilder().with_domain(_DOMAIN).build()
+        rendered_body = "<p>Rendered <b>comment</b></p>"
+
+        issue_records = [
+            {
+                "id": "10001",
+                "key": "PROJ-1",
+                "fields": {
+                    "summary": "Test Issue 1",
+                    "project": {"id": "10001", "key": "PROJ1"},
+                    "created": "2024-01-01T00:00:00.000+0000",
+                    "updated": "2024-01-15T00:00:00.000+0000",
+                },
+                "renderedFields": {
+                    "comment": {
+                        "comments": [{"id": "10100", "body": rendered_body}],
+                        "maxResults": 1,
+                        "total": 1,
+                        "startAt": 0,
+                    },
+                },
+            },
+        ]
+
+        http_mocker.get(
+            JiraRequestBuilder.issues_endpoint(_DOMAIN)
+            .with_fields("*all")
+            .with_jql("updated >= 1609459200000 ORDER BY updated asc")
+            .with_expand("renderedFields,transitions,changelog")
+            .with_max_results(50)
+            .build(),
+            JiraJqlResponseBuilder().with_records(issue_records).with_pagination(start_at=0, max_results=50, total=1, is_last=True).build(),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1
+        record = output.records[0].record.data
+        assert record["renderedFields"]["comment"]["comments"][0]["body"] == rendered_body
+
+        # Call the source directly: the `discover` test helper forces `--debug`, which leaks DEBUG logging into later tests.
+        discovered = get_source(config=config).discover(logging.getLogger("airbyte"), config)
+        schema = next(stream.json_schema for stream in discovered.streams if stream.name == _STREAM_NAME)
+        assert _rendered_comment_properties(schema)["body"]["type"] == ["null", "string"]
+        assert list(Draft7Validator(schema).iter_errors(record)) == []
+
+        old_schema = copy.deepcopy(schema)
+        _rendered_comment_properties(old_schema)["body"] = {"type": ["null", "object"]}
+        old_errors = list(Draft7Validator(old_schema).iter_errors(record))
+        assert [list(error.absolute_path) for error in old_errors] == [["renderedFields", "comment", "comments", 0, "body"]]
 
     @HttpMocker()
     def test_issue_without_project_field_does_not_fail_sync(self, http_mocker: HttpMocker):
