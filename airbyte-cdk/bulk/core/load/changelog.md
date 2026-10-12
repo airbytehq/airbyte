@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.2 — 2026-10-11
+
+[#78500](https://github.com/airbytehq/airbyte/pull/78500) - Fix: fallback from batch delete to sequential per-blob delete on 403 for SAS-authenticated Azure Blob Storage destinations.
+
 ### 1.1.1 — 2026-09-24
 
 Add the Fusion archive toolkit to the published bulk load CDK toolkits.
