@@ -375,3 +375,28 @@ def test_every_error_message_template_survives_unexpected_bodies(body) -> None:
         assert "None" not in message, spec["error_message"]
         # Pipedrive's own text is capped at 300 characters.
         assert "x" * 301 not in message, spec["error_message"]
+
+
+_CLOUDFLARE_403 = HttpResponse(body="<html><body>Access denied</body></html>", status_code=403, headers={"Content-Type": "text/html"})
+
+
+def test_cloudflare_html_403_on_a_child_stream_fails_instead_of_skipping_the_parent() -> None:
+    with HttpMocker() as http_mocker:
+        http_mocker.get(deals_archived_request(), empty_v2_page())
+        http_mocker.get(deals_request(), collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}]))
+        http_mocker.get(_deal_products_batch(1), _CLOUDFLARE_403)
+
+        error = _error_trace(read_stream("deal_products", expecting_exception=True))
+
+        assert error.failure_type == FailureType.config_error
+        assert "Cloudflare" in error.message
+
+
+def test_cloudflare_html_403_on_a_plan_gated_stream_fails_instead_of_skipping_it() -> None:
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request("v1/legacyTeams"), _CLOUDFLARE_403)
+
+        error = _error_trace(read_stream("legacy_teams", expecting_exception=True))
+
+        assert error.failure_type == FailureType.config_error
+        assert "Cloudflare" in error.message
