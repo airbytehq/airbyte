@@ -266,7 +266,7 @@ definitions:
       backoff_strategies:
         - type: WaitTimeFromHeader
           header: Retry-After
-          max_waiting_time_in_seconds: 3600
+          max_waiting_time_in_seconds: 3660
         - type: ExponentialBackoffStrategy
           factor: 5
     request_parameters: "{{ parameters.get('request_parameters', {}) }}"
