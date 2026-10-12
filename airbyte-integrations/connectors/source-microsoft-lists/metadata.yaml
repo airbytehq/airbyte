@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 18ea5fae-f0b1-4d82-9aef-832bb922a5b5
-  dockerImageTag: 0.0.71
+  dockerImageTag: 0.0.72
   dockerRepository: airbyte/source-microsoft-lists
   githubIssueLabel: source-microsoft-lists
   icon: icon.svg
@@ -49,6 +49,12 @@ data:
     - title: Microsoft Graph authentication
       url: https://learn.microsoft.com/en-us/graph/auth/
       type: authentication_guide
+    - title: Microsoft Graph changelog
+      url: https://developer.microsoft.com/en-us/graph/changelog
+      type: api_release_history
+    - title: Microsoft Graph versioning, support, and breaking change policies
+      url: https://learn.microsoft.com/en-us/graph/versioning-and-support
+      type: api_deprecations
     - title: Microsoft 365 Status
-      url: https://status.office365.com/
+      url: https://status.cloud.microsoft/
       type: status_page
