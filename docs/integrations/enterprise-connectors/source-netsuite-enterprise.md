@@ -39,9 +39,14 @@ Note: the role controls what is visible and not to the connector. At a minimum t
 
 Source NetSuite supports all authentication methods in SuiteAnalytics connect: username and password, Token Based Authentication (TBA) and OAuth 2.0 based authentication.
 
+:::warning
+Oracle NetSuite 2027.1 automatically enables [2FA for All Employee Roles](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/article_44130215942.html). Two-factor authentication isn't compatible with SuiteAnalytics Connect, so **Username and Password** authentication fails for any role that requires 2FA. Oracle also no longer allows new Token Based Authentication (TBA) integrations for web services from 2027.1 ([Preparing for TBA End of Support](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_0525020842.html)). Use **OAuth 2.0** for new connections, and move existing Username and Password connections to OAuth 2.0 or TBA before your account upgrades to 2027.1.
+:::
+
 #### Username and Password
 
 Fill in the username and password of the NetSuite user account.
+The user's role must not require two-factor authentication (2FA). From NetSuite 2027.1, all Employee roles require 2FA by default.
 Ensure that the Role ID is assigned to this user (this can be done in the NetSuite UI by navigating to Setup > Users/Roles > Manage Users and selecting the user). The role must have sufficient permissions to access all the tables you want to replicate.
 
 #### Token Based Authentication (TBA)
