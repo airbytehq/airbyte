@@ -99,8 +99,11 @@ data:
     - title: PayPal lifecycle definition (deprecation policy)
       url: https://developer.paypal.com/docs/archive/lifecycle/
       type: api_deprecations
-    - title: PayPal REST API release notes
-      url: https://developer.paypal.com/api/rest/release-notes/
+    - title: PayPal Payments API v1 to v2 upgrade guide
+      url: https://developer.paypal.com/api/rest/integration/payments-api/v1-v2-migration
+      type: api_deprecations
+    - title: PayPal Orders release notes
+      url: https://developer.paypal.com/api/rest/release-notes/release-notes-orders
       type: api_release_history
     - title: PayPal Status
       url: https://www.paypal-status.com/
