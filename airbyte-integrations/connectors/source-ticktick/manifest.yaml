@@ -25,14 +25,8 @@ definitions:
             type: SelectiveAuthenticator
             authenticators:
               Oauth:
-                type: OAuthAuthenticator
-                scopes:
-                  - "tasks:"
-                  - read
-                client_id: "{{ config.authorization.client_id }}"
-                grant_type: client_credentials
-                client_secret: "{{ config.authorization.client_secret) }}"
-                access_token_value: "{{ config.authorization.client_access_token }}"
+                type: BearerAuthenticator
+                api_token: "{{ config.authorization.client_access_token }}"
               Token:
                 type: BearerAuthenticator
                 api_token: "{{ config.authorization.bearer_token }}"
@@ -70,14 +64,8 @@ definitions:
                       type: SelectiveAuthenticator
                       authenticators:
                         Oauth:
-                          type: OAuthAuthenticator
-                          scopes:
-                            - "tasks:"
-                            - read
-                          client_id: "{{ config.authorization.client_id }}"
-                          grant_type: client_credentials
-                          client_secret: "{{ config.authorization.client_secret) }}"
-                          access_token_value: "{{ config.authorization.client_access_token }}"
+                          type: BearerAuthenticator
+                          api_token: "{{ config.authorization.client_access_token }}"
                         Token:
                           type: BearerAuthenticator
                           api_token: "{{ config.authorization.bearer_token }}"
@@ -271,14 +259,8 @@ definitions:
             type: SelectiveAuthenticator
             authenticators:
               Oauth:
-                type: OAuthAuthenticator
-                scopes:
-                  - "tasks:"
-                  - read
-                client_id: "{{ config.authorization.client_id }}"
-                grant_type: client_credentials
-                client_secret: "{{ config.authorization.client_secret) }}"
-                access_token_value: "{{ config.authorization.client_access_token }}"
+                type: BearerAuthenticator
+                api_token: "{{ config.authorization.client_access_token }}"
               Token:
                 type: BearerAuthenticator
                 api_token: "{{ config.authorization.bearer_token }}"
@@ -352,14 +334,8 @@ definitions:
       type: SelectiveAuthenticator
       authenticators:
         Oauth:
-          type: OAuthAuthenticator
-          scopes:
-            - "tasks:"
-            - read
-          client_id: "{{ config.authorization.client_id }}"
-          grant_type: client_credentials
-          client_secret: "{{ config.authorization.client_secret) }}"
-          access_token_value: "{{ config.authorization.client_access_token }}"
+          type: BearerAuthenticator
+          api_token: "{{ config.authorization.client_access_token }}"
         Token:
           type: BearerAuthenticator
           api_token: "{{ config.authorization.bearer_token }}"
@@ -369,14 +345,8 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
   oauth_authenticator:
-    type: OAuthAuthenticator
-    scopes:
-      - "tasks:"
-      - read
-    client_id: "{{ config.authorization.client_id }}"
-    grant_type: client_credentials
-    client_secret: "{{ config.authorization.client_secret) }}"
-    access_token_value: "{{ config.authorization.client_access_token }}"
+    type: BearerAuthenticator
+    api_token: "{{ config.authorization.client_access_token }}"
 
 streams:
   - type: DeclarativeStream
@@ -392,14 +362,8 @@ streams:
           type: SelectiveAuthenticator
           authenticators:
             Oauth:
-              type: OAuthAuthenticator
-              scopes:
-                - "tasks:"
-                - read
-              client_id: "{{ config.authorization.client_id }}"
-              grant_type: client_credentials
-              client_secret: "{{ config.authorization.client_secret) }}"
-              access_token_value: "{{ config.authorization.client_access_token }}"
+              type: BearerAuthenticator
+              api_token: "{{ config.authorization.client_access_token }}"
             Token:
               type: BearerAuthenticator
               api_token: "{{ config.authorization.bearer_token }}"
@@ -476,14 +440,8 @@ streams:
           type: SelectiveAuthenticator
           authenticators:
             Oauth:
-              type: OAuthAuthenticator
-              scopes:
-                - "tasks:"
-                - read
-              client_id: "{{ config.authorization.client_id }}"
-              grant_type: client_credentials
-              client_secret: "{{ config.authorization.client_secret) }}"
-              access_token_value: "{{ config.authorization.client_access_token }}"
+              type: BearerAuthenticator
+              api_token: "{{ config.authorization.client_access_token }}"
             Token:
               type: BearerAuthenticator
               api_token: "{{ config.authorization.bearer_token }}"
@@ -521,14 +479,8 @@ streams:
                     type: SelectiveAuthenticator
                     authenticators:
                       Oauth:
-                        type: OAuthAuthenticator
-                        scopes:
-                          - "tasks:"
-                          - read
-                        client_id: "{{ config.authorization.client_id }}"
-                        grant_type: client_credentials
-                        client_secret: "{{ config.authorization.client_secret) }}"
-                        access_token_value: "{{ config.authorization.client_access_token }}"
+                        type: BearerAuthenticator
+                        api_token: "{{ config.authorization.client_access_token }}"
                       Token:
                         type: BearerAuthenticator
                         api_token: "{{ config.authorization.bearer_token }}"
@@ -728,7 +680,7 @@ spec:
               - authorization
               - client_access_token
       oauth_connector_input_specification:
-        scope: "tasks: read"
+        scope: "tasks:read"
         consent_url: >-
           https://ticktick.com/oauth/authorize?scope={{scope_value |
           urlEncode}}&client_id={{client_id_value}}&state={{state}}&redirect_uri={{redirect_uri_value}}&response_type=code

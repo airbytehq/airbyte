@@ -117,6 +117,12 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channels"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uploadsPlaylistId
+              value: "{{ record.get('contentDetails', {}).get('relatedPlaylists', {}).get('uploads') }}"
     comments:
       type: DeclarativeStream
       name: comments
@@ -180,10 +186,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: search
+          path: playlistItems
           http_method: GET
           request_parameters:
-            type: video
+            part: snippet
         record_selector:
           type: RecordSelector
           extractor:
@@ -191,7 +197,8 @@ definitions:
             field_path:
               - items
               - "*"
-              - id
+              - snippet
+              - resourceId
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -208,13 +215,17 @@ definitions:
             cursor_value: "{{ response.nextPageToken }}"
             stop_condition: "{{ not response.get('nextPageToken') }}"
         partition_router:
-          type: ListPartitionRouter
-          values: "{{ config.channel_ids }}"
-          cursor_field: channel_id
-          request_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: channelId
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: uploadsPlaylistId
+              request_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: playlistId
+              partition_field: playlistId
+              stream:
+                $ref: "#/definitions/streams/channels"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -529,7 +540,7 @@ api_budget:
           interval: PT1M
       matchers:
         - type: HttpRequestRegexMatcher
-          url_path_pattern: /(channels|videos|commentThreads)
+          url_path_pattern: /(channels|playlistItems|videos|commentThreads)
 
 metadata:
   autoImportSchema:

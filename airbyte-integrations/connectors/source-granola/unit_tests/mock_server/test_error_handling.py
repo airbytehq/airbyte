@@ -28,8 +28,7 @@ from mock_server.request_builder import GranolaRequestBuilder
 
 _NOW = "2026-01-15T12:00:00Z"
 _START_DATE = "2026-01-01"
-# A start date within one 30-day step keeps the parent stream to a single slice.
-_ONLY_SLICE = ("2026-01-01T00:00:00Z", _NOW)
+_UPDATED_AFTER = "2026-01-01T00:00:00Z"
 _NOTE_ID = "note-1"
 
 _UNAUTHORIZED_MESSAGE = "Granola rejected the API key. It may be revoked or mistyped."
@@ -48,8 +47,7 @@ _STREAM_MODES = {
 
 
 def _notes_request() -> HttpRequest:
-    created_after, created_before = _ONLY_SLICE
-    return GranolaRequestBuilder.notes_endpoint().with_created_after(created_after).with_created_before(created_before).build()
+    return GranolaRequestBuilder.notes_endpoint().with_updated_after(_UPDATED_AFTER).build()
 
 
 def _notes_response() -> HttpResponse:

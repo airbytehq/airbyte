@@ -506,9 +506,22 @@ streams:
     record_selector:
       type: RecordSelector
       extractor:
-        class_name: source_declarative_manifest.components.WrappingDpathExtractor
+        type: DpathExtractor
         field_path: []
-        type: CustomRecordExtractor
+  # Item shapes are dynamic, so each item is emitted wrapped as {"data": <item>}.
+  # AddFields nests the item under a sentinel key, then DpathFlattenFields replaces
+  # the record with the sentinel's content.
+  transformations:
+  - type: AddFields
+    fields:
+    - path:
+      - __airbyte_apify_wrapped_item
+      - data
+      value: "{{ record }}"
+  - type: DpathFlattenFields
+    field_path:
+    - __airbyte_apify_wrapped_item
+    replace_record: true
 check:
   type: CheckStream
   stream_names:

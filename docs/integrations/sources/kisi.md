@@ -1,13 +1,38 @@
 # Kisi
-This is the setup for the Kisi source connector that ingests data from the Kisi API.
 
-Kisi's sturdy hardware and user-friendly software work in perfect harmony to enhance the security of your spaces. Remotely manage your locations, streamline operations, and stay compliant while enjoying mobile unlocks. https://www.getkisi.com/
+:::info
+Upgrading from 0.0.x? See the [migration guide](kisi-migrations.md) — the `user_export_reporters` stream was removed in 0.1.0.
+:::
 
-In order to use this source, you must first create an account with Kisi.
-On the top right corner, click on your name and click on My Account.
-Next, select the API tab and click on Add API key. Enter your name, your Kisi password, and your verification code and click Add. Copy the API key shown on the screen.
+This page contains the setup guide and reference information for the [Kisi](https://www.getkisi.com/) source connector. The connector reads data about your Kisi organization, such as users, places, locks, groups, and reports, from the [Kisi API](https://api.kisi.io/docs).
 
-You can learn more about the API key here https://api.kisi.io/docs#/
+## Prerequisites
+
+- A Kisi account with organization administrator or organization owner rights. Kisi only allows these roles to create API keys.
+- A Kisi API key.
+
+## Setup guide
+
+### Step 1: Generate a Kisi API key
+
+1. Sign in to Kisi.
+2. In the top right corner, click your name, then click **My Account**.
+3. Select the **API** tab and click **Add API Key**.
+4. Enter a name for the API key and your Kisi password, then click **Add**.
+5. Copy the API key shown on the screen and click **Close**.
+
+An API key is tied to the account that created it. If that account loses its admin rights, the key stops working. Kisi recommends creating API keys from the organization owner's account. For details, see [Generate an API key](https://docs.kisi.io/dashboard/account/generate_api_key) in the Kisi documentation.
+
+By default, Kisi expires API keys after 6 months of inactivity. A user can have up to 40 API keys, and Kisi expires keys beyond that limit. To create a key that doesn't expire, create it with the Kisi API's `POST https://api.kisi.io/logins` endpoint and set `expire` to `false`.
+
+### Step 2: Set up the Kisi connector in Airbyte
+
+1. In Airbyte, go to **Sources** and click **New source**.
+2. Search for and select **Kisi**.
+3. In **API Key**, paste the API key from Step 1.
+4. Click **Set up source**.
+
+The connector authenticates by sending the key in the `Authorization: KISI-LOGIN <API key>` header and tests the connection by reading the `users` endpoint.
 
 ## Configuration
 
@@ -15,11 +40,15 @@ You can learn more about the API key here https://api.kisi.io/docs#/
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key. Your KISI API Key |  |
 
+## Supported sync modes
+
+All streams support only full refresh syncs. The connector doesn't support incremental syncs.
+
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | users | id | DefaultPaginator | ✅ |  ❌  |
-| user_export_reporters | id | DefaultPaginator | ✅ |  ❌  |
 | scheduled_reports | id | DefaultPaginator | ✅ |  ❌  |
 | role_assignments | id | DefaultPaginator | ✅ |  ❌  |
 | places | id | DefaultPaginator | ✅ |  ❌  |
@@ -32,6 +61,12 @@ You can learn more about the API key here https://api.kisi.io/docs#/
 | floors | id | DefaultPaginator | ✅ |  ❌  |
 | elevators | id | DefaultPaginator | ✅ |  ❌  |
 
+The `floors` and `elevators` streams are child streams of `places`. The connector reads all places first, then requests the floors and elevators for each place by its `place_id`.
+
+## Limitations
+
+Kisi limits authenticated API requests to 5 requests per second per user. All API keys that belong to the same Kisi user share this limit. When the limit is exceeded, Kisi returns an HTTP 429 response. For details, see the [Kisi API documentation](https://api.kisi.io/docs).
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -43,6 +78,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-10-09 | [88301](https://github.com/airbytehq/airbyte/pull/88301) | Remove the `user_export_reporters` stream: Kisi removed the `GET /user_export_reporters` endpoint (HTTP 404) |
+| 0.0.73 | 2026-10-06 | [87913](https://github.com/airbytehq/airbyte/pull/87913) | Update dependencies |
 | 0.0.72 | 2026-09-29 | [87218](https://github.com/airbytehq/airbyte/pull/87218) | Update dependencies |
 | 0.0.71 | 2026-09-22 | [86685](https://github.com/airbytehq/airbyte/pull/86685) | Update dependencies |
 | 0.0.70 | 2026-09-15 | [86104](https://github.com/airbytehq/airbyte/pull/86104) | Update dependencies |

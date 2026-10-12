@@ -1,23 +1,32 @@
 # Coassemble
 Coassemble is an online training tool that connects people with the information they need - anytime, anyplace.
 
+## Prerequisites
+
+- A Coassemble workspace on the **Build** plan or above. The courses and trackings API endpoints that this connector reads require the Build plan.
+- Your Coassemble Workspace ID and a workspace API key. You can find both in the Developer section of your Coassemble workspace settings. See the [Coassemble developer docs](https://developers.coassemble.com/) for details.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `user_token` | `string` | User Token.  |  |
-| `user_id` | `string` | User ID.  |  |
+| `workspace_id` | `string` | Workspace ID. The ID of your Coassemble workspace, shown next to your API key in the Developer section of your workspace settings. |  |
+| `api_key` | `string` | API Key. Workspace API key generated in the Developer section of your Coassemble workspace settings. |  |
 
-See the [Coassemble API docs](https://developers.coassemble.com/get-started) for more information to get started and generate API credentials.
+The connector sends these values in the `Authorization: COASSEMBLE:<workspace_id>:<api_key>` header. Coassemble no longer accepts the legacy User ID and User Token credentials. If you're upgrading from version 0.0.x, see the [migration guide](coassemble-migrations.md).
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | courses | id | DefaultPaginator | ✅ |  ❌  |
-| screen_types | - | NoPaginator | ✅ |  ❌  |
 | trackings | - | DefaultPaginator | ✅ |  ❌  |
 
-⚠️⚠️ Note: The `screen_types` and `trackings` streams are **Available on request only** as per the [API docs](https://developers.coassemble.com/get-started). Hence, enabling them without having them enabled on the API side would result in errors. ⚠️⚠️
+The Coassemble API requires a course ID to list trackings, so the connector reads the `trackings` stream once for each course returned by the `courses` stream. The connector adds a `course_id` field to each tracking record to identify its parent course. See the [Coassemble Courses API](https://developers.coassemble.com/api/courses) and [Tracking API](https://developers.coassemble.com/api/tracking) references for the fields each endpoint returns.
+
+## Rate limits
+
+Coassemble allows 100 requests per minute per API key across its API. Because the `trackings` stream makes at least one request per course, workspaces with many courses can reach this limit. When that happens, Coassemble responds with HTTP 429 and the connector retries the request after a backoff, which lengthens the sync. For details, see [Errors and rate limits](https://developers.coassemble.com/errors).
 
 ## IP allow list
 
@@ -30,6 +39,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.0 | 2026-10-09 | [88329](https://github.com/airbytehq/airbyte/pull/88329) | Switch to workspace API key authentication (`COASSEMBLE:<workspace_id>:<api_key>`), read `trackings` per course with 0-indexed pagination, remove the retired `screen_types` stream |
+| 0.0.66 | 2026-10-06 | [87794](https://github.com/airbytehq/airbyte/pull/87794) | Update dependencies |
 | 0.0.65 | 2026-09-29 | [87116](https://github.com/airbytehq/airbyte/pull/87116) | Update dependencies |
 | 0.0.64 | 2026-09-22 | [86569](https://github.com/airbytehq/airbyte/pull/86569) | Update dependencies |
 | 0.0.63 | 2026-09-15 | [86015](https://github.com/airbytehq/airbyte/pull/86015) | Update dependencies |

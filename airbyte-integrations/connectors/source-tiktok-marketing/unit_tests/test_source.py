@@ -149,6 +149,19 @@ def test_51004_retry_handlers_also_retry_51002():
             )
 
 
+def test_every_40067_filter_splits_the_request_window(config):
+    filters_40067 = [
+        response_filter
+        for response_filters in _walk_response_filters(get_source(config=config, state=None).resolved_manifest)
+        for response_filter in response_filters
+        if "40067" in response_filter.get("predicate", "")
+    ]
+    assert filters_40067
+    assert all(
+        response_filter.get("action") == "SPLIT_REQUEST_WINDOW" for response_filter in filters_40067
+    ), "Error 40067 must split the request window instead of failing"
+
+
 @pytest.fixture(name="config")
 def config_fixture():
     config = {

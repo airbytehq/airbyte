@@ -24,7 +24,7 @@ from mock_server.request_builder import GranolaRequestBuilder
 
 _NOW = "2026-01-15T12:00:00Z"
 _START_DATE = "2026-01-01"
-_ONLY_SLICE = ("2026-01-01T00:00:00Z", _NOW)
+_UPDATED_AFTER = "2026-01-01T00:00:00Z"
 _API_KEY = "grn_test_key"
 _LOGGER = logging.getLogger("airbyte")
 
@@ -34,8 +34,7 @@ def _config():
 
 
 def _notes_request() -> GranolaRequestBuilder:
-    created_after, created_before = _ONLY_SLICE
-    return GranolaRequestBuilder.notes_endpoint().with_created_after(created_after).with_created_before(created_before)
+    return GranolaRequestBuilder.notes_endpoint().with_updated_after(_UPDATED_AFTER)
 
 
 def _notes_response() -> HttpResponse:
@@ -95,7 +94,7 @@ class TestDiscover(TestCase):
         notes = streams["notes"]
         assert set(notes.supported_sync_modes) == {SyncMode.full_refresh, SyncMode.incremental}
         assert notes.source_defined_cursor is True
-        assert notes.default_cursor_field == ["created_at"]
+        assert notes.default_cursor_field == ["updated_at"]
         assert notes.source_defined_primary_key == [["id"]]
 
         detailed_notes = streams["detailed_notes"]

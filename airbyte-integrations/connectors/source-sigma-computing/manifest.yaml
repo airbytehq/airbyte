@@ -311,24 +311,16 @@ definitions:
           $ref: "#/schemas/workbooks"
   base_requester:
     type: HttpRequester
-    url_base: "{{ config[\"base_url\"] }}/v2"
+    url_base: "{{ config[\"base_url\"].rstrip(\"/\") }}/v2"
     authenticator:
       type: OAuthAuthenticator
       client_id: "{{ config[\"client_id\"] }}"
-      grant_type: refresh_token
+      grant_type: client_credentials
       client_secret: "{{ config[\"client_secret\"] }}"
-      refresh_token: "{{ config[\"client_refresh_token\"] }}"
       access_token_name: access_token
+      expires_in_name: expires_in
       refresh_request_body: {}
-      refresh_token_updater:
-        refresh_token_name: refresh_token
-        access_token_config_path:
-          - oauth_access_token
-        token_expiry_date_config_path:
-          - oauth_token_expiry_date
-        refresh_token_config_path:
-          - client_refresh_token
-      token_refresh_endpoint: "{{ config[\"base_url\"] }}/v2/auth/token"
+      token_refresh_endpoint: "{{ config[\"base_url\"].rstrip(\"/\") }}/v2/auth/token"
 
 streams:
   - $ref: "#/definitions/streams/files"
@@ -348,46 +340,38 @@ spec:
     required:
       - client_id
       - client_secret
-      - client_refresh_token
       - base_url
     properties:
       client_id:
         type: string
+        description: >-
+          The Client ID of your Sigma API credentials (Administration >
+          Developer Access).
         order: 0
         title: Client ID
         airbyte_secret: true
       client_secret:
         type: string
+        description: >-
+          The Client Secret of your Sigma API credentials (Administration >
+          Developer Access).
         order: 1
         title: Client secret
         airbyte_secret: true
-      client_refresh_token:
-        type: string
-        order: 2
-        title: Refresh token
-        airbyte_secret: true
-      oauth_access_token:
-        type: string
-        description: >-
-          The current access token. This field might be overridden by the
-          connector based on the token refresh endpoint response.
-        order: 3
-        title: Access token
-        airbyte_secret: true
-      oauth_token_expiry_date:
-        type: string
-        description: >-
-          The date the current access token expires in. This field might be
-          overridden by the connector based on the token refresh endpoint
-          response.
-        order: 4
-        title: Token expiry date
-        format: date-time
       base_url:
         type: string
-        description: The base url of your sigma organization
-        order: 5
+        description: >-
+          The API base URL of your Sigma organization (Administration >
+          Developer Access > API base URL), e.g.
+          https://aws-api.sigmacomputing.com for AWS-US (West) or
+          https://api.sigmacomputing.com for GCP. See
+          https://help.sigmacomputing.com/reference/get-started-sigma-api#identify-your-api-request-url
+        order: 2
         title: Base URL
+        examples:
+          - https://aws-api.sigmacomputing.com
+          - https://api.sigmacomputing.com
+          - https://api.eu.aws.sigmacomputing.com
     additionalProperties: true
 
 metadata:
