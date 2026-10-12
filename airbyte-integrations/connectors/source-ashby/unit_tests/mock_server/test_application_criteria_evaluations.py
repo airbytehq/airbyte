@@ -11,9 +11,11 @@ child page.
 """
 
 import json
+import logging
 from typing import Any, Dict, List
 from unittest import TestCase
 
+from jsonschema import Draft7Validator, FormatChecker
 from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
@@ -142,3 +144,24 @@ class TestApplicationCriteriaEvaluations(TestCase):
         http_mocker.assert_number_of_calls(app1_page1, 1)
         http_mocker.assert_number_of_calls(app1_page2, 1)
         http_mocker.assert_number_of_calls(app2_page1, 1)
+
+    @HttpMocker()
+    def test_discovered_primary_key_and_schema_match_emitted_evaluation(self, http_mocker: HttpMocker):
+        config = ConfigBuilder().build()
+        catalog = get_source(config=config).discover(logging.getLogger("airbyte"), config)
+        stream = {stream.name: stream for stream in catalog.streams}[_STREAM_NAME]
+        schema = stream.json_schema
+
+        assert stream.source_defined_primary_key == [["application_id"], ["id"]]
+        assert {"assessmentType", "criterionName", "jobId"}.isdisjoint(schema["properties"])
+
+        http_mocker.post(_applications_first_page_request(), _page([_application_record("app-1")]))
+        http_mocker.post(_evaluations_request("app-1"), _page([_evaluation_record("eval-1")]))
+
+        output = _read()
+
+        assert output.errors == []
+        record = output.records[0].record.data
+        assert set(record).issubset(schema["properties"])
+        errors = list(Draft7Validator(schema, format_checker=FormatChecker()).iter_errors(record))
+        assert errors == []
