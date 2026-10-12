@@ -78,6 +78,20 @@ def test_source_streams():
     }
 
 
+@pytest.mark.parametrize(
+    "config, valid",
+    [
+        ({"count": 10, "records_per_slice": 5, "parallelism": 2}, True),
+        ({"count": 10, "records_per_slice": 5, "parallelism": 0}, False),
+        ({"count": "ten", "records_per_slice": 5, "parallelism": 2}, False),
+    ],
+)
+def test_check_connection_validates_settings(config, valid):
+    ok, error = SourceFaker().check_connection(logger, config)
+    assert ok is valid
+    assert (error is None) is valid
+
+
 def test_read_small_random_data():
     source = SourceFaker()
     config = {"count": 10, "parallelism": 1}
