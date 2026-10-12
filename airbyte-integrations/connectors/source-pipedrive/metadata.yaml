@@ -72,9 +72,14 @@ data:
               - roles
       2.0.0:
         upgradeDeadline: 2023-10-04
-        message:
-          "This version removes the `pipeline_ids` field from the `deal_fields`
-          stream. Config has changed to only use API key. Please update your config."
+        message: "This version removes the `pipeline_ids` field from the `deal_fields` stream. Config has changed to only use API key. Please update your config."
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
   releaseDate: 2021-07-19
   releaseStage: alpha
   suggestedStreams:
