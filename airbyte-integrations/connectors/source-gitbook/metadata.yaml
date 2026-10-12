@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d1fcdf3a-dcfd-4b2e-a32c-d8a7a2e9790c
-  dockerImageTag: 0.0.64
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-gitbook
   githubIssueLabel: source-gitbook
   icon: icon.svg
@@ -25,6 +25,16 @@ data:
   name: GitBook
   releaseDate: 2024-10-30
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      0.1.0:
+        message: "The `insights_traffic` stream has been removed because GitBook removed the `GET /v1/spaces/{spaceId}/insights/traffic` endpoint from its API (it now returns `404 API operation not found`). Users syncing `insights_traffic` must deselect it from their connection; no other streams are affected."
+        upgradeDeadline: "2026-10-21"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - insights_traffic
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/gitbook
   tags:

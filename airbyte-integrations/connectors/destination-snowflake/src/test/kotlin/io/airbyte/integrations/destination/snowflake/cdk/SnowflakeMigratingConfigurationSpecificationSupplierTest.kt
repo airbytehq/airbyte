@@ -11,6 +11,8 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.destination.snowflake.spec.CredentialsSpecification
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthSpecification
 import io.airbyte.integrations.destination.snowflake.spec.NumberDataType
+import io.airbyte.integrations.destination.snowflake.spec.ProgrammaticAccessTokenAuthConfiguration
+import io.airbyte.integrations.destination.snowflake.spec.ProgrammaticAccessTokenAuthSpecification
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthSpecification
@@ -42,13 +44,14 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
     fun testHostDomains(host: String) {
         val supplier = SnowflakeMigratingConfigurationSpecificationSupplier()
         val hostPattern = supplier.jsonSchema["properties"]["host"]["pattern"].asText().toRegex()
-        for (prefix in listOf("", "http://", "https://")) {
+        for (prefix in listOf("", "http://", "https://")) { // # ignore-https-check
             val endpoint = prefix + host
             assertTrue(hostPattern.matches(endpoint), endpoint)
             for (fixture in
                 listOf(
                     "config_with_credentials_auth_type.json",
                     "config_with_credentials_auth_type_key_pair.json",
+                    "config_with_credentials_auth_type_pat.json",
                     "config_with_top_level_password.json",
                     "config_without_credentials_auth_type.json",
                     "config_without_credentials_auth_type_key_pair.json",
@@ -254,6 +257,62 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
             assertEquals(
                 "test-private-key",
                 ((spec.credentials) as KeyPairAuthSpecification).privateKey
+            )
+        }
+    }
+
+    @Test
+    fun testCredentialsWithAuthTypeProgrammaticAccessToken() {
+        val json =
+            this.javaClass.getResource("/config_with_credentials_auth_type_pat.json")!!.readText()
+
+        val supplier =
+            SnowflakeMigratingConfigurationSpecificationSupplier(jsonPropertyValue = json)
+        assertDoesNotThrow {
+            val spec = supplier.get()
+            assertEquals(
+                CredentialsSpecification.Type.PROGRAMMATIC_ACCESS_TOKEN,
+                spec.credentials?.auth_type
+            )
+            assertEquals(
+                ProgrammaticAccessTokenAuthSpecification::class.java,
+                spec.credentials?.javaClass
+            )
+            assertEquals(
+                "test-programmatic-access-token",
+                ((spec.credentials) as ProgrammaticAccessTokenAuthSpecification)
+                    .programmaticAccessToken
+            )
+
+            val config = SnowflakeConfigurationFactory().makeWithoutExceptionHandling(spec)
+            assertEquals(
+                ProgrammaticAccessTokenAuthConfiguration("test-programmatic-access-token"),
+                config.authType
+            )
+        }
+    }
+
+    @Test
+    fun testCredentialsWithAuthTypeProgrammaticAccessTokenFlat() {
+        val json =
+            unprettyPrintJson(
+                this.javaClass
+                    .getResource("/config_with_credentials_auth_type_pat.json")!!
+                    .readText()
+            )
+
+        val supplier =
+            SnowflakeMigratingConfigurationSpecificationSupplier(jsonPropertyValue = json)
+        assertDoesNotThrow {
+            val spec = supplier.get()
+            assertEquals(
+                CredentialsSpecification.Type.PROGRAMMATIC_ACCESS_TOKEN,
+                spec.credentials?.auth_type
+            )
+            assertEquals(
+                "test-programmatic-access-token",
+                ((spec.credentials) as ProgrammaticAccessTokenAuthSpecification)
+                    .programmaticAccessToken
             )
         }
     }
