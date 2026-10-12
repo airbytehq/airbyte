@@ -412,7 +412,7 @@ def test_discover_lists_new_streams():
     catalog = get_source(CONFIG).discover(logging.getLogger(__name__), CONFIG)
     streams = {stream.name: stream for stream in catalog.streams}
 
-    assert len(streams) == 36
+    assert len(streams) == 37
     assert streams["deals_archived"].source_defined_primary_key == [["id"]]
     assert streams["deals_archived"].default_cursor_field == ["update_time"]
     assert streams["leads"].default_cursor_field == ["update_time"]
@@ -426,7 +426,9 @@ def test_discover_lists_new_streams():
         "deal_flow",
         "permission_set_assignments",
         "product_variations",
+        "leads_archived",
     }.issubset(streams)
+    assert streams["leads_archived"].supported_sync_modes == [SyncMode.full_refresh]
     assert streams["product_variations"].supported_sync_modes == [SyncMode.full_refresh]
     assert streams["deal_flow"].source_defined_primary_key == [["id"]]
     assert streams["deal_flow"].default_cursor_field == ["log_time"]
@@ -530,14 +532,15 @@ def test_deals_legacy_state_is_normalized_to_rfc3339():
     assert _ids(output) == [1]
 
 
-def test_files_filter_records_client_side():
+def test_files_filter_records_client_side_with_a_one_hour_lookback():
     state = StateBuilder().with_stream_state("files", {"update_time": "2024-01-01 00:00:00"}).build()
     with HttpMocker() as http_mocker:
         http_mocker.get(
-            _request("v1/files", {"api_token": "tok", "limit": "100", "sort": "update_time ASC"}),
+            _request("v1/files", {"api_token": "tok", "limit": "100", "sort": "id ASC"}),
             _response(
                 {
                     "data": [
+                        {"id": 0, "update_time": "2023-12-31 22:59:59"},
                         {"id": 1, "update_time": "2023-12-31 23:59:59"},
                         {"id": 2, "update_time": "2024-01-01 00:00:00"},
                         {"id": 3, "update_time": "2024-01-01 00:00:01"},
@@ -549,7 +552,8 @@ def test_files_filter_records_client_side():
 
         output = _read_stream("files", SyncMode.incremental, state)
 
-    assert _ids(output) == [2, 3]
+    # File 1 sits inside the one-hour lookback before the state and is read again; file 0 does not.
+    assert _ids(output) == [1, 2, 3]
 
 
 def test_notes_filter_server_side_with_updated_since_and_emit_rfc3339_state():
@@ -559,7 +563,8 @@ def test_notes_filter_server_side_with_updated_since_and_emit_rfc3339_state():
         http_mocker.get(
             _request(
                 "v1/notes",
-                {"api_token": "tok", "limit": "500", "sort": "update_time ASC", "updated_since": "2024-01-01T00:00:00Z"},
+                # The state is 2024-01-01 00:00:00; the one-hour lookback asks from 23:00 the day before.
+                {"api_token": "tok", "limit": "500", "sort": "id ASC", "updated_since": "2023-12-31T23:00:00Z"},
             ),
             _response(
                 {
@@ -579,12 +584,12 @@ def test_notes_filter_server_side_with_updated_since_and_emit_rfc3339_state():
 
 
 def test_leads_filter_server_side_with_updated_since():
-    # `GET /v1/leads` accepts `updated_since` and sorts on `update_time`; values carry fractional seconds.
+    # `GET /v1/leads` accepts `updated_since` and sorts on the immutable `id`; values carry fractional seconds.
     with HttpMocker() as http_mocker:
         http_mocker.get(
             _request(
                 "v1/leads",
-                {"api_token": "tok", "limit": "500", "sort": "update_time ASC", "updated_since": "2017-01-25T00:00:00Z"},
+                {"api_token": "tok", "limit": "500", "sort": "id ASC", "updated_since": "2017-01-25T00:00:00Z"},
             ),
             _response(
                 {
@@ -889,4 +894,41 @@ def test_product_variations_skips_a_product_deleted_mid_sync():
         output = _read_stream("product_variations")
 
     assert _ids(output) == [20]
+    assert output.errors == []
+
+
+def test_leads_archived_pages_through_archived_leads_in_id_order():
+    with HttpMocker() as http_mocker:
+        http_mocker.get(
+            _request("v1/leads/archived", {"api_token": "tok", "limit": "500", "sort": "id ASC"}),
+            _response(
+                {
+                    "data": [{"id": "lead-a", "is_archived": True}],
+                    "additional_data": {"pagination": {"start": 0, "limit": 500, "more_items_in_collection": True, "next_start": 500}},
+                }
+            ),
+        )
+        http_mocker.get(
+            _request("v1/leads/archived", {"api_token": "tok", "limit": "500", "sort": "id ASC", "start": "500"}),
+            _response({"data": [{"id": "lead-b", "is_archived": True}], "additional_data": V1_PAGE_DONE}),
+        )
+
+        output = _read_stream("leads_archived")
+
+    assert _ids(output) == ["lead-a", "lead-b"]
+    assert output.errors == []
+
+
+def test_goals_reads_everyones_goals_by_assignee_type():
+    def goals_request(assignee_type):
+        return _request("v1/goals/find", {"api_token": "tok", "limit": "50", "assignee.type": assignee_type})
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(goals_request("person"), _response({"data": {"goals": [{"id": "g-person", "assignee": {"type": "person", "id": 7}}]}}))
+        http_mocker.get(goals_request("team"), _response({"data": {"goals": [{"id": "g-team", "assignee": {"type": "team", "id": 3}}]}}))
+        http_mocker.get(goals_request("company"), _response({"data": {"goals": []}}))
+
+        output = _read_stream("goals")
+
+    assert _ids(output) == ["g-person", "g-team"]
     assert output.errors == []

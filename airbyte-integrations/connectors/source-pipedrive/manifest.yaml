@@ -150,6 +150,16 @@ definitions:
           request_parameters:
             api_token: "{{ config['api_token'] }}"
             limit: "50"
+            # Without an assignee filter Pipedrive returns only the token owner's goals; any
+            # `assignee.type` returns everyone's goals of that type.
+            assignee.type: "{{ stream_partition.assignee_type }}"
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: assignee_type
+          values:
+            - person
+            - team
+            - company
         record_selector:
           type: RecordSelector
           extractor:
@@ -175,7 +185,8 @@ definitions:
           request_parameters:
             api_token: "{{ config['api_token'] }}"
             limit: "100"
-            sort: "update_time ASC"
+            # An immutable sort key: an edit during the read cannot move a row to another page and skip one.
+            sort: "id ASC"
         record_selector:
           type: RecordSelector
           extractor:
@@ -194,6 +205,8 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
+        # Re-read the last hour: a row edited after the read passed it keeps an update_time below the new state.
+        lookback_window: PT1H
         cursor_datetime_formats:
           - "%Y-%m-%d %H:%M:%S"
         datetime_format: "%Y-%m-%d %H:%M:%S"
@@ -269,7 +282,8 @@ definitions:
           request_parameters:
             api_token: "{{ config['api_token'] }}"
             limit: "500"
-            sort: "update_time ASC"
+            # An immutable sort key: an edit during the read cannot move a row to another page and skip one.
+            sort: "id ASC"
         record_selector:
           type: RecordSelector
           extractor:
@@ -288,6 +302,8 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
+        # Re-read the last hour: a row edited after the read passed it keeps an update_time below the new state.
+        lookback_window: PT1H
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
           - "%Y-%m-%dT%H:%M:%SZ"
@@ -300,6 +316,42 @@ definitions:
           type: RequestOption
           field_name: updated_since
           inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/leads"
+    leads_archived:
+      type: DeclarativeStream
+      name: leads_archived
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          # GET /v1/leads returns only leads that are not archived.
+          path: v1/leads/archived
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "500"
+            # An immutable sort key: an edit during the read cannot move a row to another page and skip one.
+            sort: "id ASC"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -318,7 +370,8 @@ definitions:
           request_parameters:
             api_token: "{{ config['api_token'] }}"
             limit: "500"
-            sort: "update_time ASC"
+            # An immutable sort key: an edit during the read cannot move a row to another page and skip one.
+            sort: "id ASC"
         record_selector:
           type: RecordSelector
           extractor:
@@ -337,6 +390,8 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
+        # Re-read the last hour: a row edited after the read passed it keeps an update_time below the new state.
+        lookback_window: PT1H
         cursor_datetime_formats:
           - "%Y-%m-%d %H:%M:%S"
           - "%Y-%m-%dT%H:%M:%SZ"
@@ -1546,6 +1601,7 @@ streams:
   - $ref: "#/definitions/streams/filters"
   - $ref: "#/definitions/streams/lead_labels"
   - $ref: "#/definitions/streams/leads"
+  - $ref: "#/definitions/streams/leads_archived"
   - $ref: "#/definitions/streams/notes"
   - $ref: "#/definitions/streams/activities"
   - $ref: "#/definitions/streams/activity_types"
