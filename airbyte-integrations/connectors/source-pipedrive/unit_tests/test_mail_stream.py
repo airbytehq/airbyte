@@ -16,7 +16,9 @@ _MAIL_MESSAGES_URL = f"{_MAIL_THREADS_URL}/1/mailMessages"
 
 
 def _request(url, query_params):
-    return HttpRequest(url, query_params=query_params)
+    query_params = dict(query_params)
+    token = query_params.pop("api_token")
+    return HttpRequest(url, query_params=query_params, headers={"x-api-token": token})
 
 
 def _response(body):

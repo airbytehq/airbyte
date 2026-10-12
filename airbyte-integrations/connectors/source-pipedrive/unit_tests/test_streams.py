@@ -28,7 +28,10 @@ def _read_stream(name, sync_mode=SyncMode.full_refresh, state=None):
 
 
 def _request(path, query_params):
-    return HttpRequest(f"{BASE_URL}{path}", query_params=query_params)
+    # The token travels in the `x-api-token` header, never in the query string.
+    query_params = dict(query_params)
+    token = query_params.pop("api_token")
+    return HttpRequest(f"{BASE_URL}{path}", query_params=query_params, headers={"x-api-token": token})
 
 
 def _ids(output, field="id"):

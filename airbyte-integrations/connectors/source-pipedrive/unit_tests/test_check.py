@@ -34,7 +34,9 @@ def test_check_uses_currencies_stream():
 
         assert status.status == Status.SUCCEEDED
         assert [request.path for request in mocker.request_history] == ["/v1/currencies"]
-        assert "api_token=test-token" in mocker.request_history[0].query
+        # Pipedrive documents only the `x-api-token` header; the token must not appear in the URL.
+        assert mocker.request_history[0].headers["x-api-token"] == "test-token"
+        assert "test-token" not in mocker.request_history[0].url
 
 
 def test_check_fails_on_invalid_token():
