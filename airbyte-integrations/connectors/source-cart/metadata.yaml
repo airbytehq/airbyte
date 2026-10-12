@@ -76,4 +76,10 @@ data:
     - title: Cart.com API resource list
       url: https://developers.cart.com/docs/rest-api/d6d68790cda18-resource-list
       type: api_reference
+    - title: Cart.com changelog
+      url: https://cart.canny.io/changelog
+      type: api_release_history
+    - title: Cart.com Online Store API OpenAPI spec (AmeriCommerce/rest-api)
+      url: https://github.com/AmeriCommerce/rest-api
+      type: spec_repository
 metadataSpecVersion: "1.0"
