@@ -67,7 +67,8 @@ def _schema_at(schema, *path):
 
 def test_api_budget_weighs_each_call_by_its_gmail_quota_cost(manifest, base_config):
     # https://developers.google.com/workspace/gmail/api/reference/quota
-    assert manifest["api_budget"]["policies"][0]["rates"] == [{"limit": 6000, "interval": "PT1M"}]
+    # Pre-May-2026 projects keep higher per-user quotas, so the limit is the per-project ceiling.
+    assert manifest["api_budget"]["policies"][0]["rates"] == [{"limit": 1200000, "interval": "PT1M"}]
     budget = ModelToComponentFactory().create_component(HTTPAPIBudgetModel, manifest["api_budget"], base_config)
     expected = {
         "threads/t1": 40,
@@ -84,10 +85,12 @@ def test_api_budget_weighs_each_call_by_its_gmail_quota_cost(manifest, base_conf
         assert budget.get_matching_policy(request).get_weight(request) == weight, path
 
 
+_RATE_LIMITED = {"status_code": 429, "headers": {"Retry-After": "1"}, "json": {"error": {"code": 429}}}
+
+
 def test_check_retries_profile_up_to_ten_times(base_config, requests_mock, mocker, budget_ignores_429):
     mocker.patch("time.sleep")
-    rate_limited = {"status_code": 429, "headers": {"Retry-After": "0"}, "json": {"error": {"code": 429}}}
-    requests_mock.get(_PROFILE_URL, [rate_limited] * 10 + [{"status_code": 200, "json": {"emailAddress": "user@example.com"}}])
+    requests_mock.get(_PROFILE_URL, [_RATE_LIMITED] * 10 + [{"status_code": 200, "json": {"emailAddress": "user@example.com"}}])
 
     status = build_source(base_config).check(logging.getLogger("test"), base_config)
 
@@ -95,7 +98,17 @@ def test_check_retries_profile_up_to_ten_times(base_config, requests_mock, mocke
     assert len(_gmail_calls(requests_mock, _PROFILE_URL)) == 11
 
 
-def test_service_account_without_domain_wide_delegation_is_a_config_error(requests_mock):
+def test_check_fails_after_ten_retries(base_config, requests_mock, mocker, budget_ignores_429):
+    mocker.patch("time.sleep")
+    requests_mock.get(_PROFILE_URL, [_RATE_LIMITED] * 12)
+
+    status = build_source(base_config).check(logging.getLogger("test"), base_config)
+
+    assert status.status == Status.FAILED
+    assert len(_gmail_calls(requests_mock, _PROFILE_URL)) == 11
+
+
+def _service_account_config():
     private_key = (
         rsa.generate_private_key(public_exponent=65537, key_size=2048)
         .private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption())
@@ -107,20 +120,24 @@ def test_service_account_without_domain_wide_delegation_is_a_config_error(reques
         "private_key": private_key,
         "token_uri": "https://oauth2.googleapis.com/token",
     }
-    config = {
+    return {
         "credentials": {"auth_type": "Service", "service_account_info": json.dumps(service_account_info)},
         "include_spam_and_trash": False,
     }
-    requests_mock.post(
-        "https://oauth2.googleapis.com/token",
-        status_code=401,
-        json={"error": "unauthorized_client", "error_description": "Client is unauthorized to retrieve access tokens using this method."},
-    )
+
+
+@pytest.mark.parametrize(
+    ("status_code", "error"),
+    [(400, "invalid_grant"), (401, "invalid_client"), (401, "disabled_client"), (401, "deleted_client")],
+)
+def test_service_account_token_error_is_reported(status_code, error, requests_mock):
+    config = _service_account_config()
+    requests_mock.post("https://oauth2.googleapis.com/token", status_code=status_code, json={"error": error})
 
     status = build_source(config).check(logging.getLogger("test"), config)
 
     assert status.status == Status.FAILED
-    assert "unauthorized_client" in (status.message or "")
+    assert f"Provider error: {error}" in (status.message or "")
     assert not _gmail_calls(requests_mock, _PROFILE_URL)
 
 
@@ -171,11 +188,29 @@ def test_check_retries_profile_after_user_rate_limit_exceeded(base_config, reque
             "insufficientPermissions",
             "The authorized account lacks the required Gmail scope. Re-authenticate and grant gmail.readonly (service account or a refresh token you obtained yourself) or gmail.modify (the Authenticate your account flow).",
         ),
+        (
+            "domainPolicy",
+            "The Google Workspace administrator has disabled Gmail apps for this domain. Ask the administrator to allow Gmail API access for this app, then retry.",
+        ),
     ],
 )
 def test_gmail_api_configuration_errors_are_actionable(reason, message, base_config, requests_mock):
+    _assert_config_error_not_retried(403, reason, message, base_config, requests_mock)
+
+
+def test_account_without_mailbox_is_a_config_error(base_config, requests_mock):
+    _assert_config_error_not_retried(
+        400,
+        "failedPrecondition",
+        "The authenticated account has no Gmail mailbox: either a service account, which has no mailbox of its own, or a Workspace user without Gmail enabled. Authenticate as the user whose mailbox you want to sync.",
+        base_config,
+        requests_mock,
+    )
+
+
+def _assert_config_error_not_retried(status_code, reason, message, base_config, requests_mock):
     error_response = {
-        "status_code": 403,
+        "status_code": status_code,
         "json": {"error": {"errors": [{"reason": reason}]}},
     }
     requests_mock.get(_PROFILE_URL, [error_response, error_response])

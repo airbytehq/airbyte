@@ -117,14 +117,16 @@ The Gmail API enforces two simultaneous quota limits, measured in [quota units](
 | Per project rate limit  | 1,200,000 quota units per minute       | `rateLimitExceeded`     |
 | Per user rate limit     | 6,000 quota units per minute per user  | `userRateLimitExceeded` |
 
-Each `threads.get` call costs 40 units, `messages.get` 20, `threads.list` 10, `messages.list` and `drafts.list` 5, and `labels` and `profile` calls 1. The `messages_details` and `threads_details` substreams issue one `get` call per parent record, so high-volume mailboxes consume quota quickly. The connector budgets its own calls against the per-user limit by these costs, so it slows down before Gmail starts rejecting requests.
+Each `threads.get` call costs 40 units, `messages.get` 20, `threads.list` 10, `messages.list` and `drafts.list` 5, and `labels` and `profile` calls 1. The `messages_details` and `threads_details` substreams issue one `get` call per parent record, so high-volume mailboxes consume quota quickly.
 
-The connector retries `429 Too Many Requests` and `403` quota-saturation errors with backoff, up to 10 times within about 10 minutes. After a `429`, every request waits for the current one-minute quota window to clear. If you see frequent rate-limit warnings in sync logs, lower the **Number of concurrent workers** setting.
+These are the quotas for Google Cloud projects created on or after May 1, 2026. Projects that used the Gmail API between November 2025 and April 2026 keep their previous quotas: 15,000 units per minute per user, with `messages.get` and `messages.list` at 5 units and `threads.get` and `threads.list` at 10. Because the limit depends on the project, the connector doesn't throttle its calls up front and relies on Gmail's rate-limit responses instead.
+
+The connector retries `429 Too Many Requests` and `403` quota-saturation errors with backoff, up to 10 times over roughly 10 to 13 minutes. After a `429`, every request waits up to a minute for the current quota window to clear. If you see frequent rate-limit warnings in sync logs, lower the **Number of concurrent workers** setting.
 
 ## Limitations & troubleshooting
 
 - **`messages` and `threads` are stub-only.** The Gmail API's `users.messages.list` and `users.threads.list` endpoints return only `{id, threadId}` (or `{id, historyId}`) per record. To replicate the full message body, headers, or labels, sync the `messages_details` or `threads_details` substream alongside its parent.
-- **Service account mailbox access requires domain-wide delegation.** A service account without domain-wide delegation has no Gmail mailbox of its own to read. Configure domain-wide delegation in your Workspace admin console so the service account can impersonate Workspace users. If delegation is missing, or does not authorize the `https://www.googleapis.com/auth/gmail.readonly` scope, the connection check fails with `Provider error: unauthorized_client`.
+- **Service account mailbox access requires domain-wide delegation.** A service account without domain-wide delegation has no Gmail mailbox of its own to read. Configure domain-wide delegation in your Workspace admin console so the service account can impersonate Workspace users. If Gmail answers `Precondition check failed`, the authenticated account has no mailbox to read.
 - **The Cloud consent screen asks for more access than the connector uses.** `https://www.googleapis.com/auth/gmail.modify` lets an app read, compose, and send mail, change labels, and trash messages. This connector only issues GET requests. To grant the narrower `https://www.googleapis.com/auth/gmail.readonly` scope instead, use your own OAuth client or a service account on a self-managed Airbyte instance.
 
 ## Configuration

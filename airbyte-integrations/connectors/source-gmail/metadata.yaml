@@ -6,8 +6,8 @@ data:
   suggestedStreams:
     streams:
       - messages_details
-      - threads_details
       - labels_details
+      - drafts
       - profile
   registryOverrides:
     oss:

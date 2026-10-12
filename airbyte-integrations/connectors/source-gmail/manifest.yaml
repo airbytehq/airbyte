@@ -11,13 +11,16 @@ check:
 
 api_budget:
   type: HTTPAPIBudget
-  # Gmail allows 6,000 quota units per user per minute; each matcher weighs a call by its unit cost
-  # (https://developers.google.com/workspace/gmail/api/reference/quota). On a 429 the budget treats the
-  # window as spent and every worker waits for it to drain (up to a minute), whatever Retry-After says.
+  # Each matcher weighs a call by its unit cost under Gmail's current quotas
+  # (https://developers.google.com/workspace/gmail/api/reference/quota). The per-user limit depends on the
+  # project's age: projects that used the API before May 2026 keep their previous, higher quotas, so the
+  # budget does not throttle up front. The limit is the per-project ceiling; the budget only acts on a 429,
+  # when it treats the window as spent and every worker waits for it to drain (up to a minute), whatever
+  # Retry-After says.
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 6000
+        - limit: 1200000
           interval: PT1M
       matchers:
         - type: HttpRequestRegexMatcher
@@ -350,8 +353,8 @@ definitions:
     refresh_request_headers:
       Content-Type: application/x-www-form-urlencoded
     use_profile_assertion: true
-    # A service account without domain-wide delegation for the gmail.readonly scope gets
-    # `unauthorized_client`; surface it as a config error instead of a bare HTTP 401.
+    # Token errors for an invalid, disabled or deleted service-account key surface as config errors
+    # instead of a bare HTTP error.
     refresh_token_error_status_codes:
       - 400
       - 401
@@ -359,6 +362,9 @@ definitions:
     refresh_token_error_values:
       - unauthorized_client
       - invalid_grant
+      - invalid_client
+      - disabled_client
+      - deleted_client
     profile_assertion:
       $ref: "#/definitions/jwt_authenticator"
   authenticator:
@@ -374,8 +380,8 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       # The CDK also stops retrying after 600 s (not configurable in the manifest). With the API budget's
-      # one-minute wait after each 429, the 10 retries fit in that window; when Gmail sends no Retry-After,
-      # the exponential fallback below reaches the 600 s limit after 6 retries.
+      # wait of up to a minute after each 429, the 10 retries fit in that window; when Gmail sends no
+      # Retry-After, the exponential fallback below reaches the 600 s limit after 6 retries.
       max_retries: 10
       backoff_strategies:
         # Gmail usually returns a `Retry-After` header on 429 and on 403
@@ -428,6 +434,20 @@ definitions:
           error_message: "The authorized account lacks the required Gmail scope. Re-authenticate and grant gmail.readonly (service account or a refresh token you obtained yourself) or gmail.modify (the Authenticate your account flow)."
           predicate: >-
             {{ ((response.get('error', {}).get('errors', [{}]) | first).get('reason', '')) in ['insufficientPermissions'] }}
+        - type: HttpResponseFilter
+          action: FAIL
+          failure_type: config_error
+          error_message: "The Google Workspace administrator has disabled Gmail apps for this domain. Ask the administrator to allow Gmail API access for this app, then retry."
+          predicate: >-
+            {{ ((response.get('error', {}).get('errors', [{}]) | first).get('reason', '')) in ['domainPolicy'] }}
+        # Gmail answers 400 `failedPrecondition` when the authenticated account has no mailbox, e.g. a
+        # service account reading `users/me` without impersonating a Workspace user.
+        - type: HttpResponseFilter
+          action: FAIL
+          failure_type: config_error
+          error_message: "Gmail rejected the request with 'Precondition check failed'. The authenticated account has no Gmail mailbox: either a service account, which has no mailbox of its own, or a Workspace user without Gmail enabled. Authenticate as the user whose mailbox you want to sync."
+          predicate: >-
+            {{ ((response.get('error', {}).get('errors', [{}]) | first).get('reason', '')) in ['failedPrecondition'] }}
 
 streams:
   - $ref: "#/definitions/streams/profile"
