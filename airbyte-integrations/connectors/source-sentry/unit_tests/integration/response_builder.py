@@ -1,12 +1,19 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import json
+from typing import Any, Dict, Optional
 
 from airbyte_cdk.test.mock_http import HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
 
-def create_response(resource_name: str, status_code: int = 200, has_next: bool = False, cursor: str = "next") -> HttpResponse:
+def create_response(
+    resource_name: str,
+    status_code: int = 200,
+    has_next: bool = False,
+    cursor: str = "next",
+    body_overrides: Optional[Dict[str, Any]] = None,
+) -> HttpResponse:
     """
     Create HTTP response using template from resource/http/response/<resource_name>.json
 
@@ -15,8 +22,12 @@ def create_response(resource_name: str, status_code: int = 200, has_next: bool =
         status_code: HTTP status code
         has_next: Whether there's a next page (for pagination)
         cursor: Cursor value for pagination
+        body_overrides: Top-level fields merged into an object template
     """
-    body = json.dumps(find_template(resource_name, __file__))
+    template = find_template(resource_name, __file__)
+    if body_overrides:
+        template = {**template, **body_overrides}
+    body = json.dumps(template)
 
     headers = {}
     if has_next:

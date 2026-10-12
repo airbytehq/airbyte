@@ -6,10 +6,11 @@ from pathlib import Path
 from unittest import TestCase
 
 import freezegun
+from jsonschema import Draft7Validator
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.mock_http import HttpMocker
 from integration.config import ConfigBuilder
 from integration.request_builder import SentryRequestBuilder
@@ -59,3 +60,26 @@ class TestAllProjectsDetailStream(TestCase):
         assert record["slug"] == "test-project"
         # Fields dropped by the org-scoped list endpoint remain available here.
         assert record["status"] == "active"
+
+    @HttpMocker()
+    def test_boolean_replay_rage_click_option_matches_stream_schema(self, http_mocker: HttpMocker):
+        http_mocker.get(
+            SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(),
+            create_response("projects", has_next=False),
+        )
+        http_mocker.get(
+            SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, "test-project", _AUTH_TOKEN).build(),
+            create_response("project_detail", has_next=False, body_overrides={"options": {"sentry:replay_rage_click_issues": True}}),
+        )
+
+        source = get_source(config=self._config())
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=self._config(), catalog=catalog)
+
+        assert len(output.records) == 1
+        record = output.records[0].record.data
+        assert record["options"]["sentry:replay_rage_click_issues"] is True
+
+        discovered = discover(get_source(config=self._config()), config=self._config())
+        schema = next(stream.json_schema for stream in discovered.catalog.catalog.streams if stream.name == _STREAM_NAME)
+        assert list(Draft7Validator(schema).iter_errors(record)) == []
