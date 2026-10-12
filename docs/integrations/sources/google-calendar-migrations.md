@@ -7,7 +7,7 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 When **Calendar Id** is empty, version 1.0.0 reads every calendar in the account's calendar list, including hidden ones: `events` from the calendars the account can read, `acl` from those it owns, and `freebusy` from all of them. It adds the `acl` and `freebusy` streams, and changes the `events`, `calendars` and `colors` streams.
 
 :::danger Risk of permanent data loss
-Clearing the `events` stream deletes its destination rows and re-reads only what Google still returns. Events last modified before your Start Date are not re-read, events deleted in Google Calendar come back with at most their ID and a `cancelled` status (or not at all), and with an Append sync mode every earlier copy of each event is lost. Back up the `events` table before you clear it if you need that history.
+Clearing the `events` stream deletes its destination rows and re-reads only what Google still returns. Events last modified before your Start Date are not re-read, events deleted in Google Calendar come back with at most their ID and a `cancelled` status (or not at all), and with an Append sync mode every earlier copy of each event is lost. Before you clear it: back up the `events` table if you need that history, and if Start Date is set, empty it (or move it earlier) so the re-read covers every event Google still returns — Google serves live events of any age; only Start Date limits the re-read. Restore Start Date after the first sync if you want it.
 :::
 
 ### `events`
@@ -25,7 +25,7 @@ With **Calendar Id** empty, `events` reads only the calendars the account can re
 
 ### `calendars`
 
-`calendars` used to return the same calendar-list entries as `calendarlist`. It now returns the calendar resource of each calendar in the calendar list that the account can read, hidden ones included: `kind`, `etag`, `id`, `summary`, `description`, `location`, `timeZone`, `conferenceProperties`, `dataOwner`, `autoAcceptInvitations` and `labelProperties`. The per-user fields of a list entry (`accessRole`, colors, reminders, `primary`, `selected`) stay in `calendarlist`.
+`calendars` used to return the same calendar-list entries as `calendarlist`. It now returns the calendar resource of each calendar in the calendar list that the account can read, hidden ones included: `kind`, `etag`, `id`, `summary`, `description`, `location`, `timeZone`, `conferenceProperties`, `dataOwner`, `autoAcceptInvitations` and `labelProperties`. Hidden calendars are now included, and calendars shared with the account as free/busy only are no longer returned. These columns are removed from `calendars` and stay in `calendarlist`: `accessRole`, `backgroundColor`, `foregroundColor`, `colorId`, `defaultReminders`, `notificationSettings`, `primary` and `selected`.
 
 ### `colors`
 
@@ -35,13 +35,15 @@ The primary key changes from `[calendar, event]`, two objects keyed by color ID,
 
 - Queries that filter `events.calendar_id = 'primary'` stop matching. Filter on the account's email address instead.
 - Once `events` reads more than one calendar, `events.id` is no longer unique. Joins, uniqueness tests and deduplication logic must use `(calendar_id, id)`.
-- Queries that read `accessRole`, colors or reminders from `calendars` must read them from `calendarlist`.
+- Queries that read `accessRole`, `backgroundColor`, `foregroundColor`, `colorId`, `defaultReminders`, `notificationSettings`, `primary` or `selected` from `calendars` must read them from `calendarlist`.
 
 ### `acl` scope
 
 The new `acl` stream needs the `calendar.acls.readonly` scope, unless your refresh token already has `calendar.acls` or `calendar`. Generate a new refresh token for your OAuth client that includes the scope and paste it into **Refresh token**, or leave `acl` deselected. If your connection adds new streams automatically, deselect `acl` until the token has the scope; otherwise every sync fails.
 
 ### Refresh schemas and clear data
+
+Clear `events`, `calendars` and `colors` on every connection, whether or not **Calendar Id** is set: the primary keys widen (`events`, `colors`), existing columns change type (`events`, `colors`), `calendars` changes columns, and version 1.0.0 drops the 0.1.0 `events` cursor. Destinations differ on whether they can apply key and type changes in place, so a clear is the only path that works everywhere; connections using the alias `primary` would otherwise also keep old `primary` rows beside the new email-address rows.
 
 1. Select **Connections** in the main navbar and select the connection(s) affected by the update.
 2. Select the **Schema** tab.
