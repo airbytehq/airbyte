@@ -180,7 +180,7 @@ def test_countries_stream_slices_filters_empty_profile_location_groups(mocker, r
     assert result == expected_slices
 
 
-GRAPHQL_URL = "https://test-shop.myshopify.com/admin/api/2026-07/graphql.json"
+GRAPHQL_URL = "https://test-shop.myshopify.com/admin/api/2026-10/graphql.json"
 THROTTLED_RESPONSE = {"errors": [{"message": "Throttled", "extensions": {"code": "THROTTLED"}}]}
 GRAPHQL_ERROR_RESPONSE = {
     "errors": [{"message": "Internal error. Looks like something went wrong on our end.", "extensions": {"code": "INTERNAL_SERVER_ERROR"}}]

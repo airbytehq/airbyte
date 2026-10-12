@@ -892,7 +892,7 @@ def test_market_countries_read_retries_a_throttled_page(requests_mock, config):
         seen_cursors.append(_query_cursors(query))
         return page_responses.pop(0)
 
-    requests_mock.post("https://test-shop.myshopify.com/admin/api/2026-07/graphql.json", json=graphql_callback)
+    requests_mock.post("https://test-shop.myshopify.com/admin/api/2026-10/graphql.json", json=graphql_callback)
 
     stream = MarketCountries(config)
     records = [message for message in _read_full_refresh(stream) if isinstance(message, dict)]
@@ -912,7 +912,7 @@ def test_market_countries_read_fails_on_errored_page_and_keeps_the_last_checkpoi
         ("m1", "r2"): {"data": None, "errors": [{"message": "Access denied for markets field.", "extensions": {"code": "ACCESS_DENIED"}}]},
     }
     requests_mock.post(
-        "https://test-shop.myshopify.com/admin/api/2026-07/graphql.json",
+        "https://test-shop.myshopify.com/admin/api/2026-10/graphql.json",
         json=_market_driven_shop_callback(responses_by_cursors, []),
     )
 
@@ -937,7 +937,7 @@ def test_market_countries_resumes_from_checkpointed_cursors(requests_mock, confi
     }
     seen_cursors = []
     requests_mock.post(
-        "https://test-shop.myshopify.com/admin/api/2026-07/graphql.json",
+        "https://test-shop.myshopify.com/admin/api/2026-10/graphql.json",
         json=_market_driven_shop_callback(responses_by_cursors, seen_cursors),
     )
 

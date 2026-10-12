@@ -374,7 +374,7 @@ class LimitReducingErrorHandler(HttpStatusErrorHandler):
 class ShopifyGraphQlErrorHandler(HttpStatusErrorHandler):
     """
     Shopify GraphQL reports throttling as HTTP 200 with `errors[].extensions.code` THROTTLED / MAX_COST_EXCEEDED
-    (https://shopify.dev/docs/api/admin-graphql/2026-07#status-and-error-codes). Retry such pages instead of
+    (https://shopify.dev/docs/api/admin-graphql/2026-10#status-and-error-codes). Retry such pages instead of
     treating the 200 as a success: the cost bucket refills at the shop's restore rate within seconds.
     """
 
