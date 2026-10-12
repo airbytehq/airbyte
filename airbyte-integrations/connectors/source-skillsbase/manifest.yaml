@@ -427,7 +427,7 @@ streams:
         $ref: "#/definitions/linked/SimpleRetriever/paginator"
       requester:
         type: HttpRequester
-        url: "{{ config['api_host'] }}/1.0/courses"
+        url: "{{ config['api_host'] }}/2.0/courses"
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
@@ -453,50 +453,80 @@ streams:
             type: [integer, "null"]
           name:
             type: [string, "null"]
-          description:
+          url:
             type: [string, "null"]
+          last_update:
+            type: [string, "null"]
+            format: date
         additionalProperties: true
 
   - type: DeclarativeStream
     name: training_completions
+    # No REST GET endpoint exists; read via the Skill Query API which returns a table of rows and columns.
     retriever:
       type: SimpleRetriever
-      paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
       requester:
         type: HttpRequester
-        url: "{{ config['api_host'] }}/1.0/trainingcompletions"
-        http_method: GET
+        url: "{{ config['api_host'] }}/2.0/skillquery"
+        http_method: POST
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
         error_handler:
           $ref: "#/definitions/linked/HttpRequester/error_handler"
         request_headers:
           $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_body_json:
+          query: "find training where status = 'completed' show person.id, person.email, course.id, course.name, completionDate sorted by completionDate"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
             - data
+            - rows
+    transformations:
+      # values[] is positional; indexes must match the `show` clause order.
+      - type: AddFields
+        fields:
+          # Values arrive as strings; cast ids to int.
+          - type: AddedFieldDefinition
+            path: ["person_id"]
+            value: "{{ (record['values'][0]['data'] | int) if record['values'][0]['data'] is not none else none }}"
+          - type: AddedFieldDefinition
+            path: ["person_email"]
+            value: "{{ record['values'][1]['data'] }}"
+          - type: AddedFieldDefinition
+            path: ["course_id"]
+            value: "{{ (record['values'][2]['data'] | int) if record['values'][2]['data'] is not none else none }}"
+          - type: AddedFieldDefinition
+            path: ["course_name"]
+            value: "{{ record['values'][3]['data'] }}"
+          - type: AddedFieldDefinition
+            path: ["completion_date"]
+            value: "{{ record['values'][4]['data'] }}"
+      - type: RemoveFields
+        field_pointers:
+          - ["values"]
     primary_key:
-      - id
+      - person_id
+      - course_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/draft-07/schema#
         properties:
-          id:
-            type: [integer, "null"]
           person_id:
             type: [integer, "null"]
+          person_email:
+            type: [string, "null"]
           course_id:
             type: [integer, "null"]
-          status:
+          course_name:
             type: [string, "null"]
           completion_date:
             type: [string, "null"]
+            format: date
         additionalProperties: true
 
   - type: DeclarativeStream
