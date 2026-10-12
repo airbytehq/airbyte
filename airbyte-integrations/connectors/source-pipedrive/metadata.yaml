@@ -112,7 +112,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.33.0@sha256:3343cc05b79b9a3c07fa90152bd5348da7154b44f63521857bd2a745883d85cd
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.35.0@sha256:0557872c74928d6b338b208a97fe52e9e8aed8d9674d85d5b5b540bf91c8110c
   externalDocumentationUrls:
     - title: Pipedrive API reference
       url: https://developers.pipedrive.com/docs/api/v1
@@ -126,4 +126,22 @@ data:
     - title: Pipedrive rate limits
       url: https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting
       type: rate_limits
+    - title: API v1 endpoint deprecation announcement
+      url: https://developers.pipedrive.com/changelog/post/deprecation-of-selected-api-v1-endpoints
+      type: api_deprecations
+    - title: Deprecated API v1 endpoints out of support
+      url: https://developers.pipedrive.com/changelog/post/deprecated-apiv1-endpoints-become-out-of-support
+      type: api_deprecations
+    - title: API v2 migration guide
+      url: https://pipedrive.readme.io/docs/pipedrive-api-v2-migration-guide
+      type: api_deprecations
+    - title: Changes to the API (breaking change policy)
+      url: https://pipedrive.readme.io/docs/changes-to-the-api
+      type: api_deprecations
+    - title: OpenAPI specification (v1)
+      url: https://developers.pipedrive.com/docs/api/v1/openapi.yaml
+      type: openapi_spec
+    - title: OpenAPI specification (v2)
+      url: https://developers.pipedrive.com/docs/api/v2/openapi.yaml
+      type: openapi_spec
 metadataSpecVersion: "1.0"

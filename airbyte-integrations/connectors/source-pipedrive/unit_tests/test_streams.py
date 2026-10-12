@@ -576,7 +576,7 @@ def test_leads_filter_server_side_with_updated_since():
         http_mocker.get(
             _request(
                 "v1/leads",
-                {"api_token": "tok", "limit": "50", "sort": "update_time ASC", "updated_since": "2017-01-25T00:00:00Z"},
+                {"api_token": "tok", "limit": "500", "sort": "update_time ASC", "updated_since": "2017-01-25T00:00:00Z"},
             ),
             _response(
                 {
