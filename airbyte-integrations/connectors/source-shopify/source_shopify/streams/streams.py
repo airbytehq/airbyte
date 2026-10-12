@@ -770,10 +770,13 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
     _page_cursor = None
     _sub_page_cursor = None
 
-    _synced_countries_ids = []
-
     query = DeliveryProfile
     response_field = "deliveryProfiles"
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        # per instance: a class-level list is shared by every stream built in the same process
+        self._synced_countries_ids = []
 
     def stream_slices(
         self,
