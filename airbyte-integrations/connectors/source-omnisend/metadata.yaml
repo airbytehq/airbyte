@@ -46,3 +46,6 @@ data:
     - title: Omnisend migration guide (v3 to v2026-03-15)
       url: https://api-docs.omnisend.com/docs/migrate-from-v3-to-v2026-03-15
       type: api_deprecations
+    - title: Omnisend API v3 deprecation notice (sunset date)
+      url: https://api-docs.omnisend.com/v3/reference/intro
+      type: api_deprecations
