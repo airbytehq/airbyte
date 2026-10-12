@@ -1,68 +1,118 @@
 # Zoom
 
-## Overview
+The Zoom source connector syncs users, meetings, webinars, and past meeting and webinar reports from your [Zoom](https://zoom.us) account. It authenticates with a Zoom Server-to-Server OAuth app and supports Full Refresh syncs only.
 
-The following connector allows airbyte users to fetch various meetings & webinar data points from the [Zoom](https://zoom.us) source. This connector is built entirely using the [low-code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview/).
+## Prerequisites
 
-Please note that currently, it only supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
-
-### Output schema
-
-Currently this source supports the following output streams/endpoints from Zoom:
-
-- [Users](https://marketplace.zoom.us/docs/api-reference/zoom-api/users/users)
-- [Meetings](https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetings)
-  - [Meeting Registrants](https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetingregistrants)
-  - [Meeting Polls](https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetingpolls)
-  - [Meeting Poll Results](https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/listpastmeetingpolls)
-  - [Meeting Questions](https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetingregistrantsquestionsget)
-- [Webinars](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/webinars)
-  - [Webinar Panelists](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/webinarpanelists)
-  - [Webinar Registrants](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/webinarregistrants)
-  - [Webinar Absentees](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/webinarabsentees)
-  - [Webinar Polls](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/webinarpolls)
-  - [Webinar Poll Results](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/listpastwebinarpollresults)
-  - [Webinar Questions](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/webinarregistrantsquestionsget)
-  - [Webinar Tracking Sources](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/gettrackingsources)
-  - [Webinar Q&A Results](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/listpastwebinarqa)
-- [Report Meetings](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportmeetingdetails)
-- [Report Meeting Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportmeetingparticipants)
-- [Report Webinars](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinardetails)
-- [Report Webinar Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinarparticipants)
-
-If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
-
-### Features
-
-| Feature                       | Supported?  |
-| :---------------------------- | :---------- |
-| Full Refresh Sync             | Yes         |
-| Incremental Sync              | Coming soon |
-| Replicate Incremental Deletes | Coming soon |
-| SSL connection                | Yes         |
-| Namespaces                    | No          |
-
-### Performance considerations
-
-Most of the endpoints this connector access is restricted by standard Zoom [requests limitation](https://marketplace.zoom.us/docs/api-reference/rate-limits#rate-limit-changes), with a few exceptions. For more info, please check zoom API documentation. We’ve added appropriate retries if we hit the rate-limiting threshold.
-
-Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
-
-## Getting started
-
-### Requirements
-
-- Zoom Server-to-Server Oauth App
-
-### Setup guide
-
-Please read [How to generate your Server-to-Server OAuth app ](https://developers.zoom.us/docs/internal-apps/s2s-oauth/).
+- A Zoom account. Many streams depend on your Zoom plan:
+  - Meeting registrant, poll, and registration question streams require a Pro or higher plan.
+  - Report streams require a Pro or higher plan.
+  - Webinar streams require a Pro or higher plan with the [Zoom Webinars](https://zoom.us/webinar) add-on.
+- Permission to create Server-to-Server OAuth apps in the Zoom App Marketplace, and admin-level role permissions so you can add the admin scopes listed below.
 
 :::info
-
-JWT Tokens are deprecated, only Server-to-Server works now. [link to Zoom](https://developers.zoom.us/docs/internal-apps/jwt-faq/)
-
+Zoom no longer supports JWT apps. This connector only supports Server-to-Server OAuth apps.
 :::
+
+## Setup guide
+
+### Step 1: Create a Server-to-Server OAuth app in Zoom
+
+1. Sign in to the [Zoom App Marketplace](https://marketplace.zoom.us/) and follow Zoom's instructions to [create a Server-to-Server OAuth app](https://developers.zoom.us/docs/internal-apps/create/).
+2. On the **App credentials** page, copy the **Account ID**, **Client ID**, and **Client secret**.
+3. On the **Scopes** page, add the scopes for the streams you want to sync. See [Required scopes](#required-scopes).
+4. Activate the app. Zoom doesn't issue access tokens for apps that aren't activated.
+
+#### Required scopes
+
+The following table lists the granular scopes Zoom requires for each endpoint the connector calls. If your app uses Zoom's classic scopes instead, add `user:read:admin`, `meeting:read:admin`, `webinar:read:admin`, and `report:read:admin`.
+
+| Streams | Granular scopes |
+| :------ | :-------------- |
+| All streams (lists account users) | `user:read:list_users:admin` |
+| `meetings`, `meeting_registrants`, `meeting_polls`, `meeting_poll_results`, `meeting_registration_questions`, `report_meetings`, `report_meeting_participants` (lists each user's meetings) | `meeting:read:list_meetings:admin` |
+| `meetings` | `meeting:read:meeting:admin` |
+| `meeting_registrants` | `meeting:read:list_registrants:admin` |
+| `meeting_polls` | `meeting:read:list_polls:admin` |
+| `meeting_poll_results` | `meeting:read:list_poll_results:admin` |
+| `meeting_registration_questions` | `meeting:read:list_registration_questions:admin` |
+| All `webinar*` and `report_webinar*` streams (lists each user's webinars) | `webinar:read:list_webinars:admin` |
+| `webinars` | `webinar:read:webinar:admin` |
+| `webinar_panelists` | `webinar:read:list_panelists:admin` |
+| `webinar_registrants` | `webinar:read:list_registrants:admin` |
+| `webinar_absentees` | `webinar:read:list_absentees:admin` |
+| `webinar_polls` | `webinar:read:list_polls:admin` |
+| `webinar_poll_results` | `webinar:read:list_past_polls:admin` |
+| `webinar_registration_questions` | `webinar:read:list_registration_questions:admin` |
+| `webinar_tracking_sources` | `webinar:read:list_tracking_sources:admin` |
+| `webinar_qna_results` | `webinar:read:past_qa:admin` |
+| `report_meetings` | `report:read:meeting:admin` |
+| `report_meeting_participants` | `report:read:list_meeting_participants:admin` |
+| `report_webinars` | `report:read:webinar:admin` |
+| `report_webinar_participants` | `report:read:list_webinar_participants:admin` |
+
+### Step 2: Set up the connector in Airbyte
+
+1. In Airbyte, create a new Zoom source.
+2. Enter the following values from your Server-to-Server OAuth app:
+   - **account_id**: Your app's Account ID.
+   - **client_id**: Your app's Client ID.
+   - **client_secret**: Your app's Client secret.
+3. Leave **authorization_endpoint** set to the default, `https://zoom.us/oauth/token`.
+4. Click **Set up source**. Airbyte tests the connection by reading the `users` stream.
+
+## Supported sync modes
+
+| Feature | Supported? |
+| :------------------ | :--------- |
+| Full Refresh Sync | Yes |
+| Incremental Sync | No |
+| Namespaces | No |
+
+## Supported streams
+
+The connector reads every active user in the account, then reads each user's meetings and webinars, then reads the details for each meeting and webinar. For endpoint details, see the [Zoom API reference](https://developers.zoom.us/docs/api/).
+
+| Stream | Zoom endpoint |
+| :----- | :------------ |
+| `users` | `GET /users` |
+| `meetings` | `GET /meetings/{meetingId}` |
+| `meeting_registrants` | `GET /meetings/{meetingId}/registrants` |
+| `meeting_polls` | `GET /meetings/{meetingId}/polls` |
+| `meeting_poll_results` | `GET /past_meetings/{meetingId}/polls` |
+| `meeting_registration_questions` | `GET /meetings/{meetingId}/registrants/questions` |
+| `webinars` | `GET /webinars/{webinarId}` |
+| `webinar_panelists` | `GET /webinars/{webinarId}/panelists` |
+| `webinar_registrants` | `GET /webinars/{webinarId}/registrants` |
+| `webinar_absentees` | `GET /past_webinars/{webinarUUID}/absentees` |
+| `webinar_polls` | `GET /webinars/{webinarId}/polls` |
+| `webinar_poll_results` | `GET /past_webinars/{webinarUUID}/polls` |
+| `webinar_registration_questions` | `GET /webinars/{webinarId}/registrants/questions` |
+| `webinar_tracking_sources` | `GET /webinars/{webinarId}/tracking_sources` |
+| `webinar_qna_results` | `GET /past_webinars/{webinarUUID}/qa` |
+| `report_meetings` | `GET /report/meetings/{meetingId}` |
+| `report_meeting_participants` | `GET /report/meetings/{meetingId}/participants` |
+| `report_webinars` | `GET /report/webinars/{webinarUUID}` |
+| `report_webinar_participants` | `GET /report/webinars/{webinarUUID}/participants` |
+
+## Limitations and troubleshooting
+
+- **Authentication errors.** The connector requests access tokens from the **authorization_endpoint** using Zoom's `account_credentials` grant. If Zoom rejects your credentials, the connection test or sync fails with a configuration error that includes Zoom's error code. The error message says the refresh token was rejected, even though Server-to-Server OAuth apps don't use refresh tokens. Check the code in the message:
+  - `invalid_client`: The client ID or client secret is wrong, or the app is deactivated.
+  - `invalid_request`: The account ID is wrong.
+  - `unsupported_grant_type`: The credentials belong to an app that isn't a Server-to-Server OAuth app.
+- **Access tokens are refreshed during long syncs.** Zoom access tokens expire after one hour. The connector requests a new token when the current one expires. If Zoom rejects a token with error code `124`, the connector requests a new token and retries the request.
+- **Only active users are synced.** The connector doesn't filter the `users` request, so Zoom returns only users with `active` status. Meetings and webinars hosted by inactive or pending users aren't synced.
+- **Only scheduled, unexpired meetings and webinars are synced.** Zoom's list endpoints return scheduled meetings and webinars that haven't expired. Instant meetings and expired meetings aren't returned, so their details, registrants, polls, and reports aren't synced either. See Zoom's explanation of [meeting ID expiration](https://support.zoom.us/hc/en-us/articles/201362373-Meeting-ID).
+- **Users who can't host meetings are skipped.** If Zoom returns error code `3161` ("Meeting hosting and scheduling capabilities are not allowed for your user account") for a user, the connector skips that user's meetings instead of failing the sync.
+- **Deleted meetings and webinars are skipped.** If Zoom returns error code `3001` because a meeting or webinar no longer exists or has no report data, the connector skips it instead of failing the sync.
+- **Some streams sync zero records instead of failing.** Most webinar, poll, registration question, and report streams ignore HTTP `400` or `404` responses from Zoom. For example, if a user doesn't have the Webinars add-on, Zoom returns a `400` error when the connector lists that user's webinars, and the connector syncs no webinar records for that user. If a stream you expect to have data is empty, check your Zoom plan, the host's license, and the scopes on your app.
+
+## Rate limits
+
+Zoom applies [rate limits](https://developers.zoom.us/docs/api/rate-limits/) per account, shared across all apps installed on the account, and the limits depend on your Zoom plan. Free accounts have low daily limits, such as 1,000 requests per day for Heavy APIs. The report endpoints and `GET /past_webinars/{webinarUUID}/absentees` are Heavy APIs, and on Pro and higher plans they share a daily limit with resource-intensive APIs.
+
+When Zoom returns HTTP `429`, the connector waits and retries the request. Because the connector makes several requests for every meeting and webinar, large accounts can reach daily limits. If syncs fail with rate limit errors, deselect streams you don't need, especially the report and webinar absentee streams.
 
 ## IP allow list
 
@@ -75,8 +125,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 1.3.0 | 2026-10-07 | [87561](https://github.com/airbytehq/airbyte/pull/87561) | Use the declarative OAuth authenticator, refresh tokens that expire mid-sync and report invalid credentials as configuration errors |
-| 1.2.67 | 2026-10-07 | [87005](https://github.com/airbytehq/airbyte/pull/87005) | Fix sync failures on users without meeting hosting rights, deleted meetings and webinars, and webinar UUIDs containing slashes |
+| 1.3.0 | 2026-10-08 | [87561](https://github.com/airbytehq/airbyte/pull/87561) | Use the declarative OAuth authenticator, refresh tokens that expire mid-sync and report invalid credentials as configuration errors |
+| 1.2.67 | 2026-10-08 | [87005](https://github.com/airbytehq/airbyte/pull/87005) | Fix sync failures on users without meeting hosting rights, deleted meetings and webinars, and webinar UUIDs containing slashes |
 | 1.2.66 | 2026-10-06 | [88100](https://github.com/airbytehq/airbyte/pull/88100) | Update dependencies |
 | 1.2.65 | 2026-09-29 | [87422](https://github.com/airbytehq/airbyte/pull/87422) | Update dependencies |
 | 1.2.64 | 2026-09-22 | [86858](https://github.com/airbytehq/airbyte/pull/86858) | Update dependencies |
