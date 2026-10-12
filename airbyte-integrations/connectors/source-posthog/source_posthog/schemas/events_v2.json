@@ -1,0 +1,60 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique event identifier (uuid)"
+    },
+    "event": {
+      "type": "string",
+      "description": "Event name"
+    },
+    "distinct_id": {
+      "type": "string",
+      "description": "Distinct ID of the user who triggered the event"
+    },
+    "properties": {
+      "type": ["object", "string", "null"],
+      "description": "Event properties (may be JSON string or object)"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the event occurred"
+    },
+    "elements_chain": {
+      "type": ["string", "null"],
+      "description": "Autocapture elements chain"
+    },
+    "created_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Timestamp when the event was created in PostHog"
+    },
+    "person": {
+      "type": ["object", "null"],
+      "description": "Person who triggered the event",
+      "properties": {
+        "id": {
+          "type": ["string", "null"],
+          "description": "Unique person identifier (uuid)"
+        },
+        "properties": {
+          "type": ["object", "string", "null"],
+          "description": "Person properties (may be JSON string or object)"
+        },
+        "is_identified": {
+          "type": ["boolean", "null"],
+          "description": "Whether the person has been identified"
+        },
+        "distinct_ids": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          },
+          "description": "List of distinct IDs associated with this person"
+        }
+      }
+    }
+  }
+}
