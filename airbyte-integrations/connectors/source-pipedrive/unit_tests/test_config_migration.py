@@ -102,3 +102,25 @@ def test_current_config_is_not_migrated(capsys):
     source = get_source({"api_token": "current-token", "replication_start_date": "2017-01-25T00:00:00Z"})
     assert source._config["api_token"] == "current-token"
     assert "CONTROL" not in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("saved_value", [20, 40])
+def test_num_workers_above_the_current_maximum_is_lowered(capsys, saved_value):
+    source = get_source({"api_token": "t", "num_workers": saved_value})
+    assert source._config["num_workers"] == 10
+    control_messages = [json.loads(line) for line in capsys.readouterr().out.splitlines() if '"CONTROL"' in line]
+    assert len(control_messages) == 1
+    assert control_messages[0]["control"]["connectorConfig"]["config"]["num_workers"] == 10
+
+
+@pytest.mark.parametrize("saved_value", [1, 10])
+def test_num_workers_within_the_maximum_is_kept(capsys, saved_value):
+    source = get_source({"api_token": "t", "num_workers": saved_value})
+    assert source._config["num_workers"] == saved_value
+    assert "CONTROL" not in capsys.readouterr().out
+
+
+def test_config_saved_by_2_3_x_with_40_workers_still_syncs(requests_mock):
+    requests_mock.get(_DEALS_URL, json=_EMPTY_PAGE)
+    output = _read_deals({"api_token": "t", "num_workers": 40})
+    assert output.errors == []

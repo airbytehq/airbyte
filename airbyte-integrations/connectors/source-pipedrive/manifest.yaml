@@ -1656,6 +1656,16 @@ spec:
                 path: ["api_token"]
                 value: "{{ config.get('authorization', {}).get('api_token') }}"
             condition: "{{ config.get('api_token') is none and config.get('authorization', {}).get('api_token') is not none }}"
+      - type: ConfigMigration
+        description: Lower a `num_workers` above 10 to 10; versions 2.3.0 to 2.3.7 allowed up to 40 and saved configs keep the old value.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["num_workers"]
+                value: "10"
+                value_type: integer
+            condition: "{{ config.get('num_workers') is number and config.get('num_workers') > 10 }}"
 
 metadata:
   autoImportSchema:
