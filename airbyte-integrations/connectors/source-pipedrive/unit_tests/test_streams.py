@@ -180,9 +180,7 @@ def test_projects_paginates_active_and_archived_projects():
 def test_projects_ignores_unavailable_endpoints(status_code, body):
     with HttpMocker() as http_mocker:
         http_mocker.get(_request("api/v2/projects", _PROJECTS_QUERY), _response(body, status_code=status_code))
-        http_mocker.get(
-            _request("api/v2/projects/archived", _PROJECTS_QUERY), _response(body, status_code=status_code)
-        )
+        http_mocker.get(_request("api/v2/projects/archived", _PROJECTS_QUERY), _response(body, status_code=status_code))
 
         output = _read_stream("projects")
 
@@ -544,7 +542,7 @@ def test_files_filter_records_client_side_with_a_one_hour_lookback():
                 {
                     "data": [
                         {"id": 0, "update_time": "2023-12-31 22:59:59"},
-                        {"id": 1, "update_time": "2023-12-31 23:59:59"},
+                        {"id": 1, "update_time": "2023-12-31 23:00:00"},
                         {"id": 2, "update_time": "2024-01-01 00:00:00"},
                         {"id": 3, "update_time": "2024-01-01 00:00:01"},
                     ],
@@ -766,7 +764,10 @@ def test_deal_products_requests_one_hundred_deals_at_a_time():
         first = _deal_products_batch(range(1, 101))
         http_mocker.get(first, _response({"data": [{"id": 1001, "deal_id": 7}], "additional_data": {"next_cursor": "next"}}))
         http_mocker.get(
-            _request("api/v2/deals/products", {"api_token": "tok", "deal_ids": ",".join(map(str, range(1, 101))), "limit": "500", "cursor": "next"}),
+            _request(
+                "api/v2/deals/products",
+                {"api_token": "tok", "deal_ids": ",".join(map(str, range(1, 101))), "limit": "500", "cursor": "next"},
+            ),
             _response({"data": [{"id": 1002, "deal_id": 99}], "additional_data": {"next_cursor": None}}),
         )
         second = _deal_products_batch(range(101, 151))
@@ -865,7 +866,12 @@ def test_product_variations_reads_every_product_regardless_of_start_date():
         )
         http_mocker.get(
             _request("api/v2/products/1/variations", {"api_token": "tok", "limit": "500", "cursor": "c1"}),
-            _response({"data": [{"id": 11, "product_id": 1, "prices": [{"currency": "EUR", "price": 9.5}]}], "additional_data": {"next_cursor": None}}),
+            _response(
+                {
+                    "data": [{"id": 11, "product_id": 1, "prices": [{"currency": "EUR", "price": 9.5}]}],
+                    "additional_data": {"next_cursor": None},
+                }
+            ),
         )
         http_mocker.get(
             _request("api/v2/products/2/variations", {"api_token": "tok", "limit": "500"}),
@@ -927,11 +933,28 @@ def test_goals_reads_everyones_goals_by_assignee_type():
         return _request("v1/goals/find", {"api_token": "tok", "limit": "50", "assignee.type": assignee_type})
 
     with HttpMocker() as http_mocker:
-        http_mocker.get(goals_request("person"), _response({"data": {"goals": [{"id": "g-person", "assignee": {"type": "person", "id": 7}}]}}))
+        http_mocker.get(
+            goals_request("person"), _response({"data": {"goals": [{"id": "g-person", "assignee": {"type": "person", "id": 7}}]}})
+        )
         http_mocker.get(goals_request("team"), _response({"data": {"goals": [{"id": "g-team", "assignee": {"type": "team", "id": 3}}]}}))
-        http_mocker.get(goals_request("company"), _response({"data": {"goals": []}}))
+        http_mocker.get(
+            goals_request("company"), _response({"data": {"goals": [{"id": "g-company", "assignee": {"type": "company", "id": 1}}]}})
+        )
 
         output = _read_stream("goals")
 
-    assert _ids(output) == ["g-person", "g-team"]
+    assert _ids(output) == ["g-company", "g-person", "g-team"]
     assert output.errors == []
+
+
+def test_leads_re_read_the_hour_before_the_saved_cursor():
+    state = StateBuilder().with_stream_state("leads", {"update_time": "2024-01-01T00:00:00Z"}).build()
+    with HttpMocker() as http_mocker:
+        http_mocker.get(
+            _request("v1/leads", {"api_token": "tok", "limit": "500", "sort": "id ASC", "updated_since": "2023-12-31T23:00:00Z"}),
+            _response({"data": [{"id": "lead-1", "update_time": "2023-12-31T23:30:00.000Z"}], "additional_data": V1_PAGE_DONE}),
+        )
+
+        output = _read_stream("leads", SyncMode.incremental, state)
+
+    assert _ids(output) == ["lead-1"]

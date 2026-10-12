@@ -194,7 +194,15 @@ def test_deal_flow_skips_missing_or_forbidden_parent_deal(status_code: int, erro
         http_mocker.get(missing_deal, pipedrive_error(status_code, error))
         http_mocker.get(
             _deal_flow_request(2),
-            collection([{"object": "dealChange", "timestamp": "2024-02-01 00:00:00", "data": {"id": 20, "item_id": 2, "log_time": "2024-02-01 00:00:00"}}]),
+            collection(
+                [
+                    {
+                        "object": "dealChange",
+                        "timestamp": "2024-02-01 00:00:00",
+                        "data": {"id": 20, "item_id": 2, "log_time": "2024-02-01 00:00:00"},
+                    }
+                ]
+            ),
         )
 
         output = read_stream("deal_flow")
@@ -392,11 +400,110 @@ def test_cloudflare_html_403_on_a_child_stream_fails_instead_of_skipping_the_par
         assert "Cloudflare" in error.message
 
 
-def test_cloudflare_html_403_on_a_plan_gated_stream_fails_instead_of_skipping_it() -> None:
-    with HttpMocker() as http_mocker:
-        http_mocker.get(request("v1/legacyTeams"), _CLOUDFLARE_403)
+_PROJECTS_QUERY = {"limit": "500", "status": "open,completed,canceled,deleted"}
 
-        error = _error_trace(read_stream("legacy_teams", expecting_exception=True))
+
+def _mock_gated_stream(http_mocker, stream, response):
+    """Mock the parents of a plan-gated stream and answer its own request(s) with `response`."""
+    if stream == "legacy_teams":
+        targets = [request("v1/legacyTeams")]
+    elif stream == "projects":
+        targets = [request("api/v2/projects", _PROJECTS_QUERY), request("api/v2/projects/archived", _PROJECTS_QUERY)]
+    elif stream == "tasks":
+        targets = [request("api/v2/tasks", {"limit": "500"})]
+    elif stream == "deal_installments":
+        http_mocker.get(deals_archived_request(), empty_v2_page())
+        http_mocker.get(deals_request(), collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}]))
+        targets = [request("api/v2/deals/installments", {"deal_ids": "1", "limit": "500"})]
+    elif stream == "permission_set_assignments":
+        http_mocker.get(request("v1/permissionSets", {"limit": "50"}), collection([{"id": "ps-1"}]))
+        targets = [request("v1/permissionSets/ps-1/assignments", {"limit": "500"})]
+    elif stream == "deal_flow":
+        http_mocker.get(deals_archived_request(), empty_v2_page())
+        http_mocker.get(deals_request(), collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}]))
+        targets = [_deal_flow_request(1)]
+    elif stream == "deal_products":
+        http_mocker.get(deals_archived_request(), empty_v2_page())
+        http_mocker.get(deals_request(), collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}]))
+        targets = [_deal_products_batch(1)]
+    for target in targets:
+        http_mocker.get(target, response)
+    return targets
+
+
+_GATED = ["legacy_teams", "projects", "tasks", "deal_installments", "permission_set_assignments"]
+
+
+@pytest.mark.parametrize("stream", _GATED)
+def test_cloudflare_html_403_on_a_plan_gated_stream_fails_instead_of_skipping_it(stream) -> None:
+    with HttpMocker() as http_mocker:
+        _mock_gated_stream(http_mocker, stream, _CLOUDFLARE_403)
+
+        error = _error_trace(read_stream(stream, expecting_exception=True))
 
         assert error.failure_type == FailureType.config_error
         assert "Cloudflare" in error.message
+
+
+@pytest.mark.parametrize(
+    "stream, status_code",
+    [("legacy_teams", 404), ("legacy_teams", 410), ("projects", 402), ("projects", 404), ("tasks", 404), ("deal_installments", 402)],
+)
+def test_plan_responses_with_an_html_body_are_still_skipped(stream, status_code) -> None:
+    # Only Cloudflare's 403 is HTML in practice; any other status these streams skip stays skipped whatever the body.
+    html = HttpResponse(body="<html><body>Not available</body></html>", status_code=status_code, headers={"Content-Type": "text/html"})
+    with HttpMocker() as http_mocker:
+        _mock_gated_stream(http_mocker, stream, html)
+
+        output = read_stream(stream)
+
+        assert not output.errors
+        assert output.records == []
+
+
+@pytest.mark.parametrize(
+    "stream, status_code, error",
+    [
+        ("legacy_teams", 402, "Company account is not open"),
+        ("legacy_teams", 501, "Not implemented"),
+        ("projects", 410, "Gone"),
+        ("tasks", 410, "Gone"),
+        ("deal_installments", 410, "Gone"),
+        ("permission_set_assignments", 402, "Company account is not open"),
+        ("permission_set_assignments", 415, "Feature is not enabled"),
+        ("deal_flow", 415, "Feature is not enabled"),
+        ("deal_flow", 501, "Not implemented"),
+        ("deal_products", 402, "Company account is not open"),
+    ],
+)
+def test_statuses_missing_from_the_cdk_mapping_reach_the_shared_handler(stream, status_code, error) -> None:
+    with HttpMocker() as http_mocker:
+        targets = _mock_gated_stream(http_mocker, stream, pipedrive_error(status_code, error))
+
+        error_trace = _error_trace(read_stream(stream, expecting_exception=True))
+
+        assert f"{status_code}: {error}" in error_trace.message
+        # Classified once by base_error_handler, not retried as the CDK fallback would.
+        http_mocker.assert_number_of_calls(targets[0], 1)
+
+
+def test_deal_installments_skip_415() -> None:
+    with HttpMocker() as http_mocker:
+        _mock_gated_stream(http_mocker, "deal_installments", pipedrive_error(415, "Feature is not enabled"))
+
+        output = read_stream("deal_installments")
+
+        assert not output.errors
+        assert output.records == []
+
+
+@pytest.mark.parametrize("status_code", [404, 410])
+def test_deal_products_batch_route_failure_is_not_skipped(status_code) -> None:
+    # The batch endpoint answers 200 for deal ids it no longer has, so 404 and 410 mean the route failed.
+    with HttpMocker() as http_mocker:
+        targets = _mock_gated_stream(http_mocker, "deal_products", pipedrive_error(status_code, "Not found"))
+
+        output = read_stream("deal_products", expecting_exception=True)
+
+        assert output.errors
+        http_mocker.assert_number_of_calls(targets[0], 1)

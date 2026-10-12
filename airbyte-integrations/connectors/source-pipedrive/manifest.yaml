@@ -937,10 +937,27 @@ definitions:
           request_parameters:
             deal_ids: "{{ stream_slice['parent_id'] | join(',') }}"
             limit: "500"
+          # The batch endpoint answers 200 for deal ids it no longer has, so a 404 or 410 means the route
+          # itself failed and must not be skipped like a missing parent.
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
-              - $ref: "#/definitions/substream_missing_parent_error_handler"
+              - type: DefaultErrorHandler
+                max_retries: 10
+                response_filters:
+                  # Cloudflare's HTML 403 after repeated rate-limit violations is not a hidden deal: hand it to base_error_handler.
+                  - type: HttpResponseFilter
+                    predicate: "{{ 'text/html' in (headers.get('Content-Type') or '') }}"
+                    action: FAIL
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: "Pipedrive denied access to the products of these deals ({{ (((response if response is mapping else {}).get('error') or 'forbidden') ~ '')[:300] }}); the API token owner cannot see them. Skipping them and continuing."
+                  # A status the CDK default mapping lacks would end the composite as a retry; failing hands it to base_error_handler.
+                  - type: HttpResponseFilter
+                    http_codes: [402, 410, 415, 501]
+                    action: FAIL
               - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
@@ -1137,6 +1154,13 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 10
                 response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                      - 410
+                      - 415
+                    error_message: "The legacy Teams feature is disabled for this Pipedrive company or the endpoint has been retired ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping legacy_teams."
                   # Cloudflare's HTML 403 after repeated rate-limit violations is not a plan response: hand it to base_error_handler.
                   - type: HttpResponseFilter
                     predicate: "{{ 'text/html' in (headers.get('Content-Type') or '') }}"
@@ -1145,9 +1169,6 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 403
-                      - 404
-                      - 410
-                      - 415
                     error_message: "The legacy Teams feature is disabled for this Pipedrive company or the endpoint has been retired ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping legacy_teams."
                   # A status the CDK default mapping lacks would end the composite as a retry; failing hands it to base_error_handler.
                   - type: HttpResponseFilter
@@ -1185,6 +1206,13 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 10
                 response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 402
+                      - 404
+                      - 415
+                    error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read projects ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping projects."
                   # Cloudflare's HTML 403 after repeated rate-limit violations is not a plan response: hand it to base_error_handler.
                   - type: HttpResponseFilter
                     predicate: "{{ 'text/html' in (headers.get('Content-Type') or '') }}"
@@ -1192,10 +1220,7 @@ definitions:
                   - type: HttpResponseFilter
                     action: IGNORE
                     http_codes:
-                      - 402
                       - 403
-                      - 404
-                      - 415
                     error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read projects ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping projects."
                   # A status the CDK default mapping lacks would end the composite as a retry; failing hands it to base_error_handler.
                   - type: HttpResponseFilter
@@ -1239,6 +1264,13 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 10
                 response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 402
+                      - 404
+                      - 415
+                    error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read tasks ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping tasks."
                   # Cloudflare's HTML 403 after repeated rate-limit violations is not a plan response: hand it to base_error_handler.
                   - type: HttpResponseFilter
                     predicate: "{{ 'text/html' in (headers.get('Content-Type') or '') }}"
@@ -1246,10 +1278,7 @@ definitions:
                   - type: HttpResponseFilter
                     action: IGNORE
                     http_codes:
-                      - 402
                       - 403
-                      - 404
-                      - 415
                     error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read tasks ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping tasks."
                   # A status the CDK default mapping lacks would end the composite as a retry; failing hands it to base_error_handler.
                   - type: HttpResponseFilter
@@ -1288,6 +1317,12 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 10
                 response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 402
+                      - 415
+                    error_message: "Installments are not included in this Pipedrive plan or the token cannot read deals ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping deal_installments."
                   # Cloudflare's HTML 403 after repeated rate-limit violations is not a plan response: hand it to base_error_handler.
                   - type: HttpResponseFilter
                     predicate: "{{ 'text/html' in (headers.get('Content-Type') or '') }}"
@@ -1295,9 +1330,7 @@ definitions:
                   - type: HttpResponseFilter
                     action: IGNORE
                     http_codes:
-                      - 402
                       - 403
-                      - 415
                     error_message: "Installments are not included in this Pipedrive plan or the token cannot read deals ({{ (((response if response is mapping else {}).get('error') or 'not available') ~ '')[:300] }}); skipping deal_installments."
                   # A status the CDK default mapping lacks would end the composite as a retry; failing hands it to base_error_handler.
                   - type: HttpResponseFilter
@@ -1421,6 +1454,12 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 10
                 response_filters:
+                  # Pipedrive documents NotFound for a permission set without assignments (GET /permissionSets/{id}/assignments).
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: "Pipedrive has no assignments for this permission set ({{ (((response if response is mapping else {}).get('error') or 'not found') ~ '')[:300] }}); skipping it."
                   # Cloudflare's HTML 403 after repeated rate-limit violations is not a plan response: hand it to base_error_handler.
                   - type: HttpResponseFilter
                     predicate: "{{ 'text/html' in (headers.get('Content-Type') or '') }}"
@@ -1430,12 +1469,6 @@ definitions:
                     http_codes:
                       - 403
                     error_message: "Permission set assignments require an admin API token ({{ (((response if response is mapping else {}).get('error') or 'forbidden') ~ '')[:300] }}); skipping permission_set_assignments."
-                  # Pipedrive documents NotFound for a permission set without assignments (GET /permissionSets/{id}/assignments).
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: "Pipedrive has no assignments for this permission set ({{ (((response if response is mapping else {}).get('error') or 'not found') ~ '')[:300] }}); skipping it."
                   # A status the CDK default mapping lacks would end the composite as a retry; failing hands it to base_error_handler.
                   - type: HttpResponseFilter
                     http_codes: [402, 410, 415, 501]
