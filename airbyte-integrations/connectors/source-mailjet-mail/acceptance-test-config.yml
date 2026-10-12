@@ -7,22 +7,15 @@ acceptance_tests:
       - spec_path: "manifest.yaml"
   connection:
     tests:
-      - config_path: "secrets/config.json"
-        status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:
-    tests:
-      - config_path: "secrets/config.json"
+    bypass_reason: "The CI test secret's API key gets 401 Unauthorized on every stream. Refreshing it needs a Mailjet account. Live tests are bypassed until a new secret is stored."
   basic_read:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+    bypass_reason: "The CI test secret's API key gets 401 Unauthorized on every stream. Refreshing it needs a Mailjet account. Live tests are bypassed until a new secret is stored."
   # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
   #        expect_records:
   #          path: "integration_tests/expected_records.jsonl"
   #          exact_order: no
   full_refresh:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+    bypass_reason: "The CI test secret's API key gets 401 Unauthorized on every stream. Refreshing it needs a Mailjet account. Live tests are bypassed until a new secret is stored."

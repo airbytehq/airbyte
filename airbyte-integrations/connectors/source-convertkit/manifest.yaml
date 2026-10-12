@@ -861,7 +861,7 @@ spec:
         type: string
         airbyte_secret: true
         order: 2
-        title: Legacy Start Date
+        title: Legacy API Secret
         airbyte_hidden: true
     additionalProperties: true
 
