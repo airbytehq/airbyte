@@ -141,24 +141,30 @@ def test_legacy_teams_ignores_unavailable_endpoint(status_code, body):
     assert output.errors == []
 
 
+# Every documented project status, so deleted projects come back too (`status` example `open,completed`).
+_PROJECTS_QUERY = {"api_token": "tok", "limit": "500", "status": "open,completed,canceled,deleted"}
+
+
 def test_projects_paginates_active_and_archived_projects():
     with HttpMocker() as http_mocker:
         http_mocker.get(
-            _request("api/v2/projects", {"api_token": "tok", "limit": "500"}),
+            _request("api/v2/projects", _PROJECTS_QUERY),
             _response({"data": [{"id": 1}], "additional_data": {"next_cursor": "abc"}}),
         )
         http_mocker.get(
-            _request("api/v2/projects", {"api_token": "tok", "limit": "500", "cursor": "abc"}),
+            _request("api/v2/projects", {**_PROJECTS_QUERY, "cursor": "abc"}),
             _response({"data": [{"id": 2}], "additional_data": {"next_cursor": None}}),
         )
         http_mocker.get(
-            _request("api/v2/projects/archived", {"api_token": "tok", "limit": "500"}),
-            _response({"data": [{"id": 3}], "additional_data": {"next_cursor": None}}),
+            _request("api/v2/projects/archived", _PROJECTS_QUERY),
+            _response({"data": [{"id": 3}, {"id": 4, "status": "deleted"}], "additional_data": {"next_cursor": None}}),
         )
 
         output = _read_stream("projects")
 
-    assert _ids(output) == [1, 2, 3]
+    assert _ids(output) == [1, 2, 3, 4]
+    # Deleted projects arrive in the same stream, marked by the API's own `status`.
+    assert next(r.record.data for r in output.records if r.record.data["id"] == 4)["status"] == "deleted"
 
 
 @pytest.mark.parametrize(
@@ -170,9 +176,9 @@ def test_projects_paginates_active_and_archived_projects():
 )
 def test_projects_ignores_unavailable_endpoints(status_code, body):
     with HttpMocker() as http_mocker:
-        http_mocker.get(_request("api/v2/projects", {"api_token": "tok", "limit": "500"}), _response(body, status_code=status_code))
+        http_mocker.get(_request("api/v2/projects", _PROJECTS_QUERY), _response(body, status_code=status_code))
         http_mocker.get(
-            _request("api/v2/projects/archived", {"api_token": "tok", "limit": "500"}), _response(body, status_code=status_code)
+            _request("api/v2/projects/archived", _PROJECTS_QUERY), _response(body, status_code=status_code)
         )
 
         output = _read_stream("projects")

@@ -1094,6 +1094,8 @@ definitions:
           request_parameters:
             api_token: "{{ config['api_token'] }}"
             limit: "500"
+            # Without `status` Pipedrive leaves out deleted projects; naming every status returns them too.
+            status: open,completed,canceled,deleted
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1890,6 +1892,26 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      subfields:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+      options_deleted:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+      created_by_user_id:
+        type:
+          - "null"
+          - integer
       active_flag:
         type:
           - "null"
@@ -2096,6 +2118,10 @@ schemas:
           - "null"
         additionalProperties: true
         properties:
+          currency_id:
+            type:
+              - "null"
+              - integer
           target:
             type:
               - number
@@ -2136,6 +2162,14 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      project_name:
+        type:
+          - "null"
+          - string
+      project_id:
+        type:
+          - "null"
+          - integer
       description:
         type:
           - "null"
@@ -2269,6 +2303,10 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      is_editable:
+        type:
+          - "null"
+          - boolean
       type:
         type:
           - "null"
@@ -2355,6 +2393,38 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      visible_to:
+        type:
+          - "null"
+          - string
+      source_deal_id:
+        type:
+          - "null"
+          - integer
+      origin_id:
+        type:
+          - "null"
+          - string
+      origin:
+        type:
+          - "null"
+          - string
+      channel_id:
+        type:
+          - "null"
+          - string
+      channel:
+        type:
+          - "null"
+          - integer
+      cc_email:
+        type:
+          - "null"
+          - string
+      archive_reason:
+        type:
+          - "null"
+          - string
       add_time:
         type:
           - "null"
@@ -2676,6 +2746,10 @@ schemas:
           - object
         additionalProperties: true
         properties:
+          formatted_address:
+            type:
+              - "null"
+              - string
           value:
             type:
               - "null"
@@ -2860,6 +2934,26 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      subfields:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+      options_deleted:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+      created_by_user_id:
+        type:
+          - "null"
+          - integer
       active_flag:
         type:
           - "null"
@@ -2943,6 +3037,10 @@ schemas:
             - "null"
             - object
           properties:
+            color:
+              type:
+                - "null"
+                - string
             id:
               type:
                 - "null"
@@ -3335,6 +3433,10 @@ schemas:
           - object
         additionalProperties: true
         properties:
+          formatted_address:
+            type:
+              - "null"
+              - string
           value:
             type:
               - "null"
@@ -3414,6 +3516,26 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      subfields:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+      options_deleted:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+      created_by_user_id:
+        type:
+          - "null"
+          - integer
       active_flag:
         type:
           - "null"
@@ -3513,6 +3635,14 @@ schemas:
             - "null"
             - object
           properties:
+            alt_id:
+              type:
+                - "null"
+                - string
+            color:
+              type:
+                - "null"
+                - string
             id:
               type:
                 - "null"
@@ -3775,6 +3905,34 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      autocomplete:
+        type:
+          - "null"
+          - string
+      subfields:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+      options_deleted:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+      is_subfield:
+        type:
+          - "null"
+          - boolean
+      created_by_user_id:
+        type:
+          - "null"
+          - integer
       active_flag:
         type:
           - "null"
@@ -3856,6 +4014,10 @@ schemas:
         items:
           type: object
           properties:
+            color:
+              type:
+                - "null"
+                - string
             id:
               type:
                 - "null"
@@ -4039,6 +4201,10 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      created_by_user_id:
+        type:
+          - "null"
+          - integer
       active_flag:
         type:
           - "null"
