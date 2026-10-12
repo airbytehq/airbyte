@@ -1,55 +1,96 @@
-# Employment-Hero
-This directory contains the manifest-only connector for `source-employment-hero`.
+# Employment Hero
 
-## Documentation reference:
-Visit `https://developer.employmenthero.com/api-references/#icon-book-open-introduction` for API documentation
+This page contains the setup guide and reference information for the Employment Hero source connector. The connector syncs HR data, including organisations, employees, leave requests, teams, policies, certifications, custom fields, and pay details, from the [Employment Hero API](https://developer.employmenthero.com/api-references/introduction).
+
+## Prerequisites
+
+- An Employment Hero **Platinum** subscription or above. Employment Hero only offers API access on these plans.
+- Access to the Employment Hero **Developer Portal**, so you can create an OAuth 2.0 application.
+- An Employment Hero account to authorize the application. Employment Hero recommends an admin or owner account, because the connector can only read data that the authorizing account has permission to see.
+- An OAuth 2.0 client that supports the authorization code flow with PKCE, such as Postman, to obtain a refresh token.
 
 ## Authentication setup
-`Employement Hero` uses Bearer token authentication, since code granted OAuth is not directly supported right now, Visit your developer profile for getting your OAuth keys. Refer `https://secure.employmenthero.com/app/v2/organisations/xxxxx/developer_portal/api` for more details.
 
-## Getting your bearer token via postman
+The Employment Hero API uses OAuth 2.0, and access tokens expire after 15 minutes. The connector authenticates with your OAuth application's **Client ID**, **Client Secret**, and a **Refresh Token**. It exchanges the refresh token for a new access token at `https://oauth.employmenthero.com/oauth2/token` whenever it needs one. For details, see the [Employment Hero authentication docs](https://developer.employmenthero.com/api-references/authentication).
 
-You can make a POST request from Postman to exchange your OAuth credentials for an `access token` to make requests.
+### Step 1: Create an OAuth 2.0 application
 
-First make an app to get the client ID and secret for authentication:
+1. Sign in to Employment Hero and open the **Developer Portal** from the menu under your profile name in the top right corner. You can also go directly to `https://secure.employmenthero.com/app/v2/organisations/<your-org-id>/developer_portal/api`.
+2. Select **Add Application** and give the application a name.
+3. Select the read scopes for every resource you plan to sync. Scopes use the format `urn:mainapp:<resource>:read`, for example `urn:mainapp:organisations:read` and `urn:mainapp:employees:read`.
 
-1. Go to developers portal Page:
-- Visit `https://secure.employmenthero.com/app/v2/organisations/xxxxx/developer_portal/api`, select `Add Application` and input an app name. Select the `scopes` and set the redirect URI as `https://oauth.pstmn.io/v1/callback`.
+   :::warning
+   You can't change an application's scopes after you create it. If you need more scopes later, create a new application.
+   :::
 
-2. Copy Your App Credentials:
- - After creating the app, you will see the Client ID and Client Secret.
- - Client ID: Copy this value as it will be your Client ID in Postman.
- - Client Secret: Copy this value as it will be your Client Secret in Postman.
+4. Enter a redirect URI. Employment Hero requires HTTPS redirect URIs. If you use Postman to obtain the refresh token, enter `https://oauth.pstmn.io/v1/callback`.
+5. Copy the **Client ID** and **Client Secret** from the application details page.
 
-3. Visit Postman via web or app and make a new request with following guidelines:
- - Open a new request - Goto Authorization tab - Select OAuth 2.0
- - Auth URL - `https://oauth.employmenthero.com/oauth2/authorize`
- - Access Token URL - `https://oauth.employmenthero.com/oauth2/token`
- - Set your client id and secret and leave scope and state as blank
+### Step 2: Obtain a refresh token
 
-Hit Get new Access token and approve via browser, Postman will collect a new `access_token` in the console response.
+Since 2026-09-30, Employment Hero requires PKCE for all authorization flows. A refresh token works only if it was issued through the PKCE flow, so a refresh token you obtained without PKCE before that date fails.
+
+To obtain a refresh token with Postman:
+
+1. Open a new request in Postman, go to the **Authorization** tab, and select **OAuth 2.0**.
+2. Set **Grant Type** to `Authorization Code (With PKCE)` and **Code Challenge Method** to `SHA-256`.
+3. Set **Auth URL** to `https://oauth.employmenthero.com/oauth2/authorize` and **Access Token URL** to `https://oauth.employmenthero.com/oauth2/token`.
+4. Enter your Client ID and Client Secret, and set **Client Authentication** to **Send client credentials in body**. Leave **Scope** and **State** blank.
+5. Select **Get New Access Token**, sign in to Employment Hero, and approve the request in your browser.
+6. Copy the `refresh_token` value from the token response. Don't use the `access_token`, which expires after 15 minutes.
+
+Employment Hero refresh tokens don't currently expire, and you can reuse the same refresh token for every token request.
+
+If your account belongs to more than one organisation that enforces single sign-on (SSO), each token can include only one SSO organisation. Organisations that don't enforce SSO are included automatically. To sync more than one SSO organisation, authorize each one separately and use each resulting refresh token in its own source.
+
+### Step 3: Set up the source in Airbyte
+
+1. Enter the **Client ID**, **Client Secret**, and **Refresh Token**.
+2. Optional: To sync the `employee_certifications`, `pay_details`, and `employee_custom_fields` streams, enter **Organization ID** and **Employees ID** values. See [Organization and employee IDs](#organization-and-employee-ids).
+3. Select **Set up source**.
+
+## Organization and employee IDs
+
+Most streams discover their parent records automatically. The connector reads the `organisations` stream and then requests employees, leave requests, teams, policies, certifications, and custom fields for every organisation it returns.
+
+The `employee_certifications`, `pay_details`, and `employee_custom_fields` streams work differently. They only read data for the IDs you enter in the **Organization ID** (`organization_configids`) and **Employees ID** (`employees_configids`) fields. The connector requests every combination of the organisation IDs and employee IDs you enter, so each employee ID is requested under each organisation ID.
+
+To find these IDs, sync the `organisations` and `employees` streams first and copy the `id` values from the results.
 
 ## Configuration
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
-| `organization_configids` | `array` | Organization ID. Organization ID which could be found as result of `organizations` stream to be used in other substreams |  |
-| `employees_configids` | `array` | Employees ID. Employees IDs in the given organisation found in `employees` stream for passing to sub-streams |  |
+| Input | Type | Description |
+| --- | --- | --- |
+| `client_id` | `string` | Client ID of the OAuth 2.0 application created in the Employment Hero Developer Portal. |
+| `client_secret` | `string` | Client Secret of the OAuth 2.0 application created in the Employment Hero Developer Portal. |
+| `refresh_token` | `string` | Refresh token obtained from the Employment Hero OAuth 2.0 authorization code flow with PKCE. |
+| `organization_configids` | `array` | Organization ID. IDs of the organisations to read the `employee_certifications`, `pay_details`, and `employee_custom_fields` streams for. Find them in the `organisations` stream. |
+| `employees_configids` | `array` | Employees ID. IDs of the employees to read the `employee_certifications`, `pay_details`, and `employee_custom_fields` streams for. Find them in the `employees` stream. |
 
-## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| organisations | id | DefaultPaginator | ✅ |  ❌  |
-| employees | id | DefaultPaginator | ✅ |  ❌  |
-| leave_requests | id | DefaultPaginator | ✅ |  ❌  |
-| employee_certifications | id | DefaultPaginator | ✅ |  ❌  |
-| pay_details | id | DefaultPaginator | ✅ |  ❌  |
-| teams | id | DefaultPaginator | ✅ |  ❌  |
-| policies | id | DefaultPaginator | ✅ |  ❌  |
-| certifications | id | DefaultPaginator | ✅ |  ❌  |
-| custom_fields | id | DefaultPaginator | ✅ |  ❌  |
-| employee_custom_fields | id | DefaultPaginator | ✅ |  ❌  |
+## Supported streams
+
+All streams support the **Full Refresh** sync mode only. Incremental sync isn't supported.
+
+| Stream name | Employment Hero endpoint | Primary key |
+| --- | --- | --- |
+| organisations | `/api/v1/organisations` | id |
+| employees | `/api/v1/organisations/{organisation_id}/employees` | id |
+| leave_requests | `/api/v1/organisations/{organisation_id}/leave_requests` | id |
+| employee_certifications | `/api/v1/organisations/{organisation_id}/employees/{employee_id}/certifications` | id |
+| pay_details | `/api/v1/organisations/{organisation_id}/employees/{employee_id}/pay_details` | id |
+| teams | `/api/v1/organisations/{organisation_id}/teams` | id |
+| policies | `/api/v1/organisations/{organisation_id}/policies` | id |
+| certifications | `/api/v1/organisations/{organisation_id}/certifications` | id |
+| custom_fields | `/api/v1/organisations/{organisation_id}/custom_fields` | id |
+| employee_custom_fields | `/api/v1/organisations/{organisation_id}/employees/{employee_id}/custom_fields` | id |
+
+The Employment Hero interface calls teams "Groups," but the API and the `teams` stream still use the term "teams."
+
+## Limitations
+
+- **Rate limits**: Employment Hero allows 20 requests per second and 100 requests per minute. The connector requests 20 records per page and retries rate-limited (HTTP 429) responses up to three times with exponential backoff.
+- **Permissions**: The connector only returns data that the account you authorized with can access. A non-admin account can return partial data or `403 Forbidden` errors.
+- **Regional fields**: Some fields only apply to employees in specific regions (Australia, Malaysia, Singapore, New Zealand, United Kingdom, or Canada). Employment Hero omits these fields from records for employees outside the matching region.
 
 ## IP allow list
 
@@ -62,6 +103,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.1.0 | 2026-10-09 | [88211](https://github.com/airbytehq/airbyte/pull/88211) | Replace static access-token auth with OAuth 2.0 refresh-token flow (access tokens expire after 15 minutes) |
 | 0.0.66 | 2026-10-06 | [87860](https://github.com/airbytehq/airbyte/pull/87860) | Update dependencies |
 | 0.0.65 | 2026-09-29 | [87167](https://github.com/airbytehq/airbyte/pull/87167) | Update dependencies |
 | 0.0.64 | 2026-09-22 | [86634](https://github.com/airbytehq/airbyte/pull/86634) | Update dependencies |

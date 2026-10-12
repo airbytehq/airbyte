@@ -44,7 +44,7 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 6. **Action IDs May Arrive as JSON Strings** - `campaigns_actions.id` is a JSON string although the
    [OpenAPI spec](https://docs.customer.io/files/journeys-app.json) documents an integer, so joins
    with `campaigns.actions[].id` need a cast; `broadcast_actions` casts its `id` to the documented
-   integer. Details in AGENTS.md section 6.
+   integer. `from_id` and `reply_to_id` are integers, as documented. Details in AGENTS.md section 6.
 7. **Language and A/B Variants Are Separate Records** - `broadcast_actions` has one record per
    language variant of a message
    ([broadcastActions](https://docs.customer.io/integrations/api/app/tag/broadcasts/broadcastactions/)),

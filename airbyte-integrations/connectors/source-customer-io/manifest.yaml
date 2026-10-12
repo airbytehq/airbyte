@@ -1347,12 +1347,10 @@ schemas:
         type:
           - "null"
           - array
-        additionalProperties: true
-        properties:
-          id:
-            type:
-              - "null"
-              - integer
+        items:
+          type:
+            - "null"
+            - string
       timezone:
         type:
           - "null"
@@ -1361,12 +1359,10 @@ schemas:
         type:
           - "null"
           - array
-        additionalProperties: true
-        properties:
-          id:
-            type:
-              - "null"
-              - integer
+        items:
+          type:
+            - "null"
+            - integer
       updated:
         type:
           - "null"
@@ -1443,7 +1439,7 @@ schemas:
       from_id:
         type:
           - "null"
-          - string
+          - integer
       headers:
         type:
           - "null"
@@ -1503,7 +1499,7 @@ schemas:
       reply_to_id:
         type:
           - "null"
-          - string
+          - integer
       request_method:
         type:
           - "null"
@@ -1549,12 +1545,10 @@ schemas:
         type:
           - "null"
           - array
-        additionalProperties: true
-        properties:
-          id:
-            type:
-              - "null"
-              - integer
+        items:
+          type:
+            - "null"
+            - integer
       created:
         type:
           - "null"
@@ -1602,13 +1596,7 @@ schemas:
       sent_at:
         type:
           - "null"
-          - array
-        additionalProperties: true
-        properties:
-          id:
-            type:
-              - "null"
-              - string
+          - integer
       subscription_topic_id:
         type:
           - "null"
@@ -1617,12 +1605,10 @@ schemas:
         type:
           - "null"
           - array
-        additionalProperties: true
-        properties:
-          id:
-            type:
-              - "null"
-              - integer
+        items:
+          type:
+            - "null"
+            - string
       timezone:
         type:
           - "null"

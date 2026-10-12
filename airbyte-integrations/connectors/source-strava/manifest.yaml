@@ -6,6 +6,7 @@ check:
   type: CheckStream
   stream_names:
     - athlete_stats
+    - activities
 
 definitions:
   streams:
@@ -85,7 +86,14 @@ definitions:
       client_secret: "{{ config['client_secret'] }}"
       refresh_token: "{{ config['refresh_token'] }}"
       token_refresh_endpoint: https://www.strava.com/oauth/token
-      expires_in_name: expires_at
+      expires_in_name: expires_in
+      refresh_token_updater:
+        refresh_token_config_path:
+          - refresh_token
+        access_token_config_path:
+          - access_token
+        token_expiry_date_config_path:
+          - token_expiry_date
       scopes:
         - read_all
         - activity:read_all
@@ -132,6 +140,17 @@ spec:
           - fc6243f283e51f6ca989aab298b17da125496f50
         airbyte_secret: true
         order: 2
+      access_token:
+        type: string
+        title: Access Token
+        description: Access token managed automatically by Airbyte.
+        airbyte_secret: true
+        airbyte_hidden: true
+      token_expiry_date:
+        type: string
+        title: Token Expiry Date
+        description: Access token expiry managed automatically by Airbyte.
+        airbyte_hidden: true
       athlete_id:
         type: integer
         description: The Athlete ID of your Strava developer application.
