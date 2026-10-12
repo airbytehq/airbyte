@@ -60,11 +60,10 @@ internal class SnowflakeAirbyteClientTest {
             SnowflakeAirbyteClient(dataSource, sqlGenerator, snowflakeConfiguration, columnManager)
     }
 
-    private fun mockTableRows(vararg names: String): ResultSet =
-        mockk {
-            every { next() } returnsMany (names.map { true } + false)
-            every { getString("name") } returnsMany names.toList()
-        }
+    private fun mockTableRows(vararg names: String): ResultSet = mockk {
+        every { next() } returnsMany (names.map { true } + false)
+        every { getString("name") } returnsMany names.toList()
+    }
 
     @Test
     fun testCountTable() {
@@ -201,9 +200,7 @@ internal class SnowflakeAirbyteClientTest {
 
         every { dataSource.connection } returns mockConnection
 
-        runBlocking {
-            assertEquals(false, client.tableExists(tableName))
-        }
+        runBlocking { assertEquals(false, client.tableExists(tableName)) }
     }
 
     @Test
@@ -223,9 +220,7 @@ internal class SnowflakeAirbyteClientTest {
 
         every { dataSource.connection } returns mockConnection
 
-        runBlocking {
-            assertEquals(true, client.tableExists(tableName))
-        }
+        runBlocking { assertEquals(true, client.tableExists(tableName)) }
     }
 
     @Test
