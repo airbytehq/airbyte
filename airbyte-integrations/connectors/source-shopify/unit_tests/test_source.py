@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import copy
 import json
 import logging
 import math
@@ -605,6 +606,23 @@ def test_countries_parse_response(config, countries_response_data, countries_exp
         countries_expected_record_data,
     ]
     assert list(records) == expected_records
+
+
+def test_countries_dedup_is_per_instance(config, countries_response_data, countries_expected_record_data):
+    config["credentials"] = {"auth_method": "api_password", "api_password": "shppa_123"}
+    config["authenticator"] = ShopifyAuthenticator(config)
+
+    def read(stream):
+        response = MagicMock(status_code=requests.codes.OK)
+        response.json.return_value = copy.deepcopy(countries_response_data)
+        return list(stream.parse_response(response))
+
+    first = Countries(config=config, parent=None)
+    assert read(first) == [countries_expected_record_data]
+    # the same country on a later page is still deduplicated within one instance
+    assert read(first) == []
+    # a second instance (e.g. another config read in the same process) starts with no synced ids
+    assert read(Countries(config=config, parent=None)) == [countries_expected_record_data]
 
 
 def test_market_countries_request_body_json(config):
