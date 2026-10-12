@@ -30,6 +30,8 @@ acceptance_tests:
             bypass_reason: "The data changes from sync to sync"
           - name: "campaigns_stats_lifetime"
             bypass_reason: "The data changes from sync to sync"
+          - name: segments
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
   incremental:
     tests:
       - config_path: "secrets/config.json"

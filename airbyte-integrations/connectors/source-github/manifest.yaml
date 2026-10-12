@@ -17833,7 +17833,7 @@ definitions:
             query: |
               query Releases($owner: String!, $name: String!, $first: Int!, $after: String) {
                 repository(owner: $owner, name: $name) {
-                  releases(first: $first, after: $after, orderBy: {field: CREATED_AT, direction: ASC}) {
+                  releases(first: $first, after: $after, orderBy: {field: CREATED_AT, direction: DESC}) {
                     nodes {
                       node_id: id
                       id: databaseId
@@ -17912,10 +17912,12 @@ definitions:
       - type: CustomTransformation
         class_name: source_declarative_manifest.components.ReleasesRecordTransformation
     incremental_sync:
-      # Semi-incremental, matching legacy `SemiIncrementalMixin`: the query is ordered
-      # CREATED_AT ASC and every page is read, with records at or below the partition cursor
-      # dropped client-side. Ascending order means there is no early exit to take, so
-      # `is_data_feed` would be wrong here.
+      # The query is ordered CREATED_AT DESC and `created_at` is the cursor field, so
+      # `is_data_feed` ends the partition after the first page whose last record is at or
+      # below the cursor; the CDK drops that page's records outside the window, leaving the
+      # same records the legacy client-side filter emitted. ASC bought nothing: the
+      # declarative cursor checkpoints once per partition regardless of order. Without this
+      # stop, every sync walked the full release history at 10 records per page.
       type: DatetimeBasedCursor
       cursor_field: "created_at"
       cursor_datetime_formats:
@@ -17925,7 +17927,7 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      is_client_side_incremental: true
+      is_data_feed: true
     state_migrations:
       - type: LegacyToPerPartitionStateMigration
     schema_loader:

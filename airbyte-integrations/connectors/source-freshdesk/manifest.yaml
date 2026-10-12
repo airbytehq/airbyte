@@ -1095,6 +1095,13 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+      transformations:
+        # The API currently returns the SLA policy id as a string (observed 2026-10, not in Freshdesk's docs);
+        # cast back to the integer the schema declares.
+        - type: AddFields
+          fields:
+            - path: ["id"]
+              value: "{{ record['id'] | int(default=record['id']) if record.get('id') is not none else none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:

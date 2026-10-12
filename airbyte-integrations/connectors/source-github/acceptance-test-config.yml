@@ -25,6 +25,16 @@ acceptance_tests:
         empty_streams:
           - name: "events"
             bypass_reason: "Only events created within the past 90 days can be showed. Stream is tested with integration tests."
+          - name: project_cards
+            bypass_reason: "The test repository has no Projects (classic) data to return; GitHub has sunset Projects (classic)."
+          - name: project_columns
+            bypass_reason: "The test repository has no Projects (classic) data to return; GitHub has sunset Projects (classic)."
+          - name: projects
+            bypass_reason: "The test repository has no Projects (classic) data to return; GitHub has sunset Projects (classic)."
+          - name: workflow_jobs
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: workflow_runs
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
   incremental:
     tests:
       - config_path: "secrets/config.json"

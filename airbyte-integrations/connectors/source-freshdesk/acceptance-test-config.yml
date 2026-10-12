@@ -31,6 +31,8 @@ acceptance_tests:
             bypass_reason: "no records"
           - name: products
             bypass_reason: "no records"
+          - name: ticket_activities
+            bypass_reason: "The test account has no daily ticket activity export files: the export API returns file_not_found."
         fail_on_extra_columns: false
   incremental:
     tests:
