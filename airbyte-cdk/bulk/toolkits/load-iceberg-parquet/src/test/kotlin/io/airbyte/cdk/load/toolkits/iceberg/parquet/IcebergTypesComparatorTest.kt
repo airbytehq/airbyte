@@ -225,11 +225,84 @@ class IcebergTypesComparatorTest {
 
         val diff = comparator.compareSchemas(incomingSchema, existingSchema)
 
-        // This appears as a type update because list element optionality changed
-        assertThat(diff.updatedDataTypes).containsExactly("values")
+        assertThat(diff.updatedDataTypes).isEmpty()
         assertThat(diff.newColumns).isEmpty()
         assertThat(diff.removedColumns).isEmpty()
+        assertThat(diff.newlyOptionalColumns).containsExactly("values.element")
+    }
+
+    @Test
+    fun testListTypeElementTighteningRemainsATypeChange() {
+        val existingSchema =
+            buildSchema(
+                field(
+                    "values",
+                    Types.ListType.ofOptional(101, Types.StringType.get()),
+                    false,
+                ),
+            )
+        val incomingSchema =
+            buildSchema(
+                field(
+                    "values",
+                    Types.ListType.ofRequired(101, Types.StringType.get()),
+                    false,
+                ),
+            )
+
+        val diff = comparator.compareSchemas(incomingSchema, existingSchema)
+
+        assertThat(diff.updatedDataTypes).containsExactly("values")
         assertThat(diff.newlyOptionalColumns).isEmpty()
+    }
+
+    @Test
+    fun testMetaListRelaxationsAreReportedUsingCanonicalNestedNames() {
+        val existingSchema = metaSchema(elementOptional = false, fieldsOptional = false)
+        val incomingSchema = metaSchema(elementOptional = true, fieldsOptional = true)
+
+        val diff = comparator.compareSchemas(incomingSchema, existingSchema)
+
+        assertThat(diff.updatedDataTypes).isEmpty()
+        assertThat(diff.newlyOptionalColumns)
+            .containsExactlyInAnyOrder(
+                "_airbyte_meta.changes.element",
+                "_airbyte_meta.changes.element.field",
+                "_airbyte_meta.changes.element.change",
+                "_airbyte_meta.changes.element.reason",
+            )
+    }
+
+    private fun metaSchema(elementOptional: Boolean, fieldsOptional: Boolean): Schema {
+        fun nestedField(id: Int, name: String): Types.NestedField =
+            if (fieldsOptional) {
+                Types.NestedField.optional(id, name, Types.StringType.get())
+            } else {
+                Types.NestedField.required(id, name, Types.StringType.get())
+            }
+
+        val changesStruct =
+            Types.StructType.of(
+                nestedField(5, "field"),
+                nestedField(6, "change"),
+                nestedField(7, "reason"),
+            )
+        val changesList =
+            if (elementOptional) {
+                Types.ListType.ofOptional(4, changesStruct)
+            } else {
+                Types.ListType.ofRequired(4, changesStruct)
+            }
+        return buildSchema(
+            Types.NestedField.required(
+                1,
+                "_airbyte_meta",
+                Types.StructType.of(
+                    Types.NestedField.required(2, "sync_id", Types.LongType.get()),
+                    Types.NestedField.required(3, "changes", changesList),
+                ),
+            ),
+        )
     }
 
     @Test
