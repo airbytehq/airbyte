@@ -66,6 +66,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.60 | 2026-10-12 | [85892](https://github.com/airbytehq/airbyte/pull/85892) | Migrate `contact_groups`, `teammates_contact_groups`, and `teams_contact_groups` streams to the `contact_lists` endpoints (Front deprecated `contact_groups` on 2025-09-01) |
 | 0.0.59 | 2026-10-06 | [87826](https://github.com/airbytehq/airbyte/pull/87826) | Update dependencies |
 | 0.0.58 | 2026-09-29 | [87171](https://github.com/airbytehq/airbyte/pull/87171) | Update dependencies |
 | 0.0.57 | 2026-09-22 | [86638](https://github.com/airbytehq/airbyte/pull/86638) | Update dependencies |
