@@ -7,6 +7,22 @@ acceptance_tests:
           - name: folder
           - name: list
           - name: task
+          - name: list_comments
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: list_custom_fields
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: space_tags
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: team
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: team_custom_fields
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: team_goals
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: time_tracking
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: time_tracking_tags
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
   connection:
     tests:
       - config_path: secrets/config.json

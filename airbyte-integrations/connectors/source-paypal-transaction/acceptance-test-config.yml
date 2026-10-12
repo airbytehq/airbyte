@@ -39,6 +39,8 @@ acceptance_tests:
             bypass_reason: "Empty Stream."
           - name: balances
             bypass_reason: "as_of_time value will keep changing"
+          - name: list_payments
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
         timeout_seconds: 3200
         expect_records:
           path: "integration_tests/sample_files/expected_records.jsonl"
