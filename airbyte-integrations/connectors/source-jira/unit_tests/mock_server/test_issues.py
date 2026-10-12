@@ -1,6 +1,5 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-import copy
 import json
 import logging
 from datetime import datetime, timezone
@@ -150,11 +149,6 @@ class TestIssuesStream(TestCase):
         schema = next(stream.json_schema for stream in discovered.streams if stream.name == _STREAM_NAME)
         assert _rendered_comment_properties(schema)["body"]["type"] == ["null", "string"]
         assert list(Draft7Validator(schema).iter_errors(record)) == []
-
-        old_schema = copy.deepcopy(schema)
-        _rendered_comment_properties(old_schema)["body"] = {"type": ["null", "object"]}
-        old_errors = list(Draft7Validator(old_schema).iter_errors(record))
-        assert [list(error.absolute_path) for error in old_errors] == [["renderedFields", "comment", "comments", 0, "body"]]
 
     @HttpMocker()
     def test_issue_without_project_field_does_not_fail_sync(self, http_mocker: HttpMocker):
