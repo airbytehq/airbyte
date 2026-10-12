@@ -662,14 +662,17 @@ def test_deals_archived_resumes_from_legacy_state():
     assert _ids(output) == [9]
 
 
+def _deal_products_batch(deal_ids):
+    return _request("api/v2/deals/products", {"api_token": "tok", "deal_ids": ",".join(map(str, deal_ids)), "limit": "500"})
+
+
 def test_deal_products_expands_archived_deals_too():
     with HttpMocker() as http_mocker:
         _mock_deals(http_mocker, archived=[{"id": 9, "update_time": "2024-02-01T00:00:00Z", "is_archived": True}])
-        for deal_id, products in ((1, [{"id": 10, "deal_id": 1}]), (2, []), (9, [{"id": 90, "deal_id": 9}])):
-            http_mocker.get(
-                _request(f"api/v2/deals/{deal_id}/products", {"api_token": "tok", "limit": "500"}),
-                _response({"data": products, "additional_data": {"next_cursor": None}}),
-            )
+        http_mocker.get(
+            _deal_products_batch([1, 2, 9]),
+            _response({"data": [{"id": 10, "deal_id": 1}, {"id": 90, "deal_id": 9}], "additional_data": {"next_cursor": None}}),
+        )
 
         output = _read_stream("deal_products")
 
@@ -747,22 +750,25 @@ def test_migrated_primary_keys(stream, expected):
     assert discovered[stream].source_defined_primary_key == expected
 
 
-def test_deal_products_uses_v2_nested_endpoint():
+def test_deal_products_requests_one_hundred_deals_at_a_time():
+    deals = [{"id": deal_id, "update_time": "2024-01-01T00:00:00Z"} for deal_id in range(1, 151)]
     with HttpMocker() as http_mocker:
-        _mock_deals(http_mocker)
+        http_mocker.get(_request("api/v2/deals", _DEALS_QUERY), _response({"data": deals, "additional_data": {"next_cursor": None}}))
+        http_mocker.get(_request("api/v2/deals/archived", _DEALS_QUERY), _response({"data": [], "additional_data": {"next_cursor": None}}))
+        first = _deal_products_batch(range(1, 101))
+        http_mocker.get(first, _response({"data": [{"id": 1001, "deal_id": 7}], "additional_data": {"next_cursor": "next"}}))
         http_mocker.get(
-            _request("api/v2/deals/1/products", {"api_token": "tok", "limit": "500"}),
-            _response({"data": [{"id": 10, "deal_id": 1}], "additional_data": {"next_cursor": None}}),
+            _request("api/v2/deals/products", {"api_token": "tok", "deal_ids": ",".join(map(str, range(1, 101))), "limit": "500", "cursor": "next"}),
+            _response({"data": [{"id": 1002, "deal_id": 99}], "additional_data": {"next_cursor": None}}),
         )
-        http_mocker.get(
-            _request("api/v2/deals/2/products", {"api_token": "tok", "limit": "500"}),
-            _response({"data": [], "additional_data": {"next_cursor": None}}),
-        )
+        second = _deal_products_batch(range(101, 151))
+        http_mocker.get(second, _response({"data": [{"id": 1101, "deal_id": 150}], "additional_data": {"next_cursor": None}}))
 
         output = _read_stream("deal_products")
 
-    assert _ids(output) == [10]
+    assert _ids(output) == [1001, 1002, 1101]
     assert output.errors == []
+    http_mocker.assert_number_of_calls(second, 1)
 
 
 def _threads_request(folder, start=None):

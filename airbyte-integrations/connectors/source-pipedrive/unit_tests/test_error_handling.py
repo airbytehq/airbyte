@@ -166,8 +166,12 @@ def test_5xx_is_retried(status_code: int) -> None:
         http_mocker.assert_number_of_calls(deals, 2)
 
 
-def _deal_products_request(deal_id: int):
-    return request(f"api/v2/deals/{deal_id}/products", {"limit": "500"})
+def _deal_products_batch(*deal_ids: int):
+    return request("api/v2/deals/products", {"deal_ids": ",".join(map(str, deal_ids)), "limit": "500"})
+
+
+def _deal_flow_request(deal_id: int):
+    return request(f"v1/deals/{deal_id}/flow", {"limit": "500", "items": "dealChange", "all_changes": "1"})
 
 
 @pytest.mark.parametrize(
@@ -178,7 +182,7 @@ def _deal_products_request(deal_id: int):
         (410, "Deal has been deleted"),
     ],
 )
-def test_deal_products_skips_missing_or_forbidden_parent_deal(status_code: int, error: str) -> None:
+def test_deal_flow_skips_missing_or_forbidden_parent_deal(status_code: int, error: str) -> None:
     with HttpMocker() as http_mocker:
         deals = deals_request()
         http_mocker.get(deals_archived_request(), empty_v2_page())
@@ -186,11 +190,14 @@ def test_deal_products_skips_missing_or_forbidden_parent_deal(status_code: int, 
             deals,
             collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}, {"id": 2, "update_time": "2024-02-01 00:00:00"}]),
         )
-        missing_deal = _deal_products_request(1)
+        missing_deal = _deal_flow_request(1)
         http_mocker.get(missing_deal, pipedrive_error(status_code, error))
-        http_mocker.get(_deal_products_request(2), collection([{"id": 20, "deal_id": 2, "product_id": 5}]))
+        http_mocker.get(
+            _deal_flow_request(2),
+            collection([{"object": "dealChange", "timestamp": "2024-02-01 00:00:00", "data": {"id": 20, "item_id": 2, "log_time": "2024-02-01 00:00:00"}}]),
+        )
 
-        output = read_stream("deal_products")
+        output = read_stream("deal_flow")
 
         assert not output.errors
         assert [record.record.data["id"] for record in output.records] == [20]
@@ -203,7 +210,7 @@ def test_deal_products_still_fails_on_401() -> None:
         deals = deals_request()
         http_mocker.get(deals_archived_request(), empty_v2_page())
         http_mocker.get(deals, collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}]))
-        http_mocker.get(_deal_products_request(1), pipedrive_error(401, "unauthorized access"))
+        http_mocker.get(_deal_products_batch(1), pipedrive_error(401, "unauthorized access"))
 
         error = _error_trace(read_stream("deal_products", expecting_exception=True))
 
@@ -262,7 +269,7 @@ def test_child_stream_402_reaches_the_shared_handler_instead_of_retrying() -> No
     with HttpMocker() as http_mocker:
         http_mocker.get(deals_archived_request(), empty_v2_page())
         http_mocker.get(deals_request(), collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}]))
-        child = _deal_products_request(1)
+        child = _deal_products_batch(1)
         http_mocker.get(child, pipedrive_error(402, "Required suites missing"))
 
         error = _error_trace(read_stream("deal_products", expecting_exception=True))

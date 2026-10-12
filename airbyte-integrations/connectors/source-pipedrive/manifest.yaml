@@ -904,10 +904,12 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: api/v2/deals/{{ stream_slice['parent_id'] }}/products
+          # One request per 100 deals: the batch endpoint returns the same items as /deals/{id}/products.
+          path: api/v2/deals/products
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
+            deal_ids: "{{ stream_slice['parent_id'] | join(',') }}"
             limit: "500"
           error_handler:
             type: CompositeErrorHandler
@@ -923,18 +925,22 @@ definitions:
         paginator:
           $ref: "#/definitions/v2_cursor_paginator"
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: parent_id
-              stream:
-                $ref: "#/definitions/streams/deals"
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: parent_id
-              stream:
-                $ref: "#/definitions/streams/deals_archived"
+          type: GroupingPartitionRouter
+          group_size: 100
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: parent_id
+                stream:
+                  $ref: "#/definitions/streams/deals"
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: parent_id
+                stream:
+                  $ref: "#/definitions/streams/deals_archived"
       schema_loader:
         type: InlineSchemaLoader
         schema:
