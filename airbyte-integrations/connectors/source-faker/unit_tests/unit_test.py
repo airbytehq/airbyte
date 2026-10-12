@@ -84,6 +84,9 @@ def test_source_streams():
         ({"count": 10, "records_per_slice": 5, "parallelism": 2}, True),
         ({"count": 10, "records_per_slice": 5, "parallelism": 0}, False),
         ({"count": "ten", "records_per_slice": 5, "parallelism": 2}, False),
+        ({"count": 5000, "seed": 42}, True),
+        ({}, True),
+        ({"count": 10, "records_per_slice": 0}, False),
     ],
 )
 def test_check_connection_validates_settings(config, valid):
