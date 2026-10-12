@@ -9,7 +9,7 @@ The Extract CDK provides functionality for source connectors including schema di
 
 ### 1.1.16 — 2026-10-12
 
-[#PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) — The connection check's zero-tables error now names the databases or schemas that were searched and the usual causes (wrong name, empty database, missing permissions, or table filters), and the unqueryable-tables error suggests checking SELECT permission.
+[#88493](https://github.com/airbytehq/airbyte/pull/88493) — The connection check's zero-tables error now names the databases or schemas that were searched and the usual causes (wrong name, empty database, missing permissions, or table filters), and the unqueryable-tables error suggests checking SELECT permission.
 
 ### 1.1.15 — 2026-10-08
 
