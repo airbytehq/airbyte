@@ -26,6 +26,8 @@ The first time your client connects, it opens the Airbyte Cloud sign-in page in 
 
 If your organization uses [single sign-on](/platform/access-management/sso), select **Sign in with SSO** and enter your **Company identifier**. This is the same identifier you enter after you select **Continue with SSO** on the Airbyte Cloud sign-in page. If you don't know it, ask your Airbyte organization admin.
 
+Your client finds the Airbyte MCP's authorization and token endpoints and registers itself automatically, so you only need the server URL. If your client has optional OAuth settings, like a client ID, client secret, authorization URL, or token URL, leave them blank.
+
 Your client keeps you signed in while you use the Airbyte MCP. If you don't use it for 14 days, you may need to sign in again.
 
 If you belong to more than one organization or workspace, the Airbyte MCP uses your default workspace. Ask your agent to list your workspaces or switch to a different one at any time.
@@ -216,7 +218,7 @@ Automated agents, scripts, and CI jobs can't complete a browser sign-in. Instead
 
 1. [Create an application](/platform/using-airbyte/configuring-api-access) and copy its client ID and client secret. The application acts with the permissions of the user who created it, so consider using a service account.
 
-2. Send the client ID and client secret in the `Client-Id` and `Client-Secret` headers of every request to the Airbyte MCP. The Airbyte MCP exchanges them for a new access token on each request, so your agent doesn't need to refresh tokens.
+2. Send the client ID and client secret in the `Client-Id` and `Client-Secret` headers of every request to the Airbyte MCP. The Airbyte MCP exchanges them for a new access token on each request, so your agent doesn't need a token endpoint, an authorization endpoint, or to refresh tokens.
 
    ```json
    {
@@ -233,6 +235,8 @@ Automated agents, scripts, and CI jobs can't complete a browser sign-in. Instead
    ```
 
 3. Optional: to choose a workspace or organization other than your default, add the `X-Airbyte-Workspace-Id` or `X-Airbyte-Organization-Id` header.
+
+Don't enter the application's client ID and client secret in your client's OAuth settings. The Airbyte MCP only accepts them in request headers.
 
 Treat the client secret like a password. Keep it out of version control, and use your client's secret storage or environment variables if it supports them.
 

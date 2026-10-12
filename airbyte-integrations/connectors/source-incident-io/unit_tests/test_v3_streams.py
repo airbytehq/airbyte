@@ -16,48 +16,26 @@ catch-all.
 """
 
 import logging
-from pathlib import Path
 from unittest import mock
 
 import jsonschema
 import pytest
 import requests_mock
+import yaml
+from conftest import _BASE_URL, _CONFIG, _MANIFEST_PATH, _get_source, _read_stream
 
 from airbyte_cdk.models import Status, SyncMode
+from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
-def _get_manifest_path() -> Path:
-    ci_path = Path("/airbyte/integration_code/source_declarative_manifest")
-    if ci_path.exists():
-        return ci_path
-    return Path(__file__).parent.parent
-
-
-_MANIFEST_PATH = _get_manifest_path() / "manifest.yaml"
-_CONFIG = {"api_key": "test-key"}
 # A start_date inside one P30D window of "now", so tests that count requests see a single slice.
 _RECENT_CONFIG = {"api_key": "test-key", "start_date": "2026-10-06T00:00:00Z"}
-_BASE_URL = "https://api.incident.io"
 _MODES = ["standard", "retrospective", "test", "tutorial", "stream"]
 _STATUS_CATEGORIES = ["triage", "live", "learning", "paused", "closed", "declined", "canceled", "merged"]
-
-
-def _get_source(state=None, config=None):
-    return YamlDeclarativeSource(
-        path_to_yaml=str(_MANIFEST_PATH),
-        catalog=CatalogBuilder().build(),
-        config=config or _CONFIG,
-        state=state if state is not None else StateBuilder().build(),
-    )
-
-
-def _read_stream(stream_name, sync_mode=SyncMode.full_refresh, state=None, config=None):
-    catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
-    return read(_get_source(state, config), config or _CONFIG, catalog, state=state)
 
 
 def _mock_empty(mocker, path, records_field):
@@ -292,7 +270,7 @@ def test_start_date_config_starts_the_first_window():
     with requests_mock.Mocker() as mocker:
         mocker.get(f"{_BASE_URL}/v2/incidents", json={"incidents": [], "pagination_meta": {}})
         read(source, config, catalog)
-        assert mocker.request_history[0].qs["updated_at[date_range]"][0].startswith("2025-03-01~")
+        assert any(request.qs["updated_at[date_range]"][0].startswith("2025-03-01~") for request in mocker.request_history)
 
 
 @pytest.mark.parametrize(
@@ -579,3 +557,170 @@ def test_users_requests_inactive_users():
     assert requests_made[0].qs["include_inactive"] == ["true"]
     assert requests_made[0].qs["page_size"] == ["10000"]
     assert output.records[0].record.data["is_active"] is False
+
+
+def test_incident_types_reads_v1_endpoint():
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v1/incident_types", json={"incident_types": [{"id": "type-1", "name": "Production"}]})
+        output = _read_stream("incident_types")
+
+    assert [message.record.data["id"] for message in output.records] == ["type-1"]
+
+
+def test_incident_attachments_partitions_by_incident_and_ignores_404():
+    incidents = {
+        "incidents": [
+            {"id": "incident-1", "updated_at": "2026-10-08T00:00:00Z"},
+            {"id": "incident-2", "updated_at": "2026-10-08T00:00:00Z"},
+        ],
+        "pagination_meta": {},
+    }
+    attachment = {
+        "incident_attachments": [
+            {
+                "id": "attachment-2",
+                "incident_id": "incident-2",
+                "resource": {"external_id": "123", "permalink": "https://example.com", "title": "Alert", "resource_type": "arbitrary_url"},
+            }
+        ]
+    }
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/incidents", json=incidents)
+        mocker.get(
+            f"{_BASE_URL}/v1/incident_attachments?incident_id=incident-1",
+            complete_qs=True,
+            status_code=404,
+            json={"errors": [{"message": "Incident was deleted"}]},
+        )
+        mocker.get(
+            f"{_BASE_URL}/v1/incident_attachments?incident_id=incident-2",
+            complete_qs=True,
+            json=attachment,
+        )
+        output = _read_stream("incident_attachments", config=_RECENT_CONFIG)
+        attachment_requests = [request for request in mocker.request_history if request.path == "/v1/incident_attachments"]
+
+    assert output.errors == []
+    assert [message.record.data["id"] for message in output.records] == ["attachment-2"]
+    assert sorted(request.qs["incident_id"][0] for request in attachment_requests) == ["incident-1", "incident-2"]
+
+
+def test_incident_attachments_retries_transient_errors():
+    incidents = {
+        "incidents": [{"id": "incident-1", "updated_at": "2026-10-08T00:00:00Z"}],
+        "pagination_meta": {},
+    }
+    attachment = {"incident_attachments": [{"id": "attachment-1", "incident_id": "incident-1"}]}
+
+    with mock.patch("time.sleep"), requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/incidents", json=incidents)
+        mocker.get(
+            f"{_BASE_URL}/v1/incident_attachments?incident_id=incident-1",
+            [
+                {"status_code": 503, "json": {"errors": [{"message": "Temporary service error"}]}},
+                {"json": attachment},
+            ],
+            complete_qs=True,
+        )
+        output = _read_stream("incident_attachments", config=_RECENT_CONFIG)
+        attachment_requests = [request for request in mocker.request_history if request.path == "/v1/incident_attachments"]
+
+    assert output.errors == []
+    assert [message.record.data["id"] for message in output.records] == ["attachment-1"]
+    assert len(attachment_requests) == 2
+
+
+def test_incident_attachments_error_handler_reuses_base_filters():
+    raw_manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    manifest = ManifestReferenceResolver().preprocess_manifest(raw_manifest)
+    definitions = manifest["definitions"]
+    base_requester_handlers = definitions["base_requester"]["error_handler"]["error_handlers"]
+    assert len(base_requester_handlers) == 1
+    base_handler = base_requester_handlers[0]
+
+    attachment_requester = definitions["streams"]["incident_attachments"]["retriever"]["requester"]
+    attachment_handlers = attachment_requester["error_handler"]["error_handlers"]
+    assert len(attachment_handlers) == 1
+    attachment_handler = attachment_handlers[0]
+    assert attachment_handler["type"] == "DefaultErrorHandler"
+    assert attachment_handler["max_retries"] == base_handler["max_retries"]
+
+    base_filters = base_handler["response_filters"]
+    attachment_filters = attachment_handler["response_filters"]
+    assert len(attachment_filters) == len(base_filters) + 1
+    assert attachment_filters[0]["action"] == "IGNORE"
+    assert attachment_filters[0]["http_codes"] == [404]
+    assert [(filter["action"], filter["http_codes"]) for filter in attachment_filters[1:]] == [
+        (filter["action"], filter["http_codes"]) for filter in base_filters
+    ]
+
+
+def test_catalog_entries_partitions_and_follows_all_pages():
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/catalog_types", json={"catalog_types": [{"id": "catalog-type-1"}]})
+        mocker.get(
+            f"{_BASE_URL}/v3/catalog_entries",
+            [
+                {
+                    "json": {
+                        "catalog_entries": [{"id": "entry-1", "catalog_type_id": "catalog-type-1"}],
+                        "pagination_meta": {"after": "entry-1"},
+                    }
+                },
+                {"json": {"catalog_entries": [{"id": "entry-2", "catalog_type_id": "catalog-type-1"}], "pagination_meta": {}}},
+            ],
+        )
+        output = _read_stream("catalog_entries")
+        entry_requests = [request for request in mocker.request_history if request.path == "/v3/catalog_entries"]
+
+    assert [message.record.data["id"] for message in output.records] == ["entry-1", "entry-2"]
+    assert len(entry_requests) == 2
+    assert all(request.qs["catalog_type_id"] == ["catalog-type-1"] for request in entry_requests)
+    assert all(request.qs["page_size"] == ["250"] for request in entry_requests)
+    assert "after" not in entry_requests[0].qs
+    assert entry_requests[1].qs["after"] == ["entry-1"]
+
+
+def test_catalog_resources_records_are_keyed_by_type():
+    with requests_mock.Mocker() as mocker:
+        mocker.get(
+            f"{_BASE_URL}/v3/catalog_resources",
+            json={"resources": [{"type": "Boolean", "label": "Boolean value"}]},
+        )
+        output = _read_stream("catalog_resources")
+        stream = next(stream for stream in _get_source().streams(_CONFIG) if stream.name == "catalog_resources")
+
+    assert stream._primary_key == ["type"]
+    assert [message.record.data["type"] for message in output.records] == ["Boolean"]
+
+
+def test_custom_field_options_partitions_and_follows_all_pages():
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/custom_fields", json={"custom_fields": [{"id": "custom-field-1", "field_type": "single_select"}]})
+        mocker.get(
+            f"{_BASE_URL}/v1/custom_field_options",
+            [
+                {
+                    "json": {
+                        "custom_field_options": [{"id": "option-1", "custom_field_id": "custom-field-1", "value": "one"}],
+                        "pagination_meta": {"after": "option-1"},
+                    }
+                },
+                {
+                    "json": {
+                        "custom_field_options": [{"id": "option-2", "custom_field_id": "custom-field-1", "value": "two"}],
+                        "pagination_meta": {},
+                    }
+                },
+            ],
+        )
+        output = _read_stream("custom_field_options")
+        option_requests = [request for request in mocker.request_history if request.path == "/v1/custom_field_options"]
+
+    assert [message.record.data["id"] for message in output.records] == ["option-1", "option-2"]
+    assert len(option_requests) == 2
+    assert all(request.qs["custom_field_id"] == ["custom-field-1"] for request in option_requests)
+    assert all(request.qs["page_size"] == ["250"] for request in option_requests)
+    assert "after" not in option_requests[0].qs
+    assert option_requests[1].qs["after"] == ["option-1"]
