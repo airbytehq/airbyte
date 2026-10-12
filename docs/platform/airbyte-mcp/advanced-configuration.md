@@ -2,7 +2,7 @@
 products: cloud
 ---
 
-# Advanced configuration
+# Advanced Airbyte MCP configuration
 
 The hosted [Airbyte MCP](readme.md) works without any extra configuration. These optional request headers let you narrow which tools your agent can see and use, or set a default workspace. They apply to the hosted server at `https://mcp.airbyte.com/mcp`.
 
