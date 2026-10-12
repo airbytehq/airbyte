@@ -87,6 +87,14 @@ class SlaPoliciesTest(TestCase):
         assert isinstance(_ids(output)[0], int)
 
     @HttpMocker()
+    def test_given_non_numeric_id_when_read_then_id_is_passed_through(self, http_mocker: HttpMocker) -> None:
+        http_mocker.get(HttpRequest(_URL), _response([_policy(id="abc")]))
+
+        output = _read()
+
+        assert _ids(output) == ["abc"]
+
+    @HttpMocker()
     def test_given_null_id_when_read_then_id_is_not_cast(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(HttpRequest(_URL), _response([_policy(id=None)]))
 
