@@ -1,33 +1,96 @@
 # ConvertKit
 
-## Sync overview
+This page guides you through setting up the ConvertKit source connector, which syncs data from [Kit](https://kit.com/) (formerly ConvertKit) using the [Kit API v4](https://developers.kit.com/api-reference/overview).
 
-This source can sync data from the [ConvertKit API](https://developers.convertkit.com/#getting-started). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
+## Prerequisites
 
-## This Source Supports the Following Streams
+- A Kit account on a plan that's [eligible for API access](https://kit.com/pricing).
+- One of the following sets of credentials:
+  - A Kit **V4 API key**. API keys only access your own Kit account and have a lower rate limit than OAuth.
+  - OAuth 2.0 credentials from a Kit app: a **Client ID**, **Client Secret**, and **Refresh Token**. OAuth is required to sync the `purchases` stream.
 
-- sequences
-- subscribers
-- broadcasts
-- tags
-- forms
+Kit V3 API keys and API secrets don't work with the V4 API. If you only have V3 credentials, create a V4 API key.
 
-### Features
+## Setup guide
 
-| Feature           | Supported?\(Yes/No\) | Notes |
-| :---------------- | :------------------- | :---- |
-| Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | No                   |       |
+### Step 1: Get your Kit credentials
 
-### Performance considerations
+#### Option A: API key
 
-The connector has a rate limit of no more than 120 requests over a rolling 60 second period, for a given api secret.
+1. In Kit, go to **Settings** > [**Developer**](https://app.kit.com/account_settings/developer_settings).
+2. Create a new V4 API key.
+3. Copy the API key and store it somewhere safe. Kit only shows the key once. If you lose it, you must reset the key.
 
-## Getting started
+For more details, see [Creating V4 API keys](https://developers.kit.com/api-reference/authentication#creating-v4-api-keys).
 
-### Requirements
+#### Option B: OAuth 2.0
 
-- ConvertKit API Secret
+1. [Create a Kit app](https://developers.kit.com/kit-app-store/building-apps#creating-your-app) and turn on API access for it.
+2. Configure the app's redirect URI, then copy the app's **Client ID** and **Client Secret**.
+3. Complete Kit's [OAuth authorization code flow](https://developers.kit.com/api-reference/oauth-refresh-token-flow) for the Kit account you want to sync, and save the **Refresh Token** that Kit returns.
+
+The connector uses the refresh token to request access tokens from `https://api.kit.com/oauth/token` and stores the rotated refresh token in your connection configuration.
+
+### Step 2: Set up the ConvertKit connector in Airbyte
+
+1. In Airbyte, go to **Sources** and select **ConvertKit**.
+2. Enter a name for the source.
+3. For **Start date**, enter the UTC date and time from which to sync subscriber records, in the format `YYYY-MM-DDTHH:mm:ssZ`. The default is `2013-01-01T00:00:00Z`. The start date only applies to the `subscribers`, `form_subscribers`, `sequence_subscribers`, and `tag_subscribers` streams.
+4. For **Authentication Type**, choose one of the following:
+   - **API Key**: Enter your V4 API key.
+   - **OAuth 2.0**: Enter your **Client ID**, **Client Secret**, and **Refresh Token**. You can leave **Access Token** and **Access Token Expires At** empty. The connector fills them in when it refreshes the token.
+5. Click **Set up source**.
+
+## Supported sync modes
+
+| Feature           | Supported? | Notes                                                                                 |
+| :---------------- | :--------- | :------------------------------------------------------------------------------------ |
+| Full Refresh Sync | Yes        |                                                                                       |
+| Incremental Sync  | Yes        | `subscribers`, `form_subscribers`, `sequence_subscribers`, and `tag_subscribers` only |
+
+## Supported streams
+
+| Stream                 | Kit API endpoint                                                                                                      | Primary key         | Incremental |
+| :--------------------- | :-------------------------------------------------------------------------------------------------------------------- | :------------------ | :---------- |
+| `broadcasts`           | [List broadcasts](https://developers.kit.com/api-reference/broadcasts/list-broadcasts)                                | `id`                | No          |
+| `current_account`      | [Get current account](https://developers.kit.com/api-reference/accounts/get-current-account)                          | None                | No          |
+| `custom_fields`        | [List custom fields](https://developers.kit.com/api-reference/custom-fields/list-custom-fields)                       | `id`                | No          |
+| `email_templates`      | [List email templates](https://developers.kit.com/api-reference/email-templates/list-email-templates)                 | `id`                | No          |
+| `forms`                | [List forms](https://developers.kit.com/api-reference/forms/list-forms)                                               | `id`                | No          |
+| `form_subscribers`     | [List subscribers for a form](https://developers.kit.com/api-reference/forms/list-subscribers-for-a-form)             | `id`, `form_id`     | Yes         |
+| `purchases`            | [List purchases](https://developers.kit.com/api-reference/purchases/list-purchases)                                   | `id`                | No          |
+| `segments`             | [List segments](https://developers.kit.com/api-reference/segments/list-segments)                                      | `id`                | No          |
+| `sequences`            | [List sequences](https://developers.kit.com/api-reference/sequences/list-sequences)                                   | `id`                | No          |
+| `sequence_subscribers` | [List subscribers for a sequence](https://developers.kit.com/api-reference/sequences/list-subscribers-for-a-sequence) | `id`, `sequence_id` | Yes         |
+| `subscribers`          | [List subscribers](https://developers.kit.com/api-reference/subscribers/list-subscribers)                             | `id`                | Yes         |
+| `tags`                 | [List tags](https://developers.kit.com/api-reference/tags/list-tags)                                                  | `id`                | No          |
+| `tag_subscribers`      | [List subscribers for a tag](https://developers.kit.com/api-reference/tags/list-subscribers-for-a-tag)                | `id`, `tag_id`      | Yes         |
+
+The `form_subscribers`, `sequence_subscribers`, and `tag_subscribers` streams read every form, sequence, or tag first, then request the subscribers for each one. The connector adds `form_id`, `sequence_id`, or `tag_id` to each record.
+
+The subscriber streams request subscribers in all states, including inactive, bounced, complained, and cancelled subscribers, not only active ones.
+
+### Incremental sync behavior
+
+- `subscribers`: Filters on the subscriber's last update time (`updated_after`). The cursor field, `date_last_loaded`, is added by the connector and records when the sync read the record.
+- `tag_subscribers`: Filters on when the subscriber was tagged (`tagged_after`). The cursor field, `date_loaded`, is added by the connector and records when the sync read the record.
+- `form_subscribers` and `sequence_subscribers`: Filter on when the subscriber was added (`added_after`), using the `added_at` field as the cursor.
+
+Each incremental sync re-reads the last hour before the saved cursor, so expect some duplicate records unless you use a deduplicating sync mode.
+
+## Limitations and troubleshooting
+
+### Rate limits
+
+Kit limits API keys to 120 requests and OAuth access tokens to 600 requests over a rolling 60-second period. When Kit returns HTTP 429, Airbyte backs off and retries the request. Use OAuth if your syncs are slow because of rate limiting.
+
+### `purchases` requires OAuth
+
+Kit's List purchases endpoint only accepts OAuth access tokens. If you authenticate with an API key and select the `purchases` stream, the sync fails with an error. Switch to OAuth 2.0 or deselect the `purchases` stream.
+
+### Connections created before version 0.3.0
+
+Versions before 0.3.0 used the Kit V3 API and authenticated with a V3 API secret. Starting with 0.3.0, the connector uses the V4 API. It still falls back to the stored V3 secret if no API key is set, but Kit doesn't accept V3 credentials on the V4 API. If your sync fails with `401 The API key is invalid`, create a V4 API key and enter it under **Authentication Type** > **API Key**.
 
 ## IP allow list
 
@@ -40,7 +103,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
-| 0.3.4 | 2026-10-09 | [88414](https://github.com/airbytehq/airbyte/pull/88414) | Mark `api_secret` as `airbyte_secret` and retitle it Legacy API Secret |
+| 0.3.4 | 2026-10-12 | [88414](https://github.com/airbytehq/airbyte/pull/88414) | Mark `api_secret` as `airbyte_secret` and retitle it Legacy API Secret |
 | 0.3.3 | 2025-05-24 | [60414](https://github.com/airbytehq/airbyte/pull/60414) | Update dependencies |
 | 0.3.2 | 2025-05-10 | [59955](https://github.com/airbytehq/airbyte/pull/59955) | Update dependencies |
 | 0.3.1 | 2025-05-03 | [59410](https://github.com/airbytehq/airbyte/pull/59410) | Update dependencies |
