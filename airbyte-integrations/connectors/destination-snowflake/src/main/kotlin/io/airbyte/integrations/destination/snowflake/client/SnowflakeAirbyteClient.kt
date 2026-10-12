@@ -83,8 +83,18 @@ class SnowflakeAirbyteClient(
                     in schema "$databaseName"."${table.namespace}"
                     """.trimIndent()
                 )
-            statement.setString(1, table.name)
-            statement.use { it.executeQuery().next() }
+            val rawName = table.name.replace("\"\"", "\"")
+            statement.setString(1, rawName)
+            // SHOW TABLES LIKE is case-insensitive and treats `_` and `%` as wildcards,
+            // so it can return sibling tables. Require an exact, case-sensitive name match.
+            statement.use {
+                val resultSet = it.executeQuery()
+                var found = false
+                while (!found && resultSet.next()) {
+                    found = resultSet.getString("name") == rawName
+                }
+                found
+            }
         }
 
     override suspend fun namespaceExists(namespace: String): Boolean {

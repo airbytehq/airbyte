@@ -60,6 +60,12 @@ internal class SnowflakeAirbyteClientTest {
             SnowflakeAirbyteClient(dataSource, sqlGenerator, snowflakeConfiguration, columnManager)
     }
 
+    private fun mockTableRows(vararg names: String): ResultSet =
+        mockk {
+            every { next() } returnsMany (names.map { true } + false)
+            every { getString("name") } returnsMany names.toList()
+        }
+
     @Test
     fun testCountTable() {
         val tableName = TableName(namespace = "namespace", name = "name")
@@ -73,10 +79,11 @@ internal class SnowflakeAirbyteClientTest {
                 every { executeQuery(any()) } returns resultSet
                 every { close() } just Runs
             }
+        val preparedResultSet = mockTableRows(tableName.name)
         val preparedStatement =
             mockk<PreparedStatement> {
                 every { setString(any(), any()) } just runs
-                every { executeQuery().next() } returns true
+                every { executeQuery() } returns preparedResultSet
                 every { close() } just runs
             }
         val mockConnection =
@@ -98,10 +105,11 @@ internal class SnowflakeAirbyteClientTest {
     @Test
     fun testCountMissingTable() {
         val tableName = TableName(namespace = "namespace", name = "name")
+        val preparedResultSet = mockTableRows()
         val preparedStatement =
             mockk<PreparedStatement> {
                 every { setString(any(), any()) } just runs
-                every { executeQuery().next() } returns false
+                every { executeQuery() } returns preparedResultSet
                 every { close() } just runs
             }
         val mockConnection =
@@ -123,6 +131,7 @@ internal class SnowflakeAirbyteClientTest {
     fun testCountTableNoResults() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val resultSet = mockk<ResultSet> { every { next() } returns false }
+        val preparedResultSet = mockTableRows(tableName.name)
         val statement =
             mockk<Statement> {
                 every { executeQuery(any()) } returns resultSet
@@ -131,7 +140,7 @@ internal class SnowflakeAirbyteClientTest {
         val preparedStatement =
             mockk<PreparedStatement> {
                 every { setString(any(), any()) } just runs
-                every { executeQuery().next() } returns true
+                every { executeQuery() } returns preparedResultSet
                 every { close() } just runs
             }
         val mockConnection =
@@ -147,6 +156,98 @@ internal class SnowflakeAirbyteClientTest {
             val result = client.countTable(tableName)
             assertEquals(0L, result)
             verify(exactly = 2) { mockConnection.close() }
+        }
+    }
+
+    @Test
+    fun testCountTableReturnsNullWhenOnlyWildcardSiblingMatches() {
+        val tableName = TableName(namespace = "BUNDESAPI_JOBSUCHE", name = "V6_JOBS")
+        val preparedStatement =
+            mockk<PreparedStatement> {
+                every { setString(any(), any()) } just runs
+                every { executeQuery() } returnsMany
+                    listOf(mockTableRows("V6/JOBS"), mockTableRows("V6/JOBS"))
+                every { close() } just runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { prepareStatement(any()) } returns preparedStatement
+            }
+
+        every { dataSource.connection } returns mockConnection
+
+        runBlocking {
+            assertEquals(false, client.tableExists(tableName))
+            assertEquals(null, client.countTable(tableName))
+            verify(exactly = 0) { mockConnection.createStatement() }
+        }
+    }
+
+    @Test
+    fun testTableExistsRequiresCaseSensitiveMatch() {
+        val tableName = TableName(namespace = "namespace", name = "V6_JOBS")
+        val preparedStatement =
+            mockk<PreparedStatement> {
+                every { setString(any(), any()) } just runs
+                every { executeQuery() } returns mockTableRows("v6_jobs")
+                every { close() } just runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { prepareStatement(any()) } returns preparedStatement
+            }
+
+        every { dataSource.connection } returns mockConnection
+
+        runBlocking {
+            assertEquals(false, client.tableExists(tableName))
+        }
+    }
+
+    @Test
+    fun testTableExistsScansAllRowsForExactMatch() {
+        val tableName = TableName(namespace = "namespace", name = "V6_JOBS")
+        val preparedStatement =
+            mockk<PreparedStatement> {
+                every { setString(any(), any()) } just runs
+                every { executeQuery() } returns mockTableRows("V6/JOBS", "V6_JOBS")
+                every { close() } just runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { prepareStatement(any()) } returns preparedStatement
+            }
+
+        every { dataSource.connection } returns mockConnection
+
+        runBlocking {
+            assertEquals(true, client.tableExists(tableName))
+        }
+    }
+
+    @Test
+    fun testTableExistsUnescapesQuotedNameForShowTables() {
+        val tableName = TableName(namespace = "namespace", name = "A\"\"B")
+        val preparedStatement =
+            mockk<PreparedStatement> {
+                every { setString(any(), any()) } just runs
+                every { executeQuery() } returns mockTableRows("A\"B")
+                every { close() } just runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { prepareStatement(any()) } returns preparedStatement
+            }
+
+        every { dataSource.connection } returns mockConnection
+
+        runBlocking {
+            assertEquals(true, client.tableExists(tableName))
+            verify(exactly = 1) { preparedStatement.setString(1, "A\"B") }
         }
     }
 
