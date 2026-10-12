@@ -6,6 +6,10 @@ import io.airbyte.cdk.output.RegexExceptionClassifier
 import io.airbyte.cdk.output.TransientError
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import java.net.ConnectException
+import java.net.UnknownHostException
+import java.sql.DriverManager
+import java.sql.SQLRecoverableException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -135,5 +139,101 @@ class MySqlExceptionClassifierTest {
             )
         val result = classifier.classify(exception)
         Assertions.assertInstanceOf(TransientError::class.java, result)
+    }
+
+    private fun connectionEstablishmentFailure(rootCause: Throwable): Throwable {
+        val message =
+            "Communications link failure\n\n" +
+                "The last packet sent successfully to the server was 0 milliseconds ago. " +
+                "The driver has not received any packets from the server."
+        return SQLRecoverableException(message, "08S01", 0, RuntimeException(message, rootCause))
+    }
+
+    private fun assertConnectionGuidance(result: Any?) {
+        Assertions.assertInstanceOf(TransientError::class.java, result)
+        val message = (result as TransientError).displayMessage
+        Assertions.assertTrue(
+            message.startsWith(
+                "MySQL Connection Error: MySQL server is unreachable at the configured host and port."
+            ),
+            "Unexpected message: $message"
+        )
+        Assertions.assertTrue(
+            message.contains("firewall or security group allows inbound connections"),
+            message
+        )
+        Assertions.assertTrue(message.contains("Airbyte's IP addresses"), message)
+        Assertions.assertTrue(
+            message.contains("\nhttps://docs.airbyte.com/platform/operating-airbyte/ip-allowlist"),
+            message
+        )
+        Assertions.assertTrue(
+            message.contains("\nhttps://docs.airbyte.com/integrations/sources/mysql"),
+            message
+        )
+        Assertions.assertFalse(message.contains("will retry"), message)
+        Assertions.assertFalse(message.contains("08S01"), message)
+        Assertions.assertFalse(message.contains("milliseconds ago"), message)
+    }
+
+    @Test
+    fun testCommunicationsLinkFailureConnectionRefused() {
+        val exception = connectionEstablishmentFailure(ConnectException("Connection refused"))
+        assertConnectionGuidance(classifier.classify(exception))
+    }
+
+    @Test
+    fun testCommunicationsLinkFailureUnknownHost() {
+        val exception = connectionEstablishmentFailure(UnknownHostException("no-such-host.invalid"))
+        assertConnectionGuidance(classifier.classify(exception))
+    }
+
+    @Test
+    fun testCommunicationsLinkFailureFromDriverOnClosedPort() {
+        val exception =
+            Assertions.assertThrows(Throwable::class.java) {
+                DriverManager.getConnection(
+                    "jdbc:mysql://127.0.0.1:1/db?connectTimeout=5000",
+                    "user",
+                    "password"
+                )
+            }
+        assertConnectionGuidance(classifier.classify(exception))
+    }
+
+    @Test
+    fun testMidStreamCommunicationsLinkFailureIsNotTreatedAsUnreachableServer() {
+        val message =
+            "Communications link failure\n\n" +
+                "The last packet successfully received from the server was 1,234 milliseconds ago. " +
+                "The last packet sent successfully to the server was 1,235 milliseconds ago."
+        Assertions.assertNull(classifier.classify(SQLRecoverableException(message, "08S01", 0)))
+        val eof =
+            java.io.EOFException(
+                "Can not read response from server. Expected to read 4 bytes, " +
+                    "read 0 bytes before connection was unexpectedly lost."
+            )
+        val result = classifier.classify(SQLRecoverableException(message, "08S01", 0, eof))
+        Assertions.assertInstanceOf(TransientError::class.java, result)
+        Assertions.assertTrue(
+            (result as TransientError).displayMessage.startsWith("MySQL EOF Exception:"),
+            result.displayMessage
+        )
+    }
+
+    @Test
+    fun testHikariTimeoutWrappingCommunicationsLinkFailureKeepsHikariRule() {
+        val exception =
+            RuntimeException(
+                "java.sql.SQLTransientConnectionException: HikariPool-1 - " +
+                    "Connection is not available, request timed out after 10 ms",
+                connectionEstablishmentFailure(ConnectException("Connection refused"))
+            )
+        val result = classifier.classify(exception)
+        Assertions.assertInstanceOf(TransientError::class.java, result)
+        Assertions.assertTrue(
+            (result as TransientError).displayMessage.startsWith("Hikari Connection Pool Timeout:"),
+            result.displayMessage
+        )
     }
 }
