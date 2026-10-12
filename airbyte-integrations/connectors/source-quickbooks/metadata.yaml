@@ -81,6 +81,9 @@ data:
     - title: QuickBooks Online API release notes
       url: https://developer.intuit.com/app/developer/qbo/docs/release-notes/platform-release-notes
       type: api_release_history
+    - title: Intuit Developer blog (upcoming API changes)
+      url: https://medium.com/intuitdev
+      type: api_deprecations
     - title: QuickBooks authentication
       url: https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization
       type: authentication_guide
