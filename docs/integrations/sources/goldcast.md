@@ -5,7 +5,8 @@ This page contains the setup guide and reference information for the Goldcast so
 ## Prerequisites
 
 - A [Goldcast Pro plan](https://www.goldcast.io/pricing) or higher. The Starter plan does not allow API access.
-- A Goldcast API token. Follow [Goldcast's guide](https://help.goldcast.io/hc/en-us/articles/22931655725723-How-To-Create-an-API-Token-in-Goldcast) to create one. The token is case-sensitive.
+- API tokens enabled for your Goldcast organization. Goldcast disables tokens by default, so if your plan includes API access, contact Goldcast support to turn them on.
+- A Goldcast API token. Follow [Goldcast's guide](https://help.goldcast.io/hc/en-us/articles/22931655725723-How-To-Create-an-API-Token-in-Goldcast) to create one in Goldcast Studio under **Settings** > **Tokens**. If your organization uses Goldcast Teams, only organization admins can create tokens. Goldcast shows the token value only once, so copy it when you create it. The token is case-sensitive.
 
 ## Setup guide
 
@@ -41,38 +42,39 @@ To set up Goldcast as a source in Airbyte Open Source:
 
 ## Supported Sync Modes
 
-The Goldcast source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Goldcast source connector supports the following [sync modes](/platform/using-airbyte/core-concepts/sync-modes/):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Full Refresh - Overwrite](/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
 
-Incremental modes are not supported as the Goldcast API does not contain a cursor field (modified at field for example) at the time of this writing.
+Incremental modes are not supported because the Goldcast API does not expose a cursor field, such as a modified-at timestamp, that the connector can filter on.
 
 ## Supported Streams
 
 The Goldcast source connector can sync the following streams. See the [Goldcast API documentation](https://apidocs.goldcast.io/) for details on each endpoint.
 
-### Main streams
+| Stream | Description |
+| :--- | :--- |
+| [organizations](https://apidocs.goldcast.io/#tag/Organization/operation/List%20organization) | Your Goldcast organization and its workspace settings. |
+| [events](https://apidocs.goldcast.io/#tag/Event/operation/List%20events) | All events of every type (webinars, conferences, and so on). |
+| [event_members](https://apidocs.goldcast.io/#tag/Event-members/operation/List%20event%20members) | Registrants and attendees of each event. Child of `events`. See [The `props` field](#the-props-field-in-event_members). |
+| [webinars](https://apidocs.goldcast.io/#tag/Webinars/operation/Retrieve%20webinars) | Webinar settings for each event. Child of `events`, limited to events whose type is `Webinar`. |
+| [tracks](https://apidocs.goldcast.io/#tag/Tracks/operation/List%20tracks) | Tracks associated with your events. |
+| [agenda_items](https://apidocs.goldcast.io/#tag/Agenda-item/operation/List%20agenda%20item) | Agenda items associated with your events. |
+| [discussion_groups](https://apidocs.goldcast.io/#tag/Discussion-groups/operation/List%20discussion%20groups) | Discussion groups associated with your events. |
 
-- [organizations](https://apidocs.goldcast.io/#tag/Organization/operation/List%20organization)
+The connector requests list endpoints with `limit`/`offset` pagination, 100 records per page. The `webinars` stream is scoped to webinar-type events because the Goldcast webinars endpoint returns an error for other event types.
 
-- [events](https://apidocs.goldcast.io/#tag/Event/operation/List%20events)
+### The `props` field in `event_members`
 
-- [event_members](https://apidocs.goldcast.io/#tag/Event-members/operation/List%20event%20members)
+Each `event_members` record has a `props` object that holds the registration form fields for that registrant, such as UTM parameters or job title. Goldcast lets every workspace define its own registration fields, so the connector doesn't declare a fixed set of properties inside `props`. It syncs `props` as a schemaless object that contains whatever fields your workspace collects.
 
-This is a child stream of the events stream representing users associated to events.
+How `props` lands in your destination depends on the destination:
 
-- [webinars](https://apidocs.goldcast.io/#tag/Webinars/operation/Retrieve%20webinars)
+- Database and data lake destinations store `props` as a single JSON value with every field intact.
+- S3 and GCS destinations writing Avro or Parquet files store `props` as a JSON string. To read individual fields, parse that string in your query engine instead of addressing `props.<field>` as a nested column.
 
-This is a child stream of the events stream, scoped to webinar-type events only.
-
-- [tracks](https://apidocs.goldcast.io/#tag/Tracks/operation/List%20tracks)
-
-- [agenda_items](https://apidocs.goldcast.io/#tag/Agenda-item/operation/List%20agenda%20item)
-
-- [discussion_groups](https://apidocs.goldcast.io/#tag/Discussion-groups/operation/List%20discussion%20groups)
-
-The connector requests list endpoints with `limit`/`offset` pagination, 100 records per page.
+Before version 1.0.0, the connector declared eleven fixed fields inside `props`, and Avro and Parquet files silently dropped any other registration field. If you're upgrading from an earlier version, see the [migration guide](goldcast-migrations).
 
 ## IP allow list
 

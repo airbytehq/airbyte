@@ -395,53 +395,7 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="AccountsSearchResult"></a>
-
-`AccountsSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `AirbyteSearchResult[ContactsSearchData](**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="ContactsSearchResult"></a>
-
-`ContactsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -473,53 +427,7 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="LeadsSearchResult"></a>
-
-`LeadsSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `AirbyteSearchResult[OpportunitiesSearchData](**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="OpportunitiesSearchResult"></a>
-
-`OpportunitiesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -575,29 +483,6 @@ Classes
     * typing.Generic
 
 `AirbyteSearchResult[TasksSearchData](**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="TasksSearchResult"></a>
-
-`TasksSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -3729,6 +3614,131 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="AccountsSearchResult"></a>
+
+`AccountsSearchResult(**data: Any)`
+:   Response envelope with data only.
+    
+    Used for actions that return data without metadata.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="ContactsSearchResult"></a>
+
+`ContactsSearchResult(**data: Any)`
+:   Response envelope with data only.
+    
+    Used for actions that return data without metadata.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="LeadsSearchResult"></a>
+
+`LeadsSearchResult(**data: Any)`
+:   Response envelope with data only.
+    
+    Used for actions that return data without metadata.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="OpportunitiesSearchResult"></a>
+
+`OpportunitiesSearchResult(**data: Any)`
+:   Response envelope with data only.
+    
+    Used for actions that return data without metadata.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="TasksSearchResult"></a>
+
+`TasksSearchResult(**data: Any)`
+:   Response envelope with data only.
+    
+    Used for actions that return data without metadata.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
 `SalesforceExecuteResult[SearchResult](**data: Any)`
 :   Response envelope with data only.
     
@@ -3752,9 +3762,9 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-<a id="AccountsApiSearchResult"></a>
+<a id="EventsSearchResult"></a>
 
-`AccountsApiSearchResult(**data: Any)`
+`EventsSearchResult(**data: Any)`
 :   Response envelope with data only.
     
     Used for actions that return data without metadata.
@@ -3777,9 +3787,9 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-<a id="ContactsApiSearchResult"></a>
+<a id="CampaignsSearchResult"></a>
 
-`ContactsApiSearchResult(**data: Any)`
+`CampaignsSearchResult(**data: Any)`
 :   Response envelope with data only.
     
     Used for actions that return data without metadata.
@@ -3802,9 +3812,9 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-<a id="LeadsApiSearchResult"></a>
+<a id="CasesSearchResult"></a>
 
-`LeadsApiSearchResult(**data: Any)`
+`CasesSearchResult(**data: Any)`
 :   Response envelope with data only.
     
     Used for actions that return data without metadata.
@@ -3827,134 +3837,9 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-<a id="OpportunitiesApiSearchResult"></a>
+<a id="NotesSearchResult"></a>
 
-`OpportunitiesApiSearchResult(**data: Any)`
-:   Response envelope with data only.
-    
-    Used for actions that return data without metadata.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="TasksApiSearchResult"></a>
-
-`TasksApiSearchResult(**data: Any)`
-:   Response envelope with data only.
-    
-    Used for actions that return data without metadata.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="EventsApiSearchResult"></a>
-
-`EventsApiSearchResult(**data: Any)`
-:   Response envelope with data only.
-    
-    Used for actions that return data without metadata.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="CampaignsApiSearchResult"></a>
-
-`CampaignsApiSearchResult(**data: Any)`
-:   Response envelope with data only.
-    
-    Used for actions that return data without metadata.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="CasesApiSearchResult"></a>
-
-`CasesApiSearchResult(**data: Any)`
-:   Response envelope with data only.
-    
-    Used for actions that return data without metadata.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="NotesApiSearchResult"></a>
-
-`NotesApiSearchResult(**data: Any)`
+`NotesSearchResult(**data: Any)`
 :   Response envelope with data only.
     
     Used for actions that return data without metadata.

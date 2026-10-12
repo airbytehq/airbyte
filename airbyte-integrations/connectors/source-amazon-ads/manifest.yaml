@@ -68,7 +68,18 @@ definitions:
 
   report_creation_error_handler:
     type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: "Retry-After"
+        max_waiting_time_in_seconds: 900
     response_filters:
+      # See `basic_error_handler` for why the retryable filters must come first and why
+      # they carry no `error_message`: DefaultErrorHandler returns the first matching
+      # filter, and the body predicates below would otherwise FAIL a retryable status.
+      - http_codes: [429]
+        action: RATE_LIMITED
+      - http_codes: [500, 502, 503, 504]
+        action: RETRY
       - predicate: "{{ 'KDP authors do not have access to Sponsored Brands functionality' in response.details }}"
         action: FAIL
         failure_type: config_error
@@ -94,7 +105,15 @@ definitions:
   report_polling_error_handler:
     type: DefaultErrorHandler
     max_retries: 5
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: "Retry-After"
+        max_waiting_time_in_seconds: 900
     response_filters:
+      - http_codes: [429]
+        action: RATE_LIMITED
+      - http_codes: [500, 502, 503, 504]
+        action: RETRY
       - http_codes: [401]
         action: RETRY
         error_message: "Unauthorized error while report status checking. Known error. Please, retry the request or restart sync."
@@ -1131,6 +1150,10 @@ definitions:
               - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
                 action: IGNORE
                 error_message: "{{ response }}"
+              # Matches 401 on any page, so a 401 mid-pagination would truncate that profile's report. Accepted as unlikely.
+              - http_codes: [401]
+                action: IGNORE
+                error_message: "Amazon returned 401 Unauthorized from the Attribution API for this profile, so its remaining attribution data was skipped. This usually means Amazon Attribution is not enabled for the profile or your app lacks Attribution API access."
               - predicate: "{{ 'message' in response }}"
                 action: FAIL
                 error_message: "{{ response.message }}"
@@ -1220,6 +1243,10 @@ definitions:
               - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
                 action: IGNORE
                 error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
+              # Matches 401 on any page, so a 401 mid-pagination would truncate that profile's report. Accepted as unlikely.
+              - http_codes: [401]
+                action: IGNORE
+                error_message: "Amazon returned 401 Unauthorized from the Attribution API for this profile, so its remaining attribution data was skipped. This usually means Amazon Attribution is not enabled for the profile or your app lacks Attribution API access."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"
@@ -1306,6 +1333,10 @@ definitions:
               - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
                 action: IGNORE
                 error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
+              # Matches 401 on any page, so a 401 mid-pagination would truncate that profile's report. Accepted as unlikely.
+              - http_codes: [401]
+                action: IGNORE
+                error_message: "Amazon returned 401 Unauthorized from the Attribution API for this profile, so its remaining attribution data was skipped. This usually means Amazon Attribution is not enabled for the profile or your app lacks Attribution API access."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"
@@ -1392,6 +1423,10 @@ definitions:
               - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
                 action: IGNORE
                 error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
+              # Matches 401 on any page, so a 401 mid-pagination would truncate that profile's report. Accepted as unlikely.
+              - http_codes: [401]
+                action: IGNORE
+                error_message: "Amazon returned 401 Unauthorized from the Attribution API for this profile, so its remaining attribution data was skipped. This usually means Amazon Attribution is not enabled for the profile or your app lacks Attribution API access."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"

@@ -174,81 +174,9 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-<a id="IssueFieldsSearchResult"></a>
-
-`IssueFieldsSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 <a id="IssueWorklogsSearchResult"></a>
 
 `IssueWorklogsSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-<a id="IssuesSearchResult"></a>
-
-`IssuesSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-<a id="ProjectsSearchResult"></a>
-
-`ProjectsSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-<a id="UsersSearchResult"></a>
-
-`UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -752,7 +680,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['api_search', 'create', 'get', 'update', 'delete', 'list', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['search', 'create', 'get', 'update', 'delete', 'list', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -814,6 +742,88 @@ Classes
         Example:
             outline = await connector.read_skill_docs()
             details = await connector.read_skill_docs(section="entity:contacts")
+
+<a id="IssuesSearchResult"></a>
+
+`IssuesSearchResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="ProjectsSearchResult"></a>
+
+`ProjectsSearchResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="IssueFieldsSearchResult"></a>
+
+`IssueFieldsSearchResult(**data: Any)`
+:   Response envelope with data only.
+    
+    Used for actions that return data without metadata.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="UsersSearchResult"></a>
+
+`UsersSearchResult(**data: Any)`
+:   Response envelope with data only.
+    
+    Used for actions that return data without metadata.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
 
 <a id="JiraOAuthCredentials"></a>
 

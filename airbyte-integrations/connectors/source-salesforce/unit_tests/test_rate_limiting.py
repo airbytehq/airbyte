@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 import requests_mock
-from requests.exceptions import ChunkedEncodingError
+from requests.exceptions import ChunkedEncodingError, InvalidURL
 from source_salesforce.api import (
     _LOGIN_DEDUP_SECONDS,
     _REFRESH_FAILURE_BACKOFF_SECONDS,
@@ -16,10 +16,11 @@ from source_salesforce.api import (
     Salesforce,
     SalesforceTokenProvider,
 )
-from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler
+from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
 
 
@@ -406,6 +407,28 @@ class SalesforceErrorHandlerTest(TestCase):
         error_resolution = self._error_handler.interpret_response(ChunkedEncodingError())
         assert error_resolution.response_action == ResponseAction.RETRY
 
+    def test_given_invalid_url_exception_when_interpret_response_then_retry_with_exception_in_message(self) -> None:
+        error_resolution = SalesforceErrorHandler(stream_name="a_stream").interpret_response(
+            InvalidURL("Invalid URL 'x': No host supplied")
+        )
+
+        assert error_resolution.response_action == ResponseAction.RETRY
+        assert error_resolution.failure_type == FailureType.system_error
+        assert error_resolution.error_message == "Request for stream 'a_stream' failed with InvalidURL: Invalid URL 'x': No host supplied"
+
+    def test_given_generic_request_exception_when_interpret_response_then_retry(self) -> None:
+        error_resolution = SalesforceErrorHandler(stream_name="a_stream").interpret_response(requests.exceptions.RequestException("boom"))
+
+        assert error_resolution.response_action == ResponseAction.RETRY
+        assert error_resolution.failure_type == FailureType.system_error
+        assert error_resolution.error_message == "Request for stream 'a_stream' failed with RequestException: boom"
+
+    def test_given_none_when_interpret_response_then_retry(self) -> None:
+        error_resolution = SalesforceErrorHandler(stream_name="a_stream").interpret_response(None)
+
+        assert error_resolution.response_action == ResponseAction.RETRY
+        assert error_resolution.failure_type == FailureType.system_error
+
     def test_given_401_invalid_session_id_with_token_provider_when_interpret_response_then_retry_and_refresh(self) -> None:
         token_provider = MagicMock()
         token_provider.credentials_permanently_failed = False
@@ -462,3 +485,45 @@ class SalesforceErrorHandlerTest(TestCase):
 
     def _url_for_job_creation(self) -> str:
         return f"{_ANY_BASE_URL}/services/data/{API_VERSION}/jobs/query"
+
+
+class DefaultBackoffHandlerTest(TestCase):
+    _URL = "https://example.com/non-job-endpoint"
+
+    def test_gives_up_on_http_400_without_crashing(self) -> None:
+        backoff_exception = self._create_backoff_exception(400)
+        call_count = 0
+
+        @default_backoff_handler(max_tries=2)
+        def request() -> None:
+            nonlocal call_count
+            call_count += 1
+            raise backoff_exception
+
+        with pytest.raises(DefaultBackoffException):
+            request()
+
+        assert call_count == 1
+
+    def test_retries_http_500(self) -> None:
+        backoff_exception = self._create_backoff_exception(500)
+        call_count = 0
+
+        @default_backoff_handler(max_tries=2)
+        def request() -> None:
+            nonlocal call_count
+            call_count += 1
+            raise backoff_exception
+
+        with patch("backoff._sync.time.sleep"):
+            with pytest.raises(DefaultBackoffException):
+                request()
+
+        assert call_count == 2
+
+    def _create_backoff_exception(self, status_code: int) -> DefaultBackoffException:
+        with requests_mock.Mocker() as mocker:
+            mocker.get(self._URL, status_code=status_code, json=[{"errorCode": "X", "message": "y"}])
+            response = requests.get(self._URL)
+
+        return DefaultBackoffException(request=response.request, response=response, error_message="e")

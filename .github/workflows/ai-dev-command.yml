@@ -149,7 +149,7 @@ jobs:
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
       - name: Run dev playbook
-        uses: aaronsteers/devin-action@main
+        uses: airbytehq/devin-action@main
         with:
           comment-id: ${{ steps.resolve.outputs.comment_id }}
           issue-number: ${{ steps.resolve.outputs.issue_number }}

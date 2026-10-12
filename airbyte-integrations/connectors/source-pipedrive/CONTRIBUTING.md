@@ -24,7 +24,9 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 3. **Date Fields Are Typed to Their Actual Shape** -- RFC3339 values (API v2, `leads`, `lead_labels`)
    are `date-time` + `timestamp_with_timezone`; `YYYY-MM-DD HH:MM:SS` values (API v1) are `date-time` +
    `timestamp_without_timezone`; `HH:MM` fields such as `activities.due_time` stay untyped. Adding
-   or changing a `format` is a breaking change. Details in AGENTS.md section 3.
+   or changing a `format` is a breaking change. Details in AGENTS.md section 3. Declared JSON types follow
+   Pipedrive's OpenAPI: lead ids are strings, numbers the reference restricts to whole values (0/1 flags,
+   `visible_to`, epoch milliseconds) stay `integer`, and a type change is a breaking change.
 4. **Authentication Is a Query Parameter, Not an Authenticator** -- the API token rides in the URL
    and scopes every stream to one user's visibility. OAuth is owned by
    [airbyte-internal-issues#17201](https://github.com/airbytehq/airbyte-internal-issues/issues/17201);

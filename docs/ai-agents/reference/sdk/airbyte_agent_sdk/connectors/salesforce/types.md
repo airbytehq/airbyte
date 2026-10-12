@@ -155,20 +155,6 @@ Classes
     `website: Any`
     :   Website URL for the account
 
-<a id="AccountsApiSearchParams"></a>
-
-`AccountsApiSearchParams(*args, **kwargs)`
-:   Parameters for accounts.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `q: str`
-    :   The type of the None singleton.
-
 <a id="AccountsArrayContainsCondition"></a>
 
 `AccountsArrayContainsCondition(*args, **kwargs)`
@@ -695,6 +681,20 @@ Classes
     `website: str | None`
     :   Website URL for the account
 
+<a id="AccountsSearchParams"></a>
+
+`AccountsSearchParams(*args, **kwargs)`
+:   Parameters for accounts.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `q: str`
+    :   The type of the None singleton.
+
 <a id="AccountsSearchQuery"></a>
 
 `AccountsSearchQuery(*args, **kwargs)`
@@ -1061,20 +1061,6 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
-<a id="CampaignsApiSearchParams"></a>
-
-`CampaignsApiSearchParams(*args, **kwargs)`
-:   Parameters for campaigns.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `q: str`
-    :   The type of the None singleton.
-
 <a id="CampaignsCreateParams"></a>
 
 `CampaignsCreateParams(*args, **kwargs)`
@@ -1173,6 +1159,20 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="CampaignsSearchParams"></a>
+
+`CampaignsSearchParams(*args, **kwargs)`
+:   Parameters for campaigns.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `q: str`
+    :   The type of the None singleton.
+
 <a id="CampaignsUpdateParams"></a>
 
 `CampaignsUpdateParams(*args, **kwargs)`
@@ -1227,20 +1227,6 @@ Classes
     :   The type of the None singleton.
 
     `type: str`
-    :   The type of the None singleton.
-
-<a id="CasesApiSearchParams"></a>
-
-`CasesApiSearchParams(*args, **kwargs)`
-:   Parameters for cases.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `q: str`
     :   The type of the None singleton.
 
 <a id="CasesCreateParams"></a>
@@ -1334,6 +1320,20 @@ Classes
 
 `CasesListParams(*args, **kwargs)`
 :   Parameters for cases.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `q: str`
+    :   The type of the None singleton.
+
+<a id="CasesSearchParams"></a>
+
+`CasesSearchParams(*args, **kwargs)`
+:   Parameters for cases.search operation
 
     ### Ancestors (in MRO)
 
@@ -1535,20 +1535,6 @@ Classes
 
     `title: Any`
     :   Job title of the contact
-
-<a id="ContactsApiSearchParams"></a>
-
-`ContactsApiSearchParams(*args, **kwargs)`
-:   Parameters for contacts.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `q: str`
-    :   The type of the None singleton.
 
 <a id="ContactsArrayContainsCondition"></a>
 
@@ -2049,6 +2035,20 @@ Classes
     `title: str | None`
     :   Job title of the contact
 
+<a id="ContactsSearchParams"></a>
+
+`ContactsSearchParams(*args, **kwargs)`
+:   Parameters for contacts.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `q: str`
+    :   The type of the None singleton.
+
 <a id="ContactsSearchQuery"></a>
 
 `ContactsSearchQuery(*args, **kwargs)`
@@ -2365,20 +2365,6 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
-<a id="EventsApiSearchParams"></a>
-
-`EventsApiSearchParams(*args, **kwargs)`
-:   Parameters for events.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `q: str`
-    :   The type of the None singleton.
-
 <a id="EventsCreateParams"></a>
 
 `EventsCreateParams(*args, **kwargs)`
@@ -2458,6 +2444,20 @@ Classes
 
 `EventsListParams(*args, **kwargs)`
 :   Parameters for events.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `q: str`
+    :   The type of the None singleton.
+
+<a id="EventsSearchParams"></a>
+
+`EventsSearchParams(*args, **kwargs)`
+:   Parameters for events.search operation
 
     ### Ancestors (in MRO)
 
@@ -2671,20 +2671,6 @@ Classes
 
     `website: Any`
     :   Website URL for the lead's company
-
-<a id="LeadsApiSearchParams"></a>
-
-`LeadsApiSearchParams(*args, **kwargs)`
-:   Parameters for leads.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `q: str`
-    :   The type of the None singleton.
 
 <a id="LeadsArrayContainsCondition"></a>
 
@@ -3251,6 +3237,20 @@ Classes
     `website: str | None`
     :   Website URL for the lead's company
 
+<a id="LeadsSearchParams"></a>
+
+`LeadsSearchParams(*args, **kwargs)`
+:   Parameters for leads.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `q: str`
+    :   The type of the None singleton.
+
 <a id="LeadsSearchQuery"></a>
 
 `LeadsSearchQuery(*args, **kwargs)`
@@ -3585,20 +3585,6 @@ Classes
     `website: str`
     :   The type of the None singleton.
 
-<a id="NotesApiSearchParams"></a>
-
-`NotesApiSearchParams(*args, **kwargs)`
-:   Parameters for notes.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `q: str`
-    :   The type of the None singleton.
-
 <a id="NotesCreateParams"></a>
 
 `NotesCreateParams(*args, **kwargs)`
@@ -3660,6 +3646,20 @@ Classes
 
 `NotesListParams(*args, **kwargs)`
 :   Parameters for notes.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `q: str`
+    :   The type of the None singleton.
+
+<a id="NotesSearchParams"></a>
+
+`NotesSearchParams(*args, **kwargs)`
+:   Parameters for notes.search operation
 
     ### Ancestors (in MRO)
 
@@ -3828,20 +3828,6 @@ Classes
 
     `type_: Any`
     :   Type of opportunity (e.g., New Business, Existing Business)
-
-<a id="OpportunitiesApiSearchParams"></a>
-
-`OpportunitiesApiSearchParams(*args, **kwargs)`
-:   Parameters for opportunities.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `q: str`
-    :   The type of the None singleton.
 
 <a id="OpportunitiesArrayContainsCondition"></a>
 
@@ -4335,6 +4321,20 @@ Classes
 
     `type_: str | None`
     :   Type of opportunity (e.g., New Business, Existing Business)
+
+<a id="OpportunitiesSearchParams"></a>
+
+`OpportunitiesSearchParams(*args, **kwargs)`
+:   Parameters for opportunities.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `q: str`
+    :   The type of the None singleton.
 
 <a id="OpportunitiesSearchQuery"></a>
 
@@ -5463,20 +5463,6 @@ Classes
     `who_id: Any`
     :   ID of the related person (Contact or Lead)
 
-<a id="TasksApiSearchParams"></a>
-
-`TasksApiSearchParams(*args, **kwargs)`
-:   Parameters for tasks.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `q: str`
-    :   The type of the None singleton.
-
 <a id="TasksArrayContainsCondition"></a>
 
 `TasksArrayContainsCondition(*args, **kwargs)`
@@ -5951,6 +5937,20 @@ Classes
 
     `who_id: str | None`
     :   ID of the related person (Contact or Lead)
+
+<a id="TasksSearchParams"></a>
+
+`TasksSearchParams(*args, **kwargs)`
+:   Parameters for tasks.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `q: str`
+    :   The type of the None singleton.
 
 <a id="TasksSearchQuery"></a>
 
