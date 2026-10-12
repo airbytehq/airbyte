@@ -29,7 +29,8 @@ def test_paginated_alerting_streams_follow_cursor(stream_name, page_size):
     ]
 
     with requests_mock.Mocker() as mocker:
-        mocker.get(f"{_BASE_URL}/v2/{stream_name}", responses)
+        api_version = "v3" if stream_name == "alert_routes" else "v2"
+        mocker.get(f"{_BASE_URL}/{api_version}/{stream_name}", responses)
         output = _read_stream(stream_name)
         requests_made = mocker.request_history
 
@@ -55,7 +56,7 @@ def test_alert_routes_stops_after_trailing_empty_page():
     ]
 
     with requests_mock.Mocker() as mocker:
-        mocker.get(f"{_BASE_URL}/v2/alert_routes", responses)
+        mocker.get(f"{_BASE_URL}/v3/alert_routes", responses)
         output = _read_stream("alert_routes")
         requests_made = mocker.request_history
 

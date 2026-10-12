@@ -723,7 +723,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/alert_routes
+          path: /v3/alert_routes
           http_method: GET
         record_selector:
           type: RecordSelector
