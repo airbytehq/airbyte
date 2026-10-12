@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.16 — 2026-10-12
+
+[#PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) — The connection check's zero-tables error now names the databases or schemas that were searched and the usual causes (wrong name, empty database, missing permissions, or table filters), and the unqueryable-tables error suggests checking SELECT permission.
+
 ### 1.1.15 — 2026-10-08
 
 [#88175](https://github.com/airbytehq/airbyte/pull/88175) — Restore null-safe JDBC `DateAccessor`/`TimestampAccessor` getters and revert `OffsetDateTimeFieldType` to `ObjectGetter`, removing the Postgres-specific `infinity`/`-infinity` checks from the shared accessors (source-postgres handles them in its own field types). MySQL zero dates read with `zeroDateTimeBehavior=convertToNull` now become null without a WARN stack trace or a `RETRIEVAL_FAILURE_TOTAL` change.

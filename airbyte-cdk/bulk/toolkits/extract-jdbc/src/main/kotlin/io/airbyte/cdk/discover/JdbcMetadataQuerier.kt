@@ -50,6 +50,8 @@ class JdbcMetadataQuerier(
     override fun streamNamespaces(): List<String> =
         memoizedTableNames.mapNotNull { it.namespace() }.distinct()
 
+    override fun searchedNamespaces(): List<String> = effectiveNamespaces.sorted()
+
     override fun streamNames(streamNamespace: String?): List<StreamIdentifier> =
         memoizedTableNames
             .filter { it.namespace() == streamNamespace }

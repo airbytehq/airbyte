@@ -81,14 +81,38 @@ class CheckOperation<T : ConfigurationSpecification>(
             }
         }
         if (n == 0) {
-            throw ConfigErrorException("Discovered zero tables.")
+            throw ConfigErrorException(zeroTablesMessage(metadataQuerier.searchedNamespaces()))
         } else {
-            throw ConfigErrorException("Unable to query any of the $n discovered table(s).")
+            throw ConfigErrorException(
+                "Unable to query any of the $n discovered table(s). Check that the configured " +
+                    "user has SELECT permission on the tables to sync."
+            )
         }
     }
 
     companion object {
         const val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String =
             "Could not connect with provided configuration. Error: %s"
+
+        const val MAX_NAMESPACES_IN_MESSAGE: Int = 5
+
+        fun zeroTablesMessage(searchedNamespaces: List<String>): String {
+            if (searchedNamespaces.isEmpty()) {
+                return "Discovered zero tables. Check that the configured user has permission " +
+                    "to list and select tables, and that the database or schema selection and " +
+                    "table filters, if any, don't exclude all of them."
+            }
+            val shown: String =
+                searchedNamespaces.take(MAX_NAMESPACES_IN_MESSAGE).joinToString(", ") { "'$it'" }
+            val more: String =
+                if (searchedNamespaces.size > MAX_NAMESPACES_IN_MESSAGE) {
+                    " and ${searchedNamespaces.size - MAX_NAMESPACES_IN_MESSAGE} more"
+                } else {
+                    ""
+                }
+            return "Discovered zero tables in $shown$more. Check that the database or schema " +
+                "name is correct and contains tables, that the configured user has permission " +
+                "to list and select them, and that table filters, if any, don't exclude all of them."
+        }
     }
 }
