@@ -832,7 +832,9 @@ streams:
         # A Start Date before 1970 would send negative start times, and year 0001 overflows the window math.
         min_datetime: "0"
         max_datetime: "{{ now_utc().timestamp() | int }}"
-      lookback_window: PT1H
+      # Customer.io can record an activity with a timestamp well before it processes it (anonymous merges, backdated
+      # events, processing delays), so every sync re-reads activities_lookback_days (default 7) before the cursor.
+      lookback_window: "P{{ config['activities_lookback_days'] if config.get('activities_lookback_days') is not none else 7 }}D"
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
@@ -1088,7 +1090,8 @@ streams:
         $ref: "#/schemas/esp_suppressions"
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 3
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 10
 api_budget:
   type: HTTPAPIBudget
   policies:
@@ -1155,6 +1158,20 @@ spec:
         minimum: 1
         maximum: 180
         order: 3
+      activities_lookback_days:
+        type: integer
+        title: Activities Lookback Window (Days)
+        description: >-
+          How many days before the last synced activity each incremental sync of the activities stream reads
+          again. Customer.io can record an activity with a time well before it processes it, for example when it
+          merges an anonymous person's events into a profile or receives a backdated event, and an incremental
+          sync skips activities that arrive later than this window. Customer.io keeps 30 days of activities. A
+          longer window skips fewer late activities, but every sync then requests one page per 100 activities
+          in the window. Enter 1 to 30 days. Defaults to 7.
+        default: 7
+        minimum: 1
+        maximum: 30
+        order: 4
       esp_suppression_domains:
         type: array
         title: Sending Domains for ESP Suppressions
@@ -1169,7 +1186,20 @@ spec:
           type: string
           pattern: ^[a-z0-9-]+(\.[a-z0-9-]+)+$
         uniqueItems: true
-        order: 4
+        order: 5
+      # At least 2: with one worker the CDK runs the partition generator alone, so a stream with about 10,000
+      # partitions (people, at 100 IDs per partition) waits forever for a free worker.
+      num_workers:
+        type: integer
+        title: Number of Concurrent Workers
+        description: >-
+          How many requests Airbyte sends to Customer.io at the same time, across all streams. They all count
+          against the 10 requests per second Customer.io allows for your workspace, so beyond about 5 a sync
+          rarely gets faster. Enter 2 to 10. Defaults to 3.
+        default: 3
+        minimum: 2
+        maximum: 10
+        order: 6
     additionalProperties: true
 metadata:
   autoImportSchema:

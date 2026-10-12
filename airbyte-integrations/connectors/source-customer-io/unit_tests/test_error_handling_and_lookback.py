@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 """Unit tests for the trimmed App API key, the 401/403 messages, `Retry-After` backoff, 30 retries, the 10 requests per second
-`api_budget`, the `campaigns_actions` 404 skip, the Start Date cap at now and the one-hour lookback."""
+`api_budget`, `num_workers`, the `campaigns_actions` 404 skip, the Start Date cap at now and the one-hour lookback."""
 
 import logging
 import time
@@ -277,6 +277,14 @@ def test_api_budget_holds_the_eleventh_request_of_a_second(region, host):
     assert len(output.records) == 10
     assert mocker.call_count == 11
     assert budget_time.sleep.called, "expected the api_budget to hold the 11th request"
+
+
+@pytest.mark.parametrize("num_workers, expected", [(None, 3), (2, 2), (10, 10)], ids=["default", "2", "10"])
+def test_num_workers_sets_the_concurrency_level(num_workers, expected):
+    """`num_workers` sets how many streams are read at the same time; without it the connector keeps 3 workers."""
+    config = _BASE_CONFIG if num_workers is None else {**_BASE_CONFIG, "num_workers": num_workers}
+    # The concurrency level is the size of the concurrent source's thread pool.
+    assert get_source(config)._concurrent_source._threadpool._threadpool._max_workers == expected
 
 
 def test_pasted_key_with_whitespace_is_trimmed():
