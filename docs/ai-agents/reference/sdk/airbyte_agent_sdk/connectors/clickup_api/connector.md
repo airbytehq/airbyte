@@ -249,7 +249,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['get', 'list', 'api_search', 'create', 'update', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['get', 'list', 'search', 'create', 'update', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -760,36 +760,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, team_id: str, search: str | None = None, statuses: list[str] | None = None, assignees: list[str] | None = None, tags: list[str] | None = None, priority: int | None = None, due_date_gt: int | None = None, due_date_lt: int | None = None, date_created_gt: int | None = None, date_created_lt: int | None = None, date_updated_gt: int | None = None, date_updated_lt: int | None = None, custom_fields: list[dict[str, Any]] | None = None, include_closed: bool | None = None, page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResultWithMeta[list[Task], TasksApiSearchResultMeta]`
-    :   View the tasks that meet specific criteria from a workspace. Supports free-text search
-        and structured filters including status, assignee, tags, priority, and date ranges.
-        Responses are limited to 100 tasks per page.
-        
-        
-                Args:
-                    team_id: The workspace ID to search within
-                    search: Free-text search across task name, description, and custom field text
-                    statuses: Filter by status names (e.g. "in progress", "done")
-                    assignees: Filter by user IDs
-                    tags: Filter by tag names
-                    priority: Filter by priority: 1=Urgent, 2=High, 3=Normal, 4=Low
-                    due_date_gt: Due date after (Unix ms)
-                    due_date_lt: Due date before (Unix ms)
-                    date_created_gt: Created after (Unix ms)
-                    date_created_lt: Created before (Unix ms)
-                    date_updated_gt: Updated after (Unix ms)
-                    date_updated_lt: Updated before (Unix ms)
-                    custom_fields: JSON array of custom field filters. Each object: \{"field_id": "&lt;UUID&gt;", "operator": "&lt;OP&gt;", "value": "&lt;DATA&gt;"\}.
-        Operators: = (contains), == (exact), &lt;, &lt;=, &gt;, >=, !=, !==, IS NULL, IS NOT NULL, RANGE, ANY, ALL, NOT ANY, NOT ALL
-        
-                    include_closed: Include closed tasks (excluded by default)
-                    page: Page number (0-indexed), results capped at 100/page
-                    **kwargs: Additional parameters
-        
-                Returns:
-                    TasksApiSearchResult
-
-    `context_store_search(self, query: TasksSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[TasksSearchData]`
+    `context_store_search(self, query: TasksSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResultWithMeta[list[Task], TasksSearchResultMeta]`
     :   Search tasks records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -858,6 +829,35 @@ Classes
         
         Returns:
             TasksListResult
+
+    `search(self, team_id: str, search: str | None = None, statuses: list[str] | None = None, assignees: list[str] | None = None, tags: list[str] | None = None, priority: int | None = None, due_date_gt: int | None = None, due_date_lt: int | None = None, date_created_gt: int | None = None, date_created_lt: int | None = None, date_updated_gt: int | None = None, date_updated_lt: int | None = None, custom_fields: list[dict[str, Any]] | None = None, include_closed: bool | None = None, page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResultWithMeta[list[Task], TasksSearchResultMeta]`
+    :   View the tasks that meet specific criteria from a workspace. Supports free-text search
+        and structured filters including status, assignee, tags, priority, and date ranges.
+        Responses are limited to 100 tasks per page.
+        
+        
+                Args:
+                    team_id: The workspace ID to search within
+                    search: Free-text search across task name, description, and custom field text
+                    statuses: Filter by status names (e.g. "in progress", "done")
+                    assignees: Filter by user IDs
+                    tags: Filter by tag names
+                    priority: Filter by priority: 1=Urgent, 2=High, 3=Normal, 4=Low
+                    due_date_gt: Due date after (Unix ms)
+                    due_date_lt: Due date before (Unix ms)
+                    date_created_gt: Created after (Unix ms)
+                    date_created_lt: Created before (Unix ms)
+                    date_updated_gt: Updated after (Unix ms)
+                    date_updated_lt: Updated before (Unix ms)
+                    custom_fields: JSON array of custom field filters. Each object: \{"field_id": "&lt;UUID&gt;", "operator": "&lt;OP&gt;", "value": "&lt;DATA&gt;"\}.
+        Operators: = (contains), == (exact), &lt;, &lt;=, &gt;, >=, !=, !==, IS NULL, IS NOT NULL, RANGE, ANY, ALL, NOT ANY, NOT ALL
+        
+                    include_closed: Include closed tasks (excluded by default)
+                    page: Page number (0-indexed), results capped at 100/page
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    TasksSearchResult
 
 <a id="TeamsQuery"></a>
 

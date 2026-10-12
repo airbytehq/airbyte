@@ -14,7 +14,7 @@ The airbyte-agent-sdk repository ships four skills under `.codex/skills/`:
 
 | Skill | What it teaches Codex |
 | ----- | --------------------- |
-| `bootstrapping-agent` | Wiring a single Airbyte connector into a PydanticAI or Claude SDK agent, including `AirbyteAuthConfig`, connector initialization, and `build_connector_tools`. |
+| `bootstrapping-agent` | Wiring a single Airbyte connector into a PydanticAI, Claude SDK, or other agent, including `AirbyteAuthConfig`, connector initialization, `build_connector_tools` for prebuilt tools, and `agent_tool` for custom tool bodies. |
 | `building-multi-connector-agent` | Scaffolding a complete agent with multiple Airbyte connectors, composing tools, and writing the run loop. |
 | `discovering-connectors` | Enumerating the available Airbyte connectors and exploring a connector's entities, actions, and schemas at runtime. |
 | `airbyte-sdk-reference` | Reference material for the public SDK API, including `configure()`, `connect()`, `Workspace`, `build_connector_tools`, `agent_tool`, `list_entities()`, and `entity_schema()`, plus PydanticAI and Claude SDK code patterns. |

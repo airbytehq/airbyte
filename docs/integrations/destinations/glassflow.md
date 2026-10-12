@@ -1,5 +1,15 @@
 # GlassFlow
 
+:::warning
+
+## Deprecation Notice
+
+The GlassFlow destination connector is archived and is no longer available in the Airbyte connector catalog. GlassFlow's legacy serverless pipeline product [is no longer available](https://www.glassflow.dev/blog/glassflow-vs-other-serverless-solutions), and the `api.glassflow.dev` host used by this connector no longer resolves.
+
+GlassFlow's current products do not provide a compatible replacement for this connector's pipeline publishing API. Existing pipeline IDs and access tokens cannot restore connectivity. Choose another supported destination or evaluate a new integration using [GlassFlow's current documentation](https://docs.glassflow.ai/).
+
+:::
+
 ## Overview
 
 The GlassFlow destination allows you to send/stream data to a GlassFlow pipeline. GlassFlow is 
@@ -48,6 +58,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date              | Pull Request                                              | Subject                                         |
 |:--------|:------------------| :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.1.7 | 2026-10-07 | [88287](https://github.com/airbytehq/airbyte/pull/88287) | Archive connector for the discontinued GlassFlow serverless pipeline API |
 | 0.1.6 | 2025-05-03 | [59349](https://github.com/airbytehq/airbyte/pull/59349) | Update dependencies |
 | 0.1.5 | 2025-04-26 | [58697](https://github.com/airbytehq/airbyte/pull/58697) | Update dependencies |
 | 0.1.4 | 2025-04-19 | [58260](https://github.com/airbytehq/airbyte/pull/58260) | Update dependencies |

@@ -1,5 +1,5 @@
 ---
-products: cloud
+products: cloud-plus
 ---
 
 # Single sign on (SSO)
@@ -11,6 +11,10 @@ import CaptureHarFile from '../_partials/_capture-har-file.md';
 Use Open ID Connect (OIDC) to log into Airbyte using an Identity Provider (IdP) like Okta or Entra ID/Active Directory.
 
 SCIM provisioning is an add-on to SSO. After you set up SSO, see [SCIM provisioning](scim) to configure user and group provisioning.
+
+:::note
+SSO isn't available on the Cloud Standard plan. If your Standard organization already uses SSO, you keep it as long as you remain a paying customer. To compare plans, see [Airbyte's pricing page](https://airbyte.com/pricing).
+:::
 
 ## Set up single sign on
 

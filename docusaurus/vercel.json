@@ -1,6 +1,12 @@
 {
   "trailingSlash": false,
   "cleanUrls": true,
+  "git": {
+    "deploymentEnabled": {
+      "**": false,
+      "master": true
+    }
+  },
   "redirects": [
     {
       "source": "/ai-agents/interfaces/ui/automations",
@@ -234,12 +240,22 @@
     },
     {
       "source": "/developers/mcp-servers/pyairbyte-mcp",
-      "destination": "/community/mcp-servers/replication-mcp",
+      "destination": "/platform/airbyte-mcp",
       "statusCode": 301
     },
     {
       "source": "/community/mcp-servers/pyairbyte-mcp",
-      "destination": "/community/mcp-servers/replication-mcp",
+      "destination": "/platform/airbyte-mcp",
+      "statusCode": 301
+    },
+    {
+      "source": "/community/mcp-servers/replication-mcp",
+      "destination": "/platform/airbyte-mcp",
+      "statusCode": 301
+    },
+    {
+      "source": "/community/mcp-servers/replication-mcp-advanced",
+      "destination": "/platform/airbyte-mcp",
       "statusCode": 301
     },
     {

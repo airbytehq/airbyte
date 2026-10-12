@@ -9,20 +9,20 @@ The Salesforce connector supports the following entities and actions.
 | Entity | Actions |
 |--------|---------|
 | Sobjects | [List](#sobjects-list), [Create](#sobjects-create), [Get](#sobjects-get), [Update](#sobjects-update), [Delete](#sobjects-delete) |
-| Accounts | [List](#accounts-list), [Create](#accounts-create), [Get](#accounts-get), [Update](#accounts-update), [Delete](#accounts-delete), [API Search](#accounts-api-search), [Context Store Search](#accounts-context-store-search) |
-| Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [Delete](#contacts-delete), [API Search](#contacts-api-search), [Context Store Search](#contacts-context-store-search) |
-| Leads | [List](#leads-list), [Create](#leads-create), [Get](#leads-get), [Update](#leads-update), [Delete](#leads-delete), [API Search](#leads-api-search), [Context Store Search](#leads-context-store-search) |
-| Opportunities | [List](#opportunities-list), [Create](#opportunities-create), [Get](#opportunities-get), [Update](#opportunities-update), [Delete](#opportunities-delete), [API Search](#opportunities-api-search), [Context Store Search](#opportunities-context-store-search) |
-| Tasks | [List](#tasks-list), [Create](#tasks-create), [Get](#tasks-get), [Update](#tasks-update), [Delete](#tasks-delete), [API Search](#tasks-api-search), [Context Store Search](#tasks-context-store-search) |
-| Events | [List](#events-list), [Create](#events-create), [Get](#events-get), [Update](#events-update), [Delete](#events-delete), [API Search](#events-api-search) |
-| Campaigns | [List](#campaigns-list), [Create](#campaigns-create), [Get](#campaigns-get), [Update](#campaigns-update), [Delete](#campaigns-delete), [API Search](#campaigns-api-search) |
-| Cases | [List](#cases-list), [Create](#cases-create), [Get](#cases-get), [Update](#cases-update), [Delete](#cases-delete), [API Search](#cases-api-search) |
-| Notes | [List](#notes-list), [Create](#notes-create), [Get](#notes-get), [Update](#notes-update), [Delete](#notes-delete), [API Search](#notes-api-search) |
+| Accounts | [List](#accounts-list), [Create](#accounts-create), [Get](#accounts-get), [Update](#accounts-update), [Delete](#accounts-delete), [Search](#accounts-search), [Context Store Search](#accounts-context-store-search), [Context Store SQL Query](#accounts-context-store-sql-query) |
+| Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [Delete](#contacts-delete), [Search](#contacts-search), [Context Store Search](#contacts-context-store-search), [Context Store SQL Query](#contacts-context-store-sql-query) |
+| Leads | [List](#leads-list), [Create](#leads-create), [Get](#leads-get), [Update](#leads-update), [Delete](#leads-delete), [Search](#leads-search), [Context Store Search](#leads-context-store-search), [Context Store SQL Query](#leads-context-store-sql-query) |
+| Opportunities | [List](#opportunities-list), [Create](#opportunities-create), [Get](#opportunities-get), [Update](#opportunities-update), [Delete](#opportunities-delete), [Search](#opportunities-search), [Context Store Search](#opportunities-context-store-search), [Context Store SQL Query](#opportunities-context-store-sql-query) |
+| Tasks | [List](#tasks-list), [Create](#tasks-create), [Get](#tasks-get), [Update](#tasks-update), [Delete](#tasks-delete), [Search](#tasks-search), [Context Store Search](#tasks-context-store-search), [Context Store SQL Query](#tasks-context-store-sql-query) |
+| Events | [List](#events-list), [Create](#events-create), [Get](#events-get), [Update](#events-update), [Delete](#events-delete), [Search](#events-search) |
+| Campaigns | [List](#campaigns-list), [Create](#campaigns-create), [Get](#campaigns-get), [Update](#campaigns-update), [Delete](#campaigns-delete), [Search](#campaigns-search) |
+| Cases | [List](#cases-list), [Create](#cases-create), [Get](#cases-get), [Update](#cases-update), [Delete](#cases-delete), [Search](#cases-search) |
+| Notes | [List](#notes-list), [Create](#notes-create), [Get](#notes-get), [Update](#notes-update), [Delete](#notes-delete), [Search](#notes-search) |
 | Content Versions | [List](#content-versions-list), [Get](#content-versions-get), [Download](#content-versions-download) |
 | Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download) |
 | Reports | [List](#reports-list), [Get](#reports-get) |
-| Users | [List](#users-list), [Create](#users-create), [Get](#users-get), [Update](#users-update), [Context Store Search](#users-context-store-search) |
-| Opportunity Stages | [List](#opportunity-stages-list), [Get](#opportunity-stages-get), [Context Store Search](#opportunity-stages-context-store-search) |
+| Users | [List](#users-list), [Create](#users-create), [Get](#users-get), [Update](#users-update), [Context Store Search](#users-context-store-search), [Context Store SQL Query](#users-context-store-sql-query) |
+| Opportunity Stages | [List](#opportunity-stages-list), [Get](#opportunity-stages-get), [Context Store Search](#opportunity-stages-context-store-search), [Context Store SQL Query](#opportunity-stages-context-store-sql-query) |
 | Query | [List](#query-list) |
 
 ## Sobjects
@@ -750,7 +750,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Accounts API Search
+### Accounts Search
 
 Search for accounts using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields and objects.
@@ -764,7 +764,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "salesforce",
   "entity": "accounts",
-  "action": "api_search",
+  "action": "search",
   "params": {
     "q": "<str>"
   }
@@ -774,7 +774,7 @@ airbyte-agent connectors execute --json '{
 #### Python SDK
 
 ```python
-await salesforce.accounts.api_search(
+await salesforce.accounts.search(
     q="<str>"
 )
 ```
@@ -787,7 +787,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "accounts",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -952,6 +952,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].Type` | `string` | Type of account (e.g., Customer, Partner, Competitor) |
 | `data[].Website` | `string` | Website URL for the account |
 | `data[].SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+</details>
+
+### Accounts Context Store SQL Query
+
+Run a SQL query against accounts records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "accounts",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await salesforce.accounts.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "accounts",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1384,7 +1447,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Contacts API Search
+### Contacts Search
 
 Search for contacts using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -1397,7 +1460,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "salesforce",
   "entity": "contacts",
-  "action": "api_search",
+  "action": "search",
   "params": {
     "q": "<str>"
   }
@@ -1407,7 +1470,7 @@ airbyte-agent connectors execute --json '{
 #### Python SDK
 
 ```python
-await salesforce.contacts.api_search(
+await salesforce.contacts.search(
     q="<str>"
 )
 ```
@@ -1420,7 +1483,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -1576,6 +1639,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].ReportsToId` | `string` | ID of the contact this contact reports to |
 | `data[].Title` | `string` | Job title of the contact |
 | `data[].SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+</details>
+
+### Contacts Context Store SQL Query
+
+Run a SQL query against contacts records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "contacts",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await salesforce.contacts.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2056,7 +2182,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Leads API Search
+### Leads Search
 
 Search for leads using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -2069,7 +2195,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "salesforce",
   "entity": "leads",
-  "action": "api_search",
+  "action": "search",
   "params": {
     "q": "<str>"
   }
@@ -2079,7 +2205,7 @@ airbyte-agent connectors execute --json '{
 #### Python SDK
 
 ```python
-await salesforce.leads.api_search(
+await salesforce.leads.search(
     q="<str>"
 )
 ```
@@ -2092,7 +2218,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "leads",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -2264,6 +2390,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].Title` | `string` | Job title of the lead |
 | `data[].Website` | `string` | Website URL for the lead's company |
 | `data[].SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+</details>
+
+### Leads Context Store SQL Query
+
+Run a SQL query against leads records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "leads",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await salesforce.leads.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "leads",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -2685,7 +2874,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Opportunities API Search
+### Opportunities Search
 
 Search for opportunities using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -2698,7 +2887,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "salesforce",
   "entity": "opportunities",
-  "action": "api_search",
+  "action": "search",
   "params": {
     "q": "<str>"
   }
@@ -2708,7 +2897,7 @@ airbyte-agent connectors execute --json '{
 #### Python SDK
 
 ```python
-await salesforce.opportunities.api_search(
+await salesforce.opportunities.search(
     q="<str>"
 )
 ```
@@ -2721,7 +2910,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "opportunities",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -2877,6 +3066,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].StageName` | `string` | Current stage of the opportunity in the sales process |
 | `data[].Type` | `string` | Type of opportunity (e.g., New Business, Existing Business) |
 | `data[].SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+</details>
+
+### Opportunities Context Store SQL Query
+
+Run a SQL query against opportunities records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "opportunities",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await salesforce.opportunities.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "opportunities",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -3278,7 +3530,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Tasks API Search
+### Tasks Search
 
 Search for tasks using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -3291,7 +3543,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "salesforce",
   "entity": "tasks",
-  "action": "api_search",
+  "action": "search",
   "params": {
     "q": "<str>"
   }
@@ -3301,7 +3553,7 @@ airbyte-agent connectors execute --json '{
 #### Python SDK
 
 ```python
-await salesforce.tasks.api_search(
+await salesforce.tasks.search(
     q="<str>"
 )
 ```
@@ -3314,7 +3566,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tasks",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -3466,6 +3718,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].WhatId` | `string` | ID of the related object (Account, Opportunity, etc.) |
 | `data[].WhoId` | `string` | ID of the related person (Contact or Lead) |
 | `data[].SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+</details>
+
+### Tasks Context Store SQL Query
+
+Run a SQL query against tasks records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "tasks",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await salesforce.tasks.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tasks",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -3867,7 +4182,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Events API Search
+### Events Search
 
 Search for events using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -3880,7 +4195,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "salesforce",
   "entity": "events",
-  "action": "api_search",
+  "action": "search",
   "params": {
     "q": "<str>"
   }
@@ -3890,7 +4205,7 @@ airbyte-agent connectors execute --json '{
 #### Python SDK
 
 ```python
-await salesforce.events.api_search(
+await salesforce.events.search(
     q="<str>"
 )
 ```
@@ -3903,7 +4218,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "events",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -4355,7 +4670,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Campaigns API Search
+### Campaigns Search
 
 Search for campaigns using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -4368,7 +4683,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "salesforce",
   "entity": "campaigns",
-  "action": "api_search",
+  "action": "search",
   "params": {
     "q": "<str>"
   }
@@ -4378,7 +4693,7 @@ airbyte-agent connectors execute --json '{
 #### Python SDK
 
 ```python
-await salesforce.campaigns.api_search(
+await salesforce.campaigns.search(
     q="<str>"
 )
 ```
@@ -4391,7 +4706,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -4853,7 +5168,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Cases API Search
+### Cases Search
 
 Search for cases using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -4866,7 +5181,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "salesforce",
   "entity": "cases",
-  "action": "api_search",
+  "action": "search",
   "params": {
     "q": "<str>"
   }
@@ -4876,7 +5191,7 @@ airbyte-agent connectors execute --json '{
 #### Python SDK
 
 ```python
-await salesforce.cases.api_search(
+await salesforce.cases.search(
     q="<str>"
 )
 ```
@@ -4889,7 +5204,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "cases",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -5267,7 +5582,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes |  |
 
 
-### Notes API Search
+### Notes Search
 
 Search for notes using SOSL (Salesforce Object Search Language).
 SOSL is optimized for text-based searches across multiple fields.
@@ -5280,7 +5595,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "salesforce",
   "entity": "notes",
-  "action": "api_search",
+  "action": "search",
   "params": {
     "q": "<str>"
   }
@@ -5290,7 +5605,7 @@ airbyte-agent connectors execute --json '{
 #### Python SDK
 
 ```python
-await salesforce.notes.api_search(
+await salesforce.notes.search(
     q="<str>"
 )
 ```
@@ -5303,7 +5618,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "notes",
-    "action": "api_search",
+    "action": "search",
     "params": {
         "q": "<str>"
     }
@@ -6430,6 +6745,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Users Context Store SQL Query
+
+Run a SQL query against users records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "users",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await salesforce.users.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Opportunity Stages
 
 ### Opportunity Stages List
@@ -6686,6 +7064,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].MasterLabel` | `string` | Display label for the stage |
 | `data[].SortOrder` | `integer` | Order in which the stage appears in the sales process |
 | `data[].SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+</details>
+
+### Opportunity Stages Context Store SQL Query
+
+Run a SQL query against opportunity stages records in the Airbyte Context Store. SQL projections may return any set of columns, so each result row is a dictionary matching the query's selected fields. Only available in hosted mode.
+
+Use the hosted server documentation to find the qualified Context Store table name and SQL guidance.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "salesforce",
+  "entity": "opportunity_stages",
+  "action": "context_store_sql_query",
+  "params": {
+    "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await salesforce.opportunity_stages.context_store_sql_query(
+    sql="SELECT * FROM <qualified_context_store_table> LIMIT 100"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "opportunity_stages",
+    "action": "context_store_sql_query",
+    "params": {
+        "sql": "SELECT * FROM <qualified_context_store_table> LIMIT 100"
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `sql` | `string` | Yes | SQL query to execute against this entity's Context Store data |
+| `limit` | `integer` | No | Maximum results to return |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | Projected rows, with dictionary keys matching the selected columns |
+| `meta` | `object` | Query metadata |
+| `meta.has_more` | `boolean` | Whether the result was limited and more rows are available |
+| `meta.cursor` | `null` | SQL query results do not use cursor pagination |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 

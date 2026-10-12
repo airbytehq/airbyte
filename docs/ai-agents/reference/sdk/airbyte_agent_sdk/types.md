@@ -19,7 +19,7 @@ Classes
         GET, CREATE, UPDATE, DELETE, LIST
     
     Special actions:
-        API_SEARCH - Search via API endpoint
+        SEARCH - Search via API endpoint
         DOWNLOAD - Download file content
         AUTHORIZE - OAuth authorization flow
 
@@ -29,9 +29,6 @@ Classes
     * enum.Enum
 
     ### Class variables
-
-    `API_SEARCH`
-    :   The type of the None singleton.
 
     `AUTHORIZE`
     :   The type of the None singleton.
@@ -49,6 +46,9 @@ Classes
     :   The type of the None singleton.
 
     `LIST`
+    :   The type of the None singleton.
+
+    `SEARCH`
     :   The type of the None singleton.
 
     `UPDATE`

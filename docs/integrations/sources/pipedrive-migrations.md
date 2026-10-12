@@ -2,6 +2,41 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Pipedrive Migration Guide
 
+## Upgrading to 4.0.0
+
+:::danger Risk of permanent data loss
+Clearing a stream deletes its destination table and re-syncs it from Pipedrive. Pipedrive doesn't return deleted notes, files, filters or leads, so their rows aren't restored. Back up the affected tables before you clear them if you need that history.
+:::
+
+Version 4.0.0 changes the declared type of fields whose type didn't match Pipedrive's API reference. The values Pipedrive returns are unchanged; typed destinations now create these columns with the correct type.
+
+<details>
+<summary>Retyped fields</summary>
+
+- `notes`: `lead_id` changes from integer to string. Lead ids are UUIDs, so typed destinations wrote them as null under the old type.
+- `files`: `lead_id`, `cid`, `mail_message_id` and `mail_template_id` change from integer to string.
+- `filters`: `temporary_flag` changes from string to boolean.
+- `leads`: `value.amount` changes from integer to number, so fractional amounts are kept.
+
+</details>
+
+This version also declares fields Pipedrive already returned, which needs no action: `cc`, `bcc`, `draft` and `mail_tracking_status` on `mail`, plus `latest_sent`, `linked_organization_id` and `message_time` on the `mail.to[]` and `mail.from[]` parties; `lead_id`, `message_count`, `read_flag` and `mail_tracking_status` on `mailThreads`; `project`, `project_id`, `task`, `task_id`, `pinned_to_project_flag` and `pinned_to_task_flag` on `notes`; and `description` on `permission_sets`. `notes.organization` can now be null.
+
+If you don't sync `notes`, `files`, `filters` or `leads`, you don't need to take any action.
+
+To upgrade:
+
+1. Open the connection, go to **Schema** and click **Refresh source schema**.
+   If you moved your Start Date later after the first sync, move it back before clearing; the re-sync only backfills records modified on or after it.
+2. Clear the retyped streams you sync. A clear is required on destinations that can't change a column's type in place, such as S3 Data Lake, and for streams in Incremental or Full refresh | Append mode, where it is the only way to backfill rows synced before the upgrade. `filters` in Full refresh | Overwrite mode is rebuilt on every sync, so on other destinations you can skip clearing it.
+3. Run a sync.
+
+If you skip the clear, rows synced before the upgrade keep a null `lead_id`, `cid`, `mail_message_id`, `mail_template_id` or fractional `value.amount` until the record changes in Pipedrive.
+
+### Update downstream consumers
+
+Update casts and joins on the retyped columns: `notes.lead_id` and `files.lead_id` now hold the lead UUID and join to `leads.id`; `filters.temporary_flag` is a boolean; `leads.value.amount` is a number that can have decimals.
+
 ## Upgrading to 3.0.0
 
 :::danger Risk of permanent data loss

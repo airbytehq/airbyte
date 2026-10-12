@@ -25,6 +25,20 @@ definitions:
               field_name: api_key
           path: activity
           http_method: GET
+          request_headers:
+            api-key: "{{ config['api_key'] }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                  (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                  https://acme.hellobaton.com.
         record_selector:
           type: RecordSelector
           extractor:
@@ -124,6 +138,20 @@ definitions:
               field_name: api_key
           path: companies
           http_method: GET
+          request_headers:
+            api-key: "{{ config['api_key'] }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                  (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                  https://acme.hellobaton.com.
         record_selector:
           type: RecordSelector
           extractor:
@@ -195,6 +223,20 @@ definitions:
               field_name: api_key
           path: milestones
           http_method: GET
+          request_headers:
+            api-key: "{{ config['api_key'] }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                  (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                  https://acme.hellobaton.com.
         record_selector:
           type: RecordSelector
           extractor:
@@ -356,6 +398,20 @@ definitions:
               field_name: api_key
           path: phases
           http_method: GET
+          request_headers:
+            api-key: "{{ config['api_key'] }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                  (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                  https://acme.hellobaton.com.
         record_selector:
           type: RecordSelector
           extractor:
@@ -427,6 +483,20 @@ definitions:
               field_name: api_key
           path: project_attachments
           http_method: GET
+          request_headers:
+            api-key: "{{ config['api_key'] }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                  (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                  https://acme.hellobaton.com.
         record_selector:
           type: RecordSelector
           extractor:
@@ -518,6 +588,20 @@ definitions:
               field_name: api_key
           path: projects
           http_method: GET
+          request_headers:
+            api-key: "{{ config['api_key'] }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                  (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                  https://acme.hellobaton.com.
         record_selector:
           type: RecordSelector
           extractor:
@@ -750,6 +834,20 @@ definitions:
               field_name: api_key
           path: tasks
           http_method: GET
+          request_headers:
+            api-key: "{{ config['api_key'] }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                  (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                  https://acme.hellobaton.com.
         record_selector:
           type: RecordSelector
           extractor:
@@ -940,6 +1038,20 @@ definitions:
               field_name: api_key
           path: task_attachments
           http_method: GET
+          request_headers:
+            api-key: "{{ config['api_key'] }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                  (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                  https://acme.hellobaton.com.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1041,6 +1153,20 @@ definitions:
               field_name: api_key
           path: templates
           http_method: GET
+          request_headers:
+            api-key: "{{ config['api_key'] }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                  (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                  https://acme.hellobaton.com.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1185,6 +1311,20 @@ definitions:
               field_name: api_key
           path: time_entries
           http_method: GET
+          request_headers:
+            api-key: "{{ config['api_key'] }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                  (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                  https://acme.hellobaton.com.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1298,6 +1438,20 @@ definitions:
               field_name: api_key
           path: users
           http_method: GET
+          request_headers:
+            api-key: "{{ config['api_key'] }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                  (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                  https://acme.hellobaton.com.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1416,6 +1570,20 @@ streams:
             field_name: api_key
         path: activity
         http_method: GET
+        request_headers:
+          api-key: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 404
+              error_message: >-
+                Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                https://acme.hellobaton.com.
       record_selector:
         type: RecordSelector
         extractor:
@@ -1514,6 +1682,20 @@ streams:
             field_name: api_key
         path: companies
         http_method: GET
+        request_headers:
+          api-key: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 404
+              error_message: >-
+                Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                https://acme.hellobaton.com.
       record_selector:
         type: RecordSelector
         extractor:
@@ -1584,6 +1766,20 @@ streams:
             field_name: api_key
         path: milestones
         http_method: GET
+        request_headers:
+          api-key: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 404
+              error_message: >-
+                Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                https://acme.hellobaton.com.
       record_selector:
         type: RecordSelector
         extractor:
@@ -1744,6 +1940,20 @@ streams:
             field_name: api_key
         path: phases
         http_method: GET
+        request_headers:
+          api-key: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 404
+              error_message: >-
+                Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                https://acme.hellobaton.com.
       record_selector:
         type: RecordSelector
         extractor:
@@ -1814,6 +2024,20 @@ streams:
             field_name: api_key
         path: project_attachments
         http_method: GET
+        request_headers:
+          api-key: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 404
+              error_message: >-
+                Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                https://acme.hellobaton.com.
       record_selector:
         type: RecordSelector
         extractor:
@@ -1904,6 +2128,20 @@ streams:
             field_name: api_key
         path: projects
         http_method: GET
+        request_headers:
+          api-key: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 404
+              error_message: >-
+                Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                https://acme.hellobaton.com.
       record_selector:
         type: RecordSelector
         extractor:
@@ -2135,6 +2373,20 @@ streams:
             field_name: api_key
         path: tasks
         http_method: GET
+        request_headers:
+          api-key: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 404
+              error_message: >-
+                Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                https://acme.hellobaton.com.
       record_selector:
         type: RecordSelector
         extractor:
@@ -2324,6 +2576,20 @@ streams:
             field_name: api_key
         path: task_attachments
         http_method: GET
+        request_headers:
+          api-key: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 404
+              error_message: >-
+                Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                https://acme.hellobaton.com.
       record_selector:
         type: RecordSelector
         extractor:
@@ -2424,6 +2690,20 @@ streams:
             field_name: api_key
         path: templates
         http_method: GET
+        request_headers:
+          api-key: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 404
+              error_message: >-
+                Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                https://acme.hellobaton.com.
       record_selector:
         type: RecordSelector
         extractor:
@@ -2567,6 +2847,20 @@ streams:
             field_name: api_key
         path: time_entries
         http_method: GET
+        request_headers:
+          api-key: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 404
+              error_message: >-
+                Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                https://acme.hellobaton.com.
       record_selector:
         type: RecordSelector
         extractor:
@@ -2679,6 +2973,20 @@ streams:
             field_name: api_key
         path: users
         http_method: GET
+        request_headers:
+          api-key: "{{ config['api_key'] }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 404
+              error_message: >-
+                Baton workspace 'https://{{ config['company'] }}.hellobaton.com' was not found
+                (HTTP 404). Set 'company' to your workspace subdomain only, e.g. 'acme' for
+                https://acme.hellobaton.com.
       record_selector:
         type: RecordSelector
         extractor:
@@ -2775,19 +3083,23 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
-      - api_key
       - company
     properties:
       api_key:
         type: string
         title: API Key
-        description: authentication key required to access the api endpoints
+        description: >-
+          API key issued by Baton for your workspace. It is sent on every request
+          as the `api-key` header (and as the legacy `api_key` query parameter).
         airbyte_secret: true
         order: 1
       company:
         type: string
         title: company
-        description: Company name that generates your base api url
+        description: >-
+          Your Baton workspace subdomain, i.e. the `<company>` part of your
+          workspace URL `https://<company>.hellobaton.com`. The API is called at
+          `https://<company>.hellobaton.com/api/`.
         examples:
           - google
           - facebook
