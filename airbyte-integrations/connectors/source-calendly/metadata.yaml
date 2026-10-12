@@ -52,7 +52,7 @@ data:
       url: https://developer.calendly.com/release-notes
       type: api_release_history
     - title: Calendly API rate limits
-      url: https://developer.calendly.com/api-docs/ZG9jOjM2MzE2MDM4-api-conventions#rate-limiting
+      url: https://developer.calendly.com/api-docs/overview/rate-limits
       type: rate_limits
     - title: Calendly Status
       url: https://status.calendly.com/
