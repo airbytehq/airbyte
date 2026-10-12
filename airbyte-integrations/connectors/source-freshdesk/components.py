@@ -5,7 +5,7 @@ import json
 import logging
 from dataclasses import InitVar, dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -33,26 +33,12 @@ _EXPORT_UNAVAILABLE_MESSAGE = (
 )
 
 
-class FreshdeskExportBackoffStrategy(BackoffStrategy):
-    """Honor Retry-After when present, otherwise use exponential backoff for 429/5xx."""
-
-    def backoff_time(self, response_or_exception, attempt_count: int) -> Optional[float]:
-        if isinstance(response_or_exception, requests.Response):
-            retry_after = response_or_exception.headers.get("Retry-After")
-            if retry_after:
-                try:
-                    return float(retry_after)
-                except ValueError:
-                    pass
-        return min(2**attempt_count, 60.0)
-
-
 @dataclass
 class TicketActivitiesRetriever(Retriever):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     request_timeout: int = 300
-    backoff_strategy: Optional[BackoffStrategy] = field(default=None)
+    backoff_strategy: Optional[Union[BackoffStrategy, List[BackoffStrategy]]] = field(default=None)
     api_budget: Optional[APIBudget] = field(default=None)
     cursor: Optional[Cursor] = field(default=None)
 
@@ -80,7 +66,7 @@ class TicketActivitiesRetriever(Retriever):
             logger=logger,
             error_handler=HttpStatusErrorHandler(logger, error_mapping=error_mapping),
             api_budget=self.api_budget,
-            backoff_strategy=self.backoff_strategy or FreshdeskExportBackoffStrategy(),
+            backoff_strategy=self.backoff_strategy,
         )
 
     def read_records(
