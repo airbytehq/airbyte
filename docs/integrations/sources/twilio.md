@@ -167,6 +167,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.6 | 2026-10-06 | [88133](https://github.com/airbytehq/airbyte/pull/88133) | Move RFC2822 datetime normalization to a declarative manifest transformation; synced data is unchanged |
 | 1.1.5 | 2026-10-06 | [88048](https://github.com/airbytehq/airbyte/pull/88048) | Update dependencies |
 | 1.1.4 | 2026-10-05 | [87049](https://github.com/airbytehq/airbyte/pull/87049) | Automatically split Alerts time windows that exceed Twilio's 10,000-result limit instead of failing the sync |
 | 1.1.3 | 2026-09-29 | [87367](https://github.com/airbytehq/airbyte/pull/87367) | Update dependencies |
