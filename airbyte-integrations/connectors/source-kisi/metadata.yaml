@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7706728b-f644-456e-8dd4-ac92c4d8f31a
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-kisi
   githubIssueLabel: source-kisi
   icon: icon.svg
