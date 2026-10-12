@@ -28,14 +28,16 @@ import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types
 import org.apache.iceberg.types.Types.NestedField
 
-/** Delta/Databricks rejects NOT NULL constraints nested inside arrays or maps. */
 class AirbyteTypeToIcebergSchema {
 
-    @JvmOverloads
+    /**
+     * @param insideList true when converting a list's element type. Everything inside a list is
+     * optional, since Delta/Databricks rejects NOT NULL nested in arrays.
+     */
     fun convert(
         airbyteSchema: AirbyteType,
         stringifyObjects: Boolean,
-        insideList: Boolean = false
+        insideList: Boolean = false,
     ): Type {
         return when (airbyteSchema) {
             is ObjectType -> {

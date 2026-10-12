@@ -10,12 +10,11 @@ import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types
 
 /**
- * Compares two Iceberg [Schema] definitions (including nested structs and lists) to identify:
+ * Compares two Iceberg [Schema] definitions (including nested structs) to identify:
  * - New columns that do not exist in the "existing" schema.
  * - Columns whose data types have changed.
  * - Columns that no longer exist in the incoming schema (removed).
- * - Columns, struct fields, and list elements that changed from required to optional. Nullability
- * relaxations are tracked separately and are not considered type changes.
+ * - Columns (including nested fields and list elements) that changed from required to optional.
  */
 @Singleton
 class IcebergTypesComparator {
@@ -61,9 +60,8 @@ class IcebergTypesComparator {
      * @property updatedDataTypes list of fully-qualified column names whose types differ.
      * @property removedColumns list of fully-qualified column names that are no longer in the
      * incoming schema.
-     * @property newlyOptionalColumns list of canonical Iceberg column names, including nested
-     * struct fields and list elements, that changed from required to optional. These relaxations
-     * are not also included in [updatedDataTypes].
+     * @property newlyOptionalColumns list of column names that changed from required -> optional.
+     * Nested fields use Iceberg's dotted names (e.g. `_airbyte_meta.changes.element`).
      */
     data class ColumnDiff(
         val newColumns: MutableList<String> = mutableListOf(),
@@ -99,59 +97,32 @@ class IcebergTypesComparator {
         val incomingIdentifierNames = incomingSchema.identifierFieldNames().toSet()
         val existingIdentifierNames = existingSchema.identifierFieldNames().toSet()
         diff.identifierFieldsChanged = incomingIdentifierNames != existingIdentifierNames
-
-        val updatedTopLevelFields = diff.updatedDataTypes.toSet()
-        for (incomingField in incomingSchema.columns()) {
-            val existingField = existingSchema.findField(incomingField.name()) ?: continue
-            if (incomingField.name() in updatedTopLevelFields) continue
-            collectNestedNullabilityRelaxations(
-                incomingType = incomingField.type(),
-                existingType = existingField.type(),
-                existingSchema = existingSchema,
-                diff = diff
-            )
-        }
-
         return diff
     }
 
+    /**
+     * Records nested fields under [path] that changed from required to optional, using Iceberg's
+     * dotted names so they can be passed to `makeColumnOptional` directly. [Type.NestedType.fields]
+     * exposes struct fields and list elements alike, so one recursion covers both.
+     */
     private fun collectNestedNullabilityRelaxations(
+        path: String,
         incomingType: Type,
         existingType: Type,
-        existingSchema: Schema,
         diff: ColumnDiff
     ) {
-        if (incomingType.isStructType && existingType.isStructType) {
-            val incomingFieldsByName =
-                incomingType.asStructType().fields().associateBy { it.name() }
-            for (existingField in existingType.asStructType().fields()) {
-                val incomingField = incomingFieldsByName[existingField.name()] ?: continue
-                if (!existingField.isOptional && incomingField.isOptional) {
-                    val columnName = existingSchema.findColumnName(existingField.fieldId())
-                    if (columnName !in diff.newlyOptionalColumns) {
-                        diff.newlyOptionalColumns.add(columnName)
-                    }
-                }
-                collectNestedNullabilityRelaxations(
-                    incomingType = incomingField.type(),
-                    existingType = existingField.type(),
-                    existingSchema = existingSchema,
-                    diff = diff
-                )
-            }
-        } else if (incomingType.isListType && existingType.isListType) {
-            val incomingList = incomingType.asListType()
-            val existingList = existingType.asListType()
-            if (!existingList.isElementOptional && incomingList.isElementOptional) {
-                val columnName = existingSchema.findColumnName(existingList.elementId())
-                if (columnName !in diff.newlyOptionalColumns) {
-                    diff.newlyOptionalColumns.add(columnName)
-                }
+        if (!incomingType.isNestedType || !existingType.isNestedType) return
+        val incomingFieldsByName = incomingType.asNestedType().fields().associateBy { it.name() }
+        for (existingField in existingType.asNestedType().fields()) {
+            val incomingField = incomingFieldsByName[existingField.name()] ?: continue
+            val fieldPath = "$path.${existingField.name()}"
+            if (existingField.isRequired && incomingField.isOptional) {
+                diff.newlyOptionalColumns.add(fieldPath)
             }
             collectNestedNullabilityRelaxations(
-                incomingType = incomingList.elementType(),
-                existingType = existingList.elementType(),
-                existingSchema = existingSchema,
+                path = fieldPath,
+                incomingType = incomingField.type(),
+                existingType = existingField.type(),
                 diff = diff
             )
         }
@@ -185,11 +156,17 @@ class IcebergTypesComparator {
                 diff.newColumns.add(fqName)
             } else {
                 // The column exists in both => check for type differences at top-level
-                if (
-                    parentPath.isNullOrBlank() &&
-                        !typesAreEqual(incomingField.type(), existingField.type())
-                ) {
-                    diff.updatedDataTypes.add(fqName)
+                if (parentPath.isNullOrBlank()) {
+                    if (typesAreEqual(incomingField.type(), existingField.type())) {
+                        collectNestedNullabilityRelaxations(
+                            path = fqName,
+                            incomingType = incomingField.type(),
+                            existingType = existingField.type(),
+                            diff = diff
+                        )
+                    } else {
+                        diff.updatedDataTypes.add(fqName)
+                    }
                 }
 
                 // Check if it changed from required to optional at top-level
@@ -226,6 +203,8 @@ class IcebergTypesComparator {
      * Checks if two Iceberg [Type]s are semantically equal by comparing type IDs and any relevant
      * sub-properties (e.g., for timestamps, lists, structs).
      *
+     * Relaxing nested nullability (required -> optional) is not a type change; tightening it is.
+     *
      * @param incomingType the type from the incoming schema.
      * @param existingType the type from the existing schema.
      * @return `true` if they are effectively the same type, `false` otherwise.
@@ -260,7 +239,7 @@ class IcebergTypesComparator {
                 val sameElementType =
                     typesAreEqual(incomingType.elementType(), existingType.elementType())
                 sameElementType &&
-                    !(existingType.isElementOptional && !incomingType.isElementOptional)
+                    (incomingType.isElementOptional || existingType.isElementRequired)
             }
             Type.TypeID.STRUCT -> {
                 val incomingStructFields =
@@ -271,7 +250,7 @@ class IcebergTypesComparator {
                 // For all fields in existing, ensure there's a matching field in incoming
                 for ((name, existingField) in existingStructFields) {
                     val incomingField = incomingStructFields[name] ?: return false
-                    if (existingField.isOptional && !incomingField.isOptional) return false
+                    if (existingField.isOptional && incomingField.isRequired) return false
                     if (!typesAreEqual(incomingField.type(), existingField.type())) return false
                 }
                 // If there are extra fields in `incoming`, that doesn't mean they're "unequal" per
