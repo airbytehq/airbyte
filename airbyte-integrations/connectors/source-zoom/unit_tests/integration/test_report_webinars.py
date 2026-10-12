@@ -18,7 +18,7 @@ from .zoom_mocks import (
     WEBINARS,
     assert_completed_without_errors,
     assert_parent_400_is_skipped,
-    assert_parent_403_fails_with_config_error,
+    assert_parent_unhandled_403_fails_with_config_error,
     json_response,
     mock_webinar_parents,
     read_stream,
@@ -75,5 +75,5 @@ class TestReportWebinars(TestCase):
     def test_parent_400_yields_no_records(self):
         assert_parent_400_is_skipped(_STREAM)
 
-    def test_parent_403_fails_with_config_error(self):
-        assert_parent_403_fails_with_config_error(_STREAM)
+    def test_parent_unhandled_403_fails_with_config_error(self):
+        assert_parent_unhandled_403_fails_with_config_error(_STREAM)

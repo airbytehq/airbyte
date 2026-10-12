@@ -13,12 +13,16 @@ pagination; `WEBINAR_2` has a UUID that begins with `/` and contains `//`.
 """
 
 import json
+from functools import lru_cache
 from typing import Any, Dict, List, Mapping, Optional
+
+from jsonschema import Draft7Validator
 
 from airbyte_cdk.models import AirbyteStreamStatus, FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, discover, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.test.models.outcome import ExpectedOutcome
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_source
 
@@ -47,6 +51,16 @@ _TOKEN_REQUEST = HttpRequest(
     query_params={"grant_type": "account_credentials", "account_id": "test_account_id"},
 )
 _WEBINARS_NEXT_PAGE_TOKEN = "webinars-page-2"
+
+# Pre-existing drift: `AddFields` injects `webinar_id` from `stream_partition.parent_id` (an int) while these
+# schemas declare it `["null", "string"]`. Fixing it changes the emitted type, so it is a separate, breaking change.
+# Remove a stream from this map once its schema and `AddFields` agree.
+KNOWN_SCHEMA_DRIFT = {
+    "webinar_registrants": {"webinar_id"},
+    "webinar_polls": {"webinar_id"},
+    "webinar_registration_questions": {"webinar_id"},
+    "webinar_tracking_sources": {"webinar_id"},
+}
 
 
 def json_response(body: Any, status_code: int = 200) -> HttpResponse:
@@ -95,53 +109,83 @@ def mock_webinar_parents(http_mocker: HttpMocker) -> None:
     )
 
 
-def mock_webinars_parent_error(http_mocker: HttpMocker, response: HttpResponse) -> None:
+def mock_webinars_parent_error(http_mocker: HttpMocker, response: HttpResponse) -> HttpRequest:
+    """Stub the token and users, fail `GET /users/{id}/webinars` with `response`, and return that request."""
     mock_token(http_mocker)
     mock_users(http_mocker)
-    http_mocker.get(user_webinars_request(), response)
+    parent_request = user_webinars_request()
+    http_mocker.get(parent_request, response)
+    return parent_request
 
 
-def read_stream(stream_name: str, expecting_exception: bool = False) -> EntrypointOutput:
+def read_stream(stream_name: str, expected_outcome: ExpectedOutcome = ExpectedOutcome.EXPECT_SUCCESS) -> EntrypointOutput:
     catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
     return read(
         get_source(config=CONFIG),
         config=CONFIG,
         catalog=catalog,
         state=StateBuilder().build(),
-        expecting_exception=expecting_exception,
+        expected_outcome=expected_outcome,
     )
+
+
+@lru_cache(maxsize=None)
+def _stream_schema_validators() -> Dict[str, Draft7Validator]:
+    catalog = discover(get_source(config=CONFIG), CONFIG).catalog.catalog
+    return {stream.name: Draft7Validator(stream.json_schema) for stream in catalog.streams}
 
 
 def records_data(output: EntrypointOutput) -> List[Dict[str, Any]]:
     return [message.record.data for message in output.records]
 
 
+def assert_records_match_schema(output: EntrypointOutput, stream_name: str) -> None:
+    """Every record validates against the discovered schema, except the fields listed in `KNOWN_SCHEMA_DRIFT`."""
+    validator = _stream_schema_validators()[stream_name]
+    known_drift = KNOWN_SCHEMA_DRIFT.get(stream_name, set())
+    drifted_fields = set()
+    for record in records_data(output):
+        for error in validator.iter_errors(record):
+            field = error.absolute_path[0] if error.absolute_path else None
+            assert field in known_drift, f"{stream_name} record does not match its schema: {error.message}"
+            drifted_fields.add(field)
+    if output.records:
+        assert drifted_fields == known_drift, f"{stream_name} no longer drifts on {known_drift - drifted_fields}; update KNOWN_SCHEMA_DRIFT"
+
+
 def assert_completed_without_errors(output: EntrypointOutput, stream_name: str) -> None:
     assert output.errors == []
     assert output.get_stream_statuses(stream_name)[-1] == AirbyteStreamStatus.COMPLETE
+    assert_records_match_schema(output, stream_name)
 
 
-def assert_parent_400_is_skipped(stream_name: str) -> None:
-    """A 400 on `GET /users/{id}/webinars` (e.g. code 3161, user not licensed) yields an empty, COMPLETE stream."""
+_WEBINAR_PLAN_MISSING = zoom_error(
+    200,
+    "Webinar plan is missing. You must subscribe to the webinar plan and enable webinar for this user in order to perform this action.",
+    status_code=400,
+)
+# Zoom reports a token missing a required scope as HTTP 400, code 4711.
+MISSING_SCOPE = zoom_error(4711, "Invalid access token, does not contain scopes:[webinar:read:admin].", status_code=400)
+
+
+def assert_parent_400_is_skipped(stream_name: str, response: HttpResponse = _WEBINAR_PLAN_MISSING) -> None:
+    """A 400 on `GET /users/{id}/webinars` (by default code 200, no webinar plan) yields an empty, COMPLETE stream."""
     with HttpMocker() as http_mocker:
-        mock_webinars_parent_error(
-            http_mocker,
-            zoom_error(3161, "User does not have the webinar feature enabled.", status_code=400),
-        )
+        parent_request = mock_webinars_parent_error(http_mocker, response)
         output = read_stream(stream_name)
+        # The context-manager form of HttpMocker does not check that every mock was called.
+        http_mocker.assert_number_of_calls(parent_request, 1)
 
     assert_completed_without_errors(output, stream_name)
     assert output.records == []
 
 
-def assert_parent_403_fails_with_config_error(stream_name: str) -> None:
-    """A 403 on `GET /users/{id}/webinars` (e.g. missing scope) fails the stream as a config error."""
+def assert_parent_unhandled_403_fails_with_config_error(stream_name: str) -> None:
+    """A 403 on `GET /users/{id}/webinars`, which no handler in the manifest covers, fails the stream as a config error."""
     with HttpMocker() as http_mocker:
-        mock_webinars_parent_error(
-            http_mocker,
-            zoom_error(4711, "Invalid access token, does not contain scopes:[webinar:read:admin].", status_code=403),
-        )
-        output = read_stream(stream_name, expecting_exception=True)
+        parent_request = mock_webinars_parent_error(http_mocker, zoom_error(200, "No permission.", status_code=403))
+        output = read_stream(stream_name, expected_outcome=ExpectedOutcome.EXPECT_EXCEPTION)
+        http_mocker.assert_number_of_calls(parent_request, 1)
 
     assert output.records == []
     assert AirbyteStreamStatus.INCOMPLETE in output.get_stream_statuses(stream_name)

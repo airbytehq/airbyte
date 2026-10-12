@@ -17,7 +17,7 @@ from .zoom_mocks import (
     WEBINARS,
     assert_completed_without_errors,
     assert_parent_400_is_skipped,
-    assert_parent_403_fails_with_config_error,
+    assert_parent_unhandled_403_fails_with_config_error,
     json_response,
     mock_webinar_parents,
     read_stream,
@@ -64,11 +64,11 @@ class TestWebinarRegistrationQuestions(TestCase):
         output = read_stream(_STREAM)
 
         assert_completed_without_errors(output, _STREAM)
-        assert [record["webinar_id"] for record in records_data(output)] == [WEBINAR_1["id"]]
+        assert records_data(output) == [{**_QUESTIONS_BODY, "webinar_id": WEBINAR_1["id"]}]
         assert output.is_in_logs("Zoom returned code 3001")
 
     def test_parent_400_yields_no_records(self):
         assert_parent_400_is_skipped(_STREAM)
 
-    def test_parent_403_fails_with_config_error(self):
-        assert_parent_403_fails_with_config_error(_STREAM)
+    def test_parent_unhandled_403_fails_with_config_error(self):
+        assert_parent_unhandled_403_fails_with_config_error(_STREAM)
