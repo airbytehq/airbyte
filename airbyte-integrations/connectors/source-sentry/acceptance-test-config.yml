@@ -23,7 +23,9 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog_full_refresh.json
-        # test 403 exception is not breaking the sync
+        # Token with project:read only (no org:read / event:read). A 403 fails the stream
+        # (config_error), so the three streams that need the missing scopes are excluded;
+        # the rest must still sync with this token.
       - config_path: secrets/config_limited_scopes.json
         configured_catalog_path: integration_tests/configured_catalog_full_refresh.json
         empty_streams:
