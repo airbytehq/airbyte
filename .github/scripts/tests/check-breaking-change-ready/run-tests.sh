@@ -44,6 +44,7 @@ for case_dir in "$cases_dir"/*/; do
         ;;
       exit_code)
         if [[ "$value" == nonzero ]]; then
+          expected_exit_code=nonzero
           if [[ "$exit_code" == 0 ]]; then
             printf 'FAIL %s: expected a nonzero exit code\n' "$case_name"
             case_passed=false
@@ -72,7 +73,7 @@ for case_dir in "$cases_dir"/*/; do
     esac
   done <"$case_dir/expected"
 
-  if [[ "$expected_exit_code" != 0 && "$exit_code" != "$expected_exit_code" ]]; then
+  if [[ "$expected_exit_code" != nonzero && "$exit_code" != "$expected_exit_code" ]]; then
     printf 'FAIL %s: expected exit code %s, got %s\n' "$case_name" "$expected_exit_code" "$exit_code"
     case_passed=false
   fi
