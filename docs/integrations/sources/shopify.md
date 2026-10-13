@@ -234,6 +234,8 @@ Shopify's Bulk Operations API silently truncates the nested `codes` connection a
 
 **Discount Codes Sync** avoids this limitation by querying parent discounts with cursor pagination, then explicitly paging through each parent's child codes (up to 250 per page). The trade-off is higher per-record API cost and lower throughput compared to the bulk stream.
 
+If a discount is deleted while **Discount Codes Sync** is paging through its codes, the connector logs a warning and skips that discount's remaining codes.
+
 **Recommendation:** Enable the **Discount Codes Sync** stream if you have any discounts with more than ~100 redeem codes. You may run both streams simultaneously — they produce records with the same schema, so you can deduplicate downstream by `id`.
 
 **Discounts in Shopify Rollouts:** Connector versions before 4.2.3 use a Shopify API version that leaves out a discount while a serving [Rollout](https://shopify.dev/docs/apps/build/discounts/rollouts) activates or expires it for some or all buyers. Version 4.2.3 and later return these discounts, but incremental syncs don't backfill codes that were left out earlier, because their `updated_at` is older than the saved cursor. If your store has put discounts into Rollouts, [refresh and retain records](/platform/operator-guides/refreshes) for the discount code streams you sync incrementally after upgrading. While a Rollout is serving, a discount's `status` still reflects its own start and end dates, not what buyers get.
@@ -290,6 +292,13 @@ Waiting <some_number> seconds then retrying..."
 This is expected when the connector hits a `429 - Rate Limit Exceeded` HTTP Error. The sync operation will continue successfully after a short backoff period.
 
 For all Shopify GraphQL Bulk API requests, Shopify's [bulk operation limitations](https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions) apply. Different request types can have different limitations.
+
+Shopify's GraphQL Admin API reports throttling (`THROTTLED`, `MAX_COST_EXCEEDED`) and most internal errors (`INTERNAL_SERVER_ERROR`) as an HTTP `200` response that carries an error code, instead of a `429` or `500` status. For details, see Shopify's [status and error codes](https://shopify.dev/docs/api/admin-graphql/latest#status-and-error-codes). The `Countries`, `Deleted Products`, `Discount Codes Sync`, and `Market Countries` streams retry these responses a limited number of times. If the errors persist, the sync fails with a transient error and a later attempt can succeed. Any other GraphQL error fails the sync and includes Shopify's error message:
+
+```text
+Stream `<stream_name>`: Shopify GraphQL request failed: <error_message>
+GraphQL query failed for stream `discount_codes_sync`: <error_message>
+```
 
 #### Missing records after bulk stream checkpointing
 
@@ -362,6 +371,7 @@ Before version 4.1.1, some failed BULK jobs that returned no usable partial resu
 - If you receive a "checkpoint collision is detected" error for a stream, see [BULK job checkpoint collisions](#bulk-job-checkpoint-collisions) above to tell a self-clearing failure from a blocked stream.
 - If the sync logs say a BULK job "was canceled on checkpointing" and "the checkpointing is disabled for the rest of this sync", see [Checkpointed BULK jobs that return no result](#checkpointed-bulk-jobs-that-return-no-result).
 - If a sync fails with a "The BULK Job: `<job_id>` exited with FAILED" or "exited with EXPIRED" error, see [Failed and expired BULK jobs](#failed-and-expired-bulk-jobs).
+- If a sync fails with a "Shopify GraphQL request failed" or "GraphQL query failed for stream" error, see [Rate limiting](#rate-limiting) for how the connector handles GraphQL errors. The text after the colon is Shopify's own error message.
 - If you need to cancel a `Shopify GraphQL BULK`job, please follow [these steps](https://shopify.dev/docs/api/usage/bulk-operations/queries#canceling-an-operation).  You will need the current in-progress job ID to cancel.
 - Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
