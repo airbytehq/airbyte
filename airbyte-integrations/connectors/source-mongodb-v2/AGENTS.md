@@ -1,41 +1,33 @@
 > NOTE: CLAUDE.md is a symlink to AGENTS.md; update AGENTS.md (not the symlink) when changing these instructions.
 
-# source-mongodb-v2: Contributor notes
+# source-mongodb-v2: Unique Connector Behaviors
 
-`source-mongodb-v2` is a Java connector on the legacy Java CDK. Standard local
-commands:
+## 1. Schemaless mode packs fields into `data`
 
-```bash
-./gradlew :airbyte-integrations:connectors:source-mongodb-v2:test
-./gradlew :airbyte-integrations:connectors:source-mongodb-v2:assemble
-./gradlew :airbyte-integrations:connectors:source-mongodb-v2:dockerBuildx
-```
+With `schema_enforced` disabled, the catalog replaces individual document fields with a packed object field named `data`. Schema-enforced mode instead exposes discovered document fields as stream properties.
 
-## Reproducing bugs locally
+**Why this matters:** These modes produce different record shapes and schemas. Code that reads or transforms source fields must not assume that fields are top-level in schemaless mode.
 
-Use the
-[`source-mongodb-v2-e2e-tests`](.agents/skills/source-mongodb-v2-e2e-tests/SKILL.md)
-skill for non-CDC local sweeps. It stands up a single-node MongoDB 7.0
-replica set (`source-mongodb-v2-db-backend`), applies `mongosh` JavaScript
-fixtures (MongoDB has no SQL; the engine's `apply-sql.sh` entrypoint takes a
-`.js` file), and sweeps `spec` → `check` → `discover` → `read` against
-`airbyte/source-mongodb-v2:<tag>`. Orchestration is delegated to
-[`airbyte-integrations/db-harness-lib/`](../../db-harness-lib/).
+## 2. Schema-enforced discovery samples a configurable number of documents
 
-There is no `source-mongodb-v2-e2e-cdc-tests` skill yet: change-stream
-(CDC) replay with resume tokens is not covered by the local harness. If the
-reported failure is CDC-mode, say so in the evidence plan rather than
-forcing the generic skill to cover it.
+Schema-enforced discovery samples `discover_sample_size` documents to infer each collection's fields; the default is 10,000. Fields absent from the sample may not appear in the discovered schema. Schemaless mode uses a one-document sample to inspect `_id` information, not the schema-enforced sample size.
 
-```bash
-cd airbyte-integrations/connectors/source-mongodb-v2
+**Why this matters:** Discovery is sample-based, not a complete inventory of all fields in a collection. Changes to the sampling pipeline or defaults can alter schema coverage and should preserve the distinct schemaless behavior.
 
-# Single-version sweep
-poe e2e-local --test-version=<tag>
+## 3. Invalid resume tokens fail or reset according to configuration
 
-# Prove-fix comparison (target vs. known-bad control)
-poe e2e-local --test-version=<tag> --control-version=<control-tag>
-```
+When a saved CDC resume token is invalid, `invalid_cdc_cursor_position_behavior` controls whether the connector fails or resets state for a full refresh. The default behavior is `Fail sync`; `Re-sync data` triggers the refresh.
 
-**Never** repro against a customer connection, Atlas cluster, or Airbyte
-Cloud instance.
+**Why this matters:** A full refresh after token expiry can be expensive, while continuing from an invalid token is not possible. Keep the explicit fail-versus-refresh choice and its default intact.
+
+## 4. Update capture defaults to Lookup
+
+The default update capture mode is `Lookup`; selecting `Post Image` configures Debezium to use post-images. The spec warns that MongoDB must have the required pre/post-image settings enabled or data loss can occur.
+
+**Why this matters:** The mode depends on server-side change-stream configuration and affects the document content emitted for updates. Changing the default or Debezium property without preserving the server requirements can lose update data.
+
+## Reproducing bugs and testing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md#reproducing-bugs-locally) and the
+[source-mongodb-v2-e2e-tests](.agents/skills/source-mongodb-v2-e2e-tests/SKILL.md)
+skill for the available non-CDC local harness. CDC replay with resume tokens is not covered by that harness.
