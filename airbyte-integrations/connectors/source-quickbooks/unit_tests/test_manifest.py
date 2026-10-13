@@ -177,8 +177,8 @@ def test_nested_config_missing_optional_fields(manifest):
     assert "credentials" not in migrated
 
 
-def test_flat_config_only_gains_auth_type(manifest):
-    """A 4.0.0-era flat config predates the `auth_type` discriminator; nothing else about it changes."""
+def test_flat_config_is_left_unchanged(manifest):
+    """A 4.0.0-era flat config needs no migration, and must not gain an `auth_type` it never had."""
     flat = {
         "client_id": "cid",
         "client_secret": "cs",
@@ -187,16 +187,7 @@ def test_flat_config_only_gains_auth_type(manifest):
         "start_date": "2024-01-01T00:00:00Z",
         "sandbox": True,
     }
-    assert _migrated(manifest, flat) == {**flat, "auth_type": "oauth2.0"}
-
-
-def test_migration_sets_auth_type_when_absent(manifest):
-    """`auth_type` is the spec's discriminator; a pre-4.0.0 config carries none."""
-    nested = {
-        "start_date": "2024-01-01T00:00:00Z",
-        "credentials": {"client_id": "cid", "client_secret": "cs", "refresh_token": "rt", "realm_id": "123"},
-    }
-    assert _migrated(manifest, nested)["auth_type"] == "oauth2.0"
+    assert _migrated(manifest, flat) == flat
 
 
 def test_migration_keeps_an_existing_auth_type(manifest):
@@ -256,20 +247,81 @@ def test_realm_id_stays_a_string_when_stored_as_a_number(manifest):
     assert _migrated(manifest, nested)["realm_id"] == "4620816365288779920"
 
 
-def test_advanced_auth_is_legacy_oauth_flow(manifest):
-    """Cloud OAuth runs through the platform's built-in QuickbooksOAuthFlow, not declarative OAuth."""
+def test_spec_declares_no_platform_oauth(manifest):
+    """Credentials come from the user's own Intuit app, so the spec must not declare any OAuth
+    flow the platform could use to inject Airbyte's app credentials (oncall#13686)."""
     spec = manifest["spec"]
-    advanced_auth = spec.get("advanced_auth")
-    assert advanced_auth is not None
-    assert advanced_auth["auth_flow_type"] == "oauth2.0"
-    output_props = advanced_auth["oauth_config_specification"]["complete_oauth_output_specification"]["properties"]
-    paths = {k: v["path_in_connector_config"] for k, v in output_props.items()}
-    assert paths == {
-        "access_token": ["access_token"],
-        "refresh_token": ["refresh_token"],
-        "token_expiry_date": ["token_expiry_date"],
-        "realm_id": ["realm_id"],
-    }
-    # realmId arrives on the consent redirect, which oauth_connector_input_specification
-    # cannot capture — it must never be declared here.
+    assert "advanced_auth" not in spec
     assert "oauth_connector_input_specification" not in spec
+
+
+def _platform_oauth_overridden_paths(spec, config):
+    """Config paths the Airbyte platform would overwrite with its own OAuth app credentials.
+
+    Mirrors `OAuthConfigSupplier.injectOAuthParameters` in airbyte-platform: when the spec
+    declares `advanced_auth.oauth_config_specification` and the config satisfies the
+    predicate, every `complete_oauth_server_output_specification` path is replaced with the
+    instance's OAuth parameters at runtime, and masked with `******` when the config is persisted.
+    """
+    advanced_auth = spec.get("advanced_auth")
+    if not advanced_auth or not advanced_auth.get("oauth_config_specification"):
+        return []
+    node = config
+    for key in advanced_auth.get("predicate_key") or []:
+        if not isinstance(node, dict) or key not in node:
+            return []
+        node = node[key]
+    predicate_value = advanced_auth.get("predicate_value")
+    if predicate_value and str(node) != predicate_value:
+        return []
+    server_output = advanced_auth["oauth_config_specification"].get("complete_oauth_server_output_specification") or {}
+    return [prop["path_in_connector_config"] for prop in server_output.get("properties", {}).values()]
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        pytest.param(
+            {
+                "auth_type": "oauth2.0",
+                "client_id": "customer-app-cid",
+                "client_secret": "customer-app-cs",
+                "refresh_token": "rt",
+                "realm_id": "123",
+                "start_date": "2024-01-01T00:00:00Z",
+                "sandbox": False,
+            },
+            id="flat-4.0.x-config-with-auth-type-const",
+        ),
+        pytest.param(
+            {
+                "client_id": "customer-app-cid",
+                "client_secret": "customer-app-cs",
+                "refresh_token": "rt",
+                "realm_id": "123",
+                "start_date": "2024-01-01T00:00:00Z",
+            },
+            id="flat-config-without-auth-type",
+        ),
+        pytest.param(
+            {
+                "start_date": "2024-01-01T00:00:00Z",
+                "credentials": {
+                    "auth_type": "oauth2.0",
+                    "client_id": "customer-app-cid",
+                    "client_secret": "customer-app-cs",
+                    "refresh_token": "rt",
+                    "realm_id": "123",
+                },
+            },
+            id="nested-pre-4.0.0-config",
+        ),
+    ],
+)
+def test_platform_never_overrides_user_entered_client_credentials(manifest, config):
+    """Users authenticate with their own Intuit app, so the refresh token is bound to their
+    `client_id`. If the platform swaps in Airbyte's OAuth app credentials, Intuit answers the
+    token refresh with `invalid_grant` (oncall#13686)."""
+    migrated = _migrated(manifest, config)
+    assert migrated["client_id"] == "customer-app-cid"
+    assert _platform_oauth_overridden_paths(manifest["spec"], migrated) == []

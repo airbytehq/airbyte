@@ -17708,13 +17708,6 @@ spec:
                 path: ["token_expiry_date"]
                 value: "{{ config.get('token_expiry_date') or (config.get('credentials') or {}).get('token_expiry_date') }}"
                 value_type: string
-          - type: ConfigAddFields
-            condition: "{{ config.get('auth_type') is none }}"
-            fields:
-              - type: AddedFieldDefinition
-                path: ["auth_type"]
-                value: "oauth2.0"
-                value_type: string
           - type: ConfigRemoveFields
             condition: "{{ config.get('credentials') is mapping }}"
             field_pointers:
@@ -17812,53 +17805,6 @@ spec:
           Raising it reduces the number of requests on companies with long
           histories; 1,000 is the maximum Intuit accepts.
     additionalProperties: true
-  advanced_auth:
-    auth_flow_type: oauth2.0
-    predicate_key:
-    - auth_type
-    predicate_value: oauth2.0
-    oauth_config_specification:
-      complete_oauth_output_specification:
-        type: object
-        additionalProperties: true
-        properties:
-          access_token:
-            type: string
-            path_in_connector_config:
-            - access_token
-          refresh_token:
-            type: string
-            path_in_connector_config:
-            - refresh_token
-          token_expiry_date:
-            type: string
-            format: date-time
-            path_in_connector_config:
-            - token_expiry_date
-          realm_id:
-            type: string
-            path_in_connector_config:
-            - realm_id
-      complete_oauth_server_input_specification:
-        type: object
-        additionalProperties: true
-        properties:
-          client_id:
-            type: string
-          client_secret:
-            type: string
-      complete_oauth_server_output_specification:
-        type: object
-        additionalProperties: true
-        properties:
-          client_id:
-            type: string
-            path_in_connector_config:
-            - client_id
-          client_secret:
-            type: string
-            path_in_connector_config:
-            - client_secret
 metadata:
   autoImportSchema:
     accounts: false

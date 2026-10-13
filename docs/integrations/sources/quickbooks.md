@@ -40,7 +40,7 @@ Intuit issues a new refresh token roughly every 24 hours, and only the latest on
 8. Click **Set up source**.
 
 :::note
-An **Authenticate your QuickBooks account** button (the Intuit consent flow, which also captures the Realm ID for you) is available on Cloud only once this connector version is rolled out there. Until then, enter the credentials above.
+If your source ran on version 4.2.0 or 4.2.1 and its **Client ID** now shows `******`, re-enter the **Client ID** and **Client Secret** of your own Intuit app and save the source. Those versions let Airbyte Cloud replace them with its own OAuth app credentials.
 :::
 
 <!-- /env:cloud -->
@@ -147,6 +147,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version       | Date         | Pull Request                                               | Subject                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ------------- | ------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.2.2 | 2026-10-13 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix `invalid_grant` refresh-token failures on Cloud by no longer replacing your own Intuit app's Client ID and Client Secret with Airbyte's OAuth app credentials |
 | 4.2.1 | 2026-10-13 | [78925](https://github.com/airbytehq/airbyte/pull/78925) | Update dependencies |
 | 4.2.0 | 2026-09-24 | [85216](https://github.com/airbytehq/airbyte/pull/85216) | Certification: actionable error handling for Intuit fault codes and rejected refresh tokens, SDM 7.30.0 bump, rate-limit budget and stream concurrency, automatic migration of pre-4.0.0 nested credentials configs, Cloud OAuth via advanced_auth, a configurable Page Size, and six new streams (company_info, preferences, exchange_rates, reimburse_charges, attachables, credit_card_payments; first two full refresh) |
 | 4.1.8 | 2025-05-24 | [60468](https://github.com/airbytehq/airbyte/pull/60468) | Update dependencies |
