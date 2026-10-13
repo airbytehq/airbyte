@@ -45,7 +45,10 @@ test_cases = (
     (
         "jobs",
         (
-            ("/api/v4/projects/p_1/pipelines", [{"project_id": "p_1", "id": "build_project_p1"}]),
+            (
+                "/api/v4/projects/p_1/pipelines",
+                [{"project_id": "p_1", "id": "build_project_p1", "updated_at": "2021-03-18T12:51:06.000Z"}],
+            ),
             (
                 "/api/v4/projects/p_1/pipelines/build_project_p1/jobs",
                 [
@@ -64,6 +67,7 @@ test_cases = (
             "commit_id": "c_23",
             "id": "j_1",
             "pipeline": {"id": "p_17"},
+            "pipeline_updated_at": "2021-03-18T12:51:06.000Z",
             "pipeline_id": "p_17",
             "project_id": "p_1",
             "runner": None,
@@ -166,7 +170,7 @@ def test_stream_slices_child_stream(requests_mock):
         url="https://gitlab.com/api/v4/projects/p_1?per_page=50&statistics=1",
         json=[{"id": 13082000, "description": "", "name": "New CI Test Project"}],
     )
-    stream_state = {"13082000": {"" "created_at": "2021-03-10T23:58:1213"}}
+    stream_state = {"13082000": {"created_at": "2021-03-10T23:58:1213"}}
 
     slices = list(map(lambda partition: partition.to_slice(), commits.generate_partitions()))
     assert slices
