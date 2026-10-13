@@ -170,11 +170,7 @@ def test_migration_never_produces_oauth_and_preserves_string_types(mutate, capsy
     migrated = source._config["credentials"]
     assert migrated["auth_type"] == "OwnApp"
     assert isinstance(migrated["client_id"], str)
-    # The CDK migrates a shallow copy, so when `credentials` already exists the
-    # in-place mutation leaves it equal to the input and no control message is
-    # emitted; a purely flat config does emit one.
-    expected_controls = 0 if config.get("credentials") is not None else 1
-    assert len(_control_messages(capsys)) == expected_controls
+    assert len(_control_messages(capsys)) == 1
 
 
 def test_no_migration_value_contains_oauth_literal() -> None:
@@ -182,8 +178,51 @@ def test_no_migration_value_contains_oauth_literal() -> None:
     rules = source.resolved_manifest["spec"]["config_normalization_rules"]
     for migration in rules["config_migrations"]:
         for transformation in migration["transformations"]:
-            for field in transformation["fields"]:
+            for field in transformation.get("fields", []):
                 assert "OAuth2.0" not in field.get("value", "")
+
+
+_MIGRATED_CREDENTIALS = {
+    "auth_type": "OwnApp",
+    "client_id": "test-client-id",
+    "client_secret": "test-client-secret",
+    "refresh_token": "test-refresh-token",
+}
+_CACHED_TOKEN = {"access_token": "test-cached-access-token", "token_expiry_date": "2026-10-01T00:00:00+00:00"}
+
+
+def _assert_single_migration_control_message(controls: list[dict], config_path: Path) -> None:
+    assert len(controls) == 1
+    assert controls[0]["control"]["type"] == "CONNECTOR_CONFIG"
+    assert controls[0]["control"]["connectorConfig"]["config"]["credentials"] == _MIGRATED_CREDENTIALS
+    assert json.loads(config_path.read_text())["credentials"] == _MIGRATED_CREDENTIALS
+
+
+def test_migration_of_flat_config_emits_control_message(tmp_path, capsys) -> None:
+    config_path, controls = _construct_with_config_file(legacy_flat_config(), tmp_path, capsys)
+
+    _assert_single_migration_control_message(controls, config_path)
+
+
+def test_migration_replaces_cached_token_credentials_and_emits_control_message(tmp_path, capsys) -> None:
+    # 0.1.1 cached its access token at credentials.access_token / credentials.token_expiry_date.
+    config = legacy_flat_config(credentials=dict(_CACHED_TOKEN))
+    config_path, controls = _construct_with_config_file(config, tmp_path, capsys)
+
+    _assert_single_migration_control_message(controls, config_path)
+    emitted_credentials = controls[0]["control"]["connectorConfig"]["config"]["credentials"]
+    assert "access_token" not in emitted_credentials
+    assert "token_expiry_date" not in emitted_credentials
+
+
+@pytest.mark.parametrize("auth_type", ["OAuth2.0", "OwnApp"])
+def test_nested_config_with_auth_type_is_left_unchanged(auth_type: str, tmp_path, capsys) -> None:
+    config = base_config()
+    config["credentials"].update(auth_type=auth_type, **_CACHED_TOKEN)
+    config_path, controls = _construct_with_config_file(config, tmp_path, capsys)
+
+    assert controls == []
+    assert json.loads(config_path.read_text()) == config
 
 
 def test_token_refresh_uses_nested_credentials_for_basic_auth() -> None:

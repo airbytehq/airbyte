@@ -928,8 +928,18 @@ spec:
           credentials with auth_type OwnApp (the connector's own Reddit app).
           It never selects OAuth2.0, so platform OAuth parameter injection
           (gated on credentials.auth_type == OAuth2.0) never applies to
-          migrated configs. The flat keys are left in place.
+          migrated configs. The flat keys are left in place. The existing
+          credentials object is removed first: 0.1.1 cached its access token
+          at credentials.access_token and credentials.token_expiry_date, and
+          the CDK migrates a shallow copy of the config, so adding fields to
+          that existing nested object in place would leave the migrated config
+          equal to the input and no CONNECTOR_CONFIG control message would be
+          emitted to persist it.
         transformations:
+          - type: ConfigRemoveFields
+            field_pointers:
+              - ["credentials"]
+            condition: "{{ config.get('client_id') and not (config.get('credentials') or {}).get('auth_type') }}"
           - type: ConfigAddFields
             fields:
               - type: AddedFieldDefinition
