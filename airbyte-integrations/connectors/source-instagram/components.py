@@ -278,8 +278,11 @@ class InstagramBreakDownResultsTransformation(RecordTransformation):
         record_total_value = record.pop("total_value")
         # Multi-dimension breakdowns (e.g. "age,gender") return several dimension values
         # per result; join them so that no dimension is dropped and keys stay unique.
+        # The API documents these values as strings; they are coerced so that an
+        # unexpected null or number cannot fail the sync.
         record["value"] = {
-            ",".join(res.get("dimension_values", [""])): res.get("value") for res in record_total_value["breakdowns"][0]["results"]
+            ",".join("" if v is None else str(v) for v in res.get("dimension_values") or [""]): res.get("value")
+            for res in record_total_value["breakdowns"][0]["results"]
         }
         return record
 
