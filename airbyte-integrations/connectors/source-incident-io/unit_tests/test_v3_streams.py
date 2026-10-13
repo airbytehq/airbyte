@@ -282,6 +282,50 @@ def test_catalog_types_uses_v3_schema():
     assert {"attribute_id", "attribute_name"} <= attributes["path"]["items"]["properties"].keys()
 
 
+def test_catalog_types_reads_v3_response():
+    mocked_record = {
+        "id": "ct-1",
+        "name": "Incident Type",
+        "created_at": "2026-10-01T12:00:00Z",
+        "updated_at": "2026-10-02T12:00:00Z",
+        "last_synced_at": "2026-10-03T12:00:00Z",
+        "engine_resource_type": "incident",
+        "is_team_type": True,
+        "owning_team_ids": ["team-1"],
+        "use_name_as_identifier": False,
+        "estimated_count": 3,
+        "schema": {
+            "attributes": [
+                {
+                    "id": "attribute-1",
+                    "name": "Country",
+                    "mode": "api",
+                    "backlink_attribute": "country_code",
+                    "path": [{"attribute_id": "attribute-1", "attribute_name": "Country"}],
+                }
+            ]
+        },
+    }
+    response = {"catalog_types": [mocked_record]}
+    raw_manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    manifest = ManifestReferenceResolver().preprocess_manifest(raw_manifest)
+    schema = manifest["schemas"]["catalog_types"]
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v3/catalog_types", json=response)
+        output = _read_stream("catalog_types")
+        requests_made = mocker.request_history
+
+    records = [message.record.data for message in output.records]
+    assert len(records) == 1
+    assert records[0] == mocked_record
+    assert requests_made
+    assert all(request.path == "/v3/catalog_types" for request in requests_made)
+    assert all("/v2/catalog_types" not in request.path for request in requests_made)
+    jsonschema.validate(mocked_record, schema)
+    assert "semantic_type" not in schema["properties"]
+
+
 @pytest.mark.parametrize(
     ("stream_name", "path", "records_field"),
     [
