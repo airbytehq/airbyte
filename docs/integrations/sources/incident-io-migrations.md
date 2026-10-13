@@ -1,6 +1,6 @@
 import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
-# incident.io Migration Guide
+# Incident.io Migration Guide
 
 ## Upgrading to 1.0.0
 
