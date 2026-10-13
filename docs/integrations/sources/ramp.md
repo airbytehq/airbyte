@@ -5,12 +5,14 @@ The Ramp source syncs data from the [Ramp Developer API](https://docs.ramp.com/d
 ## Prerequisites
 
 - A Ramp account with administrator access, so you can create a developer app.
-- A Ramp developer app that uses the **Client Credentials** grant type, with the `transactions:read`, `cards:read`, and `reimbursements:read` scopes enabled, plus the read scope for each other stream you want to sync. See [Supported streams](#supported-streams) for the scope each stream needs.
+- A Ramp developer app that uses the **Client Credentials** grant type, with the `transactions:read`, `cards:read`, and `reimbursements:read` scopes enabled, plus the read scope for each other stream you want to sync. See [Supported Streams](#supported-streams) for the scope each stream needs.
 - The client ID and client secret for that app.
 
-## Set up the Ramp source
+## Setup guide
 
-### Step 1: Create a Ramp developer app
+Create a developer app in Ramp, then create the source in Airbyte with the app's client ID and client secret.
+
+## Set up Ramp
 
 1. In your Ramp account, go to **Company** > **Developer**.
 2. Select **Create New App**, name the app, and accept the terms.
@@ -20,16 +22,42 @@ The Ramp source syncs data from the [Ramp Developer API](https://docs.ramp.com/d
 
 For more detail, see Ramp's [quickstart](https://docs.ramp.com/developer-api/v1/getting-started) and [authorization guide](https://docs.ramp.com/developer-api/v1/authorization).
 
-### Step 2: Configure the source in Airbyte
+## Set up the Ramp connector in Airbyte
 
-1. Enter the **Ramp Client ID** and **Ramp Client Secret** from your developer app.
-2. Optionally, set **Start Date**. On the first sync, the `transactions` and `reimbursements` streams only read records with an `updated_at` on or after this date, and the `receipts` stream only reads receipts with a `created_at` after this date. Later syncs use the saved cursor instead. Other streams ignore Start Date. If you leave it empty, the connector uses `2019-01-01T00:00:00Z`.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or open your self-managed Airbyte instance.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Ramp** from the Source type dropdown.
+4. Enter a name for the Ramp connector.
+5. Enter the **Ramp Client ID** and **Ramp Client Secret** from your developer app.
+6. Optionally, set **Start Date**. On the first sync, the `transactions` and `reimbursements` streams only read records with an `updated_at` on or after this date, and the `receipts` stream only reads receipts created on or after this date. Later syncs use the saved cursor instead. Other streams ignore Start Date. If you leave it empty, the connector uses `2019-01-01T00:00:00Z`.
 
    Enter Start Date as a UTC timestamp with a `Z` suffix, such as `2024-01-01T00:00:00Z`. Fractional seconds, such as `2024-01-01T00:00:00.000Z`, are accepted. Values with a numeric offset, such as `2024-01-01T00:00:00+00:00`, are rejected.
+7. Click **Set up source**.
 
 The connection test only reads the `transactions` stream. If your app is missing the scope for another stream, the test still passes, and that stream fails during the sync.
 
-## Supported streams
+## Test against the Ramp sandbox
+
+The connector calls `https://api.ramp.com` by default. Since version 0.0.4, an **API Base URL** (`api_url`) field can point it at Ramp's [sandbox](https://docs.ramp.com/developer-api/v1/sandbox) at `https://demo-api.ramp.com` instead. The value must start with `https://`. Leave the default for production accounts.
+
+The field is hidden in the Airbyte UI, so set it programmatically. For example, include it in the source configuration you send through the Airbyte API, Terraform provider, or PyAirbyte. Sandbox and production credentials aren't interchangeable: create a developer app in the sandbox (`https://demo.ramp.com`) with the same grant type and scopes, and use that app's client ID and secret with the sandbox base URL.
+
+## Supported sync modes
+
+The Ramp source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+
+Only `transactions`, `reimbursements`, and `receipts` support incremental syncs. Every other stream re-reads all records on every sync.
+
+- **Incremental syncs filter on the server.** For `transactions` and `reimbursements`, the connector sends the cursor as the `updated_after` query parameter. For `receipts`, it sends the cursor as `created_after`. Ramp doesn't list `updated_after` in its published parameters for the transactions endpoint, but the API honors it.
+- **Records at the cursor boundary are read again.** `updated_after` is inclusive, so the next sync re-emits records whose `updated_at` equals the saved cursor. Use the **Incremental - Append + Deduped** sync mode to keep one row per `id`.
+- **`receipts` only picks up new receipts.** Ramp's receipts have no `updated_at` field, so incremental syncs use `created_at`. Changes to a receipt after the sync that first read it aren't synced until you refresh the stream.
+
+## Supported Streams
 
 All endpoints are under `/developer/v1`.
 
@@ -82,36 +110,13 @@ The connector also requests the purchase data merchants send to Ramp, and stores
 
 `vendor_agreements` and `purchase_orders` include archived records.
 
-`receipts` includes Ramp's OCR data for each receipt. Ramp's receipts have no `updated_at` field, so incremental syncs use `created_at` and only pick up new receipts. Changes to a receipt after the sync that first read it aren't synced until you refresh the stream.
+`receipts` includes Ramp's OCR data for each receipt.
 
 `purchase_orders` requires Ramp Plus. If your Ramp plan doesn't include purchase orders, deselect this stream.
 
-## Sync behavior and limitations
+## IP allow list
 
-- **Incremental syncs filter on the server.** For `transactions` and `reimbursements`, the connector sends the cursor as the `updated_after` query parameter. For `receipts`, it sends the cursor as `created_after`. Ramp doesn't list `updated_after` in its published parameters for the transactions endpoint, but the API honors it.
-- **Records at the cursor boundary are read again.** `updated_after` is inclusive, so the next sync re-emits records whose `updated_at` equals the saved cursor. Use the **Incremental | Append + Deduped** sync mode to keep one row per `id`.
-- **Declined transactions from before version 0.1.0 aren't backfilled automatically.** Versions before 0.1.0 didn't sync declined transactions. To pull in declined transactions older than your current cursor, refresh the `transactions` stream.
-- **Most streams are full refresh only.** Every stream except `transactions`, `reimbursements`, and `receipts` re-reads all records on every sync.
-- **Date and timestamp fields are typed.** Since version 1.0.0, the connector declares Ramp's ISO 8601 date and timestamp fields with `date` or `date-time` formats, so typed destinations store them as dates and timestamps instead of text. Three date-like fields stay strings because Ramp doesn't return them in ISO 8601 format: `cards.expiration` (`MMYY`, for example `0430`), and `business_balance.next_billing_date` and `prev_billing_date` (`MM/DD/YYYY`). If you're upgrading from a version before 1.0.0, follow the [migration guide](/integrations/sources/ramp-migrations#upgrading-to-100).
-- **One business per source.** Client credentials are issued to a single Ramp business. To sync several businesses, create one Airbyte source per business.
-
-## Troubleshooting
-
-The connector reports these Ramp errors as configuration errors, so Airbyte doesn't retry them:
-
-| Error | Cause | Fix |
-| --- | --- | --- |
-| `Ramp rejected the client ID or client secret` | The token request returned `400` or `401`. | Copy the client ID and client secret again from **Company** > **Developer** > your app, and confirm the app has the **Client Credentials** grant type. |
-| `Your Ramp app is not allowed to read this data` | Ramp returned error code `DEVELOPER_7100`. The connector requests every stream's scope when it gets a token. Ramp doesn't fail the token request when the app lacks one of those scopes. It issues a token without that scope, and only the streams that need it fail. | Enable the scope named in the error on your app, then test the source again. Or deselect the streams that need it. |
-| `Ramp no longer accepts this connector's access token` | Ramp returned error code `DEVELOPER_7002`. | Check that the Ramp app still exists and that its client secret hasn't been rotated, then test the source again. |
-| `Ramp rejected the connector's credentials` | Any other `401` response. | Re-enter the client ID and client secret. |
-| `Ramp denied access to this data` | Any other `403` response. | Confirm the app has the scope named in the error. For `purchase_orders`, confirm your plan includes Ramp Plus. |
-
-## Test against the Ramp sandbox
-
-The connector calls `https://api.ramp.com` by default. Since version 0.0.4, an **API Base URL** (`api_url`) field can point it at Ramp's [sandbox](https://docs.ramp.com/developer-api/v1/sandbox) at `https://demo-api.ramp.com` instead. The value must start with `https://`. Leave the default for production accounts.
-
-The field is hidden in the Airbyte UI, so set it programmatically. For example, include it in the source configuration you send through the Airbyte API, Terraform provider, or PyAirbyte. Sandbox and production credentials aren't interchangeable: create a developer app in the sandbox (`https://demo.ramp.com`) with the same grant type and scopes, and use that app's client ID and secret with the sandbox base URL.
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Performance considerations
 
@@ -121,9 +126,37 @@ The connector reads 50 records per page. `vendor_contacts` makes at least one re
 
 Ramp's client credentials access tokens last 10 days. The connector requests a token for each stream it reads and reuses that token for the stream's requests.
 
-## IP allow list
+## Limitations & Troubleshooting
 
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+### Limitations
+
+- **Declined transactions from before version 0.1.0 aren't backfilled automatically.** Versions before 0.1.0 didn't sync declined transactions. To pull in declined transactions older than your current cursor, refresh the `transactions` stream.
+- **Date and timestamp fields are typed.** The connector declares Ramp's ISO 8601 date and timestamp fields with `date` or `date-time` formats, so typed destinations store them as dates and timestamps instead of text. The streams added in version 0.2.0 were typed from the start; `cards`, `transactions`, and `reimbursements` were typed in version 1.0.0. Three date-like fields stay strings because Ramp doesn't return them in ISO 8601 format: `cards.expiration` (`MMYY`, for example `0430`), and `business_balance.next_billing_date` and `prev_billing_date` (`MM/DD/YYYY`). If you're upgrading from a version before 1.0.0, follow the [migration guide](/integrations/sources/ramp-migrations#upgrading-to-100).
+- **One business per source.** Client credentials are issued to a single Ramp business. To sync several businesses, create one Airbyte source per business.
+
+### Deletions
+
+Ramp's API doesn't report hard deletes. Where Ramp's list endpoints leave archived or terminated records out by default, the connector requests them too, so a deleted record keeps arriving with its final state:
+
+- `bills`: archived bills have `archived_at` set.
+- `purchase_orders`: archived purchase orders have `archived_at` set.
+- `vendor_agreements`: archived agreements have `deleted_at` set.
+- `funds`: terminated funds have `state: TERMINATED`.
+- `users`: deactivated and suspended users stay in the stream with `status` `USER_INACTIVE` or `USER_SUSPENDED`.
+
+Filter on these fields downstream if you only want live records. `cards` is the exception: terminated cards aren't returned at all. See [Card spend](#card-spend) for how they leave the destination.
+
+### Configuration errors
+
+The connector reports these Ramp errors as configuration errors, so Airbyte doesn't retry them:
+
+| Error | Cause | Fix |
+| --- | --- | --- |
+| `Ramp rejected the client ID or client secret` | The token request returned `400` or `401`. | Copy the client ID and client secret again from **Company** > **Developer** > your app, and confirm the app has the **Client Credentials** grant type. |
+| `Your Ramp app is not allowed to read this data` | Ramp returned error code `DEVELOPER_7100`. The connector requests every stream's scope when it gets a token. Ramp doesn't fail the token request when the app lacks one of those scopes. It issues a token without that scope, and only the streams that need it fail. | Enable the missing read scope on your app, then test the source again. Or deselect the streams that need it. |
+| `Ramp no longer accepts this connector's access token` | Ramp returned error code `DEVELOPER_7002`. | Check that the Ramp app still exists and that its client secret hasn't been rotated, then test the source again. |
+| `Ramp rejected the connector's credentials` | Any other `401` response. | Re-enter the client ID and client secret. |
+| `Ramp denied access to this data` | Any other `403` response. | Confirm the app has the scope named in the error. For `purchase_orders`, confirm your plan includes Ramp Plus. |
 
 ## Changelog
 
