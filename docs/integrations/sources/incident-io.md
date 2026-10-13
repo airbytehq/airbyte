@@ -70,7 +70,7 @@ The `start_date` filter applies to these five streams in every sync mode, includ
 
 The `incidents` stream includes incidents in every status category, including `declined`, `canceled` and `merged`, which the API leaves out by default.
 
-The `incidents`, `actions`, and `follow-ups` streams include records from incidents in every incident mode: `standard`, `retrospective`, `test`, `tutorial`, and `stream`. By default, the API only returns records from `standard` and `retrospective` incidents. To exclude test, tutorial or stream incidents, filter on the `mode` field of `incidents`; for `actions` and `follow-ups`, join on `incident_id` to `incidents` first.
+The `actions` and `follow-ups` streams include records from incidents in every incident mode: `standard`, `retrospective`, `test`, `tutorial`, and `stream`. The `incidents` stream requests all five modes; `/v2/incidents` doesn't document `stream`, so stream incidents appear only if incident.io returns them. By default, the API only returns records from `standard` and `retrospective` incidents. To exclude test, tutorial or stream incidents, filter on the `mode` field of `incidents`; for `actions` and `follow-ups`, join on `incident_id` to `incidents` first.
 
 The `users` stream includes deactivated and not-yet-active users. Use the `is_active` field to filter them.
 
