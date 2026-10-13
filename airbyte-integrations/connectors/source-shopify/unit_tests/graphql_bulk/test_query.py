@@ -3,17 +3,48 @@
 #
 
 
+import json
+from pathlib import Path
+
 import pytest
 from graphql_query import Argument, Field, InlineFragment, Operation, Query
 from source_shopify.shopify_graphql.bulk.query import (
     InventoryLevel,
     MetafieldCustomer,
     MetafieldProductImage,
+    Product,
     ProductImage,
     ShopifyBulkQuery,
     ShopifyBulkTemplates,
 )
 from source_shopify.streams.streams import Customers, Products
+
+
+def test_product_query_includes_category() -> None:
+    query = Product({"shop": "test-shop"}).get(
+        filter_field="updated_at",
+        start="2026-01-01T00:00:00+00:00",
+        end="2026-01-02T00:00:00+00:00",
+    )
+
+    assert "category {" in query
+    for field in (
+        "full_name: fullName",
+        "is_leaf: isLeaf",
+        "is_root: isRoot",
+        "is_archived: isArchived",
+        "parent_id: parentId",
+        "ancestor_ids: ancestorIds",
+        "level",
+    ):
+        assert field in query
+
+
+def test_products_schema_includes_nullable_category() -> None:
+    schema_path = Path(__file__).resolve().parents[2] / "source_shopify" / "schemas" / "products.json"
+    schema = json.loads(schema_path.read_text())
+
+    assert schema["properties"]["category"]["type"] == ["null", "object"]
 
 
 def test_query_status() -> None:
