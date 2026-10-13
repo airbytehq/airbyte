@@ -6,13 +6,13 @@ The SparkPost connector for Airbyte enables seamless integration with SparkPost�
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
-| `start_date` | `string` | Start Date.  |  |
+| `start_date` | `string` | Start Date for the `message_events` stream (format `YYYY-MM-DDTHH:MM:SSZ`). SparkPost only retains events for 10 days, so earlier dates are clamped to the last 10 days.  |  |
 | `api_prefix` | `string` | API Endpoint Prefix (`api` or `api.eu`)  | api |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| message_events | event_id | DefaultPaginator | ✅ |  ❌  |
+| message_events | event_id | DefaultPaginator | ✅ |  ✅  |
 | sending_domains | domain | No pagination | ✅ |  ❌  |
 | ab_test | id | No pagination | ✅ |  ❌  |
 | templates | id | No pagination | ✅ |  ❌  |
@@ -31,6 +31,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.66 | 2026-10-07 | [88218](https://github.com/airbytehq/airbyte/pull/88218) | Fix `message_events` pagination (`links.next` is an object, not a list), make the stream incremental so `start_date` is honored via `from`/`to`, fix `allowedHosts` |
 | 0.0.65 | 2026-10-06 | [88082](https://github.com/airbytehq/airbyte/pull/88082) | Update dependencies |
 | 0.0.64 | 2026-09-29 | [87392](https://github.com/airbytehq/airbyte/pull/87392) | Update dependencies |
 | 0.0.63 | 2026-09-22 | [86836](https://github.com/airbytehq/airbyte/pull/86836) | Update dependencies |

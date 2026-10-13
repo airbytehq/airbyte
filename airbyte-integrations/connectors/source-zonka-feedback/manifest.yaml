@@ -74,6 +74,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /workspaces
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/feature_not_enabled_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -109,6 +111,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /surveys
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/feature_not_enabled_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -144,6 +148,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /contacts
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/feature_not_enabled_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -181,6 +187,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /tasks
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/feature_not_enabled_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -216,6 +224,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /users
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/feature_not_enabled_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -251,6 +261,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /locations
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/feature_not_enabled_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -275,6 +287,16 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/locations"
+  feature_not_enabled_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: IGNORE
+        predicate: >-
+          {{ response is mapping and response.get('status') == 403 and 'not enabled' in (response.get('message') | string | lower) }}
+        error_message: >-
+          Stream skipped: Zonka Feedback returned 403 '{{ response.get('message') }}'
+          (feature not enabled on the account).
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['datacenter'] }}.apis.zonkafeedback.com
@@ -306,10 +328,15 @@ spec:
     properties:
       datacenter:
         type: string
-        description: The identifier for the data center, such as 'us1' or 'e' for EU.
+        description: >-
+          The identifier for the data center your account is hosted in: 'us1'
+          (US), 'e' (EU), 'in' (India) or 'au' (Australia). Find it under
+          Company Settings > Developers > API in Zonka Feedback.
         enum:
           - us1
           - e
+          - in
+          - au
         name: dc_id
         order: 0
         title: Data Center ID

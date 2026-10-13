@@ -9,6 +9,7 @@ import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
+import io.airbyte.integrations.destination.snowflake.spec.ProgrammaticAccessTokenAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
 import java.io.File
@@ -27,6 +28,7 @@ import org.bouncycastle.openssl.PKCS8Generator
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter
 import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8EncryptorBuilder
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -348,6 +350,62 @@ internal class SnowflakeBeanFactoryTest {
             )
             assertEquals(username, (dataSource as HikariConfig).username)
             assertEquals(password, (dataSource as HikariConfig).password)
+        } finally {
+            dataSource.close()
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = ["COMMUNITY", "CLOUD", "ENTERPRISE"])
+    fun testCreateSnowflakeDataSourceProgrammaticAccessTokenAuth(airbyteEdition: String) {
+        val programmaticAccessToken = "test-programmatic-access-token"
+        val username = "test-username"
+        val snowflakeConfiguration =
+            SnowflakeConfiguration(
+                host = "test-account.test-host",
+                role = "test-role",
+                warehouse = "test-warehouse",
+                database = "test-database",
+                schema = "test-schema",
+                username = username,
+                authType =
+                    ProgrammaticAccessTokenAuthConfiguration(
+                        programmaticAccessToken = programmaticAccessToken,
+                    ),
+                cdcDeletionMode = CdcDeletionMode.HARD_DELETE,
+                legacyRawTablesOnly = false,
+                internalTableSchema = "snowflake",
+                trimSpace = true,
+                jdbcUrlParams = "param1=foo;param2=bar",
+                retentionPeriodDays = 1,
+            )
+        val factory = SnowflakeBeanFactory()
+        val dataSource =
+            factory.snowflakeDataSource(
+                snowflakeConfiguration = snowflakeConfiguration,
+                airbyteEdition = airbyteEdition,
+            )
+        try {
+            assertEquals(HikariDataSource::class, dataSource::class)
+            assertEquals(
+                "jdbc:snowflake://${snowflakeConfiguration.host}/?${snowflakeConfiguration.jdbcUrlParams}",
+                (dataSource as HikariConfig).jdbcUrl
+            )
+            // The token is passed to the driver in place of a password.
+            assertEquals(username, (dataSource as HikariConfig).username)
+            assertEquals(programmaticAccessToken, (dataSource as HikariConfig).password)
+            assertNull(
+                (dataSource as HikariConfig)
+                    .dataSourceProperties[DATA_SOURCE_PROPERTY_PRIVATE_KEY_FILE]
+            )
+            assertNull(
+                (dataSource as HikariConfig)
+                    .dataSourceProperties[DATA_SOURCE_PROPERTY_PRIVATE_KEY_PASSWORD]
+            )
+            assertEquals(
+                "airbyte_${airbyteEdition.lowercase()}",
+                (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_APPLICATION]
+            )
         } finally {
             dataSource.close()
         }
