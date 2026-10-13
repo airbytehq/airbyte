@@ -16,12 +16,13 @@ the JSON-only body matcher.
 import json
 from datetime import timedelta
 from unittest import TestCase
+from unittest.mock import patch
 
 import freezegun
 import pytest
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
@@ -267,6 +268,52 @@ class TestOAuthRefreshTokenRotation(TestCase):
 
         output = read_stream("tags", SyncMode.full_refresh, config)
         assert len(output.records) == 1
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class TestOAuthTokenRefreshOnRejectedToken(TestCase):
+    """Tests for REFRESH_TOKEN_THEN_RETRY: a 401 `invalid_token` response triggers a token refresh and retry.
+
+    The access token is not expired here (`token_expiry_date` in the future), so the refresh can only
+    be triggered by the rejected request itself — covering streams on the shared requester.
+    """
+
+    @HttpMocker()
+    def test_given_401_invalid_token_when_read_tags_then_refresh_token_and_retry(self, http_mocker):
+        config = _build_oauth_refresh_config(
+            refresh_token=_INITIAL_REFRESH_TOKEN,
+            access_token=_INITIAL_ACCESS_TOKEN,
+            token_expiry_date=(_NOW + timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        )
+
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.tags_endpoint(OAuthBearerAuthenticator(_INITIAL_ACCESS_TOKEN)).with_page_size(100).build(),
+            HttpResponse(
+                json.dumps(
+                    {
+                        "error": "invalid_token",
+                        "error_description": "The access token provided is expired, revoked, malformed or invalid for other reasons.",
+                    }
+                ),
+                401,
+            ),
+        )
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.tags_endpoint(OAuthBearerAuthenticator(_NEW_ACCESS_TOKEN)).with_page_size(100).build(),
+            TagsResponseBuilder.tags_response().with_record(TagsRecordBuilder.tags_record()).build(),
+        )
+        token_refresh_matcher = http_mocker._mocker.post(
+            _OAUTH_TOKEN_URL,
+            text=_build_token_refresh_response_json(_NEW_ACCESS_TOKEN, _ROTATED_REFRESH_TOKEN),
+            status_code=200,
+        )
+
+        with patch("time.sleep", return_value=None):
+            output = read_stream("tags", SyncMode.full_refresh, config)
+
+        assert len(output.records) == 1
+        assert token_refresh_matcher.call_count == 1
+        assert len(output.errors) == 0
 
 
 @pytest.mark.parametrize(
