@@ -166,18 +166,18 @@ The connector reports these Ramp errors as configuration errors, so Airbyte does
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
 | 1.0.1 | 2026-10-13 | [88768](https://github.com/airbytehq/airbyte/pull/88768) | Update dependencies |
-| 1.0.0 | 2026-10-08 | [88373](https://github.com/airbytehq/airbyte/pull/88373) | Declare 13 date and timestamp fields on `cards`, `transactions` and `reimbursements` with their real types. See the [migration guide](/integrations/sources/ramp-migrations#upgrading-to-100) |
+| 1.0.0 | 2026-10-12 | [88373](https://github.com/airbytehq/airbyte/pull/88373) | Declare 13 date and timestamp fields on `cards`, `transactions` and `reimbursements` with their real types. See the [migration guide](/integrations/sources/ramp-migrations#upgrading-to-100) |
 | 0.3.0 | 2026-10-08 | [88365](https://github.com/airbytehq/airbyte/pull/88365) | Request merchant purchase data on `transactions` and declare 10 more fields Ramp already returns |
 | 0.2.1 | 2026-10-06 | [87999](https://github.com/airbytehq/airbyte/pull/87999) | Update dependencies |
-| 0.2.0 | 2026-10-01 | [87610](https://github.com/airbytehq/airbyte/pull/87610) | Add 15 streams for Ramp's organisation, spend-control, accounts-payable and procurement resources |
-| 0.1.0 | 2026-09-30 | [86957](https://github.com/airbytehq/airbyte/pull/86957) | Map Ramp auth and scope errors to config errors, add a rate-limit budget, filter `transactions` server-side, sync declined transactions, declare missing fields, and make `start_date` optional |
+| 0.2.0 | 2026-10-02 | [87610](https://github.com/airbytehq/airbyte/pull/87610) | Add 15 streams for Ramp's organisation, spend-control, accounts-payable and procurement resources |
+| 0.1.0 | 2026-10-01 | [86957](https://github.com/airbytehq/airbyte/pull/86957) | Map Ramp auth and scope errors to config errors, add a rate-limit budget, filter `transactions` server-side, sync declined transactions, declare missing fields, and make `start_date` optional |
 | 0.0.8 | 2026-09-29 | [87331](https://github.com/airbytehq/airbyte/pull/87331) | Update dependencies |
 | 0.0.7 | 2026-09-22 | [86778](https://github.com/airbytehq/airbyte/pull/86778) | Update dependencies |
 | 0.0.6 | 2026-09-15 | [86193](https://github.com/airbytehq/airbyte/pull/86193) | Update dependencies |
 | 0.0.5 | 2026-09-08 | [85624](https://github.com/airbytehq/airbyte/pull/85624) | Update dependencies |
-| 0.0.4 | 2026-08-18 | [84843](https://github.com/airbytehq/airbyte/pull/84843) | Add hidden configurable API base URL for sandbox testing |
+| 0.0.4 | 2026-08-20 | [84843](https://github.com/airbytehq/airbyte/pull/84843) | Add hidden configurable API base URL for sandbox testing |
 | 0.0.3 | 2026-08-18 | [84721](https://github.com/airbytehq/airbyte/pull/84721) | Update dependencies |
 | 0.0.2 | 2026-08-11 | [84077](https://github.com/airbytehq/airbyte/pull/84077) | Update dependencies |
-| 0.0.1 | 2026-08-05 | [83706](https://github.com/airbytehq/airbyte/pull/83706) | Initial release by [@MercureTony](https://github.com/MercureTony) via Connector Builder |
+| 0.0.1 | 2026-08-06 | [83706](https://github.com/airbytehq/airbyte/pull/83706) | Initial release by [@MercureTony](https://github.com/MercureTony) via Connector Builder |
 
 </details>
