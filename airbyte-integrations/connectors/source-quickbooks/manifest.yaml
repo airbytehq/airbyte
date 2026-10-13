@@ -17741,7 +17741,16 @@ spec:
       auth_type:
         type: string
         order: 1
-        const: oauth2.0
+        title: Authentication Method
+        description: >-
+          `oauth2.0`: use your own Intuit app — enter its Client ID, Client Secret,
+          Refresh Token and Realm ID. Required for sandbox companies.
+          `airbyte_oauth`: sign in with QuickBooks through Airbyte's Intuit app
+          (Airbyte Cloud only; production companies only).
+        enum:
+          - oauth2.0
+          - airbyte_oauth
+        default: oauth2.0
       client_id:
         type: string
         order: 2
@@ -17816,7 +17825,7 @@ spec:
     auth_flow_type: oauth2.0
     predicate_key:
     - auth_type
-    predicate_value: oauth2.0
+    predicate_value: airbyte_oauth
     oauth_config_specification:
       complete_oauth_output_specification:
         type: object
