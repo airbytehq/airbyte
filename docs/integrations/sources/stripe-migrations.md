@@ -4,6 +4,10 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 7.0.0
 
+:::danger Risk of permanent data loss
+If you're affected, this upgrade requires you to refresh `invoice_line_items` and remove records. That deletes rows that Stripe can't send again. Back up the table before you refresh. See [Migration steps](#migration-steps).
+:::
+
 Version 7.0.0 changes the `id` values that incremental syncs of the `invoice_line_items` stream write for Stripe accounts whose default API version is older than `2019-12-03`. `id` is this stream's primary key, so on those accounts, rows written by earlier versions don't match rows written by 7.0.0. Most Stripe accounts use a newer default API version and aren't affected.
 
 ### What changed
@@ -11,6 +15,7 @@ Version 7.0.0 changes the `id` values that incremental syncs of the `invoice_lin
 After the first sync, incremental syncs of `invoice_line_items` read line items from the Stripe Events API. Stripe renders each event in the account's default API version at the time the event was created, whatever API version the connector requests. Before `2019-12-03`, Stripe used legacy invoice line item IDs:
 
 - `ii_...`: the ID of the invoice item behind the line.
+- `item_...`: another legacy line item ID prefix listed in Stripe's changelog.
 - `sub_...`: the ID of the subscription behind the line. It repeats on every renewal invoice for that subscription.
 - `su_...`: also a subscription ID, used by some older subscriptions. Like `sub_...`, it repeats on every renewal invoice for that subscription.
 - `sli_...`: a subscription line item ID used by API versions from 2018 and 2019.
@@ -24,7 +29,7 @@ In 7.0.0, incremental syncs use the current `il_...` ID that Stripe includes in 
 You're affected only if both of these are true:
 
 - You sync `invoice_line_items` with an incremental sync mode.
-- Your Stripe account's default API version is older than `2019-12-03`. Workbench in the Stripe Dashboard shows your account's default API version.
+- Your Stripe account's default API version is, or was while Airbyte synced it, older than `2019-12-03`. Workbench in the Stripe Dashboard shows your account's current default API version.
 
 To check your destination, run this query, replacing `<schema>` with your destination schema:
 
@@ -60,7 +65,7 @@ Upgrading to 7.0.0 stops new legacy IDs from being written, but rows that earlie
 
 ### Downstream changes
 
-Queries, models, and dashboards that join or filter on `invoice_line_items.id` using legacy `ii_...`, `sub_...`, `su_...`, or `sli_...` values must use `il_...` IDs instead. To relate a subscription line to its subscription, use the `subscription` field rather than the line's `id`.
+Queries, models, and dashboards that join or filter on `invoice_line_items.id` using legacy `ii_...`, `item_...`, `sub_...`, `su_...`, or `sli_...` values must use `il_...` IDs instead. To relate a subscription line to its subscription, use the `subscription` field rather than the line's `id`.
 
 For general upgrade steps, see the [connector upgrade guide](#connector-upgrade-guide).
 
