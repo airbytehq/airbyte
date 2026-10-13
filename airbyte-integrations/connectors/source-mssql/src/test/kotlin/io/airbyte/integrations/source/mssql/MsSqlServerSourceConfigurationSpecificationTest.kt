@@ -184,6 +184,20 @@ class MsSqlServerSourceConfigurationSpecificationTest {
         )
     }
 
+    /** The Unencrypted option must warn users that Airbyte Cloud rejects it without SSH. */
+    @Test
+    fun testUnencryptedDescriptionMentionsCloudRestriction() {
+        val unencrypted =
+            supplier.jsonSchema["properties"]["ssl_mode"]["oneOf"].first {
+                it["title"].asText() == "Unencrypted"
+            }
+        Assertions.assertEquals(
+            "Data transfer will not be encrypted. " +
+                "Not available on Airbyte Cloud unless an SSH tunnel is configured.",
+            unencrypted["description"].asText(),
+        )
+    }
+
     companion object {
 
         const val CONFIG_JSON: String =
