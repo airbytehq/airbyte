@@ -5,59 +5,56 @@ This page contains the setup guide and reference information for the Notion sour
 ## Prerequisites
 
 - Access to a [Notion](https://notion.so/login) workspace
-- You must be a workspace owner to create a Notion integration
+- To authenticate with an access token, or with your own OAuth connection in Airbyte Open Source, you must be a [Workspace Owner](https://www.notion.com/help/add-members-admins-guests-and-groups) in Notion so you can create a connection
 
 ## Setup guide
 
-To authenticate the Notion source connector, you need to use **one** of the following two methods:
+To authenticate the Notion source connector, use **one** of the following methods:
 
 - OAuth2.0 authorization (recommended for Airbyte Cloud)
 - Access Token
 
+Notion calls the apps that access its API _connections_. You manage them in the Notion [Developer portal](https://app.notion.com/developers/connections). For more detail, see Notion's [internal connections](https://developers.notion.com/guides/get-started/internal-connections) and [public connections](https://developers.notion.com/guides/get-started/public-connections) guides.
+
 <!-- env:cloud -->
 
 :::note
-**For Airbyte Cloud users:** We highly recommend using OAuth2.0 authorization to connect to Notion, as this method significantly simplifies the setup process. If you use OAuth2.0 authorization in Airbyte Cloud, you do **not** need to create and configure a new integration in Notion. Instead, you can proceed straight to [setting up the connector in Airbyte](#step-3-set-up-the-notion-connector-in-airbyte).
+**For Airbyte Cloud users:** If you use OAuth2.0 authorization in Airbyte Cloud, you don't need to create a connection in Notion. Skip to [setting up the connector in Airbyte](#step-3-set-up-the-notion-connector-in-airbyte).
 :::
 
 <!-- /env:cloud -->
 
-We have provided a quick setup guide for creating an integration in Notion below. If you would like more detailed information and context on Notion integrations, or experience any difficulties with the integration setup process, please refer to the [official Notion documentation](https://developers.notion.com/docs).
+### Step 1: Create a connection in Notion and set capabilities {#step-1-create-an-integration-in-notion}
 
-### Step 1: Create an integration in Notion and set capabilities
+1. Open the Notion [Developer portal](https://app.notion.com/developers/connections). In the **Build** section of the sidebar, select **Internal connections**.
+2. Click **Create a new connection**, enter a name, and choose the workspace you want to sync.
+3. Open the connection's **Configuration** tab and enable the following [capabilities](https://developers.notion.com/reference/capabilities) based on the streams you want to sync:
 
-1. Log in to your Notion workspace and navigate to the [My integrations](https://www.notion.so/my-integrations) page. Select **New integration**.
+   - **Read content**: Required for all connections.
+   - **Read comments**: Required for the Comments stream.
+   - **Read user information** (with or without email addresses): Required for the Users stream.
 
-:::note
-You must be the owner of the Notion workspace to create a new integration associated with it.
-:::
-
-2. Enter a **Name** for your integration. Make sure you have selected the correct workspace from the **Associated workspace** dropdown menu, and click **Submit**.
-3. In the navbar, select [**Capabilities**](https://developers.notion.com/reference/capabilities). Check the following capabilities based on your use case:
-
-- [**Read content**](https://developers.notion.com/reference/capabilities#content-capabilities): required for all connections.
-- [**Read comments**](https://developers.notion.com/reference/capabilities#comment-capabilities): required if you want to sync the Comments stream.
-- [**Read user information**](https://developers.notion.com/reference/capabilities#user-capabilities) (with or without emails): required if you want to sync the Users stream.
-
-### Step 2: Share pages and acquire authorization credentials
+### Step 2: Share pages and get your credentials {#step-2-set-permissions-and-acquire-authorization-credentials}
 
 #### Access Token (Cloud and Open Source)
 
-If you are authenticating via Access Token, you will need to manually share each page you want to sync with Airbyte.
+The connector only syncs pages and data sources that you share with your connection. Sharing a page also shares all of its child pages.
 
-1. Navigate to the page(s) you want to share with Airbyte. Click the **•••** menu at the top right of the page, select **Add connections**, and choose the integration you created in Step 1.
-2. Once you have selected all the pages to share, you can find and copy the Access Token from the **Secrets** tab of your Notion integration's page. Then proceed to [setting up the connector in Airbyte](#step-3-set-up-the-notion-connector-in-airbyte).
+1. Share the pages you want to sync with your connection. Use either method:
+   - In the Developer portal, open your connection, click the **Content access** tab, click **Edit access**, and select the pages and databases to share.
+   - In Notion, open a page, click the **•••** menu in the top-right corner, select **Connections**, click **+ Add connection**, and choose your connection.
+2. In the connection's **Configuration** tab, copy the **API token**. Then continue to [setting up the connector in Airbyte](#step-3-set-up-the-notion-connector-in-airbyte).
 
 <!-- env:oss -->
 
 #### OAuth2.0 (Open Source only)
 
-If you are authenticating via OAuth2.0 for **Airbyte Open Source**, you will need to make your integration public and acquire your Client ID, Client Secret and Access Token.
+To use OAuth2.0 in Airbyte Open Source, create a public connection instead of an internal connection, then complete Notion's OAuth flow to get an access token.
 
-1. Navigate to the **Distribution** tab in your integration page, and toggle the switch to make the integration public.
-2. Fill out the required fields in the **Organization information** and **OAuth Domain & URIs** section, then click **Submit**.
-3. Navigate to the **Secrets** tab to find your Client ID and Client Secret.
-4. You need to use your integration's authorization URL to set the necessary page permissions and send a request to obtain your Access Token. A thorough explanation of the necessary steps is provided in the [official Notion documentation](https://developers.notion.com/docs/authorization#public-integration-auth-flow-set-up). Once you have your Client ID, Client Secret and Access Token, you are ready to proceed to the next step.
+1. In the [Developer portal](https://app.notion.com/developers/connections), in the **Build** section of the sidebar, select **Public connections**, then click **Create new connection**.
+2. Fill in the required fields, including a redirect URI, and enable the capabilities listed in [Step 1](#step-1-create-an-integration-in-notion).
+3. In the connection's **Configuration** tab, copy the **OAuth client ID** and **OAuth client secret**.
+4. Use the connection's authorization URL to choose the pages to share and exchange the returned code for an access token. Notion's [authorization guide](https://developers.notion.com/guides/get-started/authorization#public-connection-auth-flow-set-up) explains each step. When you have your client ID, client secret, and access token, continue to the next step.
 <!-- /env:oss -->
 
 ### Step 3: Set up the Notion connector in Airbyte
@@ -73,19 +70,20 @@ If you are authenticating via OAuth2.0 for **Airbyte Open Source**, you will nee
 #### Authentication for Airbyte Cloud
 
 - **OAuth2.0** (Recommended): Click **Authenticate your Notion account**. When the popup appears, click **Select pages**. Check the pages you want to give Airbyte access to, and click **Allow access**.
-- **Access Token**: Copy and paste the Access Token found in the **Secrets** tab of your private integration's page.
+- **Access Token**: Paste the API token from your internal connection's **Configuration** tab.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
 #### Authentication for Airbyte Open Source
 
-- **Access Token**: Copy and paste the Access Token found in the **Secrets** tab of your private integration's page.
-- **OAuth2.0**: Copy and paste the Client ID, Client Secret and Access Token you acquired after setting up your public integration.
+- **Access Token**: Paste the API token from your internal connection's **Configuration** tab.
+- **OAuth2.0**: Paste the client ID, client secret, and access token from your public connection.
 <!-- /env:oss -->
 
-6. (Optional) You may optionally provide a **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. During incremental syncs, only data generated after this date is replicated. If left blank, the start date defaults to two years before the current date.
-7. Click **Set up source** and wait for the tests to complete.
+6. (Optional) Enter a **Start Date** in UTC, in the format `YYYY-MM-DDTHH:mm:ss.SSSZ`. The connector doesn't sync records last edited before this date. If you leave it blank, the start date defaults to two years before the current date.
+7. (Optional) Set **Number of concurrent workers** to control how many requests the connector makes in parallel. The default is 3 and the maximum is 10. For guidance, see [Performance considerations](#performance-considerations).
+8. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
@@ -99,21 +97,44 @@ The Notion source connector supports the following [sync modes](https://docs.air
 | Pages        |                ✓                |                   ✓                   |
 | Users        |                ✓                |                                       |
 
+Incremental streams use the `last_edited_time` field as the cursor and filter records on the client side. On each sync, the connector reads records from Notion and only emits records edited since the last sync.
+
 ## Supported streams
 
 The Notion source connector supports the following streams:
 
-- [Blocks](https://developers.notion.com/reference/retrieve-a-block): Retrieves content blocks for all synced pages, including recursively nested child blocks up to 30 levels deep. Block types `child_page`, `child_database`, and `ai_block` are excluded.
-- [Comments](https://developers.notion.com/reference/list-comments): Retrieves comments on all synced pages. Requires the **Read comments** integration capability.
-- [Data Sources](https://developers.notion.com/reference/data-source): Retrieves data source objects. In the Notion API `2025-09-03`, a data source represents a structured table that contains pages and properties — previously called a "database." This stream replaces the former `Databases` stream as of v4.0.0. For details on migrating, see the [Notion migration guide](notion-migrations.md).
-- [Pages](https://developers.notion.com/reference/retrieve-a-page): Retrieves page objects from all shared pages.
-- [Users](https://developers.notion.com/reference/get-users): Retrieves user objects from the workspace. Requires the **Read user information** integration capability.
+- [Blocks](https://developers.notion.com/reference/get-block-children): Retrieves content blocks for all synced pages, including recursively nested child blocks up to 30 levels deep. Block types `child_page`, `child_database`, and `ai_block` are excluded.
+- [Comments](https://developers.notion.com/reference/list-comments): Retrieves un-resolved comments on all synced pages. Requires the **Read comments** capability.
+- [Data Sources](https://developers.notion.com/reference/data-source): Retrieves all data sources shared with your connection, using the [Search](https://developers.notion.com/reference/post-search) endpoint. In Notion API version `2025-09-03`, a data source represents a structured table that contains pages and properties, previously called a "database." This stream replaces the former `Databases` stream as of v4.0.0. For details on migrating, see the [Notion migration guide](notion-migrations.md).
+- [Pages](https://developers.notion.com/reference/page): Retrieves all pages shared with your connection, using the [Search](https://developers.notion.com/reference/post-search) endpoint.
+- [Users](https://developers.notion.com/reference/get-users): Retrieves users in the workspace, including bots. Notion doesn't return guests from this endpoint. Requires the **Read user information** capability.
+
+### Record format
+
+The connector reshapes some fields so they have a consistent structure in your destination:
+
+- **Pages** and **Data Sources**: Notion returns `properties` as an object keyed by property name. The connector converts it to an array of objects, each with a `name` field (the property name) and a `value` field (the property object Notion returned).
+- **Users**: For bot users, Notion stores owner details under a key that matches the owner type, such as `bot.owner.workspace` or `bot.owner.user`. The connector moves these details to `bot.owner.info`. The `bot.owner.type` field still tells you the owner type.
 
 ## Performance considerations
 
-The Notion API enforces a rate limit of approximately three requests per second per integration. When the connector receives an HTTP 429 response, it respects the `Retry-After` header and retries the request automatically. Rate-limited requests do not count toward the maximum retry limit, so syncs continue indefinitely until the rate limit clears. For more details, see Notion's [request limits](https://developers.notion.com/reference/request-limits) documentation.
+Notion rate limits each connection to an average of three requests per second on most plans, and ten requests per second on Business and Enterprise plans. Notion also enforces a separate limit shared across all connections in a workspace. When the connector receives an HTTP 429 response, it waits for the time in the `Retry-After` header and retries the request. Rate-limited requests don't count toward the maximum retry limit, so syncs continue until the rate limit clears. For more details, see Notion's [request limits](https://developers.notion.com/reference/request-limits) documentation.
 
-The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages with deeply nested content can generate a large number of API requests, which may slow down syncs for workspaces with complex page structures.
+The connector sends requests in parallel. Use the **Number of concurrent workers** setting (1 to 10, default 3) to control parallelism. More workers can speed up large syncs, but make it more likely that the connector hits Notion's rate limits.
+
+The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages with deeply nested content can generate a large number of API requests, which can slow down syncs for workspaces with complex page structures. If Notion returns a 404 error because a block isn't shared with your connection, the connector skips that block instead of failing the sync.
+
+## Troubleshooting
+
+### Users stream fails with a permission error
+
+If the Users stream fails with the message "Notion integration lacks read user information for the Users stream," your connection doesn't have the **Read user information** capability. Open your connection in the Notion [Developer portal](https://app.notion.com/developers/connections) and enable **Read user information** in the **Configuration** tab. If you don't need user data, disable the Users stream in your Airbyte connection instead.
+
+Notion [personal access tokens](https://developers.notion.com/guides/get-started/personal-access-tokens) can't list workspace users. If you authenticate with a personal access token instead of an internal connection's API token, disable the Users stream.
+
+### Pages or blocks are missing
+
+The connector only syncs content that you share with your connection. If pages, data sources, or blocks are missing, confirm that you shared the parent page with your connection, or that you selected the page during the OAuth flow.
 
 ## IP allow list
 
@@ -136,7 +157,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 4.0.21 | 2026-08-18 | [84680](https://github.com/airbytehq/airbyte/pull/84680) | Update dependencies |
 | 4.0.20 | 2026-08-11 | [84017](https://github.com/airbytehq/airbyte/pull/84017) | Update dependencies |
 | 4.0.19 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
-| 4.0.18 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 4.0.16 — 4.0.17 is built on SDM 7.23.7, which breaks bundled custom components |
+| 4.0.18 | 2026-07-28 | [83183](https://github.com/airbytehq/airbyte/pull/83183) | Roll Cloud back to 4.0.16 — 4.0.17 is built on SDM 7.23.7, which breaks bundled custom components |
 | 4.0.17 | 2026-07-28 | [83001](https://github.com/airbytehq/airbyte/pull/83001) | Update dependencies |
 | 4.0.16 | 2026-07-21 | [82506](https://github.com/airbytehq/airbyte/pull/82506) | Update dependencies |
 | 4.0.15 | 2026-07-14 | [81929](https://github.com/airbytehq/airbyte/pull/81929) | Update dependencies |
@@ -147,9 +168,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 4.0.10 | 2026-06-02 | [78821](https://github.com/airbytehq/airbyte/pull/78821) | Update dependencies |
 | 4.0.9 | 2026-06-01 | [78048](https://github.com/airbytehq/airbyte/pull/78048) | Improve the permission error message for the Users stream when the Notion integration lacks user information capabilities. |
 | 4.0.8 | 2026-06-01 | [78543](https://github.com/airbytehq/airbyte/pull/78543) | Set final default concurrency to 3 with configurable worker count |
-| 4.0.8-rc.5 | 2026-05-27 | [78500](https://github.com/airbytehq/airbyte/pull/78500) | Remove Notion API budget while keeping configurable worker count defaulted to 5 |
+| 4.0.8-rc.5 | 2026-05-28 | [78467](https://github.com/airbytehq/airbyte/pull/78467) | Remove Notion API budget while keeping configurable worker count defaulted to 5 |
 | 4.0.8-rc.4 | 2026-05-26 | [78433](https://github.com/airbytehq/airbyte/pull/78433) | Reduce default concurrency to 4 while preserving configurable worker count and Notion API budget |
-| 4.0.8-rc.3 | 2026-05-21 | [78343](https://github.com/airbytehq/airbyte/pull/78343) | Revert default concurrency to 5, add configurable worker count, and enforce Notion API budget |
+| 4.0.8-rc.3 | 2026-05-22 | [78343](https://github.com/airbytehq/airbyte/pull/78343) | Revert default concurrency to 5, add configurable worker count, and enforce Notion API budget |
 | 4.0.8-rc.2 | 2026-05-19 | [78274](https://github.com/airbytehq/airbyte/pull/78274) | Increase `default_concurrency` to 6 for concurrency tuning iteration 2 |
 | 4.0.8-rc.1 | 2026-05-18 | [78149](https://github.com/airbytehq/airbyte/pull/78149) | Start concurrency tuning rollout |
 | 4.0.7 | 2026-04-28 | [77340](https://github.com/airbytehq/airbyte/pull/77340) | Update dependencies |
@@ -162,7 +183,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 4.0.0 | 2026-02-25 | [74017](https://github.com/airbytehq/airbyte/pull/74017) | Migrate to Notion API version 2025-09-03: replace `databases` stream with `data_sources`, update page parent references, and add new schema fields |
 | 3.3.14 | 2026-02-24 | [73856](https://github.com/airbytehq/airbyte/pull/73856) | Update dependencies |
 | 3.3.13 | 2026-02-10 | [73032](https://github.com/airbytehq/airbyte/pull/73032) | Update dependencies |
-| 3.3.12 | 2026-02-06 | [72925](https://github.com/airbytehq/airbyte/pull/72925) | Add client-side incremental filtering to blocks stream RecordFilter |
+| 3.3.12 | 2026-02-09 | [72925](https://github.com/airbytehq/airbyte/pull/72925) | Add client-side incremental filtering to blocks stream RecordFilter |
 | 3.3.11 | 2026-01-20 | [71943](https://github.com/airbytehq/airbyte/pull/71943) | Update dependencies |
 | 3.3.10 | 2026-01-14 | [71602](https://github.com/airbytehq/airbyte/pull/71602) | Update dependencies |
 | 3.3.9 | 2025-12-18 | [70534](https://github.com/airbytehq/airbyte/pull/70534) | Update dependencies |
