@@ -43,7 +43,8 @@ class RedshiftSourceOperationsTypeTest {
   void testTemporalColumnsDiscoveredWithFormatHints() {
     assertEquals(JsonSchemaType.STRING_DATE, discoveredType(JDBCType.DATE, "date"));
     assertEquals(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE, discoveredType(JDBCType.TIMESTAMP, "timestamp"));
-    // The driver reports timestamptz as TIMESTAMP; it must still be discovered as a timezone-aware type.
+    // The driver reports timestamptz as TIMESTAMP; it must still be discovered as a timezone-aware
+    // type.
     assertEquals(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE, discoveredType(JDBCType.TIMESTAMP, "timestamptz"));
   }
 
