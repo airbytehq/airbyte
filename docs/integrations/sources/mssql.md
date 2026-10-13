@@ -47,7 +47,7 @@ for more details.
 This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect
 to your MSSQL instance is via the check connection tool in the UI. If you use Airbyte Cloud, your
 firewall or security group must allow the
-[Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses)
+[Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist)
 and the connection must be encrypted; see [Airbyte Cloud](#airbyte-cloud) below.
 
 #### 2. Create a dedicated read-only user with access to the relevant tables \(Recommended but optional\)
@@ -556,7 +556,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 ## IP allow list
 
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses) to your allow list.
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 When Airbyte cannot open a TCP connection to your server, the connection test and syncs fail with:
 
@@ -578,7 +578,7 @@ Cloud without an [SSH tunnel](#connection-to-mssql-via-an-ssh-tunnel).
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                 |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.0.3 | 2026-10-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Replace the sync-oriented retry wording of unreachable-host errors with guidance on the host, port, firewall, and Airbyte Cloud IP allow list; note that `Unencrypted` needs an SSH tunnel on Airbyte Cloud. |
+| 5.0.3 | 2026-10-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Replace the sync-oriented retry wording of unreachable-host errors with guidance on the host, port, firewall, and Airbyte Cloud IP allow list; note that `Unencrypted` needs an SSH tunnel on Airbyte Cloud. Explain the `Discovered zero tables.` connection-test failure: say that no table is visible to the login and how to grant `SELECT`. |
 | 5.0.2 | 2026-10-09 | [88429](https://github.com/airbytehq/airbyte/pull/88429) | Upgrade to Bulk CDK 1.1.14. |
 | 5.0.1       | 2026-09-09 | [84356](https://github.com/airbytehq/airbyte/pull/84356)                                                         | Change Debezium data.query.mode from `direct` to `function` to prevent syncs from hanging on large tables.                                                  |
 | 5.0.0       | 2026-06-23 | [77672](https://github.com/airbytehq/airbyte/pull/77672)                                                          | Map `DECIMAL`/`NUMERIC` columns with scale 0 to Airbyte `integer` instead of `number` so destinations preserve integral semantics.                      |

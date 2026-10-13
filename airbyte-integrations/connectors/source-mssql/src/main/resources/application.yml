@@ -27,6 +27,14 @@ airbyte:
 
     exception-classifiers:
       regex:
+        # Run the regex rules ahead of the CDK's DefaultExceptionClassifier (order 1). The default
+        # classifier maps any ConfigErrorException, TransientErrorException or SystemErrorException
+        # to its raw message, so with the regex classifier at its default order (10) no rule could
+        # ever see a message the CDK itself throws. Going first lets a rule refine those, such as
+        # "Discovered zero tables." from the CDK's CheckOperation. Typed exceptions that no rule
+        # matches still fall through to the default mapping unchanged.
+        order: 0
+
         # The following rules are for the RegexExceptionClassifier [0] which are applied
         # sequentially on a Throwable's message [1] and its nested messages by cause [2].
         #
@@ -70,23 +78,7 @@ airbyte:
               that the instance accepts remote TCP connections, and that your firewall or security group
               allows Airbyte's IP addresses.
             reference-links:
-              - https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses
-              - https://docs.airbyte.com/integrations/sources/mssql
-              - https://docs.microsoft.com/en-us/sql/connect/jdbc/troubleshooting-connectivity
-
-          # Must precede the generic "timeout expired" query-timeout rule below: a login timeout is
-          # a connectivity problem, not a slow query.
-          - pattern: (?i).*login timeout expired.*
-            input-example: >-
-              com.microsoft.sqlserver.jdbc.SQLServerException: Login timeout expired.
-            error: transient
-            group: SQL Server Connection Error
-            output: >-
-              Airbyte could not reach SQL Server at the configured host and port. Check the host and port,
-              that the instance accepts remote TCP connections, and that your firewall or security group
-              allows Airbyte's IP addresses.
-            reference-links:
-              - https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses
+              - https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist
               - https://docs.airbyte.com/integrations/sources/mssql
               - https://docs.microsoft.com/en-us/sql/connect/jdbc/troubleshooting-connectivity
 
@@ -120,6 +112,20 @@ airbyte:
               The sync failed because the specified database cannot be accessed with the provided credentials. 
               Please verify your database name and user permissions.
             reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/security/authentication-access/database-level-roles
+
+          # Thrown by the CDK's CheckOperation when discovery returns no table at all; reachable only
+          # because this classifier runs ahead of the default one (see `order` above). Anchored so
+          # that the sibling "Unable to query any of the N discovered table(s)." is left alone.
+          - pattern: (?i)^Discovered zero tables\.?$
+            input-example: Discovered zero tables.
+            error: config
+            group: SQL Server Table Access Error
+            output: >-
+              No tables are visible to the configured login in the selected database and schemas.
+              Grant SELECT on the tables to sync (for example add the user to the db_datareader role,
+              or run GRANT SELECT ON SCHEMA::{schema name} TO {user name}), and check the Database and
+              Schemas settings (schema names are case sensitive).
+            reference-links: https://docs.airbyte.com/integrations/sources/mssql#2-create-a-dedicated-read-only-user-with-access-to-the-relevant-tables-recommended-but-optional
 
           - pattern: (?i).*invalid object name.*
             input-example: >-
