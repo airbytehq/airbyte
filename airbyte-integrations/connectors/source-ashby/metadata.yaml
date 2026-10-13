@@ -6,7 +6,7 @@ data:
     hosts:
       - api.ashbyhq.com
   maxSecondsBetweenMessages: 3600
-  dockerImageTag: 1.7.1
+  dockerImageTag: 1.7.2
   dockerRepository: airbyte/source-ashby
   githubIssueLabel: source-ashby
   icon: ashby.svg
