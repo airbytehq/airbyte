@@ -123,10 +123,12 @@ def test_spec_declares_oauth_advanced_auth() -> None:
     assert user_input["properties"]["base_url"]["pattern"] == "^https://[a-z0-9-]+\\.onuptick\\.com/?$"
     assert "workspace" not in user_input["properties"]
     oauth_input = spec["advanced_auth"]["oauth_config_specification"]["oauth_connector_input_specification"]
-    assert oauth_input["consent_url"].startswith("{{ base_url | regex_replace('/+$', '') }}/api/oauth2/")
+    assert oauth_input["consent_url"].startswith("{{ base_url | replace('.onuptick.com/', '.onuptick.com') }}/api/oauth2/")
+    assert "regex_replace" not in oauth_input["consent_url"]
     assert "&{{scopes_param}}&" in oauth_input["consent_url"]
     assert oauth_input["scopes"] == [{"scope": "read"}]
-    assert oauth_input["access_token_url"].startswith("{{ base_url | regex_replace('/+$', '') }}/api/oauth2/")
+    assert oauth_input["access_token_url"].startswith("{{ base_url | replace('.onuptick.com/', '.onuptick.com') }}/api/oauth2/")
+    assert "regex_replace" not in oauth_input["access_token_url"]
 
 
 @pytest.mark.parametrize(
