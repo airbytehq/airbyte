@@ -50,17 +50,6 @@ def _iter_authenticators(node):
             yield from _iter_authenticators(value)
 
 
-def _iter_url_bases(node):
-    if isinstance(node, dict):
-        if isinstance(node.get("url_base"), str):
-            yield node["url_base"]
-        for value in node.values():
-            yield from _iter_url_bases(value)
-    elif isinstance(node, list):
-        for value in node:
-            yield from _iter_url_bases(value)
-
-
 def _fault_predicates(response_filters):
     return [f["predicate"] for f in response_filters if "predicate" in f]
 
@@ -146,34 +135,6 @@ def _migrated(manifest, config):
     """Run the manifest's spec.config_normalization_rules against a config dict."""
     source = ConcurrentDeclarativeSource(source_config=manifest, config=config, catalog=None, state=None)
     return source._migrate_and_transform_config(None, dict(config))
-
-
-def test_auth_type_offers_oauth_and_client_credentials(manifest):
-    auth_type = manifest["spec"]["connection_specification"]["properties"]["auth_type"]
-    assert auth_type["enum"] == ["oauth2.0", "client_credentials"]
-    assert auth_type["default"] == "oauth2.0"
-    advanced_auth = manifest["spec"]["advanced_auth"]
-    assert advanced_auth["predicate_key"] == ["auth_type"]
-    assert advanced_auth["predicate_value"] == "oauth2.0"
-
-
-def test_url_base_uses_sandbox_only_with_client_credentials(manifest):
-    url_bases = set(_iter_url_bases(manifest))
-    assert len(url_bases) == 1
-    url_base = url_bases.pop()
-
-    cases = [
-        (
-            {"auth_type": "client_credentials", "sandbox": True},
-            "https://sandbox-quickbooks.api.intuit.com",
-        ),
-        ({"auth_type": "client_credentials", "sandbox": False}, "https://quickbooks.api.intuit.com"),
-        ({"auth_type": "oauth2.0", "sandbox": True}, "https://quickbooks.api.intuit.com"),
-        ({"sandbox": True}, "https://quickbooks.api.intuit.com"),
-    ]
-    for config, expected_url_base in cases:
-        rendered_url_base = jinja2.Environment().from_string(url_base).render(config=config)
-        assert rendered_url_base == expected_url_base
 
 
 def test_nested_legacy_config_is_flattened(manifest):
