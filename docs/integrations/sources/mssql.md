@@ -96,7 +96,7 @@ bastion host. In practice:
 | :-------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
 | **Encryption** set to `Encrypted (trust server certificate)` or `Encrypted (verify certificate)`    | Yes, with or without an SSH tunnel.                                                          |
 | **Encryption** set to `Unencrypted` with an SSH tunnel                                              | Yes. The SSH tunnel provides the encryption.                                                 |
-| **Encryption** set to `Unencrypted` without an SSH tunnel                                           | No. The connection test fails.                                                               |
+| **Encryption** set to `Unencrypted` without an SSH tunnel                                           | No. The connection test fails with `Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.` |
 | Database on `localhost` or on a private network (not reachable from the public internet)            | Only through an SSH tunnel to a bastion host that can reach the database.                    |
 
 See [Connection to MSSQL via an SSH Tunnel](#connection-to-mssql-via-an-ssh-tunnel) for how to set
