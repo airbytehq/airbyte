@@ -3,7 +3,9 @@ package io.airbyte.integrations.source.mssql
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.check.CloudHostCheck
 import io.airbyte.cdk.check.JdbcCheckQueries
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
@@ -611,10 +613,13 @@ class MsSqlSourceMetadataQuerier(
         val selectQueryGenerator: SelectQueryGenerator,
         val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
         val checkQueries: JdbcCheckQueries,
+        val featureFlags: Set<FeatureFlag>,
         val configuredCatalog: ConfiguredAirbyteCatalog? = null,
     ) : MetadataQuerier.Factory<MsSqlServerSourceConfiguration> {
         /** The [SourceConfiguration] is deliberately not injected in order to support tests. */
         override fun session(config: MsSqlServerSourceConfiguration): MetadataQuerier {
+            // Before the connection opens: with an unreachable host the network error would win.
+            CloudHostCheck.validate(config.realHost, config.sshTunnel, featureFlags)
             val jdbcConnectionFactory = JdbcConnectionFactory(config)
             val base =
                 JdbcMetadataQuerier(

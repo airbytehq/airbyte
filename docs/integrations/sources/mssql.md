@@ -97,7 +97,8 @@ bastion host. In practice:
 | **Encryption** set to `Encrypted (trust server certificate)` or `Encrypted (verify certificate)`    | Yes, with or without an SSH tunnel.                                                          |
 | **Encryption** set to `Unencrypted` with an SSH tunnel                                              | Yes. The SSH tunnel provides the encryption.                                                 |
 | **Encryption** set to `Unencrypted` without an SSH tunnel                                           | No. The connection test fails with `Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.` |
-| Database on `localhost` or on a private network (not reachable from the public internet)            | Only through an SSH tunnel to a bastion host that can reach the database.                    |
+| Database on `localhost` or on a private network (not reachable from the public internet)            | Only through an SSH tunnel to a bastion host that can reach the database, which also provides the encryption Airbyte Cloud requires. With `No Tunnel`, `localhost`, `127.0.0.1` or `0.0.0.0` fails the connection test with `Airbyte Cloud cannot reach a database on your own machine. Use a hostname reachable from the internet, or configure an SSH tunnel.` |
+| A URL, credentials or `host:port` pasted into **Host**                                              | No. The connection test fails with `Enter only the hostname in Host; put the port in the Port field.` Enter only the hostname or IP address in **Host** and the port in **Port**. |
 
 On Airbyte Cloud, the **Encryption** option defaults to `Encrypted (trust server certificate)`.
 
@@ -571,7 +572,8 @@ or security group allows Airbyte's IP addresses.
 This covers a wrong host or port, a host name that does not resolve, an instance that does not
 accept remote TCP connections, and a firewall or security group that does not allow the Airbyte
 Cloud IP addresses. A database on `localhost` or on a private network is not reachable from Airbyte
-Cloud without an [SSH tunnel](#connection-to-mssql-via-an-ssh-tunnel).
+Cloud without an [SSH tunnel](#connection-to-mssql-via-an-ssh-tunnel); Airbyte Cloud rejects
+`localhost` with `No Tunnel` before connecting, with `Airbyte Cloud cannot reach a database on your own machine. Use a hostname reachable from the internet, or configure an SSH tunnel.` A URL or `host:port` pasted into **Host** is rejected with `Enter only the hostname in Host; put the port in the Port field.`
 
 ## Changelog
 
@@ -580,7 +582,7 @@ Cloud without an [SSH tunnel](#connection-to-mssql-via-an-ssh-tunnel).
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                 |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.0.3 | 2026-10-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Replace the sync-oriented retry wording of unreachable-host errors with guidance on the host, port, firewall, and Airbyte Cloud IP allow list; note that `Unencrypted` needs an SSH tunnel on Airbyte Cloud. Explain the `Discovered zero tables.` connection-test failure: say that no table is visible to the login and how to grant `SELECT`. On Airbyte Cloud, default the Encryption option to `Encrypted (trust server certificate)`. |
+| 5.0.3 | 2026-10-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Replace the sync-oriented retry wording of unreachable-host errors with guidance on the host, port, firewall, and Airbyte Cloud IP allow list; note that `Unencrypted` needs an SSH tunnel on Airbyte Cloud. Explain the `Discovered zero tables.` connection-test failure: say that no table is visible to the login and how to grant `SELECT`. On Airbyte Cloud, default the Encryption option to `Encrypted (trust server certificate)`. On Airbyte Cloud, reject `localhost` without an SSH tunnel and a URL or `host:port` pasted into Host with an explicit message before the connection is attempted. |
 | 5.0.2 | 2026-10-09 | [88429](https://github.com/airbytehq/airbyte/pull/88429) | Upgrade to Bulk CDK 1.1.14. |
 | 5.0.1       | 2026-09-09 | [84356](https://github.com/airbytehq/airbyte/pull/84356)                                                         | Change Debezium data.query.mode from `direct` to `function` to prevent syncs from hanging on large tables.                                                  |
 | 5.0.0       | 2026-06-23 | [77672](https://github.com/airbytehq/airbyte/pull/77672)                                                          | Map `DECIMAL`/`NUMERIC` columns with scale 0 to Airbyte `integer` instead of `number` so destinations preserve integral semantics.                      |
