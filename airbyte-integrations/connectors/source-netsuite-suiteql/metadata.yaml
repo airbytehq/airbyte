@@ -1,0 +1,48 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 52daad28-f6c0-418c-b2ea-52858dc75ed0
+  dockerImageTag: 1.0.0
+  canonicalImageTag: 1.0.0-canonical-1.0.0
+  dockerRepository: airbyte/source-netsuite-suiteql
+  documentationUrl: https://docs.airbyte.com/integrations/sources/netsuite-suiteql
+  githubIssueLabel: source-netsuite-suiteql
+  icon: icon.svg
+  license: ELv2
+  name: NetSuite SuiteQL
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-netsuite-suiteql
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE_NETSUITE_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Executing SuiteQL Queries Through REST Web Services
+      url: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_157909186990.html
+      type: api_reference
+    - title: NetSuite authentication
+      url: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4389727047.html
+      type: authentication_guide
+metadataSpecVersion: "1.0"

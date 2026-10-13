@@ -123,7 +123,11 @@ jobs:
           cd ../../../
           # Find the latest timestamped report directory inside the CI branch folder
           BRANCH_LOWERCASE="${CI_GIT_BRANCH,,}"
-          REPORT_DIR=$(find airbyte-ci/connectors/pipelines/pipeline_reports/airbyte-ci/connectors/test/manual/"$BRANCH_LOWERCASE" -mindepth 1 -maxdepth 1 -type d | sort | tail -n 1)
+          # airbyte-ci replaces branch slashes with underscores in report directories:
+          # feat/CSS-0001-connector -> feat_css-0001-connector
+          # release/v1.0 -> release_v1.0
+          BRANCH_REPORT_KEY="${BRANCH_LOWERCASE//\//_}"
+          REPORT_DIR=$(find airbyte-ci/connectors/pipelines/pipeline_reports/airbyte-ci/connectors/test/manual/"$BRANCH_REPORT_KEY" -mindepth 1 -maxdepth 1 -type d | sort | tail -n 1)
           echo "Report dir is $REPORT_DIR"
 
           if [[ -z "$REPORT_DIR" ]]; then

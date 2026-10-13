@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "lastmodifieddate": { "type": ["null", "string"] },
+    "cseg_revenue_family": { "type": ["null", "integer"] },
+    "cseg_sales_type": { "type": ["null", "integer"] },
+    "recordnumber": { "type": ["null", "string"] },
+    "revrecenddate": { "type": ["null", "string"] },
+    "source": { "type": ["null", "string"] },
+    "revenuearrangement": { "type": ["null", "integer"] },
+    "revrecstartdate": { "type": ["null", "string"] },
+    "id": { "type": ["null", "integer"] },
+    "cseg_lobs": { "type": ["null", "integer"] },
+    "exchangerate": { "type": ["null", "number"] },
+    "revenuerecognitionrule": { "type": ["null", "integer"] },
+    "currency": { "type": ["null", "integer"] }
+  }
+}

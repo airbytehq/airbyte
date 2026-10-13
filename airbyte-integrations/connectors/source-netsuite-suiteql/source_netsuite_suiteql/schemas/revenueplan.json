@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "lastmodifieddate": { "type": ["null", "string"] },
+    "item": { "type": ["null", "integer"] },
+    "statusfordisplay": { "type": ["null", "string"] },
+    "recognitionmethod": { "type": ["null", "string"] },
+    "amount": { "type": ["null", "number"] },
+    "recordnumber": { "type": ["null", "string"] },
+    "accountingbook": { "type": ["null", "integer"] },
+    "createdfrom": { "type": ["null", "integer"] },
+    "exchangerate": { "type": ["null", "number"] },
+    "revenueplantype": { "type": ["null", "string"] },
+    "revenueplancurrency": { "type": ["null", "string"] },
+    "revenuerecognitionrule": { "type": ["null", "integer"] },
+    "id": { "type": ["null", "integer"] },
+    "holdrevenuerecognition": { "type": ["null", "boolean"] }
+  }
+}

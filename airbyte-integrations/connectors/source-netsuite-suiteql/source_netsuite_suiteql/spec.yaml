@@ -1,0 +1,65 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/netsuite-suiteql
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: NetSuite SuiteQL Spec
+  type: object
+  additionalProperties: false
+  required:
+    - realm
+    - consumer_key
+    - consumer_secret
+    - token_key
+    - token_secret
+    - tables
+  properties:
+    realm:
+      type: string
+      title: Realm (Account ID)
+      description: NetSuite account ID, such as 2344535 for production or 2344535_SB1 (also accepted as 2344535-sb1) for a sandbox.
+      pattern: ^[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*$
+      airbyte_secret: true
+      order: 0
+    consumer_key:
+      type: string
+      title: Consumer Key
+      airbyte_secret: true
+      order: 1
+    consumer_secret:
+      type: string
+      title: Consumer Secret
+      airbyte_secret: true
+      order: 2
+    token_key:
+      type: string
+      title: Token ID
+      airbyte_secret: true
+      order: 3
+    token_secret:
+      type: string
+      title: Token Secret
+      airbyte_secret: true
+      order: 4
+    tables:
+      type: array
+      title: NetSuite Tables
+      description: Tables to replicate with connector-generated SELECT * queries. Configure primary keys and cursor fields in the Airbyte connection catalog.
+      minItems: 1
+      order: 5
+      items:
+        type: object
+        additionalProperties: false
+        required:
+          - table_name
+        properties:
+          table_name:
+            type: string
+            title: Table Name
+            pattern: ^[A-Za-z_][A-Za-z0-9_]*$
+    page_size:
+      type: integer
+      title: Page Size
+      description: Number of rows requested per page.
+      minimum: 1
+      maximum: 1000
+      default: 1000
+      order: 6

@@ -1,0 +1,28 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "source-netsuite-suiteql"
+description = "Airbyte source for cursor-based NetSuite SuiteQL table replication."
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "ELv2"
+readme = "README.md"
+packages = [{ include = "source_netsuite_suiteql" }]
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.12"
+airbyte-cdk = "^1"
+requests-oauthlib = "^2.0.0"
+typing-extensions = "^4.1.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+requests-mock = "^1.11.0"
+
+[tool.poetry.scripts]
+source-netsuite-suiteql = "source_netsuite_suiteql.run:run"
+
+[tool.poe]
+include = ["${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml"]

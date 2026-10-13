@@ -1,0 +1,27 @@
+# See https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference
+# for connector acceptance test configuration details.
+connector_image: airbyte/source-netsuite-suiteql:dev
+acceptance_tests:
+  spec:
+    - spec_path: "source_netsuite_suiteql/spec.yaml"
+  connection:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "integration_tests/invalid_config.json"
+      status: "failed"
+  discovery:
+    - config_path: "secrets/config.json"
+      timeout_seconds: 1200
+  basic_read:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      timeout_seconds: 3600
+  full_refresh:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      timeout_seconds: 3600
+  incremental:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_incremental_catalog.json"
+      future_state_path: "integration_tests/sample_state.json"
+      timeout_seconds: 7200
