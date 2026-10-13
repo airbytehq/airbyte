@@ -54,6 +54,19 @@ def async_job_mock_fixture(mocker):
     mock.side_effect = lambda api, **kwargs: {"api": api, **kwargs}
 
 
+def _complete_insight_slice(stream, mocker, account_id, interval_start):
+    job = mocker.Mock(spec=InsightAsyncJob)
+    job.get_result.return_value = []
+    job.interval = DateInterval(interval_start, interval_start)
+
+    return list(
+        stream.read_records(
+            sync_mode=SyncMode.incremental,
+            stream_slice={"insight_job": job, "account_id": account_id},
+        )
+    )
+
+
 class TestBaseInsightsStream:
     def test_init(self, api, some_config):
         stream = AdsInsights(
@@ -228,6 +241,160 @@ class TestBaseInsightsStream:
 
         assert len(records) == 3
 
+    @freeze_time("2026-09-30")
+    def test_cursor_does_not_regress_while_completing_lookback_slices(self, mocker, api, some_config):
+        account_id = some_config["account_ids"][0]
+        cursor = date(2026, 9, 20)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 9, 29),
+            insights_lookback_window=28,
+        )
+        stream.state = {account_id: {"date_start": cursor.isoformat(), "slices": []}}
+
+        for offset in [-28, -26, -27, -25, -24]:
+            _complete_insight_slice(stream, mocker, account_id, cursor + timedelta(days=offset))
+            assert date.fromisoformat(stream.state[account_id]["date_start"]) >= cursor
+
+        resumed_stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 9, 29),
+            insights_lookback_window=28,
+        )
+        resumed_stream.state = stream.state
+        assert resumed_stream._get_start_date()[account_id] == cursor - timedelta(days=28)
+
+    @freeze_time("2026-09-30")
+    def test_stale_slices_are_removed_and_lookback_dates_are_still_requested(self, mocker, api, some_config, async_job_mock):
+        account_id = some_config["account_ids"][0]
+        cursor = date(2026, 9, 20)
+        end_date = date(2026, 9, 25)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime.combine(end_date, datetime.min.time()),
+            insights_lookback_window=28,
+        )
+        stream.state = {
+            account_id: {
+                "date_start": cursor.isoformat(),
+                "slices": [(cursor - timedelta(days=days)).isoformat() for days in [19, 12, 11, 10]],
+            }
+        }
+        assert stream.state[account_id]["slices"] == []
+
+        stale_slice = cursor - timedelta(days=29)
+        _complete_insight_slice(stream, mocker, account_id, stale_slice)
+        assert stale_slice in stream._completed_slices[account_id]
+        assert stream.state[account_id]["slices"] == []
+        assert stale_slice in stream._completed_slices[account_id]
+
+        generated_jobs = list(stream._generate_async_jobs(params={}, account_id=account_id))
+        expected_dates = [cursor - timedelta(days=28) + timedelta(days=offset) for offset in range((end_date - cursor).days + 29)]
+        assert {job["interval"].start for job in generated_jobs} == set(expected_dates)
+
+        completion_order = expected_dates[::2] + expected_dates[1::2]
+        for interval_start in completion_order:
+            _complete_insight_slice(stream, mocker, account_id, interval_start)
+
+        assert stream.state[account_id]["date_start"] == end_date.isoformat()
+        assert stream.state[account_id]["slices"] == []
+
+    @freeze_time("2026-09-30")
+    def test_completed_slices_past_gap_remain_in_state(self, mocker, api, some_config):
+        account_id = some_config["account_ids"][0]
+        cursor = date(2026, 9, 20)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 9, 29),
+            insights_lookback_window=28,
+        )
+        stream.state = {account_id: {"date_start": cursor.isoformat(), "slices": []}}
+
+        for offset in [*range(-28, 3), 4]:
+            _complete_insight_slice(stream, mocker, account_id, cursor + timedelta(days=offset))
+
+        assert stream.state[account_id]["date_start"] == (cursor + timedelta(days=2)).isoformat()
+        assert stream.state[account_id]["slices"] == [(cursor + timedelta(days=4)).isoformat()]
+
+    @freeze_time("2026-09-30")
+    def test_monthly_cursor_advances_from_snapped_first_slice(self, mocker, api, some_config):
+        account_id = some_config["account_ids"][0]
+        cursor = date(2026, 8, 1)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 9, 20),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.monthly,
+        )
+        stream.state = {
+            account_id: {"date_start": cursor.isoformat(), "slices": []},
+            "time_increment": 30,
+            "time_increment_period": "monthly",
+        }
+
+        for interval_start in [date(2026, 7, 1), date(2026, 8, 1), date(2026, 9, 1)]:
+            _complete_insight_slice(stream, mocker, account_id, interval_start)
+
+        assert stream.state[account_id]["date_start"] == "2026-09-01"
+
+    @freeze_time("2026-09-30")
+    def test_weekly_cursor_advances_with_non_aligned_lookback(self, mocker, api, some_config):
+        account_id = some_config["account_ids"][0]
+        cursor = date(2026, 9, 21)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 9, 30),
+            insights_lookback_window=10,
+            time_increment_period=TimeIncrementPeriod.weekly,
+        )
+        stream.state = {
+            account_id: {"date_start": cursor.isoformat(), "slices": []},
+            "time_increment": 7,
+            "time_increment_period": "weekly",
+        }
+
+        for interval_start in [date(2026, 9, 7), date(2026, 9, 14), date(2026, 9, 21), date(2026, 9, 28)]:
+            _complete_insight_slice(stream, mocker, account_id, interval_start)
+
+        assert stream.state[account_id]["date_start"] == "2026-09-28"
+
+    @freeze_time("2026-09-30")
+    def test_cursor_progress_is_independent_between_accounts(self, mocker, api):
+        first_account, second_account = "first_account", "second_account"
+        first_cursor, second_cursor = date(2026, 9, 20), date(2026, 9, 10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[first_account, second_account],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 9, 29),
+            insights_lookback_window=28,
+        )
+        stream.state = {
+            first_account: {"date_start": first_cursor.isoformat(), "slices": []},
+            second_account: {"date_start": second_cursor.isoformat(), "slices": []},
+        }
+
+        for offset in [-28, -26, -27]:
+            _complete_insight_slice(stream, mocker, first_account, first_cursor + timedelta(days=offset))
+            assert date.fromisoformat(stream.state[first_account]["date_start"]) >= first_cursor
+            assert date.fromisoformat(stream.state[second_account]["date_start"]) == second_cursor
+
+        _complete_insight_slice(stream, mocker, second_account, second_cursor - timedelta(days=28))
+        assert date.fromisoformat(stream.state[second_account]["date_start"]) >= second_cursor
+        assert date.fromisoformat(stream.state[first_account]["date_start"]) >= first_cursor
+
     def test_read_records_random_order(self, mocker, api, some_config):
         """1. yield all from mock
         2. if read slice 2, 3 state not changed
@@ -307,10 +474,7 @@ class TestBaseInsightsStream:
                 {
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
-                        "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
-                        ],
+                        "slices": [],
                     },
                     "time_increment": 1,
                 },
@@ -353,7 +517,13 @@ class TestBaseInsightsStream:
                     },
                     "time_increment": 1,
                 },
-                None,
+                {
+                    "unknown_account": {
+                        AdsInsights.cursor_field: "2010-10-03",
+                        "slices": [],
+                    },
+                    "time_increment": 1,
+                },
             ),
             (
                 {
