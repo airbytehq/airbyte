@@ -18,7 +18,7 @@ With the Airbyte MCP, your agent can:
 - **Learn how each connector works**: connector skills describe the entities, actions, and parameters each connector supports, so your agent knows how to request data correctly.
 - **Answer questions about Airbyte**: your agent can search Airbyte's documentation and the source code for the platform and connectors to answer questions about how Airbyte works.
 
-To start, [connect the Airbyte MCP to your agent](install.md). For a complete list of what your agent can do, see [Airbyte MCP tools](tools.md).
+To start, [connect the Airbyte MCP to your agent](install.md). For a complete list of what your agent can do, see [Airbyte MCP tools](tools.md). To limit which tools your agent can use, see [Advanced configuration](advanced-configuration.md).
 
 ## Example prompts
 
