@@ -94,7 +94,7 @@ class BigQuerySourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("use_storage_read_api")
     @JsonSchemaTitle("Use the BigQuery Storage Read API")
     @JsonSchemaDescription(
-        "Read tables through the BigQuery Storage Read API for high throughput (on by default). Requires the BigQuery Read Session User role (bigquery.readsessions.create, bigquery.readsessions.getData) on the project that runs the jobs; Storage Read API usage is billed separately from query bytes. When the permission is missing the connector falls back to the standard query API, which is much slower on large tables. Read more <a href=\"https://cloud.google.com/bigquery/docs/reference/storage\">here</a>."
+        "Read tables through the BigQuery Storage Read API for high throughput (on by default). Requires the BigQuery Read Session User role (bigquery.readsessions.create, bigquery.readsessions.getData) on the project that runs the jobs; Storage Read API usage is billed separately from query bytes. The connection test fails when the role is missing; a sync that loses it later falls back to the standard query API, which is much slower on large tables. Read more <a href=\"https://cloud.google.com/bigquery/docs/reference/storage\">here</a>."
     )
     @JsonSchemaInject(json = """{"group":"advanced","order":5,"default":true}""")
     var useStorageReadApi: Boolean? = null

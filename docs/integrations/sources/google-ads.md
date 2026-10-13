@@ -392,6 +392,8 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.4       | 2026-10-06 | [88123](https://github.com/airbytehq/airbyte/pull/88123) | Report invalid custom GAQL queries as configuration errors that include the Google Ads error message. |
+| 6.1.3       | 2026-10-05 | [87630](https://github.com/airbytehq/airbyte/pull/87630) | Split interrupted reports with the CDK's request window splitting (CDK 7.33.0); retry dropped criterion first syncs and mid-stream read timeouts instead of failing.   |
 | 6.1.2 | 2026-09-28 | [87026](https://github.com/airbytehq/airbyte/pull/87026) | Fix state migration discarding mid-sync per-partition checkpoints, which caused retries to restart incremental streams from the start date. |
 | 6.1.1 | 2026-08-25 | [85023](https://github.com/airbytehq/airbyte/pull/85023) | Fixed multi-byte UTF-8 characters being corrupted at chunk boundaries in large streamed responses. |
 | 6.1.0 | 2026-07-06 | [80952](https://github.com/airbytehq/airbyte/pull/80952) | Add `ad_performance` and `geo_performance` streams. |

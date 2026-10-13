@@ -383,8 +383,25 @@ definitions:
     type: HttpRequester
     url_base: https://api.100ms.live
     authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config[\"management_token\"] }}"
+      type: SelectiveAuthenticator
+      authenticator_selection_path: ["auth_type"]
+      authenticators:
+        app_credentials: "#/definitions/jwt_authenticator"
+        management_token: "#/definitions/bearer_authenticator"
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config[\"management_token\"] }}"
+  jwt_authenticator:
+    type: JwtAuthenticator
+    algorithm: HS256
+    secret_key: "{{ config[\"app_secret\"] }}"
+    token_duration: 86400
+    header_prefix: Bearer
+    additional_jwt_payload:
+      access_key: "{{ config[\"app_access_key\"] }}"
+      type: management
+      version: 2
+      jti: "{{ generate_uuid() }}"
 
 streams:
   - $ref: "#/definitions/streams/sessions"
@@ -402,28 +419,63 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - management_token
       - start_date
     properties:
+      app_access_key:
+        type: string
+        title: App Access Key
+        description: >-
+          The App Access Key of your 100ms app (Dashboard > Developer). Used
+          together with the App Secret to generate management tokens
+          automatically, so syncs keep working after dashboard tokens expire.
+          Recommended. See
+          https://www.100ms.live/docs/concepts/v2/concepts/security-and-tokens#management-token-for-rest-api
+        order: 0
+      app_secret:
+        type: string
+        title: App Secret
+        description: >-
+          The App Secret of your 100ms app (Dashboard > Developer). Used
+          together with the App Access Key to generate management tokens
+          automatically.
+        order: 1
+        airbyte_secret: true
       management_token:
         type: string
         description: >-
-          The management token used for authenticating API requests. You can
-          find or generate this token in your 100ms dashboard under the API
-          section. Refer to the documentation at
+          A pre-generated management token for authenticating API requests.
+          Only used when App Access Key and App Secret are not provided. Tokens
+          generated in the 100ms dashboard expire after at most 14 days, after
+          which syncs fail with "Unauthorized" until a new token is entered.
+          Prefer App Access Key + App Secret. Refer to
           https://www.100ms.live/docs/concepts/v2/concepts/security-and-tokens#management-token-for-rest-api
           for more details.
         name: management_token
-        order: 0
-        title: Management Token
+        order: 2
+        title: Management Token (legacy)
         airbyte_secret: true
       start_date:
         type: string
         title: Start date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        order: 1
+        order: 3
     additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    transformations:
+      - type: ConfigAddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["auth_type"]
+            value: app_credentials
+        condition: "{{ config.get('app_access_key') and config.get('app_secret') }}"
+      - type: ConfigAddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["auth_type"]
+            value: management_token
+        condition: "{{ not (config.get('app_access_key') and config.get('app_secret')) }}"
 
 metadata:
   autoImportSchema:
