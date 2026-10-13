@@ -504,6 +504,394 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/escalations"
+    incident_types:
+      type: DeclarativeStream
+      name: incident_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/incident_types
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - incident_types
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incident_types"
+    incident_attachments:
+      type: DeclarativeStream
+      name: incident_attachments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/incident_attachments
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - $ref: "#/definitions/base_error_handler"
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                  - $ref: "#/definitions/base_error_handler/response_filters/0"
+                  - $ref: "#/definitions/base_error_handler/response_filters/1"
+                  - $ref: "#/definitions/base_error_handler/response_filters/2"
+                  - $ref: "#/definitions/base_error_handler/response_filters/3"
+                  - $ref: "#/definitions/base_error_handler/response_filters/4"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - incident_attachments
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              request_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: incident_id
+              partition_field: incident_id
+              stream:
+                $ref: "#/definitions/streams/incidents"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incident_attachments"
+    catalog_entries:
+      type: DeclarativeStream
+      name: catalog_entries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/catalog_entries
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - catalog_entries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
+            stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              request_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: catalog_type_id
+              partition_field: catalog_type_id
+              stream:
+                $ref: "#/definitions/streams/catalog_types"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/catalog_entries"
+    catalog_resources:
+      type: DeclarativeStream
+      name: catalog_resources
+      primary_key:
+        - type
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/catalog_resources
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - resources
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/catalog_resources"
+    custom_field_options:
+      type: DeclarativeStream
+      name: custom_field_options
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/custom_field_options
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - custom_field_options
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 250
+            cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
+            stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              request_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: custom_field_id
+              partition_field: custom_field_id
+              stream:
+                $ref: "#/definitions/streams/custom_fields"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_field_options"
+    alert_sources:
+      type: DeclarativeStream
+      name: alert_sources
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/alert_sources
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - alert_sources
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - secret_token
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/alert_sources"
+    alert_routes:
+      type: DeclarativeStream
+      name: alert_routes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/alert_routes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - alert_routes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
+            stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/alert_routes"
+    alert_attributes:
+      type: DeclarativeStream
+      name: alert_attributes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/alert_attributes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - alert_attributes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/alert_attributes"
+    incident_alerts:
+      type: DeclarativeStream
+      name: incident_alerts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/incident_alerts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - incident_alerts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
+            stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incident_alerts"
+    escalation_paths:
+      type: DeclarativeStream
+      name: escalation_paths
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/escalation_paths
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - escalation_paths
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 25
+            cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
+            stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/escalation_paths"
+  base_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: retry-after
+        max_waiting_time_in_seconds: 600
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 401
+        error_message: "The API key is invalid or has been revoked. Create a new key in incident.io under Settings > API keys and update the connector configuration."
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 403
+        error_message: "The API key lacks a permission this stream needs: {{ ((response.get('errors') or [{}])[0].get('message') or 'see the incident.io error response')[:300] }}. Grant it in incident.io under Settings > API keys, or deselect the stream."
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes:
+          - 429
+        error_message: "incident.io rate limit reached. Retrying after the Retry-After interval."
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 408
+          - 500
+          - 502
+          - 503
+          - 504
+        error_message: "incident.io returned a transient error. Retrying."
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: system_error
+        http_codes:
+          - 400
+          - 404
+          - 405
+          - 406
+          - 409
+          - 412
+          - 413
+          - 422
+        error_message: "incident.io rejected the request: {{ ((response.get('errors') or [{}])[0].get('message') or 'see the incident.io error response')[:300] }}"
   base_requester:
     type: HttpRequester
     url_base: https://api.incident.io
@@ -513,54 +901,7 @@ definitions:
     error_handler:
       type: CompositeErrorHandler
       error_handlers:
-        - type: DefaultErrorHandler
-          max_retries: 5
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: retry-after
-              max_waiting_time_in_seconds: 600
-            - type: ExponentialBackoffStrategy
-              factor: 5
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              failure_type: config_error
-              http_codes:
-                - 401
-              error_message: "The API key is invalid or has been revoked. Create a new key in incident.io under Settings > API keys and update the connector configuration."
-            - type: HttpResponseFilter
-              action: FAIL
-              failure_type: config_error
-              http_codes:
-                - 403
-              error_message: "The API key lacks a permission this stream needs: {{ ((response.get('errors') or [{}])[0].get('message') or 'see the incident.io error response')[:300] }}. Grant it in incident.io under Settings > API keys, or deselect the stream."
-            - type: HttpResponseFilter
-              action: RATE_LIMITED
-              http_codes:
-                - 429
-              error_message: "incident.io rate limit reached. Retrying after the Retry-After interval."
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
-                - 408
-                - 500
-                - 502
-                - 503
-                - 504
-              error_message: "incident.io returned a transient error. Retrying."
-            - type: HttpResponseFilter
-              action: FAIL
-              failure_type: system_error
-              http_codes:
-                - 400
-                - 404
-                - 405
-                - 406
-                - 409
-                - 412
-                - 413
-                - 422
-              error_message: "incident.io rejected the request: {{ ((response.get('errors') or [{}])[0].get('message') or 'see the incident.io error response')[:300] }}"
+        - $ref: "#/definitions/base_error_handler"
   updated_at_cursor:
     type: DatetimeBasedCursor
     cursor_field: updated_at
@@ -592,6 +933,16 @@ streams:
   - $ref: "#/definitions/streams/incidents"
   - $ref: "#/definitions/streams/alerts"
   - $ref: "#/definitions/streams/escalations"
+  - $ref: "#/definitions/streams/incident_types"
+  - $ref: "#/definitions/streams/incident_attachments"
+  - $ref: "#/definitions/streams/catalog_entries"
+  - $ref: "#/definitions/streams/catalog_resources"
+  - $ref: "#/definitions/streams/custom_field_options"
+  - $ref: "#/definitions/streams/alert_sources"
+  - $ref: "#/definitions/streams/alert_routes"
+  - $ref: "#/definitions/streams/alert_attributes"
+  - $ref: "#/definitions/streams/incident_alerts"
+  - $ref: "#/definitions/streams/escalation_paths"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -637,7 +988,7 @@ spec:
       start_date:
         type: string
         title: Start Date
-        description: "Only sync records updated on or after this UTC date for the incremental streams (incidents, alerts, escalations, actions, follow-ups). The default predates all incident.io data, so everything is synced."
+        description: "Only sync records updated on or after this UTC date for the incremental streams (incidents, alerts, escalations, actions, follow-ups). The default predates all incident.io data, so everything is synced. Streams read per incident, such as `incident_attachments`, follow the same scope and only cover incidents updated on or after this date."
         format: date-time
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         default: "2020-01-01T00:00:00Z"
@@ -668,6 +1019,11 @@ spec:
 metadata:
   autoImportSchema:
     actions: true
+    incident_types: true
+    incident_attachments: true
+    catalog_entries: true
+    catalog_resources: true
+    custom_field_options: true
     catalog_types: true
     custom_fields: true
     follow-ups: true
@@ -785,6 +1141,656 @@ metadata:
     docsUrl: https://api-docs.incident.io/
 
 schemas:
+  incident_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      is_default:
+        type:
+          - boolean
+          - "null"
+      private_incidents_only:
+        type:
+          - boolean
+          - "null"
+      create_in_triage:
+        type:
+          - string
+          - "null"
+      owning_team_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+    required:
+      - id
+  incident_attachments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      incident_id:
+        type:
+          - string
+          - "null"
+      resource:
+        type:
+          - object
+          - "null"
+        properties:
+          external_id:
+            type:
+              - string
+              - "null"
+          permalink:
+            type:
+              - string
+              - "null"
+          resource_type:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  catalog_entries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      catalog_type_id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      external_id:
+        type:
+          - string
+          - "null"
+      aliases:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      rank:
+        type:
+          - integer
+          - "null"
+      attribute_values:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      archived_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+    required:
+      - id
+  catalog_resources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      engine_resource_type:
+        type:
+          - string
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      value_docstring:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+    required:
+      - type
+  custom_field_options:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      custom_field_id:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - string
+          - "null"
+      sort_key:
+        type:
+          - integer
+          - "null"
+    required:
+      - id
+  alert_sources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      source_type:
+        type:
+          - string
+          - "null"
+      template:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      owning_team_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      fixed_team_id:
+        type:
+          - string
+          - "null"
+      auto_resolve_incident_alerts:
+        type:
+          - boolean
+          - "null"
+      auto_resolve_timeout_minutes:
+        type:
+          - integer
+          - "null"
+      alert_events_url:
+        type:
+          - string
+          - "null"
+      email_options:
+        type:
+          - object
+          - "null"
+        properties:
+          email_address:
+            type:
+              - string
+              - "null"
+          redactions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          transform_expression:
+            type:
+              - string
+              - "null"
+      heartbeat_options:
+        type:
+          - object
+          - "null"
+        properties:
+          failure_threshold:
+            type:
+              - integer
+              - "null"
+          grace_period_seconds:
+            type:
+              - integer
+              - "null"
+          interval_seconds:
+            type:
+              - integer
+              - "null"
+          ping_url:
+            type:
+              - string
+              - "null"
+      http_custom_options:
+        type:
+          - object
+          - "null"
+        properties:
+          deduplication_key_path:
+            type:
+              - string
+              - "null"
+          transform_expression:
+            type:
+              - string
+              - "null"
+      jira_options:
+        type:
+          - object
+          - "null"
+        properties:
+          project_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      azure_devops_options:
+        type:
+          - object
+          - "null"
+        properties:
+          project_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      filter_condition_groups:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          additionalProperties: true
+      rate_limit_sharding:
+        type:
+          - object
+          - "null"
+        properties:
+          rate_limit_shard_key_path:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  alert_routes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      enabled:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  alert_attributes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      array:
+        type:
+          - boolean
+          - "null"
+      required:
+        type:
+          - boolean
+          - "null"
+      emoji:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  incident_alerts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      alert:
+        type:
+          - object
+          - "null"
+        properties:
+          alert_group_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          alert_source_id:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          deduplication_key:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          resolved_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          source_url:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+      incident:
+        type:
+          - object
+          - "null"
+        properties:
+          external_id:
+            type:
+              - integer
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          reference:
+            type:
+              - string
+              - "null"
+          status_category:
+            type:
+              - string
+              - "null"
+          summary:
+            type:
+              - string
+              - "null"
+          visibility:
+            type:
+              - string
+              - "null"
+      alert_route_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  escalation_paths:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      kind:
+        type:
+          - string
+          - "null"
+      path:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            type:
+              type:
+                - string
+                - "null"
+            delay:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+            escalation_path:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+            if_else:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+            level:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+            notify_channel:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+            repeat:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+      team_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      working_hours:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            timezone:
+              type:
+                - string
+                - "null"
+            weekday_intervals:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  end_time:
+                    type:
+                      - string
+                      - "null"
+                  start_time:
+                    type:
+                      - string
+                      - "null"
+                  weekday:
+                    type:
+                      - string
+                      - "null"
+      repeat_config:
+        type:
+          - object
+          - "null"
+        properties:
+          delay_repeat_on_activity:
+            type:
+              - boolean
+              - "null"
+          repeat_after_seconds:
+            type:
+              - integer
+              - "null"
+      current_responders:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            email:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            role:
+              type:
+                - string
+                - "null"
+            slack_user_id:
+              type:
+                - string
+                - "null"
+      param_bindings:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      template_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
   actions:
     type: object
     $schema: http://json-schema.org/schema#
