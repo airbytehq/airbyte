@@ -47,6 +47,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.44 | 2026-10-13 | [81988](https://github.com/airbytehq/airbyte/pull/81988) | Update dependencies |
 | 0.2.43 | 2026-10-07 | [88317](https://github.com/airbytehq/airbyte/pull/88317) | Archive connector: SmartEngage API and vendor site are offline (Cloudflare 521); zero successful syncs since 2025-05 |
 | 0.2.42 | 2026-06-30 | [81258](https://github.com/airbytehq/airbyte/pull/81258) | Update dependencies |
 | 0.2.41 | 2026-06-23 | [80630](https://github.com/airbytehq/airbyte/pull/80630) | Update dependencies |
