@@ -36,11 +36,11 @@ On an existing connection, `incidents` continues from its saved cursor, so test,
 
 ### Why
 
-Destinations currently load these timestamp values as text. The timestamp annotations let destinations treat them as time-zone-aware timestamps. incident.io has deprecated `/v2/catalog_types`; the v3 endpoint removes `semantic_type` and exposes the v3 catalog fields.
+Destinations currently load these timestamp values as text. The timestamp annotations let destinations treat them as time-zone-aware timestamps. incident.io has deprecated `/v2/catalog_types`; the v3 endpoint removes `semantic_type` and exposes the v3 catalog fields. incident.io has also deprecated `/v2/alert_routes`, so the `alert_routes` stream moves to `/v3/alert_routes`.
 
 ### Who is affected
 
-Connections that sync any of `actions`, `alerts`, `catalog_types`, `custom_fields`, `escalations`, `follow-ups`, `incident_roles`, `incident_statuses`, `incident_updates`, `incidents`, `schedules`, `severities`, or `workflows` need to refresh their source schema. Connections syncing `incident_attachments` may receive additional records because the parent incidents stream now includes all five modes. Connections that sync none of these streams do not need to change their schema or clear data for this release.
+Connections that sync any of `actions`, `alerts`, `catalog_types`, `custom_fields`, `escalations`, `follow-ups`, `incident_roles`, `incident_statuses`, `incident_updates`, `incidents`, `schedules`, `severities`, or `workflows` need to refresh their source schema. Connections syncing `incident_attachments` may receive additional records because the parent incidents stream now includes all five modes. Connections that sync none of these streams do not need to change their schema or clear data for this release. Connections that sync `alert_routes` only need to update queries that read `channel_config`, `incident_template`, or `message_template` from its raw records; see the `alert_routes` section below.
 
 ### Steps
 
@@ -53,6 +53,18 @@ Connections that sync any of `actions`, `alerts`, `catalog_types`, `custom_field
 ### Downstream changes
 
 Update SQL and dbt models, dashboards, and exports that cast or compare the 49 timestamp fields as text. Remove `catalog_types.semantic_type` from queries; it was always empty and has no replacement. Filters on `schema.attributes[].mode = 'manual'` must match `api` or `dashboard` instead. The `incidents` stream may contain more rows now that test, tutorial, and stream modes are requested; filter on the `mode` field if you need the previous standard-and-retrospective scope. The `incident_attachments` stream may also contain attachments for those additional incidents.
+
+### `alert_routes` moves to v3
+
+The `alert_routes` stream now reads `/v3/alert_routes`, because incident.io has deprecated `/v2/alert_routes`. Its declared columns (`id`, `name`, and `enabled`), primary key, and pagination are unchanged, so this stream needs no schema refresh and no clear.
+
+The v3 response no longer returns these three nested objects that v2 returned, so they no longer appear in synced records:
+
+- `channel_config`
+- `incident_template`
+- `message_template`
+
+v3 adds `grouping_config` and `message_config` instead. None of these five objects are declared in the schema, so they only appear where your destination keeps the full raw record. Update any query, model, or export that reads the three removed objects from `alert_routes` records.
 
 ## Connector upgrade guide
 
