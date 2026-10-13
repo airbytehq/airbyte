@@ -249,6 +249,82 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
         assert output.errors == []
         assert len(output.records) == 2
 
+    def test_given_checkpointed_job_canceled_with_no_url_when_read_then_rerun_slice_without_checkpointing(self) -> None:
+        """
+        See https://github.com/airbytehq/oncall/issues/13569
+
+        The job is self-canceled on checkpointing, but the API returns no `url` / `partialDataUrl`.
+        The same slice is expected to be requested again and to run to completion (without the second cancelation).
+        """
+        self._assert_slice_rerun_after_checkpoint_without_url(canceled_object_count="16000")
+
+    def test_given_checkpointed_job_canceled_with_no_url_and_lower_object_count_when_read_then_rerun_slice(self) -> None:
+        """
+        The CANCELED job can report the `objectCount` below the checkpoint threshold,
+        the slice is still expected to be re-run, since the job was self-canceled on checkpointing.
+        """
+        self._assert_slice_rerun_after_checkpoint_without_url(canceled_object_count="1700")
+
+    def test_given_checkpointed_job_canceled_with_url_but_no_records_when_read_then_rerun_slice_without_checkpointing(self) -> None:
+        """
+        The job is self-canceled on checkpointing and the API returns the `url`, but the result has no records,
+        so there is no checkpointed cursor to resume from. The same slice is expected to be requested again.
+        """
+        canceled_result_url = _JOB_RESULT_URL.replace("bulk-4476008693949.jsonl", "bulk-4476008693948.jsonl")
+        self._assert_slice_rerun_after_checkpoint_without_url(canceled_object_count="16000", canceled_result_url=canceled_result_url)
+
+    def _assert_slice_rerun_after_checkpoint_without_url(
+        self, canceled_object_count: str, canceled_result_url: Optional[str] = None
+    ) -> None:
+        job_created_at = (_INCREMENTAL_JOB_END_DATE - timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        next_bulk_operation_id = "gid://shopify/BulkOperation/4472588009771"
+        # both jobs are requested for the same slice
+        self._http_mocker.post(
+            create_job_creation_request(_SHOP_NAME, _INCREMENTAL_JOB_START_DATE, _INCREMENTAL_JOB_END_DATE),
+            [
+                JobCreationResponseBuilder(job_created_at=job_created_at).with_bulk_operation_id(_BULK_OPERATION_ID).build(),
+                JobCreationResponseBuilder(job_created_at=job_created_at).with_bulk_operation_id(next_bulk_operation_id).build(),
+            ],
+        )
+        # 1st job: self-canceled on checkpointing, no result (or a result with no records) is returned
+        self._http_mocker.post(
+            create_job_status_request(_SHOP_NAME, _BULK_OPERATION_ID),
+            [
+                JobStatusResponseBuilder().with_running_status(_BULK_OPERATION_ID, object_count="16000").build(),
+                JobStatusResponseBuilder()
+                .with_canceled_status(_BULK_OPERATION_ID, canceled_result_url, object_count=canceled_object_count)
+                .build(),
+            ],
+        )
+        if canceled_result_url:
+            # the result of the 1st job has no records to checkpoint from
+            self._http_mocker.get(HttpRequest(canceled_result_url), MetafieldOrdersJobResponseBuilder().build())
+        self._http_mocker.post(create_job_cancel_request(_SHOP_NAME, _BULK_OPERATION_ID), [HttpResponse(json.dumps({}), status_code=200)])
+        # 2nd job: passes the checkpoint threshold, but is not canceled (no cancel request is mocked for it) and completes
+        self._http_mocker.post(
+            create_job_status_request(_SHOP_NAME, next_bulk_operation_id),
+            [
+                JobStatusResponseBuilder().with_running_status(next_bulk_operation_id, object_count="16000").build(),
+                JobStatusResponseBuilder().with_completed_status(next_bulk_operation_id, _JOB_RESULT_URL, object_count="16000").build(),
+            ],
+        )
+        self._http_mocker.get(HttpRequest(_JOB_RESULT_URL), MetafieldOrdersJobResponseBuilder().with_record().with_record().build())
+
+        metafield_orders_orders_state = {
+            "orders": {"updated_at": _INCREMENTAL_JOB_START_DATE_ISO, "deleted": {"deleted_at": ""}},
+            "updated_at": _INCREMENTAL_JOB_START_DATE_ISO,
+        }
+        stream_state = StateBuilder().with_stream_state(_BULK_STREAM, metafield_orders_orders_state).build()
+        config_start_date = _INCREMENTAL_JOB_START_DATE - timedelta(weeks=104)
+        output = self._read(
+            _get_config(config_start_date, job_checkpoint_interval=15000), sync_mode=SyncMode.incremental, state=stream_state
+        )
+
+        assert output.errors == []
+        assert len(output.records) == 2
+        assert output.most_recent_state.stream_state.updated_at > _INCREMENTAL_JOB_START_DATE_ISO
+        assert any("checkpointing is disabled for the rest of this sync" in log.log.message for log in output.logs)
+
     def test_when_read_with_updated_at_field_before_bulk_request_window_start_date(self) -> None:
         """ "
         The motivation of this test is https://github.com/airbytehq/oncall/issues/6874

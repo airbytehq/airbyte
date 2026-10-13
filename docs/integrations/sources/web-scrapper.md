@@ -27,6 +27,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.69 | 2026-10-13 | [88854](https://github.com/airbytehq/airbyte/pull/88854) | Update dependencies |
 | 0.0.68 | 2026-10-07 | [88247](https://github.com/airbytehq/airbyte/pull/88247) | Authenticate with the documented `Authorization: Bearer` header instead of the undocumented `api_token` query parameter |
 | 0.0.67 | 2026-10-06 | [88090](https://github.com/airbytehq/airbyte/pull/88090) | Update dependencies |
 | 0.0.66 | 2026-09-29 | [87416](https://github.com/airbytehq/airbyte/pull/87416) | Update dependencies |
