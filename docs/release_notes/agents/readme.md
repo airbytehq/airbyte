@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## October 7, 2026
+
+Connectors
+
+- Fixed an issue where your agents got an empty result when looking up a single reporting webhook in Customer.io. Your agents can now retrieve a webhook's name, endpoint URL, subscribed events, and status. This fix is also available in the SDK.
+
 ## October 1, 2026
 
 Connectors

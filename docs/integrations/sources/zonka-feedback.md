@@ -11,7 +11,7 @@ For more information about the API visit https://apidocs.zonkafeedback.com/#intr
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `dc_id` | `string` | Data Center ID. The identifier for the data center, such as &#39;us1&#39; or &#39;e&#39; for EU. |  |
+| `dc_id` | `string` | Data Center ID. The identifier for the data center your account is hosted in: `us1` (US), `e` (EU), `in` (India) or `au` (Australia). Find it under Company Settings &gt; Developers &gt; API in Zonka Feedback. |  |
 | `auth_token` | `string` | Auth Token. Auth token to use. Generate it by navigating to Company Settings &gt; Developers &gt; API in your Zonka Feedback account. |  |
 
 ## Streams
@@ -36,6 +36,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.68 | 2026-10-07 | [88234](https://github.com/airbytehq/airbyte/pull/88234) | Skip streams returning 403 `not enabled` (feature not on the account plan) instead of failing the sync; add `in` and `au` data centers |
 | 0.0.67 | 2026-10-06 | [88115](https://github.com/airbytehq/airbyte/pull/88115) | Update dependencies |
 | 0.0.66 | 2026-09-29 | [87417](https://github.com/airbytehq/airbyte/pull/87417) | Update dependencies |
 | 0.0.65 | 2026-09-22 | [86895](https://github.com/airbytehq/airbyte/pull/86895) | Update dependencies |

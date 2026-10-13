@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d75a7792-e5db-4645-93c3-b4a16ad62ab0
-  dockerImageTag: 0.0.69
+  dockerImageTag: 0.0.70
   dockerRepository: airbyte/source-uppromote
   githubIssueLabel: source-uppromote
   icon: icon.svg
@@ -35,5 +35,5 @@ data:
     sl: 100
   externalDocumentationUrls:
     - title: UpPromote API documentation
-      url: https://uppromote.com/api
+      url: https://aff-api.uppromote.com/docs/v1.html
       type: api_reference
