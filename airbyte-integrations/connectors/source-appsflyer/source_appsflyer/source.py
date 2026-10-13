@@ -37,7 +37,14 @@ class AppsflyerStream(HttpStream, ABC):
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
     def __init__(
-        self, app_id: str, api_token: str, timezone: str, start_date: Union[date, str] = None, end_date: Union[date, str] = None, **kwargs
+        self,
+        app_id: str,
+        api_token: str,
+        timezone: str,
+        start_date: Union[date, str] = None,
+        end_date: Union[date, str] = None,
+        raw_data_lookback_window_in_hours: int = 0,
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.app_id = app_id
@@ -45,6 +52,7 @@ class AppsflyerStream(HttpStream, ABC):
         self.start_date = start_date
         self.end_date = end_date
         self.timezone = pendulum.timezone(timezone)
+        self.raw_data_lookback_window_in_hours = raw_data_lookback_window_in_hours
 
     @property
     def url_base(self) -> str:
@@ -144,11 +152,17 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
                 f"Expected {self.cursor_field} type '{type(current_state).__name__}' but returned type '{type(latest_state).__name__}'."
             ) from e
 
+    @property
+    def lookback_window(self) -> timedelta:
+        return timedelta(0)
+
     def stream_slices(
         self, *, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         cursor_value = stream_state.get(self.cursor_field)
+        if cursor_value:
+            cursor_value = parse_date(cursor_value, self.timezone) - self.lookback_window
         start_date = self.get_date(parse_date(cursor_value, self.timezone), self.start_date, max)
         if self.start_date_abnormal(start_date):
             self.end_date = start_date
@@ -174,6 +188,11 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
 
 class RawDataMixin:
     additional_fields = additional_fields.raw_data
+    raw_data_lookback_window_in_hours: int
+
+    @property
+    def lookback_window(self) -> timedelta:
+        return timedelta(hours=self.raw_data_lookback_window_in_hours)
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None

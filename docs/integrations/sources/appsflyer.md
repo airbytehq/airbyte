@@ -27,10 +27,13 @@ Provide the following configuration:
 | `api_token` | Yes | Your AppsFlyer API token (V2.0). |
 | `start_date` | Yes | The date to start syncing from when no previous state exists. Accepts `YYYY-MM-DD` or `YYYY-MM-DD HH:mm:ss`. Raw data reports are limited to the most recent 90 days; if the start date is more than 90 days in the past, the connector automatically uses a date 90 days ago. |
 | `timezone` | No | The time zone in which your app's data is stored, found in the app settings in the AppsFlyer console. Defaults to `UTC`. Provide a valid [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) name such as `US/Pacific`. |
+| `raw_data_lookback_window_in_hours` | No | The number of hours before the saved state that each incremental sync of the raw data reports re-fetches, to capture events that AppsFlyer makes available after a previous sync has already moved past them. Re-fetched records are emitted again, so use this with a deduplicating sync mode. Aggregate reports are not affected. Defaults to `0`, which disables the lookback. The maximum is `720` (30 days). |
 
 ## Supported sync modes
 
 The AppsFlyer source supports both **Full Refresh** and **Incremental** syncs for all streams. Incremental syncs use each stream's timestamp field (`install_time`, `event_time`, or `date`) as the cursor.
+
+To avoid duplicate records, use **Incremental | Append + Deduped**. The connector doesn't declare primary keys, and raw data records have no unique ID field, so you need to choose a primary key for each stream. For the install streams, use `appsflyer_id` and `event_time`. For the in-app event streams, use `appsflyer_id`, `event_time`, `event_name`, and `event_value`. Leaving out `event_value` merges distinct events: `event_time` has one-second precision, and events from the same `appsflyer_id` with the same name and time can differ only in their value. AppsFlyer's own in-app event deduplication likewise treats two events as identical only when their event name, event value, app ID, and AppsFlyer ID all match. See "How does AppsFlyer handle event deduplication?" in AppsFlyer's [In-app events overview](https://support.appsflyer.com/hc/en-us/articles/115005544169-In-app-events-Overview).
 
 ## Supported streams
 
@@ -87,6 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                           | Subject                                     |
 | :------ | :--------- | :----------------------------------------------------- | :------------------------------------------ |
+| 0.4.0 | 2026-10-13 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add `raw_data_lookback_window_in_hours` to re-fetch late-arriving raw data |
 | 0.3.3 | 2026-08-04 | [83360](https://github.com/airbytehq/airbyte/pull/83360) | Update dependencies |
 | 0.3.2 | 2026-07-28 | [78563](https://github.com/airbytehq/airbyte/pull/78563) | Update dependencies |
 | 0.3.1 | 2026-07-23 | [82242](https://github.com/airbytehq/airbyte/pull/82242) | Bump base image to python-connector-base 4.1.1 (Python 3.13.14) |
