@@ -90,7 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                           | Subject                                     |
 | :------ | :--------- | :----------------------------------------------------- | :------------------------------------------ |
-| 0.4.0 | 2026-10-13 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add `raw_data_lookback_window_in_hours` to re-fetch late-arriving raw data |
+| 0.4.0 | 2026-10-13 | [88918](https://github.com/airbytehq/airbyte/pull/88918) | Add `raw_data_lookback_window_in_hours` to re-fetch late-arriving raw data |
 | 0.3.3 | 2026-08-04 | [83360](https://github.com/airbytehq/airbyte/pull/83360) | Update dependencies |
 | 0.3.2 | 2026-07-28 | [78563](https://github.com/airbytehq/airbyte/pull/78563) | Update dependencies |
 | 0.3.1 | 2026-07-23 | [82242](https://github.com/airbytehq/airbyte/pull/82242) | Bump base image to python-connector-base 4.1.1 (Python 3.13.14) |
