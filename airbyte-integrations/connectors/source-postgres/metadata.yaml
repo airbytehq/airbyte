@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
-  dockerImageTag: 3.8.6
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-postgres
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   githubIssueLabel: source-postgres
@@ -77,6 +77,22 @@ data:
         autoStart: true
         autoPromoteStages: true
         strategy: slow
+    breakingChanges:
+      4.0.0:
+        message:
+          "**Version 4.0.0 discovers zero-scale numeric array columns as arrays of integers.
+          Connections without such columns don't need to do anything.**
+
+          **What changed:** the elements of a `NUMERIC(p)[]`, `NUMERIC(p,0)[]` or `DECIMAL(p,0)[]`
+          column are discovered as integers instead of numbers, matching the type of the
+          corresponding scalar column. Arrays of unconstrained `NUMERIC` or of `NUMERIC(p,s)` with a
+          non-zero scale are unchanged.
+
+          **What to do:** refresh the source schema of affected connections after upgrading. Until
+          the schema is refreshed, streams containing such a column are skipped. See the
+          [migration guide](https://docs.airbyte.com/integrations/sources/postgres-migrations).
+          "
+        upgradeDeadline: "2026-10-27"
   externalDocumentationUrls:
     - title: PostgreSQL documentation
       url: https://www.postgresql.org/docs/

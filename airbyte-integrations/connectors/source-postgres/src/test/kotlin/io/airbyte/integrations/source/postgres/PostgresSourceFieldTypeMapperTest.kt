@@ -96,11 +96,29 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
         add(
             testCase(
                 "DECIMAL(20,0)[]",
-                // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15879):
-                //  Fix type handling for numeric arrays.
-                ArrayAirbyteSchemaType(LeafAirbyteSchemaType.NUMBER),
+                ArrayAirbyteSchemaType(LeafAirbyteSchemaType.INTEGER),
                 AnsiSql.bigIntValues.toArrayVals("DECIMAL(20,0)[]"),
                 "DECIMAL(20,0) ARRAY"
+            )
+        )
+        add(
+            testCase(
+                "NUMERIC(10)[]",
+                ArrayAirbyteSchemaType(LeafAirbyteSchemaType.INTEGER),
+                AnsiSql.intValues.toArrayVals("NUMERIC(10)[]"),
+                "NUMERIC(10) ARRAY"
+            )
+        )
+        add(
+            testCase(
+                "NUMERIC(38,0)[]",
+                ArrayAirbyteSchemaType(LeafAirbyteSchemaType.INTEGER),
+                mapOf(
+                        "'99999999999999999999999999999999999999'" to
+                            "99999999999999999999999999999999999999"
+                    )
+                    .toArrayVals("NUMERIC(38,0)[]"),
+                "NUMERIC(38,0) ARRAY"
             )
         )
 

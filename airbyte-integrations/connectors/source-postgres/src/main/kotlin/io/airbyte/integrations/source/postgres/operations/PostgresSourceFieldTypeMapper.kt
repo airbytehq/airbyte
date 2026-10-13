@@ -79,15 +79,12 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                     else -> PostgresMoneyFieldType
                 }
             JDBCType.NUMERIC,
-            JDBCType.DECIMAL -> {
-                // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15879):
-                //  Fix type handling for numeric arrays.
-                //  Precision and scale for array types are not accurately reported by JDBC.
-                //  If we are able to fetch the real values, we should remove this clause.
-                if (type.isArray) BigDecimalFieldType
-                else if (type.precision != 0 && type.scale == 0) BigIntegerFieldType
+            JDBCType.DECIMAL ->
+                // For arrays, precision and scale are resolved from pg_attribute.atttypmod by
+                // PostgresSourceMetadataQuerier, since JDBC does not report them for array
+                // elements.
+                if (type.precision != 0 && type.scale == 0) BigIntegerFieldType
                 else BigDecimalFieldType
-            }
             JDBCType.DATE -> PostgresDateFieldType
             JDBCType.TIMESTAMP ->
                 // JDBC driver reports timestamptz as TIMESTAMP instead of TIMESTAMP_WITH_TIMEZONE
@@ -130,9 +127,6 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
             if (isArray) systemType.typeName!!.substring(1) else systemType.typeName!!
         val scalarJdbcType: JDBCType =
             if (isArray) scalarJDBCType(systemType.typeName!!) else systemType.jdbcType!!
-        // TODO: Fix type handling for numeric arrays.
-        //  Requires fetching the correct scale and precision of array elements from another source.
-        //  https://github.com/airbytehq/airbyte-internal-issues/issues/15879
         val scale = systemType.scale
         val precision = systemType.precision
 
