@@ -230,7 +230,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                          |
 |:------------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.53.8 | 2026-10-13 | [PR_NUMBER_TBD](https://github.com/airbytehq/airbyte/pull/PR_NUMBER_TBD) | Upgrade to Bulk CDK 1.1.15, which simplifies the shared JDBC date and timestamp reads. |
+| 3.53.8 | 2026-10-13 | [88908](https://github.com/airbytehq/airbyte/pull/88908) | Upgrade to Bulk CDK 1.1.15, which simplifies the shared JDBC date and timestamp reads. |
 | 3.53.7 | 2026-10-09 | [88430](https://github.com/airbytehq/airbyte/pull/88430) | Upgrade to Bulk CDK 1.1.14. |
 | 3.53.6      | 2026-10-02 | [87650](https://github.com/airbytehq/airbyte/pull/87650)   | Classify MySQL EOF errors whose byte counts contain thousands separators, and the "Expected X bytes, received only Y bytes" format, as transient so syncs retry. |
 | 3.53.5      | 2026-09-09 | [77840](https://github.com/airbytehq/airbyte/pull/77840)   | Fix CDC binlog client authentication when SSL `verify_ca`/`verify_identity` is configured with client certificates.                              |
