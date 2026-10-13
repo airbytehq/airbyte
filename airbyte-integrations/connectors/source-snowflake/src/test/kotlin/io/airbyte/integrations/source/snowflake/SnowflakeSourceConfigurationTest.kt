@@ -227,4 +227,64 @@ class SnowflakeSourceConfigurationTest {
             factory.makeWithoutExceptionHandling(spec)
         }
     }
+
+    @Test
+    fun testNormalizeHost() {
+        val expected: Map<String, String> =
+            mapOf(
+                // Plain hosts are unchanged.
+                "acct.snowflakecomputing.com" to "acct.snowflakecomputing.com",
+                "acct.us-east-2.aws.snowflakecomputing.com" to
+                    "acct.us-east-2.aws.snowflakecomputing.com",
+                "" to "",
+                // What the driver tolerates is removed.
+                "  acct.snowflakecomputing.com  " to "acct.snowflakecomputing.com",
+                "https://acct.snowflakecomputing.com" to "acct.snowflakecomputing.com",
+                "http://acct.snowflakecomputing.com" to "acct.snowflakecomputing.com",
+                "https://acct.snowflakecomputing.com/" to "acct.snowflakecomputing.com",
+                "acct.snowflakecomputing.com:443" to "acct.snowflakecomputing.com",
+                "acct.snowflakecomputing.com/" to "acct.snowflakecomputing.com",
+                "HTTPS://Acct.snowflakecomputing.com:443/" to "Acct.snowflakecomputing.com",
+                " https://acct.snowflakecomputing.com:443/ " to "acct.snowflakecomputing.com",
+                // What it cannot handle is kept for the syntax check.
+                "https://app.snowflake.com/org/acct" to "app.snowflake.com/org/acct",
+                "acct.snowflakecomputing.com/console" to "acct.snowflakecomputing.com/console",
+                "acct.snowflakecomputing.com//" to "acct.snowflakecomputing.com/",
+                "user@acct.snowflakecomputing.com" to "user@acct.snowflakecomputing.com",
+                "https://user:pw@acct.snowflakecomputing.com" to
+                    "user:pw@acct.snowflakecomputing.com",
+                "acct.snowflakecomputing.com:8443" to "acct.snowflakecomputing.com:8443",
+                "acct.snowflakecomputing.com:443:443" to "acct.snowflakecomputing.com:443",
+                "jdbc:snowflake://acct.snowflakecomputing.com" to
+                    "jdbc:snowflake://acct.snowflakecomputing.com",
+                "ftp://acct.snowflakecomputing.com" to "ftp://acct.snowflakecomputing.com",
+            )
+        for ((raw: String, normalized: String) in expected) {
+            assertEquals(
+                normalized,
+                SnowflakeSourceConfigurationFactory.normalizeHost(raw),
+                "raw '$raw'"
+            )
+        }
+    }
+
+    @Test
+    fun testHostIsNormalizedInTheConfigurationButNotInTheSpec() {
+        val spec =
+            SnowflakeSourceConfigurationSpecification().apply {
+                host = "https://acct.snowflakecomputing.com:443/"
+                role = "TEST_ROLE"
+                warehouse = "TEST_WAREHOUSE"
+                database = "TEST_DATABASE"
+                credentials =
+                    ProgrammaticAccessTokenCredentialsSpecification(
+                        programmaticAccessToken = "test-token"
+                    )
+            }
+
+        val config = factory.makeWithoutExceptionHandling(spec)
+
+        assertEquals("acct.snowflakecomputing.com", config.realHost)
+        assertEquals("https://acct.snowflakecomputing.com:443/", spec.host)
+    }
 }
