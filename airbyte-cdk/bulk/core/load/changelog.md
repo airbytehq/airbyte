@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.2 — 2026-10-08
+
+Fix: Iceberg toolkit no longer emits NOT NULL constraints nested inside list types (e.g. _airbyte_meta.changes), which Databricks/Delta rejects; existing tables are relaxed in place via schema evolution.
+
 ### 1.1.1 — 2026-09-24
 
 Add the Fusion archive toolkit to the published bulk load CDK toolkits.
