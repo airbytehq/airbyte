@@ -172,8 +172,8 @@ The connector reports these Ramp errors as configuration errors, so Airbyte does
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date | Pull Request | Subject |
+| ------------------ | ------------------- | -------------- | ---------------- |
 | 1.1.0 | 2026-10-13 | [88128](https://github.com/airbytehq/airbyte/pull/88128) | Add OAuth authentication; existing client-credentials configs are migrated automatically |
 | 1.0.1 | 2026-10-13 | [88768](https://github.com/airbytehq/airbyte/pull/88768) | Update dependencies |
 | 1.0.0 | 2026-10-12 | [88373](https://github.com/airbytehq/airbyte/pull/88373) | Declare 13 date and timestamp fields on `cards`, `transactions` and `reimbursements` with their real types. See the [migration guide](/integrations/sources/ramp-migrations#upgrading-to-100) |
