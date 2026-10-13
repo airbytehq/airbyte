@@ -433,8 +433,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 <details>
   <summary>Expand to review</summary>
 
-| Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-|:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :------------ | :----------- | :----------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.4.2 | 2026-10-13 | [88495](https://github.com/airbytehq/airbyte/pull/88495) | Upgrade to Bulk CDK 1.1.2: write the fields inside `_airbyte_meta.changes` as optional so Databricks/Delta can query the tables. Existing tables are migrated in place; downgrading past this version afterwards is not supported. |
 | 0.4.1 | 2026-10-09 | [87621](https://github.com/airbytehq/airbyte/pull/87621) | Upgrade to Bulk CDK 1.1.1. |
 | 0.4.0 | 2026-09-15 | [85827](https://github.com/airbytehq/airbyte/pull/85827) | Add `normalize_column_names` option: lowercase column names, replace non-alphanumeric characters with underscores, and prefix SQL reserved keywords. |
