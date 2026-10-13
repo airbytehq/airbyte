@@ -2,6 +2,7 @@
 package io.airbyte.cdk.command
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.ConnectorErrorException
 
 /**
  * Each connector contains an implementation of this interface in a stateless class which maps the
@@ -11,10 +12,19 @@ import io.airbyte.cdk.ConfigErrorException
 interface SourceConfigurationFactory<I : ConfigurationSpecification, O : SourceConfiguration> {
     fun makeWithoutExceptionHandling(pojo: I): O
 
-    /** Wraps [makeWithoutExceptionHandling] exceptions in [ConfigErrorException]. */
+    /**
+     * Wraps [makeWithoutExceptionHandling] exceptions in [ConfigErrorException].
+     *
+     * A [ConnectorErrorException] thrown on purpose by the connector (typically a
+     * [ConfigErrorException] rejecting the configuration with a user-facing message) is rethrown
+     * unchanged so that its message reaches the user; wrapping it would hide that message behind
+     * the generic "Failed to build ConnectorConfiguration." one.
+     */
     fun make(spec: I): O =
         try {
             makeWithoutExceptionHandling(spec)
+        } catch (e: ConnectorErrorException) {
+            throw e
         } catch (e: Exception) {
             // Wrap NPEs (mostly) in ConfigErrorException.
             throw ConfigErrorException("Failed to build ConnectorConfiguration.", e)

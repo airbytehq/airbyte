@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.16 — 2026-10-12
+
+[#TBD](https://github.com/airbytehq/airbyte/pull/TBD) — `SourceConfigurationFactory.make()` rethrows a `ConnectorErrorException` (for example the `ConfigErrorException` a connector throws to reject its configuration, such as `Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.`) unchanged instead of wrapping it in the generic `Failed to build ConnectorConfiguration.` error, so the connector's message reaches the user in CHECK. Every other exception is still wrapped. This matches the existing behaviour of `DestinationConfigurationFactory`.
+
 ### 1.1.15 — 2026-10-08
 
 [#88175](https://github.com/airbytehq/airbyte/pull/88175) — Restore null-safe JDBC `DateAccessor`/`TimestampAccessor` getters and revert `OffsetDateTimeFieldType` to `ObjectGetter`, removing the Postgres-specific `infinity`/`-infinity` checks from the shared accessors (source-postgres handles them in its own field types). MySQL zero dates read with `zeroDateTimeBehavior=convertToNull` now become null without a WARN stack trace or a `RETRIEVAL_FAILURE_TOTAL` change.
