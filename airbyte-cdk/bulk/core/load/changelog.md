@@ -9,7 +9,7 @@ The Load CDK provides functionality for destination connectors including stream-
 
 ### 1.1.3 — 2026-10-12
 
-[#TBD](https://github.com/airbytehq/airbyte/pull/TBD) — Add `DestinationConfigurationFactory` tests (core and legacy-task-loader) pinning that a connector `ConfigErrorException` passes through `make()` unchanged. No behaviour change; released alongside extract 1.1.16, which gains the same pass-through in `SourceConfigurationFactory`.
+[#88497](https://github.com/airbytehq/airbyte/pull/88497) — Add `DestinationConfigurationFactory` tests (core and legacy-task-loader) pinning that a connector `ConfigErrorException` passes through `make()` unchanged. No behaviour change; released alongside extract 1.1.16, which gains the same pass-through in `SourceConfigurationFactory`.
 
 ### 1.1.2 — 2026-10-08
 
