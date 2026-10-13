@@ -1,10 +1,14 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.postgres
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.output.ConfigError
 import io.airbyte.cdk.output.ConnectorError
+import io.airbyte.cdk.output.ExceptionHandler
 import io.airbyte.cdk.output.RegexExceptionClassifier
 import io.airbyte.cdk.output.TransientError
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
+import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import java.net.ConnectException
@@ -19,11 +23,18 @@ import org.postgresql.util.PSQLState
  * Exercises the regex rules in `src/main/resources/application.yml`, in particular the
  * unreachable-host rules whose output must point the user at the host and port, the Postgres
  * remote-connection settings and the firewall / Airbyte Cloud IP allowlist.
+ *
+ * The [ExceptionHandler] tests cover the whole classifier chain: the connector orders the regex
+ * classifier ahead of the default one so that a rule can refine a [ConfigErrorException] the CDK
+ * throws, such as "Discovered zero tables.", while typed exceptions that match no rule keep their
+ * message.
  */
 @MicronautTest
 class PostgresExceptionClassifierTest {
 
     @Inject lateinit var classifier: RegexExceptionClassifier
+
+    @Inject lateinit var handler: ExceptionHandler
 
     @Test
     fun testConnectionAttemptFailedOnUnknownHost() {
@@ -114,6 +125,86 @@ class PostgresExceptionClassifierTest {
         Assertions.assertNull(classifier.classify(exception))
     }
 
+    @Test
+    fun testRegexClassifierRunsAheadOfDefaultClassifier() {
+        // application.yml sets airbyte.connector.exception-classifiers.regex.order to 0, ahead of
+        // the DefaultExceptionClassifier (1) and the JdbcExceptionClassifier (100).
+        Assertions.assertInstanceOf(
+            RegexExceptionClassifier::class.java,
+            handler.classifiers.first()
+        )
+    }
+
+    @Test
+    fun testDiscoveredZeroTablesIsRefinedWithPostgresGuidance() {
+        // Thrown by the CDK's CheckOperation when no table is found in any discovered schema.
+        val trace: AirbyteErrorTraceMessage =
+            handler.handle(ConfigErrorException("Discovered zero tables."))
+        Assertions.assertEquals(
+            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+            trace.failureType
+        )
+        Assertions.assertTrue(
+            trace.message.startsWith(ZERO_TABLES_GUIDANCE),
+            "Expected the zero-tables guidance in: ${trace.message}",
+        )
+        Assertions.assertTrue(
+            trace.message.contains(
+                "https://docs.airbyte.com/integrations/sources/postgres" +
+                    "#step-1-create-a-dedicated-read-only-postgres-user"
+            ),
+            "Expected the read-only user docs link in: ${trace.message}",
+        )
+    }
+
+    @Test
+    fun testTypedConfigErrorWithoutMatchingRuleKeepsItsMessage() {
+        // Thrown by PostgresSourceMetadataQuerier on Airbyte Cloud; no regex rule matches it, so
+        // the DefaultExceptionClassifier still maps it to its raw message.
+        val message =
+            "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel. " +
+                "Current SSL mode: disable"
+        val trace: AirbyteErrorTraceMessage = handler.handle(ConfigErrorException(message))
+        Assertions.assertEquals(
+            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+            trace.failureType
+        )
+        Assertions.assertEquals(message, trace.message)
+    }
+
+    @Test
+    fun testTransientRuleStillYieldsTransientErrorThroughHandler() {
+        val driverException =
+            PSQLException("The connection attempt failed.", PSQLState.CONNECTION_UNABLE_TO_CONNECT)
+        val exception =
+            RuntimeException(
+                "An exception occurred in the change event producer. This connector will be stopped.",
+                driverException,
+            )
+        val trace: AirbyteErrorTraceMessage = handler.handle(exception)
+        Assertions.assertEquals(
+            AirbyteErrorTraceMessage.FailureType.TRANSIENT_ERROR,
+            trace.failureType,
+        )
+    }
+
+    @Test
+    fun testCheckFailureOnDiscoveredZeroTables() {
+        val (trace: AirbyteErrorTraceMessage, status: AirbyteConnectionStatus) =
+            handler.handleCheckFailure(ConfigErrorException("Discovered zero tables."))
+        Assertions.assertEquals(
+            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+            trace.failureType
+        )
+        Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.status)
+        Assertions.assertTrue(
+            status.message.startsWith(
+                "Could not connect with provided configuration. Error: $ZERO_TABLES_GUIDANCE"
+            ),
+            "Unexpected connection status message: ${status.message}",
+        )
+    }
+
     private fun assertUnreachableHostConfigError(result: ConnectorError?) {
         Assertions.assertInstanceOf(ConfigError::class.java, result)
         val displayMessage: String = (result as ConfigError).displayMessage
@@ -123,7 +214,7 @@ class PostgresExceptionClassifierTest {
                 "Check the host and port, that Postgres accepts remote connections " +
                     "(listen_addresses, pg_hba.conf), and that your firewall or security group " +
                     "allows Airbyte's IP addresses.",
-                "https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses",
+                "https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist",
                 "https://docs.airbyte.com/integrations/sources/postgres",
             )) {
             Assertions.assertTrue(
@@ -131,5 +222,15 @@ class PostgresExceptionClassifierTest {
                 "Expected '$expected' in: $displayMessage",
             )
         }
+    }
+
+    companion object {
+        const val ZERO_TABLES_GUIDANCE: String =
+            "No tables are visible to the configured user in the selected database and schemas. " +
+                "Grant USAGE on each schema and SELECT on the tables to sync " +
+                "(GRANT USAGE ON SCHEMA <schema> TO <user>; " +
+                "GRANT SELECT ON ALL TABLES IN SCHEMA <schema> TO <user>), " +
+                "check the database name and the Schemas setting, " +
+                "and check that no table filter excludes every table."
     }
 }
