@@ -20,7 +20,6 @@ const getRemarkPlugins = () => ({
   npm2yarn: require("@docusaurus/remark-plugin-npm2yarn"),
   agentConnectorHeaderDecoration: require("./src/remark/agentConnectorHeaderDecoration"),
   planInformation: require("./src/remark/planInformation"),
-  connectorTypeBanner: require("./src/remark/connectorTypeBanner"),
   codeBlockTabs: require("./src/remark/codeBlockTabs"),
 });
 
@@ -241,7 +240,6 @@ const config: Config = {
           plugins.docsHeaderDecoration,
           plugins.enterpriseDocsHeaderInformation,
           plugins.productInformation,
-          plugins.connectorTypeBanner,
           plugins.docMetaTags,
         ],
       },
@@ -382,7 +380,7 @@ const config: Config = {
     announcementBar: {
       id: "try_airbyte_cloud",
       content:
-        '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.com/signup?utm_source=docs&utm_medium=banner&utm_campaign=airbyte_cloud_docs_banner">Try Airbyte Cloud!</a> Free trial for 30 days, no credit card needed.',
+        '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.com/signup?utm_source=docs&utm_medium=banner&utm_campaign=airbyte_cloud_docs_banner">Try Airbyte Cloud!</a> Free trial for 14 days, no credit card needed.',
       backgroundColor: "#615eff",
       textColor: "#ffffff",
       isCloseable: false,

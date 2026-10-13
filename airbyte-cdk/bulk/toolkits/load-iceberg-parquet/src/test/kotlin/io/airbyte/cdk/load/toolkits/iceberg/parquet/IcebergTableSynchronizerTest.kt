@@ -5,6 +5,11 @@
 package io.airbyte.cdk.load.toolkits.iceberg.parquet
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
+import io.airbyte.cdk.load.message.Meta
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.just
@@ -542,6 +547,103 @@ class IcebergTableSynchronizerTest {
             .buildTable(tableId, schema)
             .withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
             .create()
+    }
+
+    private fun oldRequiredMetaSchema(): Schema =
+        Schema(
+            listOf(
+                Types.NestedField.required(
+                    1,
+                    Meta.COLUMN_NAME_AB_META,
+                    Types.StructType.of(
+                        Types.NestedField.required(2, "sync_id", Types.LongType.get()),
+                        Types.NestedField.required(
+                            3,
+                            "changes",
+                            Types.ListType.ofRequired(
+                                4,
+                                Types.StructType.of(
+                                    Types.NestedField.required(5, "field", Types.StringType.get()),
+                                    Types.NestedField.required(6, "change", Types.StringType.get()),
+                                    Types.NestedField.required(7, "reason", Types.StringType.get()),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                Types.NestedField.required(8, "id", Types.StringType.get()),
+            ),
+        )
+
+    private fun nullableMetaIncomingSchema(): Schema =
+        ObjectType(
+                linkedMapOf(
+                    Meta.COLUMN_NAME_AB_META to
+                        FieldType(Meta.AirbyteMetaFields.META.type, nullable = false),
+                    "id" to FieldType(StringType, nullable = false),
+                )
+            )
+            .toIcebergSchema(emptyList())
+
+    private fun assertMetaSchemaRelaxedInPlace(
+        tableName: String,
+        behavior: ColumnTypeChangeBehavior
+    ) {
+        val warehousePath = Files.createTempDirectory("iceberg-meta-nullability")
+        val catalog = HadoopCatalog(Configuration(), warehousePath.toString())
+        val tableId = TableIdentifier.of("db", tableName)
+        val table = createTableWithoutSortOrder(catalog, tableId, oldRequiredMetaSchema())
+        val incomingSchema = nullableMetaIncomingSchema()
+        val oldSchema = table.schema()
+        val oldMeta = oldSchema.findField(Meta.COLUMN_NAME_AB_META)!!
+        val oldChanges = oldSchema.findField("${Meta.COLUMN_NAME_AB_META}.changes")!!
+        val oldList = oldChanges.type().asListType()
+        val oldElement = oldList.elementType().asStructType()
+        val oldNestedFields = oldElement.fields().associate { it.name() to it.fieldId() }
+
+        val firstResult =
+            createRealSynchronizer().maybeApplySchemaChanges(table, incomingSchema, behavior)
+        if (behavior == ColumnTypeChangeBehavior.OVERWRITE) {
+            firstResult.pendingUpdates.forEach { it.commit() }
+        }
+
+        val reloadedTable = catalog.loadTable(tableId)
+        reloadedTable.refresh()
+        val relaxedSchema = reloadedTable.schema()
+        val relaxedMeta = relaxedSchema.findField(Meta.COLUMN_NAME_AB_META)!!
+        val relaxedChanges = relaxedSchema.findField("${Meta.COLUMN_NAME_AB_META}.changes")!!
+        val relaxedList = relaxedChanges.type().asListType()
+        val relaxedElement = relaxedList.elementType().asStructType()
+
+        assertThat(relaxedMeta.fieldId()).isEqualTo(oldMeta.fieldId())
+        assertThat(relaxedChanges.fieldId()).isEqualTo(oldChanges.fieldId())
+        assertThat(relaxedList.elementId()).isEqualTo(oldList.elementId())
+        assertThat(relaxedList.isElementOptional).isTrue()
+        assertThat(relaxedElement.fields()).allMatch { it.isOptional }
+        assertThat(relaxedElement.fields().associate { it.name() to it.fieldId() })
+            .isEqualTo(oldNestedFields)
+
+        val secondResult =
+            createRealSynchronizer()
+                .maybeApplySchemaChanges(reloadedTable, incomingSchema, behavior)
+        assertThat(secondResult.pendingUpdates).isEmpty()
+        assertThat(reloadedTable.schema().toString()).isEqualTo(relaxedSchema.toString())
+
+        catalog.dropTable(tableId)
+        warehousePath.toFile().deleteRecursively()
+    }
+
+    @Test
+    fun `real table relaxes nested list nullability with safe supertype`() {
+        assertMetaSchemaRelaxedInPlace(
+            "meta_safe_supertype",
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
+        )
+    }
+
+    @Test
+    fun `real table relaxes nested list nullability with overwrite`() {
+        assertMetaSchemaRelaxedInPlace("meta_overwrite", ColumnTypeChangeBehavior.OVERWRITE)
     }
 
     /**

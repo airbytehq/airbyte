@@ -56,10 +56,12 @@ definitions:
             inject_into: request_parameter
             field_name: size
           pagination_strategy:
-            type: PageIncrement
-            start_from_page: 1
+            type: CursorPagination
             page_size: 100
-            inject_on_first_request: true
+            cursor_value: "{{ response.get('page', {}).get('number', 0) + 1 }}"
+            stop_condition: >-
+              {{ response.get('page', {}).get('number', 0) + 1 >= response.get('page', {}).get('totalPages', 0)
+              or (response.get('page', {}).get('number', 0) + 1) * response.get('page', {}).get('size', 100) >= 1000 }}
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -107,10 +109,12 @@ definitions:
             inject_into: request_parameter
             field_name: size
           pagination_strategy:
-            type: PageIncrement
-            start_from_page: 1
+            type: CursorPagination
             page_size: 100
-            inject_on_first_request: true
+            cursor_value: "{{ response.get('page', {}).get('number', 0) + 1 }}"
+            stop_condition: >-
+              {{ response.get('page', {}).get('number', 0) + 1 >= response.get('page', {}).get('totalPages', 0)
+              or (response.get('page', {}).get('number', 0) + 1) * response.get('page', {}).get('size', 100) >= 1000 }}
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -158,10 +162,12 @@ definitions:
             inject_into: request_parameter
             field_name: size
           pagination_strategy:
-            type: PageIncrement
-            start_from_page: 1
+            type: CursorPagination
             page_size: 100
-            inject_on_first_request: true
+            cursor_value: "{{ response.get('page', {}).get('number', 0) + 1 }}"
+            stop_condition: >-
+              {{ response.get('page', {}).get('number', 0) + 1 >= response.get('page', {}).get('totalPages', 0)
+              or (response.get('page', {}).get('number', 0) + 1) * response.get('page', {}).get('size', 100) >= 1000 }}
       schema_loader:
         type: InlineSchemaLoader
         schema:

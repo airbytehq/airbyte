@@ -2074,7 +2074,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 ### Conferences List
 
-Returns a list of conferences for an account
+Returns a list of conferences for an account. From September 30, 2026 Twilio returns only in-progress conferences when Status is omitted, so pass Status explicitly to retrieve init or completed conferences.
+
 
 #### CLI
 
@@ -2119,6 +2120,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `AccountSid` | `string` | Yes | Account SID |
+| `Status` | `"init" \| "in-progress" \| "completed"` | No | Status of the conferences to return. Twilio defaults to in-progress conferences only from September 30, 2026; request completed conferences explicitly.
+ |
 | `PageSize` | `integer` | No | Number of items to return per page |
 
 
