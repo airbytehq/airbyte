@@ -29,6 +29,7 @@ class MySqlSourceMetadataQuerierTableFilterTest {
                 selectQueryGenerator = MySqlSourceOperations(),
                 fieldTypeMapper = MySqlSourceOperations(),
                 checkQueries = JdbcCheckQueries(),
+                featureFlags = emptySet(),
             )
 
         @JvmStatic
