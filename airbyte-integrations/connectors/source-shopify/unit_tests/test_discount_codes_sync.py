@@ -499,9 +499,10 @@ def test_graphql_errors_non_throttled_raises(auth_config, time_sleep_mock):
     [
         pytest.param("THROTTLED", id="THROTTLED"),
         pytest.param("MAX_COST_EXCEEDED", id="MAX_COST_EXCEEDED"),
+        pytest.param("INTERNAL_SERVER_ERROR", id="INTERNAL_SERVER_ERROR"),
     ],
 )
-def test_graphql_throttled_retries_then_succeeds(auth_config, time_sleep_mock, error_code):
+def test_graphql_retryable_errors_retry_then_succeed(auth_config, time_sleep_mock, error_code):
     stream = DiscountCodesSync(auth_config)
     url = _graphql_url()
 

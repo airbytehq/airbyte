@@ -41,7 +41,7 @@ from source_shopify.utils import (
     ShopifyGraphQlErrorHandler,
     ShopifyNonRetryableErrors,
     ShopifyRateLimiter,
-    is_throttled_graphql_error,
+    is_retryable_graphql_error,
 )
 
 from airbyte_cdk import HttpSubStream
@@ -273,7 +273,7 @@ class DeletedProducts(IncrementalShopifyStream):
             raise AirbyteTracedException(
                 message=f"Stream `{self.name}`: Shopify GraphQL request failed: "
                 + "; ".join(str(error.get("message", error)) for error in errors),
-                failure_type=FailureType.transient_error if is_throttled_graphql_error(errors) else FailureType.system_error,
+                failure_type=FailureType.transient_error if is_retryable_graphql_error(errors) else FailureType.system_error,
             )
         events = ((json_response.get("data") or {}).get("events") or {}).get("nodes", [])
         for event in events:
@@ -626,18 +626,18 @@ class DiscountCodesSync(IncrementalShopifyStream):
             result = response.json()
             errors = result.get("errors")
             if errors:
-                if is_throttled_graphql_error(errors):
+                if is_retryable_graphql_error(errors):
                     if attempt < self._GRAPHQL_MAX_RETRIES:
                         ShopifyRateLimiter.wait_time(ShopifyRateLimiter.on_unknown_load)
                         continue
                     raise AirbyteTracedException(
-                        message="GraphQL query for stream `discount_codes_sync` exceeded max retries due to throttling."
+                        message="GraphQL query for stream `discount_codes_sync` exceeded max retries on transient errors."
                     )
                 error_messages = "; ".join(e.get("message", str(e)) for e in errors)
                 raise AirbyteTracedException(message=f"GraphQL query failed for stream `discount_codes_sync`: {error_messages}")
             ShopifyRateLimiter.wait_time(ShopifyRateLimiter.get_graphql_api_wait_time(response, threshold=0.9))
             return result
-        raise AirbyteTracedException(message="GraphQL query for stream `discount_codes_sync` exceeded max retries due to throttling.")
+        raise AirbyteTracedException(message="GraphQL query for stream `discount_codes_sync` exceeded max retries on transient errors.")
 
     @staticmethod
     def _extract_codes_connection(code_discount: Mapping[str, Any]) -> Mapping[str, Any]:

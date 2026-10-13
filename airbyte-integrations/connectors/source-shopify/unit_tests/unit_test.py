@@ -185,6 +185,7 @@ THROTTLED_RESPONSE = {"errors": [{"message": "Throttled", "extensions": {"code":
 GRAPHQL_ERROR_RESPONSE = {
     "errors": [{"message": "Internal error. Looks like something went wrong on our end.", "extensions": {"code": "INTERNAL_SERVER_ERROR"}}]
 }
+ACCESS_DENIED_RESPONSE = {"errors": [{"message": "Access denied", "extensions": {"code": "ACCESS_DENIED"}}]}
 
 
 def mock_shop_features(requests_mock, market_driven_shipping: bool) -> None:
@@ -200,7 +201,7 @@ def mock_shop_features(requests_mock, market_driven_shipping: bool) -> None:
             True,
             id="market_driven_shop_still_reads_delivery_profiles_and_warns",
         ),
-        pytest.param(GRAPHQL_ERROR_RESPONSE, False, id="unreadable_flag_reads_delivery_profiles_without_the_snapshot_warning"),
+        pytest.param(ACCESS_DENIED_RESPONSE, False, id="unreadable_flag_reads_delivery_profiles_without_the_snapshot_warning"),
     ],
 )
 def test_countries_stream_slices_not_gated_by_market_driven_shipping(
@@ -240,6 +241,7 @@ def test_market_countries_stream_slices_fail_when_flag_is_unreadable(requests_mo
     with pytest.raises(AirbyteTracedException) as exc_info:
         list(MarketCountries(auth_config).stream_slices())
     assert exc_info.value.failure_type == FailureType.transient_error
+    assert requests_mock.call_count == 6
 
 
 def test_market_driven_shipping_flag_is_fetched_once(requests_mock, auth_config):
@@ -296,7 +298,7 @@ def test_market_driven_shipping_flag_is_unreadable_when_throttling_persists(requ
         ),
         pytest.param({"data": {"shop": {"features": {"marketDrivenShipping": None}}}}, id="null_flag_without_errors"),
         pytest.param({"data": {"shop": {"features": {}}}}, id="flag_missing_without_errors"),
-        pytest.param({"data": None, **GRAPHQL_ERROR_RESPONSE}, id="internal_server_error"),
+        pytest.param({"data": None, **ACCESS_DENIED_RESPONSE}, id="access_denied"),
     ],
 )
 def test_market_driven_shipping_flag_is_unreadable(requests_mock, auth_config, caplog, response):
@@ -333,8 +335,8 @@ def deleted_products_page(nodes, end_cursor: Optional[str] = None) -> Mapping[st
 @pytest.mark.parametrize(
     "response",
     [
-        pytest.param(GRAPHQL_ERROR_RESPONSE, id="errors_without_data"),
-        pytest.param({"data": None, **GRAPHQL_ERROR_RESPONSE}, id="errors_with_null_data"),
+        pytest.param(ACCESS_DENIED_RESPONSE, id="errors_without_data"),
+        pytest.param({"data": None, **ACCESS_DENIED_RESPONSE}, id="errors_with_null_data"),
     ],
 )
 def test_deleted_products_fails_on_graphql_errors(requests_mock, auth_config, response):
@@ -345,8 +347,15 @@ def test_deleted_products_fails_on_graphql_errors(requests_mock, auth_config, re
     assert exc_info.value.failure_type == FailureType.system_error
 
 
-def test_deleted_products_retries_a_throttled_page(requests_mock, auth_config):
-    requests_mock.post(GRAPHQL_URL, response_list=[{"json": THROTTLED_RESPONSE}, {"json": deleted_products_page([DELETED_PRODUCT_EVENT])}])
+@pytest.mark.parametrize(
+    "transient_response",
+    [
+        pytest.param(THROTTLED_RESPONSE, id="throttled"),
+        pytest.param(GRAPHQL_ERROR_RESPONSE, id="internal_server_error"),
+    ],
+)
+def test_deleted_products_retries_a_transient_page(requests_mock, auth_config, transient_response):
+    requests_mock.post(GRAPHQL_URL, response_list=[{"json": transient_response}, {"json": deleted_products_page([DELETED_PRODUCT_EVENT])}])
     assert [record["id"] for record in DeletedProducts(auth_config).read_records(sync_mode=None)] == [123]
     assert requests_mock.call_count == 2
 
