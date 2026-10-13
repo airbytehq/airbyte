@@ -136,4 +136,91 @@ class MySqlExceptionClassifierTest {
         val result = classifier.classify(exception)
         Assertions.assertInstanceOf(TransientError::class.java, result)
     }
+
+    @Test
+    fun testCommunicationsLinkFailureIsConfigWithReachabilityGuidance() {
+        // Connector/J wraps the socket error; the message head is what the rule matches on.
+        val exception =
+            RuntimeException(
+                "com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure\n\n" +
+                    "The last packet sent successfully to the server was 0 milliseconds ago. " +
+                    "The driver has not received any packets from the server.",
+                java.net.ConnectException("Connection refused")
+            )
+        val result = classifier.classify(exception)
+        Assertions.assertInstanceOf(ConfigError::class.java, result)
+        assertReachabilityGuidance((result as ConfigError).displayMessage)
+    }
+
+    @Test
+    fun testUnknownHostExceptionIsConfigWithReachabilityGuidance() {
+        val exception = RuntimeException("java.net.UnknownHostException: nonexistent-host.invalid")
+        val result = classifier.classify(exception)
+        Assertions.assertInstanceOf(ConfigError::class.java, result)
+        assertReachabilityGuidance((result as ConfigError).displayMessage)
+    }
+
+    @Test
+    fun testConnectionRefusedIsConfigWithReachabilityGuidance() {
+        val exception = RuntimeException("java.net.ConnectException: Connection refused")
+        val result = classifier.classify(exception)
+        Assertions.assertInstanceOf(ConfigError::class.java, result)
+        assertReachabilityGuidance((result as ConfigError).displayMessage)
+    }
+
+    @Test
+    fun testSslRequiredButNotProvidedByServerIsConfigWithTlsOptions() {
+        val exception =
+            RuntimeException(
+                "com.mysql.cj.jdbc.exceptions.CommunicationsException: " +
+                    "SSL Connection required, but not provided by server."
+            )
+        val result = classifier.classify(exception)
+        Assertions.assertInstanceOf(ConfigError::class.java, result)
+        val message: String = (result as ConfigError).displayMessage
+        Assertions.assertTrue(message.contains("does not offer TLS"), message)
+        Assertions.assertTrue(message.contains("enable TLS on the MySQL server"), message)
+        Assertions.assertTrue(message.contains("require_secure_transport"), message)
+        Assertions.assertTrue(message.contains("connect through an SSH tunnel"), message)
+        Assertions.assertTrue(
+            message.contains("preferred SSL mode is not accepted on Airbyte Cloud"),
+            message
+        )
+        Assertions.assertTrue(
+            message.contains("https://docs.airbyte.com/integrations/sources/mysql"),
+            message
+        )
+    }
+
+    @Test
+    fun testAccessDeniedIsNotCapturedByReachabilityOrTlsRules() {
+        val exception =
+            RuntimeException(
+                "java.sql.SQLException: Access denied for user 'airbyte'@'10.0.0.1' (using password: YES)"
+            )
+        Assertions.assertNull(classifier.classify(exception))
+    }
+
+    private fun assertReachabilityGuidance(message: String) {
+        Assertions.assertTrue(
+            message.contains("could not reach the database at the configured host and port"),
+            message
+        )
+        Assertions.assertTrue(message.contains("Check the host and port"), message)
+        Assertions.assertTrue(message.contains("accepts remote connections"), message)
+        Assertions.assertTrue(
+            message.contains("firewall or security group allows Airbyte's IP addresses"),
+            message
+        )
+        Assertions.assertTrue(
+            message.contains(
+                "https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses"
+            ),
+            message
+        )
+        Assertions.assertTrue(
+            message.contains("https://docs.airbyte.com/integrations/sources/mysql"),
+            message
+        )
+    }
 }

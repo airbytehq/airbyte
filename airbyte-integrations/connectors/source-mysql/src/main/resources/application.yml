@@ -121,6 +121,57 @@ airbyte:
             output: The sync encountered a communication issue while reading data from the MySQL server, will retry.
             reference-links: https://docs.oracle.com/javase/8/docs/api/java/io/EOFException.html
 
+          # Unreachable host: the same rules serve a failed connection test and a failed sync.
+          # Connector/J wraps java.net.ConnectException / java.net.UnknownHostException in a
+          # CommunicationsException whose message starts with "Communications link failure".
+          - pattern: (?i).*Communications link failure.*
+            input-example: >-
+              com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure
+              The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+            error: config
+            output: >-
+              Airbyte could not reach the database at the configured host and port.
+              Check the host and port, that MySQL accepts remote connections (bind-address, the user's host grants),
+              and that your firewall or security group allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses
+              - https://docs.airbyte.com/integrations/sources/mysql
+
+          - pattern: (?i).*UnknownHostException.*
+            input-example: >-
+              java.net.UnknownHostException: nonexistent-host.invalid
+            error: config
+            output: >-
+              Airbyte could not reach the database at the configured host and port.
+              Check the host and port, that MySQL accepts remote connections (bind-address, the user's host grants),
+              and that your firewall or security group allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses
+              - https://docs.airbyte.com/integrations/sources/mysql
+
+          - pattern: (?i).*Connection refused.*
+            input-example: >-
+              java.net.ConnectException: Connection refused
+            error: config
+            output: >-
+              Airbyte could not reach the database at the configured host and port.
+              Check the host and port, that MySQL accepts remote connections (bind-address, the user's host grants),
+              and that your firewall or security group allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses
+              - https://docs.airbyte.com/integrations/sources/mysql
+
+          # The server offers no TLS but the selected SSL mode (required, verify_ca, verify_identity) needs it.
+          - pattern: (?i).*SSL Connection required, but not provided by server.*
+            input-example: >-
+              com.mysql.cj.jdbc.exceptions.CommunicationsException: SSL Connection required, but not provided by server.
+            error: config
+            output: >-
+              Your MySQL server does not offer TLS. On Airbyte Cloud, either enable TLS on the MySQL server
+              (require_secure_transport and server certificates) or connect through an SSH tunnel;
+              the preferred SSL mode is not accepted on Airbyte Cloud without an SSH tunnel.
+            reference-links: https://docs.airbyte.com/integrations/sources/mysql#connecting-with-ssl-or-ssh-tunneling
+
           - pattern: (?i).*exception occurred in the change event produce.*
             input-example: >-
               java.lang.RuntimeException: org.apache.kafka.connect.errors.ConnectException: 
