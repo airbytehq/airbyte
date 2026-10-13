@@ -28,7 +28,7 @@ Each field was a nullable string; it is now a nullable string with `format: date
 | severities | `created_at`, `updated_at` |
 | workflows | `runs_from` |
 
-The `catalog_types` stream now reads `/v3/catalog_types`. The v3 response no longer has `semantic_type`. The five new top-level fields are `engine_resource_type`, `estimated_count`, `is_team_type`, `owning_team_ids`, and `use_name_as_identifier`. The nested v3 additions are `schema.attributes[].backlink_attribute`, `schema.attributes[].path`, `schema.attributes[].path[].attribute_id`, and `schema.attributes[].path[].attribute_name`. All nine are nullable.
+The `catalog_types` stream now reads `/v3/catalog_types`. The v3 response no longer has `semantic_type`; incident.io documents that field on v2 as deprecated and always empty, so no populated data is lost. Four top-level fields are new in v3: `engine_resource_type`, `is_team_type`, `owning_team_ids`, and `use_name_as_identifier`. The stream also now declares fields that v2 already returned: `estimated_count`, `schema.attributes[].backlink_attribute`, `schema.attributes[].path`, `schema.attributes[].path[].attribute_id`, and `schema.attributes[].path[].attribute_name`. All nine are nullable. In v3, `schema.attributes[].mode` no longer uses `manual`; those attributes now report `api` or `dashboard`.
 
 The `incidents` stream now requests all five modes: `standard`, `retrospective`, `test`, `tutorial`, and `stream`. Its child stream `incident_attachments` follows the expanded parent scope and may also return more records.
 
@@ -44,13 +44,13 @@ Connections that sync any of `actions`, `alerts`, `catalog_types`, `custom_field
 
 1. Upgrade to version 1.0.0.
 2. Refresh the source schema and accept the changes.
-3. For full-refresh streams using **Overwrite**, the next sync rebuilds the affected table, so no clear is needed. For full-refresh streams using **Append**, existing rows remain and new rows are appended; old timestamp values remain text unless the destination can evolve the column.
-4. For incremental streams (`actions`, `follow-ups`, `incidents`, `alerts`, and `escalations`), if your destination cannot change an existing column's type, clear only those incremental streams whose type change it cannot apply, then sync them again. A clear is destructive and truncates the destination data for that stream. If no clear is done on an append-mode stream, old rows keep the text values.
+3. For full-refresh streams using **Overwrite**, the next sync rebuilds the affected table, so no clear is needed.
+4. For any stream that keeps existing rows, meaning full-refresh streams using **Append** and the incremental streams (`actions`, `follow-ups`, `incidents`, `alerts`, and `escalations`), check whether your destination can change an existing column's type from text to timestamp. If it can, no clear is needed, but rows written before the upgrade keep their text values. If it cannot, clear only the streams whose type change it cannot apply, then sync them again. A clear is destructive and truncates the destination data for that stream.
 5. A clear re-syncs from `start_date`. If you use a later `start_date`, records last updated before it will not be re-synced; snapshot or back up the destination first. Records no longer available from incident.io will not be restored by a clear. The incidents endpoint is limited to 60 requests per minute, so a full backfill can take time.
 
 ### Downstream changes
 
-Update SQL and dbt models, dashboards, and exports that cast or compare the 49 timestamp fields as text. Queries that read `catalog_types.semantic_type` will fail because that field is removed; use the remaining catalog fields or the new v3 fields as appropriate. The `incidents` stream may contain more rows now that test, tutorial, and stream modes are requested; filter on the `mode` field if you need the previous standard-and-retrospective scope. The `incident_attachments` stream may also contain attachments for those additional incidents.
+Update SQL and dbt models, dashboards, and exports that cast or compare the 49 timestamp fields as text. Remove `catalog_types.semantic_type` from queries; it was always empty and has no replacement. Filters on `schema.attributes[].mode = 'manual'` must match `api` or `dashboard` instead. The `incidents` stream may contain more rows now that test, tutorial, and stream modes are requested; filter on the `mode` field if you need the previous standard-and-retrospective scope. The `incident_attachments` stream may also contain attachments for those additional incidents.
 
 ## Connector upgrade guide
 
