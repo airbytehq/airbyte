@@ -60,8 +60,13 @@ airbyte:
               com.microsoft.sqlserver.jdbc.SQLServerException: The TCP/IP connection to the host localhost, port 1433 has failed.
             error: transient
             group: SQL Server Connection Error
-            output: The sync encountered a network connection issue while connecting to the SQL Server, will retry.
-            reference-links: https://docs.microsoft.com/en-us/sql/connect/jdbc/troubleshooting-connectivity
+            output: >-
+              Airbyte could not reach the SQL Server host and port provided. Check that the host and port are correct,
+              that the SQL Server instance accepts remote TCP/IP connections, and that your firewall or security group
+              allows inbound connections from Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses
+              - https://docs.microsoft.com/en-us/sql/connect/jdbc/troubleshooting-connectivity
 
           - pattern: (?i).*error code 3947.*
             input-example: >-
@@ -165,9 +170,14 @@ airbyte:
 
           - code: 2
             error: transient
-            output: The sync encountered a network connection issue while connecting to the SQL Server, will retry.
+            output: >-
+              Airbyte could not reach the SQL Server host and port provided. Check that the host and port are correct,
+              that the SQL Server instance accepts remote TCP/IP connections, and that your firewall or security group
+              allows inbound connections from Airbyte's IP addresses.
             group: SQL Server Network Error
-            reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-2-database-engine-error
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses
+              - https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-2-database-engine-error
 
           - code: 1205
             error: transient
