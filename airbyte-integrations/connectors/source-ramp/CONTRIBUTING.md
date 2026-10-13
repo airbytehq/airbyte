@@ -30,6 +30,9 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    so this stream is the connector's one deliberate keyless exception.
 8. **`vendor_contacts` skips vendors that return 404** -- A vendor deleted mid-sync is skipped instead of
    failing the stream.
+9. **Date fields are typed, except three that Ramp does not return in ISO 8601** -- `cards.expiration` and
+   the two `business_balance` billing dates stay strings because of their formats. Changing the type of an
+   existing field is a breaking change, so type new date fields when you add them.
 
 ## Testing
 

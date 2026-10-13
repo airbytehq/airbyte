@@ -38,6 +38,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.67 | 2026-10-13 | [88699](https://github.com/airbytehq/airbyte/pull/88699) | Update dependencies |
 | 0.0.66 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/<n>) | Fix `historical_news` failing when `end_date` is unset, stop sending `q=None` when no search query is configured, and honor NewsData.io `Retry-After` on HTTP 429 |
 | 0.0.65 | 2026-10-06 | [87954](https://github.com/airbytehq/airbyte/pull/87954) | Update dependencies |
 | 0.0.64 | 2026-09-29 | [87262](https://github.com/airbytehq/airbyte/pull/87262) | Update dependencies |
