@@ -36,6 +36,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.69 | 2026-10-13 | [88885](https://github.com/airbytehq/airbyte/pull/88885) | Update dependencies |
 | 0.0.68 | 2026-10-07 | [88234](https://github.com/airbytehq/airbyte/pull/88234) | Skip streams returning 403 `not enabled` (feature not on the account plan) instead of failing the sync; add `in` and `au` data centers |
 | 0.0.67 | 2026-10-06 | [88115](https://github.com/airbytehq/airbyte/pull/88115) | Update dependencies |
 | 0.0.66 | 2026-09-29 | [87417](https://github.com/airbytehq/airbyte/pull/87417) | Update dependencies |
