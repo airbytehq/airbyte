@@ -156,7 +156,7 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonPropertyDescription(
         "The encryption method which is used when communicating with the database.",
     )
-    @JsonSchemaInject(json = """{"order":10,"default":"required"}""")
+    @JsonSchemaInject(json = """{"order":10}""")
     fun getEncryptionValue(): EncryptionSpecification? = encryptionJson ?: encryption.asEncryption()
 
     @JsonIgnore

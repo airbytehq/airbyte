@@ -62,8 +62,8 @@ class MsSqlServerSourceConfigurationSpecificationTest {
     }
 
     /**
-     * Verifies that the encryption mode is correctly set to "required" as the default value in the
-     * MsSqlServerSourceConfigurationSpecification class.
+     * Verifies that a configuration without `ssl_mode` parses as Unencrypted, the POJO default. The
+     * value the connection form preselects is a spec concern, see [MsSqlServerSourceSpecTest].
      */
     @Test
     @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_ENCRYPTION_CHECK)
