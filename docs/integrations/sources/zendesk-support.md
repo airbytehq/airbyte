@@ -29,7 +29,7 @@ Zendesk [requires the refresh token flow](https://support.zendesk.com/hc/en-us/a
 
 **For Airbyte Cloud:**
 
-We highly recommend using OAuth to authenticate your Zendesk Support account, as it simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-zendesk-support-source-connector).
+We highly recommend using OAuth to authenticate your Zendesk Support account, as it simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-zendesk-support-connector-in-airbyte).
 
 <!-- /env:cloud -->
 
