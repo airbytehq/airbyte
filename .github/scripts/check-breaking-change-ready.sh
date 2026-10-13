@@ -76,7 +76,7 @@ GRAPHQL
     response="$(gh api graphql "${api_args[@]}")"
     page_threads="$(jq -ce '.data.repository.pullRequest.reviewThreads.nodes' <<<"$response")"
     all_threads="$(jq -cn --argjson all "$all_threads" --argjson page "$page_threads" '$all + $page')"
-    has_next="$(jq -er '.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage' <<<"$response")"
+    has_next="$(jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage' <<<"$response")"
     [[ "$has_next" == true ]] || break
     cursor="$(jq -er '.data.repository.pullRequest.reviewThreads.pageInfo.endCursor | select(type == "string" and length > 0)' <<<"$response")"
   done
