@@ -317,6 +317,35 @@ def test_message_schemas_declare_gmail_fields(base_config, path):
     assert "string" in _schema_at(_stream_schema(base_config, stream), *field_path)["type"]
 
 
+@pytest.mark.parametrize(
+    ("stream_name", "message_path"),
+    [
+        ("messages_details", ("payload",)),
+        ("threads_details", ("messages", "payload")),
+    ],
+)
+def test_message_part_schemas_declare_nested_parts(base_config, stream_name, message_path):
+    schema = _stream_schema(base_config, stream_name)
+    expected_properties = {"body", "filename", "headers", "mimeType", "partId"}
+
+    for depth in (2, 3, 4):
+        parts_schema = _schema_at(schema, *(message_path + ("parts",) * depth))
+        assert {"array", "null"} <= set(parts_schema["type"])
+        assert {"object", "null"} <= set(parts_schema["items"]["type"])
+
+        if depth < 4:
+            assert expected_properties <= set(parts_schema["items"]["properties"])
+        else:
+            assert "properties" not in parts_schema["items"]
+
+
+def test_nested_message_part_schemas_match_between_detail_streams(base_config):
+    messages_schema = _stream_schema(base_config, "messages_details")
+    threads_schema = _stream_schema(base_config, "threads_details")
+
+    assert _schema_at(messages_schema, "payload", "parts") == _schema_at(threads_schema, "messages", "payload", "parts")
+
+
 def test_public_messages_standalone_is_full_refresh_and_emits_records(base_config, requests_mock):
     """Regression guard for the "messages cursor silently drops every record
     standalone" design flaw flagged in pnilan's follow-up review.

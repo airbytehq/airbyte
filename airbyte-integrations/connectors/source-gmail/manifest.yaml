@@ -1002,6 +1002,124 @@ schemas:
                   type:
                     - string
                     - "null"
+                parts:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      body:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          attachmentId:
+                            type:
+                              - string
+                              - "null"
+                          data:
+                            type:
+                              - string
+                              - "null"
+                          size:
+                            type:
+                              - number
+                              - "null"
+                      filename:
+                        type:
+                          - string
+                          - "null"
+                      headers:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            name:
+                              type:
+                                - string
+                                - "null"
+                            value:
+                              type:
+                                - string
+                                - "null"
+                      mimeType:
+                        type:
+                          - string
+                          - "null"
+                      partId:
+                        type:
+                          - string
+                          - "null"
+                      parts:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            body:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                attachmentId:
+                                  type:
+                                    - string
+                                    - "null"
+                                data:
+                                  type:
+                                    - string
+                                    - "null"
+                                size:
+                                  type:
+                                    - number
+                                    - "null"
+                            filename:
+                              type:
+                                - string
+                                - "null"
+                            headers:
+                              type:
+                                - array
+                                - "null"
+                              items:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  name:
+                                    type:
+                                      - string
+                                      - "null"
+                                  value:
+                                    type:
+                                      - string
+                                      - "null"
+                            mimeType:
+                              type:
+                                - string
+                                - "null"
+                            partId:
+                              type:
+                                - string
+                                - "null"
+                            parts:
+                              type:
+                                - array
+                                - "null"
+                              items:
+                                type:
+                                  - object
+                                  - "null"
       sizeEstimate:
         type:
           - number
@@ -1209,6 +1327,124 @@ schemas:
                         type:
                           - string
                           - "null"
+                      parts:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            body:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                attachmentId:
+                                  type:
+                                    - string
+                                    - "null"
+                                data:
+                                  type:
+                                    - string
+                                    - "null"
+                                size:
+                                  type:
+                                    - number
+                                    - "null"
+                            filename:
+                              type:
+                                - string
+                                - "null"
+                            headers:
+                              type:
+                                - array
+                                - "null"
+                              items:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  name:
+                                    type:
+                                      - string
+                                      - "null"
+                                  value:
+                                    type:
+                                      - string
+                                      - "null"
+                            mimeType:
+                              type:
+                                - string
+                                - "null"
+                            partId:
+                              type:
+                                - string
+                                - "null"
+                            parts:
+                              type:
+                                - array
+                                - "null"
+                              items:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  body:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      attachmentId:
+                                        type:
+                                          - string
+                                          - "null"
+                                      data:
+                                        type:
+                                          - string
+                                          - "null"
+                                      size:
+                                        type:
+                                          - number
+                                          - "null"
+                                  filename:
+                                    type:
+                                      - string
+                                      - "null"
+                                  headers:
+                                    type:
+                                      - array
+                                      - "null"
+                                    items:
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        name:
+                                          type:
+                                            - string
+                                            - "null"
+                                        value:
+                                          type:
+                                            - string
+                                            - "null"
+                                  mimeType:
+                                    type:
+                                      - string
+                                      - "null"
+                                  partId:
+                                    type:
+                                      - string
+                                      - "null"
+                                  parts:
+                                    type:
+                                      - array
+                                      - "null"
+                                    items:
+                                      type:
+                                        - object
+                                        - "null"
             sizeEstimate:
               type:
                 - number
