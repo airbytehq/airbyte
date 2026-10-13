@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 13, 2026
+
+Connections
+
+- If you try to create a connection with a source or destination that has been deleted, for example through the API or Terraform, Airbyte now rejects the request with an error explaining that the source or destination was deleted. Previously, the connection could be created anyway.
+
 ## October 9, 2026
 
 Connections
