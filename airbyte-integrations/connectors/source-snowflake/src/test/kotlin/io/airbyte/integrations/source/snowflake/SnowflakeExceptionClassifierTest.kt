@@ -35,10 +35,11 @@ class SnowflakeExceptionClassifierTest {
 
         assertEquals(
             ConfigError(
-                "Authentication Error: Snowflake rejected the key pair (JWT) authentication. " +
-                    "Verify that the private key in the connection configuration " +
-                    "matches the public key registered on the Snowflake user, and that " +
-                    "the username and account are correct.\n" +
+                "Authentication Error: " +
+                    "Key pair authentication failed. Check that the username is correct and that " +
+                    "the private key matches the RSA public key registered on that user (DESCRIBE " +
+                    "USER shows RSA_PUBLIC_KEY_FP; ALTER USER ... SET RSA_PUBLIC_KEY registers a " +
+                    "new one).\n" +
                     "https://docs.snowflake.com/en/user-guide/key-pair-auth-troubleshooting"
             ),
             classifier.classify(exception)
