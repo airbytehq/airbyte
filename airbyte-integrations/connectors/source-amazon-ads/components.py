@@ -49,7 +49,9 @@ def _canonical(value: Any) -> Any:
     if value is None:
         return []
     if isinstance(value, list):
-        return sorted(json.dumps(item, sort_keys=True) for item in value)
+        return sorted(json.dumps(_canonical(item), sort_keys=True) for item in value)
+    if isinstance(value, dict):
+        return {key: _canonical(item) for key, item in value.items()}
     return value
 
 

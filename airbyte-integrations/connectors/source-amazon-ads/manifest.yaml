@@ -4229,7 +4229,7 @@ definitions:
     creation_requester:
       type: CustomRequester
       class_name: source_declarative_manifest.components.DuplicateReportCreationRequester
-      # CDK 6 passes `name` to a custom component's subcomponents only through `$parameters`.
+      # The CDK passes `name` to a custom component's subcomponents only through `$parameters`.
       $parameters:
         name: report creation
       requester:

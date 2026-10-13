@@ -9,7 +9,7 @@ from unittest.mock import call, patch
 import pytest
 import requests_mock
 import yaml
-from components import _DUPLICATE_REPORT_RETRY_WAIT_SECONDS
+from components import _DUPLICATE_REPORT_MAX_ATTEMPTS, _DUPLICATE_REPORT_RETRY_WAIT_SECONDS
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.models import Level as LogLevel
@@ -236,14 +236,25 @@ class TestDisplayReportStreams:
         assert len(output.records) == 1
 
     @pytest.mark.parametrize(
-        "stream_name",
+        "stream_name, changes",
         [
-            "sponsored_brands_v3_report_stream",
-            "sponsored_display_campaigns_report_stream_daily",
+            pytest.param("sponsored_brands_v3_report_stream", None, id="summary"),
+            pytest.param("sponsored_display_campaigns_report_stream_daily", None, id="daily"),
+            pytest.param(
+                "sponsored_products_keywords_report_stream",
+                {"configuration.filters": [{"field": "keywordType", "values": ["EXACT", "PHRASE", "BROAD"]}]},
+                id="filter-values-in-different-order",
+            ),
         ],
     )
     def test_given_425_naming_matching_report_then_reuses_existing_report(
-        self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles, stream_name: str
+        self,
+        requests_mock: requests_mock.Mocker,
+        config: Mapping[str, Any],
+        mock_oauth,
+        mock_profiles,
+        stream_name: str,
+        changes: Optional[Mapping[str, Any]],
     ):
         """Amazon can reject a report creation POST with HTTP 425 and a body naming the already-running
         duplicate report. Once a lookup confirms that report holds what this request asked for, the
@@ -253,9 +264,12 @@ class TestDisplayReportStreams:
         requests_mock.get(
             f"{_REPORTS_URL}/{_DUPLICATE_REPORT_ID}",
             [
-                {"status_code": 200, "json": _existing_report(requests_mock, "PENDING")},
-                {"status_code": 200, "json": _existing_report(requests_mock, "PENDING")},
-                {"status_code": 200, "json": _existing_report(requests_mock, "COMPLETED", url=download_url)},
+                {"status_code": 200, "json": _existing_report(requests_mock, "PENDING", changes=changes)},
+                {"status_code": 200, "json": _existing_report(requests_mock, "PENDING", changes=changes)},
+                {
+                    "status_code": 200,
+                    "json": _existing_report(requests_mock, "COMPLETED", url=download_url, changes=changes),
+                },
             ],
             request_headers={
                 "Authorization": "Bearer test-access-token",
@@ -431,6 +445,10 @@ class TestDisplayReportStreams:
         assert call(_DUPLICATE_REPORT_RETRY_WAIT_SECONDS) in sleep.call_args_list
         report_lookup_calls = [r for r in requests_mock.request_history if r.method == "GET" and "/reporting/reports/" in r.url]
         assert report_lookup_calls == []
+        # The orchestrator retries a creation that raised up to `job_max_retry` (3) times, and each retry
+        # runs this requester's own attempts and waits again.
+        assert len(_creation_calls(requests_mock)) == _DUPLICATE_REPORT_MAX_ATTEMPTS * 3
+        assert sleep.call_args_list.count(call(_DUPLICATE_REPORT_RETRY_WAIT_SECONDS)) == (_DUPLICATE_REPORT_MAX_ATTEMPTS - 1) * 3
 
     def test_given_429_then_200_on_report_polling_then_retries_and_returns_records(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles

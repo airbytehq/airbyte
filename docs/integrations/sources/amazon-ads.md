@@ -141,7 +141,7 @@ Each report stream is available in two variants:
 For more information on time units, see the Amazon Ads documentation on [timeUnit and supported columns](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#timeunit-and-supported-columns).
 
 :::note
-Amazon rejects a report request that duplicates one it is still generating, for example when a sync attempt is retried after an earlier attempt already requested the report. When the report Amazon names matches the request, the connector syncs that report instead of failing. Otherwise the connector waits and requests the report again.
+Amazon rejects a report request that duplicates one it is still generating, for example when a sync attempt is retried after an earlier attempt already requested the report. When the report Amazon names matches the request, the connector syncs that report instead of failing. Otherwise the connector waits and requests the report again. Amazon can also treat requests from different streams as duplicates, such as the keywords and targets reports or the summary and daily versions of a report, so syncing both can add several minutes to each report.
 :::
 
 ### Sponsored Brands report types
