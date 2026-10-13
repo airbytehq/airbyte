@@ -5,10 +5,14 @@
 package io.airbyte.integrations.source.postgres
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetadataQuerier
+import io.airbyte.cdk.discover.SystemType
+import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.SelectQueryGenerator
@@ -26,6 +30,44 @@ class PostgresSourceMetadataQuerier(
     val postgresSourceConfig: PostgresSourceConfiguration,
     private val featureFlags: Set<FeatureFlag>,
 ) : MetadataQuerier by base {
+
+    override fun fields(streamID: StreamIdentifier): List<EmittedField> {
+        val table: TableName = base.findTableName(streamID) ?: return listOf()
+        val columns: List<JdbcMetadataQuerier.ColumnMetadata> = base.columnMetadata(table)
+        val typmods: Map<String, Int> =
+            if (columns.any { isNumericArray(it) }) queryTypmods(table) else emptyMap()
+        return columns.map { c ->
+            val resolved: JdbcMetadataQuerier.ColumnMetadata =
+                if (isNumericArray(c)) withNumericArrayElementPrecision(c, typmods[c.name]) else c
+            EmittedField(c.label, base.fieldTypeMapper.toFieldType(resolved))
+        }
+    }
+
+    /**
+     * JDBC does not report the precision and scale of array elements, so we read the column's type
+     * modifier from the catalog. For `numeric(p,s)[]`, atttypmod holds the element's typmod.
+     */
+    private fun queryTypmods(table: TableName): Map<String, Int> {
+        val sql =
+            """
+            SELECT a.attname, a.atttypmod
+            FROM pg_catalog.pg_attribute a
+            JOIN pg_catalog.pg_class c ON c.oid = a.attrelid
+            JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE n.nspname = ? AND c.relname = ? AND a.attnum > 0 AND NOT a.attisdropped
+            """.trimIndent()
+        val result = mutableMapOf<String, Int>()
+        base.conn.prepareStatement(sql).use { stmt ->
+            stmt.setString(1, table.schema)
+            stmt.setString(2, table.name)
+            stmt.executeQuery().use { rs ->
+                while (rs.next()) {
+                    result[rs.getString("attname")] = rs.getInt("atttypmod")
+                }
+            }
+        }
+        return result
+    }
 
     override fun extraChecks() {
         base.extraChecks()
@@ -61,6 +103,28 @@ class PostgresSourceMetadataQuerier(
 
     companion object {
         private val log = KotlinLogging.logger {}
+
+        private const val VARHDRSZ = 4
+
+        private fun isNumericArray(c: JdbcMetadataQuerier.ColumnMetadata): Boolean =
+            (c.type as? SystemType)?.typeName == "_numeric"
+
+        /**
+         * Decodes a numeric typmod the same way the Postgres JDBC driver does for scalar columns.
+         * An unconstrained numeric (typmod -1) or a missing typmod yields precision 0 and scale 0.
+         */
+        fun numericPrecisionAndScale(typmod: Int?): Pair<Int, Int> =
+            if (typmod == null || typmod < VARHDRSZ) 0 to 0
+            else ((typmod - VARHDRSZ) shr 16 and 0xFFFF) to ((typmod - VARHDRSZ) and 0xFFFF)
+
+        fun withNumericArrayElementPrecision(
+            c: JdbcMetadataQuerier.ColumnMetadata,
+            typmod: Int?,
+        ): JdbcMetadataQuerier.ColumnMetadata {
+            val type = c.type as SystemType
+            val (precision, scale) = numericPrecisionAndScale(typmod)
+            return c.copy(type = type.copy(precision = precision, scale = scale))
+        }
 
         const val xminWraparoundError: String =
             "We detected XMIN transaction wraparound in the database, " +
