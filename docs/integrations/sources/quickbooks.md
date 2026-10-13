@@ -34,15 +34,15 @@ Intuit issues a new refresh token roughly every 24 hours, and only the latest on
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **QuickBooks** from the Source type dropdown and enter a name for this connector.
 4. Choose **Authentication Method**:
-   - `airbyte_oauth` — click **Authenticate your QuickBooks account** (production companies only).
-   - `oauth2.0` — enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Realm ID** from your own Intuit app.
+   - `oauth2.0` — click **Authenticate your QuickBooks account** to authorize through Airbyte's QuickBooks app (production companies only).
+   - `client_credentials` — enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Realm ID** from your own Intuit app.
 5. **Start date** - The date starting from which you'd like to replicate data.
 6. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
 7. **Page Size** (optional) - Records requested per query page (Intuit's `MAXRESULTS`, default 200, maximum 1,000).
 8. Click **Set up source**.
 
 :::note
-To sync a sandbox company, use `oauth2.0` with your app's development keys and turn on **Sandbox**; Airbyte's app can't access sandbox companies.
+To sync a sandbox company, select `client_credentials`, enter your own Intuit app's development keys, and turn on **Sandbox**. `oauth2.0` always calls production because Airbyte's QuickBooks app can't access sandbox companies.
 :::
 
 <!-- /env:cloud -->
@@ -51,7 +51,7 @@ To sync a sandbox company, use `oauth2.0` with your app's development keys and t
 
 **For Airbyte Open Source:**
 
-Authentication Method stays `oauth2.0`.
+Use `client_credentials` for **Authentication Method**.
 
 1. **Client ID** - The OAuth2.0 application ID
 2. **Client Secret** - The OAuth2.0 application secret
@@ -151,7 +151,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version       | Date         | Pull Request                                               | Subject                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ------------- | ------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.3.0 | 2026-10-13 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add Authentication Method: own Intuit app (`oauth2.0`, default, sandbox-capable, never overridden by Airbyte's OAuth app) or Airbyte OAuth (`airbyte_oauth`) |
+| 5.0.0 | 2026-10-13 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Breaking: choose Authentication Method — `oauth2.0` (Airbyte's QuickBooks app, production only) or `client_credentials` (your own Intuit app, never overridden by Airbyte's credentials); Sandbox only applies with `client_credentials` |
 | 4.2.1 | 2026-10-13 | [78925](https://github.com/airbytehq/airbyte/pull/78925) | Update dependencies |
 | 4.2.0 | 2026-09-24 | [85216](https://github.com/airbytehq/airbyte/pull/85216) | Certification: actionable error handling for Intuit fault codes and rejected refresh tokens, SDM 7.30.0 bump, rate-limit budget and stream concurrency, automatic migration of pre-4.0.0 nested credentials configs, Cloud OAuth via advanced_auth, a configurable Page Size, and six new streams (company_info, preferences, exchange_rates, reimburse_charges, attachables, credit_card_payments; first two full refresh) |
 | 4.1.8 | 2025-05-24 | [60468](https://github.com/airbytehq/airbyte/pull/60468) | Update dependencies |

@@ -90,8 +90,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -273,8 +272,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -450,8 +448,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -714,8 +711,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -1073,8 +1069,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -1286,8 +1281,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -1432,8 +1426,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -1587,8 +1580,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -1772,8 +1764,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -2170,8 +2161,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -2535,8 +2525,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -2681,8 +2670,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -2979,8 +2967,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -3191,8 +3178,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -3640,8 +3626,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -3770,8 +3755,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -4333,8 +4317,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -4542,8 +4525,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -4871,8 +4853,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -5004,8 +4985,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -5309,8 +5289,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -5443,8 +5422,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -5900,8 +5878,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -6303,8 +6280,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -6661,8 +6637,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -6841,8 +6816,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -7287,8 +7261,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -7424,8 +7397,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -7609,8 +7581,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -7805,8 +7776,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -7962,8 +7932,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -8155,8 +8124,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -8328,8 +8296,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -8600,8 +8567,7 @@ definitions:
         requester:
           type: HttpRequester
           url_base: >-
-            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-            'https://quickbooks.api.intuit.com' }}
+            {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config['client_id'] }}"
@@ -8866,8 +8832,7 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: >-
-      {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-      'https://quickbooks.api.intuit.com' }}
+      {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
     authenticator:
       type: OAuthAuthenticator
       client_id: "{{ config['client_id'] }}"
@@ -8901,8 +8866,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -9084,8 +9048,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -9261,8 +9224,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -9525,8 +9487,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -9884,8 +9845,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -10097,8 +10057,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -10243,8 +10202,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -10397,8 +10355,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -10582,8 +10539,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -10980,8 +10936,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -11345,8 +11300,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -11491,8 +11445,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -11789,8 +11742,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -12001,8 +11953,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -12450,8 +12401,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -12580,8 +12530,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -13143,8 +13092,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -13352,8 +13300,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -13681,8 +13628,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -13814,8 +13760,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -14119,8 +14064,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -14252,8 +14196,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -14709,8 +14652,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -15112,8 +15054,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -15470,8 +15411,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -15650,8 +15590,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -16096,8 +16035,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -16233,8 +16171,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -16418,8 +16355,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -16614,8 +16550,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -16771,8 +16706,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -16964,8 +16898,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -17137,8 +17070,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -17409,8 +17341,7 @@ streams:
     requester:
       type: HttpRequester
       url_base: >-
-        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else
-        'https://quickbooks.api.intuit.com' }}
+        {{ 'https://sandbox-quickbooks.api.intuit.com' if config.get('sandbox') and config.get('auth_type') == 'client_credentials' else 'https://quickbooks.api.intuit.com' }}
       authenticator:
         type: OAuthAuthenticator
         client_id: "{{ config['client_id'] }}"
@@ -17743,13 +17674,13 @@ spec:
         order: 1
         title: Authentication Method
         description: >-
-          `oauth2.0`: use your own Intuit app — enter its Client ID, Client Secret,
-          Refresh Token and Realm ID. Required for sandbox companies.
-          `airbyte_oauth`: sign in with QuickBooks through Airbyte's Intuit app
-          (Airbyte Cloud only; production companies only).
+          `oauth2.0`: authenticate through Airbyte's QuickBooks app (production
+          companies only). `client_credentials`: use your own Intuit app (enter
+          Client ID, Client Secret, Refresh Token and Realm ID). Required for
+          sandbox companies.
         enum:
           - oauth2.0
-          - airbyte_oauth
+          - client_credentials
         default: oauth2.0
       client_id:
         type: string
@@ -17808,7 +17739,10 @@ spec:
         order: 8
         title: Sandbox
         default: false
-        description: Determines whether to use the sandbox or production environment.
+        description: >-
+          Use Intuit's sandbox environment. Only applies when Authentication
+          Method is `client_credentials`; with `oauth2.0`, the connector always
+          calls production.
       max_results:
         type: integer
         order: 9
@@ -17825,7 +17759,7 @@ spec:
     auth_flow_type: oauth2.0
     predicate_key:
     - auth_type
-    predicate_value: airbyte_oauth
+    predicate_value: oauth2.0
     oauth_config_specification:
       complete_oauth_output_specification:
         type: object

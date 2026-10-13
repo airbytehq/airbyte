@@ -42,6 +42,7 @@ MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 REALM_ID = "4620816365288779920"
 TOKEN_URL = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
 QUERY_URL = f"https://sandbox-quickbooks.api.intuit.com/v3/company/{REALM_ID}/query"
+PRODUCTION_QUERY_URL = f"https://quickbooks.api.intuit.com/v3/company/{REALM_ID}/query"
 
 STREAM_ENTITY = {
     "accounts": "Account",
@@ -91,6 +92,7 @@ def _flat_config() -> dict:
         "realm_id": REALM_ID,
         "start_date": (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=3)).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "sandbox": True,
+        "auth_type": "client_credentials",
         "access_token": "test-access-token",
         "token_expiry_date": "2124-01-01T00:00:00Z",
     }
@@ -101,7 +103,7 @@ def _nested_config() -> dict:
     return {
         "sandbox": flat["sandbox"],
         "start_date": flat["start_date"],
-        "credentials": flat,
+        "credentials": {key: value for key, value in flat.items() if key not in {"auth_type", "sandbox", "start_date"}},
     }
 
 
@@ -150,7 +152,7 @@ def _source(config: dict, manifest: dict) -> ConcurrentDeclarativeSource:
     )
 
 
-def _mock_intuit(http_mocker: HttpMocker, entity: str) -> None:
+def _mock_intuit(http_mocker: HttpMocker, entity: str, query_url: str = QUERY_URL) -> None:
     now = datetime.datetime.now(datetime.timezone.utc)
     create_time = (now - datetime.timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%S-08:00")
     update_time = (now - datetime.timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%S-08:00")
@@ -197,7 +199,7 @@ def _mock_intuit(http_mocker: HttpMocker, entity: str) -> None:
     )
     # First 30-day slice returns the record; any later slices get empty pages.
     http_mocker.get(
-        HttpRequest(QUERY_URL, query_params="any query_parameters"),
+        HttpRequest(query_url, query_params="any query_parameters"),
         [record_page] + [empty_page] * 10,
     )
 
@@ -237,7 +239,7 @@ def test_nested_legacy_config_is_migrated_and_read(manifest):
     """Pre-4.0.0 `credentials.*` configs are flattened by the manifest migration before spec validation."""
     config = _nested_config()
     with HttpMocker() as http_mocker:
-        _mock_intuit(http_mocker, "Account")
+        _mock_intuit(http_mocker, "Account", query_url=PRODUCTION_QUERY_URL)
 
         output = read(
             _source(config, manifest),

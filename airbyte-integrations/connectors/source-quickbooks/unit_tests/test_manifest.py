@@ -50,6 +50,17 @@ def _iter_authenticators(node):
             yield from _iter_authenticators(value)
 
 
+def _iter_url_bases(node):
+    if isinstance(node, dict):
+        if isinstance(node.get("url_base"), str):
+            yield node["url_base"]
+        for value in node.values():
+            yield from _iter_url_bases(value)
+    elif isinstance(node, list):
+        for value in node:
+            yield from _iter_url_bases(value)
+
+
 def _fault_predicates(response_filters):
     return [f["predicate"] for f in response_filters if "predicate" in f]
 
@@ -137,68 +148,32 @@ def _migrated(manifest, config):
     return source._migrate_and_transform_config(None, dict(config))
 
 
-def test_auth_type_offers_own_app_and_airbyte_oauth(manifest):
+def test_auth_type_offers_oauth_and_client_credentials(manifest):
     auth_type = manifest["spec"]["connection_specification"]["properties"]["auth_type"]
-    assert auth_type["enum"] == ["oauth2.0", "airbyte_oauth"]
+    assert auth_type["enum"] == ["oauth2.0", "client_credentials"]
     assert auth_type["default"] == "oauth2.0"
-
-
-def test_advanced_auth_predicate_is_airbyte_oauth(manifest):
     advanced_auth = manifest["spec"]["advanced_auth"]
     assert advanced_auth["predicate_key"] == ["auth_type"]
-    assert advanced_auth["predicate_value"] == "airbyte_oauth"
+    assert advanced_auth["predicate_value"] == "oauth2.0"
 
 
-@pytest.mark.parametrize(
-    "config,client_id,client_secret",
-    [
-        pytest.param(
-            {
-                "client_id": "4.0.4-client-id",
-                "client_secret": "4.0.4-client-secret",
-                "refresh_token": "4.0.4-refresh-token",
-                "realm_id": "4.0.4-realm",
-                "auth_type": "oauth2.0",
-            },
-            "4.0.4-client-id",
-            "4.0.4-client-secret",
-            id="4.0.4-flat",
-        ),
-        pytest.param(
-            {
-                "client_id": "flat-client-id",
-                "client_secret": "flat-client-secret",
-                "refresh_token": "flat-refresh-token",
-                "realm_id": "flat-realm",
-            },
-            "flat-client-id",
-            "flat-client-secret",
-            id="flat-without-auth-type",
-        ),
-        pytest.param(
-            {
-                "credentials": {
-                    "client_id": "nested-client-id",
-                    "client_secret": "nested-client-secret",
-                    "refresh_token": "nested-refresh-token",
-                    "realm_id": "nested-realm",
-                }
-            },
-            "nested-client-id",
-            "nested-client-secret",
-            id="pre-4.0.0-nested",
-        ),
-    ],
-)
-def test_existing_configs_never_match_oauth_predicate(manifest, config, client_id, client_secret):
-    """The platform overwrites client_id/client_secret only when auth_type matches the predicate."""
-    migrated = _migrated(manifest, config)
-    predicate_value = manifest["spec"]["advanced_auth"]["predicate_value"]
+def test_url_base_uses_sandbox_only_with_client_credentials(manifest):
+    url_bases = set(_iter_url_bases(manifest))
+    assert len(url_bases) == 1
+    url_base = url_bases.pop()
 
-    assert migrated["auth_type"] == "oauth2.0"
-    assert migrated["auth_type"] != predicate_value
-    assert migrated["client_id"] == client_id
-    assert migrated["client_secret"] == client_secret
+    cases = [
+        (
+            {"auth_type": "client_credentials", "sandbox": True},
+            "https://sandbox-quickbooks.api.intuit.com",
+        ),
+        ({"auth_type": "client_credentials", "sandbox": False}, "https://quickbooks.api.intuit.com"),
+        ({"auth_type": "oauth2.0", "sandbox": True}, "https://quickbooks.api.intuit.com"),
+        ({"sandbox": True}, "https://quickbooks.api.intuit.com"),
+    ]
+    for config, expected_url_base in cases:
+        rendered_url_base = jinja2.Environment().from_string(url_base).render(config=config)
+        assert rendered_url_base == expected_url_base
 
 
 def test_nested_legacy_config_is_flattened(manifest):

@@ -9,7 +9,7 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.35.0@sha256:0557872c74928d6b338b208a97fe52e9e8aed8d9674d85d5b5b540bf91c8110c
   connectorType: source
   definitionId: cf9c4355-b171-4477-8f2d-6c5cc5fc8b7e
-  dockerImageTag: 4.3.0
+  dockerImageTag: 5.0.0
   dockerRepository: airbyte/source-quickbooks
   githubIssueLabel: source-quickbooks
   icon: quickbooks.svg
@@ -61,6 +61,16 @@ data:
           connector migrates a nested `credentials` config to the root-level fields
           automatically, so no manual repopulation is needed."
         upgradeDeadline: "2025-02-15"
+      5.0.0:
+        message: >-
+          Authentication is now an explicit choice. Each existing source must be
+          reconfigured: either select `oauth2.0` and click "Authenticate your
+          QuickBooks account" to authorize through Airbyte's QuickBooks app
+          (production companies only), or select `client_credentials` and re-enter
+          your own Intuit app's Client ID, Client Secret, Refresh Token and Realm ID.
+          Sandbox companies require `client_credentials`.
+        upgradeDeadline: "2026-11-13"
+        deadlineAction: disable
   documentationUrl: https://docs.airbyte.com/integrations/sources/quickbooks
   tags:
     - cdk:low-code
