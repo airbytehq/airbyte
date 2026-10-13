@@ -49,6 +49,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | -- | ---------------- |
+| 0.0.68 | 2026-10-07 | [88233](https://github.com/airbytehq/airbyte/pull/88233) | Fix `users` for non-admin API users (per-project `get_users`), read `suites` from paginated envelope, and partition `sections`/`cases` by suite instead of project x suite cross product |
 | 0.0.67 | 2026-10-06 | [88083](https://github.com/airbytehq/airbyte/pull/88083) | Update dependencies |
 | 0.0.66 | 2026-09-29 | [87388](https://github.com/airbytehq/airbyte/pull/87388) | Update dependencies |
 | 0.0.65 | 2026-09-22 | [86827](https://github.com/airbytehq/airbyte/pull/86827) | Update dependencies |

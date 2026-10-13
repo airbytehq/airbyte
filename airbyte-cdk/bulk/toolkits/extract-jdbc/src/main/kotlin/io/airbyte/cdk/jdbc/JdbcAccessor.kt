@@ -15,7 +15,6 @@ import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.OffsetDateTime
 
 /** Combination of [JdbcGetter] and [JdbcSetter]. */
 interface JdbcAccessor<T> : JdbcGetter<T>, JdbcSetter<T>
@@ -307,15 +306,7 @@ data object DateAccessor : JdbcAccessor<LocalDate> {
     override fun get(
         rs: ResultSet,
         colIdx: Int,
-    ): LocalDate? {
-        val dateStr = rs.getString(colIdx)
-        return when {
-            rs.wasNull() -> null
-            dateStr == "infinity" || dateStr == "-infinity" ->
-                throw IllegalStateException("Date '$dateStr' is not supported")
-            else -> rs.getDate(colIdx)?.toLocalDate()
-        }
-    }
+    ): LocalDate? = rs.getDate(colIdx)?.takeUnless { rs.wasNull() }?.toLocalDate()
 
     override fun set(
         stmt: PreparedStatement,
@@ -345,15 +336,7 @@ data object TimestampAccessor : JdbcAccessor<LocalDateTime> {
     override fun get(
         rs: ResultSet,
         colIdx: Int,
-    ): LocalDateTime? {
-        val timestampStr = rs.getString(colIdx)
-        return when {
-            rs.wasNull() -> null
-            timestampStr == "infinity" || timestampStr == "-infinity" ->
-                throw IllegalStateException("Timestamp '$timestampStr' is not supported")
-            else -> rs.getTimestamp(colIdx)?.toLocalDateTime()
-        }
-    }
+    ): LocalDateTime? = rs.getTimestamp(colIdx)?.takeUnless { rs.wasNull() }?.toLocalDateTime()
 
     override fun set(
         stmt: PreparedStatement,
@@ -361,21 +344,6 @@ data object TimestampAccessor : JdbcAccessor<LocalDateTime> {
         value: LocalDateTime,
     ) {
         stmt.setTimestamp(paramIdx, Timestamp.valueOf(value))
-    }
-}
-
-data object TimestampTzGetter : JdbcGetter<OffsetDateTime> {
-    override fun get(
-        rs: ResultSet,
-        colIdx: Int,
-    ): OffsetDateTime? {
-        val timestampStr = rs.getString(colIdx)
-        return when {
-            rs.wasNull() -> null
-            timestampStr == "infinity" || timestampStr == "-infinity" ->
-                throw IllegalStateException("Timestamp '$timestampStr' is not supported")
-            else -> rs.getObject(colIdx, OffsetDateTime::class.java)
-        }
     }
 }
 
