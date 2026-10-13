@@ -6,7 +6,7 @@
 
 When Xmin is the configured incremental mode, `PostgresSourceMetadataQuerier.extraChecks()` checks for database transaction-ID wraparound and raises a `ConfigErrorException` if it detects one. The connector's check operation invokes these extra checks; this is not a guard applied to every incremental mode.
 
-**Why this matters:** Xmin is safe only while PostgreSQL can still distinguish transaction IDs. Do not remove or bypass this check when changing Xmin configuration validation: allowing a sync to proceed against a wrapped database can produce incomplete or inconsistent reads.
+**Why this matters:** The connector reports that wraparound makes Xmin inefficient and can lead to higher credit consumption, and recommends switching to CDC or a cursor-based mode. Preserve this guard and its guidance so users can move away from a degraded Xmin configuration.
 
 ## 2. CTID partition state tracks table filenodes
 

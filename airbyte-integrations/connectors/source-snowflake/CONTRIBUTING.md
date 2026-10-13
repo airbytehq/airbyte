@@ -1,22 +1,15 @@
 # Contributing to source-snowflake
 
+For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
+
 ## Unique behaviors (summary)
 
-### 1. Snowflake timestamps round up to microseconds
+Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 
-Timestamp values with sub-microsecond precision are rounded up for Airbyte output and cursor bounds. See [AGENTS.md](AGENTS.md#1-snowflake-timestamps-round-up-to-microseconds).
-
-### 2. Programmatic access-token authentication omits the JDBC username
-
-Programmatic access-token authentication sets the token and authenticator without a JDBC username. See [AGENTS.md](AGENTS.md#2-programmatic-access-token-authentication-omits-the-jdbc-username).
-
-### 3. Metadata error tolerance is limited to discovery
-
-Selected object-level metadata errors are tolerated only during discovery, not CHECK or READ. See [AGENTS.md](AGENTS.md#3-metadata-error-tolerance-is-limited-to-discovery).
-
-### 4. The SSH tunnel field is retained for compatibility
-
-Snowflake retains the shared SSH tunnel field for compatibility, but does not use it for Snowflake connections. See [AGENTS.md](AGENTS.md#4-the-ssh-tunnel-field-is-retained-for-compatibility).
+1. **Snowflake timestamps round up to microseconds** -- Timestamp values with sub-microsecond precision are rounded up so incremental syncs do not miss rows at a cursor boundary.
+2. **Programmatic access-token authentication omits the JDBC username** -- Programmatic access-token authentication identifies the user from the token, rather than a JDBC username.
+3. **Metadata error tolerance is limited to discovery** -- Discovery can continue past certain object-level metadata errors, but the same tolerance does not apply to CHECK or READ.
+4. **The SSH tunnel field is retained for compatibility** -- The retained SSH field is for compatibility, not evidence that SSH tunneling is supported for Snowflake.
 
 `source-snowflake` is a Kotlin / bulk-CDK connector. Standard local commands:
 

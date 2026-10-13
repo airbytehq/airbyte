@@ -1,22 +1,15 @@
 # Contributing to source-mongodb-v2
 
+For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
+
 ## Unique behaviors (summary)
 
-### 1. Schemaless mode packs fields into `data`
+Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 
-Schemaless records pack user fields into `data`, while schema-enforced mode exposes them as properties. See [AGENTS.md](AGENTS.md#1-schemaless-mode-packs-fields-into-data).
-
-### 2. Schema-enforced discovery samples a configurable number of documents
-
-Schema-enforced discovery samples 10,000 documents by default, so fields outside the sample may be absent from the schema. See [AGENTS.md](AGENTS.md#2-schema-enforced-discovery-samples-a-configurable-number-of-documents).
-
-### 3. Invalid resume tokens fail or reset according to configuration
-
-An invalid saved CDC token fails by default, with a configurable full-refresh option. See [AGENTS.md](AGENTS.md#3-invalid-resume-tokens-fail-or-reset-according-to-configuration).
-
-### 4. Update capture defaults to Lookup
-
-Update capture defaults to Lookup; Post Image mode requires the appropriate MongoDB image settings. See [AGENTS.md](AGENTS.md#4-update-capture-defaults-to-lookup).
+1. **Schemaless mode packs fields into `data`** -- Schemaless records nest document fields under `data`, while schema-enforced mode exposes them as properties, so code must account for both record shapes.
+2. **Schema-enforced discovery samples a configurable number of documents** -- Schema-enforced discovery infers fields from a sample, so fields unseen during discovery can be absent from the catalog.
+3. **Invalid resume tokens fail or reset according to configuration** -- Invalid saved resume tokens fail by default, with a configurable full-refresh option.
+4. **Update capture defaults to Lookup** -- Post-image capture requires MongoDB's matching change-stream configuration, or update data can be lost.
 
 `source-mongodb-v2` is a Java connector on the legacy Java CDK. Standard local
 commands:

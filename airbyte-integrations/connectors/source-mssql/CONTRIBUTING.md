@@ -1,26 +1,15 @@
 # Contributing to source-mssql
 
+For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
+
 ## Unique behaviors (summary)
 
-### 1. "Exclude Today's Data" uses UTC day cutoffs
+Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 
-The option excludes rows on the current UTC day using a strict upper cutoff. See [AGENTS.md](AGENTS.md#1-exclude-todays-data-uses-utc-day-cutoffs).
-
-### 2. Cursor-incremental partitions omit the upper bound for datetime2(7)
-
-Cursor-incremental partitions avoid an upper ceiling that could drop `datetime2(7)` rows beyond a six-digit-truncated maximum. See [AGENTS.md](AGENTS.md#2-cursor-incremental-partitions-omit-the-upper-bound-for-datetime27).
-
-### 3. Null legacy cursor state resets to a cold start
-
-A migrated null cursor is reset and read from a cold start instead of being bound as SQL `NULL`. See [AGENTS.md](AGENTS.md#3-null-legacy-cursor-state-resets-to-a-cold-start).
-
-### 4. CDC starts at current max LSN and validates capture instances
-
-CDC initializes from the current maximum LSN and distinguishes inaccessible capture instances from expired resume history. See [AGENTS.md](AGENTS.md#4-cdc-starts-at-current-max-lsn-and-validates-capture-instances).
-
-This file is connector-specific. For general Airbyte contribution guidance,
-see the repo-root [`CONTRIBUTING.md`](../../../CONTRIBUTING.md) and the
-[connector contribution guide](https://docs.airbyte.com/connector-development/).
+1. **"Exclude Today's Data" uses UTC day cutoffs** -- This option excludes records from the current UTC day, so changing its cutoff can include or omit rows unexpectedly.
+2. **Cursor-incremental partitions omit the upper bound for datetime2(7)** -- The open-ended cursor partition protects high-precision `datetime2(7)` values from being dropped at the maximum boundary.
+3. **Null legacy cursor state resets to a cold start** -- Null migrated cursor state triggers a cold start rather than an invalid SQL predicate.
+4. **CDC starts at current max LSN and validates capture instances** -- Cold starts begin at the current CDC position, and unavailable capture-instance access is treated as a configuration problem rather than resettable history.
 
 `source-mssql` is a Kotlin / bulk-CDK connector. Standard local commands:
 

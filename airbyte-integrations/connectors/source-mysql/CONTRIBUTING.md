@@ -1,26 +1,16 @@
 # Contributing to source-mysql
 
+For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
+
 ## Unique behaviors (summary)
 
-### 1. Saved CDC positions are validated against available binlog history
+Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 
-Saved CDC positions are checked against retained GTID and binlog history; invalid state fails by default but can be configured to reset. See [AGENTS.md](AGENTS.md#1-saved-cdc-positions-are-validated-against-available-binlog-history).
-
-### 2. Zero dates and times have distinct CDC conversions
-
-Zero `DATE` and `DATETIME` values become nullable nulls, but zero `TIMESTAMP` becomes the Unix epoch and midnight `TIME` remains valid. See [AGENTS.md](AGENTS.md#2-zero-dates-and-times-have-distinct-cdc-conversions).
-
-### 3. TINYINT(1) defaults to boolean in CDC
-
-CDC emits `TINYINT(1)` as boolean unless `treat_tinyint1_as_integer` is enabled. See [AGENTS.md](AGENTS.md#3-tinyint1-defaults-to-boolean-in-cdc).
-
-### 4. TLS settings are translated for JDBC and Debezium
-
-TLS configuration is passed through both JDBC properties and Debezium's separate SSL properties for its binlog client. See [AGENTS.md](AGENTS.md#4-tls-settings-are-translated-for-jdbc-and-debezium).
-
-### 5. Only specific binlog EOF errors are transient
-
-Only a narrow set of binlog EOF message patterns is classified as transient. See [AGENTS.md](AGENTS.md#5-only-specific-binlog-eof-errors-are-transient).
+1. **Saved CDC positions are validated against available binlog history** -- If saved CDC history is no longer available, the connector fails by default, with a configurable option to reset and re-read.
+2. **Zero dates and times have distinct CDC conversions** -- MySQL zero date/time values do not all map the same way, so preserving their distinct conversions avoids nulling valid times or changing expected schemas.
+3. **TINYINT(1) defaults to boolean in CDC** -- CDC emits `TINYINT(1)` as booleans by default, and `treat_tinyint1_as_integer` switches it to integers.
+4. **TLS settings are translated for JDBC and Debezium** -- Keep TLS settings consistent across JDBC reads and the CDC connection; changing only one path can leave the other differently protected.
+5. **Only specific binlog EOF errors are transient** -- Only recognized binlog EOF messages are retried as transient, so broadening the rule could make permanent failures retry indefinitely.
 
 ## Performance tests
 

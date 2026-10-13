@@ -18,7 +18,7 @@ For programmatic access-token credentials, the connector sets the JDBC `token` a
 
 The metadata querier recognizes object-level errors `2003`, `2043`, `2037`, and `2057`, but its factory enables this tolerance only for the `discover` operation. `application.yml` separately classifies some of these errors; it does not configure `2057`.
 
-**Why this matters:** Discovery can encounter objects whose metadata is unavailable, but the same tolerance is not applied to CHECK or READ. Do not broaden the allowlist or describe the classifier as covering codes it does not handle.
+**Why this matters:** Discovery tolerates these object-level errors so one broken view or unauthorized object does not fail the full discover; CHECK and READ do not receive that tolerance. Keep the tolerance narrow and confined to discovery.
 
 ## 4. The SSH tunnel field is retained for compatibility
 

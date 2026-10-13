@@ -1,22 +1,15 @@
 # Contributing to source-postgres
 
+For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
+
 ## Unique behaviors (summary)
 
-### 1. Xmin incremental checks reject wraparound
+Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 
-Xmin checks reject databases with transaction-ID wraparound. See [AGENTS.md](AGENTS.md#1-xmin-incremental-checks-reject-wraparound).
-
-### 2. CTID partition state tracks table filenodes
-
-CTID state is tied to the table filenode and resets when a table rewrite changes it. See [AGENTS.md](AGENTS.md#2-ctid-partition-state-tracks-table-filenodes).
-
-### 3. CDC replication slots advance during startup
-
-Postgres validates and may advance the replication slot in the CDC startup hook, not at sync completion or checkpoint. See [AGENTS.md](AGENTS.md#3-cdc-replication-slots-advance-during-startup).
-
-### 4. PostgreSQL-specific types have connector-defined encodings
-
-Geometry, geography, intervals, and `money` use connector-specific conversion paths, including different `money` representations across encodings. See [AGENTS.md](AGENTS.md#4-postgresql-specific-types-have-connector-defined-encodings).
+1. **Xmin incremental checks reject wraparound** -- Xmin incremental sync is rejected when transaction-ID wraparound is detected, and the message directs users to CDC or a cursor-based mode.
+2. **CTID partition state tracks table filenodes** -- A rewritten table causes the connector to restart its affected CTID read instead of trusting saved physical row positions.
+3. **CDC replication slots advance during startup** -- CDC may advance its replication slot at startup based on saved progress; it does not make this advancement at checkpoints or sync completion.
+4. **PostgreSQL-specific types have connector-defined encodings** -- Several PostgreSQL-specific types use non-obvious output formats that must remain consistent to avoid changing schemas or precision.
 
 ## Reproducing bugs
 
