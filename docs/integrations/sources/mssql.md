@@ -84,9 +84,9 @@ plan to use CDC, this user also needs the additional CDC-related permissions des
 
 #### Airbyte Cloud
 
-:::warning Airbyte Cloud requires encryption
-On Airbyte Cloud, only secured connections to your MSSQL instance are supported, because Airbyte Cloud never connects to your database over an unencrypted channel. Set **Encryption** to `Encrypted (trust server certificate)` or `Encrypted (verify certificate)`. If your SQL Server does not support TLS (for example a development server or a server on a private network that is only reachable through a bastion host), you can still use `Unencrypted`, but only together with an [SSH tunnel](#connection-to-mssql-via-an-ssh-tunnel): the tunnel then encrypts the traffic between Airbyte Cloud and your network. With `Unencrypted` and no SSH tunnel, the connection test on Airbyte Cloud fails with `Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.` Self-managed Airbyte (Open Source and Enterprise) does not enforce this, but encryption is still recommended.
-:::
+On Airbyte Cloud, only secured connections to your MSSQL instance are supported in source
+configuration. You may either configure your connection using one of the supported SSL Methods or by
+using an SSH Tunnel.
 
 ## Authentication with Microsoft Entra ID
 
@@ -370,10 +370,6 @@ directly \(e.g. it does not have a public IP address\).
 When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server \(a.k.a.
 a bastion server\) that _does_ have direct access to the database. Airbyte connects to the bastion
 and then asks the bastion to connect directly to the server.
-
-On Airbyte Cloud, an SSH tunnel is also the only way to use the `Unencrypted` encryption setting,
-because Airbyte Cloud never sends database traffic unencrypted. The SSH tunnel provides the
-encryption when the SQL Server itself does not.
 
 Using this feature requires additional configuration, when creating the source. We will talk through
 what each piece of configuration means.

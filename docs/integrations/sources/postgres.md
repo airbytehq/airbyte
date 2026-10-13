@@ -228,7 +228,7 @@ This is a good solution if:
 ### SSL Modes
 
 <FieldAnchor field="ssl_mode">
-On Airbyte Cloud, the connection must always be encrypted (see the note below). You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
+Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
 
 Here is a breakdown of available SSL connection modes:
 
@@ -239,10 +239,6 @@ Here is a breakdown of available SSL connection modes:
 - `verify-ca` to always require encryption and verify that the source has a valid SSL certificate
 - `verify-full` to always require encryption and verify the identity of the source
 </FieldAnchor>
-
-:::warning Airbyte Cloud requires encryption
-Airbyte Cloud never connects to your database over an unencrypted channel. Choose `require`, `verify-ca`, or `verify-full`. If your Postgres server does not support SSL (for example a development server or a server on a private network that is only reachable through a bastion host), you can still use `disable`, `allow`, or `prefer`, but only together with an [SSH tunnel](#ssh-tunneling): the tunnel then encrypts the traffic between Airbyte Cloud and your network. Without an SSH tunnel, those three modes fail the connection test on Airbyte Cloud with `Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.` Self-managed Airbyte (Open Source and Enterprise) does not enforce this, but encryption is still recommended.
-:::
 
 ### SSH Tunneling
 

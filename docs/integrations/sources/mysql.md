@@ -87,7 +87,7 @@ To fill out the required information:
 
 1. Enter the hostname, port number, and name for your MySQL database.
 2. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-mysql-user).
-3. Select an SSL mode. You will most frequently choose `required` or `verify_ca`. Both of these always require encryption. `verify_ca` also requires certificates from your MySQL database. On Airbyte Cloud, the connection must always be encrypted: use one of these modes, or `preferred` together with an SSH tunnel. See [here](#ssl-modes) to learn about other SSL modes and SSH tunneling.
+3. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your MySQL database. See [here](#ssl-modes) to learn about other SSL modes and SSH tunneling.
 4. Select `Read Changes using Binary Log (CDC)` from available replication methods.
 
 <!-- env:cloud -->
@@ -139,15 +139,9 @@ Here is a breakdown of available SSL connection modes:
 
 </FieldAnchor>
 
-:::warning Airbyte Cloud requires encryption
-Airbyte Cloud never connects to your database over an unencrypted channel. Choose `required`, `verify_ca`, or `verify_identity`. If your MySQL server does not support SSL (for example a development server or a server on a private network that is only reachable through a bastion host), you can still use `preferred`, but only together with an [SSH tunnel](#connection-via-ssh-tunnel): the tunnel then encrypts the traffic between Airbyte Cloud and your network. With `preferred` and no SSH tunnel, the connection test on Airbyte Cloud fails with `Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.` Self-managed Airbyte (Open Source and Enterprise) does not enforce this, but encryption is still recommended.
-:::
-
 ### Connection via SSH Tunnel
 
 You can connect to a MySQL server via an SSH tunnel.
-
-On Airbyte Cloud, an SSH tunnel is also the only way to use the `preferred` SSL mode, because Airbyte Cloud never sends database traffic unencrypted. The SSH tunnel provides the encryption when the MySQL server itself does not.
 
 When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server (also called a bastion or a jump server) that has direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
 
