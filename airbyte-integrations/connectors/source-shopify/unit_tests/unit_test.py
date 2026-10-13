@@ -9,7 +9,7 @@ import pytest
 import requests
 from source_shopify.run import run
 from source_shopify.source import ConnectionCheckTest, SourceShopify
-from source_shopify.streams.streams import BalanceTransactions, Countries, DiscountCodes, MarketCountries, PriceRules
+from source_shopify.streams.streams import BalanceTransactions, Countries, DeletedProducts, DiscountCodes, MarketCountries, PriceRules
 from source_shopify.utils import ShopifyNonRetryableErrors
 
 from airbyte_cdk.models import FailureType
@@ -315,3 +315,58 @@ def test_market_driven_shipping_flag_is_unreadable_on_non_json_response(requests
     with caplog.at_level(logging.WARNING, logger="airbyte"):
         assert stream.market_driven_shipping_enabled is None
     assert "could not read `shop.features.marketDrivenShipping`" in caplog.text
+
+
+DELETED_PRODUCT_EVENT = {
+    "id": "gid://shopify/BasicEvent/1",
+    "createdAt": "2026-10-01T00:00:00Z",
+    "message": "Product was deleted.",
+    "subjectId": "gid://shopify/Product/123",
+    "subjectType": "PRODUCT",
+}
+
+
+def deleted_products_page(nodes, end_cursor: Optional[str] = None) -> Mapping[str, Any]:
+    return {"data": {"events": {"pageInfo": {"hasNextPage": end_cursor is not None, "endCursor": end_cursor}, "nodes": nodes}}}
+
+
+@pytest.mark.parametrize(
+    "response",
+    [
+        pytest.param(GRAPHQL_ERROR_RESPONSE, id="errors_without_data"),
+        pytest.param({"data": None, **GRAPHQL_ERROR_RESPONSE}, id="errors_with_null_data"),
+    ],
+)
+def test_deleted_products_fails_on_graphql_errors(requests_mock, auth_config, response):
+    """An HTTP 200 with GraphQL `errors` must fail the read instead of completing it with zero records."""
+    requests_mock.post(GRAPHQL_URL, json=response)
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(DeletedProducts(auth_config).read_records(sync_mode=None))
+    assert exc_info.value.failure_type == FailureType.system_error
+
+
+def test_deleted_products_retries_a_throttled_page(requests_mock, auth_config):
+    requests_mock.post(GRAPHQL_URL, response_list=[{"json": THROTTLED_RESPONSE}, {"json": deleted_products_page([DELETED_PRODUCT_EVENT])}])
+    assert [record["id"] for record in DeletedProducts(auth_config).read_records(sync_mode=None)] == [123]
+    assert requests_mock.call_count == 2
+
+
+def test_deleted_products_parses_destroy_events_across_pages(requests_mock, auth_config):
+    requests_mock.post(
+        GRAPHQL_URL,
+        response_list=[
+            {"json": deleted_products_page([DELETED_PRODUCT_EVENT], end_cursor="cursor-1")},
+            {"json": deleted_products_page([])},
+        ],
+    )
+    assert list(DeletedProducts(auth_config).read_records(sync_mode=None)) == [
+        {
+            "id": 123,
+            "deleted_at": "2026-10-01T00:00:00Z",
+            "deleted_message": "Product was deleted.",
+            "deleted_description": None,
+            "shop_url": "test-shop",
+        }
+    ]
+    assert requests_mock.call_count == 2
+    assert requests_mock.last_request.json()["variables"]["after"] == "cursor-1"

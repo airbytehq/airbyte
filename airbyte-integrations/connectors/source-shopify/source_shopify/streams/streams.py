@@ -36,7 +36,13 @@ from source_shopify.shopify_graphql.bulk.query import (
     Transaction,
 )
 from source_shopify.shopify_graphql.bulk.tools import BulkTools
-from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors, ShopifyRateLimiter, is_throttled_graphql_error
+from source_shopify.utils import (
+    LimitReducingErrorHandler,
+    ShopifyGraphQlErrorHandler,
+    ShopifyNonRetryableErrors,
+    ShopifyRateLimiter,
+    is_throttled_graphql_error,
+)
 
 from airbyte_cdk import HttpSubStream
 from airbyte_cdk.models import FailureType
@@ -247,16 +253,29 @@ class DeletedProducts(IncrementalShopifyStream):
             "variables": variables,
         }
 
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        return ShopifyGraphQlErrorHandler(
+            self.logger, max_retries=5, error_mapping=DEFAULT_ERROR_MAPPING | ShopifyNonRetryableErrors(self.name)
+        )
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json_response = response.json()
-        page_info = json_response.get("data", {}).get("events", {}).get("pageInfo", {})
+        page_info = ((json_response.get("data") or {}).get("events") or {}).get("pageInfo", {})
         if page_info.get("hasNextPage"):
             return {"cursor": page_info.get("endCursor")}
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
-        events = json_response.get("data", {}).get("events", {}).get("nodes", [])
+        errors = json_response.get("errors")
+        if errors and response.ok:
+            # an HTTP 200 with GraphQL errors has no usable data, reading it as an empty page would end the sync as complete
+            raise AirbyteTracedException(
+                message=f"Stream `{self.name}`: Shopify GraphQL request failed: "
+                + "; ".join(str(error.get("message", error)) for error in errors),
+                failure_type=FailureType.transient_error if is_throttled_graphql_error(errors) else FailureType.system_error,
+            )
+        events = ((json_response.get("data") or {}).get("events") or {}).get("nodes", [])
         for event in events:
             if event.get("subjectType") == "PRODUCT" and event.get("subjectId"):
                 subject_id = event.get("subjectId", "")
@@ -663,7 +682,11 @@ class DiscountCodesSync(IncrementalShopifyStream):
             if child_cursor:
                 variables["after"] = child_cursor
             result = self._graphql_request(self.CHILD_CODES_QUERY, variables)
-            code_discount = result.get("data", {}).get("codeDiscountNode", {}).get("codeDiscount") or {}
+            code_discount_node = (result.get("data") or {}).get("codeDiscountNode")
+            if not code_discount_node:
+                self.logger.warning(f"Stream `{self.name}`: discount `{parent_gid}` no longer exists, skipping its codes.")
+                return
+            code_discount = code_discount_node.get("codeDiscount") or {}
             codes_conn = self._extract_codes_connection(code_discount)
             for code_node in codes_conn.get("nodes", []):
                 record = self._build_child_record(code_node, parent_gid, parent_meta)

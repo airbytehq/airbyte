@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 
 import pytest
 import requests_mock as rmock
@@ -366,6 +367,31 @@ def test_null_code_discount_skipped(auth_config, time_sleep_mock):
 
     assert len(records) == 1
     assert records[0]["code"] == "VALID"
+
+
+def test_null_child_code_discount_node_skipped(auth_config, time_sleep_mock, caplog):
+    """codeDiscountNode=null on the child request (discount deleted mid-sync) should skip that parent with a warning."""
+    stream = DiscountCodesSync(auth_config)
+    url = _graphql_url()
+
+    deleted_parent = _make_parent_node(100)
+    valid_parent = _make_parent_node(200)
+    code_node = _make_code_node(300, "VALID")
+
+    with rmock.Mocker() as m:
+        m.post(
+            url,
+            [
+                {"json": _parent_response([deleted_parent, valid_parent])},
+                {"json": {"data": {"codeDiscountNode": None}, "extensions": _EXTENSIONS}},
+                {"json": _child_response([code_node])},
+            ],
+        )
+        with caplog.at_level(logging.WARNING, logger="airbyte"):
+            records = list(stream.read_records(sync_mode=None))
+
+    assert [(r["price_rule_id"], r["code"]) for r in records] == [(200, "VALID")]
+    assert "gid://shopify/DiscountCodeNode/100" in caplog.text
 
 
 def test_extract_codes_connection_fallback(auth_config, time_sleep_mock):
