@@ -78,9 +78,9 @@ Zendesk refresh tokens are single-use. Every refresh returns a new refresh token
 
 #### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select Zendesk Support from the Source type dropdown.
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click **Sources** and then click **+ New source**.
+3. On the **Set up the source** page, select **Zendesk Support** from the **Source type** dropdown.
 4. Enter a name for the Zendesk Support connector.
    <!-- /env:cloud -->
    <!-- env:oss -->
@@ -88,8 +88,8 @@ Zendesk refresh tokens are single-use. Every refresh returns a new refresh token
 #### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select Zendesk Support from the Source type dropdown.
+2. Click **Sources** and then click **+ New source**.
+3. On the **Set up the source** page, select **Zendesk Support** from the **Source type** dropdown.
 4. Enter a name for the Zendesk Support connector.
 <!-- /env:oss -->
 5. You can use OAuth or an API token to authenticate your Zendesk Support account.
@@ -269,7 +269,15 @@ Zendesk invalidates a refresh token as soon as it's used, so authentication fail
 
 To recover, upgrade to version 5.5.1 or later, then re-authenticate the source in Airbyte Cloud or replace the refresh token on self-managed Airbyte.
 
-- Check out common troubleshooting issues for the Zendesk Support source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+#### OAuth syncs fail with `401 invalid_token`
+
+Zendesk can reject an OAuth access token with a `401` response whose body contains `"error": "invalid_token"`, even when the token expiry the connector stored hasn't passed yet. Versions before 5.6.3 failed the sync when this happened, which showed up most often on the `ticket_metrics` stream.
+
+As of version 5.6.3, sources that use **OAuth2.0 with Refresh Token** refresh the access token and retry the rejected request once. When several requests are rejected at the same time, the connector refreshes only once, so the single-use refresh token isn't spent twice. If Zendesk rejects the refreshed token as well, the sync fails with `Refreshed OAuth access token is rejected by the API.` If the refresh request itself is rejected, see [OAuth authentication fails with `invalid_grant`](#oauth-authentication-fails-with-invalid_grant). In both cases, re-authenticate the source.
+
+**OAuth2.0 (Legacy)** access tokens can't be refreshed, so the connector retries with the same token. If the error continues, re-authenticate the source with **OAuth2.0 with Refresh Token**. **API Token** sources don't use this retry. A `401` on an API token source means Zendesk couldn't authenticate the email address and API token.
+
+For other issues, search [GitHub Discussions](https://github.com/airbytehq/airbyte/discussions) for the Zendesk Support connector.
 
 </details>
 
