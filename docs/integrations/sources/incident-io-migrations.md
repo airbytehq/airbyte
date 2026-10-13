@@ -32,6 +32,8 @@ The `catalog_types` stream now reads `/v3/catalog_types`. The v3 response no lon
 
 The `incidents` stream now requests all five modes: `standard`, `retrospective`, `test`, `tutorial`, and `stream`. Its child stream `incident_attachments` follows the expanded parent scope and may also return more records.
 
+On an existing connection, `incidents` continues from its saved cursor, so test, tutorial, and stream incidents last updated before the upgrade are not synced. To include them, clear `incidents` and `incident_attachments` after upgrading, then sync them again.
+
 ### Why
 
 Destinations currently load these timestamp values as text. The timestamp annotations let destinations treat them as time-zone-aware timestamps. incident.io has deprecated `/v2/catalog_types`; the v3 endpoint removes `semantic_type` and exposes the v3 catalog fields.
