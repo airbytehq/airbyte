@@ -2,14 +2,10 @@
 package io.airbyte.integrations.source.bigquery.readapi
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.google.api.gax.rpc.PermissionDeniedException
-import com.google.api.gax.rpc.ServerStream
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.TableDefinition
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.storage.v1.BigQueryReadClient
-import com.google.cloud.bigquery.storage.v1.ReadRowsRequest
-import com.google.cloud.bigquery.storage.v1.ReadRowsResponse
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
@@ -29,6 +25,7 @@ import io.airbyte.integrations.source.bigquery.BigQueryClientFactory
 import io.airbyte.integrations.source.bigquery.BigQueryLegacyStreamState
 import io.airbyte.integrations.source.bigquery.BigQuerySourceConfiguration
 import io.airbyte.integrations.source.bigquery.BigQueryTableTypes
+import io.airbyte.integrations.source.bigquery.readapi.BigQueryReadApiPermissionProbe.Companion.qualifiedName
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -323,10 +320,12 @@ class BigQueryReadApiPartitionsCreatorFactory(
 
 /**
  * Decides once per READ, before any feed starts, whether the service account may use the Storage
- * Read API: one read session on the first base table of the catalog, restricted to a single column
- * and a single read stream, and one `ReadRows` response. A `PERMISSION_DENIED` on either call marks
- * the API unavailable for the whole READ, and the connector falls back to the query API. Any other
- * failure keeps the API enabled; the partition readers report it with the table's context.
+ * Read API, with a [BigQueryReadApiPermissionProbe] on the first base table of the catalog, or on
+ * the result table of a query job when the catalog holds none. A denied permission marks the API
+ * unavailable for the whole READ: the connector's own Read API partitions decline every table and
+ * the JDBC driver stops asking for `EnableHighThroughputAPI`, so everything is read through the
+ * query API. Any other failure keeps the API enabled; the partition readers report it with the
+ * table's context.
  */
 @Singleton
 @Requires(property = Operation.PROPERTY, value = "read")
@@ -342,7 +341,15 @@ class BigQueryReadApiAvailabilityProbe(
     private val config: BigQuerySourceConfiguration
         get() = clients.config
 
-    fun runOnce() {
+    fun runOnce(
+        permissionProbe: BigQueryReadApiPermissionProbe =
+            BigQueryReadApiPermissionProbe(
+                config,
+                { clients.bigquery },
+                { clients.readClient },
+                constants,
+            ),
+    ) {
         if (!done.compareAndSet(false, true)) return
         if (config.emulatorHost != null || !config.useStorageReadApi) {
             log.info {
@@ -352,65 +359,49 @@ class BigQueryReadApiAvailabilityProbe(
             }
             return
         }
-        val candidate: ConfiguredAirbyteStream =
+        val candidate: ConfiguredAirbyteStream? =
             catalog.streams.firstOrNull { configured ->
                 tableTypes.typeOf(StreamIdentifier.from(configured.stream)) ==
                     TableDefinition.Type.TABLE
             }
-                ?: run {
-                    log.info { "No base table in the catalog: the Storage Read API is not probed." }
-                    return
-                }
-        val streamID: StreamIdentifier = StreamIdentifier.from(candidate.stream)
+        val table: TableId? =
+            candidate?.let {
+                val streamID: StreamIdentifier = StreamIdentifier.from(it.stream)
+                TableId.of(
+                    config.projectId,
+                    streamID.namespace ?: config.datasetId ?: config.projectId,
+                    streamID.name,
+                )
+            }
         val firstColumn: String? =
-            candidate.stream.jsonSchema
+            candidate
+                ?.stream
+                ?.jsonSchema
                 ?.get("properties")
                 ?.fieldNames()
                 ?.asSequence()
                 ?.firstOrNull()
-        try {
-            val session: BigQueryReadSession =
-                BigQueryReadSession.create(
-                    client = clients.readClient,
-                    jobProjectId = config.jobProjectId,
-                    dataProjectId = config.projectId,
-                    dataset = streamID.namespace ?: config.datasetId ?: config.projectId,
-                    table = streamID.name,
-                    selectedFields = firstColumn?.let { listOf(it) },
-                    maxReadStreams = 1,
-                    arrowBufferCompression = "NONE",
-                )
-            if (session.readStreams.isNotEmpty()) {
-                val responses: ServerStream<ReadRowsResponse> =
-                    clients.readClient
-                        .readRowsCallable()
-                        .call(
-                            ReadRowsRequest.newBuilder()
-                                .setReadStream(session.readStreams.first())
-                                .setOffset(0L)
-                                .build(),
-                            BigQueryReadApiPartitionReader.callContext(constants),
-                        )
-                val iterator: Iterator<ReadRowsResponse> = responses.iterator()
-                if (iterator.hasNext()) iterator.next()
-                responses.cancel()
-            }
+        if (table == null) {
             log.info {
-                "The Storage Read API is available (probed on '${streamID}' in project " +
-                    "'${config.jobProjectId}')."
+                "No base table in the catalog: the Storage Read API is probed on the result " +
+                    "table of a query job instead."
             }
-        } catch (e: PermissionDeniedException) {
-            val reason: String = BigQueryReadSession.permissionDeniedMessage(config.jobProjectId)
-            availability.markUnavailable(reason)
-            log.warn(e) {
-                "Falling back to the standard query API for every table, which is much slower on " +
-                    "large tables. $reason"
+        }
+        when (val outcome = permissionProbe.probe(table, firstColumn)) {
+            is BigQueryReadApiPermissionProbe.Outcome.Allowed ->
+                log.info {
+                    "The Storage Read API is available (probed on ${outcome.table.qualifiedName()} " +
+                        "in project '${config.jobProjectId}')."
+                }
+            is BigQueryReadApiPermissionProbe.Outcome.Denied -> {
+                availability.markUnavailable(outcome.message)
+                log.warn(outcome.cause) {
+                    "Falling back to the standard query API for every table, which is much " +
+                        "slower on large tables. ${outcome.message}"
+                }
             }
-        } catch (e: Exception) {
-            log.warn(e) {
-                "The Storage Read API probe on '$streamID' failed for a reason other than a " +
-                    "missing permission; the Read API stays enabled."
-            }
+            is BigQueryReadApiPermissionProbe.Outcome.Inconclusive ->
+                log.warn(outcome.cause) { "${outcome.message}; the Read API stays enabled." }
         }
     }
 }
