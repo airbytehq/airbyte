@@ -380,7 +380,7 @@ GO
 
 #### Advanced CDC settings
 
-When you select **Read Changes using Change Data Capture (CDC)** as the update method, the connector exposes the following advanced settings. The defaults work for most databases.
+When you select **Read Changes using Change Data Capture (CDC)** as the update method, the connector exposes the following advanced settings.
 
 | Setting | Default | Description |
 | :--- | :--- | :--- |
