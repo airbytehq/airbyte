@@ -148,6 +148,58 @@ airbyte:
             group: Postgres Debezium Connection Error
             output: The sync encountered an unexpected error in the change event producer and has stopped. Please check the logs for details and troubleshoot accordingly.
 
+          # Unreachable host rules. The same rule serves a failed connection test (CHECK) and a
+          # failed sync, so the wording must work for both. PgJDBC wraps every I/O failure during
+          # connect (unknown host, connect timeout, no route to host) in "The connection attempt
+          # failed." and a refused TCP connection in "Connection to host:port refused".
+          - pattern: (?i).*The connection attempt failed\..*
+            input-example: "org.postgresql.util.PSQLException: The connection attempt failed."
+            error: config
+            output: >-
+              Airbyte could not reach the database at the configured host and port.
+              Check the host and port, that Postgres accepts remote connections (listen_addresses, pg_hba.conf),
+              and that your firewall or security group allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses
+              - https://docs.airbyte.com/integrations/sources/postgres
+
+          - pattern: (?i).*Connection to \S+ refused\. Check that the hostname and port are correct.*
+            input-example: "org.postgresql.util.PSQLException: Connection to localhost:5433 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections."
+            error: config
+            output: >-
+              Airbyte could not reach the database at the configured host and port.
+              Check the host and port, that Postgres accepts remote connections (listen_addresses, pg_hba.conf),
+              and that your firewall or security group allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses
+              - https://docs.airbyte.com/integrations/sources/postgres
+
+          # Thrown by org.postgresql.Driver when a loginTimeout is set (e.g. via JDBC URL params)
+          # and the connection is not established within it.
+          - pattern: (?i).*Connection attempt timed out\..*
+            input-example: "org.postgresql.util.PSQLException: Connection attempt timed out."
+            error: config
+            output: >-
+              Airbyte could not reach the database at the configured host and port.
+              Check the host and port, that Postgres accepts remote connections (listen_addresses, pg_hba.conf),
+              and that your firewall or security group allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses
+              - https://docs.airbyte.com/integrations/sources/postgres
+
+          # PgJDBC itself wraps an unresolvable host in "The connection attempt failed." (above);
+          # this rule catches the DNS failure when another layer surfaces it directly.
+          - pattern: (?i).*java\.net\.UnknownHostException.*
+            input-example: "java.lang.RuntimeException: java.net.UnknownHostException: nonexistent-host.invalid"
+            error: config
+            output: >-
+              Airbyte could not reach the database at the configured host and port.
+              Check the host and port, that Postgres accepts remote connections (listen_addresses, pg_hba.conf),
+              and that your firewall or security group allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses
+              - https://docs.airbyte.com/integrations/sources/postgres
+
       jdbc:
         # The following rules are for the JdbcExceptionClassifier [0] which are applied on a
         # Postgres error code [1]. The vendor error code is printed in the exception
