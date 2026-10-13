@@ -408,7 +408,10 @@ def test_time_window_config_changes_the_slice_size():
         mocker.get(f"{_BASE_URL}/v2/alerts", json={"alerts": [], "pagination_meta": {}})
         _read_stream("alerts", SyncMode.incremental, config=config)
 
-        windows = [request.qs["updated_at[date_range]"][0].lower() for request in mocker.request_history]
+        windows = sorted(
+            [request.qs["updated_at[date_range]"][0].lower() for request in mocker.request_history],
+            key=lambda w: w.split("~")[0],
+        )
 
     assert windows[0] == "2020-01-01t00:00:00.000000z~2020-12-30t23:59:59.999999z"
     assert windows[1].startswith("2020-12-31t00:00:00.000000z~")
