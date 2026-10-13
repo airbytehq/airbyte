@@ -5,7 +5,7 @@
 ## Prerequisites
 
 - An Incident.io account with API access. You can sign up at [incident.io](https://incident.io/).
-- An Incident.io API key. To create one, go to **Settings** → **API keys** in your Incident.io dashboard. When you create the key, choose which actions it can take. Keys can have account-level permissions, team-scoped permissions, or both. For this connector, the key needs read access to all resources you want to sync. To see which scope each stream needs, see [API key scopes by stream](#api-key-scopes-by-stream). For example, the `escalations` stream requires the **View data** or **Create and manage on-call resources** permission. You can only set a key's permissions when you create it, so if the key is missing a permission, create a new key. The API key is shown only once, so store it somewhere safe.
+- An Incident.io API key. To create one, go to **Settings** → **API keys** in your Incident.io dashboard. When you create the key, choose which actions it can take. Keys can have account-level permissions, team-scoped permissions, or both. For this connector, the key needs read access to all resources you want to sync. To see which scope each stream needs, see [API key scopes by stream](#api-key-scopes-by-stream). For example, the `escalations` stream requires the **View data** or **Create and manage on-call resources** permission. You can only grant permissions that you have yourself. To create or edit API keys, you need the **Manage API keys** permission. Incident.io shows the API key token only once, so store it somewhere safe.
 
 For more information about the API, see the [Incident.io API reference](https://api-docs.incident.io/).
 
@@ -36,7 +36,7 @@ The `start_date` filter applies to these five streams in every sync mode, includ
 | `api_key` | `string` | API Key. API key to use. Find it at https://app.incident.io/settings/api-keys | |
 | `start_date` | `string` | Start Date. Only sync records updated on or after this UTC date-time, in the format `YYYY-MM-DDTHH:MM:SSZ`, for the `incidents`, `alerts`, `escalations`, `actions`, and `follow-ups` streams. Applies to both Full Refresh and Incremental syncs. The default predates all incident.io data. Streams read per incident, such as `incident_attachments`, follow the same scope and only cover incidents updated on or after this date. | 2020-01-01T00:00:00Z |
 | `time_window` | `string` | Time window. Size of each date window requested from incident.io on incremental streams, in whole days as an ISO 8601 duration (for example `P30D`, `P7D`, `P365D`). The minimum is `P1D` because incidents and escalations filter by date. Smaller windows let more requests run in parallel on large accounts; larger windows mean fewer requests on small accounts. Defaults to `P30D`. | P30D |
-| `num_workers` | `integer` | Number of concurrent workers. Number of streams and partitions read in parallel. Higher values can speed up large syncs but use more of the incident.io rate limit (1,200 requests per minute per API key, 60 per minute on incidents). | 4 |
+| `num_workers` | `integer` | Number of concurrent workers. Number of streams and partitions read in parallel, from 1 to 10. Higher values can speed up large syncs but use more of the incident.io rate limit (1,200 requests per minute per API key, 60 per minute on incidents). | 4 |
 
 ## Streams
 
@@ -89,7 +89,7 @@ The connector reads three streams once for each record of a parent stream:
 The Incident.io API allows 1,200 requests per minute per API key, and the incidents endpoint has a lower limit of 60 requests per minute. The connector paces itself within both limits and, if the API still returns a rate-limit response, waits for the interval the API asks for before retrying.
 
 - **Invalid API key (HTTP 401):** The sync fails if the API key is invalid or has been revoked. Create a new key in Incident.io under **Settings** → **API keys** and update the source configuration.
-- **Missing permission (HTTP 403):** The sync fails with Incident.io's error message, which names the missing permission. Create a new API key that includes that permission, or deselect the affected stream in your connection.
+- **Missing permission (HTTP 403):** The sync fails with Incident.io's error message, which names the missing permission. Edit the API key in Incident.io under **Settings** → **API keys** to add that permission, or deselect the affected stream in your connection. You don't need to create a new key or update the source configuration.
 - **Transient errors (HTTP 408 and 5xx):** The connector retries these requests automatically.
 - **Slow syncs with `incident_attachments`:** On every sync, this stream reads the `incidents` endpoint from `start_date`, which allows only 60 requests per minute, and then sends one request per incident. This happens even if you sync the `incidents` stream incrementally. On accounts with many incidents, this can add significant time to each sync. If you don't need attachments, deselect this stream. If someone deletes an incident during a sync, the connector skips its attachments instead of failing.
 
