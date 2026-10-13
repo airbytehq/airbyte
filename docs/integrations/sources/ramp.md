@@ -45,7 +45,7 @@ Sources created before version 1.1.0 use client credentials. They move to the **
 
 ## Test against the Ramp sandbox
 
-The connector calls `https://api.ramp.com` by default. Since version 0.0.4, an **API Base URL** (`api_url`) field can point it at Ramp's [sandbox](https://docs.ramp.com/developer-api/v1/sandbox) at `https://demo-api.ramp.com` instead. The value must start with `https://`. Leave the default for production accounts.
+The connector calls `https://api.ramp.com` by default. Since version 0.0.4, an **API Base URL** (`api_url`) field can point it at Ramp's [sandbox](https://docs.ramp.com/developer-api/v1/sandbox) at `https://demo-api.ramp.com` instead. These are the only two accepted values. Leave the default for production accounts.
 
 The field is hidden in the Airbyte UI, so set it programmatically. For example, include it in the source configuration you send through the Airbyte API, Terraform provider, or PyAirbyte. Sandbox and production credentials aren't interchangeable: create a developer app in the sandbox (`https://demo.ramp.com`) with the same grant type and scopes, and use that app's client ID and secret with the sandbox base URL. The **OAuth** option always uses Ramp's production consent and token URLs, so test the sandbox with client credentials.
 

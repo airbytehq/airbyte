@@ -12,63 +12,96 @@ check:
     - transactions
 
 definitions:
+  # The parts both login requests share. Each option in `linked.HttpRequester.authenticator` adds its own
+  # form and error message.
+  token_requester:
+    type: HttpRequester
+    url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/token"
+    http_method: POST
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['credentials']['client_id'] }}"
+      password: "{{ config['credentials']['client_secret'] }}"
   linked:
     HttpRequester:
-      # One login request serves both auth options. `SelectiveAuthenticator` cannot hold a
-      # `SessionTokenAuthenticator` (the CDK does not pass it the `name` argument it requires), and the
-      # CDK's `OAuthAuthenticator` would drop the Ramp `error_v2` detail from token errors.
+      # Both options log in with a `SessionTokenAuthenticator`, not the CDK's `OAuthAuthenticator`, which would
+      # drop the Ramp `error_v2` detail from token errors.
       authenticator:
-        type: SessionTokenAuthenticator
-        login_requester:
-          type: HttpRequester
-          url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/token"
-          http_method: POST
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['credentials']['client_id'] }}"
-            password: "{{ config['credentials']['client_secret'] }}"
-          request_body:
-            type: RequestBodyUrlEncodedForm
-            value:
-              grant_type: "{{ 'refresh_token' if config['credentials']['auth_type'] == 'oauth2.0' else 'client_credentials' }}"
-              # Each grant needs one more field, so its key is interpolated too: OAuth sends `refresh_token`,
-              # client credentials send `scope`. Ramp does not rotate refresh tokens: a refresh returns only a
-              # new access token, so the token from the consent flow is reused until it expires or is revoked.
-              # The scope list is one token for every stream's scope. Ramp grants the subset the app has and
-              # silently drops the rest, so a missing scope only fails its own stream (403 DEVELOPER_7100),
-              # never the login. Keep it in sync with `scope` in `spec.advanced_auth`.
-              "{{ 'refresh_token' if config['credentials']['auth_type'] == 'oauth2.0' else 'scope' }}": >-
-                {{ config['credentials']['refresh_token'] if config['credentials']['auth_type'] == 'oauth2.0'
-                else 'transactions:read cards:read reimbursements:read users:read departments:read locations:read
-                entities:read business:read funds:read spend_programs:read bills:read vendors:read
-                receipts:read merchants:read purchase_orders:read' }}
-          error_handler:
-            type: DefaultErrorHandler
-            max_retries: 5
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 400
-                  - 401
-                action: FAIL
-                failure_type: config_error
-                # Ramp does not fail the token call for a scope the app lacks: it drops the scope and the
-                # data call later returns 403 DEVELOPER_7100, handled by the shared error handler.
-                error_message: >-
-                  {% if config['credentials']['auth_type'] == 'oauth2.0' %}Ramp rejected the connector's OAuth
-                  authorization ({{ (response.get('error_v2') or {}).get('message') or response.get('error_description')
-                  or response.get('error') or 'no details' }}). Re-authenticate the source as a Ramp Admin or Business
-                  Owner.{% else %}Ramp rejected the client ID or client secret ({{ (response.get('error_v2') or {}).get('message')
-                  or response.get('error_description') or response.get('error') or 'no details' }}).
-                  Copy both again from Ramp > Company > Developer > your app, and check the app uses the
-                  Client Credentials grant.{% endif %}
-        session_token_path:
-          - access_token
-        # OAuth access tokens last 1 hour by default; client-credentials tokens last 10 days, so they are
-        # simply re-issued more often than needed.
-        expiration_duration: PT50M
-        request_authentication:
-          type: Bearer
+        type: SelectiveAuthenticator
+        authenticator_selection_path:
+          - credentials
+          - auth_type
+        authenticators:
+          oauth2.0:
+            type: SessionTokenAuthenticator
+            login_requester:
+              $ref: "#/definitions/token_requester"
+              request_body:
+                type: RequestBodyUrlEncodedForm
+                value:
+                  # Ramp does not rotate refresh tokens: a refresh returns only a new access token, so the
+                  # token from the consent flow is reused until it expires or is revoked. The token keeps the
+                  # scopes granted at consent, so the request sends none.
+                  grant_type: refresh_token
+                  refresh_token: "{{ config['credentials']['refresh_token'] }}"
+              error_handler:
+                type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 400
+                      - 401
+                    action: FAIL
+                    failure_type: config_error
+                    error_message: >-
+                      Ramp rejected the connector's OAuth authorization ({{ (response.get('error_v2') or {}).get('message')
+                      or response.get('error_description') or response.get('error') or 'no details' }}).
+                      Re-authenticate the source as a Ramp Admin or Business Owner.
+            session_token_path:
+              - access_token
+            # Ramp OAuth access tokens last 1 hour unless the app is configured with another lifetime.
+            expiration_duration: PT50M
+            request_authentication:
+              type: Bearer
+          client_credentials:
+            type: SessionTokenAuthenticator
+            login_requester:
+              $ref: "#/definitions/token_requester"
+              request_body:
+                type: RequestBodyUrlEncodedForm
+                value:
+                  grant_type: client_credentials
+                  # One token for every stream's scope. Ramp grants the subset the app has and silently drops
+                  # the rest, so a missing scope only fails its own stream (403 DEVELOPER_7100), never the
+                  # login. Keep in sync with `scope` in `spec.advanced_auth`.
+                  scope: >-
+                    transactions:read cards:read reimbursements:read users:read departments:read locations:read
+                    entities:read business:read funds:read spend_programs:read bills:read vendors:read
+                    receipts:read merchants:read purchase_orders:read
+              error_handler:
+                type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 400
+                      - 401
+                    action: FAIL
+                    failure_type: config_error
+                    # Ramp does not fail the token call for a scope the app lacks: it drops the scope and the
+                    # data call later returns 403 DEVELOPER_7100, handled by the shared error handler.
+                    error_message: >-
+                      Ramp rejected the client ID or client secret ({{ (response.get('error_v2') or {}).get('message')
+                      or response.get('error_description') or response.get('error') or 'no details' }}).
+                      Copy both again from Ramp > Company > Developer > your app, and check the app uses the
+                      Client Credentials grant.
+            session_token_path:
+              - access_token
+            # Client-credentials tokens last 10 days.
+            expiration_duration: PT240H
+            request_authentication:
+              type: Bearer
       error_handler:
         type: DefaultErrorHandler
         max_retries: 5
@@ -2547,10 +2580,13 @@ spec:
         description: >-
           Ramp API base URL. All production Ramp accounts use the default. Set
           to https://demo-api.ramp.com only when testing against a Ramp
-          sandbox app.
+          sandbox app. No other value is accepted.
         title: API Base URL
         default: https://api.ramp.com
-        pattern: ^https://
+        # Only Ramp's own hosts: the login sends the client ID and secret in a Basic header, and with OAuth
+        # on Airbyte Cloud those are Airbyte's Ramp app credentials, injected by the platform. Any other host
+        # would receive them.
+        pattern: ^https://(demo-)?api\.ramp\.com/?$
         airbyte_hidden: true
         order: 2
     additionalProperties: true

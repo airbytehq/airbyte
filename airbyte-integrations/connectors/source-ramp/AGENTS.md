@@ -8,40 +8,73 @@ This connector is manifest-only (`language:manifest-only`, `cdk:low-code`); ever
 sandbox). Ramp's [OpenAPI spec](https://docs.ramp.com/openapi/developer-api.json) is the most reliable
 reference for fields, filters and scopes; the guide pages are rendered client-side.
 
-## 1. One token request asks for every scope, and Ramp silently drops the ones the app lacks
+## 1. Two login options, each with its own token request; only client credentials drop missing scopes
 
-Every stream logs in with the same `client_credentials` request to `POST /developer/v1/token`, and that
-request asks for all 15 read scopes the connector uses. Ramp's
-[authorization guide](https://docs.ramp.com/developer-api/v1/authorization) says an ungranted scope
-fails the token request, but the sandbox does not behave that way: it issues a token for the subset of
-scopes the app has and drops the rest (verified 2026-10-01: `transactions:read bills:write` returned a
-token with only `transactions:read`). A missing scope therefore surfaces later, as a 403
-`DEVELOPER_7100` on the first data call of the stream that needs it, and only that stream fails.
+`credentials.auth_type` picks the login through a `SelectiveAuthenticator`. Both options are
+`SessionTokenAuthenticator`s that `POST /developer/v1/token` with HTTP Basic `client_id:client_secret`
+(`definitions.token_requester`). The CDK's `OAuthAuthenticator` is not used for OAuth because it replaces
+Ramp's `error_v2` reason (for example "Business not authorized to use this application") with a generic
+message.
+
+- **Client Credentials** (`client_credentials`) sends `grant_type=client_credentials` and all 15 read
+  scopes the connector uses. Ramp's
+  [authorization guide](https://docs.ramp.com/developer-api/v1/authorization) says an ungranted scope
+  fails the token request, but the sandbox does not behave that way: it issues a token for the subset of
+  scopes the app has and drops the rest (verified 2026-10-01: `transactions:read bills:write` returned a
+  token with only `transactions:read`). A missing scope therefore surfaces later, as a 403
+  `DEVELOPER_7100` on the first data call of the stream that needs it, and only that stream fails.
+- **OAuth** (`oauth2.0`) sends `grant_type=refresh_token` with the refresh token from the consent flow and
+  no scope; the access token keeps the scopes granted at consent. Ramp does not rotate refresh tokens: a
+  refresh returns only a new access token, so nothing is written back to the config and the rotating-token
+  failures other OAuth connectors have (a lost token on pod preemption) cannot happen. The consent in
+  `spec.advanced_auth` asks for the same 15 scopes, and unlike the client-credentials login it fails with
+  `invalid_scope` if Airbyte's Ramp app lacks any of them.
+  `test_advanced_auth_requests_the_client_credentials_scopes` keeps the two scope lists equal. The consent
+  and token URLs are Ramp production; the OAuth branch can be tested against the sandbox only with a
+  refresh token obtained by hand from a sandbox app and `api_url` set to the sandbox.
+
+Both logins go to `{api_url}/developer/v1/token`, so the spec `pattern` limits `api_url` to
+`https://api.ramp.com` and `https://demo-api.ramp.com`. With OAuth on Airbyte Cloud, the platform
+injects Airbyte's own Ramp app client ID and secret into `credentials`, and the login sends them in the
+Basic header. With the old `^https://` pattern, anyone able to set the hidden `api_url` through the API
+could point the login at their own host and collect that secret. Never loosen the pattern, and never send
+a request built from `api_url` before the config has been validated against the spec.
 
 The token is not shared across streams. The CDK builds a separate session-token provider for every
 stream's authenticator, so each selected stream logs in once per sync, and `vendor_contacts` logs in
-twice because its parent `vendors` read has its own authenticator. The token lives 10 days
-(`expiration_duration: PT240H`), so it never expires mid-sync.
+twice because its parent `vendors` read has its own authenticator. Client-credentials tokens live 10 days
+(`expiration_duration: PT240H`), so they never expire mid-sync. OAuth access tokens last 1 hour by
+default, but Ramp lets each app configure its own lifetime, so the OAuth option re-logs in after
+`PT50M`. If Airbyte's Ramp app is ever set to a shorter lifetime, long streams get a 401 mid-sync, which
+the shared error handler reports as a credentials `config_error`.
+
+Configs created before 1.1.0 have flat `client_id` and `client_secret`. A `ConfigMigration` moves them
+into the Client Credentials option and removes the flat fields. Its `ConfigAddFields` condition is
+evaluated before each field, so `auth_type`, whose absence marks an unmigrated config, is added last.
+Once a config is migrated, versions before 1.1.0 can no longer read it.
 
 **Why this matters:** Do not split the scope string per stream to "fix" a missing scope, and do not
 drop scopes from the shared request to make the login pass for small apps: neither is needed, because
-the login never fails on scope. If Ramp starts enforcing its documented `invalid_scope` behaviour, every
-stream would fail at login for any app that lacks one of the 15 scopes. The live CI read would catch
-that; mocked unit tests cannot.
+the client-credentials login never fails on scope. If Ramp starts enforcing its documented
+`invalid_scope` behaviour, every stream would fail at login for any app that lacks one of the 15 scopes.
+The live CI read would catch that; mocked unit tests cannot. Keep the two logins separate: one
+interpolated login would force a single `expiration_duration` on both options and send per-option form
+keys through Jinja.
 
 ## 2. Ramp's own error codes drive the error mapping, including a 404 for a bad token
 
 Ramp returns errors as `{"error_v2": {"error_code": ..., "message": ...}}`
 ([error handling](https://docs.ramp.com/developer-api/v1/error-handling)). The shared error handler
-maps them as follows, in this order:
+maps them as follows, in this order (each login has its own handler for its `400` / `401`):
 
 | Response | Failure type | Message points the user to |
 | --- | --- | --- |
-| any status with `error_code` `DEVELOPER_7100` (missing scope) | `config_error` | grant the read scope Ramp names |
-| any status with `error_code` `DEVELOPER_7002` (token no longer accepted) | `config_error` | check the app still exists and the secret was not rotated |
-| `401` | `config_error` | re-enter the client ID and secret |
-| `403` | `config_error` | the stream's `required_scope`, plus its `access_note` (`purchase_orders` adds "Ramp Plus only") |
-| login `400` / `401` | `config_error` | re-copy the credentials; quotes Ramp's `error_v2.message` or the OAuth `error_description` |
+| any status with `error_code` `DEVELOPER_7100` (missing scope) | `config_error` | OAuth: re-authenticate as an Admin or Business Owner; client credentials: grant the read scope Ramp names |
+| any status with `error_code` `DEVELOPER_7002` (token no longer accepted) | `config_error` | OAuth: re-authenticate; client credentials: check the app still exists and the secret was not rotated |
+| `401` | `config_error` | OAuth: re-authenticate; client credentials: re-enter the client ID and secret |
+| `403` | `config_error` | the stream's `required_scope`, plus its `access_note` (`purchase_orders` adds "Ramp Plus only"); OAuth: re-authenticate, client credentials: grant the scope |
+| login `400` / `401`, OAuth | `config_error` | re-authenticate as an Admin or Business Owner; quotes Ramp's `error_v2.message` or the OAuth `error_description` |
+| login `400` / `401`, client credentials | `config_error` | re-copy the credentials; quotes Ramp's `error_v2.message` or the OAuth `error_description` |
 | `429`, `5xx` | retried with `ExponentialBackoffStrategy` (factor 2), up to `max_retries: 5`; then the CDK default failure type | — |
 | anything else | CDK default mapping | — |
 

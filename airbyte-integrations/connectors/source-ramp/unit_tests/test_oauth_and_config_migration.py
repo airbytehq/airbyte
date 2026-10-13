@@ -6,6 +6,7 @@
 - configs created before OAuth support (flat `client_id` / `client_secret`) are migrated into the
   client-credentials option and keep reading
 - `spec.advanced_auth` requests the same scopes the client-credentials login does
+- `api_url` accepts only Ramp's hosts, so the login never sends client credentials elsewhere
 """
 
 import base64
@@ -13,6 +14,7 @@ import json
 import logging
 from urllib.parse import parse_qs
 
+import pytest
 import requests_mock
 from _helpers import (
     ACCESS_TOKEN,
@@ -64,9 +66,10 @@ def test_oauth_login_uses_refresh_token_grant():
     assert _basic_credentials(login) == f"{credentials['client_id']}:{credentials['client_secret']}"
 
     form_body = parse_qs(login.text)
-    assert form_body == {"grant_type": ["refresh_token"], "refresh_token": [credentials["refresh_token"]]}, (
-        f"unexpected OAuth login form {form_body}"
-    )
+    assert form_body == {
+        "grant_type": ["refresh_token"],
+        "refresh_token": [credentials["refresh_token"]],
+    }, f"unexpected OAuth login form {form_body}"
 
     data_requests = requests_to(mocker.request_history, TRANSACTIONS_PATH)
     assert data_requests[0].headers["Authorization"] == f"Bearer {ACCESS_TOKEN}"
@@ -134,3 +137,41 @@ def test_advanced_auth_requests_the_client_credentials_scopes():
 
     oauth_option = spec.connectionSpecification["properties"]["credentials"]["oneOf"][0]
     assert oauth_option["properties"]["auth_type"]["const"] == "oauth2.0", "OAuth must be the first option"
+
+
+@pytest.mark.parametrize("config", [OAUTH_CONFIG, CONFIG], ids=["oauth", "client_credentials"])
+@pytest.mark.parametrize(
+    "api_url",
+    [
+        "https://collector.example.org",
+        "https://demo-api.ramp.com.collector.example.org",
+        "https://api.ramp.com@collector.example.org",
+    ],
+)
+def test_foreign_api_url_is_rejected_before_any_request(config, api_url):
+    """The login sends the app's client ID and secret in a Basic header, so it never goes to a non-Ramp host.
+
+    With OAuth on Airbyte Cloud, those are Airbyte's own Ramp app credentials, injected by the platform.
+    """
+    config = {**config, "api_url": api_url}
+
+    with requests_mock.Mocker() as mocker:
+        output = read_stream("transactions", config=config)
+
+    assert mocker.request_history == [], f"no request may leave the connector, got {mocker.request_history}"
+    errors = [message.trace.error for message in output.errors]
+    assert errors, "expected the read to emit an error trace"
+    assert errors[0].failure_type == FailureType.config_error, f"expected config_error, got {errors[0].failure_type}"
+
+
+def test_sandbox_api_url_is_accepted():
+    """The sandbox host stays allowed, for both the login and the data calls."""
+    sandbox = "https://demo-api.ramp.com"
+    config = {**OAUTH_CONFIG, "api_url": f"{sandbox}/"}
+
+    with requests_mock.Mocker() as mocker:
+        mocker.post(f"{sandbox}/developer/v1/token", json=OAUTH_TOKEN_RESPONSE)
+        mocker.get(f"{sandbox}/developer/v1/transactions", json=_transactions_page())
+        output = read_stream("transactions", config=config)
+
+    assert record_ids(output) == ["tx-1"]
