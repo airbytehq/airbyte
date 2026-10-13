@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mssql
 
+import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
@@ -166,6 +167,21 @@ class MsSqlServerSourceConfigurationSpecificationTest {
                 clientSecret = "client-secret-value",
             ),
             config.authentication,
+        )
+    }
+
+    /**
+     * The generated spec must tell Airbyte Cloud users that the Unencrypted option only works
+     * together with an SSH tunnel (the connector rejects Unencrypted without a tunnel on Cloud).
+     */
+    @Test
+    fun testUnencryptedOptionDescriptionMentionsCloudTunnelRequirement() {
+        val sslModeOptions: JsonNode = supplier.jsonSchema["properties"]["ssl_mode"]["oneOf"]
+        val unencrypted: JsonNode = sslModeOptions.first { it["title"].asText() == "Unencrypted" }
+        Assertions.assertEquals(
+            "Data transfer will not be encrypted. " +
+                "Not available on Airbyte Cloud unless an SSH tunnel is configured.",
+            unencrypted["description"].asText(),
         )
     }
 

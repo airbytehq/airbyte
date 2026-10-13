@@ -55,13 +55,40 @@ airbyte:
             output: The sync encountered a database read failure due to a connection timeout, will retry.
             reference-links: https://docs.oracle.com/javase/9/docs/api/java/sql/SQLTransientConnectionException.html
 
+          # Unreachable host. The driver folds "Connection refused", "connect timed out" and
+          # UnknownHostException into this message, so one rule covers all of them. The same rule
+          # serves a failed connection test and a failed sync, so the output must not mention retries.
           - pattern: (?i).*the tcp\/ip connection to the host.*has failed.*
             input-example: >-
               com.microsoft.sqlserver.jdbc.SQLServerException: The TCP/IP connection to the host localhost, port 1433 has failed.
+              Error: "Connection refused. Verify the connection properties. Make sure that an instance of SQL Server is running
+              on the host and accepting TCP/IP connections at the port. Make sure that TCP connections to the port are not blocked by a firewall.".
             error: transient
             group: SQL Server Connection Error
-            output: The sync encountered a network connection issue while connecting to the SQL Server, will retry.
-            reference-links: https://docs.microsoft.com/en-us/sql/connect/jdbc/troubleshooting-connectivity
+            output: >-
+              Airbyte could not reach SQL Server at the configured host and port. Check the host and port,
+              that the instance accepts remote TCP connections, and that your firewall or security group
+              allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses
+              - https://docs.airbyte.com/integrations/sources/mssql
+              - https://docs.microsoft.com/en-us/sql/connect/jdbc/troubleshooting-connectivity
+
+          # Must precede the generic "timeout expired" query-timeout rule below: a login timeout is
+          # a connectivity problem, not a slow query.
+          - pattern: (?i).*login timeout expired.*
+            input-example: >-
+              com.microsoft.sqlserver.jdbc.SQLServerException: Login timeout expired.
+            error: transient
+            group: SQL Server Connection Error
+            output: >-
+              Airbyte could not reach SQL Server at the configured host and port. Check the host and port,
+              that the instance accepts remote TCP connections, and that your firewall or security group
+              allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/security#ip-addresses
+              - https://docs.airbyte.com/integrations/sources/mssql
+              - https://docs.microsoft.com/en-us/sql/connect/jdbc/troubleshooting-connectivity
 
           - pattern: (?i).*error code 3947.*
             input-example: >-
