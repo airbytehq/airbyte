@@ -47,14 +47,15 @@ The field is hidden in the Airbyte UI, so set it programmatically. For example, 
 The Ramp source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 Only `transactions`, `reimbursements`, and `receipts` support incremental syncs. Every other stream re-reads all records on every sync.
 
-- **Incremental syncs filter on the server.** For `transactions` and `reimbursements`, the connector sends the cursor as the `updated_after` query parameter. For `receipts`, it sends the cursor as `created_after`. Ramp doesn't list `updated_after` in its published parameters for the transactions endpoint, but the API honors it.
-- **Records at the cursor boundary are read again.** `updated_after` is inclusive, so the next sync re-emits records whose `updated_at` equals the saved cursor. Use the **Incremental - Append + Deduped** sync mode to keep one row per `id`.
+- **Incremental syncs filter on the server.** For `transactions` and `reimbursements`, the connector sends the cursor as the `updated_after` query parameter. For `receipts`, it sends the cursor as `created_after`. Ramp doesn't list `updated_after` in its published parameters for the transactions endpoint, but in testing the API honors it. If Ramp ever stopped honoring it, each sync would re-read every transaction: you would get duplicate rows, not missing ones.
+- **Records at the cursor boundary are read again.** In testing, `updated_after` and `created_after` both include records exactly at the given time, so the next sync re-emits records whose cursor value equals the saved cursor. Use the **Incremental - Append + Deduped** sync mode to keep one row per `id`.
 - **`receipts` only picks up new receipts.** Ramp's receipts have no `updated_at` field, so incremental syncs use `created_at`. Changes to a receipt after the sync that first read it aren't synced until you refresh the stream.
 
 ## Supported Streams
@@ -84,7 +85,7 @@ All endpoints are under `/developer/v1`.
 
 ### Card spend
 
-`cards` returns physical and virtual cards, including their state, cardholder, card program, and spending restrictions. It doesn't return terminated cards, because Ramp's cards list leaves them out. With the **Overwrite** or **Overwrite + Deduped** sync mode, a card disappears from the destination on the first sync after it's terminated. Its transactions stay in the `transactions` stream, so use a left join from `transactions.card_id` to `cards`, or read the cardholder from `transactions.card_holder`. With **Append**, the destination keeps every earlier copy of the card, and the newest copy still shows the `state` it had before termination, such as `ACTIVE`.
+`cards` returns physical and virtual cards, including their state, cardholder, card program, and spending restrictions. It doesn't return terminated cards, because it reads Ramp's legacy cards endpoint (`GET /cards`), which leaves them out. With the **Overwrite** or **Overwrite + Deduped** sync mode, a card disappears from the destination on the first sync after it's terminated. Its transactions stay in the `transactions` stream, so use a left join from `transactions.card_id` to `cards`, or read the cardholder from `transactions.card_holder`. With **Append**, the destination keeps every earlier copy of the card, and the newest copy still shows the `state` it had before termination, such as `ACTIVE`.
 
 `transactions` returns card transactions in every state, including `DECLINED`. Declined transactions have `state: DECLINED` and a populated `decline_details` object, so filter them out if you calculate spend totals.
 
@@ -144,7 +145,7 @@ Ramp's API doesn't report hard deletes. Where Ramp's list endpoints leave archiv
 - `funds`: terminated funds have `state: TERMINATED`.
 - `users`: deactivated and suspended users stay in the stream with `status` `USER_INACTIVE` or `USER_SUSPENDED`.
 
-Filter on these fields downstream if you only want live records. `cards` is the exception: terminated cards aren't returned at all. See [Card spend](#card-spend) for how they leave the destination.
+Filter on these fields downstream if you only want live records. `cards` is the exception: the legacy cards endpoint the connector reads doesn't return terminated cards. See [Card spend](#card-spend) for how they leave the destination.
 
 ### Configuration errors
 
