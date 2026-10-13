@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - api.todoist.com/rest/v2
+      - api.todoist.com
   remoteRegistries:
     pypi:
       enabled: false
@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1a3d38e4-dc6b-4154-b56b-582f9e978ecd
-  dockerImageTag: 0.3.43
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-todoist
   githubIssueLabel: source-todoist
   icon: todoist.svg
@@ -33,6 +33,7 @@ data:
     - cdk:low-code
     - language:manifest-only
   connectorTestSuitesOptions:
+    - suite: unitTests
     - suite: liveTests
       testConnections:
         - name: todoist_config_dev_null
@@ -45,10 +46,26 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
-    - title: Todoist REST API
-      url: https://developer.todoist.com/rest/v2/
+    - title: Todoist API
+      url: https://developer.todoist.com/api/v1/
       type: api_reference
     - title: Todoist authentication
-      url: https://developer.todoist.com/rest/v2/#authorization
+      url: https://developer.todoist.com/api/v1/#tag/Authorization
       type: authentication_guide
+  releases:
+    breakingChanges:
+      0.4.0:
+        upgradeDeadline: "2026-10-21"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - tasks
+              - projects
+        message: >-
+          Todoist shut down the REST API v2 that this connector used (every request now returns HTTP 410 "This endpoint is deprecated").
+          Version 0.4.0 reads the `tasks` and `projects` streams from the Todoist API v1 (`https://api.todoist.com/api/v1`) instead.
+          Todoist API v1 uses a new ID format and renamed or removed several fields, so both streams have a new schema.
+          After upgrading, refresh the source schema and clear the `tasks` and `projects` streams, then run a sync.
+          See https://docs.airbyte.com/integrations/sources/todoist-migrations for details.
 metadataSpecVersion: "1.0"

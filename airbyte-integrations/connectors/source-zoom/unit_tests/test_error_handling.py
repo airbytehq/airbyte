@@ -8,10 +8,10 @@ non-2xx statuses:
 
 * code 3161 on `GET /users/{id}/meetings` when a user is not licensed to host
   meetings — the sync should skip that user's partition instead of failing.
-* code 3001 on `GET /meetings/{id}` and `GET /report/webinars/{uuid}` when the
-  resource was deleted — the sync should skip the resource.
-* Webinar UUIDs can contain `/` and `//`, which Zoom requires to be double
-  URL-encoded in the report/past-webinar paths.
+* code 3001 on `GET /meetings/{id}` when the resource was deleted — the sync
+  should skip the resource.
+
+Webinar streams are covered per stream in `unit_tests/integration/`.
 
 Other errors (e.g. missing OAuth scopes, code 4700) must still fail the sync.
 """
@@ -56,10 +56,6 @@ def _zoom_error(code: int, message: str, status_code: int = 400) -> HttpResponse
 
 def _user_meetings_request(user_id: str) -> HttpRequest:
     return HttpRequest(url=f"{_BASE_URL}/users/{user_id}/meetings", query_params={"page_size": "30"})
-
-
-def _user_webinars_request(user_id: str) -> HttpRequest:
-    return HttpRequest(url=f"{_BASE_URL}/users/{user_id}/webinars", query_params={"page_size": "30"})
 
 
 def _read(stream_name: str) -> EntrypointOutput:
@@ -153,98 +149,6 @@ class TestMeetings(TestCase):
         assert output.is_in_logs("Zoom returned code 3001")
 
 
-class TestReportWebinars(TestCase):
-    _STREAM = "report_webinars"
-
-    # GET /users/{id}/webinars returns these two webinar records; their UUIDs are
-    # used as the report path partition and must be double URL-encoded.
-    _WEBINARS_PAGE = HttpResponse(
-        json.dumps(
-            {
-                "webinars": [
-                    {"id": 11, "uuid": "wPUYIy/pR2mPs5r9no2GmA=="},
-                    {"id": 12, "uuid": "/abc//d=="},
-                ],
-                "next_page_token": "",
-            }
-        )
-    )
-    _WEBINARS_PAGE_U2 = HttpResponse(json.dumps({"webinars": [{"id": 12, "uuid": "/abc//d=="}], "next_page_token": ""}))
-    _ENCODED_UUID_1 = "wPUYIy%252FpR2mPs5r9no2GmA%253D%253D"
-    _ENCODED_UUID_2 = "%252Fabc%252F%252Fd%253D%253D"
-
-    @HttpMocker()
-    def test_report_webinars_double_encodes_uuid_and_skips_3001(self, http_mocker: HttpMocker):
-        _mock_token(http_mocker)
-        _mock_users(http_mocker)
-        http_mocker.get(_user_webinars_request("u1"), self._WEBINARS_PAGE)
-        http_mocker.get(_user_webinars_request("u2"), self._WEBINARS_PAGE_U2)
-
-        report_request_1 = HttpRequest(url=f"{_BASE_URL}/report/webinars/{self._ENCODED_UUID_1}")
-        report_request_2 = HttpRequest(url=f"{_BASE_URL}/report/webinars/{self._ENCODED_UUID_2}")
-        http_mocker.get(
-            report_request_1,
-            HttpResponse(json.dumps({"id": 11, "uuid": "wPUYIy/pR2mPs5r9no2GmA==", "topic": "t"})),
-        )
-        http_mocker.get(
-            report_request_2,
-            _zoom_error(3001, "Meeting does not exist.", status_code=404),
-        )
-
-        output = _read(self._STREAM)
-
-        assert output.errors == []
-        assert output.get_stream_statuses(self._STREAM)[-1] == AirbyteStreamStatus.COMPLETE
-        assert len(output.records) == 1
-        assert output.records[0].record.data["uuid"] == "wPUYIy/pR2mPs5r9no2GmA=="
-        assert output.records[0].record.data["webinar_uuid"] == "wPUYIy/pR2mPs5r9no2GmA=="
-        assert output.is_in_logs("Zoom returned code 3001")
-        http_mocker.assert_number_of_calls(report_request_1, 1)
-        http_mocker.assert_number_of_calls(report_request_2, 2)
-
-
-class TestReportWebinarParticipants(TestCase):
-    _STREAM = "report_webinar_participants"
-    _WEBINARS_PAGE = TestReportWebinars._WEBINARS_PAGE
-    _WEBINARS_PAGE_U2 = TestReportWebinars._WEBINARS_PAGE_U2
-    _ENCODED_UUID_1 = TestReportWebinars._ENCODED_UUID_1
-    _ENCODED_UUID_2 = TestReportWebinars._ENCODED_UUID_2
-
-    @HttpMocker()
-    def test_report_webinar_participants_double_encodes_uuid(self, http_mocker: HttpMocker):
-        _mock_token(http_mocker)
-        _mock_users(http_mocker)
-        http_mocker.get(_user_webinars_request("u1"), self._WEBINARS_PAGE)
-        http_mocker.get(_user_webinars_request("u2"), self._WEBINARS_PAGE_U2)
-
-        participants_request_1 = HttpRequest(
-            url=f"{_BASE_URL}/report/webinars/{self._ENCODED_UUID_1}/participants",
-            query_params={"page_size": "30"},
-        )
-        participants_request_2 = HttpRequest(
-            url=f"{_BASE_URL}/report/webinars/{self._ENCODED_UUID_2}/participants",
-            query_params={"page_size": "30"},
-        )
-        http_mocker.get(
-            participants_request_1,
-            HttpResponse(json.dumps({"participants": [{"id": "p1", "user_id": "x"}], "next_page_token": ""})),
-        )
-        http_mocker.get(
-            participants_request_2,
-            _zoom_error(3001, "Meeting does not exist.", status_code=404),
-        )
-
-        output = _read(self._STREAM)
-
-        assert output.errors == []
-        assert output.get_stream_statuses(self._STREAM)[-1] == AirbyteStreamStatus.COMPLETE
-        assert len(output.records) == 1
-        assert output.records[0].record.data["id"] == "p1"
-        assert output.is_in_logs("Zoom returned code 3001")
-        http_mocker.assert_number_of_calls(participants_request_1, 1)
-        http_mocker.assert_number_of_calls(participants_request_2, 2)
-
-
 # The manifest inlines the parent chain into every stream, so each stream below reads its own copy of the
 # requester that carries the 3161 / 3001 filter or the double-encoded UUID path.
 @pytest.mark.parametrize(
@@ -279,8 +183,6 @@ def test_meeting_child_streams_skip_user_not_allowed_to_host_3161(stream_name):
         ("meeting_registrants", "meetings", "/meetings/1/registrants"),
         ("meeting_polls", "meetings", "/meetings/1/polls"),
         ("meeting_registration_questions", "meetings", "/meetings/1/registrants/questions"),
-        ("webinar_registration_questions", "webinars", "/webinars/1/registrants/questions"),
-        ("webinar_tracking_sources", "webinars", "/webinars/1/tracking_sources"),
     ],
 )
 def test_child_streams_skip_deleted_resource_3001(stream_name, parent_resource, child_path):
@@ -301,28 +203,3 @@ def test_child_streams_skip_deleted_resource_3001(stream_name, parent_resource, 
 
     assert output.errors == []
     assert output.get_stream_statuses(stream_name)[-1] == AirbyteStreamStatus.COMPLETE
-
-
-@pytest.mark.parametrize(
-    "stream_name, path, body",
-    [
-        ("webinar_absentees", "/past_webinars/{}/absentees", {"registrants": [], "next_page_token": ""}),
-        ("webinar_poll_results", "/past_webinars/{}/polls", {"questions": []}),
-        ("webinar_qna_results", "/past_webinars/{}/qa", {"questions": []}),
-    ],
-)
-def test_past_webinar_streams_double_encode_uuid(stream_name, path, body):
-    with HttpMocker() as http_mocker:
-        _mock_token(http_mocker)
-        http_mocker.get(_USERS_REQUEST, _ONE_USER_RESPONSE)
-        http_mocker.get(
-            _user_webinars_request("u1"),
-            HttpResponse(json.dumps({"webinars": [{"id": 12, "uuid": "/abc//d=="}], "next_page_token": ""})),
-        )
-        child_request = HttpRequest(url=_BASE_URL + path.format(TestReportWebinars._ENCODED_UUID_2), query_params=ANY_QUERY_PARAMS)
-        http_mocker.get(child_request, HttpResponse(json.dumps(body)))
-
-        output = _read(stream_name)
-
-    assert output.errors == []
-    http_mocker.assert_number_of_calls(child_request, 1)
