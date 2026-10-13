@@ -44,7 +44,7 @@ The `start_date` filter applies to these five streams in every sync mode, includ
 | ------------- | ---------- | ------------- | ------------ | --------------------- | ---------------------- |
 | actions | `/v3/actions` | id | DefaultPaginator | ✅ | ✅ |
 | alert_attributes | `/v2/alert_attributes` | id | No pagination | ✅ | ❌ |
-| alert_routes | `/v2/alert_routes` | id | DefaultPaginator | ✅ | ❌ |
+| alert_routes | `/v3/alert_routes` | id | DefaultPaginator | ✅ | ❌ |
 | alert_sources | `/v2/alert_sources` | id | No pagination | ✅ | ❌ |
 | alerts | `/v2/alerts` | id | DefaultPaginator | ✅ | ✅ |
 | catalog_entries | `/v3/catalog_entries` | id | DefaultPaginator | ✅ | ❌ |
