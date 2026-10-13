@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: bf8b99df-bdcf-4e90-b19e-c6f3616b5867
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-cursor
   githubIssueLabel: source-cursor
   icon: icon.svg
