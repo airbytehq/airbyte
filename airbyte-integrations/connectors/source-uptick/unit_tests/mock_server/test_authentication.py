@@ -266,11 +266,24 @@ def _check_with_network_blocked(source, config, tmp_path, monkeypatch) -> tuple[
     return output, socket_calls
 
 
-def test_oauth_non_onuptick_base_url_fails_check_without_requests(tmp_path, monkeypatch) -> None:
+# Both shapes the platform can hand the connector: a cold config (refresh first) and the persisted
+# shape after consent or a refresh CONTROL (a still-valid access_token, so no refresh by default).
+_OAUTH_TOKEN_SHAPES = pytest.mark.parametrize(
+    "stored_token",
+    [
+        pytest.param({}, id="no_stored_token"),
+        pytest.param({"access_token": "LIVE-ACCESS-TOKEN", "token_expiry_date": "2099-01-01T00:00:00Z"}, id="valid_stored_token"),
+    ],
+)
+
+
+@_OAUTH_TOKEN_SHAPES
+def test_oauth_non_onuptick_base_url_fails_check_without_requests(stored_token, tmp_path, monkeypatch) -> None:
     # A post-creation edit of base_url to another host must not redirect the OAuth
-    # client_secret + refresh_token there: oauth_token_url is only derived when the
-    # base_url host matches *.onuptick.com, so the authenticator fails before any request.
-    config = ConfigBuilder().with_base_url("https://evil.example.com").with_oauth_credentials().build()
+    # client_secret + refresh_token there, nor send a still-valid stored access token as Bearer:
+    # oauth_token_url is only derived when the base_url host matches *.onuptick.com, and the
+    # stored expiry is cleared on mismatch, so the authenticator fails before any request.
+    config = ConfigBuilder().with_base_url("https://evil.example.com").with_oauth_credentials(**stored_token).build()
     source, _ = _source_with_migration_controls(config)
 
     output, socket_calls = _check_with_network_blocked(source, config, tmp_path, monkeypatch)
@@ -285,9 +298,10 @@ def test_oauth_non_onuptick_base_url_fails_check_without_requests(tmp_path, monk
     assert socket_calls == []
 
 
-def test_oauth_uppercase_host_base_url_fails_check_without_requests(tmp_path, monkeypatch) -> None:
+@_OAUTH_TOKEN_SHAPES
+def test_oauth_uppercase_host_base_url_fails_check_without_requests(stored_token, tmp_path, monkeypatch) -> None:
     # The host match is case-sensitive, consistent with the advanced_auth pattern.
-    config = ConfigBuilder().with_base_url("https://Test-Tenant.onuptick.com").with_oauth_credentials().build()
+    config = ConfigBuilder().with_base_url("https://Test-Tenant.onuptick.com").with_oauth_credentials(**stored_token).build()
     source, _ = _source_with_migration_controls(config)
 
     output, socket_calls = _check_with_network_blocked(source, config, tmp_path, monkeypatch)

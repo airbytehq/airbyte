@@ -26,8 +26,17 @@ class ConfigBuilder:
         self._config["credentials"] = credentials
         return self
 
-    def with_oauth_credentials(self, refresh_token: str = "test-refresh-token") -> "ConfigBuilder":
-        """Replace the credential fields with an OAuth 2.0 `credentials` block."""
+    def with_oauth_credentials(
+        self,
+        refresh_token: str = "test-refresh-token",
+        access_token: str | None = None,
+        token_expiry_date: str | None = None,
+    ) -> "ConfigBuilder":
+        """Replace the credential fields with an OAuth 2.0 `credentials` block.
+
+        Pass `access_token` and `token_expiry_date` to get the shape the platform persists after
+        consent or a refresh CONTROL; without them every run starts with a cold refresh.
+        """
         for field in ("client_id", "client_secret", "username", "password"):
             self._config.pop(field, None)
         self._config["credentials"] = {
@@ -36,6 +45,10 @@ class ConfigBuilder:
             "client_secret": "test-client-secret",
             "refresh_token": refresh_token,
         }
+        if access_token is not None:
+            self._config["credentials"]["access_token"] = access_token
+        if token_expiry_date is not None:
+            self._config["credentials"]["token_expiry_date"] = token_expiry_date
         return self
 
     def build(self) -> dict[str, Any]:

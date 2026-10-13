@@ -35,8 +35,10 @@ definitions:
     client_secret: '{{ config["credentials"]["client_secret"] }}'
     refresh_token: '{{ config["credentials"]["refresh_token"] }}'
     # oauth_token_url is derived by config_normalization_rules only when base_url matches the
-    # *.onuptick.com host pattern; on mismatch the value is unset, this interpolates to "", and
-    # get_token_refresh_endpoint raises before any request is issued.
+    # *.onuptick.com host pattern; on mismatch it is the unsupported-oauth-host:// sentinel, so the
+    # refresh fails with requests.InvalidSchema ("No connection adapters were found...") before any
+    # request is issued. The same rules clear a stored token_expiry_date on mismatch, so a still-valid
+    # access token is never sent to the foreign host either.
     token_refresh_endpoint: '{{ config["oauth_token_url"] }}'
     access_token_name: access_token
     expires_in_name: expires_in
@@ -385,7 +387,7 @@ spec:
         # On host-pattern mismatch (including a missing/blank base_url), sets a sentinel
         # unsupported-scheme URL so the OAuth authenticator fails before any request; the
         # sentinel embeds the hint 'base_url-must-be-https-workspace.onuptick.com' (surfaced
-        # in the internal error message). The password authenticator never reads
+        # in the check failure message). The password authenticator never reads
         # oauth_token_url, so the sentinel is harmless there.
         condition: "{{ (config.get('base_url') | default('') | string | trim | regex_search('^(https://[a-z0-9-]+\\.onuptick\\.com)/?$')) | length == 0 }}"
         fields:
@@ -393,12 +395,23 @@ spec:
             path: ["oauth_token_url"]
             value: "unsupported-oauth-host://base_url-must-be-https-workspace.onuptick.com"
             value_type: string
+      - type: ConfigAddFields
+        # A still-valid stored access token must not be sent to a non-onuptick host either:
+        # clearing the expiry forces a refresh, which fails on the sentinel oauth_token_url above
+        # before any request. Runtime only: the refresh fails, so no CONTROL persists this.
+        condition: "{{ config.get('credentials', {}).get('auth_type') == 'oauth2.0' and (config.get('base_url') | default('') | string | trim | regex_search('^(https://[a-z0-9-]+\\.onuptick\\.com)/?$')) | length == 0 }}"
+        fields:
+          - type: AddedFieldDefinition
+            path: ["credentials", "token_expiry_date"]
+            value: ""
+            value_type: string
     config_migrations:
       - type: ConfigMigration
         description: Copy legacy top-level credentials under `credentials` (auth_type password); the top-level fields are kept so the config still works on <=1.3.x.
         transformations:
           - type: ConfigAddFields
-            # Moves legacy top-level credential fields under `credentials`. The condition is evaluated
+            # Copies legacy top-level credential fields under `credentials` (the top-level fields are kept
+            # for rollback, see the description above). The condition is evaluated
             # per field on the mutating config, so `auth_type` is written last and tested for; a config
             # that already has credentials.auth_type is left untouched.
             condition: "{{ config.get('username') is not none and not config.get('credentials', {}).get('auth_type') }}"
