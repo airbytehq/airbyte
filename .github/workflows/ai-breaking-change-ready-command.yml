@@ -27,7 +27,7 @@ concurrency:
 # Edit this list to add or remove reviewers. They are @-mentioned in the channel below.
 env:
   BREAKING_CHANGE_REVIEWER_SLACK_IDS: "U04QENY1EDV,U07V1RTGP88"
-  BREAKING_CHANGE_REVIEW_SLACK_CHANNEL: C04928XA0LB # The `#dev-ci` channel
+  BREAKING_CHANGE_REVIEW_SLACK_CHANNEL: C0BHDAPNPCY # The `#team-apis` channel
 
 permissions:
   contents: read
