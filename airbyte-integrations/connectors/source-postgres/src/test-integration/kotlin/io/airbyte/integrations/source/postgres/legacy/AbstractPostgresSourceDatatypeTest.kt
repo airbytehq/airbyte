@@ -1030,12 +1030,7 @@ abstract class AbstractPostgresSourceDatatypeTest : AbstractSourceDatabaseTypeTe
                     )
                     .airbyteType(
                         JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
-                            .withItems(
-                                JsonSchemaType.builder(
-                                        JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER
-                                    )
-                                    .build(),
-                            )
+                            .withItems(JsonSchemaType.INTEGER)
                             .build(),
                     )
                     .addInsertValues("'{131070,231072}'")
