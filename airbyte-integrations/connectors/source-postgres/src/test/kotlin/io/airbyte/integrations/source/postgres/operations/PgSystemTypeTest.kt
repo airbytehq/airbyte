@@ -9,7 +9,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class PgSystemTypeTest {
 
@@ -67,8 +66,12 @@ class PgSystemTypeTest {
     }
 
     @Test
-    fun `array type name that is neither underscore-prefixed nor schema-qualified throws`() {
-        assertThrows<IllegalStateException> { pgType("kind", JDBCType.ARRAY) }
-        assertThrows<IllegalStateException> { pgType("\"s2\".\"kind\"", JDBCType.ARRAY) }
+    fun `array type name without underscore prefix falls back to a generic element type`() {
+        for (name in listOf("kind", "\"s2\".\"kind\"")) {
+            val type = pgType(name, JDBCType.ARRAY)
+            assertTrue(type.isArray, name)
+            assertEquals(name, type.scalarTypeName, name)
+            assertEquals(JDBCType.OTHER, type.scalarJdbcType, name)
+        }
     }
 }

@@ -131,43 +131,20 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
         val isArray: Boolean = jdbcType == JDBCType.ARRAY
 
         // Array type names are "_<element>", e.g. "_int4". For array types outside the
-        // search_path, the driver returns a quoted, schema-qualified name instead,
-        // e.g. "s2"."_kind".
-        private val isSchemaQualifiedArray: Boolean = isArray && !typeName.startsWith("_")
-
-        init {
-            if (isSchemaQualifiedArray) {
-                check(SCHEMA_QUALIFIED_ARRAY_TYPE_NAME.matches(typeName)) {
-                    "Unsupported array type $typeName: cannot determine its element type."
-                }
-            }
-        }
-
-        val scalarTypeName: String =
-            if (isArray && !isSchemaQualifiedArray) typeName.removePrefix("_") else typeName
-
-        // Built-in types are always on the search_path, so the element type of a
-        // schema-qualified array is user-defined or comes from an extension. The driver doesn't
-        // apply type-specific conversions to such elements (e.g. hstore to Map), so we don't
-        // map them by name.
-        val scalarJdbcType: JDBCType =
-            when {
-                !isArray -> jdbcType
-                isSchemaQualifiedArray -> JDBCType.OTHER
-                else -> scalarJDBCType(typeName)
-            }
+        // search_path, the driver returns a quoted, schema-qualified name instead, e.g.
+        // "s2"."_kind". Such names don't start with an underscore and never match a built-in name,
+        // so their element type falls through to JDBCType.OTHER and maps to a string. That's the
+        // correct mapping: built-in types are always on the search_path, so the element type of a
+        // schema-qualified array is user-defined or comes from an extension, and the driver doesn't
+        // apply type-specific conversions to such elements (e.g. hstore to Map).
+        val scalarTypeName: String = if (isArray) typeName.removePrefix("_") else typeName
+        val scalarJdbcType: JDBCType = if (isArray) scalarJDBCType(typeName) else jdbcType
 
         // TODO: Fix type handling for numeric arrays.
         //  Requires fetching the correct scale and precision of array elements from another source.
         //  https://github.com/airbytehq/airbyte-internal-issues/issues/15879
         val scale = systemType.scale
         val precision = systemType.precision
-
-        companion object {
-            // "<schema>"."_<element>". The driver doesn't escape quotes inside the names, so a schema
-            // named s"2 comes back as "s"2"."_kind"; allow any characters within the quotes.
-            private val SCHEMA_QUALIFIED_ARRAY_TYPE_NAME = Regex("""^".+"\."_.+"$""")
-        }
 
         // Postgres reports the JDBC type of all arrays as JDBCType.ARRAY. Here, we use the
         // name of the array type to determine the JDBC type of its elements. Array type names

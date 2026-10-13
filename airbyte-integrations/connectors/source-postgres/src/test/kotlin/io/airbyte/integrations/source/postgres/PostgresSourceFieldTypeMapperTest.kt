@@ -405,6 +405,20 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 "UNDERSCORE PREFIXED ENUM ARRAY"
             )
         )
+
+        // Array of a user-defined type outside the search_path. The driver reports its quoted,
+        // schema-qualified name, e.g. "<schema>"."_kind", which falls back to an array of strings.
+        add(
+            testCase(
+                "\"$schema\".\"$OFF_PATH_ENUM\"[]",
+                ArrayAirbyteSchemaType(LeafAirbyteSchemaType.STRING),
+                mapOf(
+                    "array['sad', 'happy']::\"$schema\".\"$OFF_PATH_ENUM\"[]" to
+                        "[\"sad\",\"happy\"]"
+                ),
+                "SCHEMA QUALIFIED ENUM ARRAY"
+            )
+        )
     }
 
     companion object {
@@ -451,12 +465,14 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             )
         private val nulledNaN = mapOf("'NaN'" to "null")
         private const val UNDERSCORE_ENUM = "_status"
+        private const val OFF_PATH_ENUM = "kind"
     }
 
     override val setupDdl: List<String> =
         listOf(
                 "CREATE SCHEMA \"$schema\"",
                 "CREATE TYPE public.\"$UNDERSCORE_ENUM\" AS ENUM ('active', 'inactive')",
+                "CREATE TYPE \"$schema\".\"$OFF_PATH_ENUM\" AS ENUM ('sad', 'happy')",
             )
             .plus(
                 testCases.map {
