@@ -65,6 +65,19 @@ internal class SnowflakeAirbyteClientTest {
         every { getString("name") } returnsMany names.toList()
     }
 
+    private fun mockParameterRow(value: String? = null): ResultSet = mockk {
+        every { next() } returns (value != null)
+        if (value != null) {
+            every { getString("value") } returns value
+        }
+    }
+
+    private fun mockParameterStatement(resultSet: ResultSet): Statement = mockk {
+        every { executeQuery(match { it.contains("QUOTED_IDENTIFIERS_IGNORE_CASE") }) } returns
+            resultSet
+        every { close() } just Runs
+    }
+
     @Test
     fun testCountTable() {
         val tableName = TableName(namespace = "namespace", name = "name")
@@ -196,6 +209,50 @@ internal class SnowflakeAirbyteClientTest {
             mockk<Connection> {
                 every { close() } just Runs
                 every { prepareStatement(any()) } returns preparedStatement
+                every { createStatement() } returns
+                    mockParameterStatement(mockParameterRow("false"))
+            }
+
+        every { dataSource.connection } returns mockConnection
+
+        runBlocking { assertEquals(false, client.tableExists(tableName)) }
+    }
+
+    @Test
+    fun testTableExistsMatchesCaseInsensitivelyWhenQuotedIdentifiersIgnoreCase() {
+        val tableName = TableName(namespace = "namespace", name = "public_raw__stream_users")
+        val preparedStatement =
+            mockk<PreparedStatement> {
+                every { setString(any(), any()) } just runs
+                every { executeQuery() } returns mockTableRows("PUBLIC_RAW__STREAM_USERS")
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { prepareStatement(any()) } returns preparedStatement
+                every { createStatement() } returns mockParameterStatement(mockParameterRow("true"))
+            }
+
+        every { dataSource.connection } returns mockConnection
+
+        runBlocking { assertEquals(true, client.tableExists(tableName)) }
+    }
+
+    @Test
+    fun testTableExistsReturnsFalseWhenQuotedIdentifiersIgnoreCaseHasNoRow() {
+        val tableName = TableName(namespace = "namespace", name = "public_raw__stream_users")
+        val preparedStatement =
+            mockk<PreparedStatement> {
+                every { setString(any(), any()) } just runs
+                every { executeQuery() } returns mockTableRows("PUBLIC_RAW__STREAM_USERS")
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { prepareStatement(any()) } returns preparedStatement
+                every { createStatement() } returns mockParameterStatement(mockParameterRow())
             }
 
         every { dataSource.connection } returns mockConnection
