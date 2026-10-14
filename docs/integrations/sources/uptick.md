@@ -162,11 +162,11 @@ The Uptick connector syncs data from the following streams, organized by functio
 | `promptquestions` | `id` | `DefaultPaginator` | ✅ | ✅ |
 | `promptanswergroups` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
 | `promptanswers` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
-| `majorservices` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `majorservices` | `id` | `DefaultPaginator` | ✅ | ❌ (no `updated` timestamp) |
 
 ### API version and fields
 
-Every stream except `task_profitability` reads a pinned Uptick endpoint under `/api/v2.15/`. The `task_profitability` stream reads the intelligence report at `/api/v2/intelligencereports/profitability_by_task/`, which resolves to whichever minor version Uptick currently treats as the latest.
+Every stream except `task_profitability` reads a pinned Uptick endpoint under `/api/v2.16/`. The `task_profitability` stream reads the intelligence report at `/api/v2/intelligencereports/profitability_by_task/`, which resolves to whichever minor version Uptick currently treats as the latest.
 
 Each stream requests a fixed list of fields using Uptick's sparse fieldsets, so a stream carries a curated subset of what the endpoint can return rather than every field. Fields that Uptick adds later show up only after the connector is updated. Uptick keeps roughly three minor API versions live at a time and retires the oldest, so connector releases that move to a newer minor version can add, rename, or remove fields. The [Uptick API patch notes](https://support.uptickhq.com/en/articles/6728314-uptick-api-overview-and-patch-notes) list what changed in each version.
 
@@ -190,9 +190,11 @@ Prompt data spans three streams, and Uptick reworked its prompt model in API v2.
 
 For streams that support incremental sync, the connector uses each record's `updated` timestamp as the cursor and fetches only records changed since the last sync through the Uptick API's `updatedsince` filter. Streams that support only full refresh are re-read in full on every sync.
 
-The `servicegroups` and `accreditationtypes` endpoints ignore the `updatedsince` filter and always return every row. For these two streams, the connector requests the full table on every sync and then drops records whose `updated` value is older than the saved cursor before emitting them. Sync time and API usage for these streams don't shrink in incremental mode, but from version 1.2.0 the connector no longer re-emits unchanged rows on every incremental sync.
+Before version 2.0.0, the `servicegroups` and `accreditationtypes` endpoints ignored the `updatedsince` filter, so the connector read both tables in full on every sync and filtered on the cursor itself. Uptick now applies the filter on these endpoints, and from version 2.0.0 incremental syncs of these streams fetch only changed rows.
 
-Airbyte still offers incremental sync in the UI for the streams marked `❌ (no soft delete)`, because the connector defines the `updated` cursor for every stream. Avoid it for those streams: their Uptick endpoints don't report deletions, so an incremental sync keeps records in your destination after they're deleted in Uptick. Sync them in full refresh mode instead.
+The `majorservices` endpoint has no `updated` timestamp, so there is no cursor to sync from. From version 2.0.0 the connector offers this stream in full refresh mode only.
+
+Airbyte still offers incremental sync in the UI for the streams marked `❌ (no soft delete)`, because the connector defines the `updated` cursor for every stream except `majorservices`. Avoid it for those streams: their Uptick endpoints don't report deletions, so an incremental sync keeps records in your destination after they're deleted in Uptick. Sync them in full refresh mode instead.
 
 ## Rate limits and performance
 
@@ -224,6 +226,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
+| 2.0.0 | 2026-10-14 | [88925](https://github.com/airbytehq/airbyte/pull/88925) | Upgrade the Uptick API to v2.16, correct the types of object and numeric fields, make majorservices full refresh only, and filter servicegroups and accreditationtypes server-side |
 | 1.3.4 | 2026-10-13 | [88900](https://github.com/airbytehq/airbyte/pull/88900) | Add product_id to invoicelineitems |
 | 1.3.3 | 2026-10-13 | [88821](https://github.com/airbytehq/airbyte/pull/88821) | Update dependencies |
 | 1.3.2 | 2026-10-06 | [88063](https://github.com/airbytehq/airbyte/pull/88063) | Update dependencies |
