@@ -1,36 +1,33 @@
 > NOTE: CLAUDE.md is a symlink to AGENTS.md; update AGENTS.md (not the symlink) when changing these instructions.
 
-# Contributing to `source-snowflake`
+# source-snowflake: Unique Connector Behaviors
 
-This file is connector-specific. For general Airbyte contribution guidance,
-see the repo-root [`CONTRIBUTING.md`](../../../CONTRIBUTING.md) and the
-[connector contribution guide](https://docs.airbyte.com/connector-development/).
+## 1. Snowflake timestamps round up to microseconds
 
-`source-snowflake` is a Kotlin / bulk-CDK connector. Standard local commands:
+Snowflake timestamps can have nanosecond precision, but Airbyte timestamps support microseconds. The field converters round values up to the next microsecond when discarded nanoseconds are nonzero; the converted value is also used as an incremental cursor bound.
 
-```bash
-./gradlew :airbyte-integrations:connectors:source-snowflake:test
-./gradlew :airbyte-integrations:connectors:source-snowflake:assemble
-./gradlew :airbyte-integrations:connectors:source-snowflake:dockerBuildx
-```
+**Why this matters:** Rounding down a cursor can make it compare below a source row and omit that row from the next sync. Preserve round-up behavior for `TIMESTAMP_NTZ`, `TIMESTAMP_TZ`, and `TIMESTAMP_LTZ` when changing conversion or cursor handling.
 
-## Reproducing bugs
+## 2. Programmatic access-token authentication omits the JDBC username
 
-The remote-backend harness for this connector is documented in
-[`.agents/skills/source-snowflake-e2e-tests/SKILL.md`](.agents/skills/source-snowflake-e2e-tests/SKILL.md).
-It creates a per-run `PROVEFIX_<run_id>` schema in the shared Snowflake
-integration account using a GSM key-pair secret; there is no local container,
-and `--reset=backend` is rejected. The `poe e2e-local` task is the entrypoint.
+For programmatic access-token credentials, the connector sets the JDBC `token` and `authenticator` properties without setting `user`; the token identifies the user for this authenticator. Username/password and key-pair authentication populate `user` separately.
 
-The worked example is
-`.agents/skills/source-snowflake-e2e-tests/cases/cursor-upper-bound.sh`.
-After a run, check for leaked schemas with
-`sweep-orphans.sh --older-than-hours=0 --dry-run`.
+**Why this matters:** Adding a username unconditionally can change or break the driver's token-authentication behavior. Keep the credential-specific JDBC properties separate.
 
-## Troubleshooting
+## 3. Metadata error tolerance is limited to discovery
 
-Files under `airbyte-integrations/connectors/source-snowflake/`, including
-`.agents/`, are treated as connector changes by CI. The matrix detector
-requires a `dockerImageTag` bump and a changelog entry when these files
-change. Do not edit metadata solely to bypass this check without confirming
-the required versioning decision.
+The metadata querier recognizes object-level errors `2003`, `2043`, `2037`, and `2057`, but its factory enables this tolerance only for the `discover` operation. `application.yml` separately classifies some of these errors; it does not configure `2057`.
+
+**Why this matters:** Discovery tolerates these object-level errors so one broken view or unauthorized object does not fail the full discover; CHECK and READ do not receive that tolerance. Keep the tolerance narrow and confined to discovery.
+
+## 4. The SSH tunnel field is retained for compatibility
+
+`SnowflakeSourceConfiguration` keeps an `sshTunnel` field for compatibility but documents that Snowflake does not need it; its default is `SshNoTunnelMethod`.
+
+**Why this matters:** The field exists to fit the shared configuration shape, not as evidence of supported Snowflake tunneling. Do not rely on it when changing Snowflake connection setup.
+
+## Reproducing bugs and testing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md#reproducing-bugs) for the remote-backend harness and troubleshooting details, and the
+[source-snowflake-e2e-tests](.agents/skills/source-snowflake-e2e-tests/SKILL.md)
+skill for the supported workflow.
