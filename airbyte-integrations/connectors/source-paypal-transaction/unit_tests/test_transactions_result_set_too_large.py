@@ -23,7 +23,13 @@ _FIRST_WINDOW = ("2024-01-01T00:00:00Z", "2024-01-01T23:59:59Z")
 _FIRST_WINDOW_FIRST_HALF = ("2024-01-01T00:00:00Z", "2024-01-01T11:59:59Z")
 _FIRST_WINDOW_SECOND_HALF = ("2024-01-01T12:00:00Z", "2024-01-01T23:59:59Z")
 _SECOND_WINDOW = ("2024-01-02T00:00:00Z", "2024-01-03T00:00:00Z")
+# The cursor never generates a slice with start == end (ConcurrentCursor.stream_slices() requires a
+# strictly positive span), so the smallest slice reaching the API is a one-second span. The declarative
+# `request_window_reduction` feature's cursor_granularity: PT1S counts this span as two distinct
+# one-second instants (00:00:00 and 00:00:01) and splits it once more, into single-instant windows, before
+# hitting the true floor (a window where start == end).
 _ONE_SECOND_WINDOW = ("2024-01-01T00:00:00Z", "2024-01-01T00:00:01Z")
+_ONE_SECOND_WINDOW_FIRST_INSTANT = ("2024-01-01T00:00:00Z", "2024-01-01T00:00:00Z")
 
 _RESULT_SET_TOO_LARGE_RESPONSE = HttpResponse(
     json.dumps(
@@ -120,11 +126,41 @@ class ResultSetTooLargeTest(TestCase):
         assert _final_cursor_state(output)["transaction_updated_date"] == "2024-01-02T05:00:00Z"
 
     @HttpMocker()
-    def test_given_result_set_too_large_for_smallest_window_when_read_then_config_error(self, http_mocker: HttpMocker) -> None:
+    def test_given_result_set_too_large_for_smallest_window_when_read_then_transient_error(self, http_mocker: HttpMocker) -> None:
+        """
+        The recursion explores children depth-first: the window splits into two single-instant children,
+        and the first one is read before the second, so the terminal transient_error - raised once the
+        first (still-rejected) single-instant child can no longer be split - propagates immediately and
+        the second single-instant child is never actually requested.
+        """
         _mock_authentication(http_mocker)
         http_mocker.get(_transactions_request(*_ONE_SECOND_WINDOW), _RESULT_SET_TOO_LARGE_RESPONSE)
+        http_mocker.get(_transactions_request(*_ONE_SECOND_WINDOW_FIRST_INSTANT), _RESULT_SET_TOO_LARGE_RESPONSE)
 
         output = _read(_config(end_date=_ONE_SECOND_WINDOW[1]), expecting_exception=True)
 
         assert output.errors
-        assert output.errors[-1].trace.error.failure_type == FailureType.config_error
+        assert output.errors[0].trace.error.failure_type == FailureType.transient_error
+        assert "smallest window" in output.errors[0].trace.error.message
+
+    @HttpMocker()
+    def test_given_unrelated_400_when_read_then_fails_without_splitting(self, http_mocker: HttpMocker) -> None:
+        """
+        The SPLIT_REQUEST_WINDOW filter matches only `RESULTSET_TOO_LARGE`; any other 400 must fail
+        immediately instead of triggering a window split.
+        """
+        _mock_authentication(http_mocker)
+        request = _transactions_request(*_FIRST_WINDOW)
+        http_mocker.get(
+            request,
+            HttpResponse(
+                json.dumps({"name": "INVALID_REQUEST", "message": "Data for the given start date is not available."}),
+                status_code=400,
+            ),
+        )
+
+        output = _read(_config(end_date=_FIRST_WINDOW[1]), expecting_exception=True)
+
+        assert output.errors
+        assert output.errors[0].trace.error.failure_type == FailureType.system_error
+        http_mocker.assert_number_of_calls(request, 1)
