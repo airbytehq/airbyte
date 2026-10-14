@@ -161,10 +161,15 @@ echo "Running the in-process standard tests for ${CONNECTOR_NAME} with its pinne
 summary "\`${CONNECTOR_NAME}\`: in-process standard tests ran with the pinned airbyte-cdk ${CDK_VERSION}."
 # The Docker tests (marked image_tests) are left to `airbyte-cdk image test`, which runs them with
 # the latest CDK against the built image.
+# --tb=short: the default traceback style prints the arguments of the failing frame, and the suite
+# passes the real test config into the source's constructor. Printed there, the config would reach
+# the JUnit file, whose failures "Publish Test Results" turns into check-run annotations that
+# GitHub's log masking never sees. The short style keeps the source lines and the exception.
 poetry run pytest \
   -p airbyte_cdk.test.standard_tests.pytest_hooks \
   --noconftest \
   --rootdir=. \
+  --tb=short \
   -m "not image_tests" \
   --junitxml=build/test-results/standard-tests-in-process-junit.xml \
   "$TEST_FILE"
