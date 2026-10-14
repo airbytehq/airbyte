@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.s3_data_lake.write
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
@@ -109,6 +110,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
         deleteFileType: IcebergDeleteFileType = IcebergDeleteFileType.AUTOMATIC,
         formatVersion: IcebergTableFormatVersion = IcebergTableFormatVersion.V2,
         allowUpgrade: AllowNonReversibleUpgrades = AllowNonReversibleUpgrades.NO,
+        mainBranchName: String = "main",
     ): S3DataLakeConfiguration {
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
@@ -120,7 +122,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
             every { s3Endpoint } returns "http://localhost:8080"
         }
         val icebergCatalogConfig: IcebergCatalogConfiguration = mockk {
-            every { mainBranchName } returns "main"
+            every { this@mockk.mainBranchName } returns mainBranchName
             every { warehouseLocation } returns "s3://bucket/"
             every { catalogConfiguration } returns
                 NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
@@ -160,6 +162,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
         stream: DestinationStream,
         configuration: S3DataLakeConfiguration,
         table: Table,
+        mainBranchName: String = "main",
     ): S3DataLakeStreamLoader {
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createNamespaceWithGlueHandling(any(), any()) } just runs
@@ -181,7 +184,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
             icebergUtil,
             mockk { every { toTableIdentifier(any()) } returns tableIdentifier },
             stagingBranchName = "airbyte_staging_test",
-            mainBranchName = "main",
+            mainBranchName = mainBranchName,
             streamStateStore = streamStateStore,
         )
     }
@@ -310,6 +313,65 @@ internal class S3DataLakeDeleteModeResolutionTest {
         val table = createTableAt(3, icebergSchema(stream.tableSchema.importType))
         val state = captureState(makeLoader(stream, makeConfiguration(), table))
         assertEquals(IcebergDeleteMode.DELETION_VECTOR, state.deleteMode)
+    }
+
+    @Test
+    fun `append stream targeting v3 with YES also upgrades the existing v2 table`() {
+        val stream = makeStream(Append)
+        val table = createTableAt(2, icebergSchema(stream.tableSchema.importType))
+        val state =
+            captureState(
+                makeLoader(
+                    stream,
+                    makeConfiguration(
+                        formatVersion = IcebergTableFormatVersion.V3,
+                        allowUpgrade = AllowNonReversibleUpgrades.YES,
+                    ),
+                    table,
+                )
+            )
+        assertEquals(IcebergDeleteMode.EQUALITY, state.deleteMode)
+        table.refresh()
+        assertEquals(3, tableFormatVersion(table))
+    }
+
+    @Test
+    fun `explicit POSITIONAL on an existing v3 table fails at stream start`() {
+        val stream = makeStream()
+        val table = createTableAt(3, icebergSchema(stream.tableSchema.importType))
+        assertFailsWith<ConfigErrorException> {
+            runBlocking {
+                makeLoader(
+                        stream,
+                        makeConfiguration(
+                            deleteFileType = IcebergDeleteFileType.POSITIONAL,
+                        ),
+                        table,
+                    )
+                    .start()
+            }
+        }
+    }
+
+    @Test
+    fun `upgrader is called with the configured main branch name`() {
+        val stream = makeStream()
+        val table = createTableAt(2, icebergSchema(stream.tableSchema.importType))
+        table.manageSnapshots().createBranch("prod").commit()
+        captureState(
+            makeLoader(
+                stream,
+                makeConfiguration(
+                    formatVersion = IcebergTableFormatVersion.V3,
+                    allowUpgrade = AllowNonReversibleUpgrades.YES,
+                    mainBranchName = "prod",
+                ),
+                table,
+                mainBranchName = "prod",
+            )
+        )
+        table.refresh()
+        assertEquals(3, tableFormatVersion(table))
     }
 
     @Test

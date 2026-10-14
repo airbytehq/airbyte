@@ -1104,7 +1104,10 @@ internal class S3DataLakeStreamLoaderTest {
         // The table was created before the option was enabled, so it still has "UserName" and
         // "Foo.Bar".
         val existingSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
-        val table: Table = mockk { every { schema() } returns existingSchema }
+        val table: Table = mockk {
+            every { schema() } returns existingSchema
+            every { properties() } returns emptyMap()
+        }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns mockk<Catalog> {
                 every { tableExists(any()) } returns false

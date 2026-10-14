@@ -126,13 +126,14 @@ class S3DataLakeStreamLoader(
                 schema = incomingSchema,
                 formatVersion = targetFormatVersion,
             )
-        val deleteMode =
-            resolveDeleteMode(
+        val effectiveFormatVersion =
+            reconcileFormatVersion(
                 table = table,
                 tableExisted = tableExisted,
                 targetFormatVersion = targetFormatVersion,
                 catalog = catalog,
             )
+        val deleteMode = resolveDeleteMode(table, effectiveFormatVersion)
         failOnNormalizationRenames(table.schema())
 
         // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema
@@ -188,18 +189,16 @@ class S3DataLakeStreamLoader(
     }
 
     /**
-     * Resolves the delete-file encoding for this stream from the table's actual format version,
-     * upgrading an existing v2 table to v3 in place when the configuration allows it.
+     * Reconciles the table's actual format version with the configured target, upgrading an
+     * existing v2 table to v3 in place when the configuration allows it. Applies to every stream
+     * regardless of import type. Returns the table's effective format version.
      */
-    private fun resolveDeleteMode(
+    private fun reconcileFormatVersion(
         table: Table,
         tableExisted: Boolean,
         targetFormatVersion: Int,
         catalog: org.apache.iceberg.catalog.Catalog,
-    ): IcebergDeleteMode {
-        if (stream.tableSchema.importType !is Dedupe) {
-            return IcebergDeleteMode.EQUALITY
-        }
+    ): Int {
         var effectiveVersion = tableFormatVersion(table)
         if (tableExisted && effectiveVersion != targetFormatVersion) {
             if (effectiveVersion == 2 && targetFormatVersion == 3) {
@@ -221,6 +220,7 @@ class S3DataLakeStreamLoader(
                             catalog,
                             tableIdGenerator.toTableIdentifier(stream.mappedDescriptor),
                             backup = backup,
+                            branch = mainBranchName,
                         )
                         table.refresh()
                         effectiveVersion = 3
@@ -234,12 +234,28 @@ class S3DataLakeStreamLoader(
                 }
             }
         }
+        return effectiveVersion
+    }
+
+    /** Resolves the delete-file encoding for this stream from the table's format version. */
+    private fun resolveDeleteMode(table: Table, effectiveVersion: Int): IcebergDeleteMode {
+        if (stream.tableSchema.importType !is Dedupe) {
+            return IcebergDeleteMode.EQUALITY
+        }
         return when (icebergConfiguration.icebergDeleteFileType) {
             IcebergDeleteFileType.AUTOMATIC ->
                 if (effectiveVersion >= 3) IcebergDeleteMode.DELETION_VECTOR
                 else IcebergDeleteMode.EQUALITY
             IcebergDeleteFileType.EQUALITY -> IcebergDeleteMode.EQUALITY
-            IcebergDeleteFileType.POSITIONAL -> IcebergDeleteMode.POSITIONAL
+            IcebergDeleteFileType.POSITIONAL -> {
+                if (effectiveVersion >= 3) {
+                    throw ConfigErrorException(
+                        "iceberg_delete_file_type POSITIONAL requires an Iceberg format v2 " +
+                            "table, but ${table.name()} is at format v$effectiveVersion.",
+                    )
+                }
+                IcebergDeleteMode.POSITIONAL
+            }
             IcebergDeleteFileType.DELETION_VECTOR -> {
                 if (effectiveVersion < 3) {
                     throw ConfigErrorException(
