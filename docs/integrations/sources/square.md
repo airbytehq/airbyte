@@ -77,7 +77,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
-| 2.0.0 | 2026-10-14 | [85911](https://github.com/airbytehq/airbyte/pull/85911) | Breaking: Migrate the `shifts` stream to Square's Timecards API (Labor Shift endpoints retired); removes the deprecated `employee_id` field — see the [migration guide](./square-migrations.md#upgrading-to-200) |
+| 2.0.0 | 2026-10-14 | [85911](https://github.com/airbytehq/airbyte/pull/85911) | Breaking: Migrate the `shifts` stream to Square's Timecards API (Labor Shift endpoints retired) and paginate it with `cursor`; removes the deprecated `employee_id` field — see the [migration guide](./square-migrations.md#upgrading-to-200) |
 | 1.7.33 | 2026-10-13 | [88838](https://github.com/airbytehq/airbyte/pull/88838) | Update dependencies |
 | 1.7.32 | 2026-10-06 | [88067](https://github.com/airbytehq/airbyte/pull/88067) | Update dependencies |
 | 1.7.31 | 2026-09-29 | [87389](https://github.com/airbytehq/airbyte/pull/87389) | Update dependencies |

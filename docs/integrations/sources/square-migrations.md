@@ -14,6 +14,7 @@ Only connections that sync the `shifts` stream. All other streams are unchanged.
 
 - The `shifts` stream now reads `Timecard` objects from Square's Timecards API. Square keeps the same `id` for a timecard and the shift it replaces, so the stream's primary key and existing record identities are preserved. The stream name is unchanged.
 - The `employee_id` field is removed. Square deprecated it in 2020 in favor of `team_member_id`, and the Timecards API doesn't return it. `team_member_id` carries the same value and is still present.
+- The stream now follows Square's `cursor` across pages (200 timecards per page). Previous versions read only the first page, so connections with more than 200 shifts in the sync window get the records they were missing.
 - The `wage` object is unchanged in shape (`title`, `hourly_rate.amount`, `hourly_rate.currency`). The optional `wage.job_id`, `wage.tip_eligible`, and `declared_cash_tip_money` fields are now declared in the schema.
 
 ### Migration steps

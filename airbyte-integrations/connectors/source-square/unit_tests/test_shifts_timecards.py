@@ -1,5 +1,7 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import json
+
 import requests_mock
 from _helpers import get_source
 
@@ -77,3 +79,26 @@ def test_shifts_stream_does_not_call_retired_shifts_endpoint():
     records = [record.record.data for record in output.records]
     assert shifts_matcher.call_count == 0
     assert [record["id"] for record in records] == ["timecard-1", "timecard-2"]
+
+
+def test_shifts_stream_follows_cursor_across_pages():
+    pages = {
+        None: {"timecards": [_timecard(f"timecard-{i}") for i in range(3)], "cursor": "cursor-page-2"},
+        "cursor-page-2": {"timecards": [_timecard(f"timecard-{i}") for i in range(3, 6)], "cursor": "cursor-page-3"},
+        "cursor-page-3": {"timecards": [_timecard(f"timecard-{i}") for i in range(6, 8)]},
+    }
+    request_bodies = []
+
+    def _timecards_response(request, context):
+        body = json.loads(request.text) if request.text else {}
+        request_bodies.append(body)
+        return pages[body.get("cursor")]
+
+    with requests_mock.Mocker() as mocker:
+        timecards_matcher = mocker.post(_TIMECARDS_SEARCH_URL, json=_timecards_response)
+        output = _sync()
+
+    assert [record.record.data["id"] for record in output.records] == [f"timecard-{i}" for i in range(8)]
+    assert timecards_matcher.call_count == 3
+    assert [body.get("cursor") for body in request_bodies] == [None, "cursor-page-2", "cursor-page-3"]
+    assert all(body["limit"] == 200 for body in request_bodies)
