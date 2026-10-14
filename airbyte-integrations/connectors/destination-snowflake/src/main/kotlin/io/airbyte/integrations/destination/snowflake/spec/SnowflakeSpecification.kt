@@ -26,7 +26,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonProperty("host")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 0, "examples":["accountname.us-east-2.aws.snowflakecomputing.com", "accountname.snowflakecomputing.com"], "pattern": "^(http(s)?:\\/\\/)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.(snowflakecomputing\\.com|localstack\\.cloud))$",
+            """{"group": "connection", "order": 0, "examples":["accountname.us-east-2.aws.snowflakecomputing.com", "accountname.snowflakecomputing.com"], "pattern": "^(http(s)?:\\/\\/)?([^./?#]+\\.)+[^./?#]+$",
         "pattern_descriptor": "{account_name}.snowflakecomputing.com or {accountname}.{aws_location}.aws.snowflakecomputing.com"}"""
     )
     val host: String = ""
@@ -165,7 +165,11 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     JsonSubTypes.Type(
         value = UsernamePasswordAuthSpecification::class,
         name = "Username and Password"
-    )
+    ),
+    JsonSubTypes.Type(
+        value = ProgrammaticAccessTokenAuthSpecification::class,
+        name = "Programmatic Access Token"
+    ),
 )
 sealed class CredentialsSpecification(
     @Suppress("PropertyName") @param:JsonProperty("auth_type") val auth_type: Type
@@ -174,6 +178,7 @@ sealed class CredentialsSpecification(
     enum class Type(@get:JsonValue val authTypeName: String) {
         PRIVATE_KEY("Key Pair Authentication"),
         USERNAME_PASSWORD("Username and Password"),
+        PROGRAMMATIC_ACCESS_TOKEN("Programmatic Access Token"),
     }
 }
 
@@ -198,7 +203,7 @@ class KeyPairAuthSpecification(
 
 @JsonSchemaTitle("Username and Password (Deprecated)")
 @JsonSchemaDescription(
-    "Deprecated: Username and password authentication is deprecated as of version 5.0.0 and will be removed in a future release. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. Switch to key pair authentication instead. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake-migrations\">migration guide</a> for details."
+    "Deprecated: Username and password authentication is deprecated as of version 5.0.0 and will be removed in a future release. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. Switch to key pair authentication or a programmatic access token instead. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake-migrations\">migration guide</a> for details."
 )
 class UsernamePasswordAuthSpecification(
     @get:JsonSchemaTitle("Password")
@@ -207,6 +212,22 @@ class UsernamePasswordAuthSpecification(
     @get:JsonSchemaInject(json = """{"order": 0, "airbyte_secret": true}""")
     val password: String = ""
 ) : CredentialsSpecification(Type.USERNAME_PASSWORD)
+
+@JsonSchemaTitle("Programmatic Access Token")
+@JsonSchemaDescription(
+    "Configuration details for authenticating with a Snowflake programmatic access token (PAT) generated for the username above."
+)
+class ProgrammaticAccessTokenAuthSpecification(
+    @get:JsonSchemaTitle("Programmatic Access Token")
+    @get:JsonPropertyDescription(
+        """The programmatic access token generated for the Snowflake user. See the <a
+ href="https://docs.airbyte.com/integrations/destinations/snowflake#programmatic-access-token-authentication">docs</a> for more
+ information on how to generate a token."""
+    )
+    @get:JsonProperty("programmatic_access_token")
+    @get:JsonSchemaInject(json = """{"order": 0, "airbyte_secret": true}""")
+    val programmaticAccessToken: String = ""
+) : CredentialsSpecification(Type.PROGRAMMATIC_ACCESS_TOKEN)
 
 enum class CdcDeletionMode(@Suppress("unused") @get:JsonValue val cdcDeletionMode: String) {
     HARD_DELETE("Hard delete"),

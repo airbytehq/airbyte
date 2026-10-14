@@ -65,6 +65,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                           | Subject               |
 | :------ | :--------- | :----------------------------------------------------- | :-------------------- |
+| 0.2.24 | 2026-10-07 | [88303](https://github.com/airbytehq/airbyte/pull/88303) | Extract records from the `bookings` array, query the full `start_date`..today range via `dateto`, and fail on `status: ERROR` API responses |
 | 0.2.23 | 2026-06-02 | [79032](https://github.com/airbytehq/airbyte/pull/79032) | Update dependencies |
 | 0.2.22 | 2025-05-24 | [60757](https://github.com/airbytehq/airbyte/pull/60757) | Update dependencies |
 | 0.2.21 | 2025-05-10 | [59925](https://github.com/airbytehq/airbyte/pull/59925) | Update dependencies |
