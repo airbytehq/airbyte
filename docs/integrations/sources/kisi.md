@@ -78,6 +78,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.2 | 2026-10-13 | [88680](https://github.com/airbytehq/airbyte/pull/88680) | Update dependencies |
 | 0.1.1 | 2026-10-09 | [88404](https://github.com/airbytehq/airbyte/pull/88404) | Mark `api_key` as `airbyte_secret` |
 | 0.1.0 | 2026-10-09 | [88301](https://github.com/airbytehq/airbyte/pull/88301) | Remove the `user_export_reporters` stream: Kisi removed the `GET /user_export_reporters` endpoint (HTTP 404) |
 | 0.0.73 | 2026-10-06 | [87913](https://github.com/airbytehq/airbyte/pull/87913) | Update dependencies |
