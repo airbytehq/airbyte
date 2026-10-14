@@ -49,7 +49,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                             | Subject                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
-| 0.1.54 | 2026-10-14 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Set `additionalProperties` to `true` in the spec so saved configs stay valid when a property is removed |
+| 0.1.54 | 2026-10-14 | [88930](https://github.com/airbytehq/airbyte/pull/88930) | Set `additionalProperties` to `true` in the spec so saved configs stay valid when a property is removed |
 | 0.1.53 | 2026-10-09 | [88404](https://github.com/airbytehq/airbyte/pull/88404) | Mark `api_key` as `airbyte_secret`; fix the image entrypoint |
 | 0.1.52 | 2025-05-17 | [60709](https://github.com/airbytehq/airbyte/pull/60709) | Update dependencies |
 | 0.1.51 | 2025-05-10 | [59776](https://github.com/airbytehq/airbyte/pull/59776) | Update dependencies |

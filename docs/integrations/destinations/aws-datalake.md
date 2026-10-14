@@ -99,7 +99,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                              |
 |:--------| :--------- | :--------------------------------------------------------- | :--------------------------------------------------- |
-| 0.1.59 | 2026-10-14 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Set `additionalProperties` to `true` in the spec so saved configs stay valid when a property is removed, and add the `run` module the image entrypoint calls |
+| 0.1.59 | 2026-10-14 | [88930](https://github.com/airbytehq/airbyte/pull/88930) | Set `additionalProperties` to `true` in the spec so saved configs stay valid when a property is removed, and add the `run` module the image entrypoint calls |
 | 0.1.58 | 2025-05-24 | [59824](https://github.com/airbytehq/airbyte/pull/59824) | Update dependencies |
 | 0.1.57 | 2025-05-03 | [59366](https://github.com/airbytehq/airbyte/pull/59366) | Update dependencies |
 | 0.1.56 | 2025-04-26 | [58711](https://github.com/airbytehq/airbyte/pull/58711) | Update dependencies |

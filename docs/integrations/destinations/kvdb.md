@@ -35,7 +35,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                              | Subject                                                                    |
 |:--------| :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------- |
-| 0.1.13 | 2026-10-14 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Set `additionalProperties` to `true` in the spec so saved configs stay valid when a property is removed |
+| 0.1.13 | 2026-10-14 | [88930](https://github.com/airbytehq/airbyte/pull/88930) | Set `additionalProperties` to `true` in the spec so saved configs stay valid when a property is removed |
 | 0.1.12  | 2026-10-09 | [88413](https://github.com/airbytehq/airbyte/pull/88413) | Mark `secret_key` as `airbyte_secret`; fix the image entrypoint and move to Python 3.11 (base image 4.0.0) |
 | 0.1.11  | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies                                     |
 | 0.1.10  | 2024-07-09 | [41285](https://github.com/airbytehq/airbyte/pull/41285) | Update dependencies |

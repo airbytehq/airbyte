@@ -96,7 +96,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                       |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
-| 0.1.3 | 2026-10-14 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Set `additionalProperties` to `true` in the spec so saved configs stay valid when a property is removed |
+| 0.1.3 | 2026-10-14 | [88930](https://github.com/airbytehq/airbyte/pull/88930) | Set `additionalProperties` to `true` in the spec so saved configs stay valid when a property is removed |
 | 0.1.2   | 2026-10-09 | [88404](https://github.com/airbytehq/airbyte/pull/88404) | Mark `surrealdb_password` as `airbyte_secret` |
 | 0.1.1   | 2026-10-07 | [88340](https://github.com/airbytehq/airbyte/pull/88340) | Fix `DEFINE FIELD` type mapping (`boolean`, nullable/union types), `id` field conflict, sparse records, and `check` over HTTP. |
 | 0.1.0   | 2025-05-09 | [\#59742](https://github.com/airbytehq/airbyte/pull/59742) | Added SurrealDB destination.                                                                       |

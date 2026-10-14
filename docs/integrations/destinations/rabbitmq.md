@@ -53,7 +53,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date             | Pull Request                                              | Subject                                         |
 |:--------| :--------------- | :-------------------------------------------------------- | :---------------------------------------------- |
-| 0.1.44 | 2026-10-14 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Set `additionalProperties` to `true` in the spec so saved configs stay valid when a property is removed, and add the `run` module the image entrypoint calls |
+| 0.1.44 | 2026-10-14 | [88930](https://github.com/airbytehq/airbyte/pull/88930) | Set `additionalProperties` to `true` in the spec so saved configs stay valid when a property is removed, and add the `run` module the image entrypoint calls |
 | 0.1.43 | 2025-05-24 | [60586](https://github.com/airbytehq/airbyte/pull/60586) | Update dependencies |
 | 0.1.42 | 2025-05-10 | [59812](https://github.com/airbytehq/airbyte/pull/59812) | Update dependencies |
 | 0.1.41 | 2025-05-03 | [58696](https://github.com/airbytehq/airbyte/pull/58696) | Update dependencies |
