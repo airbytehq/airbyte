@@ -14,7 +14,9 @@ The `/v3/actions` and `/v3/follow_ups` endpoints only return records from `stand
 
 To keep parity with `/v2`, both streams use a `ListPartitionRouter` that sends one request series per documented `incident_mode` value: `standard`, `retrospective`, `test`, `tutorial`, `stream`. Each record belongs to exactly one mode, so the partitions do not overlap.
 
-If incident.io adds a new `incident_mode` value (see the `incident_mode` parameter in https://docs.incident.io/openapi/latest.json), add it to the `values` list of both routers in `manifest.yaml` and to `_MODES` in `unit_tests/test_v3_streams.py`. Otherwise records from incidents in that mode will silently stop syncing.
+If incident.io adds a new `incident_mode` value (see the `incident_mode` parameter in https://docs.incident.io/openapi/latest.json), add it to the `values` list of the `actions` and `follow-ups` routers and the `mode[one_of]` list in the `incidents` requester in `manifest.yaml`. Also add it to `_MODES` in `unit_tests/test_v3_streams.py`, which the tests for all three streams use. Otherwise, records from incidents in that mode can silently stop syncing.
+
+`/v2/incidents` documents `mode` as defaulting to `standard` and `retrospective` and does not list `stream`, while `/v3/actions` and `/v3/follow_ups` document `stream` as an `incident_mode`. `/v2/incidents` accepts mode values it does not recognize without an error; an unrecognized value returns HTTP 200 with no rows. Sending `stream` costs nothing if the endpoint ignores it and prevents stream incidents from being silently dropped if it returns them only when requested.
 
 ## `incidents` includes every status category
 
@@ -57,12 +59,36 @@ default relative to "now".
 ## Page sizes
 
 Each paginated stream uses the largest `page_size` the API serves (`incidents` 250,
-`incident_updates` 250, `users` 10000, `alerts` 50, `escalations` 50, `actions` and `follow-ups` 250).
+`incident_updates` 250, `users` 10000, `alerts` 50, `alert_routes` 50, `incident_alerts` 50,
+`escalations` 50, `escalation_paths` 25, `actions` and `follow-ups` 250, `catalog_entries` 250,
+`custom_field_options` 250).
+`alert_routes` returns a `pagination_meta.after` cursor even on its last page, so each sync makes one
+extra request that returns an empty page; the paginator stops on that response because it has no
+`after`.
 For `incidents` the OpenAPI spec allows 500, but the API caps it at 250: a request for 500 comes back
 with `pagination_meta.page_size: 250`. One exception: `schedules` stays at 100 because the vendor
 documents that `next_shifts` is only
 returned when `page_size` is 25 or lower, and the connector does not emit `next_shifts` today. Lower it
 to 25 if that field is ever added to the schema.
+
+## Child-stream request cost
+
+`incident_attachments` sends one request per incident. As a full-refresh child, it re-reads the
+windowed `incidents` parent on every sync; the parent endpoint is limited to 60 requests per minute.
+A 2,000-incident account therefore needs about 2,000 attachment requests plus the `incidents` read.
+`incident_attachments` ignores 404 because an incident can be deleted after the parent read and
+before its attachment partition runs. A missing incident returns HTTP 404 with error code
+`resource_not_found` (confirmed live with a made-up incident ID), so a 404 here means a deleted or
+unknown incident and nothing else. If a filter is added to `base_error_handler`, add a corresponding
+`$ref` to the `incident_attachments` handler.
+
+`incident_attachments` uses the windowed `incidents` stream as its parent, so a later `start_date`
+also excludes attachments of incidents last updated before it. This is intentional: child streams
+follow their parent's scope, and an unfiltered second `incidents` read would cost every sync.
+
+`catalog_entries` sends one request per catalog type for each page of up to 250 entries.
+`custom_field_options` sends one request per custom field, with additional requests when a field has
+more than 250 options.
 
 ## Concurrency
 
