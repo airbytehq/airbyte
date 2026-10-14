@@ -26,6 +26,35 @@ class MySqlExceptionClassifierTest {
     }
 
     @Test
+    fun testEofCannotReadResponseWithThousandsSeparators() {
+        val exception =
+            RuntimeException(
+                "java.sql.SQLException: Error retrieving record: Unexpected Exception: java.io.EOFException message given: " +
+                    "Can not read response from server. Expected to read 65,568 bytes, read 40,166 bytes before connection was unexpectedly lost."
+            )
+        val result = classifier.classify(exception)
+        Assertions.assertInstanceOf(TransientError::class.java, result)
+    }
+
+    @Test
+    fun testEofExpectedBytesReceivedOnly() {
+        val exception =
+            RuntimeException("java.io.EOFException: Expected 252 bytes, received only 227 bytes")
+        val result = classifier.classify(exception)
+        Assertions.assertInstanceOf(TransientError::class.java, result)
+    }
+
+    @Test
+    fun testEofExpectedBytesReceivedOnlyWithThousandsSeparators() {
+        val exception =
+            RuntimeException(
+                "java.io.EOFException: Expected 65,568 bytes, received only 40,166 bytes"
+            )
+        val result = classifier.classify(exception)
+        Assertions.assertInstanceOf(TransientError::class.java, result)
+    }
+
+    @Test
     fun testEofFailedToReadRemaining() {
         val exception =
             RuntimeException(

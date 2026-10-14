@@ -70,19 +70,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, query: str, limit: int | None = None, page: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResult[ChargeSearchResult]`
-    :   Search for charges using Stripe's Search Query Language
-        
-        Args:
-            query: The search query string using Stripe's Search Query Language
-            limit: A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.
-            page: A cursor for pagination across multiple pages of results. Don’t include this parameter on the first call. Use the next_page value returned in a previous response to request subsequent results.
-            **kwargs: Additional parameters
-        
-        Returns:
-            ChargesApiSearchResult
-
-    `context_store_search(self, query: ChargesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult[ChargesSearchData]`
+    `context_store_search(self, query: ChargesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResult[ChargeSearchResult]`
     :   Search charges records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -196,6 +184,18 @@ Classes
         Returns:
             ChargesListResult
 
+    `search(self, query: str, limit: int | None = None, page: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResult[ChargeSearchResult]`
+    :   Search for charges using Stripe's Search Query Language
+        
+        Args:
+            query: The search query string using Stripe's Search Query Language
+            limit: A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.
+            page: A cursor for pagination across multiple pages of results. Don’t include this parameter on the first call. Use the next_page value returned in a previous response to request subsequent results.
+            **kwargs: Additional parameters
+        
+        Returns:
+            ChargesSearchResult
+
 <a id="CheckoutSessionsQuery"></a>
 
 `CheckoutSessionsQuery(connector: StripeConnector)`
@@ -220,19 +220,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, query: str, limit: int | None = None, page: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResultWithMeta[list[Customer], CustomersApiSearchResultMeta]`
-    :   Search for customers using Stripe's Search Query Language.
-        
-        Args:
-            query: The search query string using Stripe's Search Query Language
-            limit: A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.
-            page: A cursor for pagination across multiple pages of results. Don’t include this parameter on the first call. Use the next_page value returned in a previous response to request subsequent results.
-            **kwargs: Additional parameters
-        
-        Returns:
-            CustomersApiSearchResult
-
-    `context_store_search(self, query: CustomersSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult[CustomersSearchData]`
+    `context_store_search(self, query: CustomersSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResultWithMeta[list[Customer], CustomersSearchResultMeta]`
     :   Search customers records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -341,6 +329,18 @@ Classes
         Returns:
             CustomersListResult
 
+    `search(self, query: str, limit: int | None = None, page: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResultWithMeta[list[Customer], CustomersSearchResultMeta]`
+    :   Search for customers using Stripe's Search Query Language.
+        
+        Args:
+            query: The search query string using Stripe's Search Query Language
+            limit: A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.
+            page: A cursor for pagination across multiple pages of results. Don’t include this parameter on the first call. Use the next_page value returned in a previous response to request subsequent results.
+            **kwargs: Additional parameters
+        
+        Returns:
+            CustomersSearchResult
+
     `update(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.Customer`
     :   Updates the specified customer by setting the values of the parameters passed.
         
@@ -432,19 +432,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, query: str, limit: int | None = None, page: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResult[InvoiceSearchResult]`
-    :   Search for invoices using Stripe's Search Query Language
-        
-        Args:
-            query: The search query string using Stripe's Search Query Language
-            limit: A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.
-            page: A cursor for pagination across multiple pages of results. Don’t include this parameter on the first call. Use the next_page value returned in a previous response to request subsequent results.
-            **kwargs: Additional parameters
-        
-        Returns:
-            InvoicesApiSearchResult
-
-    `context_store_search(self, query: InvoicesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult[InvoicesSearchData]`
+    `context_store_search(self, query: InvoicesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResult[InvoiceSearchResult]`
     :   Search invoices records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -606,6 +594,18 @@ Classes
         Returns:
             InvoicesListResult
 
+    `search(self, query: str, limit: int | None = None, page: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResult[InvoiceSearchResult]`
+    :   Search for invoices using Stripe's Search Query Language
+        
+        Args:
+            query: The search query string using Stripe's Search Query Language
+            limit: A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.
+            page: A cursor for pagination across multiple pages of results. Don’t include this parameter on the first call. Use the next_page value returned in a previous response to request subsequent results.
+            **kwargs: Additional parameters
+        
+        Returns:
+            InvoicesSearchResult
+
 <a id="PaymentIntentCancellationsQuery"></a>
 
 `PaymentIntentCancellationsQuery(connector: StripeConnector)`
@@ -653,18 +653,6 @@ Classes
 
     ### Methods
 
-    `api_search(self, query: str, limit: int | None = None, page: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResultWithMeta[list[PaymentIntent], PaymentIntentsApiSearchResultMeta]`
-    :   Search for payment intents using Stripe's Search Query Language.
-        
-        Args:
-            query: The search query string using Stripe's Search Query Language
-            limit: A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.
-            page: A cursor for pagination across multiple pages of results. Don't include this parameter on the first call. Use the next_page value returned in a previous response to request subsequent results.
-            **kwargs: Additional parameters
-        
-        Returns:
-            PaymentIntentsApiSearchResult
-
     `create(self, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.PaymentIntent`
     :   Creates a PaymentIntent object. After the PaymentIntent is created, attach a payment method and confirm to continue the payment.
         
@@ -695,6 +683,18 @@ Classes
         
         Returns:
             PaymentIntentsListResult
+
+    `search(self, query: str, limit: int | None = None, page: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResultWithMeta[list[PaymentIntent], PaymentIntentsSearchResultMeta]`
+    :   Search for payment intents using Stripe's Search Query Language.
+        
+        Args:
+            query: The search query string using Stripe's Search Query Language
+            limit: A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.
+            page: A cursor for pagination across multiple pages of results. Don't include this parameter on the first call. Use the next_page value returned in a previous response to request subsequent results.
+            **kwargs: Additional parameters
+        
+        Returns:
+            PaymentIntentsSearchResult
 
     `update(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.PaymentIntent`
     :   Updates properties on a PaymentIntent object without confirming.
@@ -784,18 +784,6 @@ Classes
 
     ### Methods
 
-    `api_search(self, query: str, limit: int | None = None, page: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResultWithMeta[list[Product], ProductsApiSearchResultMeta]`
-    :   Search for products using Stripe's Search Query Language.
-        
-        Args:
-            query: The search query string using Stripe's Search Query Language
-            limit: A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.
-            page: A cursor for pagination across multiple pages of results. Don't include this parameter on the first call. Use the next_page value returned in a previous response to request subsequent results.
-            **kwargs: Additional parameters
-        
-        Returns:
-            ProductsApiSearchResult
-
     `create(self, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.Product`
     :   Creates a new product object. Your product's name, description, and other information will be displayed in all product and invoice displays.
         
@@ -838,6 +826,18 @@ Classes
         
         Returns:
             ProductsListResult
+
+    `search(self, query: str, limit: int | None = None, page: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResultWithMeta[list[Product], ProductsSearchResultMeta]`
+    :   Search for products using Stripe's Search Query Language.
+        
+        Args:
+            query: The search query string using Stripe's Search Query Language
+            limit: A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.
+            page: A cursor for pagination across multiple pages of results. Don't include this parameter on the first call. Use the next_page value returned in a previous response to request subsequent results.
+            **kwargs: Additional parameters
+        
+        Returns:
+            ProductsSearchResult
 
     `update(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.Product`
     :   Updates the specific product by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
@@ -1182,7 +1182,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'api_search', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'search', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -1254,19 +1254,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, query: str, limit: int | None = None, page: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResult[SubscriptionSearchResult]`
-    :   Search for subscriptions using Stripe's Search Query Language
-        
-        Args:
-            query: The search query string using Stripe's Search Query Language
-            limit: A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.
-            page: A cursor for pagination across multiple pages of results. Don't include this parameter on the first call. Use the next_page value returned in a previous response to request subsequent results.
-            **kwargs: Additional parameters
-        
-        Returns:
-            SubscriptionsApiSearchResult
-
-    `context_store_search(self, query: SubscriptionsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult[SubscriptionsSearchData]`
+    `context_store_search(self, query: SubscriptionsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResult[SubscriptionSearchResult]`
     :   Search subscriptions records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -1401,6 +1389,18 @@ Classes
         
         Returns:
             SubscriptionsListResult
+
+    `search(self, query: str, limit: int | None = None, page: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResult[SubscriptionSearchResult]`
+    :   Search for subscriptions using Stripe's Search Query Language
+        
+        Args:
+            query: The search query string using Stripe's Search Query Language
+            limit: A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 10.
+            page: A cursor for pagination across multiple pages of results. Don't include this parameter on the first call. Use the next_page value returned in a previous response to request subsequent results.
+            **kwargs: Additional parameters
+        
+        Returns:
+            SubscriptionsSearchResult
 
     `update(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.stripe.models.Subscription`
     :   Updates an existing subscription on a customer to match the specified parameters. When changing prices or quantities, we optionally prorate the price we charge next month to make up for any price changes.
