@@ -11,22 +11,24 @@ Gmail is the email service provided by Google. The Gmail source connector replic
 ## Prerequisites
 
 - A Google account with access to the mailbox you want to replicate.
-- The OAuth scope `https://www.googleapis.com/auth/gmail.readonly`. The connector reads from Gmail and never modifies messages, labels, or settings.
+- A Gmail API scope that allows reading mail. Airbyte Cloud's OAuth flow requests `https://www.googleapis.com/auth/gmail.modify`, which includes read access. An OAuth client you manage yourself can grant the narrower `https://www.googleapis.com/auth/gmail.readonly` scope. In either case, the connector only issues read requests.
 <!-- env:oss -->
-- For **Airbyte Open Source**: a Google Cloud project with the [Gmail API enabled](https://console.cloud.google.com/apis/library/gmail.googleapis.com), plus either an OAuth 2.0 client and refresh token, or a service account key.
+- For **Airbyte Open Source**: a Google Cloud project with the [Gmail API enabled](https://console.cloud.google.com/apis/library/gmail.googleapis.com), plus an OAuth 2.0 client and refresh token.
 <!-- /env:oss -->
 
 ## Setup guide
 
 ### Step 1: Set up authentication
 
-The Gmail source connector supports two authentication methods: **OAuth** and **Service Account Key**. Both methods require the `https://www.googleapis.com/auth/gmail.readonly` scope.
+The Gmail source connector offers two authentication methods: **OAuth** and **Service Account Key**. Use OAuth. Service Account Key authentication can't currently read a mailbox.
 
 <!-- env:cloud -->
 
 #### OAuth (recommended for Airbyte Cloud)
 
-In **Airbyte Cloud**, sign in with the Google account whose mailbox you want to replicate. Airbyte Cloud handles the OAuth flow for you — you only need to authorize Airbyte through the standard Google consent screen when configuring the source.
+In **Airbyte Cloud**, sign in with the Google account whose mailbox you want to replicate. Airbyte Cloud handles the OAuth flow for you — you only need to authorize Airbyte through the standard Google consent screen when configuring the source. The consent screen requests `https://www.googleapis.com/auth/gmail.modify`, so it asks you to let Airbyte read, compose, and send mail. The connector only issues read requests.
+
+Sources that were authorized before connector version 0.1.11 keep the scope Google granted at consent time. You don't need to re-authenticate them.
 
 <!-- /env:cloud -->
 
@@ -37,19 +39,21 @@ In **Airbyte Cloud**, sign in with the Google account whose mailbox you want to 
 To authenticate with OAuth in **Airbyte Open Source**, create your own OAuth client in your Google Cloud project and complete the authorization code flow yourself to obtain a refresh token. You will need the resulting **Client ID**, **Client Secret**, and **Refresh Token** to configure the connector.
 
 1. In the Google Cloud console, [enable the Gmail API](https://console.cloud.google.com/apis/library/gmail.googleapis.com) for your project.
-2. Configure your OAuth consent screen and add the `https://www.googleapis.com/auth/gmail.readonly` scope. See [Choose Gmail API scopes](https://developers.google.com/workspace/gmail/api/auth/scopes).
+2. Configure your OAuth consent screen and add a Gmail scope. Which scope you add depends on how you complete the flow:
+   - If you obtain the refresh token yourself, add `https://www.googleapis.com/auth/gmail.readonly`.
+   - If you register your OAuth client with your Airbyte instance and click **Authenticate your account**, add `https://www.googleapis.com/auth/gmail.modify`. Airbyte builds that consent URL from the connector, which requests `gmail.modify`, and the scope has to be configured on your consent screen.
+
+   See [Choose Gmail API scopes](https://developers.google.com/workspace/gmail/api/auth/scopes).
 3. Follow [Google's web server OAuth 2.0 guide](https://developers.google.com/identity/protocols/oauth2/web-server) to create a **Web application** OAuth client and exchange the authorization code for a refresh token.
+
+:::note
+If you configured this source before version 0.1.1, **Client ID**, **Client Secret**, and **Refresh Token** were top-level fields. The connector moves them into the nested **Authentication** object automatically the first time it runs on a newer version, as long as all three values are present. You don't need to re-enter them. Sources that already use the nested OAuth or Service Account Key configuration aren't changed.
+:::
 
 #### Service Account Key for Airbyte Open Source
 
-You can also authenticate with a Google service account key. Because Gmail mailboxes are owned by individual users, the service account must use [domain-wide delegation](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority) to access mailboxes in a Google Workspace domain.
-
-1. Open the [Service Accounts page](https://console.cloud.google.com/iam-admin/serviceaccounts) in your Google Cloud console and create a new service account, or select an existing one.
-2. In the **Keys** tab, click **Add Key** > **Create new key**, select **JSON**, and download the key file. Store it securely — Google does not let you re-download it.
-3. In your Google Workspace [admin console](https://admin.google.com/), enable [domain-wide delegation](https://support.google.com/a/answer/162106) for the service account's client ID and authorize the `https://www.googleapis.com/auth/gmail.readonly` scope.
-
-:::note
-Only a Google Workspace super administrator can configure domain-wide delegation. Domain-wide delegation lets the service account impersonate users in your Workspace organization to read their mailboxes.
+:::warning
+Service Account Key authentication can't currently read a mailbox. To read a user's mailbox, Google requires the token request to name the user to impersonate in the `sub` claim, and only applies [domain-wide delegation](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority) when that claim is set. The connector doesn't set `sub` and has no field for the user to impersonate, so Google issues a token for the service account itself. A service account has no Gmail mailbox, so the connection test and syncs fail with `Precondition check failed`, whether or not domain-wide delegation is configured. Use OAuth instead.
 :::
 
 <!-- /env:oss -->
@@ -60,11 +64,11 @@ Only a Google Workspace super administrator can configure domain-wide delegation
 2. Select **Gmail** from the source type dropdown.
 3. Choose your authentication method:
    - **Authenticate via Google (OAuth)** — Click **Authenticate your account** and complete the Google sign-in flow. **Airbyte Cloud** users authenticate against Airbyte's pre-registered OAuth app. **Airbyte Open Source** users provide their own **Client ID**, **Client Secret**, and **Refresh Token**.
-   - **Service Account Key Authentication** — Paste the contents of your service account JSON key file into the **Service Account Information** field.
+   - **Service Account Key Authentication** — Not currently usable. The connector authenticates as the service account itself, which has no mailbox. Use OAuth instead.
 4. (Optional) Set **Start date** in `YYYY-MM-DDTHH:MM:SSZ` format. Only messages, drafts, and threads received on or after this date are replicated. If you leave it blank, the connector replicates the full mailbox history.
 5. (Optional) Toggle **Include Spam & Trash** to include drafts and messages from the Spam and Trash folders. Defaults to off.
 6. (Optional) Adjust **Number of concurrent workers** (between `2` and `10`, default `5`) to control how many requests the connector issues in parallel. Lower this value if you see frequent rate-limit errors.
-7. Click **Set up source** to test the connection and save the configuration.
+7. Click **Set up source** to test the connection and save the configuration. The connection test reads the authenticated user's Gmail profile.
 
 ## Supported sync modes
 
@@ -94,6 +98,8 @@ Only the `messages_details` stream supports incremental sync. All other streams 
 
 The `messages_details` cursor is the message's `internalDate` field — the Unix epoch in milliseconds when Gmail received the message. Other streams expose only `id` and `threadId` from the upstream `list` calls and have no record-level cursor field, so they run as full refresh.
 
+On incremental syncs of `messages_details`, the connector still lists every message in the parent `messages` stream, then drops the messages whose `internalDate` predates the stored cursor. Incremental sync reduces what lands in your destination, not the API quota the `list` calls consume. If you leave **Start date** blank, the cursor starts at 2004-04-01, the date Gmail launched.
+
 When **Start date** is set, the connector applies the Gmail `after:<epoch_seconds>` [search operator](https://support.google.com/mail/answer/7190) to the `messages`, `drafts`, and `threads` `list` requests so the API skips records older than that date.
 
 ## Performance considerations
@@ -103,17 +109,23 @@ The Gmail API enforces two simultaneous quota limits, measured in [quota units](
 | Limit type              | Limit                                  | Error code              |
 |-------------------------|----------------------------------------|-------------------------|
 | Per project rate limit  | 1,200,000 quota units per minute       | `rateLimitExceeded`     |
-| Per user rate limit     | 15,000 quota units per minute per user | `userRateLimitExceeded` |
+| Per user rate limit     | 6,000 quota units per minute per user  | `userRateLimitExceeded` |
 
-Each `messages.list` and `messages.get` call costs 5 units, and each `threads.list` and `threads.get` call costs 10 units. The `messages_details` and `threads_details` substreams issue one `get` call per parent record, so high-volume mailboxes consume quota quickly.
+Each `threads.get` call costs 40 units, `messages.get` 20, `threads.list` 10, `messages.list` and `drafts.list` 5, and `labels` and `profile` calls 1. The `messages_details` and `threads_details` substreams issue one `get` call per parent record, so high-volume mailboxes consume quota quickly.
 
-The connector retries `429 Too Many Requests` and `403` quota-saturation errors with exponential backoff. If you see frequent rate-limit warnings in sync logs, lower the **Number of concurrent workers** setting.
+These are the quotas for Google Cloud projects created on or after May 1, 2026. Projects that used the Gmail API between November 2025 and April 2026 keep their previous quotas: 15,000 units per minute per user, with `messages.get` and `messages.list` at 5 units and `threads.get` and `threads.list` at 10. Because the limit depends on the project, the connector doesn't throttle its calls up front and relies on Gmail's rate-limit responses instead.
+
+The connector retries `429 Too Many Requests` and `403` quota-saturation errors with backoff, up to 10 times over roughly 10 to 13 minutes. After a `429`, every request waits up to a minute for the current quota window to clear. If you see frequent rate-limit warnings in sync logs, lower the **Number of concurrent workers** setting.
 
 ## Limitations & troubleshooting
 
 - **`messages` and `threads` are stub-only.** The Gmail API's `users.messages.list` and `users.threads.list` endpoints return only `{id, threadId}` (or `{id, historyId}`) per record. To replicate the full message body, headers, or labels, sync the `messages_details` or `threads_details` substream alongside its parent.
-- **Service account mailbox access requires domain-wide delegation.** A service account without domain-wide delegation has no Gmail mailbox of its own to read. Configure domain-wide delegation in your Workspace admin console so the service account can impersonate Workspace users.
-- **Read-only scope.** This connector reads from Gmail only. The required scope is `https://www.googleapis.com/auth/gmail.readonly`. Granting broader Gmail scopes is not necessary and not recommended.
+- **Service account keys can't read a mailbox.** The connector doesn't set the `sub` claim that Google requires for a service account to impersonate a user, so the token belongs to the service account, which has no mailbox. Domain-wide delegation doesn't change this. Use OAuth instead.
+- **`Precondition check failed`.** The authenticated account has no Gmail mailbox. Either you used Service Account Key authentication, or you authorized a Google Workspace user who doesn't have Gmail enabled. Authenticate with OAuth as the user whose mailbox you want to sync.
+- **The Gmail API isn't enabled.** On Airbyte Open Source with your own OAuth client, the connector fails with a configuration error until you [enable the Gmail API](https://console.cloud.google.com/apis/library/gmail.googleapis.com) in the Google Cloud project that owns the client.
+- **The authorized account lacks the required scope.** If Gmail returns `insufficientPermissions`, re-authenticate and grant `https://www.googleapis.com/auth/gmail.readonly` (a refresh token you obtained yourself) or `https://www.googleapis.com/auth/gmail.modify` (the **Authenticate your account** flow).
+- **Your Workspace administrator has disabled Gmail apps.** If Gmail returns `domainPolicy`, ask your Google Workspace administrator to allow Gmail API access for the app, then retry.
+- **The Cloud consent screen asks for more access than the connector uses.** `https://www.googleapis.com/auth/gmail.modify` lets an app read, compose, and send mail, change labels, and trash messages. This connector only issues GET requests. To grant the narrower `https://www.googleapis.com/auth/gmail.readonly` scope instead, use your own OAuth client on a self-managed Airbyte instance.
 
 ## Configuration
 
@@ -139,6 +151,26 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.21 | 2026-10-13 | [88403](https://github.com/airbytehq/airbyte/pull/88403) | Check connection via profile and retry rate limits; add actionable Gmail API errors, API budget and missing schema fields |
+| 0.1.20 | 2026-10-13 | [88635](https://github.com/airbytehq/airbyte/pull/88635) | Update dependencies |
+| 0.1.19 | 2026-10-06 | [87854](https://github.com/airbytehq/airbyte/pull/87854) | Update dependencies |
+| 0.1.18 | 2026-09-29 | [87179](https://github.com/airbytehq/airbyte/pull/87179) | Update dependencies |
+| 0.1.17 | 2026-09-22 | [86632](https://github.com/airbytehq/airbyte/pull/86632) | Update dependencies |
+| 0.1.16 | 2026-09-15 | [86066](https://github.com/airbytehq/airbyte/pull/86066) | Update dependencies |
+| 0.1.15 | 2026-09-11 | [85800](https://github.com/airbytehq/airbyte/pull/85800) | Fix config migration copying empty or incomplete legacy OAuth fields into nested `credentials` |
+| 0.1.14 | 2026-09-08 | [85497](https://github.com/airbytehq/airbyte/pull/85497) | Update dependencies |
+| 0.1.13 | 2026-08-18 | [84554](https://github.com/airbytehq/airbyte/pull/84554) | Update dependencies |
+| 0.1.12 | 2026-08-11 | [83951](https://github.com/airbytehq/airbyte/pull/83951) | Update dependencies |
+| 0.1.11 | 2026-08-04 | [83308](https://github.com/airbytehq/airbyte/pull/83308) | Use `gmail.modify` for Airbyte Cloud's managed OAuth flow; self-managed OAuth clients and service accounts continue to use `gmail.readonly` |
+| 0.1.10 | 2026-08-04 | [83463](https://github.com/airbytehq/airbyte/pull/83463) | Update dependencies |
+| 0.1.9 | 2026-07-28 | [82922](https://github.com/airbytehq/airbyte/pull/82922) | Update dependencies |
+| 0.1.8 | 2026-07-21 | [82425](https://github.com/airbytehq/airbyte/pull/82425) | Update dependencies |
+| 0.1.7 | 2026-07-14 | [81816](https://github.com/airbytehq/airbyte/pull/81816) | Update dependencies |
+| 0.1.6 | 2026-06-30 | [81079](https://github.com/airbytehq/airbyte/pull/81079) | Update dependencies |
+| 0.1.5 | 2026-06-23 | [80468](https://github.com/airbytehq/airbyte/pull/80468) | Update dependencies |
+| 0.1.4 | 2026-06-16 | [79869](https://github.com/airbytehq/airbyte/pull/79869) | Update dependencies |
+| 0.1.3 | 2026-06-09 | [79310](https://github.com/airbytehq/airbyte/pull/79310) | Update dependencies |
+| 0.1.2 | 2026-06-02 | [78732](https://github.com/airbytehq/airbyte/pull/78732) | Update dependencies |
 | 0.1.1 | 2026-05-04 | [76065](https://github.com/airbytehq/airbyte/pull/76065) | Add OAuth flow with credentials wrapper, config migration, and Service Account auth |
 | 0.1.0 | 2026-04-29 | [76431](https://github.com/airbytehq/airbyte/pull/76431) | Add `messages_details` incremental sync, optional `start_date` server-side filtering on `messages`/`drafts`/`threads`, configurable concurrency via `num_workers`, and Gmail-aware rate-limit handling (429 + 403 quota-saturation) |
 | 0.0.52 | 2026-04-28 | [77264](https://github.com/airbytehq/airbyte/pull/77264) | Update dependencies |
@@ -147,6 +179,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.0.49 | 2026-03-10 | [74532](https://github.com/airbytehq/airbyte/pull/74532) | Update dependencies |
 | 0.0.48 | 2026-03-03 | [74205](https://github.com/airbytehq/airbyte/pull/74205) | Update dependencies |
 | 0.0.47 | 2026-02-11 | [73300](https://github.com/airbytehq/airbyte/pull/73300) | Revert OAuth authentication support |
+| 0.0.46 | 2026-02-11 | [73273](https://github.com/airbytehq/airbyte/pull/73273) | Add OAuth authentication support (reverted in 0.0.47) |
 | 0.0.45 | 2026-02-10 | [72593](https://github.com/airbytehq/airbyte/pull/72593) | Update dependencies |
 | 0.0.44 | 2026-01-20 | [71967](https://github.com/airbytehq/airbyte/pull/71967) | Update dependencies |
 | 0.0.43 | 2026-01-14 | [71388](https://github.com/airbytehq/airbyte/pull/71388) | Update dependencies |

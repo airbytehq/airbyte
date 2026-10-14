@@ -101,6 +101,8 @@ open class MsSqlServerJdbcPartitionFactory(
         val isView = isView(stream)
         val orderedColumns = getOrderedColumnAsList(stream)
 
+        log.info { "Starting cold start for ${stream.name}" }
+
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
             // Views can't be sampled with TABLESAMPLE, so use non-resumable partitions
             // which skip the sampling step entirely
@@ -370,12 +372,26 @@ open class MsSqlServerJdbcPartitionFactory(
                 streamState.reset()
                 return coldStart(streamState)
             }
-            // Convert cursor JsonNode to proper type (handles timestamp formatting, binary
-            // decoding, etc.)
+            /*
+             * Convert cursor JsonNode to proper type (handles timestamp formatting, binary decoding, etc.).
+             *
+             * A missing or NULL cursor means there is no resume point: it can't serve as a lower bound,
+             * because the cursor-incremental requires a non-null lower bound.
+             *
+             * This shouldn't be the case in v3 - an empty table checkpoint produces isNull (see
+             * MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint), which is caught at the top of
+             * create() and skips (no state is populated). It only occurs when migrating v2 state, where
+             * empty tables had a cursor_based entry with a NULL cursor.
+             */
             val cursorCheckpoint: JsonNode =
                 if (sv.cursor == null || sv.cursor.isNull) {
-                    Jsons.nullNode()
+                    log.warn {
+                        "Cursor field '${sv.cursorField.first()}' has no stored value in stream ${stream.name}, resetting stream"
+                    }
+                    streamState.reset()
+                    return coldStart(streamState)
                 } else {
+                    // Convert the stored cursor to its typed JsonNode
                     stateValueToJsonNode(cursor, sv.cursor.asText())
                 }
 

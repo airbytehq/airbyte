@@ -406,7 +406,8 @@ abstract class IntegrationTest(
             DateTimeFormatter.ofPattern("yyyyMMdd")
 
         fun generateRandomNamespace(): String {
-            @Suppress("DEPRECATION") val randomSuffix = RandomStringUtils.randomAlphabetic(4)
+            @Suppress("DEPRECATION")
+            val randomSuffix = RandomStringUtils.randomAlphabetic(4).lowercase()
             val timestampString =
                 LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
                     .format(randomizedNamespaceDateFormatter)

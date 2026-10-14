@@ -179,7 +179,6 @@ spec:
         description: >-
           The API URL of your plausible instance.
           Change this if you self-host plausible. The default is https://plausible.io/api/v1/stats
-        pattern: ^[A-Za-z0-9-.]+\.[A-Z-a-z0-9-.]+
         examples:
           - https://plausible.example.com/api/v1/stats
         order: 2

@@ -28,6 +28,6 @@ For get status of extracting see [Status](https://developers.marketo.com/rest-ap
 
 Connector uses `createdAt` and `updatedAt` config for initial reports sync depend on connector and current date as an end data.
 
-Connector has `window_in_days` config which allows set the amount of days for each data-chunk begining from start_date. Default: 30 days. Max: 30 days.
+Connector has `window_in_days` config which allows set the amount of days for each data-chunk begining from start_date. Default: 30 days. Max: 31 days.
 
 See [this](https://docs.airbyte.io/integrations/sources/marketo) link for the nuances about the connector.

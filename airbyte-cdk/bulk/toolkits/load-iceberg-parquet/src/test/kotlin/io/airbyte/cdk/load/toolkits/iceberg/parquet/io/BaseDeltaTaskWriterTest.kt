@@ -12,8 +12,8 @@ import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT
+import org.apache.iceberg.data.GenericFileWriterFactory
 import org.apache.iceberg.data.Record
-import org.apache.iceberg.io.FileAppenderFactory
 import org.apache.iceberg.io.FileIO
 import org.apache.iceberg.io.OutputFileFactory
 import org.apache.iceberg.types.Types
@@ -29,7 +29,7 @@ internal class BaseDeltaTaskWriterTest {
         val spec: PartitionSpec = mockk()
         val format = FileFormat.PARQUET
         val outputFileFactory: OutputFileFactory = mockk()
-        val appenderFactory: FileAppenderFactory<Record> = mockk {
+        val writerFactory: GenericFileWriterFactory = mockk {
             every { newDataWriter(any(), any(), any()) } returns mockk()
         }
         val io: FileIO = mockk { every { newOutputFile(any()) } returns mockk() }
@@ -52,7 +52,7 @@ internal class BaseDeltaTaskWriterTest {
             TestDeltaWriter(
                 spec = spec,
                 format = format,
-                appenderFactory = appenderFactory,
+                writerFactory = writerFactory,
                 outputFileFactory = outputFileFactory,
                 io = io,
                 targetFileSize = targetFileSize,
@@ -80,7 +80,7 @@ internal class BaseDeltaTaskWriterTest {
         val spec: PartitionSpec = mockk()
         val format = FileFormat.PARQUET
         val outputFileFactory: OutputFileFactory = mockk()
-        val appenderFactory: FileAppenderFactory<Record> = mockk {
+        val writerFactory: GenericFileWriterFactory = mockk {
             every { newDataWriter(any(), any(), any()) } returns mockk()
         }
         val io: FileIO = mockk { every { newOutputFile(any()) } returns mockk() }
@@ -101,7 +101,7 @@ internal class BaseDeltaTaskWriterTest {
             TestDeltaWriter(
                 spec = spec,
                 format = format,
-                appenderFactory = appenderFactory,
+                writerFactory = writerFactory,
                 outputFileFactory = outputFileFactory,
                 io = io,
                 targetFileSize = targetFileSize,
@@ -117,7 +117,7 @@ internal class BaseDeltaTaskWriterTest {
     private class TestDeltaWriter(
         spec: PartitionSpec,
         format: FileFormat,
-        appenderFactory: FileAppenderFactory<Record>,
+        writerFactory: GenericFileWriterFactory,
         outputFileFactory: OutputFileFactory,
         io: FileIO,
         targetFileSize: Long,
@@ -129,7 +129,7 @@ internal class BaseDeltaTaskWriterTest {
             mockk<Table>(),
             spec,
             format,
-            appenderFactory,
+            writerFactory,
             outputFileFactory,
             io,
             targetFileSize,

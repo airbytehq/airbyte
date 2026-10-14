@@ -1,0 +1,166 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+import json
+from pathlib import Path
+from typing import Any, Dict, List
+from unittest import TestCase
+
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+
+
+_MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
+_STREAM_NAME = "transactions"
+_TOKEN_URL = "https://api-m.paypal.com/v1/oauth2/token"
+_TRANSACTIONS_URL = "https://api-m.paypal.com/v1/reporting/transactions"
+# A one-day time window over a two-day date range gives two partitions.
+_START_DATE = "2024-01-01T00:00:00Z"
+_END_DATE = "2024-01-03T00:00:00Z"
+_FIRST_WINDOW = ("2024-01-01T00:00:00Z", "2024-01-01T23:59:59Z")
+_FIRST_WINDOW_FIRST_HALF = ("2024-01-01T00:00:00Z", "2024-01-01T11:59:59Z")
+_FIRST_WINDOW_SECOND_HALF = ("2024-01-01T12:00:00Z", "2024-01-01T23:59:59Z")
+_SECOND_WINDOW = ("2024-01-02T00:00:00Z", "2024-01-03T00:00:00Z")
+# The cursor never generates a slice with start == end (ConcurrentCursor.stream_slices() requires a
+# strictly positive span), so the smallest slice reaching the API is a one-second span. The declarative
+# `request_window_reduction` feature's cursor_granularity: PT1S counts this span as two distinct
+# one-second instants (00:00:00 and 00:00:01) and splits it once more, into single-instant windows, before
+# hitting the true floor (a window where start == end).
+_ONE_SECOND_WINDOW = ("2024-01-01T00:00:00Z", "2024-01-01T00:00:01Z")
+_ONE_SECOND_WINDOW_FIRST_INSTANT = ("2024-01-01T00:00:00Z", "2024-01-01T00:00:00Z")
+
+_RESULT_SET_TOO_LARGE_RESPONSE = HttpResponse(
+    json.dumps(
+        {
+            "name": "RESULTSET_TOO_LARGE",
+            "message": "Result set size is greater than the maximum limit. Change the filter criteria and try again.",
+            "debug_id": "a-debug-id",
+            "maximum_items": 10000,
+        }
+    ),
+    status_code=400,
+)
+
+
+def _config(end_date: str = _END_DATE) -> Dict[str, Any]:
+    return {
+        "client_id": "a-client-id",
+        "client_secret": "a-client-secret",
+        "start_date": _START_DATE,
+        "end_date": end_date,
+        "is_sandbox": False,
+        "time_window": 1,
+    }
+
+
+def _transactions_request(start_date: str, end_date: str) -> HttpRequest:
+    return HttpRequest(
+        url=_TRANSACTIONS_URL,
+        query_params={
+            "fields": "all",
+            "start_date": start_date,
+            "end_date": end_date,
+            "page_size": "500",
+        },
+    )
+
+
+def _transactions_response(transaction_ids: List[str], updated_date: str = "2024-01-01T05:00:00+0000") -> HttpResponse:
+    return HttpResponse(
+        json.dumps(
+            {
+                "transaction_details": [
+                    {
+                        "transaction_info": {
+                            "transaction_id": transaction_id,
+                            "transaction_updated_date": updated_date,
+                        }
+                    }
+                    for transaction_id in transaction_ids
+                ],
+                "total_pages": 1,
+            }
+        )
+    )
+
+
+def _mock_authentication(http_mocker: HttpMocker) -> None:
+    http_mocker.post(
+        HttpRequest(url=_TOKEN_URL, body="grant_type=client_credentials&Content-Type=application%2Fx-www-form-urlencoded"),
+        HttpResponse(json.dumps({"access_token": "an-access-token", "expires_in": 3600})),
+    )
+
+
+def _read(config: Dict[str, Any], expecting_exception: bool = False) -> EntrypointOutput:
+    catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+    source = YamlDeclarativeSource(config=config, catalog=catalog, state=None, path_to_yaml=str(_MANIFEST_PATH))
+    return read(source, config, catalog, None, expecting_exception)
+
+
+def _final_cursor_state(output: EntrypointOutput) -> Dict[str, Any]:
+    return output.state_messages[-1].state.stream.stream_state.__dict__
+
+
+class ResultSetTooLargeTest(TestCase):
+    @HttpMocker()
+    def test_given_result_set_too_large_when_read_then_read_halves_of_the_window(self, http_mocker: HttpMocker) -> None:
+        _mock_authentication(http_mocker)
+        http_mocker.get(_transactions_request(*_FIRST_WINDOW), _RESULT_SET_TOO_LARGE_RESPONSE)
+        http_mocker.get(_transactions_request(*_FIRST_WINDOW_FIRST_HALF), _transactions_response(["first-half"]))
+        http_mocker.get(_transactions_request(*_FIRST_WINDOW_SECOND_HALF), _transactions_response(["second-half"]))
+        http_mocker.get(
+            _transactions_request(*_SECOND_WINDOW),
+            _transactions_response(["second-window"], updated_date="2024-01-02T05:00:00+0000"),
+        )
+
+        output = _read(_config())
+
+        assert sorted(record.record.data["transaction_id"] for record in output.records) == [
+            "first-half",
+            "second-half",
+            "second-window",
+        ]
+        assert not output.errors
+        assert _final_cursor_state(output)["transaction_updated_date"] == "2024-01-02T05:00:00Z"
+
+    @HttpMocker()
+    def test_given_result_set_too_large_for_smallest_window_when_read_then_transient_error(self, http_mocker: HttpMocker) -> None:
+        """
+        The recursion explores children depth-first: the window splits into two single-instant children,
+        and the first one is read before the second, so the terminal transient_error - raised once the
+        first (still-rejected) single-instant child can no longer be split - propagates immediately and
+        the second single-instant child is never actually requested.
+        """
+        _mock_authentication(http_mocker)
+        http_mocker.get(_transactions_request(*_ONE_SECOND_WINDOW), _RESULT_SET_TOO_LARGE_RESPONSE)
+        http_mocker.get(_transactions_request(*_ONE_SECOND_WINDOW_FIRST_INSTANT), _RESULT_SET_TOO_LARGE_RESPONSE)
+
+        output = _read(_config(end_date=_ONE_SECOND_WINDOW[1]), expecting_exception=True)
+
+        assert output.errors
+        assert output.errors[0].trace.error.failure_type == FailureType.transient_error
+        assert "smallest window" in output.errors[0].trace.error.message
+
+    @HttpMocker()
+    def test_given_unrelated_400_when_read_then_fails_without_splitting(self, http_mocker: HttpMocker) -> None:
+        """
+        The SPLIT_REQUEST_WINDOW filter matches only `RESULTSET_TOO_LARGE`; any other 400 must fail
+        immediately instead of triggering a window split.
+        """
+        _mock_authentication(http_mocker)
+        request = _transactions_request(*_FIRST_WINDOW)
+        http_mocker.get(
+            request,
+            HttpResponse(
+                json.dumps({"name": "INVALID_REQUEST", "message": "Data for the given start date is not available."}),
+                status_code=400,
+            ),
+        )
+
+        output = _read(_config(end_date=_FIRST_WINDOW[1]), expecting_exception=True)
+
+        assert output.errors
+        assert output.errors[0].trace.error.failure_type == FailureType.system_error
+        http_mocker.assert_number_of_calls(request, 1)
