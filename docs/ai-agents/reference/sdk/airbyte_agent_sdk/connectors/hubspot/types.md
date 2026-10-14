@@ -1013,91 +1013,6 @@ Classes
     `updated_at: Any`
     :   Timestamp when the company record was last modified
 
-<a id="CompaniesApiSearchParams"></a>
-
-`CompaniesApiSearchParams(*args, **kwargs)`
-:   Parameters for companies.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `after: str`
-    :   The type of the None singleton.
-
-    `filter_groups: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesApiSearchParamsFiltergroupsItem]`
-    :   The type of the None singleton.
-
-    `limit: int`
-    :   The type of the None singleton.
-
-    `properties: list[str]`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
-    `sorts: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesApiSearchParamsSortsItem]`
-    :   The type of the None singleton.
-
-<a id="CompaniesApiSearchParamsFiltergroupsItem"></a>
-
-`CompaniesApiSearchParamsFiltergroupsItem(*args, **kwargs)`
-:   Nested schema for CompaniesApiSearchParams.filterGroups_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `filters: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesApiSearchParamsFiltergroupsItemFiltersItem]`
-    :   The type of the None singleton.
-
-<a id="CompaniesApiSearchParamsFiltergroupsItemFiltersItem"></a>
-
-`CompaniesApiSearchParamsFiltergroupsItemFiltersItem(*args, **kwargs)`
-:   Nested schema for CompaniesApiSearchParamsFiltergroupsItem.filters_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `operator: str`
-    :   The type of the None singleton.
-
-    `property_name: str`
-    :   The type of the None singleton.
-
-    `value: str`
-    :   The type of the None singleton.
-
-    ### Methods
-
-    `values(self, /) ‑> list[str]`
-    :   Return an object providing a view on the dict's values.
-
-<a id="CompaniesApiSearchParamsSortsItem"></a>
-
-`CompaniesApiSearchParamsSortsItem(*args, **kwargs)`
-:   Nested schema for CompaniesApiSearchParams.sorts_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `direction: str`
-    :   The type of the None singleton.
-
-    `property_name: str`
-    :   The type of the None singleton.
-
 <a id="CompaniesArrayContainsCondition"></a>
 
 `CompaniesArrayContainsCondition(*args, **kwargs)`
@@ -1537,6 +1452,91 @@ Classes
     `updated_at: str | None`
     :   Timestamp when the company record was last modified
 
+<a id="CompaniesSearchParams"></a>
+
+`CompaniesSearchParams(*args, **kwargs)`
+:   Parameters for companies.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `after: str`
+    :   The type of the None singleton.
+
+    `filter_groups: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesSearchParamsFiltergroupsItem]`
+    :   The type of the None singleton.
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `properties: list[str]`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
+
+    `sorts: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesSearchParamsSortsItem]`
+    :   The type of the None singleton.
+
+<a id="CompaniesSearchParamsFiltergroupsItem"></a>
+
+`CompaniesSearchParamsFiltergroupsItem(*args, **kwargs)`
+:   Nested schema for CompaniesSearchParams.filterGroups_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filters: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesSearchParamsFiltergroupsItemFiltersItem]`
+    :   The type of the None singleton.
+
+<a id="CompaniesSearchParamsFiltergroupsItemFiltersItem"></a>
+
+`CompaniesSearchParamsFiltergroupsItemFiltersItem(*args, **kwargs)`
+:   Nested schema for CompaniesSearchParamsFiltergroupsItem.filters_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `operator: str`
+    :   The type of the None singleton.
+
+    `property_name: str`
+    :   The type of the None singleton.
+
+    `value: str`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `values(self, /) ‑> list[str]`
+    :   Return an object providing a view on the dict's values.
+
+<a id="CompaniesSearchParamsSortsItem"></a>
+
+`CompaniesSearchParamsSortsItem(*args, **kwargs)`
+:   Nested schema for CompaniesSearchParams.sorts_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `direction: str`
+    :   The type of the None singleton.
+
+    `property_name: str`
+    :   The type of the None singleton.
+
 <a id="CompaniesSearchQuery"></a>
 
 `CompaniesSearchQuery(*args, **kwargs)`
@@ -1828,91 +1828,6 @@ Classes
 
     `updated_at: Any`
     :   Timestamp indicating when the contact record was last modified
-
-<a id="ContactsApiSearchParams"></a>
-
-`ContactsApiSearchParams(*args, **kwargs)`
-:   Parameters for contacts.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `after: str`
-    :   The type of the None singleton.
-
-    `filter_groups: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsApiSearchParamsFiltergroupsItem]`
-    :   The type of the None singleton.
-
-    `limit: int`
-    :   The type of the None singleton.
-
-    `properties: list[str]`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
-    `sorts: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsApiSearchParamsSortsItem]`
-    :   The type of the None singleton.
-
-<a id="ContactsApiSearchParamsFiltergroupsItem"></a>
-
-`ContactsApiSearchParamsFiltergroupsItem(*args, **kwargs)`
-:   Nested schema for ContactsApiSearchParams.filterGroups_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `filters: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsApiSearchParamsFiltergroupsItemFiltersItem]`
-    :   The type of the None singleton.
-
-<a id="ContactsApiSearchParamsFiltergroupsItemFiltersItem"></a>
-
-`ContactsApiSearchParamsFiltergroupsItemFiltersItem(*args, **kwargs)`
-:   Nested schema for ContactsApiSearchParamsFiltergroupsItem.filters_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `operator: str`
-    :   The type of the None singleton.
-
-    `property_name: str`
-    :   The type of the None singleton.
-
-    `value: str`
-    :   The type of the None singleton.
-
-    ### Methods
-
-    `values(self, /) ‑> list[str]`
-    :   Return an object providing a view on the dict's values.
-
-<a id="ContactsApiSearchParamsSortsItem"></a>
-
-`ContactsApiSearchParamsSortsItem(*args, **kwargs)`
-:   Nested schema for ContactsApiSearchParams.sorts_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `direction: str`
-    :   The type of the None singleton.
-
-    `property_name: str`
-    :   The type of the None singleton.
 
 <a id="ContactsArrayContainsCondition"></a>
 
@@ -2350,6 +2265,91 @@ Classes
     `updated_at: str | None`
     :   Timestamp indicating when the contact record was last modified
 
+<a id="ContactsSearchParams"></a>
+
+`ContactsSearchParams(*args, **kwargs)`
+:   Parameters for contacts.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `after: str`
+    :   The type of the None singleton.
+
+    `filter_groups: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsSearchParamsFiltergroupsItem]`
+    :   The type of the None singleton.
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `properties: list[str]`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
+
+    `sorts: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsSearchParamsSortsItem]`
+    :   The type of the None singleton.
+
+<a id="ContactsSearchParamsFiltergroupsItem"></a>
+
+`ContactsSearchParamsFiltergroupsItem(*args, **kwargs)`
+:   Nested schema for ContactsSearchParams.filterGroups_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filters: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsSearchParamsFiltergroupsItemFiltersItem]`
+    :   The type of the None singleton.
+
+<a id="ContactsSearchParamsFiltergroupsItemFiltersItem"></a>
+
+`ContactsSearchParamsFiltergroupsItemFiltersItem(*args, **kwargs)`
+:   Nested schema for ContactsSearchParamsFiltergroupsItem.filters_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `operator: str`
+    :   The type of the None singleton.
+
+    `property_name: str`
+    :   The type of the None singleton.
+
+    `value: str`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `values(self, /) ‑> list[str]`
+    :   Return an object providing a view on the dict's values.
+
+<a id="ContactsSearchParamsSortsItem"></a>
+
+`ContactsSearchParamsSortsItem(*args, **kwargs)`
+:   Nested schema for ContactsSearchParams.sorts_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `direction: str`
+    :   The type of the None singleton.
+
+    `property_name: str`
+    :   The type of the None singleton.
+
 <a id="ContactsSearchQuery"></a>
 
 `ContactsSearchQuery(*args, **kwargs)`
@@ -2647,91 +2647,6 @@ Classes
 
     `updated_at: Any`
     :   Timestamp when the deal record was last modified
-
-<a id="DealsApiSearchParams"></a>
-
-`DealsApiSearchParams(*args, **kwargs)`
-:   Parameters for deals.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `after: str`
-    :   The type of the None singleton.
-
-    `filter_groups: list[airbyte_agent_sdk.connectors.hubspot.types.DealsApiSearchParamsFiltergroupsItem]`
-    :   The type of the None singleton.
-
-    `limit: int`
-    :   The type of the None singleton.
-
-    `properties: list[str]`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
-    `sorts: list[airbyte_agent_sdk.connectors.hubspot.types.DealsApiSearchParamsSortsItem]`
-    :   The type of the None singleton.
-
-<a id="DealsApiSearchParamsFiltergroupsItem"></a>
-
-`DealsApiSearchParamsFiltergroupsItem(*args, **kwargs)`
-:   Nested schema for DealsApiSearchParams.filterGroups_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `filters: list[airbyte_agent_sdk.connectors.hubspot.types.DealsApiSearchParamsFiltergroupsItemFiltersItem]`
-    :   The type of the None singleton.
-
-<a id="DealsApiSearchParamsFiltergroupsItemFiltersItem"></a>
-
-`DealsApiSearchParamsFiltergroupsItemFiltersItem(*args, **kwargs)`
-:   Nested schema for DealsApiSearchParamsFiltergroupsItem.filters_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `operator: str`
-    :   The type of the None singleton.
-
-    `property_name: str`
-    :   The type of the None singleton.
-
-    `value: str`
-    :   The type of the None singleton.
-
-    ### Methods
-
-    `values(self, /) ‑> list[str]`
-    :   Return an object providing a view on the dict's values.
-
-<a id="DealsApiSearchParamsSortsItem"></a>
-
-`DealsApiSearchParamsSortsItem(*args, **kwargs)`
-:   Nested schema for DealsApiSearchParams.sorts_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `direction: str`
-    :   The type of the None singleton.
-
-    `property_name: str`
-    :   The type of the None singleton.
 
 <a id="DealsArrayContainsCondition"></a>
 
@@ -3183,6 +3098,91 @@ Classes
 
     `updated_at: str | None`
     :   Timestamp when the deal record was last modified
+
+<a id="DealsSearchParams"></a>
+
+`DealsSearchParams(*args, **kwargs)`
+:   Parameters for deals.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `after: str`
+    :   The type of the None singleton.
+
+    `filter_groups: list[airbyte_agent_sdk.connectors.hubspot.types.DealsSearchParamsFiltergroupsItem]`
+    :   The type of the None singleton.
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `properties: list[str]`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
+
+    `sorts: list[airbyte_agent_sdk.connectors.hubspot.types.DealsSearchParamsSortsItem]`
+    :   The type of the None singleton.
+
+<a id="DealsSearchParamsFiltergroupsItem"></a>
+
+`DealsSearchParamsFiltergroupsItem(*args, **kwargs)`
+:   Nested schema for DealsSearchParams.filterGroups_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filters: list[airbyte_agent_sdk.connectors.hubspot.types.DealsSearchParamsFiltergroupsItemFiltersItem]`
+    :   The type of the None singleton.
+
+<a id="DealsSearchParamsFiltergroupsItemFiltersItem"></a>
+
+`DealsSearchParamsFiltergroupsItemFiltersItem(*args, **kwargs)`
+:   Nested schema for DealsSearchParamsFiltergroupsItem.filters_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `operator: str`
+    :   The type of the None singleton.
+
+    `property_name: str`
+    :   The type of the None singleton.
+
+    `value: str`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `values(self, /) ‑> list[str]`
+    :   Return an object providing a view on the dict's values.
+
+<a id="DealsSearchParamsSortsItem"></a>
+
+`DealsSearchParamsSortsItem(*args, **kwargs)`
+:   Nested schema for DealsSearchParams.sorts_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `direction: str`
+    :   The type of the None singleton.
+
+    `property_name: str`
+    :   The type of the None singleton.
 
 <a id="DealsSearchQuery"></a>
 
@@ -6698,91 +6698,6 @@ Classes
     `updated_at: Any`
     :   Timestamp when the ticket record was last modified
 
-<a id="TicketsApiSearchParams"></a>
-
-`TicketsApiSearchParams(*args, **kwargs)`
-:   Parameters for tickets.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `after: str`
-    :   The type of the None singleton.
-
-    `filter_groups: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsApiSearchParamsFiltergroupsItem]`
-    :   The type of the None singleton.
-
-    `limit: int`
-    :   The type of the None singleton.
-
-    `properties: list[str]`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
-    `sorts: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsApiSearchParamsSortsItem]`
-    :   The type of the None singleton.
-
-<a id="TicketsApiSearchParamsFiltergroupsItem"></a>
-
-`TicketsApiSearchParamsFiltergroupsItem(*args, **kwargs)`
-:   Nested schema for TicketsApiSearchParams.filterGroups_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `filters: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsApiSearchParamsFiltergroupsItemFiltersItem]`
-    :   The type of the None singleton.
-
-<a id="TicketsApiSearchParamsFiltergroupsItemFiltersItem"></a>
-
-`TicketsApiSearchParamsFiltergroupsItemFiltersItem(*args, **kwargs)`
-:   Nested schema for TicketsApiSearchParamsFiltergroupsItem.filters_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `operator: str`
-    :   The type of the None singleton.
-
-    `property_name: str`
-    :   The type of the None singleton.
-
-    `value: str`
-    :   The type of the None singleton.
-
-    ### Methods
-
-    `values(self, /) ‑> list[str]`
-    :   Return an object providing a view on the dict's values.
-
-<a id="TicketsApiSearchParamsSortsItem"></a>
-
-`TicketsApiSearchParamsSortsItem(*args, **kwargs)`
-:   Nested schema for TicketsApiSearchParams.sorts_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `direction: str`
-    :   The type of the None singleton.
-
-    `property_name: str`
-    :   The type of the None singleton.
-
 <a id="TicketsArrayContainsCondition"></a>
 
 `TicketsArrayContainsCondition(*args, **kwargs)`
@@ -7224,6 +7139,91 @@ Classes
 
     `updated_at: str | None`
     :   Timestamp when the ticket record was last modified
+
+<a id="TicketsSearchParams"></a>
+
+`TicketsSearchParams(*args, **kwargs)`
+:   Parameters for tickets.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `after: str`
+    :   The type of the None singleton.
+
+    `filter_groups: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsSearchParamsFiltergroupsItem]`
+    :   The type of the None singleton.
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `properties: list[str]`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
+
+    `sorts: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsSearchParamsSortsItem]`
+    :   The type of the None singleton.
+
+<a id="TicketsSearchParamsFiltergroupsItem"></a>
+
+`TicketsSearchParamsFiltergroupsItem(*args, **kwargs)`
+:   Nested schema for TicketsSearchParams.filterGroups_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filters: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsSearchParamsFiltergroupsItemFiltersItem]`
+    :   The type of the None singleton.
+
+<a id="TicketsSearchParamsFiltergroupsItemFiltersItem"></a>
+
+`TicketsSearchParamsFiltergroupsItemFiltersItem(*args, **kwargs)`
+:   Nested schema for TicketsSearchParamsFiltergroupsItem.filters_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `operator: str`
+    :   The type of the None singleton.
+
+    `property_name: str`
+    :   The type of the None singleton.
+
+    `value: str`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `values(self, /) ‑> list[str]`
+    :   Return an object providing a view on the dict's values.
+
+<a id="TicketsSearchParamsSortsItem"></a>
+
+`TicketsSearchParamsSortsItem(*args, **kwargs)`
+:   Nested schema for TicketsSearchParams.sorts_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `direction: str`
+    :   The type of the None singleton.
+
+    `property_name: str`
+    :   The type of the None singleton.
 
 <a id="TicketsSearchQuery"></a>
 

@@ -4,6 +4,7 @@
 
 import logging
 from pathlib import Path
+from unittest.mock import patch
 from urllib.parse import parse_qs, urlparse
 
 import pytest
@@ -181,6 +182,63 @@ def test_facebook_transient_bad_request_is_retried(error):
         assert page_request.call_count == 2
         assert len(output.records) == 1
         assert not output.errors
+
+
+def test_facebook_reduce_data_error_is_retried():
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        feed_request = m.get(
+            FEED_URL,
+            [
+                {
+                    "json": {
+                        "error": {
+                            "code": 1,
+                            "message": "Please reduce the amount of data you're asking for, then retry your request",
+                        }
+                    },
+                    "status_code": 500,
+                },
+                {
+                    "json": {
+                        "data": [{"id": "1_123", "message": "Hello", "created_time": "2024-01-01T00:00:00+0000"}],
+                        "paging": {},
+                    },
+                    "status_code": 200,
+                },
+            ],
+        )
+
+        output = read_from_stream(CONFIG, "post", SyncMode.full_refresh)
+
+        assert feed_request.call_count == 2
+        assert len(output.records) == 1
+        assert not output.errors
+
+
+def test_facebook_reduce_data_error_exhausts_retries_as_transient_error():
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        feed_request = m.get(
+            FEED_URL,
+            json={
+                "error": {
+                    "code": 1,
+                    "message": "Please reduce the amount of data you're asking for, then retry your request",
+                }
+            },
+            status_code=500,
+        )
+
+        with patch("time.sleep"):
+            output = read_from_stream(CONFIG, "post", SyncMode.full_refresh, expecting_exception=True)
+
+        assert feed_request.call_count == 6
+        assert not output.records
+        assert output.errors[0].trace.error.failure_type == FailureType.transient_error
+        formatted_error_message = output.get_formatted_error_message()
+        assert "Please reduce the amount of data" in formatted_error_message
+        assert "Page Size" in formatted_error_message
 
 
 def test_facebook_app_approval_error_is_config_error():

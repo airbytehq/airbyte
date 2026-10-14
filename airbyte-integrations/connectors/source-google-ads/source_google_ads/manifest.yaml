@@ -46,20 +46,48 @@ definitions:
     error_handler:
       $ref: "#/definitions/base_error_handler"
 
+  retry_on_server_error_filter:
+    type: HttpResponseFilter
+    action: RETRY
+    http_codes:
+      - 500
+    error_message: >-
+      Unable to fetch data from Google Ads API due to temporal error on the Google Ads server. Please retry again later.
+
+  ignore_forbidden_filter:
+    type: HttpResponseFilter
+    action: IGNORE
+    http_codes:
+      - 403
+  #        error_message_contains: "The customer account can\\'t be accessed because it is not yet enabled or has been deactivated."
+
   base_error_handler:
     type: DefaultErrorHandler
     response_filters:
+      - $ref: "#/definitions/retry_on_server_error_filter"
+      - $ref: "#/definitions/ignore_forbidden_filter"
+
+  # Custom GAQL queries are authored by the user, so a 400 from searchStream means the query is invalid.
+  # Matches on status code only: a predicate or error_message_contains would parse every response body,
+  # including large streamed 200 responses (see #78514). The body is only parsed by error_message after a 400 matched.
+  custom_query_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
       - type: HttpResponseFilter
-        action: RETRY
+        action: FAIL
+        failure_type: config_error
         http_codes:
-          - 500
+          - 400
         error_message: >-
-          Unable to fetch data from Google Ads API due to temporal error on the Google Ads server. Please retry again later.
-      - type: HttpResponseFilter
-        action: IGNORE
-        http_codes:
-          - 403
-  #        error_message_contains: "The customer account can\\'t be accessed because it is not yet enabled or has been deactivated."
+          {%- set body = (response[0] if response is sequence and response is not string and response is not mapping and response | length > 0 else response) -%}
+          {%- set body = body if body is mapping else {} -%}
+          {%- set error = body.get('error') if body.get('error') is mapping else {} -%}
+          {%- set details = error.get('details') if error.get('details') is sequence and error.get('details') is not string else [] -%}
+          {%- set ns = namespace(msg=None) -%}
+          {%- for d in details if ns.msg is none and d is mapping -%}{%- for e in (d.get('errors') or []) if ns.msg is none and e is mapping and e.get('message') -%}{%- set ns.msg = e.get('message') -%}{%- endfor -%}{%- endfor -%}
+          Google Ads rejected the custom query for stream '{{ parameters.get('stream_name') }}': {{ ns.msg or error.get('message') or 'Bad request.' }} Correct or remove the invalid field or clause in the custom query configuration.
+      - $ref: "#/definitions/retry_on_server_error_filter"
+      - $ref: "#/definitions/ignore_forbidden_filter"
 
   base_selector:
     type: RecordSelector
@@ -407,7 +435,7 @@ definitions:
         url_base: "https://googleads.googleapis.com/v23/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         error_handler:
-          $ref: "#/definitions/base_error_handler"
+          $ref: "#/definitions/custom_query_error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1037,6 +1065,14 @@ definitions:
         - type: ComponentMappingDefinition
           field_path:
             - name
+          value: "{{ components_values['table_name'] }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - requester
+            - $parameters
+            - stream_name
           value: "{{ components_values['table_name'] }}"
           create_or_update: true
         - type: ComponentMappingDefinition

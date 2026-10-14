@@ -3,8 +3,6 @@
 import json
 from unittest import TestCase
 
-from source_github import SourceGithub
-
 from airbyte_cdk.models import AirbyteStateBlob, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -12,6 +10,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
 
+from ..utils import make_source
 from .config import ConfigBuilder
 
 
@@ -88,7 +87,7 @@ class AssigneesTest(TestCase):
         """Every configured repository is read and stamped with its `repository`."""
         self._mock_assignees()
 
-        source = SourceGithub(config=_CONFIG, catalog=_create_catalog())
+        source = make_source(config=_CONFIG, catalog=_create_catalog())
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 6
@@ -121,7 +120,7 @@ class AssigneesTest(TestCase):
             .build()
         )
 
-        source = SourceGithub(config=_CONFIG, catalog=_create_catalog(), state=incoming_state)
+        source = make_source(config=_CONFIG, catalog=_create_catalog(), state=incoming_state)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(), state=incoming_state)
 
         assert len(actual_messages.records) == 6

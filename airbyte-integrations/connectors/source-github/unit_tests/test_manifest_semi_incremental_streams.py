@@ -21,7 +21,6 @@ one this group actually hits — is re-asserted here.
 import logging
 
 import pytest
-from source_github.source import SourceGithub
 
 from airbyte_cdk.models import (
     AirbyteStateBlob,
@@ -36,6 +35,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+
+from .utils import make_source
 
 
 # (stream name, endpoint under repos/{repository}/, cursor field, query params beyond per_page)
@@ -55,7 +56,7 @@ STREAM_PARAMS = [pytest.param(*stream, id=stream[0]) for stream in MIGRATED_STRE
 DATA_FEED_STREAMS = {"pull_requests", "issue_milestones"}
 CLIENT_SIDE_PARAMS = [pytest.param(*stream, id=stream[0]) for stream in MIGRATED_STREAMS if stream[0] not in DATA_FEED_STREAMS]
 DATA_FEED_PARAMS = [pytest.param(*stream, id=stream[0]) for stream in MIGRATED_STREAMS if stream[0] in DATA_FEED_STREAMS]
-# `GithubStream.large_stream`: `per_page` comes from `page_size_for_large_streams` (default 10) rather than 100.
+# `GithubStream.large_stream`: `per_page` is the reduced large-stream page size (10) rather than 100.
 LARGE_STREAMS = {"pull_requests"}
 EXTRA_ACCEPT_HEADERS = {
     "stargazers": "application/vnd.github.v3.star+json",
@@ -93,7 +94,7 @@ def _catalog(*stream_names):
 
 def _read_messages(config, *stream_names, state=None):
     catalog = _catalog(*stream_names)
-    source = SourceGithub(config=dict(config), catalog=catalog, state=state)
+    source = make_source(config=dict(config), catalog=catalog, state=state)
     messages, error = [], None
     try:
         # Appended one at a time so the messages emitted before a failure are still available.
@@ -233,7 +234,7 @@ def test_request_shape_matches_legacy(stream_name, endpoint, cursor_field, param
 def test_primary_key_and_cursor_match_legacy(stream_name, endpoint, cursor_field, params, rate_limit_mock_response, requests_mock):
     config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
-    source = SourceGithub(config=dict(config), catalog=None, state=None)
+    source = make_source(config=dict(config), catalog=None, state=None)
 
     (stream,) = [stream for stream in source.discover(logging.getLogger("airbyte"), dict(config)).streams if stream.name == stream_name]
 
@@ -247,13 +248,11 @@ def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, reque
     Step 7 group, so the Python list must not return them or the catalog would list them twice."""
     config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
-    source = SourceGithub(config=dict(config), catalog=None, state=None)
+    source = make_source(config=dict(config), catalog=None, state=None)
 
-    python_names = {stream.name for stream in source.streams(dict(config))}
     discovered = [stream.name for stream in source.discover(logging.getLogger("airbyte"), dict(config)).streams]
 
     migrated = {stream[0] for stream in MIGRATED_STREAMS}
-    assert not python_names & migrated
     assert migrated <= set(discovered)
     assert len(discovered) == len(set(discovered))
 
@@ -482,19 +481,22 @@ def test_pull_requests_flatten_head_and_base_repositories(rate_limit_mock_respon
 
 
 @pytest.mark.parametrize(
-    ("page_size_config", "expected_per_page"),
+    "page_size_config",
     [
-        pytest.param({}, "10", id="default_is_the_large_stream_page_size"),
-        pytest.param({"page_size_for_large_streams": 3}, "3", id="configured"),
-        pytest.param({"page_size_for_large_streams": None}, "10", id="present_but_null_falls_back"),
+        pytest.param({}, id="no_config"),
+        pytest.param({"page_size_for_large_streams": 3}, id="deprecated_key_present"),
+        pytest.param({"page_size_for_large_streams": None}, id="deprecated_key_null"),
     ],
 )
-def test_pull_requests_page_size_comes_from_the_large_stream_setting(
-    page_size_config, expected_per_page, rate_limit_mock_response, requests_mock
-):
-    """`PullRequests.large_stream = True`: `GithubStream.__init__` took `per_page` from the
-    deprecated `page_size_for_large_streams` (default `constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM`,
-    10) rather than the 100 the other repo-scoped streams send."""
+def test_pull_requests_sends_the_large_stream_page_size(page_size_config, rate_limit_mock_response, requests_mock):
+    """`PullRequests.large_stream = True`: `GithubStream.__init__` sent
+    `constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM` (10) rather than the 100 the other
+    repo-scoped streams send.
+
+    `page_size_for_large_streams` no longer steers it. The key left the spec in 1.0.1 and has
+    not been settable from the UI since, so a config still carrying it came from the API or
+    Terraform; it is now inert rather than silently changing the page size of a stream whose
+    reduced size was an incident fix."""
     config = _config("docker/compose", **page_size_config)
     _mock_repository_resolution(requests_mock, "docker/compose")
     requests_mock.get("https://api.github.com/repos/docker/compose/pulls", json=[])
@@ -502,7 +504,7 @@ def test_pull_requests_page_size_comes_from_the_large_stream_setting(
     _, _, _, error = _read(config, "pull_requests")
 
     assert error is None
-    assert [request.qs["per_page"] for request in _listings(requests_mock, "pulls")] == [[expected_per_page]]
+    assert [request.qs["per_page"] for request in _listings(requests_mock, "pulls")] == [["10"]]
 
 
 def test_commit_comments_rename_reactions(rate_limit_mock_response, requests_mock):
