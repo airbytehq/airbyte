@@ -24,6 +24,6 @@ You can use workspaces for the following purposes.
 
 - Set up notifications.
 
-If you use Core, you only have one workspace. If you use Cloud Standard, each organization is limited to one workspace. You can upgrade to Pro or Enterprise Flex to access multiple workspaces per organization.
+If you use Core, you only have one workspace. If you use Cloud Standard, each organization is limited to one workspace. Plus includes two workspaces, and Pro and Enterprise Flex include more. See [Airbyte's pricing page](https://airbyte.com/pricing) to compare plans.
 
 <DocCardList />

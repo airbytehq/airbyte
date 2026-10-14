@@ -117,6 +117,12 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channels"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uploadsPlaylistId
+              value: "{{ record.get('contentDetails', {}).get('relatedPlaylists', {}).get('uploads') }}"
     comments:
       type: DeclarativeStream
       name: comments
@@ -180,10 +186,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: search
+          path: playlistItems
           http_method: GET
           request_parameters:
-            type: video
+            part: snippet
         record_selector:
           type: RecordSelector
           extractor:
@@ -191,7 +197,8 @@ definitions:
             field_path:
               - items
               - "*"
-              - id
+              - snippet
+              - resourceId
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -208,13 +215,17 @@ definitions:
             cursor_value: "{{ response.nextPageToken }}"
             stop_condition: "{{ not response.get('nextPageToken') }}"
         partition_router:
-          type: ListPartitionRouter
-          values: "{{ config.channel_ids }}"
-          cursor_field: channel_id
-          request_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: channelId
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: uploadsPlaylistId
+              request_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: playlistId
+              partition_field: playlistId
+              stream:
+                $ref: "#/definitions/streams/channels"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -302,13 +313,14 @@ definitions:
               action: IGNORE
               predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') in ['commentsDisabled', 'videoNotFound'] }}"
             - type: HttpResponseFilter
-              action: FAIL
+              action: REFRESH_TOKEN_THEN_RETRY
               failure_type: config_error
               http_codes:
                 - 401
               error_message: >-
-                Authentication failed. Re-authenticate with Google OAuth from
-                the source settings, or provide a valid API key.
+                Authentication failed. The request is retried; if this
+                persists, re-authenticate with Google OAuth from the source
+                settings, or provide a valid API key.
             - type: HttpResponseFilter
               action: FAIL
               failure_type: config_error
@@ -507,25 +519,28 @@ concurrency_level:
 
 # The YouTube Data API v3 has a default quota of 10,000 units per day.
 # search.list costs 100 units per call; the other list endpoints cost 1 unit.
-# Hourly windows keep the worst-case wait for a free slot (one hour) under the
-# 5400-second heartbeat while capping a full day at roughly 9,400 units.
+# Per-minute windows keep the worst-case wait for a free slot (about one
+# minute) far below the OAuth access-token lifetime (3600s) and the 5400s
+# heartbeat, and act as a burst guard. The daily 10,000-unit quota is
+# enforced by Google (403 quotaExceeded, handled by the RETRY filter),
+# not by this budget.
 api_budget:
   type: HTTPAPIBudget
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
         - limit: 3
-          interval: PT1H
+          interval: PT1M
       matchers:
         - type: HttpRequestRegexMatcher
           url_path_pattern: /search
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 90
-          interval: PT1H
+        - limit: 100
+          interval: PT1M
       matchers:
         - type: HttpRequestRegexMatcher
-          url_path_pattern: /(channels|videos|commentThreads)
+          url_path_pattern: /(channels|playlistItems|videos|commentThreads)
 
 metadata:
   autoImportSchema:

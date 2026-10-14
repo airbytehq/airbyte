@@ -28,6 +28,7 @@ import java.net.URL
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.nio.file.FileSystems
+import java.nio.file.Path
 import java.time.Duration
 import java.util.UUID
 
@@ -41,6 +42,7 @@ data class MySqlSourceConfiguration(
     override val sshConnectionOptions: SshConnectionOptions,
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
+    val debeziumSslProperties: Map<String, String>,
     override val namespaces: Set<String>,
     override val tableFilters: List<TableFilter>,
     val incrementalConfiguration: IncrementalConfiguration,
@@ -138,9 +140,9 @@ constructor(
                 "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel."
             )
         }
-        val sslJdbcProperties: Map<String, String> = fromEncryptionSpec(pojo.getEncryptionValue()!!)
-        jdbcProperties.putAll(sslJdbcProperties)
-        log.info { "SSL mode: ${sslJdbcProperties["sslMode"]}" }
+        val sslProperties: SslProperties = fromEncryptionSpec(pojo.getEncryptionValue()!!)
+        jdbcProperties.putAll(sslProperties.jdbc)
+        log.info { "SSL mode: ${sslProperties.jdbc["sslMode"]}" }
 
         // Configure cursor.
         val incremental: IncrementalConfiguration = fromIncrementalSpec(pojo.getIncrementalValue())
@@ -213,6 +215,7 @@ constructor(
             sshConnectionOptions = sshOpts,
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
+            debeziumSslProperties = sslProperties.debezium,
             namespaces = setOf(pojo.database),
             tableFilters = jdbcTableFilters,
             incrementalConfiguration = incremental,
@@ -245,8 +248,9 @@ constructor(
             }
         }
 
-    private fun fromEncryptionSpec(encryptionSpec: EncryptionSpecification): Map<String, String> {
+    private fun fromEncryptionSpec(encryptionSpec: EncryptionSpecification): SslProperties {
         val extraJdbcProperties: MutableMap<String, String> = mutableMapOf()
+        val debeziumProperties: MutableMap<String, String> = mutableMapOf()
         val sslData: SslData =
             when (encryptionSpec) {
                 is EncryptionPreferred -> SslData("preferred")
@@ -269,9 +273,10 @@ constructor(
                     )
             }
         extraJdbcProperties[SSL_MODE] = sslData.mode
+        debeziumProperties[DEBEZIUM_SSL_MODE] = sslData.mode
         if (sslData.caCertificate.isNullOrBlank()) {
             // if CA cert is not available - done
-            return extraJdbcProperties
+            return SslProperties(extraJdbcProperties, debeziumProperties)
         }
         val password: String =
             sslData.keyStorePassword.takeUnless { it.isNullOrBlank() }
@@ -289,10 +294,12 @@ constructor(
         extraJdbcProperties[TRUST_KEY_STORE_URL] = caCertKeyStoreUrl.toString()
         extraJdbcProperties[TRUST_KEY_STORE_PASS] = password
         extraJdbcProperties[TRUST_KEY_STORE_TYPE] = KEY_STORE_TYPE_PKCS12
+        debeziumProperties[DEBEZIUM_SSL_TRUSTSTORE] = Path.of(caCertKeyStoreUrl.toURI()).toString()
+        debeziumProperties[DEBEZIUM_SSL_TRUSTSTORE_PASS] = password
 
         if (sslData.clientCertificate.isNullOrBlank() || sslData.clientKey.isNullOrBlank()) {
             // if Client cert is not available - done
-            return extraJdbcProperties
+            return SslProperties(extraJdbcProperties, debeziumProperties)
         }
         // Make keystore for Client cert with given password or generate a new password.
         val clientCertKeyStoreUrl: URL =
@@ -307,8 +314,16 @@ constructor(
         extraJdbcProperties[CLIENT_KEY_STORE_URL] = clientCertKeyStoreUrl.toString()
         extraJdbcProperties[CLIENT_KEY_STORE_PASS] = password
         extraJdbcProperties[CLIENT_KEY_STORE_TYPE] = KEY_STORE_TYPE_PKCS12
-        return extraJdbcProperties
+        debeziumProperties[DEBEZIUM_SSL_KEYSTORE] =
+            Path.of(clientCertKeyStoreUrl.toURI()).toString()
+        debeziumProperties[DEBEZIUM_SSL_KEYSTORE_PASS] = password
+        return SslProperties(extraJdbcProperties, debeziumProperties)
     }
+
+    private data class SslProperties(
+        val jdbc: Map<String, String>,
+        val debezium: Map<String, String>,
+    )
 
     private data class SslData(
         val mode: String,
@@ -344,5 +359,12 @@ constructor(
         const val TRUST_KEY_STORE_TYPE: String = "trustCertificateKeyStoreType"
         const val KEY_STORE_TYPE_PKCS12: String = "PKCS12"
         const val SSL_MODE: String = "sslMode"
+
+        // Debezium MySQL connector properties read by the embedded binlog client.
+        const val DEBEZIUM_SSL_MODE: String = "database.ssl.mode"
+        const val DEBEZIUM_SSL_TRUSTSTORE: String = "database.ssl.truststore"
+        const val DEBEZIUM_SSL_TRUSTSTORE_PASS: String = "database.ssl.truststore.password"
+        const val DEBEZIUM_SSL_KEYSTORE: String = "database.ssl.keystore"
+        const val DEBEZIUM_SSL_KEYSTORE_PASS: String = "database.ssl.keystore.password"
     }
 }

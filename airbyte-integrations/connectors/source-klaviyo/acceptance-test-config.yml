@@ -12,6 +12,8 @@ acceptance_tests:
             bypass_reason: "XS tier rate limits (2 req/min) with per-metric partitioning causes extremely long syncs"
           - name: "campaign_values_reports"
             bypass_reason: "XS tier rate limits (2 req/min) with per-metric partitioning causes extremely long syncs"
+          - name: segments
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
   connection:
     tests:
       - config_path: secrets/config.json
