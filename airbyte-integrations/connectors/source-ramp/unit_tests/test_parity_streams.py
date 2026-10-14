@@ -8,6 +8,7 @@
 - `vendor_contacts` is read per vendor and carries `vendor_id`
 - `vendor_agreements` is read through Ramp's POST query endpoint, paginating in the JSON body
 - `receipts` is incremental on `created_at` via `created_after`
+- `vendors` is incremental on `updated_at` via `from_updated_at`, while `vendor_contacts` still reads every vendor
 - missing-scope and plan-gated errors fail the stream as `config_error`, naming the stream's scope
 """
 
@@ -278,6 +279,46 @@ def test_receipts_first_sync_starts_at_start_date():
 
     params = query_params(requests_to(mocker.request_history, "/developer/v1/receipts")[0])
     assert params.get("created_after") == START_DATE
+
+
+def test_vendors_incremental_on_updated_at():
+    """`vendors` sends the state cursor as `from_updated_at` and advances the state to the newest `updated_at`."""
+    state = StateBuilder().with_stream_state("vendors", {"updated_at": "2024-06-01T00:00:00Z"}).build()
+    with requests_mock.Mocker() as mocker:
+        mocker.post(TOKEN_URL, json=TOKEN_RESPONSE)
+        mocker.get(f"{BASE_URL}/vendors", json=_page([{"id": "v-1", "updated_at": "2024-07-01T00:00:00+00:00"}]))
+        output = read_stream("vendors", sync_mode=SyncMode.incremental, state=state)
+
+    assert record_ids(output) == ["v-1"]
+    params = query_params(requests_to(mocker.request_history, "/developer/v1/vendors")[0])
+    assert params.get("from_updated_at") == "2024-06-01T00:00:00Z"
+    assert params.get("include_subsidiary") == "true"
+    assert output.most_recent_state.stream_state.__dict__.get("updated_at", "").startswith("2024-07-01")
+
+
+def test_vendors_first_sync_ignores_start_date():
+    """Vendors are reference data, so the first incremental sync reads every vendor, not only those changed since Start Date."""
+    with requests_mock.Mocker() as mocker:
+        mocker.post(TOKEN_URL, json=TOKEN_RESPONSE)
+        mocker.get(f"{BASE_URL}/vendors", json=_page([]))
+        read_stream("vendors", sync_mode=SyncMode.incremental)
+
+    params = query_params(requests_to(mocker.request_history, "/developer/v1/vendors")[0])
+    assert params.get("from_updated_at") == "2000-01-01T00:00:00Z"
+
+
+def test_vendor_contacts_parent_ignores_the_vendors_cursor():
+    """`vendor_contacts` reads its parent vendors without `from_updated_at`, even when `vendors` has a saved cursor."""
+    state = StateBuilder().with_stream_state("vendors", {"updated_at": "2024-06-01T00:00:00Z"}).build()
+    with requests_mock.Mocker() as mocker:
+        mocker.post(TOKEN_URL, json=TOKEN_RESPONSE)
+        mocker.get(f"{BASE_URL}/vendors", json=_page([{"id": "v-1", "updated_at": "2020-01-01T00:00:00+00:00"}]))
+        mocker.get(f"{BASE_URL}/vendors/v-1/contacts", json=_page([{"id": "c-1"}]))
+        output = read_stream("vendor_contacts", state=state)
+
+    assert [(message.record.data["vendor_id"], message.record.data["id"]) for message in output.records] == [("v-1", "c-1")]
+    params = query_params(requests_to(mocker.request_history, "/developer/v1/vendors")[0])
+    assert "from_updated_at" not in params
 
 
 @pytest.mark.parametrize(

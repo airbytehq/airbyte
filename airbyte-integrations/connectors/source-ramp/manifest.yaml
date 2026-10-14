@@ -328,6 +328,12 @@ definitions:
                 - object
                 - "null"
               description: Total spend year-to-date for this vendor.
+            updated_at:
+              type:
+                - string
+                - "null"
+              format: date-time
+              description: The date and time when this vendor was last updated.
             vendor_owner_id:
               type:
                 - string
@@ -1871,7 +1877,29 @@ streams:
               - string
               - "null"
             description: Memo to the vendor.
+  # The cursor lives only on this stream entry. `vendor_contacts` uses the definition without it as its
+  # parent, so it still reads every vendor on each sync.
   - $ref: "#/definitions/streams/vendors"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      # Vendors are reference data, so the first sync reads all of them whatever Start Date says.
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "2000-01-01T00:00:00Z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      # Ramp documents `from_updated_at` as "after", but the sandbox includes a vendor whose `updated_at`
+      # equals the value (probed 2026-10-14), so the boundary record is re-read rather than lost.
+      start_time_option:
+        type: RequestOption
+        field_name: from_updated_at
+        inject_into: request_parameter
   - type: DeclarativeStream
     name: vendor_contacts
     $parameters:
@@ -2445,8 +2473,8 @@ spec:
         type: string
         description: >-
           Client ID of the Ramp developer app (Ramp > Company > Developer). The app needs the Client
-          Credentials grant and the scopes `transactions:read`, `cards:read` and `reimbursements:read`. Every
-          other stream needs its own read scope, such as `users:read` or `bills:read`, granted only if you sync it.
+          Credentials grant and the scopes transactions:read, cards:read and reimbursements:read. Every
+          other stream needs its own read scope, such as users:read or bills:read, granted only if you sync it.
         title: Ramp Client ID
         airbyte_secret: true
         order: 0
@@ -2465,6 +2493,7 @@ spec:
         format: date-time
         default: "2019-01-01T00:00:00Z"
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?Z$
+        pattern_descriptor: YYYY-MM-DDTHH:mm:ssZ
         examples:
           - "2024-01-01T00:00:00Z"
         order: 2

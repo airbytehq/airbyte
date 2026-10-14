@@ -111,7 +111,7 @@ docs explain how a terminated card disappears under Overwrite.
 stop being populated for some rows and the record set changes. Do it only as a planned major release,
 for example when Ramp removes the legacy route; it is tracked as a watch item, not a defect.
 
-## 6. Only three streams are incremental, and `transactions` relies on an undocumented filter
+## 6. Four streams are incremental, and `transactions` relies on an undocumented filter
 
 `transactions` and `reimbursements` are incremental on `updated_at`, sent as `updated_after`.
 `updated_after` is in Ramp's spec for `/reimbursements` but **not** for `/transactions`; the sandbox
@@ -121,12 +121,30 @@ receipts carry no `updated_at`. If Ramp matches a receipt to a transaction after
 that receipt keeps `transaction_id: null` downstream; `transactions.receipts` always has the current
 link.
 
+`vendors` is incremental on `updated_at` through `from_updated_at`. Ramp's spec calls the filter
+"after", but the sandbox includes a vendor whose `updated_at` equals the value (probed 2026-10-14), so
+the boundary record is re-read, not lost. Ramp added `updated_at` to the Vendor schema between
+2026-10-01 and 2026-10-13; before that the spec listed the filter but not the field. Three details
+matter:
+
+- The cursor is set on the `streams:` entry, not on `definitions/streams/vendors`. `vendor_contacts`
+  uses the definition as its parent, so it still reads every vendor on each sync.
+- The first sync starts at a fixed `2000-01-01T00:00:00Z`, not at `start_date`: vendors are reference
+  data, and a full refresh of `vendors` must keep returning every vendor.
+- The `total_spend_*` fields are running totals over moving windows (30 days, 365 days, year to date).
+  They change as days pass, and Ramp does not document that this moves `updated_at`, so they can go
+  stale under incremental syncs. The sandbox has no vendor spend to test it. The user docs say so and
+  point to Full Refresh.
+
 Every other stream is full refresh. `bills`, `funds` and `purchase_orders` can only be filtered by
-created date, and `vendors` accepts `from_updated_at` but its records carry no `updated_at` to use as a
-cursor.
+created date.
 
 **Why this matters:** Do not make a stream incremental on `created_at` unless its records never change
 after creation, or updates are lost. Watch Ramp's changelog for `updated_after` on `/transactions`.
+Moving the `vendors` cursor onto the shared definition would make `vendor_contacts` depend on it; a unit
+test fails if the parent request carries `from_updated_at`. Re-diff each stream's schema against the
+current OpenAPI spec before a release: a field Ramp adds passes every schema check as an undeclared
+field, and only the platform's "unexpected fields" log line shows it.
 
 ## 7. `business_balance` has no primary key
 
