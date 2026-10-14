@@ -5,10 +5,12 @@
 package io.airbyte.integrations.source.snowflake
 
 import io.airbyte.cdk.output.ConfigError
+import io.airbyte.cdk.output.ExceptionHandler
 import io.airbyte.cdk.output.JdbcExceptionClassifier
 import io.airbyte.cdk.output.RegexExceptionClassifier
 import io.airbyte.cdk.output.SystemError
 import io.airbyte.cdk.output.TransientError
+import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import java.sql.SQLException
@@ -25,6 +27,7 @@ class SnowflakeExceptionClassifierTest {
 
     @Inject lateinit var regexClassifier: RegexExceptionClassifier
     @Inject lateinit var jdbcClassifier: JdbcExceptionClassifier
+    @Inject lateinit var handler: ExceptionHandler
 
     @Test
     fun invalidJwtIsAConfigError() {
@@ -50,6 +53,23 @@ class SnowflakeExceptionClassifierTest {
         Assertions.assertTrue(message.contains("key-pair-auth-troubleshooting"), message)
         Assertions.assertFalse(message.contains("temporary"), message)
         Assertions.assertFalse(message.contains("expired"), message)
+    }
+
+    @Test
+    fun invalidJwtIsReportedAsAConfigErrorWhenWrapped() {
+        val exception =
+            RuntimeException(
+                "Failed to connect",
+                SQLException(
+                    "JWT token is invalid. [0f811342-c5de-47a0-bd01-f2228f082876]",
+                    "08001",
+                    390144
+                )
+            )
+        Assertions.assertEquals(
+            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+            handler.handle(exception).failureType
+        )
     }
 
     @Test

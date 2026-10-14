@@ -54,7 +54,7 @@ class SnowflakeSourceFullRefreshLiveTest : AbstractSnowflakeLiveTest() {
         assertEquals("3q2+7w==", r["C_BINARY"].asText())
         assertTrue(r["C_BOOLEAN"].asBoolean())
         assertEquals("2026-03-08", r["C_DATE"].asText())
-        // TIME was NULL for every row before 2.0.2 (driver rejects getObject(LocalTime)).
+        // TIME was NULL for every row before 2.0.4 (driver rejects getObject(LocalTime)).
         assertEquals("13:14:15.123457", r["C_TIME"].asText())
         assertEquals("13:14:15.123000", r["C_TIME3"].asText())
         assertEquals("2026-03-08T01:59:59.123457", r["C_TIMESTAMP_NTZ"].asText())

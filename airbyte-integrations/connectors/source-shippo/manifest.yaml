@@ -287,6 +287,7 @@ spec:
     properties:
       shippo_token:
         type: string
+        airbyte_secret: true
         description: The bearer token used for making requests
         title: Shippo Token
         order: 0

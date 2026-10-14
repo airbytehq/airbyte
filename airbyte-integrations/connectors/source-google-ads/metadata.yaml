@@ -27,6 +27,9 @@ data:
     - title: Developer token sunset and API access management guide
       url: https://developers.google.com/google-ads/api/docs/api-policy/developer-token
       type: authentication_guide
+    - title: Google Ads API Terms and Conditions and Developer Policies
+      url: https://support.google.com/adspolicy/answer/6169371?hl=en
+      type: other
     - title: Developer blog
       url: https://ads-developers.googleblog.com/
       type: api_release_history
