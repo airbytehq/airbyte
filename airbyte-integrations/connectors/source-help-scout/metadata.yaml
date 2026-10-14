@@ -43,6 +43,12 @@ data:
     - title: Help Scout rate limits
       url: https://developer.helpscout.com/mailbox-api/overview/rate-limiting/
       type: rate_limits
+    - title: Help Scout Inbox API changelog
+      url: https://developer.helpscout.com/mailbox-api/changelog/
+      type: api_release_history
+    - title: Help Scout backward compatibility and API updates policy
+      url: https://developer.helpscout.com/mailbox-api/overview/backward-compatibility/
+      type: api_deprecations
     - title: Help Scout Status
       url: https://status.helpscout.com/
       type: status_page
