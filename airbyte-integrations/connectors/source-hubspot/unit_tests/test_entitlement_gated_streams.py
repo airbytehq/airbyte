@@ -4,9 +4,10 @@
 
 """Coverage for streams bypassed in `acceptance-test-config.yml` via `empty_streams`.
 
-`goals`, `leads`, and `workflows` back onto HubSpot objects that need paid product access
-(Sales Hub Enterprise, Sales Hub Professional, and automation respectively). The CI test portal
-lost those entitlements, so the live acceptance read returns 403 and yields no records. These
+`goals`, `leads`, `listings`, and `workflows` back onto HubSpot objects that need paid product
+access or per-portal activation (Sales Hub Enterprise, Sales Hub Professional, the Listings object,
+and automation respectively). The CI test portal lacks those, so the live acceptance read returns
+403 and yields no records. These
 tests keep the behaviour that `basic_read` used to assert: records come through, they match the
 declared schema, incremental runs emit state, and an empty page is not treated as a failure.
 """
@@ -33,6 +34,15 @@ GATED_STREAMS = {
     ),
     "leads": (
         "leads",
+        {
+            "id": "test_id",
+            "createdAt": "2022-02-25T16:43:11Z",
+            "updatedAt": "2022-02-25T16:43:11Z",
+            "properties": {"hs__test_field": "value"},
+        },
+    ),
+    "listings": (
+        "listings",
         {
             "id": "test_id",
             "createdAt": "2022-02-25T16:43:11Z",

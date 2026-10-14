@@ -46,6 +46,10 @@ acceptance_tests:
             bypass_reason: >-
               Test portal lacks Sales Hub Professional, so /crm/v3/properties/leads returns 403 -
               covered by unit tests
+          - name: listings
+            bypass_reason: >-
+              Listings must be activated per portal and the test portal has not activated it -
+              covered by unit tests
           - name: workflows
             bypass_reason: >-
               Test portal lacks automation access, so /automation/v3/workflows returns 403 (missing
@@ -96,6 +100,10 @@ acceptance_tests:
           - name: leads
             bypass_reason: >-
               Test portal lacks Sales Hub Professional, so /crm/v3/properties/leads returns 403 -
+              covered by unit tests
+          - name: listings
+            bypass_reason: >-
+              Listings must be activated per portal and the test portal has not activated it -
               covered by unit tests
           - name: workflows
             bypass_reason: >-
