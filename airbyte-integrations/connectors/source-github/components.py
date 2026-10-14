@@ -7,19 +7,17 @@
 Everything here exists because the GitHub GraphQL responses cannot be reshaped into the
 connector's long-standing REST-compatible record shape with declarative transformations
 alone. Pagination, page-size reduction, error handling and incremental behavior are all
-handled by the manifest; `RepositoryNamingErrorHandler` only adds the repository to a skip
-message, which a declarative `error_message` cannot see.
+handled by the manifest.
 """
 
 import base64
 import binascii
 import logging
-import re
 import struct
-from dataclasses import InitVar, dataclass, replace
+from dataclasses import InitVar, dataclass
 from itertools import groupby
 from os import getenv
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import urlparse
 
 import requests
@@ -29,7 +27,6 @@ from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordEx
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import (
     PaginationStrategy,
 )
@@ -38,7 +35,6 @@ from airbyte_cdk.sources.declarative.transformations.config_transformations.conf
     ConfigTransformation,
 )
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -668,29 +664,3 @@ class ApiUrlValidationStrategy(ValidationStrategy):
         else:
             return
         raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
-
-
-_REPOSITORY_IN_PATH = re.compile(r"/repos/([^/?#]+/[^/?#]+)")
-
-
-@dataclass
-class RepositoryNamingErrorHandler(DefaultErrorHandler):
-    """`DefaultErrorHandler` that prefixes a skip message with the repository it skipped.
-
-    A filter's `error_message` interpolates only the config, the response body and its headers,
-    and GitHub's 404/403 bodies do not name the repository, so a skipped repository is otherwise
-    anonymous in the sync log. The repository comes from the request path
-    (`.../repos/{owner}/{repo}/...`, which also covers a GitHub Enterprise `/api/v3` prefix).
-    Which responses are skipped, retried or failed is left entirely to the response filters.
-    """
-
-    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
-        resolution = super().interpret_response(response_or_exception)
-        if resolution.response_action != ResponseAction.IGNORE or not resolution.error_message:
-            return resolution
-        if not isinstance(response_or_exception, requests.Response):
-            return resolution
-        match = _REPOSITORY_IN_PATH.search(urlparse(response_or_exception.url).path)
-        if not match:
-            return resolution
-        return replace(resolution, error_message=f"Repository `{match.group(1)}`: {resolution.error_message}")

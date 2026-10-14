@@ -292,7 +292,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.7.8 | 2026-10-13 | [88163](https://github.com/airbytehq/airbyte/pull/88163) | When GitHub refuses to list a repository's stargazers because the token is not an admin or collaborator, the `stargazers` stream now says so in the skip message, and names the skipped repository, instead of reporting a missing repository or missing token scopes |
+| 2.7.8 | 2026-10-13 | [88163](https://github.com/airbytehq/airbyte/pull/88163) | When GitHub refuses to list a repository's stargazers because the token is not an admin or collaborator, the `stargazers` stream now says so in the skip message, and names the skipped repository, instead of reporting a missing repository or missing token scopes. Upgrades to CDK 7.37.0 |
 | 2.7.7 | 2026-10-13 | [88598](https://github.com/airbytehq/airbyte/pull/88598) | Update dependencies |
 | 2.7.6 | 2026-10-12 | [87443](https://github.com/airbytehq/airbyte/pull/87443) | Stop reading the `releases` stream at the first already-synced release instead of the full release history on every sync. Records are unchanged |
 | 2.7.5 | 2026-10-06 | [87862](https://github.com/airbytehq/airbyte/pull/87862) | Update dependencies |

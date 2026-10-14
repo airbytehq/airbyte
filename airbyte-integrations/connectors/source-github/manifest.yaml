@@ -541,13 +541,15 @@ definitions:
   # Since July 2026 GitHub lists a repository's stargazers only to its admins and collaborators,
   # and answers anyone else with 404 (or 403 for some token types). The generic skip messages blame
   # a deleted repository or missing scopes, so `stargazers` gets its own filters naming the actual
-  # restriction. Same skip semantics; `stream_partition` is unreachable from `error_message`, so
-  # `stargazers_error_handler` prefixes the repository.
+  # restriction. Same skip semantics. `stream_partition` is unreachable from `error_message`, so
+  # each message takes the repository from `request_url` (`.../repos/{owner}/{repo}/stargazers`,
+  # which also covers a GitHub Enterprise `/api/v3` prefix).
   stargazers_restricted_not_found_skip_filter:
     type: HttpResponseFilter
     http_codes: [404]
     action: IGNORE
     error_message: >-
+      Repository `{{ request_url | regex_search('/repos/([^/]+/[^/]+)/') }}`:
       GitHub returned HTTP 404 for this repository's stargazers list. GitHub only lists stargazers
       to repository admins and collaborators, so this is expected when the token is neither; it can
       also mean the repository was deleted or renamed. Skipping it.
@@ -557,6 +559,7 @@ definitions:
     http_codes: [403]
     action: IGNORE
     error_message: >-
+      Repository `{{ request_url | regex_search('/repos/([^/]+/[^/]+)/') }}`:
       GitHub denied access to this repository's stargazers list (HTTP 403). GitHub only lists
       stargazers to repository admins and collaborators, so the token needs admin or collaborator
       access to the repository (and SAML SSO authorization if the organization requires it).
@@ -564,11 +567,9 @@ definitions:
 
   # `skip_inaccessible_error_handler` with the two stargazers filters above in place of the generic
   # 404/403 ones. Keep the filter order identical to it: the rate-limit filters must stay ahead of
-  # the 403 IGNORE so a secondary-limit 403 is still retried. The custom class only prefixes each
-  # skip message with the repository, which `error_message` cannot interpolate.
+  # the 403 IGNORE so a secondary-limit 403 is still retried.
   stargazers_error_handler:
-    type: CustomErrorHandler
-    class_name: source_declarative_manifest.components.RepositoryNamingErrorHandler
+    type: DefaultErrorHandler
     backoff_strategies:
       $ref: "#/definitions/rate_limit_backoff_strategies"
     response_filters:
