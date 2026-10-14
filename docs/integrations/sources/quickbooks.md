@@ -33,7 +33,7 @@ Intuit issues a new refresh token roughly every 24 hours, and only the latest on
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **QuickBooks** from the Source type dropdown and enter a name for this connector.
-4. Under **Credentials**, choose one of the authentication options:
+4. Under **Authentication**, choose one of the options:
    - **Authenticate via QuickBooks (Airbyte app)** — click **Authenticate your QuickBooks account** (production companies only).
    - **Use your own Intuit app** — enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Realm ID** from your app.
 5. **Start date** - The date starting from which you'd like to replicate data.
@@ -50,7 +50,7 @@ To sync a sandbox company, choose **Use your own Intuit app**, enter your app's 
 
 **For Airbyte Open Source:**
 
-Under **Credentials**, choose **Use your own Intuit app**.
+Under **Authentication**, choose **Use your own Intuit app**.
 
 1. **Client ID** - The OAuth2.0 application ID
 2. **Client Secret** - The OAuth2.0 application secret
