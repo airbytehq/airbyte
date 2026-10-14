@@ -2,12 +2,18 @@
 
 ## Upgrading to 5.0.0
 
-In 5.0.0, the authentication fields move under `credentials`. No config migration runs, so each existing source must be reconfigured; its current configuration will fail until then.
+In 5.0.0, the authentication settings move into a single **Authentication** section with two explicit options. Previous versions could not tell whether a source used Airbyte's QuickBooks app or your own Intuit app, so Airbyte's app credentials could override yours. Airbyte's app also has production keys only, so it cannot reach sandbox companies.
+
+No config migration runs. Every existing source must be reconfigured, and its current configuration fails until then. Sources that are not reconfigured by the upgrade deadline (2026-11-13) have their connections disabled.
+
+Edit the existing source rather than deleting and recreating it, so the connection keeps its sync state. Authorize the same QuickBooks company (Realm ID) as before.
 
 - To authorize through Airbyte's QuickBooks app, choose **Use the Airbyte OAuth App** and click **Authenticate your QuickBooks account**. This option supports production companies only.
 - To use your own Intuit app, choose **Use your own Intuit app** and re-enter its Client ID, Client Secret, Refresh Token, and Realm ID.
 
 Sandbox companies require **Use your own Intuit app** with your app's development keys and **Sandbox** turned on under that option.
+
+Streams, schemas, and primary keys are unchanged. You don't need to refresh the schema or clear data.
 
 ## Upgrading to 4.0.0
 
