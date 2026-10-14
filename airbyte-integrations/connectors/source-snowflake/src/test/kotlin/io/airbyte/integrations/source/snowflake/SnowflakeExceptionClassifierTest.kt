@@ -29,6 +29,7 @@ class SnowflakeExceptionClassifierTest {
     @Test
     fun invalidJwtIsAConfigError() {
         // What the driver throws for a key pair whose public key is not registered on the user.
+        // The driver does not retry a rejected login, so this must not be classified as transient.
         val exception =
             SQLException(
                 "JWT token is invalid. [0f811342-c5de-47a0-bd01-f2228f082876]",
@@ -38,8 +39,17 @@ class SnowflakeExceptionClassifierTest {
         val result = regexClassifier.classify(exception)
         Assertions.assertInstanceOf(ConfigError::class.java, result)
         val message = (result as ConfigError).displayMessage
+        Assertions.assertTrue(message.startsWith("Authentication Error: "), message)
+        Assertions.assertTrue(message.contains("Username and Server URL"), message)
         Assertions.assertTrue(message.contains("RSA public key"), message)
+        Assertions.assertTrue(message.contains("clock"), message)
+        Assertions.assertTrue(
+            message.contains("SYSTEM\$GET_LOGIN_FAILURE_DETAILS('<id>')"),
+            message
+        )
+        Assertions.assertTrue(message.contains("key-pair-auth-troubleshooting"), message)
         Assertions.assertFalse(message.contains("temporary"), message)
+        Assertions.assertFalse(message.contains("expired"), message)
     }
 
     @Test

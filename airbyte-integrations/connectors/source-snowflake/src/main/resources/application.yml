@@ -43,15 +43,21 @@ airbyte:
             output: Connection to database closed unexpectedly (TCP socket was closed). This is often a temporary network issue.
 
           - pattern: (?i)JWT token is invalid
-            # Snowflake rejects the key pair login: the private key does not match the RSA public key
-            # registered on the user, or the username or account is wrong. The driver has already
-            # retried the login by the time this surfaces, so it is not transient.
+            # 390144: Snowflake rejected the key pair login. The driver signs a new JWT, valid for 60
+            # seconds, for each login and uses it only to log in, so this is never an expired session
+            # (the driver renews session tokens itself). The causes are a private key that does not
+            # match the RSA public key registered on the user, a wrong username or account, or a host
+            # clock that is off. The driver does not retry a rejected login, and a retry would sign a
+            # new token with the same key, user, account and clock and be rejected again, so it is not
+            # transient. The ID in brackets is the login request ID that
+            # SYSTEM$GET_LOGIN_FAILURE_DETAILS takes to report the exact cause.
             input-example: "JWT token is invalid. [0f811342-c5de-47a0-bd01-f2228f082876]"
             error: config
             group: Authentication Error
-            output: Key pair authentication failed. Check that the username is correct and that the private key matches the RSA public key registered on that user (DESCRIBE USER shows RSA_PUBLIC_KEY_FP; ALTER USER ... SET RSA_PUBLIC_KEY registers a new one).
+            output: Key pair authentication failed. Check that the Username and Server URL are correct and that the Private Key matches the RSA public key registered on that user (DESCRIBE USER shows RSA_PUBLIC_KEY_FP; ALTER USER ... SET RSA_PUBLIC_KEY registers a new one). If they match, check that the clock on the machine running Airbyte is correct. For the exact cause, an administrator can run SELECT SYSTEM$GET_LOGIN_FAILURE_DETAILS('<id>') with the ID shown in brackets after "JWT token is invalid" in the error details.
             reference-links:
               - https://docs.snowflake.com/en/user-guide/key-pair-auth
+              - https://docs.snowflake.com/en/user-guide/key-pair-auth-troubleshooting
 
       jdbc:
         # The following rules are for the JdbcExceptionClassifier and are based on
