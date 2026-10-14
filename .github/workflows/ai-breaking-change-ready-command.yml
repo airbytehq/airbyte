@@ -227,11 +227,9 @@ jobs:
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           token: ${{ steps.get-app-token.outputs.token }}
-          comment-id: ${{ steps.post-start-comment.outputs.comment-id || inputs.comment-id }}
-          edit-mode: append
+          issue-number: ${{ inputs.pr }}
           body: |
-
-            > **Slack notification failed**, so the breaking-change reviewers were not pinged. @airbytehq/breaking-change-reviewers, this PR is ready for your review.
+            > **Slack notification failed**, so the breaking-change reviewers were not pinged in Slack. @airbytehq/breaking-change-reviewers, this PR is ready for your review.
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
       - name: Post failure comment
