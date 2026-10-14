@@ -27,9 +27,10 @@ definitions:
       OAuth Credentials: "#/definitions/oauth_auth"
       Private App Credentials: "#/definitions/api_token_auth"
 
+  # Opt-in via `prefix_colliding_custom_objects` so existing connections keep their stream names.
   # Keep this list in sync with `streams`; guarded by `test_custom_objects_never_collide_with_any_builtin_stream`.
   custom_object_stream_name: >-
-    {{ 'custom_object_' ~ components_values.name if components_values.name in [
+    {{ 'custom_object_' ~ components_values.name if config.get('prefix_colliding_custom_objects', false) and components_values.name in [
       'campaigns', 'companies', 'companies_property_history', 'contact_lists', 'contacts',
       'list_memberships', 'contacts_property_history', 'deal_pipelines', 'deal_splits', 'deals_archived',
       'deals_property_history', 'deals', 'email_events', 'email_subscriptions', 'engagements',
@@ -3308,6 +3309,16 @@ spec:
           After changing this setting, refresh the source schema and refresh
           the affected stream data. See the connector documentation for
           details.
+        type: boolean
+        default: false
+      prefix_colliding_custom_objects:
+        title: Prefix custom objects that share a name with a built-in stream
+        description: >-
+          If enabled, a custom object whose name matches a built-in stream
+          (for example, a custom object named `form_submissions`) is exposed as
+          `custom_object_<name>`. Enable this if connection setup fails with a
+          duplicate stream name error. Other custom objects keep their names.
+          After changing this setting, refresh the source schema.
         type: boolean
         default: false
       num_worker:

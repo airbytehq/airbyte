@@ -125,7 +125,29 @@ def test_streams_ok_with_one_custom_stream(requests_mock, config, mock_dynamic_s
     assert len(streams) == 38
 
 
+def test_custom_object_colliding_with_builtin_stream_name_is_unchanged_by_default(requests_mock, config, mock_dynamic_schema_requests):
+    # Without the opt-in flag, stream names must match previous versions so existing connections are unaffected.
+    requests_mock.get(
+        "https://api.hubapi.com/crm/v3/schemas",
+        json={
+            "results": [
+                {"name": "form_submissions", "fullyQualifiedName": "p123_form_submissions", "properties": []},
+                {"name": "cars", "fullyQualifiedName": "p123_cars", "properties": []},
+            ]
+        },
+        status_code=200,
+    )
+
+    names = [stream.name for stream in discover(get_source(config), config).catalog.catalog.streams]
+
+    assert names.count("form_submissions") == 2
+    assert "custom_object_form_submissions" not in names
+    assert "cars" in names
+    assert len(names) == 39
+
+
 def test_custom_object_colliding_with_builtin_stream_name_is_prefixed(requests_mock, config, mock_dynamic_schema_requests):
+    config["prefix_colliding_custom_objects"] = True
     requests_mock.get(
         "https://api.hubapi.com/crm/v3/schemas",
         json={
@@ -147,6 +169,7 @@ def test_custom_object_colliding_with_builtin_stream_name_is_prefixed(requests_m
 
 
 def test_custom_object_prefixed_stream_reads_from_fully_qualified_entity(requests_mock, config, mock_dynamic_schema_requests):
+    config["prefix_colliding_custom_objects"] = True
     requests_mock.get(
         "https://api.hubapi.com/crm/v3/schemas",
         json={
@@ -179,6 +202,7 @@ def test_custom_object_prefixed_stream_reads_from_fully_qualified_entity(request
 
 def test_custom_objects_never_collide_with_any_builtin_stream(requests_mock, config):
     config["enable_experimental_streams"] = True
+    config["prefix_colliding_custom_objects"] = True
     schemas_url = "https://api.hubapi.com/crm/v3/schemas"
     requests_mock.get(schemas_url, json={}, status_code=200)
     builtin_names = [stream.name for stream in get_source(config).streams(config)]
