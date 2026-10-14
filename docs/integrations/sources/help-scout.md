@@ -1,29 +1,77 @@
 # Help Scout
-Connector for Help Scout Inbox API 2.0: https://developer.helpscout.com/mailbox-api/
-Auth Overview: https://developer.helpscout.com/mailbox-api/overview/authentication/
 
-## Configuration
+This connector syncs data from the [Help Scout Inbox API 2.0](https://developer.helpscout.com/mailbox-api/), including conversations, threads, customers, inboxes, users, teams, tags, and workflows.
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `client_id` | `string` | Application ID.  |  |
-| `client_secret` | `string` | Application Secret.  |  |
-| `start_date` | `string` | Start date.  |  |
+## Prerequisites
 
-## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| conversations | id | DefaultPaginator | ✅ |  ✅  |
-| conversation_threads | id | DefaultPaginator | ✅ |  ✅  |
-| customers | id | DefaultPaginator | ✅ |  ✅  |
-| inboxes | id | DefaultPaginator | ✅ |  ❌  |
-| inbox_custom_fields | id | DefaultPaginator | ✅ |  ❌  |
-| inbox_folders | id | DefaultPaginator | ✅ |  ❌  |
-| users | id | DefaultPaginator | ✅ |  ❌  |
-| workflows | id | DefaultPaginator | ✅ |  ❌  |
-| tags | id | DefaultPaginator | ✅ |  ❌  |
-| teams | id | DefaultPaginator | ✅ |  ❌  |
-| team_members | id | DefaultPaginator | ✅ |  ❌  |
+- A Help Scout account with an active, invited user. Help Scout ties API credentials to the user who creates them and returns a `401` error if that user isn't active.
+- A Help Scout OAuth2 application. The connector authenticates with the [Client Credentials flow](https://developer.helpscout.com/mailbox-api/overview/authentication/#client-credentials-flow), so you only need the application's ID and secret.
+
+## Setup guide
+
+### Step 1: Create a Help Scout OAuth2 application
+
+1. Sign in to Help Scout as the user whose access the connector should use.
+2. Go to **Your Profile** > **My Apps** and click **Create My App**.
+3. Enter a name for the app. Help Scout requires a redirection URL, but the Client Credentials flow doesn't use it, so you can enter a placeholder such as `https://www.example.com`.
+4. Save the app, then copy its application ID and application secret.
+
+The connector requests an access token with these credentials and refreshes it automatically when it expires.
+
+### Step 2: Set up the connector in Airbyte
+
+1. In Airbyte, create a new source and select **Help Scout**.
+2. Enter the following values:
+   - **Application ID**: The application ID from Step 1.
+   - **Application Secret**: The application secret from Step 1.
+   - **Start date**: The earliest date to sync data from, in UTC, using the format `YYYY-MM-DDTHH:MM:SSZ`. For example, `2024-01-01T00:00:00Z`. This value only applies to the `conversations`, `conversation_threads`, and `customers` streams.
+3. Click **Set up source**.
+
+## Supported sync modes
+
+| Stream | Primary key | Full Refresh | Incremental | Cursor field |
+|--------|-------------|--------------|-------------|--------------|
+| `conversations` | `id` | Yes | Yes | `userUpdatedAt` |
+| `conversation_threads` | `id` | Yes | Yes | `createdAt` |
+| `customers` | `id` | Yes | Yes | `updatedAt` |
+| `inboxes` | `id` | Yes | No | None |
+| `inbox_custom_fields` | `id` | Yes | No | None |
+| `inbox_folders` | `id` | Yes | No | None |
+| `users` | `id` | Yes | No | None |
+| `workflows` | `id` | Yes | No | None |
+| `tags` | `id` | Yes | No | None |
+| `teams` | `id` | Yes | No | None |
+| `team_members` | `id` | Yes | No | None |
+
+## Supported streams
+
+| Stream | Help Scout endpoint | Notes |
+|--------|---------------------|-------|
+| `conversations` | [List Conversations](https://developer.helpscout.com/mailbox-api/endpoints/conversations/list/) | Includes conversations in every status (`status=all`), not only active ones. Records include embedded threads. Incremental syncs request conversations modified since the last sync. |
+| `conversation_threads` | [List Threads](https://developer.helpscout.com/mailbox-api/endpoints/conversations/threads/list/) | Child stream of `conversations`. On incremental syncs, the connector reads threads only for conversations modified since the last sync and emits threads created after the saved cursor. |
+| `customers` | [List Customers](https://developer.helpscout.com/mailbox-api/endpoints/customers/list/) | Incremental syncs request customers modified since the last sync. |
+| `inboxes` | [List Inboxes](https://developer.helpscout.com/mailbox-api/endpoints/inboxes/list/) | Help Scout's API calls inboxes "mailboxes." |
+| `inbox_custom_fields` | [List Inbox Custom Fields](https://developer.helpscout.com/mailbox-api/endpoints/inboxes/inbox-fields/) | Child stream of `inboxes`. |
+| `inbox_folders` | [List Inbox Folders](https://developer.helpscout.com/mailbox-api/endpoints/inboxes/inbox-folders/) | Child stream of `inboxes`. |
+| `users` | [List Users](https://developer.helpscout.com/mailbox-api/endpoints/users/list/) | |
+| `workflows` | [List Workflows](https://developer.helpscout.com/mailbox-api/endpoints/workflows/list/) | |
+| `tags` | [List Tags](https://developer.helpscout.com/mailbox-api/endpoints/tags/list/) | |
+| `teams` | [List Teams](https://developer.helpscout.com/mailbox-api/endpoints/teams/list-teams/) | |
+| `team_members` | [List Team Members](https://developer.helpscout.com/mailbox-api/endpoints/teams/list-team-members/) | Child stream of `teams`. |
+
+Child streams make one request per parent record. For example, `conversation_threads` makes at least one request for every conversation it reads.
+
+## Limitations and troubleshooting
+
+### Rate limits
+
+Help Scout [rate limits](https://developer.helpscout.com/mailbox-api/overview/rate-limiting/) the Inbox API per account, and the limit depends on your Help Scout plan. All users and integrations on the same account share that limit. When the limit is reached, Help Scout returns HTTP `429` and the connector waits and retries.
+
+Because `conversation_threads` makes a request for each conversation, the first sync of an account with many conversations can take a long time. To reduce the number of requests, set a recent **Start date** or deselect streams you don't need.
+
+### `401 Unauthorized` errors
+
+Help Scout returns `401` if the application ID or secret is incorrect, or if the user who created the app is no longer an active user in the Help Scout account. Check the credentials, or create a new app as an active user.
 
 ## IP allow list
 
