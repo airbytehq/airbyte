@@ -262,7 +262,7 @@ definitions:
         - type: HttpResponseFilter
           action: RATE_LIMITED
           http_codes: [429]
-          error_message: "Rate limit exceeded on the GitLab API. The connector waits for the time in the Retry-After header before retrying."
+          error_message: "GitLab API rate limit exceeded. If syncs keep failing, lower the Number of Concurrent Threads setting or sync less frequently."
       backoff_strategies:
         - type: WaitTimeFromHeader
           header: Retry-After
