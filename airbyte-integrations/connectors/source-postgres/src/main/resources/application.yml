@@ -57,6 +57,20 @@ airbyte:
           # output: Optional, user-facing error message; when not set, the exception message is used instead.
           # reference-links: Optional, list of URLs appended to user-facing message after a newline.
 
+          - pattern: (?i)the connection attempt failed
+            input-example: "org.postgresql.util.PSQLException: The connection attempt failed."
+            error: transient
+            group: Postgres Connection Error
+            output: Airbyte could not reach the Postgres server. Verify the host and port, confirm the server accepts remote connections (listen_addresses and pg_hba.conf), and confirm your firewall or security group allows inbound traffic from Airbyte. On Airbyte Cloud, allow the Airbyte Cloud IP addresses.
+            reference-links: https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist
+
+          - pattern: (?i)connection to \S+ refused
+            input-example: "org.postgresql.util.PSQLException: Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections."
+            error: transient
+            group: Postgres Connection Error
+            output: Airbyte could not reach the Postgres server. Verify the host and port, confirm the server accepts remote connections (listen_addresses and pg_hba.conf), and confirm your firewall or security group allows inbound traffic from Airbyte. On Airbyte Cloud, allow the Airbyte Cloud IP addresses.
+            reference-links: https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist
+
           - pattern: (?i).*temporary file size exceeds temp_file_limit.*
             input-example: "org.postgresql.util.PSQLException: ERROR: temporary file size exceeds temp_file_limit"
             error: transient
