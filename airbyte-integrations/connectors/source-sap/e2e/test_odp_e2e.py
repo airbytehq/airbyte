@@ -423,7 +423,7 @@ class TestOdpRfcFailureSafety:
                 try:
                     con.execute(pragma).fetchall()
                 except Exception:
-                    pass
+                    pass  # Cleanup is best-effort; the cursor may already be gone.
         finally:
             con.close()
         yield

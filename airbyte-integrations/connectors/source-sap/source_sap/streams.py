@@ -80,6 +80,10 @@ class ErplPartition(Partition):
     def __hash__(self) -> int:
         return hash((self._stream_name, self._plan.sql, tuple(map(str, self._plan.params))))
 
+    def __eq__(self, other: object) -> bool:
+        # Distinct scheduled reads must remain distinct, even for identical plans.
+        return self is other
+
     def read(self) -> Iterable[Record]:
         cursor = self._session.cursor()
         try:

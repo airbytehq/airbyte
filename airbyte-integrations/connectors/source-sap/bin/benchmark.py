@@ -199,7 +199,7 @@ def run_connector(case: Case, command: str, workdir: Path, catalog: dict | None 
             try:
                 messages.append(json.loads(line))
             except json.JSONDecodeError:
-                pass
+                pass  # Non-JSON diagnostic output is not an Airbyte message.
     if proc.returncode != 0:
         raise RuntimeError(f"{case.key} {command} exited {proc.returncode}: {proc.stderr[-2000:]}")
     return messages, elapsed, peak_kb / 1024, len(proc.stdout)
@@ -236,7 +236,7 @@ def _run_and_watch_rss(args: list[str]) -> tuple[subprocess.CompletedProcess, fl
         # Left running, it would compete with every later case for the same SAP
         # system and quietly poison the rest of the matrix.
         process.kill()
-        stdout, stderr = process.communicate()
+        process.communicate()
         raise
     finally:
         stop.set()
