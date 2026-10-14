@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.check.CloudHostCheck
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
@@ -97,6 +98,8 @@ class Factory(
     val configuredCatalog: ConfiguredAirbyteCatalog? = null,
 ) : MetadataQuerier.Factory<PostgresSourceConfiguration> {
     override fun session(config: PostgresSourceConfiguration): MetadataQuerier {
+        // Before the connection opens: with an unreachable host the network error would win.
+        CloudHostCheck.validate(config.realHost, config.sshTunnel, featureFlags)
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val base =
             JdbcMetadataQuerier(
