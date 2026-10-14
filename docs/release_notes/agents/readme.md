@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## October 14, 2026
+
+Connectors
+
+- A new Outreach connector is now available, including in the SDK. Connect it with your Outreach account, and your agents can read and search your prospects, accounts, sequences, opportunities, calls, mailings, tasks, and more, by attributes such as industry or opportunity amount. This connector is read-only, so your agents can't create prospects, send mailings, or add prospects to sequences.
+
 ## October 7, 2026
 
 Connectors
