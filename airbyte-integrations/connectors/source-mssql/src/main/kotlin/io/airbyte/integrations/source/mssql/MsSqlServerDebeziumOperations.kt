@@ -479,10 +479,10 @@ class MsSqlServerDebeziumOperations(
 
     /**
      * A heartbeat offset (poll window with no change rows) carries change_lsn = NULL. Debezium's
-     * SQL Server schema-history comparator orders records by change_lsn only, so resuming from such
-     * an offset skips every streamed ALTER record and recovers a stale table schema. Every change
-     * at or before commit_lsn has already been processed, so commit_lsn is a safe change_lsn for
-     * the resume position. Snapshot offsets are left unchanged.
+     * schema-history comparator orders records by change_lsn only, so resuming from such an offset
+     * goes back to the schema structure of the snapshot and ignores any newly added columns. Every
+     * change at or before commit_lsn has already been processed, so commit_lsn is a safe value for
+     * change_lsn at the resume position. Snapshot offsets are left unchanged.
      */
     @VisibleForTesting
     internal fun normalizeHeartbeatChangeLsn(offset: DebeziumOffset): DebeziumOffset {
