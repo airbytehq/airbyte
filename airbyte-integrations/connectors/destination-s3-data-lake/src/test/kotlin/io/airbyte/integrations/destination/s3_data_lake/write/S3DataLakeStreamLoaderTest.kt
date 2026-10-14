@@ -28,11 +28,15 @@ import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergSuperTypeFinder
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
+import io.airbyte.integrations.destination.s3_data_lake.spec.AllowNonReversibleUpgrades
 import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_STAGING_BRANCH
+import io.airbyte.integrations.destination.s3_data_lake.spec.IcebergDeleteFileType
+import io.airbyte.integrations.destination.s3_data_lake.spec.IcebergTableFormatVersion
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketConfiguration
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketRegion
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
@@ -53,8 +57,11 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.ManageSnapshots
 import org.apache.iceberg.Schema
+import org.apache.iceberg.SnapshotRef
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
+import org.apache.iceberg.TableScan
+import org.apache.iceberg.UpdateProperties
 import org.apache.iceberg.UpdateSchema
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.io.CloseableIterable
@@ -67,6 +74,8 @@ import org.junit.jupiter.api.Test
 internal class S3DataLakeStreamLoaderTest {
     @MockK(relaxed = true)
     private lateinit var streamStateStore: StreamStateStore<S3DataLakeStreamState>
+
+    private val tableIdGenerator: TableIdGenerator = mockk(relaxed = true)
 
     private fun makeTableSchema(schema: ObjectType, importType: ImportType): StreamTableSchema {
         val inputSchema = schema.properties
@@ -134,12 +143,15 @@ internal class S3DataLakeStreamLoaderTest {
             )
         val icebergSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
         val icebergConfiguration = makeIcebergConfiguration()
-        val catalog: Catalog = mockk()
+        val catalog: Catalog = mockk {
+            every { tableExists(any()) } returns false
+        }
         val manageSnapshots: ManageSnapshots = mockk()
         every { manageSnapshots.createBranch("airbyte_staging_test") } returns manageSnapshots
         every { manageSnapshots.removeBranch("airbyte_staging_test") } returns manageSnapshots
         every { manageSnapshots.commit() } just runs
         val table: Table = mockk {
+            every { properties() } returns emptyMap()
             every { schema() } returns icebergSchema
             every { manageSnapshots() } returns manageSnapshots
         }
@@ -149,7 +161,7 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any()) } returns table
+            every { createTable(any(), any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } returns icebergSchema
         }
         val streamLoader =
@@ -162,6 +174,7 @@ internal class S3DataLakeStreamLoaderTest {
                 ),
                 s3DataLakeUtil,
                 icebergUtil,
+                tableIdGenerator,
                 stagingBranchName = "airbyte_staging_test",
                 mainBranchName = "main",
                 streamStateStore = streamStateStore,
@@ -198,7 +211,9 @@ internal class S3DataLakeStreamLoaderTest {
             )
         val icebergSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
         val icebergConfiguration = makeIcebergConfiguration()
-        val catalog: Catalog = mockk()
+        val catalog: Catalog = mockk {
+            every { tableExists(any()) } returns false
+        }
         val manageSnapshots: ManageSnapshots = mockk()
         every { manageSnapshots.createBranch("airbyte_staging_test") } returns manageSnapshots
         every { manageSnapshots.replaceBranch("main", "airbyte_staging_test") } returns
@@ -206,6 +221,7 @@ internal class S3DataLakeStreamLoaderTest {
         every { manageSnapshots.removeBranch("airbyte_staging_test") } returns manageSnapshots
         every { manageSnapshots.commit() } just runs
         val table: Table = mockk {
+            every { properties() } returns emptyMap()
             every { schema() } returns icebergSchema
             every { refresh() } just runs
             every { manageSnapshots() } returns manageSnapshots
@@ -216,7 +232,7 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any()) } returns table
+            every { createTable(any(), any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } returns icebergSchema
         }
         val streamLoader =
@@ -229,6 +245,7 @@ internal class S3DataLakeStreamLoaderTest {
                 ),
                 s3DataLakeUtil,
                 icebergUtil,
+                tableIdGenerator,
                 stagingBranchName = "airbyte_staging_test",
                 mainBranchName = "main",
                 streamStateStore = streamStateStore,
@@ -265,7 +282,9 @@ internal class S3DataLakeStreamLoaderTest {
             )
         val icebergSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
         val icebergConfiguration = makeIcebergConfiguration()
-        val catalog: Catalog = mockk()
+        val catalog: Catalog = mockk {
+            every { tableExists(any()) } returns false
+        }
         val manageSnapshots: ManageSnapshots = mockk()
         var commitCount = 0
         every { manageSnapshots.createBranch("airbyte_staging_test") } returns manageSnapshots
@@ -280,6 +299,7 @@ internal class S3DataLakeStreamLoaderTest {
                 }
             }
         val table: Table = mockk {
+            every { properties() } returns emptyMap()
             every { schema() } returns icebergSchema
             every { refresh() } just runs
             every { manageSnapshots() } returns manageSnapshots
@@ -290,7 +310,7 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any()) } returns table
+            every { createTable(any(), any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } returns icebergSchema
         }
         val streamLoader =
@@ -303,6 +323,7 @@ internal class S3DataLakeStreamLoaderTest {
                 ),
                 s3DataLakeUtil,
                 icebergUtil,
+                tableIdGenerator,
                 stagingBranchName = "airbyte_staging_test",
                 mainBranchName = "main",
                 streamStateStore = streamStateStore,
@@ -333,7 +354,9 @@ internal class S3DataLakeStreamLoaderTest {
             )
         val icebergSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
         val icebergConfiguration = makeIcebergConfiguration()
-        val catalog: Catalog = mockk()
+        val catalog: Catalog = mockk {
+            every { tableExists(any()) } returns false
+        }
         val manageSnapshots: ManageSnapshots = mockk()
         every { manageSnapshots.createBranch("airbyte_staging_test") } throws
             IllegalArgumentException("already exists")
@@ -342,6 +365,7 @@ internal class S3DataLakeStreamLoaderTest {
         every { manageSnapshots.removeBranch("airbyte_staging_test") } returns manageSnapshots
         every { manageSnapshots.commit() } just runs
         val table: Table = mockk {
+            every { properties() } returns emptyMap()
             every { schema() } returns icebergSchema
             every { refresh() } just runs
             every { manageSnapshots() } returns manageSnapshots
@@ -352,7 +376,7 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any()) } returns table
+            every { createTable(any(), any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } returns icebergSchema
         }
         val streamLoader =
@@ -365,6 +389,7 @@ internal class S3DataLakeStreamLoaderTest {
                 ),
                 s3DataLakeUtil,
                 icebergUtil,
+                tableIdGenerator,
                 stagingBranchName = "airbyte_staging_test",
                 mainBranchName = "main",
                 streamStateStore = streamStateStore,
@@ -382,6 +407,129 @@ internal class S3DataLakeStreamLoaderTest {
             streamStateStore.put(
                 stream.mappedDescriptor,
                 match { it.stagingBranchName == "airbyte_staging_test" },
+            )
+        }
+    }
+
+    @Test
+    fun testPositionalDeletesOnlyCreateResolutionStateForDedupeStreams() {
+        val objectSchema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, nullable = false),
+                    "name" to FieldType(StringType, nullable = true),
+                ),
+            )
+        val icebergSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(listOf(listOf("id")))
+        val scan: TableScan = mockk {
+            every { useRef("airbyte_staging_test") } returns this
+            every { planFiles() } returns CloseableIterable.empty()
+        }
+        val manageSnapshots: ManageSnapshots = mockk {
+            every { createBranch("airbyte_staging_test") } returns this
+            every { commit() } just runs
+        }
+        val updateProperties: UpdateProperties = mockk {
+            every { set(any(), any()) } returns this
+            every { commit() } just runs
+        }
+        val table: Table = mockk {
+            every { properties() } returns emptyMap()
+            every { name() } returns "test"
+            every { schema() } returns icebergSchema
+            every { sortOrder() } returns SortOrder.unsorted()
+            every { manageSnapshots() } returns manageSnapshots
+            every { refs() } returns emptyMap()
+            every { newScan() } returns scan
+            every { properties() } returns emptyMap()
+            every { updateProperties() } returns updateProperties
+        }
+        val loader =
+            makePositionalLoader(
+                stream = makeAppendStream(),
+                table = table,
+                icebergSchema = icebergSchema,
+            )
+
+        runBlocking { loader.start() }
+
+        verify {
+            streamStateStore.put(
+                any(),
+                match { it.positionalDeleteState == null },
+            )
+        }
+
+        val dedupeStream =
+            makeDedupeStream(
+                objectSchema = objectSchema,
+                syncId = 2,
+            )
+        val dedupeLoader =
+            makePositionalLoader(
+                stream = dedupeStream,
+                table = table,
+                icebergSchema = icebergSchema,
+            )
+
+        runBlocking { dedupeLoader.start() }
+
+        verify {
+            streamStateStore.put(
+                dedupeStream.mappedDescriptor,
+                match { it.positionalDeleteState != null },
+            )
+        }
+    }
+
+    @Test
+    fun testPositionalDeletesCreateStreamScopedResolutionState() {
+        val objectSchema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, nullable = false),
+                    "name" to FieldType(StringType, nullable = true),
+                ),
+            )
+        val icebergSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(listOf(listOf("id")))
+        val snapshotRef: SnapshotRef = mockk { every { snapshotId() } returns 42L }
+        val scan: TableScan = mockk {
+            every { useRef("airbyte_staging_test") } returns this
+            every { planFiles() } returns CloseableIterable.empty()
+        }
+        val manageSnapshots: ManageSnapshots = mockk {
+            every { createBranch("airbyte_staging_test") } throws
+                IllegalArgumentException("already exists")
+        }
+        val updateProperties: UpdateProperties = mockk {
+            every { set(any(), any()) } returns this
+            every { commit() } just runs
+        }
+        val table: Table = mockk {
+            every { properties() } returns emptyMap()
+            every { name() } returns "test"
+            every { schema() } returns icebergSchema
+            every { sortOrder() } returns SortOrder.unsorted()
+            every { manageSnapshots() } returns manageSnapshots
+            every { refs() } returns mapOf("airbyte_staging_test" to snapshotRef)
+            every { newScan() } returns scan
+            every { properties() } returns emptyMap()
+            every { updateProperties() } returns updateProperties
+        }
+        val stream = makeDedupeStream(objectSchema)
+        val loader =
+            makePositionalLoader(
+                stream = stream,
+                table = table,
+                icebergSchema = icebergSchema,
+            )
+
+        runBlocking { loader.start() }
+
+        verify {
+            streamStateStore.put(
+                stream.mappedDescriptor,
+                match { it.positionalDeleteState != null },
             )
         }
     }
@@ -473,10 +621,20 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
+            every { icebergDeleteFileType } returns IcebergDeleteFileType.EQUALITY
+            every { optimizePriorIcebergDeleteFiles } returns true
+            every { tableFormatVersion } returns IcebergTableFormatVersion.V2
+            every { allowNonReversibleUpgrades } returns AllowNonReversibleUpgrades.NO
             every { normalizeColumnNames } returns false
         }
-        val catalog: Catalog = mockk()
-        val table: Table = mockk { every { schema() } returns icebergSchema }
+        val catalog: Catalog = mockk {
+            every { tableExists(any()) } returns false
+        }
+        val table: Table = mockk {
+            every { properties() } returns emptyMap()
+            every { schema() } returns icebergSchema
+            every { properties() } returns emptyMap()
+        }
         every { table.manageSnapshots().createBranch(any()).commit() } just runs
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createNamespaceWithGlueHandling(any(), any()) } just runs
@@ -484,7 +642,7 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any()) } returns table
+            every { createTable(any(), any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
                     objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
@@ -500,6 +658,7 @@ internal class S3DataLakeStreamLoaderTest {
                 ),
                 s3DataLakeUtil,
                 icebergUtil,
+                tableIdGenerator,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
                 mainBranchName = "main",
                 streamStateStore = streamStateStore,
@@ -550,10 +709,17 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
+            every { icebergDeleteFileType } returns IcebergDeleteFileType.EQUALITY
+            every { optimizePriorIcebergDeleteFiles } returns true
+            every { tableFormatVersion } returns IcebergTableFormatVersion.V2
+            every { allowNonReversibleUpgrades } returns AllowNonReversibleUpgrades.NO
             every { normalizeColumnNames } returns false
         }
-        val catalog: Catalog = mockk()
+        val catalog: Catalog = mockk {
+            every { tableExists(any()) } returns false
+        }
         val table: Table = mockk {
+            every { properties() } returns emptyMap()
             every { schema() } returns icebergSchema
             every { sortOrder() } returns SortOrder.unsorted()
         }
@@ -589,7 +755,7 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any()) } returns table
+            every { createTable(any(), any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
                     objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
@@ -606,6 +772,7 @@ internal class S3DataLakeStreamLoaderTest {
                 ),
                 s3DataLakeUtil,
                 icebergUtil,
+                tableIdGenerator,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
                 mainBranchName = "main",
                 streamStateStore = streamStateStore,
@@ -720,10 +887,17 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
+            every { icebergDeleteFileType } returns IcebergDeleteFileType.EQUALITY
+            every { optimizePriorIcebergDeleteFiles } returns true
+            every { tableFormatVersion } returns IcebergTableFormatVersion.V2
+            every { allowNonReversibleUpgrades } returns AllowNonReversibleUpgrades.NO
             every { normalizeColumnNames } returns false
         }
-        val catalog: Catalog = mockk()
+        val catalog: Catalog = mockk {
+            every { tableExists(any()) } returns false
+        }
         val table: Table = mockk {
+            every { properties() } returns emptyMap()
             every { schema() } returns icebergSchema
             every { sortOrder() } returns SortOrder.unsorted()
         }
@@ -743,6 +917,7 @@ internal class S3DataLakeStreamLoaderTest {
             )
         } returns updateSchema
         every { updateSchema.requireColumn("id") } returns updateSchema
+        every { updateSchema.makeColumnOptional(any()) } returns updateSchema
         every { updateSchema.setIdentifierFields(primaryKeys) } returns updateSchema
         every { updateSchema.commit() } just runs
         every { updateSchema.apply() } returns icebergSchema
@@ -759,7 +934,7 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any()) } returns table
+            every { createTable(any(), any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
                     objectSchema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))
@@ -776,6 +951,7 @@ internal class S3DataLakeStreamLoaderTest {
                 ),
                 s3DataLakeUtil,
                 icebergUtil,
+                tableIdGenerator,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
                 mainBranchName = "main",
                 streamStateStore = streamStateStore,
@@ -784,7 +960,6 @@ internal class S3DataLakeStreamLoaderTest {
 
         verify(exactly = 0) { updateSchema.deleteColumn(any()) }
         verify(exactly = 0) { updateSchema.updateColumn(any(), any<Type.PrimitiveType>()) }
-        verify(exactly = 0) { updateSchema.makeColumnOptional(any()) }
         verify(exactly = 0) {
             updateSchema.addColumn(any<String>(), any<String>(), any<Type.PrimitiveType>())
         }
@@ -834,6 +1009,7 @@ internal class S3DataLakeStreamLoaderTest {
                 ),
                 s3DataLakeUtil,
                 icebergUtil,
+                tableIdGenerator,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
                 mainBranchName = "main",
                 streamStateStore = streamStateStore,
@@ -872,11 +1048,14 @@ internal class S3DataLakeStreamLoaderTest {
             every { commit() } just runs
         }
         val table: Table = mockk {
+            every { properties() } returns emptyMap()
             every { schema() } answers { createdSchema.captured }
             every { manageSnapshots() } returns manageSnapshots
         }
         val icebergUtil: IcebergUtil = mockk {
-            every { createCatalog(any(), any()) } returns mockk<Catalog>()
+            every { createCatalog(any(), any()) } returns mockk<Catalog> {
+                every { tableExists(any()) } returns false
+            }
             every { createTable(any(), any(), capture(createdSchema)) } returns table
             every { toIcebergSchema(any()) } returns inputNameSchema
         }
@@ -927,8 +1106,10 @@ internal class S3DataLakeStreamLoaderTest {
         val existingSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
         val table: Table = mockk { every { schema() } returns existingSchema }
         val icebergUtil: IcebergUtil = mockk {
-            every { createCatalog(any(), any()) } returns mockk<Catalog>()
-            every { createTable(any(), any(), any()) } returns table
+            every { createCatalog(any(), any()) } returns mockk<Catalog> {
+                every { tableExists(any()) } returns false
+            }
+            every { createTable(any(), any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } returns existingSchema
         }
         val streamLoader =
@@ -975,14 +1156,17 @@ internal class S3DataLakeStreamLoaderTest {
             every { commit() } just runs
         }
         val table: Table = mockk {
+            every { properties() } returns emptyMap()
             every { schema() } returns existingSchema
             every { sortOrder() } returns SortOrder.unsorted()
             every { updateSchema().allowIncompatibleChanges() } returns updateSchema
             every { manageSnapshots() } returns manageSnapshots
         }
         val icebergUtil: IcebergUtil = mockk {
-            every { createCatalog(any(), any()) } returns mockk<Catalog>()
-            every { createTable(any(), any(), any()) } returns table
+            every { createCatalog(any(), any()) } returns mockk<Catalog> {
+                every { tableExists(any()) } returns false
+            }
+            every { createTable(any(), any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } returns existingSchema
         }
         val streamLoader =
@@ -1046,6 +1230,7 @@ internal class S3DataLakeStreamLoaderTest {
             ),
             s3DataLakeUtil,
             icebergUtil,
+            tableIdGenerator,
             stagingBranchName = "airbyte_staging_test",
             mainBranchName = "main",
             streamStateStore = streamStateStore,
@@ -1074,9 +1259,70 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
+            every { icebergDeleteFileType } returns IcebergDeleteFileType.EQUALITY
+            every { optimizePriorIcebergDeleteFiles } returns true
+            every { tableFormatVersion } returns IcebergTableFormatVersion.V2
+            every { allowNonReversibleUpgrades } returns AllowNonReversibleUpgrades.NO
             every { this@mockk.normalizeColumnNames } returns normalizeColumnNames
         }
     }
+
+    private fun makePositionalLoader(
+        stream: DestinationStream,
+        table: Table,
+        icebergSchema: Schema,
+    ): S3DataLakeStreamLoader {
+        val catalog: Catalog = mockk {
+            every { tableExists(any()) } returns false
+        }
+        val s3DataLakeUtil: S3DataLakeUtil = mockk {
+            every { createNamespaceWithGlueHandling(any(), any()) } just runs
+            every { toCatalogProperties(any()) } returns mapOf()
+        }
+        val icebergUtil: IcebergUtil = mockk {
+            every { createCatalog(any(), any()) } returns catalog
+            every { createTable(any(), any(), any(), any()) } returns table
+            every { toIcebergSchema(any()) } returns icebergSchema
+        }
+        val configuration = makeIcebergConfiguration()
+        every { configuration.icebergDeleteFileType } returns IcebergDeleteFileType.POSITIONAL
+        return S3DataLakeStreamLoader(
+            configuration,
+            stream,
+            IcebergTableSynchronizer(
+                IcebergTypesComparator(),
+                IcebergSuperTypeFinder(IcebergTypesComparator()),
+            ),
+            s3DataLakeUtil,
+            icebergUtil,
+            tableIdGenerator,
+            stagingBranchName = "airbyte_staging_test",
+            mainBranchName = "main",
+            streamStateStore = streamStateStore,
+        )
+    }
+
+    private fun makeDedupeStream(
+        objectSchema: ObjectType,
+        syncId: Long = 1,
+    ): DestinationStream =
+        DestinationStream(
+            generationId = 1,
+            minimumGenerationId = 0,
+            syncId = syncId,
+            unmappedNamespace = "namespace",
+            unmappedName = "name",
+            namespaceMapper =
+                NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+            tableSchema =
+                makeTableSchema(
+                    objectSchema,
+                    Dedupe(
+                        primaryKey = listOf(listOf("id")),
+                        cursor = emptyList(),
+                    ),
+                ),
+        )
 
     private fun makeAppendStream(
         syncId: Long = 1,

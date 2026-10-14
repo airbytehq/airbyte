@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.spec
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.DestinationStream
@@ -41,6 +42,11 @@ data class S3DataLakeConfiguration(
     override val s3BucketConfiguration: S3BucketConfiguration,
     override val icebergCatalogConfiguration: IcebergCatalogConfiguration,
     val flushBatchSizeMb: Long?,
+    val maxRecordsPerFlush: Long? = null,
+    val tableFormatVersion: IcebergTableFormatVersion = IcebergTableFormatVersion.V2,
+    val icebergDeleteFileType: IcebergDeleteFileType = IcebergDeleteFileType.AUTOMATIC,
+    val allowNonReversibleUpgrades: AllowNonReversibleUpgrades = AllowNonReversibleUpgrades.NO,
+    val optimizePriorIcebergDeleteFiles: Boolean = true,
     val normalizeColumnNames: Boolean = false,
 ) :
     DestinationConfiguration(),
@@ -52,6 +58,28 @@ data class S3DataLakeConfiguration(
         const val MIN_FLUSH_BATCH_SIZE_MB = 1L
         const val FLUSH_BATCH_SIZE_MB = 200L
         const val MAX_FLUSH_BATCH_SIZE_MB = 500L
+        const val MAX_RECORDS_PER_FLUSH = 10_000_000_000L
+    }
+
+    init {
+        if (
+            icebergDeleteFileType == IcebergDeleteFileType.POSITIONAL &&
+                tableFormatVersion == IcebergTableFormatVersion.V3
+        ) {
+            throw ConfigErrorException(
+                "POSITIONAL delete files cannot be written to Iceberg format v3 tables. " +
+                    "Use DELETION_VECTOR or AUTOMATIC with table_format_version v3.",
+            )
+        }
+        if (
+            icebergDeleteFileType == IcebergDeleteFileType.DELETION_VECTOR &&
+                tableFormatVersion == IcebergTableFormatVersion.V2
+        ) {
+            throw ConfigErrorException(
+                "DELETION_VECTOR delete files require Iceberg format v3 tables. " +
+                    "Use POSITIONAL, EQUALITY, or AUTOMATIC with table_format_version v2.",
+            )
+        }
     }
 
     val resolvedFlushBatchSizeBytes: Long
@@ -64,6 +92,13 @@ data class S3DataLakeConfiguration(
                 "flush_batch_size_mb must be at most ${Defaults.MAX_FLUSH_BATCH_SIZE_MB}, got $mb"
             }
             return mb * 1024L * 1024L
+        }
+
+    val resolvedMaxRecordsPerFlush: Long
+        get() {
+            val records = maxRecordsPerFlush ?: Defaults.MAX_RECORDS_PER_FLUSH
+            require(records > 0) { "max_records_per_flush must be positive, got $records" }
+            return records
         }
 }
 
@@ -79,6 +114,12 @@ class S3DataLakeConfigurationFactory :
             s3BucketConfiguration = pojo.toS3BucketConfiguration(),
             icebergCatalogConfiguration = pojo.toIcebergCatalogConfiguration(),
             flushBatchSizeMb = pojo.flushBatchSizeMb,
+            maxRecordsPerFlush = pojo.maxRecordsPerFlush,
+            tableFormatVersion = pojo.tableFormatVersion ?: IcebergTableFormatVersion.V2,
+            icebergDeleteFileType = pojo.icebergDeleteFileType ?: IcebergDeleteFileType.AUTOMATIC,
+            allowNonReversibleUpgrades =
+                pojo.allowNonReversibleUpgrades ?: AllowNonReversibleUpgrades.NO,
+            optimizePriorIcebergDeleteFiles = pojo.optimizePriorIcebergDeleteFiles ?: true,
             normalizeColumnNames = pojo.normalizeColumnNames ?: false,
         )
     }
