@@ -45,7 +45,9 @@ else
   echo "No unit tests defined; skipping unit tests."
 fi
 '''
-test-integration-tests = "airbyte-cdk connector test ${POE_PWD}"
+# The Docker read test runs in `airbyte-cdk image test` (the "Container Tests" CI step), against
+# the image CI builds. Skip it here, where it would read the connector a second time.
+test-integration-tests = "airbyte-cdk connector test ${POE_PWD} --pytest-arg=--read-from-streams=none"
 format-check = "echo 'No format check step for this connector.'"
 lint-check = "echo 'No lint check step for this connector.'"
 
