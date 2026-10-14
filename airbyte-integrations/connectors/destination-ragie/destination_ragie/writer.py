@@ -4,6 +4,7 @@ import copy
 import hashlib
 import json
 import logging
+import math
 import mimetypes
 import os
 import uuid
@@ -203,7 +204,7 @@ class RagieWriter:
                         combined_metadata[key] = value
                     elif isinstance(value, (int, float)):
                         # Ensure it's finite (not NaN or Infinity)
-                        if isinstance(value, float) and not all(map(float.isfinite, [value])):
+                        if isinstance(value, float) and not math.isfinite(value):
                             logger.warning(f"Skipping non-finite float metadata field '{key}' (path: {field_path_str}). Value: {value}")
                             continue
                         combined_metadata[key] = value
@@ -337,7 +338,8 @@ class RagieWriter:
 
         # --- 7. Add Other Parameters ---
         payload["mode"] = self.config.processing_mode
-        payload["partition"] = self.config.partition
+        if self.config.partition:
+            payload["partition"] = self.config.partition
 
         # --- 8. Send to Client ---
         try:

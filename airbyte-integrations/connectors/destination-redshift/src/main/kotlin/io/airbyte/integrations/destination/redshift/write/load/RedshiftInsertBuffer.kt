@@ -43,9 +43,10 @@ class RedshiftInsertBuffer(
     val columns: List<String>,
     private val redshiftClient: RedshiftAirbyteClient,
     private val configuration: RedshiftConfiguration,
+    varcharColumns: Set<String> = emptySet(),
 ) {
 
-    private val formatter = RedshiftSchemaRecordFormatter(columns)
+    private val formatter = RedshiftSchemaRecordFormatter(columns, varcharColumns)
     private val s3Config = configuration.uploadingMethod!!
     private val purgeStagingData: Boolean = s3Config.purgeStagingData ?: true
 
@@ -60,7 +61,7 @@ class RedshiftInsertBuffer(
             .fieldSeparator(',')
             .quoteCharacter('"')
             .lineDelimiter(LineDelimiter.LF)
-            .quoteStrategy(QuoteStrategies.REQUIRED)
+            .quoteStrategy(QuoteStrategies.EMPTY)
 
     internal var recordCount = 0
     private var partNumber = 0
@@ -76,7 +77,7 @@ class RedshiftInsertBuffer(
             initializeBuffer()
         }
 
-        csvWriter!!.writeRecord(formatter.format(recordFields).map { it.toString() })
+        csvWriter!!.writeRecord(formatter.format(recordFields))
         recordCount++
     }
 

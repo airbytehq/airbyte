@@ -19,25 +19,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
-    :   Search for accounts using SOSL (Salesforce Object Search Language).
-        SOSL is optimized for text-based searches across multiple fields and objects.
-        Use SOQL (list action) for structured queries with specific field conditions.
-        
-        
-                Args:
-                    q: SOSL search query. Format: FIND \{searchTerm\} IN scope RETURNING Object(fields) [LIMIT n]
-        Examples:
-        - "FIND \{Acme\} IN ALL FIELDS RETURNING Account(Id,Name)"
-        - "FIND \{tech*\} IN NAME FIELDS RETURNING Account(Id,Name,Industry) LIMIT 50"
-        - "FIND \{"exact phrase"\} RETURNING Account(Id,Name,Website)"
-        
-                    **kwargs: Additional parameters
-        
-                Returns:
-                    AccountsApiSearchResult
-
-    `context_store_search(self, query: AccountsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[AccountsSearchData]`
+    `context_store_search(self, query: AccountsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
     :   Search accounts records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -76,8 +58,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -88,6 +71,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against accounts records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, name: str, account_number: str | None = None, type: str | None = None, industry: str | None = None, phone: str | None = None, website: str | None = None, billing_street: str | None = None, billing_city: str | None = None, billing_state: str | None = None, billing_postal_code: str | None = None, billing_country: str | None = None, annual_revenue: float | None = None, number_of_employees: int | None = None, description: str | None = None, owner_id: str | None = None, parent_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
     :   Create an account
@@ -168,6 +166,24 @@ Classes
         
                 Returns:
                     AccountsListResult
+
+    `search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
+    :   Search for accounts using SOSL (Salesforce Object Search Language).
+        SOSL is optimized for text-based searches across multiple fields and objects.
+        Use SOQL (list action) for structured queries with specific field conditions.
+        
+        
+                Args:
+                    q: SOSL search query. Format: FIND \{searchTerm\} IN scope RETURNING Object(fields) [LIMIT n]
+        Examples:
+        - "FIND \{Acme\} IN ALL FIELDS RETURNING Account(Id,Name)"
+        - "FIND \{tech*\} IN NAME FIELDS RETURNING Account(Id,Name,Industry) LIMIT 50"
+        - "FIND \{"exact phrase"\} RETURNING Account(Id,Name,Website)"
+        
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    AccountsSearchResult
 
     `update(self, name: str, account_number: str | None = None, type: str | None = None, industry: str | None = None, phone: str | None = None, website: str | None = None, billing_street: str | None = None, billing_city: str | None = None, billing_state: str | None = None, billing_postal_code: str | None = None, billing_country: str | None = None, annual_revenue: float | None = None, number_of_employees: int | None = None, description: str | None = None, owner_id: str | None = None, parent_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Update an account
@@ -294,22 +310,6 @@ Classes
 
     ### Methods
 
-    `api_search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
-    :   Search for campaigns using SOSL (Salesforce Object Search Language).
-        SOSL is optimized for text-based searches across multiple fields.
-        
-        
-                Args:
-                    q: SOSL search query. Format: FIND \{searchTerm\} RETURNING Campaign(fields) [LIMIT n]
-        Examples:
-        - "FIND \{webinar\} IN ALL FIELDS RETURNING Campaign(Id,Name,Type,Status)"
-        - "FIND \{2024\} IN NAME FIELDS RETURNING Campaign(Id,Name,StartDate,IsActive) LIMIT 50"
-        
-                    **kwargs: Additional parameters
-        
-                Returns:
-                    CampaignsApiSearchResult
-
     `create(self, name: str, type: str | None = None, status: str | None = None, start_date: str | None = None, end_date: str | None = None, is_active: bool | None = None, description: str | None = None, expected_revenue: float | None = None, budgeted_cost: float | None = None, actual_cost: float | None = None, expected_response: float | None = None, number_sent: float | None = None, parent_id: str | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
     :   Create a campaign
         
@@ -380,6 +380,22 @@ Classes
                 Returns:
                     CampaignsListResult
 
+    `search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
+    :   Search for campaigns using SOSL (Salesforce Object Search Language).
+        SOSL is optimized for text-based searches across multiple fields.
+        
+        
+                Args:
+                    q: SOSL search query. Format: FIND \{searchTerm\} RETURNING Campaign(fields) [LIMIT n]
+        Examples:
+        - "FIND \{webinar\} IN ALL FIELDS RETURNING Campaign(Id,Name,Type,Status)"
+        - "FIND \{2024\} IN NAME FIELDS RETURNING Campaign(Id,Name,StartDate,IsActive) LIMIT 50"
+        
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    CampaignsSearchResult
+
     `update(self, name: str, type: str | None = None, status: str | None = None, start_date: str | None = None, end_date: str | None = None, is_active: bool | None = None, description: str | None = None, expected_revenue: float | None = None, budgeted_cost: float | None = None, actual_cost: float | None = None, expected_response: float | None = None, number_sent: float | None = None, parent_id: str | None = None, owner_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Update a campaign
         
@@ -412,22 +428,6 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
-
-    `api_search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
-    :   Search for cases using SOSL (Salesforce Object Search Language).
-        SOSL is optimized for text-based searches across multiple fields.
-        
-        
-                Args:
-                    q: SOSL search query. Format: FIND \{searchTerm\} RETURNING Case(fields) [LIMIT n]
-        Examples:
-        - "FIND \{login issue\} IN ALL FIELDS RETURNING Case(Id,CaseNumber,Subject,Status)"
-        - "FIND \{urgent\} IN NAME FIELDS RETURNING Case(Id,Subject,Priority) LIMIT 25"
-        
-                    **kwargs: Additional parameters
-        
-                Returns:
-                    CasesApiSearchResult
 
     `create(self, subject: str | None = None, status: str | None = None, priority: str | None = None, origin: str | None = None, type: str | None = None, reason: str | None = None, description: str | None = None, account_id: str | None = None, contact_id: str | None = None, supplied_name: str | None = None, supplied_email: str | None = None, supplied_phone: str | None = None, supplied_company: str | None = None, owner_id: str | None = None, parent_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
     :   Create a case
@@ -500,6 +500,22 @@ Classes
                 Returns:
                     CasesListResult
 
+    `search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
+    :   Search for cases using SOSL (Salesforce Object Search Language).
+        SOSL is optimized for text-based searches across multiple fields.
+        
+        
+                Args:
+                    q: SOSL search query. Format: FIND \{searchTerm\} RETURNING Case(fields) [LIMIT n]
+        Examples:
+        - "FIND \{login issue\} IN ALL FIELDS RETURNING Case(Id,CaseNumber,Subject,Status)"
+        - "FIND \{urgent\} IN NAME FIELDS RETURNING Case(Id,Subject,Priority) LIMIT 25"
+        
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    CasesSearchResult
+
     `update(self, subject: str | None = None, status: str | None = None, priority: str | None = None, origin: str | None = None, type: str | None = None, reason: str | None = None, description: str | None = None, account_id: str | None = None, contact_id: str | None = None, supplied_name: str | None = None, supplied_email: str | None = None, supplied_phone: str | None = None, supplied_company: str | None = None, owner_id: str | None = None, parent_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Update a case
         
@@ -534,23 +550,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
-    :   Search for contacts using SOSL (Salesforce Object Search Language).
-        SOSL is optimized for text-based searches across multiple fields.
-        
-        
-                Args:
-                    q: SOSL search query. Format: FIND \{searchTerm\} RETURNING Contact(fields) [LIMIT n]
-        Examples:
-        - "FIND \{John\} IN NAME FIELDS RETURNING Contact(Id,FirstName,LastName,Email)"
-        - "FIND \{*@example.com\} IN EMAIL FIELDS RETURNING Contact(Id,Name,Email) LIMIT 25"
-        
-                    **kwargs: Additional parameters
-        
-                Returns:
-                    ContactsApiSearchResult
-
-    `context_store_search(self, query: ContactsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[ContactsSearchData]`
+    `context_store_search(self, query: ContactsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
     :   Search contacts records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -585,8 +585,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -597,6 +598,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against contacts records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, last_name: str, first_name: str | None = None, email: str | None = None, phone: str | None = None, mobile_phone: str | None = None, title: str | None = None, department: str | None = None, account_id: str | None = None, mailing_street: str | None = None, mailing_city: str | None = None, mailing_state: str | None = None, mailing_postal_code: str | None = None, mailing_country: str | None = None, description: str | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
     :   Create a contact
@@ -668,6 +684,22 @@ Classes
         
                 Returns:
                     ContactsListResult
+
+    `search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
+    :   Search for contacts using SOSL (Salesforce Object Search Language).
+        SOSL is optimized for text-based searches across multiple fields.
+        
+        
+                Args:
+                    q: SOSL search query. Format: FIND \{searchTerm\} RETURNING Contact(fields) [LIMIT n]
+        Examples:
+        - "FIND \{John\} IN NAME FIELDS RETURNING Contact(Id,FirstName,LastName,Email)"
+        - "FIND \{*@example.com\} IN EMAIL FIELDS RETURNING Contact(Id,Name,Email) LIMIT 25"
+        
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    ContactsSearchResult
 
     `update(self, last_name: str, first_name: str | None = None, email: str | None = None, phone: str | None = None, mobile_phone: str | None = None, title: str | None = None, department: str | None = None, account_id: str | None = None, mailing_street: str | None = None, mailing_city: str | None = None, mailing_state: str | None = None, mailing_postal_code: str | None = None, mailing_country: str | None = None, description: str | None = None, owner_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Update a contact
@@ -792,22 +824,6 @@ Classes
 
     ### Methods
 
-    `api_search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
-    :   Search for events using SOSL (Salesforce Object Search Language).
-        SOSL is optimized for text-based searches across multiple fields.
-        
-        
-                Args:
-                    q: SOSL search query. Format: FIND \{searchTerm\} RETURNING Event(fields) [LIMIT n]
-        Examples:
-        - "FIND \{meeting\} IN ALL FIELDS RETURNING Event(Id,Subject,StartDateTime,Location)"
-        - "FIND \{demo\} IN NAME FIELDS RETURNING Event(Id,Subject,EndDateTime) LIMIT 25"
-        
-                    **kwargs: Additional parameters
-        
-                Returns:
-                    EventsApiSearchResult
-
     `create(self, subject: str, start_date_time: str, duration_in_minutes: int, end_date_time: str | None = None, location: str | None = None, description: str | None = None, who_id: str | None = None, what_id: str | None = None, is_all_day_event: bool | None = None, show_as: str | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
     :   Create an event
         
@@ -876,6 +892,22 @@ Classes
                 Returns:
                     EventsListResult
 
+    `search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
+    :   Search for events using SOSL (Salesforce Object Search Language).
+        SOSL is optimized for text-based searches across multiple fields.
+        
+        
+                Args:
+                    q: SOSL search query. Format: FIND \{searchTerm\} RETURNING Event(fields) [LIMIT n]
+        Examples:
+        - "FIND \{meeting\} IN ALL FIELDS RETURNING Event(Id,Subject,StartDateTime,Location)"
+        - "FIND \{demo\} IN NAME FIELDS RETURNING Event(Id,Subject,EndDateTime) LIMIT 25"
+        
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    EventsSearchResult
+
     `update(self, subject: str, start_date_time: str, duration_in_minutes: int, end_date_time: str | None = None, location: str | None = None, description: str | None = None, who_id: str | None = None, what_id: str | None = None, is_all_day_event: bool | None = None, show_as: str | None = None, owner_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Update an event
         
@@ -906,23 +938,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
-    :   Search for leads using SOSL (Salesforce Object Search Language).
-        SOSL is optimized for text-based searches across multiple fields.
-        
-        
-                Args:
-                    q: SOSL search query. Format: FIND \{searchTerm\} RETURNING Lead(fields) [LIMIT n]
-        Examples:
-        - "FIND \{Smith\} IN NAME FIELDS RETURNING Lead(Id,FirstName,LastName,Company,Status)"
-        - "FIND \{marketing\} IN ALL FIELDS RETURNING Lead(Id,Name,LeadSource) LIMIT 50"
-        
-                    **kwargs: Additional parameters
-        
-                Returns:
-                    LeadsApiSearchResult
-
-    `context_store_search(self, query: LeadsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[LeadsSearchData]`
+    `context_store_search(self, query: LeadsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
     :   Search leads records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -965,8 +981,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -977,6 +994,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against leads records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, last_name: str, company: str, first_name: str | None = None, title: str | None = None, email: str | None = None, phone: str | None = None, mobile_phone: str | None = None, website: str | None = None, status: str | None = None, lead_source: str | None = None, industry: str | None = None, rating: str | None = None, annual_revenue: float | None = None, number_of_employees: int | None = None, street: str | None = None, city: str | None = None, state: str | None = None, postal_code: str | None = None, country: str | None = None, description: str | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
     :   Create a lead
@@ -1055,6 +1087,22 @@ Classes
                 Returns:
                     LeadsListResult
 
+    `search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
+    :   Search for leads using SOSL (Salesforce Object Search Language).
+        SOSL is optimized for text-based searches across multiple fields.
+        
+        
+                Args:
+                    q: SOSL search query. Format: FIND \{searchTerm\} RETURNING Lead(fields) [LIMIT n]
+        Examples:
+        - "FIND \{Smith\} IN NAME FIELDS RETURNING Lead(Id,FirstName,LastName,Company,Status)"
+        - "FIND \{marketing\} IN ALL FIELDS RETURNING Lead(Id,Name,LeadSource) LIMIT 50"
+        
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    LeadsSearchResult
+
     `update(self, last_name: str, company: str, first_name: str | None = None, title: str | None = None, email: str | None = None, phone: str | None = None, mobile_phone: str | None = None, website: str | None = None, status: str | None = None, lead_source: str | None = None, industry: str | None = None, rating: str | None = None, annual_revenue: float | None = None, number_of_employees: int | None = None, street: str | None = None, city: str | None = None, state: str | None = None, postal_code: str | None = None, country: str | None = None, description: str | None = None, owner_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Update a lead
         
@@ -1094,22 +1142,6 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
-
-    `api_search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
-    :   Search for notes using SOSL (Salesforce Object Search Language).
-        SOSL is optimized for text-based searches across multiple fields.
-        
-        
-                Args:
-                    q: SOSL search query. Format: FIND \{searchTerm\} RETURNING Note(fields) [LIMIT n]
-        Examples:
-        - "FIND \{important\} IN ALL FIELDS RETURNING Note(Id,Title,ParentId)"
-        - "FIND \{action items\} IN NAME FIELDS RETURNING Note(Id,Title,Body) LIMIT 50"
-        
-                    **kwargs: Additional parameters
-        
-                Returns:
-                    NotesApiSearchResult
 
     `create(self, title: str, parent_id: str, body: str | None = None, is_private: bool | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
     :   Create a classic Salesforce Note attached to a parent record (Account, Contact,
@@ -1174,6 +1206,22 @@ Classes
                 Returns:
                     NotesListResult
 
+    `search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
+    :   Search for notes using SOSL (Salesforce Object Search Language).
+        SOSL is optimized for text-based searches across multiple fields.
+        
+        
+                Args:
+                    q: SOSL search query. Format: FIND \{searchTerm\} RETURNING Note(fields) [LIMIT n]
+        Examples:
+        - "FIND \{important\} IN ALL FIELDS RETURNING Note(Id,Title,ParentId)"
+        - "FIND \{action items\} IN NAME FIELDS RETURNING Note(Id,Title,Body) LIMIT 50"
+        
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    NotesSearchResult
+
     `update(self, title: str | None = None, body: str | None = None, is_private: bool | None = None, owner_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Update a note
         
@@ -1197,23 +1245,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
-    :   Search for opportunities using SOSL (Salesforce Object Search Language).
-        SOSL is optimized for text-based searches across multiple fields.
-        
-        
-                Args:
-                    q: SOSL search query. Format: FIND \{searchTerm\} RETURNING Opportunity(fields) [LIMIT n]
-        Examples:
-        - "FIND \{Enterprise\} IN NAME FIELDS RETURNING Opportunity(Id,Name,Amount,StageName)"
-        - "FIND \{renewal\} IN ALL FIELDS RETURNING Opportunity(Id,Name,CloseDate) LIMIT 25"
-        
-                    **kwargs: Additional parameters
-        
-                Returns:
-                    OpportunitiesApiSearchResult
-
-    `context_store_search(self, query: OpportunitiesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[OpportunitiesSearchData]`
+    `context_store_search(self, query: OpportunitiesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
     :   Search opportunities records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -1248,8 +1280,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1260,6 +1293,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against opportunities records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, name: str, stage_name: str, close_date: str, account_id: str | None = None, amount: float | None = None, probability: float | None = None, type: str | None = None, lead_source: str | None = None, next_step: str | None = None, campaign_id: str | None = None, forecast_category_name: str | None = None, description: str | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
     :   Create an opportunity
@@ -1335,6 +1383,22 @@ Classes
                 Returns:
                     OpportunitiesListResult
 
+    `search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
+    :   Search for opportunities using SOSL (Salesforce Object Search Language).
+        SOSL is optimized for text-based searches across multiple fields.
+        
+        
+                Args:
+                    q: SOSL search query. Format: FIND \{searchTerm\} RETURNING Opportunity(fields) [LIMIT n]
+        Examples:
+        - "FIND \{Enterprise\} IN NAME FIELDS RETURNING Opportunity(Id,Name,Amount,StageName)"
+        - "FIND \{renewal\} IN ALL FIELDS RETURNING Opportunity(Id,Name,CloseDate) LIMIT 25"
+        
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    OpportunitiesSearchResult
+
     `update(self, name: str, stage_name: str, close_date: str, account_id: str | None = None, amount: float | None = None, probability: float | None = None, type: str | None = None, lead_source: str | None = None, next_step: str | None = None, campaign_id: str | None = None, forecast_category_name: str | None = None, description: str | None = None, owner_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Update an opportunity
         
@@ -1392,8 +1456,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1404,6 +1469,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against opportunity_stages records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.OpportunityStage`
     :   Get a single opportunity stage by ID. Returns all accessible fields by default.
@@ -1528,7 +1608,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            instance_url: Your Salesforce instance URL (e.g., https://na1.salesforce.com)
     Examples:
         # Local mode (direct API calls)
-        connector = SalesforceConnector(auth_config=SalesforceAuthConfig(refresh_token="...", client_id="...", client_secret="..."))
+        connector = SalesforceConnector(auth_config=SalesforceAuthConfig(refresh_token="...", client_id="...", client_secret="..."), instance_url="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = SalesforceConnector(
             auth_config=AirbyteAuthConfig(
@@ -1562,12 +1642,13 @@ Classes
     ### Static methods
 
     `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
-    :   Framework-agnostic decorator for user-written connector tool functions.
+    :   Decorator for new user-written connector tool functions.
         
-        The progressive-docs sibling of tool_utils: instead of baking the full
-        entity/action reference into the docstring, it instructs the agent to
-        call this connector's inspect and docs tools before executing. Tool
-        failures raise :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        Use this when a tool needs a custom body or the framework lacks a
+        native strategy. Instead of baking the full entity/action reference
+        into the docstring, it instructs the agent to call this connector's
+        inspect and docs tools before executing. Tool failures raise
+        :class:`airbyte_agent_sdk.AirbyteToolError` by default
         (``framework="none"``, no auto-detection) — pass ``framework=...`` to
         translate to a supported framework's signal instead.
         
@@ -1626,7 +1707,11 @@ Classes
                 :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Add connector-specific documentation and runtime safeguards to one tool.
+    :   Deprecated. Add connector-specific documentation and runtime safeguards to one tool.
+        
+        Kept for backwards compatibility with existing single-tool
+        integrations; it is not removed and does not warn at runtime, but new
+        code should use `build_connector_tools` or `agent_tool` below.
         
         For new agents, prefer `build_connector_tools`. It returns progressive
         `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
@@ -1639,6 +1724,9 @@ Classes
         tools = build_connector_tools(connector, framework="pydantic_ai")
         agent = Agent("openai:gpt-4o", tools=tools.as_list())
         ```
+        
+        When a new integration needs custom tool bodies or a framework
+        without native support, use `agent_tool` instead.
         
         ### Legacy: one generated-description tool
         
@@ -1680,9 +1768,11 @@ Classes
         Args:
             update_docstring: When True, append connector capabilities to `__doc__`.
             max_output_chars: Max serialized output size before raising. Use `None` to disable.
-            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp" | "none"`.
                 Defaults to `None`, which auto-detects each framework's canonical
-                import in order. Explicit always wins.
+                import in order and falls back to `"none"` with a warning when no
+                supported framework is installed. Explicit always wins, and an
+                explicit framework whose package is missing raises `RuntimeError`.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
                 `airbyte_agent_sdk.translation.translate_exceptions`.
@@ -1737,7 +1827,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'api_search', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'search', 'download', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -1880,23 +1970,7 @@ Classes
 
     ### Methods
 
-    `api_search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
-    :   Search for tasks using SOSL (Salesforce Object Search Language).
-        SOSL is optimized for text-based searches across multiple fields.
-        
-        
-                Args:
-                    q: SOSL search query. Format: FIND \{searchTerm\} RETURNING Task(fields) [LIMIT n]
-        Examples:
-        - "FIND \{follow up\} IN ALL FIELDS RETURNING Task(Id,Subject,Status,Priority)"
-        - "FIND \{call\} IN NAME FIELDS RETURNING Task(Id,Subject,ActivityDate) LIMIT 50"
-        
-                    **kwargs: Additional parameters
-        
-                Returns:
-                    TasksApiSearchResult
-
-    `context_store_search(self, query: TasksSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[TasksSearchData]`
+    `context_store_search(self, query: TasksSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
     :   Search tasks records from Airbyte cache.
         
         This operation searches cached data from Airbyte syncs.
@@ -1929,8 +2003,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1941,6 +2016,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against tasks records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, subject: str, status: str | None = None, priority: str | None = None, activity_date: str | None = None, who_id: str | None = None, what_id: str | None = None, description: str | None = None, type: str | None = None, is_reminder_set: bool | None = None, reminder_date_time: str | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
     :   Create a task
@@ -2009,6 +2099,22 @@ Classes
         
                 Returns:
                     TasksListResult
+
+    `search(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[SearchResult]`
+    :   Search for tasks using SOSL (Salesforce Object Search Language).
+        SOSL is optimized for text-based searches across multiple fields.
+        
+        
+                Args:
+                    q: SOSL search query. Format: FIND \{searchTerm\} RETURNING Task(fields) [LIMIT n]
+        Examples:
+        - "FIND \{follow up\} IN ALL FIELDS RETURNING Task(Id,Subject,Status,Priority)"
+        - "FIND \{call\} IN NAME FIELDS RETURNING Task(Id,Subject,ActivityDate) LIMIT 50"
+        
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    TasksSearchResult
 
     `update(self, subject: str, status: str | None = None, priority: str | None = None, activity_date: str | None = None, who_id: str | None = None, what_id: str | None = None, description: str | None = None, type: str | None = None, is_reminder_set: bool | None = None, reminder_date_time: str | None = None, owner_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Update a task
@@ -2081,8 +2187,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -2093,6 +2200,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, username: str, last_name: str, email: str, alias: str, profile_id: str, time_zone_sid_key: str, locale_sid_key: str, email_encoding_key: str, language_locale_key: str, first_name: str | None = None, user_role_id: str | None = None, manager_id: str | None = None, is_active: bool | None = None, title: str | None = None, department: str | None = None, phone: str | None = None, mobile_phone: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
     :   Create a Salesforce User. Consumes a paid user-license seat. Requires the

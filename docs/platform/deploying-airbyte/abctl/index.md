@@ -205,7 +205,7 @@ To install a specific version of the Airbyte Helm chart instead of the latest, u
 abctl local install --chart-version 0.422.2 --values values.yaml --secret secret.yaml --port 8000
 ```
 
-The `--chart-version` value is the Helm chart version, not the Airbyte platform version. To find available versions, see the [Airbyte Helm chart on ArtifactHub](https://artifacthub.io/packages/helm/airbyte/airbyte).
+The `--chart-version` value is the Helm chart version, not the Airbyte platform version. To find available versions, see the [Airbyte Helm chart on ArtifactHub](https://artifacthub.io/packages/helm/airbyte-v2/airbyte).
 
 #### Install from a local Helm chart
 
@@ -383,7 +383,7 @@ abctl has three commands: `local`, `images`, and `version`. Most commands have s
     | Name                | Default | Description                                                                                                                                                                                                                                            | Example                    |
     | ------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------- |
     | --chart             | ""      | Path to a local Helm chart directory. Use this to install from a local chart (for example, in air-gapped environments or during development). Mutually exclusive with `--chart-version`.                                                                  | ./my-chart                 |
-    | --chart-version     | latest  | The version of the Airbyte Helm chart to install. This is the **Helm chart version**, not the Airbyte platform version. Omit this flag to install the latest version. Mutually exclusive with `--chart`. To find available versions, see the [Airbyte Helm chart on ArtifactHub](https://artifacthub.io/packages/helm/airbyte/airbyte). | 0.422.2                    |
+    | --chart-version     | latest  | The version of the Airbyte Helm chart to install. This is the **Helm chart version**, not the Airbyte platform version. Omit this flag to install the latest version. Mutually exclusive with `--chart`. To find available versions, see the [Airbyte Helm chart on ArtifactHub](https://artifacthub.io/packages/helm/airbyte-v2/airbyte). | 0.422.2                    |
     | --docker-email      | ""      | Docker email address to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_EMAIL`.                                                                                               | user@example.com          |
     | --docker-password   | ""      | Docker password to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_PASSWORD`.                                                                                                 | mypassword                 |
     | --docker-server     | ""      | Docker server to authenticate against. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_SERVER`.                                                                                                                       | docker.io                 |

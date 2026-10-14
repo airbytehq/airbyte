@@ -1355,6 +1355,25 @@ definitions:
         type: RequestOption
         field_name: api_key
         inject_into: request_parameter
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          failure_type: config_error
+          predicate: >-
+            {{ response.get('error') is mapping and
+            response.get('error', {}).get('error_code') == 11 }}
+          error_message: >-
+            Flowlu rejected the request: {{ response.get('error', {}).get('error_msg', 'unknown error') }}.
+            Check that the 'Company' field is your Flowlu account subdomain (the part before .flowlu.com)
+            and that the API key is valid and enabled for the API.
+        - type: HttpResponseFilter
+          action: FAIL
+          predicate: "{{ response.get('error') is mapping }}"
+          error_message: >-
+            Flowlu API returned an error (code {{ response.get('error', {}).get('error_code') }}):
+            {{ response.get('error', {}).get('error_msg', 'unknown error') }}
 
 streams:
   - $ref: "#/definitions/streams/tasks"

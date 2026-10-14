@@ -6,11 +6,11 @@ data:
     hosts:
       - api.stripe.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.7@sha256:c8318a72046a68ab48bd5bd57adb459d5a69dead827356f19c2ef78fbecfe0c9
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.35.0@sha256:0557872c74928d6b338b208a97fe52e9e8aed8d9674d85d5b5b540bf91c8110c
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 6.0.11
+  dockerImageTag: 7.0.0
   dockerRepository: airbyte/source-stripe
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   erdUrl: https://dbdocs.io/airbyteio/source-stripe?view=relationships
@@ -31,7 +31,12 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
     breakingChanges:
       4.0.0:
         message: Version 4.0.0 changes the cursors in most of the Stripe streams that support incremental sync mode. This is done to not only sync the data that was created since previous sync, but also the data that was modified. A schema refresh of all effected streams is required to use the new cursor format.
@@ -51,6 +56,13 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["invoice_line_items", "subscription_items"]
+      7.0.0:
+        message: "Version 7.0.0 fixes `invoice_line_items` incremental syncs for Stripe accounts whose default Stripe API version is older than 2019-12-03. On those accounts, incremental syncs wrote legacy line item IDs (`ii_`, `item_`, `sub_`, `su_`, `sli_`) instead of Stripe's current `il_` IDs, so the primary key value of affected rows changes. Affected users must refresh the `invoice_line_items` stream and remove records after upgrading; refreshing and retaining records leaves the legacy rows in place. Most accounts aren't affected and need no action. See the [migration guide](https://docs.airbyte.com/integrations/sources/stripe-migrations#upgrading-to-700) to check whether you're affected."
+        upgradeDeadline: "2026-11-07"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["invoice_line_items"]
   suggestedStreams:
     streams:
       - customers

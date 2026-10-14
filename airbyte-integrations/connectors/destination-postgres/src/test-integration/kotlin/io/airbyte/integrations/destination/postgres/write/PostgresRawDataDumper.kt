@@ -50,7 +50,7 @@ import java.time.temporal.ChronoField
 class PostgresRawDataDumper(
     private val configProvider: (ConfigurationSpecification) -> PostgresConfiguration
 ) : DestinationDataDumper {
-    private val coercer = AirbyteValueCoercer(useFastTimestampParsing = true)
+    private val coercer = AirbyteValueCoercer()
     companion object {
         // Lenient formatters that handle PostgreSQL's JSONB serialization quirks
         // (e.g., dropping :00 seconds)

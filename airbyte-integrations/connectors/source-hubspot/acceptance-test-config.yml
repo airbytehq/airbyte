@@ -38,6 +38,22 @@ acceptance_tests:
             bypass_reason: No value in re-create every 90 days
           - name: list_memberships
             bypass_reason: Test account may not have populated list memberships
+          - name: goals
+            bypass_reason: >-
+              Test portal lacks Sales Hub Enterprise, so /crm/v3/objects/goal_targets returns 403
+              (requires one of [goals-read]) - covered by unit tests
+          - name: leads
+            bypass_reason: >-
+              Test portal lacks Sales Hub Professional, so /crm/v3/properties/leads returns 403 -
+              covered by unit tests
+          - name: workflows
+            bypass_reason: >-
+              Test portal lacks automation access, so /automation/v3/workflows returns 403 (missing
+              'workflows-access-public-api') - covered by unit tests
+          - name: flows
+            bypass_reason: >-
+              Test portal lacks automation access, so /automation/v4/flows returns 403 (missing
+              'workflows-access-public-api') - covered by unit tests
           - name: contacts_web_analytics
             bypass_reason: High-fanout experimental stream validated by unit tests and manual preview
           - name: companies_web_analytics
@@ -73,6 +89,22 @@ acceptance_tests:
             bypass_reason: No value in re-create every 90 days
           - name: list_memberships
             bypass_reason: Test account may not have populated list memberships
+          - name: goals
+            bypass_reason: >-
+              Test portal lacks Sales Hub Enterprise, so /crm/v3/objects/goal_targets returns 403
+              (requires one of [goals-read]) - covered by unit tests
+          - name: leads
+            bypass_reason: >-
+              Test portal lacks Sales Hub Professional, so /crm/v3/properties/leads returns 403 -
+              covered by unit tests
+          - name: workflows
+            bypass_reason: >-
+              Test portal lacks automation access, so /automation/v3/workflows returns 403 (missing
+              'workflows-access-public-api') - covered by unit tests
+          - name: flows
+            bypass_reason: >-
+              Test portal lacks automation access, so /automation/v4/flows returns 403 (missing
+              'workflows-access-public-api') - covered by unit tests
           - name: contacts_web_analytics
             bypass_reason: High-fanout experimental stream validated by unit tests and manual preview
           - name: companies_web_analytics
@@ -102,45 +134,6 @@ acceptance_tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/full_refresh_custom_objects.json
       - config_path: secrets/config_oauth.json
-        configured_catalog_path: integration_tests/full_refresh_oauth_catalog.json
-        ignored_fields:
-          contact_lists:
-            - name: ilsFilterBranch
-              bypass_reason: Floating fields order
-          companies:
-            - name: properties_hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_time_*
-              bypass_reason: Hubspot time depend on current time
-          contacts:
-            - name: properties_hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_v2_cumulative_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_v2_latest_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties_hs_v2_cumulative_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties_hs_v2_latest_time_*
-              bypass_reason: Hubspot time depend on current time
-          deals:
-            - name: properties_hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_time_*
-              bypass_reason: Hubspot time depend on current time
-          leads:
-            - name: properties_hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_time_*
-              bypass_reason: Hubspot time depend on current time
-          tickets:
-            - name: properties_hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_time_*
-              bypass_reason: Hubspot time depend on current time
-      - config_path: secrets/config_oauth_no_start_date.json
         configured_catalog_path: integration_tests/full_refresh_oauth_catalog.json
         ignored_fields:
           contact_lists:

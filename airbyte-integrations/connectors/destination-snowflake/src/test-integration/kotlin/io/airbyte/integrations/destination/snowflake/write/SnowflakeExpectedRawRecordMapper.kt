@@ -19,7 +19,6 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
-import io.airbyte.integrations.destination.snowflake.write.SnowflakeExpectedRecordMapper.mapAirbyteMetadata
 import io.airbyte.integrations.destination.snowflake.write.transform.INT_MAX
 import io.airbyte.integrations.destination.snowflake.write.transform.INT_MIN
 import java.math.BigDecimal
@@ -28,12 +27,14 @@ val INT_MIN_NUMBER = INT_MIN.toBigDecimal()
 val INT_MAX_NUMBER = INT_MAX.toBigDecimal()
 
 object SnowflakeExpectedRawRecordMapper : ExpectedRecordMapper {
+    private val typedRecordMapper = SnowflakeExpectedRecordMapper()
+
     override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
         // Map values to align with Snowflake values
         val mappedData = mapValues(expectedRecord.data) as ObjectValue
         // Map the metadata to account for invalid values
         val mappedMetadata =
-            mapAirbyteMetadata(
+            typedRecordMapper.mapAirbyteMetadata(
                 originalData = expectedRecord.data,
                 mappedData =
                     mappedData.values.entries.associateTo(linkedMapOf()) {

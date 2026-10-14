@@ -778,6 +778,10 @@ class MsSqlServerDebeziumOperations(
             putAll(configuration.authentication.toDebeziumDriverProperties())
         }
 
+        // Debezium is only ever engaged in CDC mode, so this cast always holds.
+        val cdcConfiguration =
+            configuration.incrementalReplicationConfiguration as CdcIncrementalConfiguration
+
         return DebeziumPropertiesBuilder()
             .withDefault()
             .withConnector(SqlServerConnector::class.java)
@@ -789,6 +793,7 @@ class MsSqlServerDebeziumOperations(
             .with("include.schema.changes", "false")
             .with("provide.transaction.metadata", "false")
             .with("snapshot.isolation.mode", "read_committed")
+            .with("data.query.mode", "function")
             .with("schema.include.list", schemaList)
             .let { builder ->
                 if (messageKeyColumns.isNotEmpty()) {
@@ -804,20 +809,21 @@ class MsSqlServerDebeziumOperations(
             .with("mssql_converter.type", MsSqlServerDebeziumConverter::class.java.name)
             .with("binary.handling.mode", "base64")
             .with("snapshot.locking.mode", "none")
-            // Set poll.interval.ms to control how often Debezium queries for new data
+            // `poll.interval.ms` controls how often Debezium queries for new data
             // This value is now configurable and validated to be smaller than heartbeat.interval.ms
+            .with("poll.interval.ms", cdcConfiguration.pollIntervalMs.toString())
+            // `max.iteration.transactions` limit how many transactions Debezium reads per streaming
+            // iteration, counted across every CDC-enabled table in the database. Lower values
+            // bound memory, higher values catch up faster. 0 means unbounded: Debezium reads up to
+            // the current max LSN in one pass.
             .with(
-                "poll.interval.ms",
-                (configuration.incrementalReplicationConfiguration as CdcIncrementalConfiguration)
-                    .pollIntervalMs
-                    .toString()
+                "max.iteration.transactions",
+                cdcConfiguration.maxIterationTransactions.toString()
             )
             // Enable heartbeat timeout for MSSQL to detect idle database states
             .with(
                 AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS,
-                configuration.incrementalReplicationConfiguration.initialWaitingSeconds
-                    .toSeconds()
-                    .toString()
+                cdcConfiguration.initialWaitingSeconds.toSeconds().toString()
             )
             .buildMap()
     }
