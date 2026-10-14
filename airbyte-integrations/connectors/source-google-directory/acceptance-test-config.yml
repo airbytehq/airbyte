@@ -6,18 +6,14 @@ acceptance_tests:
     tests:
       - spec_path: "source_google_directory/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+      - bypass_reason: "The GSM test configs fail `check`: the service account is not authorized for the requested scopes (unauthorized_client), and the OAuth client of config_oauth.json was deleted"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    bypass_reason: "The GSM test configs fail `check`: the service account is not authorized for the requested scopes (unauthorized_client), and the OAuth client of config_oauth.json was deleted"
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      # API returns different lastLoginTime for some users, eteg is generated based on all data, so also sometime are different
-      ignored_fields:
-        "users": ["etag", "lastLoginTime"]
+    bypass_reason: "The GSM test configs fail `check`: the service account is not authorized for the requested scopes (unauthorized_client), and the OAuth client of config_oauth.json was deleted"
