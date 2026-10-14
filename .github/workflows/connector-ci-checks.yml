@@ -399,7 +399,7 @@ jobs:
       # non-blocking for community connectors whose secret fetch succeeded with zero secrets.
       # With a pinned CDK before 7.36 the suite reads every discovered stream for every config;
       # the timeout keeps a connector whose full read is too long for CI from holding the job
-      # (such a connector skips that test in its integration_tests/standard_tests.py).
+      # (such a connector bounds that read in its own integration_tests/standard_tests.py).
       - name: Run Standard Tests (in-process) ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector && steps.connector-test-policy.outputs.language == 'python'
         continue-on-error: ${{ steps.connector-test-policy.outputs.allow-test-failures == 'true' }}
