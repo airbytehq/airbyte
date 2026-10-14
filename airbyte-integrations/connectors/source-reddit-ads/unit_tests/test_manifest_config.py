@@ -34,12 +34,18 @@ def test_api_budget_resolves_separate_campaign_and_report_policies() -> None:
 
     assert limits == [(400, timedelta(minutes=1)), (60, timedelta(minutes=1))]
     requests_by_path = {
-        "/api/v3/ad_accounts/a2_x/ads": requests.Request("GET", "https://ads-api.reddit.com/api/v3/ad_accounts/a2_x/ads").prepare(),
-        "/api/v3/ad_accounts/a2_x/campaigns": requests.Request(
-            "GET", "https://ads-api.reddit.com/api/v3/ad_accounts/a2_x/campaigns"
+        "/api/v3/ad_accounts/a2_abc123": requests.Request("GET", "https://ads-api.reddit.com/api/v3/ad_accounts/a2_abc123").prepare(),
+        "/api/v3/ad_accounts/a2_abc123/ad_groups": requests.Request(
+            "GET", "https://ads-api.reddit.com/api/v3/ad_accounts/a2_abc123/ad_groups"
         ).prepare(),
-        "/api/v3/ad_accounts/a2_x/reports": requests.Request(
-            "POST", "https://ads-api.reddit.com/api/v3/ad_accounts/a2_x/reports"
+        "/api/v3/ad_accounts/a2_abc123/ads": requests.Request(
+            "GET", "https://ads-api.reddit.com/api/v3/ad_accounts/a2_abc123/ads"
+        ).prepare(),
+        "/api/v3/ad_accounts/a2_abc123/campaigns": requests.Request(
+            "GET", "https://ads-api.reddit.com/api/v3/ad_accounts/a2_abc123/campaigns"
+        ).prepare(),
+        "/api/v3/ad_accounts/a2_abc123/reports": requests.Request(
+            "POST", "https://ads-api.reddit.com/api/v3/ad_accounts/a2_abc123/reports"
         ).prepare(),
     }
     matched = {
@@ -48,9 +54,11 @@ def test_api_budget_resolves_separate_campaign_and_report_policies() -> None:
     }
 
     assert matched == {
-        "/api/v3/ad_accounts/a2_x/ads": [0],
-        "/api/v3/ad_accounts/a2_x/campaigns": [0],
-        "/api/v3/ad_accounts/a2_x/reports": [1],
+        "/api/v3/ad_accounts/a2_abc123": [0],
+        "/api/v3/ad_accounts/a2_abc123/ad_groups": [0],
+        "/api/v3/ad_accounts/a2_abc123/ads": [0],
+        "/api/v3/ad_accounts/a2_abc123/campaigns": [0],
+        "/api/v3/ad_accounts/a2_abc123/reports": [1],
     }
     assert source.resolved_manifest["api_budget"]["status_codes_for_ratelimit_hit"] == [429]
 

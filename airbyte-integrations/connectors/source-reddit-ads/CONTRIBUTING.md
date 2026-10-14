@@ -11,25 +11,35 @@ after about an hour and the connector mints them as needed.
 
 ## Streams and incremental sync
 
-`ad` and `campaign` read the full Reddit v3 list endpoints and apply
-`modified_at` incremental filtering client-side. Those endpoints have no
-server-side `modified_at` filter, so every sync pages through the complete list.
+`ad` and `ad_group` read their Reddit v3 list endpoints and apply `modified_at`
+incremental filtering client-side. Those endpoints have no server-side
+`modified_at` filter, so every sync pages through the complete list. `campaign`
+uses the same incremental behavior. `ad_account` reads the configured account
+details with full refresh.
 
-`campaign_report` posts campaign-level requests to `/reports`, with `campaign_id`
-and UTC `date` breakdowns. It requests contiguous three-day windows with
-day-aligned cursor boundaries and re-reads a configurable whole-day lookback
-(default 7 days, bounded to 0–30) on incremental syncs. Today's row is partial
-until the next sync re-reads it. Report history is clamped to 24 months because
-Reddit only serves that period. Metric money fields are kept in the micro-units
-Reddit returns; the connector does not convert them. Pagination uses
+`campaign_report`, `ad_account_report`, `ad_group_report`, and `ad_report` post
+daily requests to `/reports`, broken down by campaign, account, ad group, and ad
+respectively. They request contiguous three-day windows with day-aligned cursor
+boundaries and re-read a configurable whole-day lookback (default 7 days,
+bounded to 0–30) on incremental syncs. Today's row is partial until the next
+sync re-reads it. Report history is clamped to 24 months because Reddit only
+serves that period. Metric money fields are kept in the micro-units Reddit
+returns; the connector does not convert them. Pagination uses
 `pagination.next_url` and decodes `%3D` in `page.token` before sending the next
 request.
+
+## Not implemented
+
+- `business_account`: requires business-level scope and an ID outside the configured ad account.
+- Per-event conversion reports: use separate conversion endpoints and attribution semantics.
+- Country/region breakdowns: are higher-cardinality and subject to Reddit's upcoming breakdown restrictions.
 
 ## Limits and errors
 
 The API budget is configured to Reddit's documented per-policy quotas:
-`ads-campaign-management-read` 400 requests per 60 seconds for `/ads` and
-`/campaigns` (https://ads-api.reddit.com/docs/v3/api/list-campaigns) and
+`ads-campaign-management-read` 400 requests per 60 seconds for the account,
+`/ads`, `/ad_groups`, and `/campaigns` endpoints
+(https://ads-api.reddit.com/docs/v3/api/list-campaigns) and
 `ads-reporting` 60 requests per 60 seconds for `/reports`
 (https://ads-api.reddit.com/docs/v3/api/get-a-report). The budget is per
 connector process, so other clients using the same Reddit credentials are not

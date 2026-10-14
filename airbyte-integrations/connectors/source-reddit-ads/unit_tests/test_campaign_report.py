@@ -139,7 +139,15 @@ def _inclusive_report_response(request, context) -> str:
         {
             "data": {
                 "metrics": [
-                    {"campaign_id": "test-campaign", "date": report_date.isoformat(), "impressions": 1} for report_date in report_dates
+                    {
+                        "account_id": "a2_abc123",
+                        "ad_group_id": "a2_abc123",
+                        "ad_id": "a2_abc123",
+                        "campaign_id": "a2_abc123",
+                        "date": report_date.isoformat(),
+                        "impressions": 1,
+                    }
+                    for report_date in report_dates
                 ]
             }
         }
@@ -151,8 +159,9 @@ def _read_report_windows(
     config: dict,
     state=None,
     bypass_spec_validation: bool = False,
+    stream_name: str = "campaign_report",
 ) -> tuple[list[tuple[str, str]], list[str]]:
-    catalog = CatalogBuilder().with_stream("campaign_report", SyncMode.incremental).build()
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
     with freeze_time(now), HttpMocker() as http_mocker:
         http_mocker._mocker.post(
             _TOKEN_URL,
