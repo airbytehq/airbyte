@@ -4,8 +4,8 @@ products: cloud
 
 # Install the Airbyte MCP
 
-:::info Private beta
-The Airbyte MCP is in private beta. Features and tools may change. It's available to Airbyte Cloud organizations enrolled in the beta. To use the Airbyte MCP with self-managed Airbyte Core, see [Use the Airbyte MCP with Airbyte Core](self-managed.md).
+:::info Open beta
+The Airbyte MCP is in open beta. Features and tools may change. It's available to all Airbyte Cloud organizations. To use the Airbyte MCP with self-managed Airbyte Core, see [Use the Airbyte MCP with Airbyte Core](self-managed.md).
 :::
 
 The Airbyte MCP is a hosted, remote MCP server. You don't need to install anything. Give your MCP client this URL and sign in with your Airbyte Cloud account.
@@ -16,7 +16,7 @@ https://mcp.airbyte.com/mcp
 
 ## Prerequisites
 
-- An [Airbyte Cloud](https://cloud.airbyte.com) account in an organization enrolled in the private beta.
+- An [Airbyte Cloud](https://cloud.airbyte.com) account.
 - An MCP client that supports remote MCP servers with OAuth and the Streamable HTTP transport.
 - To read data directly from sources and destinations, an organization admin must [enable the context layer](../context-layer/manage-access.md). However, you can use the Airbyte MCP to manage pipelines without it.
 
