@@ -16,6 +16,6 @@ Airbyte provides MCP (Model Context Protocol) servers for connecting AI assistan
 
 <CardWithIcon title="Agent MCP" description="Connect MCP-capable agents like Claude, Cursor, VS Code, ChatGPT, and Codex to your data through Airbyte Agents." ctaText="Set up Agent MCP" ctaLink="/ai-agents/interfaces/mcp/" icon="fa-robot" />
 
-<CardWithIcon title="Knowledge MCP server" description="For self-managed Airbyte. Provide Airbyte product and developer knowledge to AI agents through semantic search over Airbyte docs, specs, videos, and GitHub content. Airbyte Cloud users get this in the Airbyte MCP." ctaText="Set up Knowledge MCP server" ctaLink="/community/mcp-servers/airbyte-knowledge-mcp" icon="fa-magnifying-glass" />
+<CardWithIcon title="Knowledge MCP server" description="For Airbyte Core. Provide Airbyte product and developer knowledge to AI agents through semantic search over Airbyte docs, specs, videos, and GitHub content. Airbyte Cloud users get this as part of the Airbyte MCP." ctaText="Set up Knowledge MCP server" ctaLink="/community/mcp-servers/airbyte-knowledge-mcp" icon="fa-magnifying-glass" />
 
 </Grid>

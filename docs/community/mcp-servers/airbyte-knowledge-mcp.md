@@ -5,7 +5,7 @@ sidebar_label: Knowledge MCP server
 # Airbyte knowledge MCP server
 
 :::tip Airbyte Cloud users
-If you use Airbyte Cloud, use the [Airbyte MCP](/platform/airbyte-mcp) instead. It includes Airbyte knowledge search, plus tools to build, monitor, and troubleshoot your data pipelines. You only need the knowledge MCP server if you use self-managed Airbyte.
+If you use Airbyte Cloud, use the [Airbyte MCP](/platform/airbyte-mcp) instead. It includes Airbyte knowledge search, plus tools to build, monitor, and troubleshoot your data pipelines. You only need the knowledge MCP server if you use Airbyte Core.
 :::
 
 The Airbyte knowledge MCP server connects AI agents to comprehensive sources of information about Airbyte. It provides semantic search over Airbyte's documentation, website, OpenAPI specs, YouTube content, and GitHub issues, discussions, and pull requests.
