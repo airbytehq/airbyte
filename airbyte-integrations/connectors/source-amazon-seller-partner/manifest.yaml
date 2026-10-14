@@ -250,7 +250,7 @@ spec:
           removed in a future version. Rate limiting is now handled automatically
           by the connector."
         default: false
-        order: 13
+        order: 27
         airbyte_hidden: true
       max_done_report_age_hours:
         title: "Max Age of Completed Reports to Reuse (Hours)"
@@ -263,7 +263,7 @@ spec:
         default: 0
         minimum: 0
         maximum: 72
-        order: 14
+        order: 26
       financial_events_step:
         title: Financial Events Step Size
         description: 'The time window size for fetching financial events data in chunks
