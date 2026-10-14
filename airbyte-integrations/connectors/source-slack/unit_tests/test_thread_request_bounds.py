@@ -140,3 +140,65 @@ def test_thread_requests_skip_only_proven_older_replies(requests_mock, token_con
     assert endpoint.call_count == expected_requests
     parent_state = output.most_recent_state.stream_state.parent_state["channel_messages"]
     assert float(parent_state["states"][0]["cursor"]["float_ts"]) == float(root)
+
+
+@freeze_time("2026-10-14T00:00:00Z")
+@pytest.mark.parametrize("existing_partition", [False, True])
+def test_thread_requests_preserve_initial_backfill_and_older_partition_cursors(requests_mock, token_config, existing_partition):
+    config = {
+        **deepcopy(token_config),
+        "start_date": "2025-12-26T00:00:00Z",
+        "end_date": "2026-10-14T00:00:00Z",
+        "channel_filter": ["airbyte-for-beginners"],
+        "lookback_window": 0,
+        "channel_messages_window_size": 365,
+        "threads_ignore_no_replies": True,
+    }
+    root = "1767225600"
+    latest = "1777593600"
+    requests_mock.get(
+        "https://slack.com/api/conversations.history",
+        json={"ok": True, "messages": [{"ts": root, "thread_ts": root, "reply_count": 1, "latest_reply": latest}]},
+    )
+    endpoint = requests_mock.get(
+        "https://slack.com/api/conversations.replies", json={"ok": True, "messages": [{"ts": latest, "thread_ts": root}]}
+    )
+    if existing_partition:
+        checkpoint = "1769904000"
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "threads",
+                {
+                    "state": {"float_ts": "1791849600"},
+                    "use_global_cursor": False,
+                    "states": [
+                        {
+                            "partition": {"float_ts": root, "parent_slice": {"channel": "airbyte-for-beginners", "parent_slice": {}}},
+                            "cursor": {"float_ts": checkpoint},
+                        }
+                    ],
+                    "parent_state": {"channel_messages": {"float_ts": "1766707200"}},
+                },
+            )
+            .build()
+        )
+    else:
+        checkpoint = "1766707200"
+        state = StateBuilder().build()
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "threads", "json_schema": {}, "supported_sync_modes": ["incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    output = read(get_source(config, "threads", state), config=config, catalog=catalog, state=state)
+    assert not output.errors
+    assert {r.record.data["ts"] for r in output.records} == {latest}
+    assert endpoint.call_count == 1
+    assert float(endpoint.request_history[0].qs["oldest"][0]) == float(checkpoint)
