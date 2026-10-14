@@ -130,6 +130,27 @@ airbyte:
             output: >-
               The sync encountered an unexpected error in the change event producer and has stopped. Please check the logs for details and troubleshoot accordingly.
             reference-links: https://docs.oracle.com/javase/9/docs/api/java/lang/RuntimeException.html
+
+          # Connector/J raises this when it cannot open a connection at all (refused port, unknown
+          # host, connect timeout, firewall drop): no packet was ever received from the server.
+          # Mid-sync link drops instead say "The last packet successfully received from the server
+          # was N milliseconds ago" and are not matched here. Transient so syncs keep retrying;
+          # the CDK reports CHECK failures as config errors regardless.
+          - pattern: (?s)communications link failure.*the driver has not received any packets from the server
+            input-example: >-
+              com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure
+
+              The last packet sent successfully to the server was 0 milliseconds ago.
+              The driver has not received any packets from the server.
+            error: transient
+            group: MySQL Connection Error
+            output: >-
+              MySQL server is unreachable at the configured host and port.
+              Check that the host and port are correct, that the server is running and accepts remote connections
+              (bind-address and the user's allowed hosts), and that any firewall or security group allows inbound connections from Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist
+              - https://docs.airbyte.com/integrations/sources/mysql
       jdbc:
         # The following rules are for the JdbcExceptionClassifier [0] which are applied on a
         # MySQL's error code [1]. The vendor error code is printed in the exception
