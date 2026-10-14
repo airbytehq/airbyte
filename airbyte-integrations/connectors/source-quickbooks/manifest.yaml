@@ -17847,6 +17847,7 @@ spec:
         type: object
         order: 0
         title: Authentication
+        default: "oauth2.0"
         oneOf:
           - type: object
             title: Authenticate via QuickBooks (Airbyte app)
