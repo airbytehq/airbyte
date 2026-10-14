@@ -70,12 +70,12 @@ fi
 # `create_connector_test_suite` and `pytest_hooks`, which every CDK since 6.46.0 has.
 #
 # A source that the generated suite cannot build (its constructor requires `catalog`, `config` and
-# `state`, or a `FileBasedSource` stream reader and spec class, or its package does not export the
-# source class) ships its own suite in integration_tests/standard_tests.py: a `SourceTestSuiteBase`
-# subclass that overrides `create_connector()` to build the source as its `run.py` does. The task
-# runs that file instead of generating one. The file is not named
-# `test_*.py` so that `test-integration-tests` does not collect it as well, and run its Docker
-# tests with the pinned CDK before the image is built.
+# `state`, or a `FileBasedSource` stream reader and spec class, or it evaluates its config when it is
+# built, or its package does not export the source class) ships its own suite in
+# integration_tests/standard_tests.py: a `SourceTestSuiteBase` subclass that overrides
+# `create_connector()` to build the source as its `run.py` does. The task runs that file instead of
+# generating one. The file is not named `test_*.py`, so that `test-integration-tests` does not
+# collect it a second time and run its Docker tests with the pinned CDK before the image is built.
 #
 # pytest runs with `--noconftest`: the suite is self-contained, and the conftest.py files next to it
 # (integration_tests/conftest.py in source-gcs, source-sftp-bulk and source-azure-blob-storage) start
