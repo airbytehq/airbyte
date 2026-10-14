@@ -2884,6 +2884,19 @@ schemas:
               type:
                 - string
                 - "null"
+      holidays_public_config:
+        type:
+          - object
+          - "null"
+        properties:
+          country_codes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
       id:
         type: string
       name:
@@ -3032,6 +3045,23 @@ schemas:
                   type:
                     - string
                     - "null"
+      external_issue_reference:
+        type:
+          - object
+          - "null"
+        properties:
+          provider:
+            type:
+              - string
+              - "null"
+          issue_name:
+            type:
+              - string
+              - "null"
+          issue_permalink:
+            type:
+              - string
+              - "null"
       has_debrief:
         type:
           - boolean
