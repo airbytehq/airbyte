@@ -224,8 +224,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-|:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :----------- | :----------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 9.2.2 | 2026-09-14 | [78506](https://github.com/airbytehq/airbyte/pull/78506) | Handle expired refresh tokens as configuration errors |
 | 9.2.1 | 2026-09-08 | [84485](https://github.com/airbytehq/airbyte/pull/84485) | Update dependencies |
 | 9.2.0 | 2026-08-20 | [74367](https://github.com/airbytehq/airbyte/pull/74367) | Add Sponsored Products Search Terms report streams (summary and daily) using the `spSearchTerm` report type |
