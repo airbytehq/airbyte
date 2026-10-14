@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "additionalProperties": false,
   "properties": {
     "RetailerInfo": {
       "description": "in GETs: the retailer; in POSTs or PUTs: identifies existing retailer or properties of new retailer",
