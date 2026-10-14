@@ -14,7 +14,9 @@ The `/v3/actions` and `/v3/follow_ups` endpoints only return records from `stand
 
 To keep parity with `/v2`, both streams use a `ListPartitionRouter` that sends one request series per documented `incident_mode` value: `standard`, `retrospective`, `test`, `tutorial`, `stream`. Each record belongs to exactly one mode, so the partitions do not overlap.
 
-If incident.io adds a new `incident_mode` value (see the `incident_mode` parameter in https://docs.incident.io/openapi/latest.json), add it to the `values` list of both routers in `manifest.yaml` and to `_MODES` in `unit_tests/test_v3_streams.py`. Otherwise records from incidents in that mode will silently stop syncing.
+If incident.io adds a new `incident_mode` value (see the `incident_mode` parameter in https://docs.incident.io/openapi/latest.json), add it to the `values` list of the `actions` and `follow-ups` routers and the `mode[one_of]` list in the `incidents` requester in `manifest.yaml`. Also add it to `_MODES` in `unit_tests/test_v3_streams.py`, which the tests for all three streams use. Otherwise, records from incidents in that mode can silently stop syncing.
+
+`/v2/incidents` documents `mode` as defaulting to `standard` and `retrospective` and does not list `stream`, while `/v3/actions` and `/v3/follow_ups` document `stream` as an `incident_mode`. `/v2/incidents` accepts mode values it does not recognize without an error; an unrecognized value returns HTTP 200 with no rows. Sending `stream` costs nothing if the endpoint ignores it and prevents stream incidents from being silently dropped if it returns them only when requested.
 
 ## `incidents` includes every status category
 
