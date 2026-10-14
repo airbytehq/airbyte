@@ -63,12 +63,15 @@ data:
         upgradeDeadline: "2025-02-15"
       5.0.0:
         message: >-
-          Authentication fields moved under `credentials`. Each existing source
-          must be reconfigured: choose "Use the Airbyte OAuth App"
-          and click Authenticate (production companies only), or choose "Use your
-          own Intuit app" and re-enter the Client ID, Client Secret, Refresh Token
-          and Realm ID (required for sandbox). Existing configurations fail until
-          reconfigured.
+          Authentication now requires an explicit choice between Airbyte's
+          QuickBooks app and your own Intuit app, so Airbyte's app credentials
+          can no longer override yours and sandbox companies work with your
+          own app. Existing configurations fail until reconfigured. Edit the
+          existing source: choose "Use the Airbyte OAuth App" and click
+          Authenticate (production companies only), or choose "Use your own
+          Intuit app" and re-enter the Client ID, Client Secret, Refresh Token
+          and Realm ID (required for sandbox). Connections not updated by the
+          deadline are disabled. No schema refresh or data clear is needed.
         upgradeDeadline: "2026-11-13"
         deadlineAction: disable
   documentationUrl: https://docs.airbyte.com/integrations/sources/quickbooks
