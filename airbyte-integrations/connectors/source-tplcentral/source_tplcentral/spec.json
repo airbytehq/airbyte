@@ -5,7 +5,7 @@
     "title": "Tplcentral Spec",
     "type": "object",
     "required": ["url_base", "client_id", "client_secret"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "url_base": {
         "title": "URL base",
