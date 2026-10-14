@@ -24,9 +24,9 @@ concurrency:
   group: ai-breaking-change-ready-${{ inputs.pr || 'unknown' }}
   cancel-in-progress: false
 
-# Edit this list to add or remove reviewers. They are @-mentioned in the channel below.
+# The Slack user group of breaking-change reviewers, @-mentioned in the channel below. Edit the group in Slack to change who is paged.
 env:
-  BREAKING_CHANGE_REVIEWER_SLACK_IDS: "U04QENY1EDV,U07V1RTGP88"
+  BREAKING_CHANGE_REVIEWER_SLACK_GROUP: S0C7C65AZM5
   BREAKING_CHANGE_REVIEW_SLACK_CHANNEL: C0BHDAPNPCY # The `#team-apis` channel
 
 permissions:
@@ -185,7 +185,7 @@ jobs:
           pr_url="$(jq -er '.url' <<<"$PR_DATA")"
           pr_title="$(jq -er '.title | gsub("<"; "‹") | gsub(">"; "›") | gsub("[|]"; "¦")' <<<"$PR_DATA")"
           pr_author="$(jq -er '.author' <<<"$PR_DATA")"
-          mentions="$(jq -nr --arg ids "$BREAKING_CHANGE_REVIEWER_SLACK_IDS" '$ids | split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(length > 0)) | map("<@\(.)>") | join(" ")')"
+          mentions="<!subteam^${BREAKING_CHANGE_REVIEWER_SLACK_GROUP}>"
           markdown_message="$(jq -nr \
             --arg mentions "$mentions" \
             --arg url "$pr_url" \
