@@ -154,6 +154,7 @@ internal class IcebergTableWriterFactoryTest {
                     ),
                 schema = tableSchema,
                 positionalDeleteRef = "staging",
+                deleteMode = IcebergDeleteMode.POSITIONAL,
                 positionalDeleteState = PositionalDeleteResolutionState(),
             )
         assertEquals(UnpartitionedPositionDeltaWriter::class.java, positionalWriter.javaClass)

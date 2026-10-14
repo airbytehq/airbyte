@@ -196,6 +196,7 @@ class FlushMemoryBenchmark {
                     Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
                     schema(),
                     positionalDeleteRef = BRANCH,
+                    deleteMode = IcebergDeleteMode.POSITIONAL,
                     positionalDeleteState = state,
                     suppressDeletedPositions = true,
                 )

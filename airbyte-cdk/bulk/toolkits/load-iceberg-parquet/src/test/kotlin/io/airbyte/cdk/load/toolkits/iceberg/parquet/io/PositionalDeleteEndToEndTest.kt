@@ -108,6 +108,7 @@ class PositionalDeleteEndToEndTest {
                 importType,
                 schema,
                 positionalDeleteRef = "staging",
+                deleteMode = IcebergDeleteMode.POSITIONAL,
                 positionalDeleteState = positionalState,
                 maxTouchedKeys = 2,
                 allowWholeFileSupersession = true,
@@ -160,6 +161,7 @@ class PositionalDeleteEndToEndTest {
                 importType,
                 schema,
                 positionalDeleteRef = "staging",
+                deleteMode = IcebergDeleteMode.POSITIONAL,
                 positionalDeleteState = positionalState,
             )
         secondUpdateWriter.write(
@@ -250,6 +252,7 @@ class PositionalDeleteEndToEndTest {
                 importType,
                 schema,
                 positionalDeleteRef = "staging",
+                deleteMode = IcebergDeleteMode.POSITIONAL,
                 positionalDeleteState = state,
                 allowWholeFileSupersession = true,
             )
@@ -271,6 +274,7 @@ class PositionalDeleteEndToEndTest {
                 importType,
                 schema,
                 positionalDeleteRef = "staging",
+                deleteMode = IcebergDeleteMode.POSITIONAL,
                 positionalDeleteState = state,
             )
         secondWriter.write(RecordWrapper(record(schema, "b", "new-b"), Operation.UPDATE))
@@ -292,6 +296,7 @@ class PositionalDeleteEndToEndTest {
                 importType,
                 schema,
                 positionalDeleteRef = "staging",
+                deleteMode = IcebergDeleteMode.POSITIONAL,
                 positionalDeleteState = state,
                 allowWholeFileSupersession = true,
             )
@@ -358,6 +363,7 @@ class PositionalDeleteEndToEndTest {
                     importType,
                     schema,
                     positionalDeleteRef = "staging",
+                    deleteMode = IcebergDeleteMode.POSITIONAL,
                     positionalDeleteState = state,
                     suppressDeletedPositions = false,
                 )
@@ -425,6 +431,7 @@ class PositionalDeleteEndToEndTest {
                 importType,
                 schema,
                 positionalDeleteRef = "staging",
+                deleteMode = IcebergDeleteMode.POSITIONAL,
                 positionalDeleteState = state,
             )
         firstUpdate.write(RecordWrapper(record(schema, "a", "new-a"), Operation.UPDATE))
@@ -455,6 +462,7 @@ class PositionalDeleteEndToEndTest {
                 importType,
                 schema,
                 positionalDeleteRef = "staging",
+                deleteMode = IcebergDeleteMode.POSITIONAL,
                 positionalDeleteState = state,
             )
         secondUpdate.write(RecordWrapper(record(schema, "a", "newer-a"), Operation.UPDATE))
@@ -540,6 +548,7 @@ class PositionalDeleteEndToEndTest {
                 io.airbyte.cdk.load.command.Dedupe(listOf(listOf("id")), emptyList()),
                 schema,
                 positionalDeleteRef = "staging",
+                deleteMode = IcebergDeleteMode.POSITIONAL,
                 positionalDeleteState = state,
                 allowWholeFileSupersession = true,
             )
@@ -608,6 +617,7 @@ class PositionalDeleteEndToEndTest {
                 io.airbyte.cdk.load.command.Dedupe(listOf(listOf("id")), emptyList()),
                 schema,
                 positionalDeleteRef = "staging",
+                deleteMode = IcebergDeleteMode.POSITIONAL,
                 positionalDeleteState = state,
                 allowWholeFileSupersession = true,
             )
@@ -674,6 +684,7 @@ class PositionalDeleteEndToEndTest {
                 io.airbyte.cdk.load.command.Dedupe(listOf(listOf("id")), emptyList()),
                 schema,
                 positionalDeleteRef = "staging",
+                deleteMode = IcebergDeleteMode.POSITIONAL,
                 positionalDeleteState = state,
                 allowWholeFileSupersession = true,
             )
@@ -750,6 +761,7 @@ class PositionalDeleteEndToEndTest {
                     ),
                 schema = schema,
                 positionalDeleteRef = "staging",
+                deleteMode = IcebergDeleteMode.POSITIONAL,
                 positionalDeleteState = state,
             )
         updateWriter.write(RecordWrapper(record(schema, "4", "new-4"), Operation.UPDATE))
@@ -820,6 +832,7 @@ class PositionalDeleteEndToEndTest {
                     ),
                 schema = schema,
                 positionalDeleteRef = "staging",
+                deleteMode = IcebergDeleteMode.POSITIONAL,
                 positionalDeleteState = state,
             )
         (1001..1201).forEach { id ->

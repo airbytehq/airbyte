@@ -15,6 +15,7 @@ import org.apache.iceberg.FileScanTask
 import org.apache.iceberg.MetadataColumns
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
+import org.apache.iceberg.SnapshotRef
 import org.apache.iceberg.StructLike
 import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties
@@ -47,9 +48,17 @@ object IcebergTableUpgrader {
      * metadata is first registered under a sibling table named
      * `<name>_v2_backup_<yyyyMMddHHmmss>` (UTC) so the pre-upgrade state remains readable.
      *
+     * [branch] is the destination's main branch name; the migration reads from and commits to
+     * that branch.
+     *
      * No-op when the table is already v3 or newer. Returns the (re)loaded table.
      */
-    fun upgradeToV3(catalog: Catalog, tableId: TableIdentifier, backup: Boolean = false): Table {
+    fun upgradeToV3(
+        catalog: Catalog,
+        tableId: TableIdentifier,
+        backup: Boolean = false,
+        branch: String = SnapshotRef.MAIN_BRANCH,
+    ): Table {
         val table = catalog.loadTable(tableId)
         val currentVersion = tableFormatVersion(table)
         if (currentVersion >= 3) {
@@ -61,11 +70,11 @@ object IcebergTableUpgrader {
         if (backup) {
             registerBackup(catalog, table, tableId)
         }
-        val migration = planMigration(table)
-        commitUpgrade(table, migration)
+        val migration = planMigration(table, branch)
+        commitUpgrade(table, migration, branch)
         table.refresh()
         val remaining =
-            table.newScan().planFiles().use { tasks ->
+            table.newScan().useRef(branch).planFiles().use { tasks ->
                 tasks
                     .asSequence()
                     .flatMap { it.deletes().asSequence() }
@@ -107,8 +116,8 @@ object IcebergTableUpgrader {
      * Resolves every legacy delete file in the current snapshot to deleted positions and writes a
      * single merged DV per referenced data file.
      */
-    private fun planMigration(table: Table): MigratedDeletes {
-        val tasks = table.newScan().planFiles().use { it.toList() }
+    private fun planMigration(table: Table, branch: String): MigratedDeletes {
+        val tasks = table.newScan().useRef(branch).planFiles().use { it.toList() }
         val dataFileInfo = tasks.associateBy { it.file().location().toString() }
         // (data file path) -> positions to delete, alongside the spec/partition of the data file.
         class Positions(val spec: PartitionSpec, val partition: StructLike?) {
@@ -144,7 +153,7 @@ object IcebergTableUpgrader {
                 }
                 deleteFile.content() == FileContent.EQUALITY_DELETES -> {
                     legacyDeletes += deleteFile
-                    resolveEqualityDeletes(table, deleteFile, dataFileInfo).forEach { location ->
+                    resolveEqualityDeletes(table, deleteFile, dataFileInfo, branch).forEach { location ->
                         val info = dataFileInfo[location.path.toString()] ?: return@forEach
                         // Iceberg semantics: an equality delete applies only to data files in the
                         // same spec/partition with a strictly lower data sequence number.
@@ -199,41 +208,23 @@ object IcebergTableUpgrader {
     }
 
     /**
-     * Bumps `format-version` and swaps the legacy delete files for DVs, preferring a single
-     * transaction and falling back to two commits when the catalog refuses DVs in the same
-     * transaction as the format bump.
+     * Bumps `format-version` and swaps the legacy delete files for DVs in a single transaction so
+     * a failure leaves the table untouched at v2 and a later sync can retry the whole upgrade.
      */
-    private fun commitUpgrade(table: Table, migration: MigratedDeletes) {
-        try {
-            val transaction = table.newTransaction()
-            transaction
-                .updateProperties()
-                .set(TableProperties.FORMAT_VERSION, "3")
-                .commit()
-            if (migration.legacyDeleteFiles.isNotEmpty() || migration.deletionVectors.isNotEmpty()) {
-                val delta = transaction.newRowDelta()
-                migration.legacyDeleteFiles.forEach(delta::removeDeletes)
-                migration.deletionVectors.forEach(delta::addDeletes)
-                migration.rewrittenDeleteFiles.forEach(delta::removeDeletes)
-                delta.commit()
-            }
-            transaction.commitTransaction()
-        } catch (e: Exception) {
-            logger.warn(e) {
-                "Unable to upgrade ${table.name()} to v3 and migrate delete files in one " +
-                    "transaction; committing the format bump and the delete-file migration " +
-                    "separately."
-            }
-            table.refresh()
-            table.updateProperties().set(TableProperties.FORMAT_VERSION, "3").commit()
-            if (migration.legacyDeleteFiles.isNotEmpty() || migration.deletionVectors.isNotEmpty()) {
-                val delta = table.newRowDelta()
-                migration.legacyDeleteFiles.forEach(delta::removeDeletes)
-                migration.deletionVectors.forEach(delta::addDeletes)
-                migration.rewrittenDeleteFiles.forEach(delta::removeDeletes)
-                delta.commit()
-            }
+    private fun commitUpgrade(table: Table, migration: MigratedDeletes, branch: String) {
+        val transaction = table.newTransaction()
+        transaction
+            .updateProperties()
+            .set(TableProperties.FORMAT_VERSION, "3")
+            .commit()
+        if (migration.legacyDeleteFiles.isNotEmpty() || migration.deletionVectors.isNotEmpty()) {
+            val delta = transaction.newRowDelta().toBranch(branch)
+            migration.legacyDeleteFiles.forEach(delta::removeDeletes)
+            migration.deletionVectors.forEach(delta::addDeletes)
+            migration.rewrittenDeleteFiles.forEach(delta::removeDeletes)
+            delta.commit()
         }
+        transaction.commitTransaction()
     }
 
     /** Positions keyed by data-file path for one position delete file. */
@@ -263,6 +254,7 @@ object IcebergTableUpgrader {
         table: Table,
         deleteFile: DeleteFile,
         dataFileInfo: Map<String, FileScanTask>,
+        branch: String,
     ): Sequence<PositionalDeleteResolver.RowLocation> {
         val equalityFieldIds =
             deleteFile.equalityFieldIds()?.toSet()
@@ -285,7 +277,7 @@ object IcebergTableUpgrader {
             }
             .build<Record>()
             .use { records -> records.forEach { touched.markDeleted(it) } }
-        return finder.find(touched, "main").asIterable().let { locations ->
+        return finder.find(touched, branch).asIterable().let { locations ->
             // Restrict to data files in the delete file's own spec with a strictly lower data
             // sequence number.
             locations
