@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
+import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
 import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
@@ -24,6 +25,9 @@ import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.Where
 import io.airbyte.cdk.read.optimize
 import io.airbyte.cdk.util.Jsons
+import io.mockk.mockk
+import io.mockk.verify
+import java.sql.PreparedStatement
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -127,6 +131,41 @@ class MySqlSourceSelectQueryGeneratorTest {
                 ub to DoubleFieldType,
                 Jsons.numberNode(1000L) to LongFieldType,
             )
+    }
+
+    @Test
+    fun testDateTimeCursorBindingPreservesFractionalSeconds() {
+        assertDateTimeBinding(
+            "2026-04-14T16:27:33.726846",
+            "2026-04-14 16:27:33.726846",
+        )
+    }
+
+    @Test
+    fun testDateTimeCursorBindingPadsZeroFractionalSeconds() {
+        assertDateTimeBinding(
+            "2026-04-14T16:27:33",
+            "2026-04-14 16:27:33.000000",
+        )
+    }
+
+    private fun assertDateTimeBinding(value: String, expected: String) {
+        val ts = EmittedField("ts", LocalDateTimeFieldType)
+        val query =
+            MySqlSourceOperations()
+                .generate(
+                    SelectQuerySpec(
+                        SelectColumns(ts),
+                        From("TBL", "SC"),
+                        Where(LesserOrEqual(ts, Jsons.textNode(value))),
+                    )
+                )
+        val stmt = mockk<PreparedStatement>(relaxed = true)
+        val binding = query.bindings.single()
+
+        binding.type.set(stmt, 1, binding.value)
+
+        verify { stmt.setString(1, expected) }
     }
 
     private fun SelectQuerySpec.assertSqlEquals(

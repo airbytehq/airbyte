@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.mysql.cj.MysqlType
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.JsonEncoder
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
+import io.airbyte.cdk.data.LocalDateTimeCodec
 import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
 import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
 import io.airbyte.cdk.discover.CdcStringMetaFieldType
@@ -25,6 +27,7 @@ import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcFieldType
+import io.airbyte.cdk.jdbc.JdbcSetter
 import io.airbyte.cdk.jdbc.LocalDateFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.LocalTimeFieldType
@@ -35,6 +38,7 @@ import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.cdk.jdbc.TimestampAccessor
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.And
@@ -70,7 +74,10 @@ import io.airbyte.cdk.read.cdc.DebeziumOffset
 import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
+import java.sql.PreparedStatement
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 @Singleton
 @Primary
@@ -278,7 +285,11 @@ class MySqlSourceOperations :
             is And -> conj.flatMap { it.bindings() }
             is Or -> disj.flatMap { it.bindings() }
             is WhereClauseLeafNode -> {
-                val type = column.type as LosslessJdbcFieldType<*, *>
+                val type =
+                    when (val t = column.type as LosslessJdbcFieldType<*, *>) {
+                        LocalDateTimeFieldType -> MySqlSourceDateTimeBindingFieldType
+                        else -> t
+                    }
                 listOf(SelectQuery.Binding(bindingValue, type))
             }
         }
@@ -289,4 +300,26 @@ class MySqlSourceOperations :
             Limit(0) -> listOf()
             is Limit -> listOf(SelectQuery.Binding(Jsons.numberNode(n), LongFieldType))
         }
+}
+
+/**
+ * Binds DATETIME parameters as strings. Connector/J truncates fractional seconds of temporal
+ * parameters when it thinks the server lacks support for them, which happens with MariaDB because
+ * its handshake reports version 5.5.5-<version>.
+ */
+data object MySqlSourceDateTimeBindingFieldType :
+    LosslessJdbcFieldType<LocalDateTime, LocalDateTime>(
+        LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
+        TimestampAccessor,
+        LocalDateTimeCodec,
+        LocalDateTimeCodec,
+        MySqlSourceDateTimeStringSetter,
+    )
+
+data object MySqlSourceDateTimeStringSetter : JdbcSetter<LocalDateTime> {
+    private val formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss.SSSSSS")
+
+    override fun set(stmt: PreparedStatement, paramIdx: Int, value: LocalDateTime) {
+        stmt.setString(paramIdx, value.format(formatter))
+    }
 }
