@@ -278,6 +278,10 @@ class MySqlSourceDatatypeIntegrationTest {
         assertTrue(initialOutput.records()[0].data["w"].isNull)
         assertTrue(initialOutput.records()[0].data["y"].isNull)
         assertTrue(initialOutput.records()[0].data["x"].isNull)
+        assertTrue(
+            initialOutput.records()[0].meta?.changes.isNullOrEmpty(),
+            "zero-date nulls must not be flagged in meta.changes",
+        )
 
         // Binlog read: insert another zero-date row and verify the converter nulls it on the
         // streaming path too and
@@ -313,6 +317,10 @@ class MySqlSourceDatatypeIntegrationTest {
             "2020-03-30T10:30:00.000000",
             cdcOutput.records()[0].data["x"].asText()
         ) // micro
+        assertTrue(
+            cdcOutput.records()[0].meta?.changes.isNullOrEmpty(),
+            "zero-date nulls must not be flagged in meta.changes",
+        )
     }
 
     @Test
@@ -387,6 +395,10 @@ class MySqlSourceDatatypeIntegrationTest {
         assertTrue(initialOutput.records().isNotEmpty())
         assertTrue(initialOutput.records()[0].data["v"].isNull)
         assertTrue(initialOutput.records()[0].data["w"].isNull)
+        assertTrue(
+            initialOutput.records()[0].meta?.changes.isNullOrEmpty(),
+            "zero-date nulls must not be flagged in meta.changes",
+        )
 
         // Binlog read: insert another zero-date row and verify the converter nulls it on the
         // streaming path too and
@@ -413,6 +425,10 @@ class MySqlSourceDatatypeIntegrationTest {
         assertTrue(cdcOutput.records()[0].data["v"].isNull)
         // Default value
         assertEquals("2025-05-05", cdcOutput.records()[0].data["w"].asText())
+        assertTrue(
+            cdcOutput.records()[0].meta?.changes.isNullOrEmpty(),
+            "zero-date nulls must not be flagged in meta.changes",
+        )
     }
 
     @Test
@@ -488,6 +504,10 @@ class MySqlSourceDatatypeIntegrationTest {
         assertTrue(initialOutput.records().isNotEmpty())
         assertTrue(initialOutput.records()[0].data["v"].isNull)
         assertTrue(initialOutput.records()[0].data["w"].isNull)
+        assertTrue(
+            initialOutput.records()[0].meta?.changes.isNullOrEmpty(),
+            "zero-date nulls must not be flagged in meta.changes",
+        )
 
         // Binlog read: insert another zero-date row and verify the converter convert this to Unix
         // epoch.
@@ -519,6 +539,10 @@ class MySqlSourceDatatypeIntegrationTest {
         assertEquals(
             expected = "1970-01-01T00:00:00.000000Z",
             actual = cdcOutput.records()[0].data["w"].asText()
+        )
+        assertTrue(
+            cdcOutput.records()[0].meta?.changes.isNullOrEmpty(),
+            "zero-date nulls must not be flagged in meta.changes",
         )
     }
 
