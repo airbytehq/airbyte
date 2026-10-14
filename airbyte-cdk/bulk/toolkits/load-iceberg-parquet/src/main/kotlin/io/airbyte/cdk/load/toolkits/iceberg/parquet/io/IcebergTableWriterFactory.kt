@@ -55,9 +55,25 @@ class IcebergTableWriterFactory {
         table: Table,
         generationId: String,
         importType: ImportType,
-        schema: Schema
+        schema: Schema,
+        positionalDeleteRef: String? = null,
+        positionalDeleteState: PositionalDeleteResolutionState? = null,
+        maxTouchedKeys: Int = PositionalDeleteResolver.DEFAULT_MAX_TOUCHED_KEYS,
+        allowWholeFileSupersession: Boolean = false,
+        suppressDeletedPositions: Boolean = true,
+        deleteMode: IcebergDeleteMode = IcebergDeleteMode.EQUALITY,
     ): BaseTaskWriter<Record> {
         assertGenerationIdSuffixIsOfValidFormat(generationId)
+        // A delete ref without an explicit mode stays positional for backwards compatibility.
+        val resolvedMode =
+            if (positionalDeleteRef != null && deleteMode == IcebergDeleteMode.EQUALITY) {
+                IcebergDeleteMode.POSITIONAL
+            } else {
+                deleteMode
+            }
+        if (importType is Dedupe) {
+            validateDeleteMode(table, resolvedMode)
+        }
         val format =
             FileFormat.valueOf(
                 table
@@ -66,6 +82,11 @@ class IcebergTableWriterFactory {
                     .uppercase()
             )
         val identifierFieldIds = schema.identifierFieldIds()
+        if (positionalDeleteRef != null) {
+            require(identifierFieldIds.isNotEmpty()) {
+                "Positional deletes require at least one identifier field"
+            }
+        }
         val writerFactory =
             createWriterFactory(
                 table = table,
@@ -74,6 +95,25 @@ class IcebergTableWriterFactory {
             )
         val outputFileFactory =
             createOutputFileFactory(table = table, format = format, generationId = generationId)
+        val positionalDeleteResolver =
+            positionalDeleteRef?.let {
+                val resolutionState =
+                    positionalDeleteState
+                        ?: error("Positional delete writers require stream-scoped resolution state")
+                PositionalDeleteResolver(
+                    table,
+                    it,
+                    schema,
+                    identifierFieldIds,
+                    writerFactory,
+                    outputFileFactory,
+                    maxTouchedKeys = maxTouchedKeys,
+                    state = resolutionState,
+                    allowWholeFileSupersession = allowWholeFileSupersession,
+                    suppressDeletedPositions = suppressDeletedPositions,
+                    writeDeletionVectors = resolvedMode == IcebergDeleteMode.DELETION_VECTOR,
+                )
+            }
         val targetFileSize =
             PropertyUtil.propertyAsLong(
                 table.properties(),
@@ -92,15 +132,28 @@ class IcebergTableWriterFactory {
                     format = format
                 )
             is Dedupe ->
-                newDeltaWriter(
-                    table = table,
-                    schema = schema,
-                    identifierFieldIds = identifierFieldIds,
-                    writerFactory = writerFactory,
-                    targetFileSize = targetFileSize,
-                    outputFileFactory = outputFileFactory,
-                    format = format
-                )
+                if (positionalDeleteResolver == null) {
+                    newDeltaWriter(
+                        table = table,
+                        schema = schema,
+                        identifierFieldIds = identifierFieldIds,
+                        writerFactory = writerFactory,
+                        targetFileSize = targetFileSize,
+                        outputFileFactory = outputFileFactory,
+                        format = format
+                    )
+                } else {
+                    newPositionDeltaWriter(
+                        table = table,
+                        schema = schema,
+                        identifierFieldIds = identifierFieldIds,
+                        writerFactory = writerFactory,
+                        targetFileSize = targetFileSize,
+                        outputFileFactory = outputFileFactory,
+                        format = format,
+                        positionalDeleteResolver = positionalDeleteResolver,
+                    )
+                }
             else -> throw IllegalArgumentException("Unsupported import type $importType")
         }
     }
@@ -197,6 +250,45 @@ class IcebergTableWriterFactory {
                 targetFileSize = targetFileSize,
                 schema = schema,
                 identifierFieldIds = identifierFieldIds
+            )
+        }
+    }
+
+    private fun newPositionDeltaWriter(
+        table: Table,
+        schema: Schema,
+        format: FileFormat,
+        writerFactory: GenericFileWriterFactory,
+        outputFileFactory: OutputFileFactory,
+        targetFileSize: Long,
+        identifierFieldIds: Set<Int>,
+        positionalDeleteResolver: PositionalDeleteResolver,
+    ): BaseTaskWriter<Record> {
+        return if (table.spec().isUnpartitioned) {
+            UnpartitionedPositionDeltaWriter(
+                table,
+                spec = table.spec(),
+                format = format,
+                writerFactory = writerFactory,
+                outputFileFactory = outputFileFactory,
+                io = table.io(),
+                targetFileSize = targetFileSize,
+                schema = schema,
+                identifierFieldIds = identifierFieldIds,
+                resolver = positionalDeleteResolver,
+            )
+        } else {
+            PartitionedPositionDeltaWriter(
+                table,
+                spec = table.spec(),
+                format = format,
+                writerFactory = writerFactory,
+                outputFileFactory = outputFileFactory,
+                io = table.io(),
+                targetFileSize = targetFileSize,
+                schema = schema,
+                identifierFieldIds = identifierFieldIds,
+                resolver = positionalDeleteResolver,
             )
         }
     }

@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.4 — 2026-10-14
+
+Feat: add positional and deletion-vector delete file support to the Iceberg load toolkit, with duplicate-delete suppression and optional whole-file supersession; add an in-place v2-to-v3 table upgrader that converts legacy delete files to deletion vectors.
+
 ### 1.1.3 — 2026-10-12
 
 [#88497](https://github.com/airbytehq/airbyte/pull/88497) — Add `DestinationConfigurationFactory` tests (core and legacy-task-loader) pinning that a connector `ConfigErrorException` passes through `make()` unchanged. No behaviour change; released alongside extract 1.1.16, which gains the same pass-through in `SourceConfigurationFactory`.

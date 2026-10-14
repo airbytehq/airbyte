@@ -1,0 +1,292 @@
+/*
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+ */
+
+package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
+
+import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
+import java.nio.file.Files
+import org.apache.hadoop.conf.Configuration
+import org.apache.iceberg.DeleteFile
+import org.apache.iceberg.FileContent
+import org.apache.iceberg.FileFormat
+import org.apache.iceberg.Schema
+import org.apache.iceberg.Table
+import org.apache.iceberg.TableProperties
+import org.apache.iceberg.catalog.Catalog
+import org.apache.iceberg.catalog.TableIdentifier
+import org.apache.iceberg.data.GenericRecord
+import org.apache.iceberg.data.IcebergGenerics
+import org.apache.iceberg.data.Record
+import org.apache.iceberg.hadoop.HadoopCatalog
+import org.apache.iceberg.types.Types
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.Test
+
+class DeletionVectorEndToEndTest {
+
+    private val schema =
+        Schema(
+            listOf(
+                Types.NestedField.required(1, "id", Types.StringType.get()),
+                Types.NestedField.required(2, "name", Types.StringType.get()),
+            ),
+            setOf(1),
+        )
+
+    private val dedupe =
+        Dedupe(
+            primaryKey = listOf(listOf("id")),
+            cursor = emptyList(),
+        )
+
+    private fun catalog(): Pair<HadoopCatalog, java.nio.file.Path> {
+        val warehouse = Files.createTempDirectory("deletion-vector-e2e")
+        return HadoopCatalog(Configuration(), warehouse.toString()) to warehouse
+    }
+
+    private fun createTable(
+        catalog: HadoopCatalog,
+        tableId: TableIdentifier,
+        version: Int
+    ): Table {
+        if (!catalog.namespaceExists(tableId.namespace())) {
+            catalog.createNamespace(tableId.namespace())
+        }
+        return catalog
+            .buildTable(tableId, schema)
+            .withProperty(
+                TableProperties.DEFAULT_FILE_FORMAT,
+                FileFormat.PARQUET.name.lowercase()
+            )
+            .withProperty(TableProperties.FORMAT_VERSION, version.toString())
+            .create()
+    }
+
+    private fun seed(catalog: Catalog, table: Table, rows: List<Pair<String, String>>) {
+        val writer =
+            IcebergTableWriterFactory().create(table, "ab-generation-id-0-e", Append, schema)
+        rows.forEach { (id, name) -> writer.write(record(id, name)) }
+        val result = writer.complete()
+        table.newAppend().apply { result.dataFiles().forEach(::appendFile) }.commit()
+    }
+
+    private fun commitWriter(table: Table, writer: BasePositionDeltaTaskWriter) {
+        val result = writer.complete()
+        IcebergTableCommitter.commit(
+            table,
+            "main",
+            result,
+            table.currentSnapshot().snapshotId(),
+            writer.fullySupersededDataFiles(),
+            writer.rewrittenDeleteFiles().toSet(),
+        )
+    }
+
+    private fun deleteFiles(table: Table): List<DeleteFile> {
+        table.refresh()
+        return table.newScan().planFiles().use { tasks ->
+            tasks.flatMap { it.deletes() }.distinctBy { it.location().toString() }
+        }
+    }
+
+    private fun rows(table: Table): List<Pair<String, String>> {
+        table.refresh()
+        return IcebergGenerics.read(table).build().use { records ->
+            records.map { it.getField("id").toString() to it.getField("name").toString() }
+        }
+    }
+
+    private fun record(id: String, name: String): GenericRecord =
+        GenericRecord.create(schema).apply {
+            setField("id", id)
+            setField("name", name)
+        }
+
+    @Test
+    fun `v3 dedupe writes deletion vectors across repeated syncs`() {
+        val (catalog, _) = catalog()
+        val tableId = TableIdentifier.of("db", "records")
+        val table = createTable(catalog, tableId, 3)
+        assertThat(tableFormatVersion(table)).isEqualTo(3)
+        seed(catalog, table, listOf("1" to "one", "2" to "two"))
+
+        val writerFactory = IcebergTableWriterFactory()
+
+        // Sync 1: update one row, delete another.
+        val first =
+            writerFactory.create(
+                table,
+                "ab-generation-id-1-e",
+                dedupe,
+                schema,
+                positionalDeleteRef = "main",
+                positionalDeleteState = PositionalDeleteResolutionState(),
+                deleteMode = IcebergDeleteMode.DELETION_VECTOR,
+            ) as BasePositionDeltaTaskWriter
+        first.write(RecordWrapper(record("1", "one-updated"), Operation.UPDATE))
+        first.write(RecordWrapper(record("2", "ignored"), Operation.DELETE))
+        first.write(RecordWrapper(record("3", "three"), Operation.INSERT))
+        commitWriter(table, first)
+
+        var deletes = deleteFiles(table)
+        assertThat(deletes).isNotEmpty
+        assertThat(deletes).allMatch { it.format() == FileFormat.PUFFIN }
+        assertThat(deletes).allMatch { it.referencedDataFile() != null }
+        assertThat(deletes.map { it.referencedDataFile() })
+            .doesNotHaveDuplicates()
+        assertThat(rows(table))
+            .containsExactlyInAnyOrder("1" to "one-updated", "3" to "three")
+
+        // Sync 2: another update plus another delete on the same data file, so the
+        // existing DV must be merged and replaced rather than duplicated.
+        val second =
+            writerFactory.create(
+                table,
+                "ab-generation-id-2-e",
+                dedupe,
+                schema,
+                positionalDeleteRef = "main",
+                positionalDeleteState = PositionalDeleteResolutionState(),
+                deleteMode = IcebergDeleteMode.DELETION_VECTOR,
+            ) as BasePositionDeltaTaskWriter
+        second.write(RecordWrapper(record("1", "one-updated-again"), Operation.UPDATE))
+        second.write(RecordWrapper(record("3", "ignored"), Operation.DELETE))
+        commitWriter(table, second)
+
+        deletes = deleteFiles(table)
+        assertThat(deletes).allMatch { it.format() == FileFormat.PUFFIN }
+        assertThat(deletes).allMatch { it.referencedDataFile() != null }
+        assertThat(deletes.map { it.referencedDataFile() }).doesNotHaveDuplicates()
+        assertThat(rows(table)).containsExactlyInAnyOrder("1" to "one-updated-again")
+    }
+
+    @Test
+    fun `upgrade converts equality deletes to deletion vectors`() {
+        val (catalog, _) = catalog()
+        val tableId = TableIdentifier.of("db", "records_eq")
+        val table = createTable(catalog, tableId, 2)
+        seed(catalog, table, listOf("1" to "one", "2" to "two"))
+
+        // Produce a legacy equality delete through the standard dedupe writer.
+        val equalityWriter =
+            IcebergTableWriterFactory()
+                .create(table, "ab-generation-id-1-e", dedupe, schema)
+        equalityWriter.write(RecordWrapper(record("2", "ignored"), Operation.DELETE))
+        equalityWriter.write(RecordWrapper(record("3", "three"), Operation.UPDATE))
+        val result = equalityWriter.complete()
+        val delta = table.newRowDelta()
+        result.dataFiles().forEach { delta.addRows(it) }
+        result.deleteFiles().forEach { delta.addDeletes(it) }
+        delta.commit()
+        assertThat(deleteFiles(table).map { it.content() })
+            .contains(FileContent.EQUALITY_DELETES)
+        val preUpgradeRows = rows(table)
+
+        val upgraded = IcebergTableUpgrader.upgradeToV3(catalog, tableId, backup = false)
+
+        assertThat(tableFormatVersion(upgraded)).isEqualTo(3)
+        val deletes = deleteFiles(table)
+        assertThat(deletes).allMatch { it.format() == FileFormat.PUFFIN }
+        assertThat(deletes.map { it.referencedDataFile() }).doesNotHaveDuplicates()
+        assertThat(rows(table)).containsExactlyInAnyOrderElementsOf(preUpgradeRows)
+    }
+
+    @Test
+    fun `upgrade converts position deletes to deletion vectors`() {
+        val (catalog, _) = catalog()
+        val tableId = TableIdentifier.of("db", "records_pos")
+        val table = createTable(catalog, tableId, 2)
+        seed(catalog, table, listOf("1" to "one", "2" to "two"))
+
+        // Produce a legacy position delete through the positional writer.
+        val positional =
+            IcebergTableWriterFactory()
+                .create(
+                    table,
+                    "ab-generation-id-1-e",
+                    dedupe,
+                    schema,
+                    positionalDeleteRef = "main",
+                    positionalDeleteState = PositionalDeleteResolutionState(),
+                    deleteMode = IcebergDeleteMode.POSITIONAL,
+                ) as BasePositionDeltaTaskWriter
+        positional.write(RecordWrapper(record("2", "ignored"), Operation.DELETE))
+        positional.write(RecordWrapper(record("3", "three"), Operation.UPDATE))
+        commitWriter(table, positional)
+        assertThat(deleteFiles(table).map { it.content() })
+            .contains(FileContent.POSITION_DELETES)
+        val preUpgradeRows = rows(table)
+
+        val upgraded = IcebergTableUpgrader.upgradeToV3(catalog, tableId, backup = false)
+
+        assertThat(tableFormatVersion(upgraded)).isEqualTo(3)
+        val deletes = deleteFiles(table)
+        assertThat(deletes).allMatch { it.format() == FileFormat.PUFFIN }
+        assertThat(rows(table)).containsExactlyInAnyOrderElementsOf(preUpgradeRows)
+    }
+
+    @Test
+    fun `upgrade with backup registers a readable v2 copy`() {
+        val (catalog, _) = catalog()
+        val tableId = TableIdentifier.of("db", "records_bak")
+        val table = createTable(catalog, tableId, 2)
+        seed(catalog, table, listOf("1" to "one", "2" to "two"))
+        val equalityWriter =
+            IcebergTableWriterFactory()
+                .create(table, "ab-generation-id-1-e", dedupe, schema)
+        equalityWriter.write(RecordWrapper(record("2", "ignored"), Operation.DELETE))
+        val result = equalityWriter.complete()
+        val delta = table.newRowDelta().toBranch("main")
+        result.dataFiles().forEach { delta.addRows(it) }
+        result.deleteFiles().forEach { delta.addDeletes(it) }
+        delta.commit()
+        val preUpgradeRows = rows(table)
+
+        IcebergTableUpgrader.upgradeToV3(catalog, tableId, backup = true)
+
+        val backups =
+            catalog.listTables(tableId.namespace()).filter {
+                it.name().startsWith("${tableId.name()}_v2_backup_")
+            }
+        assertThat(backups).hasSize(1)
+        val backup = catalog.loadTable(backups.single())
+        assertThat(tableFormatVersion(backup)).isEqualTo(2)
+        assertThat(rows(backup)).containsExactlyInAnyOrderElementsOf(preUpgradeRows)
+    }
+
+    @Test
+    fun `delete mode validation rejects mismatched table versions`() {
+        val (catalog, _) = catalog()
+        val v2Table = createTable(catalog, TableIdentifier.of("db", "v2_table"), 2)
+        val v3Table = createTable(catalog, TableIdentifier.of("db", "v3_table"), 3)
+        val writerFactory = IcebergTableWriterFactory()
+
+        assertThatThrownBy {
+                writerFactory.create(
+                    v2Table,
+                    "ab-generation-id-1-e",
+                    dedupe,
+                    schema,
+                    deleteMode = IcebergDeleteMode.DELETION_VECTOR,
+                )
+            }
+            .isInstanceOf(ConfigErrorException::class.java)
+            .hasMessageContaining("v2")
+
+        assertThatThrownBy {
+                writerFactory.create(
+                    v3Table,
+                    "ab-generation-id-1-e",
+                    dedupe,
+                    schema,
+                    deleteMode = IcebergDeleteMode.POSITIONAL,
+                )
+            }
+            .isInstanceOf(ConfigErrorException::class.java)
+            .hasMessageContaining("v3")
+    }
+}
