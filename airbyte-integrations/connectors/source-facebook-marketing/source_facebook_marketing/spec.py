@@ -30,6 +30,11 @@ base_breakdowns = dict(AdsInsights.Breakdowns.__dict__)
 
 # Add the missing one: https://github.com/airbytehq/oncall/issues/9525
 base_breakdowns["user_segment_key"] = "user_segment_key"
+
+# Meta deprecated breakdowns=dma on June 22, 2026, replacing it with comscore_market.
+# Remove dma so it can't be selected for Custom Insights; configs still using it are rejected
+# by the CDK's config-vs-spec validation with a config_error that lists comscore_market.
+base_breakdowns.pop("dma", None)
 ValidBreakdowns = Enum("ValidBreakdowns", base_breakdowns)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
 ValidCampaignStatuses = Enum("ValidCampaignStatuses", Campaign.EffectiveStatus.__dict__)
@@ -218,6 +223,15 @@ class InsightConfig(BaseModel):
         default=False,
     )
 
+    include_engaged_view: bool = Field(
+        title="Include Engaged View",
+        description=(
+            "If enabled, the engaged view (ev) attribution window will be included in the action attribution windows for this custom insight. "
+            "This allows you to retrieve attribution data for users who had an engaged view of a video ad (watched 10+ seconds or 97%+ of a short video)."
+        ),
+        default=False,
+    )
+
 
 class ConnectorConfig(BaseConfig):
     """Connector config"""
@@ -250,6 +264,7 @@ class ConnectorConfig(BaseConfig):
             'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.'
         ),
         airbyte_secret=True,
+        airbyte_hidden=True,
     )
 
     credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
@@ -374,6 +389,18 @@ class ConnectorConfig(BaseConfig):
         description=(
             "If enabled, the incrementality attribution window will be included in the action attribution windows for all built-in insight streams. "
             "This allows you to retrieve incrementality data for action metrics. "
+            "See the Facebook Marketing API documentation for more details: "
+            "https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/"
+        ),
+        default=False,
+    )
+
+    include_engaged_view: bool = Field(
+        title="Include Engaged View",
+        order=14,
+        description=(
+            "If enabled, the engaged view (ev) attribution window will be included in the action attribution windows for all built-in insight streams. "
+            "This surfaces attribution data for users who had an engaged view of a video ad (watched 10+ seconds or 97%+ of a short video). "
             "See the Facebook Marketing API documentation for more details: "
             "https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/"
         ),

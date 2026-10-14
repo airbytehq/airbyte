@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DailyActiveUsersAnyCondition"></a>
@@ -103,10 +103,24 @@ Classes
     `start_date: Any`
     :   Start date of the reporting period
 
+<a id="DailyActiveUsersArrayContainsCondition"></a>
+
+`DailyActiveUsersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="DailyActiveUsersContainsCondition"></a>
 
 `DailyActiveUsersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -115,6 +129,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DailyActiveUsersEndswithCondition"></a>
+
+`DailyActiveUsersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersStringFilter`
     :   The type of the None singleton.
 
 <a id="DailyActiveUsersEqCondition"></a>
@@ -235,20 +263,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersStringFilter`
     :   The type of the None singleton.
 
-<a id="DailyActiveUsersLikeCondition"></a>
-
-`DailyActiveUsersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersStringFilter`
-    :   The type of the None singleton.
-
 <a id="DailyActiveUsersListParams"></a>
 
 `DailyActiveUsersListParams(*args, **kwargs)`
@@ -292,10 +306,10 @@ Classes
 
     ### Class variables
 
-    `endDate: str`
+    `end_date: str`
     :   The type of the None singleton.
 
-    `startDate: str`
+    `start_date: str`
     :   The type of the None singleton.
 
 <a id="DailyActiveUsersListParamsDimensionsItem"></a>
@@ -387,7 +401,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="DailyActiveUsersOrCondition"></a>
@@ -409,7 +423,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DailyActiveUsersSearchFilter"></a>
@@ -449,7 +463,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersSortFilter]`
@@ -481,10 +495,24 @@ Classes
     `start_date: Literal['asc', 'desc']`
     :   Start date of the reporting period
 
+<a id="DailyActiveUsersStartswithCondition"></a>
+
+`DailyActiveUsersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DailyActiveUsersStringFilter`
+    :   The type of the None singleton.
+
 <a id="DailyActiveUsersStringFilter"></a>
 
 `DailyActiveUsersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -526,7 +554,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DevicesAnyCondition"></a>
@@ -607,10 +635,24 @@ Classes
     `total_users: Any`
     :   Total number of unique users
 
+<a id="DevicesArrayContainsCondition"></a>
+
+`DevicesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="DevicesContainsCondition"></a>
 
 `DevicesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -619,6 +661,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DevicesEndswithCondition"></a>
+
+`DevicesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesStringFilter`
     :   The type of the None singleton.
 
 <a id="DevicesEqCondition"></a>
@@ -769,20 +825,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesStringFilter`
     :   The type of the None singleton.
 
-<a id="DevicesLikeCondition"></a>
-
-`DevicesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesStringFilter`
-    :   The type of the None singleton.
-
 <a id="DevicesListParams"></a>
 
 `DevicesListParams(*args, **kwargs)`
@@ -826,10 +868,10 @@ Classes
 
     ### Class variables
 
-    `endDate: str`
+    `end_date: str`
     :   The type of the None singleton.
 
-    `startDate: str`
+    `start_date: str`
     :   The type of the None singleton.
 
 <a id="DevicesListParamsDimensionsItem"></a>
@@ -921,7 +963,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAnyCondition`
     :   The type of the None singleton.
 
 <a id="DevicesOrCondition"></a>
@@ -943,7 +985,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DevicesSearchFilter"></a>
@@ -1013,7 +1055,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesSortFilter]`
@@ -1075,10 +1117,24 @@ Classes
     `total_users: Literal['asc', 'desc']`
     :   Total number of unique users
 
+<a id="DevicesStartswithCondition"></a>
+
+`DevicesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_analytics_data_api.types.DevicesStringFilter`
+    :   The type of the None singleton.
+
 <a id="DevicesStringFilter"></a>
 
 `DevicesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1150,7 +1206,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="FourWeeklyActiveUsersAnyCondition"></a>
@@ -1201,10 +1257,24 @@ Classes
     `start_date: Any`
     :   Start date of the reporting period
 
+<a id="FourWeeklyActiveUsersArrayContainsCondition"></a>
+
+`FourWeeklyActiveUsersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="FourWeeklyActiveUsersContainsCondition"></a>
 
 `FourWeeklyActiveUsersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1213,6 +1283,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="FourWeeklyActiveUsersEndswithCondition"></a>
+
+`FourWeeklyActiveUsersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersStringFilter`
     :   The type of the None singleton.
 
 <a id="FourWeeklyActiveUsersEqCondition"></a>
@@ -1333,20 +1417,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersStringFilter`
     :   The type of the None singleton.
 
-<a id="FourWeeklyActiveUsersLikeCondition"></a>
-
-`FourWeeklyActiveUsersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersStringFilter`
-    :   The type of the None singleton.
-
 <a id="FourWeeklyActiveUsersListParams"></a>
 
 `FourWeeklyActiveUsersListParams(*args, **kwargs)`
@@ -1390,10 +1460,10 @@ Classes
 
     ### Class variables
 
-    `endDate: str`
+    `end_date: str`
     :   The type of the None singleton.
 
-    `startDate: str`
+    `start_date: str`
     :   The type of the None singleton.
 
 <a id="FourWeeklyActiveUsersListParamsDimensionsItem"></a>
@@ -1485,7 +1555,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="FourWeeklyActiveUsersOrCondition"></a>
@@ -1507,7 +1577,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="FourWeeklyActiveUsersSearchFilter"></a>
@@ -1547,7 +1617,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersSortFilter]`
@@ -1579,10 +1649,24 @@ Classes
     `start_date: Literal['asc', 'desc']`
     :   Start date of the reporting period
 
+<a id="FourWeeklyActiveUsersStartswithCondition"></a>
+
+`FourWeeklyActiveUsersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_analytics_data_api.types.FourWeeklyActiveUsersStringFilter`
+    :   The type of the None singleton.
+
 <a id="FourWeeklyActiveUsersStringFilter"></a>
 
 `FourWeeklyActiveUsersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1624,7 +1708,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="LocationsAnyCondition"></a>
@@ -1705,10 +1789,24 @@ Classes
     `total_users: Any`
     :   Total number of unique users
 
+<a id="LocationsArrayContainsCondition"></a>
+
+`LocationsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="LocationsContainsCondition"></a>
 
 `LocationsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1717,6 +1815,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="LocationsEndswithCondition"></a>
+
+`LocationsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsStringFilter`
     :   The type of the None singleton.
 
 <a id="LocationsEqCondition"></a>
@@ -1867,20 +1979,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsStringFilter`
     :   The type of the None singleton.
 
-<a id="LocationsLikeCondition"></a>
-
-`LocationsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsStringFilter`
-    :   The type of the None singleton.
-
 <a id="LocationsListParams"></a>
 
 `LocationsListParams(*args, **kwargs)`
@@ -1924,10 +2022,10 @@ Classes
 
     ### Class variables
 
-    `endDate: str`
+    `end_date: str`
     :   The type of the None singleton.
 
-    `startDate: str`
+    `start_date: str`
     :   The type of the None singleton.
 
 <a id="LocationsListParamsDimensionsItem"></a>
@@ -2019,7 +2117,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAnyCondition`
     :   The type of the None singleton.
 
 <a id="LocationsOrCondition"></a>
@@ -2041,7 +2139,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="LocationsSearchFilter"></a>
@@ -2111,7 +2209,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsSortFilter]`
@@ -2173,10 +2271,24 @@ Classes
     `total_users: Literal['asc', 'desc']`
     :   Total number of unique users
 
+<a id="LocationsStartswithCondition"></a>
+
+`LocationsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_analytics_data_api.types.LocationsStringFilter`
+    :   The type of the None singleton.
+
 <a id="LocationsStringFilter"></a>
 
 `LocationsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2248,7 +2360,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PagesAnyCondition"></a>
@@ -2308,10 +2420,24 @@ Classes
     `start_date: Any`
     :   Start date of the reporting period
 
+<a id="PagesArrayContainsCondition"></a>
+
+`PagesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="PagesContainsCondition"></a>
 
 `PagesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2320,6 +2446,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="PagesEndswithCondition"></a>
+
+`PagesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesStringFilter`
     :   The type of the None singleton.
 
 <a id="PagesEqCondition"></a>
@@ -2449,20 +2589,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesStringFilter`
     :   The type of the None singleton.
 
-<a id="PagesLikeCondition"></a>
-
-`PagesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesStringFilter`
-    :   The type of the None singleton.
-
 <a id="PagesListParams"></a>
 
 `PagesListParams(*args, **kwargs)`
@@ -2506,10 +2632,10 @@ Classes
 
     ### Class variables
 
-    `endDate: str`
+    `end_date: str`
     :   The type of the None singleton.
 
-    `startDate: str`
+    `start_date: str`
     :   The type of the None singleton.
 
 <a id="PagesListParamsDimensionsItem"></a>
@@ -2601,7 +2727,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAnyCondition`
     :   The type of the None singleton.
 
 <a id="PagesOrCondition"></a>
@@ -2623,7 +2749,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PagesSearchFilter"></a>
@@ -2672,7 +2798,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesSortFilter]`
@@ -2713,10 +2839,24 @@ Classes
     `start_date: Literal['asc', 'desc']`
     :   Start date of the reporting period
 
+<a id="PagesStartswithCondition"></a>
+
+`PagesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_analytics_data_api.types.PagesStringFilter`
+    :   The type of the None singleton.
+
 <a id="PagesStringFilter"></a>
 
 `PagesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2767,7 +2907,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TrafficSourcesAnyCondition"></a>
@@ -2845,10 +2985,24 @@ Classes
     `total_users: Any`
     :   Total number of unique users
 
+<a id="TrafficSourcesArrayContainsCondition"></a>
+
+`TrafficSourcesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TrafficSourcesContainsCondition"></a>
 
 `TrafficSourcesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2857,6 +3011,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TrafficSourcesEndswithCondition"></a>
+
+`TrafficSourcesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesStringFilter`
     :   The type of the None singleton.
 
 <a id="TrafficSourcesEqCondition"></a>
@@ -3004,20 +3172,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesStringFilter`
     :   The type of the None singleton.
 
-<a id="TrafficSourcesLikeCondition"></a>
-
-`TrafficSourcesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesStringFilter`
-    :   The type of the None singleton.
-
 <a id="TrafficSourcesListParams"></a>
 
 `TrafficSourcesListParams(*args, **kwargs)`
@@ -3061,10 +3215,10 @@ Classes
 
     ### Class variables
 
-    `endDate: str`
+    `end_date: str`
     :   The type of the None singleton.
 
-    `startDate: str`
+    `start_date: str`
     :   The type of the None singleton.
 
 <a id="TrafficSourcesListParamsDimensionsItem"></a>
@@ -3156,7 +3310,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAnyCondition`
     :   The type of the None singleton.
 
 <a id="TrafficSourcesOrCondition"></a>
@@ -3178,7 +3332,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TrafficSourcesSearchFilter"></a>
@@ -3245,7 +3399,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesSortFilter]`
@@ -3304,10 +3458,24 @@ Classes
     `total_users: Literal['asc', 'desc']`
     :   Total number of unique users
 
+<a id="TrafficSourcesStartswithCondition"></a>
+
+`TrafficSourcesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_analytics_data_api.types.TrafficSourcesStringFilter`
+    :   The type of the None singleton.
+
 <a id="TrafficSourcesStringFilter"></a>
 
 `TrafficSourcesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3376,7 +3544,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAnyCondition]`
     :   The type of the None singleton.
 
 <a id="WebsiteOverviewAnyCondition"></a>
@@ -3448,10 +3616,24 @@ Classes
     `total_users: Any`
     :   Total number of unique users
 
+<a id="WebsiteOverviewArrayContainsCondition"></a>
+
+`WebsiteOverviewArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="WebsiteOverviewContainsCondition"></a>
 
 `WebsiteOverviewContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3460,6 +3642,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="WebsiteOverviewEndswithCondition"></a>
+
+`WebsiteOverviewEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewStringFilter`
     :   The type of the None singleton.
 
 <a id="WebsiteOverviewEqCondition"></a>
@@ -3601,20 +3797,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewStringFilter`
     :   The type of the None singleton.
 
-<a id="WebsiteOverviewLikeCondition"></a>
-
-`WebsiteOverviewLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewStringFilter`
-    :   The type of the None singleton.
-
 <a id="WebsiteOverviewListParams"></a>
 
 `WebsiteOverviewListParams(*args, **kwargs)`
@@ -3658,10 +3840,10 @@ Classes
 
     ### Class variables
 
-    `endDate: str`
+    `end_date: str`
     :   The type of the None singleton.
 
-    `startDate: str`
+    `start_date: str`
     :   The type of the None singleton.
 
 <a id="WebsiteOverviewListParamsDimensionsItem"></a>
@@ -3753,7 +3935,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAnyCondition`
     :   The type of the None singleton.
 
 <a id="WebsiteOverviewOrCondition"></a>
@@ -3775,7 +3957,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAnyCondition]`
     :   The type of the None singleton.
 
 <a id="WebsiteOverviewSearchFilter"></a>
@@ -3836,7 +4018,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewSortFilter]`
@@ -3889,10 +4071,24 @@ Classes
     `total_users: Literal['asc', 'desc']`
     :   Total number of unique users
 
+<a id="WebsiteOverviewStartswithCondition"></a>
+
+`WebsiteOverviewStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WebsiteOverviewStringFilter`
+    :   The type of the None singleton.
+
 <a id="WebsiteOverviewStringFilter"></a>
 
 `WebsiteOverviewStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3955,7 +4151,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="WeeklyActiveUsersAnyCondition"></a>
@@ -4006,10 +4202,24 @@ Classes
     `start_date: Any`
     :   Start date of the reporting period
 
+<a id="WeeklyActiveUsersArrayContainsCondition"></a>
+
+`WeeklyActiveUsersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="WeeklyActiveUsersContainsCondition"></a>
 
 `WeeklyActiveUsersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4018,6 +4228,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="WeeklyActiveUsersEndswithCondition"></a>
+
+`WeeklyActiveUsersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersStringFilter`
     :   The type of the None singleton.
 
 <a id="WeeklyActiveUsersEqCondition"></a>
@@ -4138,20 +4362,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersStringFilter`
     :   The type of the None singleton.
 
-<a id="WeeklyActiveUsersLikeCondition"></a>
-
-`WeeklyActiveUsersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersStringFilter`
-    :   The type of the None singleton.
-
 <a id="WeeklyActiveUsersListParams"></a>
 
 `WeeklyActiveUsersListParams(*args, **kwargs)`
@@ -4195,10 +4405,10 @@ Classes
 
     ### Class variables
 
-    `endDate: str`
+    `end_date: str`
     :   The type of the None singleton.
 
-    `startDate: str`
+    `start_date: str`
     :   The type of the None singleton.
 
 <a id="WeeklyActiveUsersListParamsDimensionsItem"></a>
@@ -4290,7 +4500,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="WeeklyActiveUsersOrCondition"></a>
@@ -4312,7 +4522,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="WeeklyActiveUsersSearchFilter"></a>
@@ -4352,7 +4562,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLikeCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersEqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersNeqCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersGtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersGteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLtCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersLteCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersInCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersArrayContainsCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersNotCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAndCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersOrCondition | airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersSortFilter]`
@@ -4384,10 +4594,24 @@ Classes
     `start_date: Literal['asc', 'desc']`
     :   Start date of the reporting period
 
+<a id="WeeklyActiveUsersStartswithCondition"></a>
+
+`WeeklyActiveUsersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_analytics_data_api.types.WeeklyActiveUsersStringFilter`
+    :   The type of the None singleton.
+
 <a id="WeeklyActiveUsersStringFilter"></a>
 
 `WeeklyActiveUsersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

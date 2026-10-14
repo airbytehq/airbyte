@@ -1,0 +1,145 @@
+name: Backfill issue connector labels
+
+on:
+  workflow_dispatch:
+    inputs:
+      since:
+        description: Include issues created on or after this date
+        required: true
+        default: "2025-08-01"
+        type: string
+      until:
+        description: Include issues created on or before this date
+        required: false
+        type: string
+      dry_run:
+        description: Detect and report labels without applying them
+        required: true
+        default: true
+        type: boolean
+      limit:
+        description: Maximum number of issues to process (blank means no limit)
+        required: false
+        type: string
+      state:
+        description: Filter issues by their current state
+        required: true
+        default: all
+        type: choice
+        options:
+          - open
+          - closed
+          - all
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  backfill:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone: true
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Authenticate as GitHub App
+        id: get-app-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        with:
+          owner: airbytehq
+          repositories: airbyte
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Resolve and validate inputs
+        id: resolve-vars
+        env:
+          SINCE: ${{ inputs.since }}
+          UNTIL: ${{ inputs.until }}
+          LIMIT: ${{ inputs.limit }}
+        run: |
+          set -euo pipefail
+          date_pattern='^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+          [[ -n "$SINCE" ]] && [[ "$SINCE" =~ $date_pattern ]] \
+            || { echo "since must be YYYY-MM-DD" >&2; exit 1; }
+          [[ -n "$UNTIL" ]] && ! [[ "$UNTIL" =~ $date_pattern ]] \
+            && { echo "until must be YYYY-MM-DD" >&2; exit 1; } || true
+          [[ -n "$LIMIT" ]] && ! [[ "$LIMIT" =~ ^[1-9][0-9]*$ ]] \
+            && { echo "limit must be a positive integer" >&2; exit 1; } || true
+          [[ -n "$UNTIL" ]] && [[ "$SINCE" > "$UNTIL" ]] \
+            && { echo "until must not precede since" >&2; exit 1; } || true
+          printf 'since=%s\n' "$SINCE" | tee -a "$GITHUB_OUTPUT"
+          printf 'until=%s\n' "${UNTIL:-9999-12-31}" | tee -a "$GITHUB_OUTPUT"
+          printf 'limit=%s\n' "$LIMIT" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Fetch connector names
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: |
+          uv run .github/scripts/detect-issue-connectors.uv --connectors-only > connectors.txt
+
+      - name: Fetch issues in date range
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          SINCE: ${{ steps.resolve-vars.outputs.since }}
+          UNTIL: ${{ steps.resolve-vars.outputs.until }}
+          STATE: ${{ inputs.state }}
+        run: |
+          gh api --paginate \
+            "repos/$GITHUB_REPOSITORY/issues?state=${STATE}&since=${SINCE}T00:00:00Z&per_page=100" \
+            --jq '.[] | select(.pull_request == null)' > issues.jsonl
+          jq -c --arg since "$SINCE" --arg until "$UNTIL" \
+            'select(.created_at >= ($since + "T00:00:00Z") and .created_at <= ($until + "T23:59:59Z"))' \
+            issues.jsonl > in-range-issues.jsonl
+
+      - name: Detect labels
+        env:
+          LIMIT: ${{ steps.resolve-vars.outputs.limit }}
+        run: |
+          set -euo pipefail
+          : > label-plan.tsv
+          count=0
+          while IFS= read -r issue; do
+            [[ -n "$LIMIT" && "$count" -ge "$LIMIT" ]] && break || true
+            has_connector_label=$(jq 'any(.labels[]?.name; startswith("connectors/"))' <<<"$issue")
+            [[ "$has_connector_label" == true ]] && continue || true
+            labels=$(uv run .github/scripts/detect-issue-connectors.uv \
+              --connectors-file connectors.txt \
+              --title "$(jq -r '.title' <<<"$issue")" \
+              --body "$(jq -r '.body // ""' <<<"$issue")" | jq -r '.labels | join(",")')
+            [[ -z "$labels" ]] || printf '%s\t%s\n' "$(jq -r '.number' <<<"$issue")" "$labels" | tee -a label-plan.tsv
+            count=$((count + 1))
+          done < in-range-issues.jsonl
+          cat label-plan.tsv
+
+      - name: Create missing connector labels
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        if: inputs.dry_run == false
+        run: |
+          set -euo pipefail
+          cut -f2 label-plan.tsv | tr ',' '\n' | sort -u | while IFS= read -r label; do
+            [[ -n "$label" ]] || continue
+            existing=$(gh label list --repo "$GITHUB_REPOSITORY" --limit 1000 --search "$label" --json name --jq '.[].name')
+            grep -Fxq "$label" <<<"$existing" || \
+              gh label create "$label" --color ededed --repo "$GITHUB_REPOSITORY"
+          done
+
+      - name: Apply connector labels
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        if: inputs.dry_run == false
+        run: |
+          while IFS=$'\t' read -r issue_number labels; do
+            IFS=',' read -ra label_list <<<"$labels"
+            for label in "${label_list[@]}"; do
+              gh issue edit "$issue_number" --add-label "$label" --repo "$GITHUB_REPOSITORY"
+              sleep 0.2
+            done
+          done < label-plan.tsv

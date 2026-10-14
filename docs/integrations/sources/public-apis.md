@@ -1,5 +1,17 @@
 # Public APIs
 
+:::warning
+
+## Deprecation Notice
+
+The Public APIs source connector has been archived and is no longer available in Airbyte. The upstream API it relied on (`https://api.publicapis.org/`) has been shut down: the hostname no longer resolves and the [public-apis/public-apis](https://github.com/public-apis/public-apis) project no longer offers a hosted API. Every sync and connection check for this connector has failed since the API went offline, and there is no replacement endpoint to migrate to.
+
+### Recommended Actions
+
+Existing connections using this source will continue to fail and should be removed. If you need the data from the [public-apis/public-apis](https://github.com/public-apis/public-apis) directory, consider building a [custom connector](https://docs.airbyte.com/connector-development/) against a data source you control.
+
+:::
+
 ## Sync overview
 
 This source can sync data for the [Public APIs](https://api.publicapis.org/) REST API. It supports only Full Refresh syncs.
@@ -50,6 +62,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.2.39 | 2026-10-07 | [88201](https://github.com/airbytehq/airbyte/pull/88201) | Archive connector: upstream API `api.publicapis.org` has been shut down |
+| 0.2.38 | 2026-07-28 | [83044](https://github.com/airbytehq/airbyte/pull/83044) | Update dependencies |
+| 0.2.37 | 2026-07-14 | [81953](https://github.com/airbytehq/airbyte/pull/81953) | Update dependencies |
+| 0.2.36 | 2026-07-07 | [81446](https://github.com/airbytehq/airbyte/pull/81446) | Update dependencies |
+| 0.2.35 | 2026-06-23 | [80607](https://github.com/airbytehq/airbyte/pull/80607) | Update dependencies |
 | 0.2.34 | 2026-06-09 | [79442](https://github.com/airbytehq/airbyte/pull/79442) | Update dependencies |
 | 0.2.33 | 2026-06-02 | [78871](https://github.com/airbytehq/airbyte/pull/78871) | Update dependencies |
 | 0.2.32 | 2026-04-28 | [77373](https://github.com/airbytehq/airbyte/pull/77373) | Update dependencies |

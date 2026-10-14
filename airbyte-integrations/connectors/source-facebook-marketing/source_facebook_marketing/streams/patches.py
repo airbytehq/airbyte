@@ -2,9 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from urllib.parse import parse_qsl, urlparse, urlunparse
 
 from facebook_business.api import Cursor
+
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
+
+
+logger = logging.getLogger("airbyte")
 
 
 class CursorPatch(Cursor):
@@ -45,22 +52,42 @@ class CursorPatch(Cursor):
         response = response_obj.json()
         self._headers = response_obj.headers()
 
-        if "paging" in response and "next" in response["paging"]:
-            path = response["paging"]["next"]
+        if not isinstance(response, dict):
+            raise AirbyteTracedException(
+                message="Facebook Marketing API response is not a JSON object.",
+                internal_message=f"Expected dict from response_obj.json(), got {type(response).__name__}: {repr(response)[:200]}",
+                failure_type=FailureType.transient_error,
+            )
+
+        paging = response.get("paging")
+        if isinstance(paging, dict) and "next" in paging:
+            path = paging["next"]
             # Here comes the magic.
             # self._path used to be path, self.params used to be {}
             # Now we separate params from the rest.
             self._path = urlunparse(urlparse(path)._replace(query={}))
             self.params = dict(parse_qsl(urlparse(path).query))
         else:
-            # Indicate if this was the last page
+            if paging is not None and not isinstance(paging, dict):
+                logger.warning(
+                    "Facebook Marketing response had a non-dict 'paging' (%s); stopping pagination for this slice.",
+                    type(paging).__name__,
+                )
             self._finished_iteration = True
 
-        if self._include_summary and "summary" in response and "total_count" in response["summary"]:
-            self._total_count = response["summary"]["total_count"]
+        summary = response.get("summary")
+        if self._include_summary and isinstance(summary, dict) and "total_count" in summary:
+            self._total_count = summary["total_count"]
 
-        if self._include_summary and "summary" in response:
-            self._summary = response["summary"]
+        if self._include_summary and isinstance(summary, dict):
+            self._summary = summary
+
+        data = response.get("data")
+        if isinstance(data, list):
+            non_dict_count = sum(1 for item in data if not isinstance(item, dict))
+            if non_dict_count:
+                logger.warning("Filtered %d non-dict items from Facebook API response 'data' array.", non_dict_count)
+                response["data"] = [item for item in data if isinstance(item, dict)]
 
         self._queue = self.build_objects_from_response(response)
         return len(self._queue) > 0

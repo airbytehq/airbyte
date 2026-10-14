@@ -38,7 +38,7 @@ new_entry="| ${new_version} | ${today} | [${pr_number}](https://github.com/airby
 # Otherwise, awk just prints the line unchanged.
 awk -v entry="$new_entry" '
   /^\| Version *\| Date *\| Pull Request *\| Subject *\|$/ { print; header=1; next }
-  header && /^\|:?-+\|:?-+\|:?-+\|:?-+\|$/ { print; print entry; header=0; next }
+  header && /^\| *:?-+:? *\| *:?-+:? *\| *:?-+:? *\| *:?-+:? *\|$/ { print; print entry; header=0; next }
   { print }
 ' "$docs_file" > "${docs_file}.tmp"
 

@@ -8386,6 +8386,114 @@
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
       "default_cursor_field": ["endDate"]
+    },
+    {
+      "name": "FbaInboundShipments",
+      "json_schema": {
+        "title": "Fulfillment Inbound Shipments",
+        "description": "getShipments payload.ShipmentData items",
+        "type": "object",
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": true,
+        "properties": {
+          "ShipmentId": {
+            "description": "The shipment identifier submitted in the request.",
+            "type": ["null", "string"]
+          },
+          "ShipmentName": {
+            "description": "The name for the inbound shipment.",
+            "type": ["null", "string"]
+          },
+          "DestinationFulfillmentCenterId": {
+            "description": "An Amazon fulfillment center identifier created by Amazon.",
+            "type": ["null", "string"]
+          },
+          "ShipmentStatus": {
+            "description": "Indicates the status of the inbound shipment. When used with the createInboundShipment operation, WORKING is the only valid value. When used with the updateInboundShipment operation, possible values are WORKING, SHIPPED or CANCELLED.",
+            "type": ["null", "string"]
+          },
+          "LabelPrepType": {
+            "description": "The type of label preparation that is required for the inbound shipment.",
+            "type": ["null", "string"]
+          },
+          "AreCasesRequired": {
+            "description": "Indicates whether or not an inbound shipment contains case-packed boxes. When AreCasesRequired = true for an inbound shipment, all items in the inbound shipment must be case packed.",
+            "type": ["null", "boolean"]
+          },
+          "ConfirmedNeedByDate": {
+            "description": "Date by which the shipment must arrive at the Amazon fulfillment center to avoid delivery promise breaks for pre-ordered items.",
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "ShipFromAddress": {
+            "description": "The return address.",
+            "type": ["null", "object"],
+            "additionalProperties": true
+          },
+          "BoxContentsSource": {
+            "description": "Where the seller provided box contents information for a shipment.",
+            "type": ["null", "string"]
+          },
+          "EstimatedBoxContentsFee": {
+            "description": "An estimate of the manual processing fee charged by Amazon for boxes without box content information. This is only returned when BoxContentsSource is NONE.",
+            "type": ["null", "object"],
+            "additionalProperties": true
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["ShipmentId"]]
+    },
+    {
+      "name": "FbaInboundShipmentItems",
+      "json_schema": {
+        "title": "Fulfillment Inbound Shipment Items",
+        "description": "getShipmentItemsByShipmentId payload.ItemData items with ShipmentId injected",
+        "type": "object",
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": true,
+        "properties": {
+          "ShipmentId": {
+            "description": "A shipment identifier originally returned by the createInboundShipmentPlan operation.",
+            "type": ["null", "string"]
+          },
+          "SellerSKU": {
+            "description": "The seller SKU of the item.",
+            "type": ["null", "string"]
+          },
+          "FulfillmentNetworkSKU": {
+            "description": "Amazon's fulfillment network SKU of the item.",
+            "type": ["null", "string"]
+          },
+          "QuantityShipped": {
+            "description": "The item quantity that you are shipping.",
+            "type": ["null", "integer"]
+          },
+          "QuantityReceived": {
+            "description": "The item quantity that has been received at an Amazon fulfillment center.",
+            "type": ["null", "integer"]
+          },
+          "QuantityInCase": {
+            "description": "The item quantity in each case, for case-packed items. Note that QuantityInCase multiplied by the number of boxes in the inbound shipment equals QuantityShipped. Also note that all of the boxes of an inbound shipment must either be case packed or individually packed. For that reason, when you submit the createInboundShipment or the updateInboundShipment operation, the value of QuantityInCase must be provided for every item in the shipment or for none of the items in the shipment.",
+            "type": ["null", "integer"]
+          },
+          "ReleaseDate": {
+            "description": "The date that a pre-order item will be available for sale.",
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "PrepDetailsList": {
+            "description": "List of prep instruction details.",
+            "type": ["null", "array"],
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["ShipmentId"], ["SellerSKU"]]
     }
   ]
 }

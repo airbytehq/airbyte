@@ -5,9 +5,9 @@ sidebar_position: 3
 
 # Add a connector
 
-Before an Airbyte agent can read from or write to a data source, someone has to authenticate that source for the workspace. In the web app, that happens on the **Connectors** page. Adding a connector means picking a workspace, picking a data source, and completing an authentication flow once; after that, every interface you use (Chats, Automations, the SDK, the API, and the MCP server) can use the resulting connector.
+Before an Airbyte agent can read from or write to a data source, someone has to authenticate that source for the workspace. In the web app, that happens on the **Connectors** page. Adding a connector means picking a workspace, picking a data source, and completing an authentication flow once; after that, every interface you use (Chats, the SDK, the API, and the MCP server) can use the resulting connector.
 
-This page walks through adding connectors end-to-end: where to add them, how to add them from inside a chat or the Automation Builder, how workspaces and multiple connectors fit together, and how to update or remove connectors you've already added.
+This page walks through adding connectors end-to-end: where to add them, how to add them from inside a chat, how workspaces and multiple connectors fit together, and how to update or remove connectors you've already added.
 
 ## What "adding a connector" means
 
@@ -16,20 +16,22 @@ It helps to separate two ideas that both get called "a connector":
 - A **connector type**, like GitHub, Salesforce, or Google Drive. These come from the [Airbyte connector catalog](../../connectors) and are the same for every organization.
 - A **connector** you've added to a workspace. This is a connector type plus real credentials (an OAuth token, an API key, a service-account file) that Airbyte can use to make calls.
 
-When this doc says "add a connector," it means the second thing: creating an authenticated instance of a connector type inside one of your workspaces. Once it exists, any Chat, Automation, or external client that runs in the same workspace can use it without re-authenticating.
+When this doc says "add a connector," it means the second thing: creating an authenticated instance of a connector type inside one of your workspaces. Once it exists, any Chat or external client that runs in the same workspace can use it without re-authenticating.
 
-Adding a connector is a one-time setup step per workspace. You don't need to pick a "mode" or opt into specific use cases. The same connector is available to agents in Chats, scheduled Automations, the [SDK](../sdk), the [API](../api), and the [MCP server](../mcp).
+Adding a connector is a one-time setup step per workspace. You don't need to pick a "mode" or opt into specific use cases. The same connector is available to agents in Chats, the [SDK](../sdk), the [API](../api), the [CLI](../cli), and the [MCP server](../mcp).
 
 ## Workspaces and connectors
 
-A **workspace** is the scope that a connector lives in. Every organization starts with a `default` workspace and a `Test Environment` workspace, and you can create more. Use workspaces to separate credentials that shouldn't mix. For example, separate production data from sandbox data, or one customer's credentials from another customer's.
+A **workspace** is the scope that a connector lives in. Every organization starts with a `default` workspace, and on the [Team and Custom plans](../../admin/billing.md#team) administrators can create more. Use workspaces to separate credentials that shouldn't mix. For example, separate production data from sandbox data, or one customer's credentials from another customer's.
+
+Connectors are shared within a workspace. Any user with access to the workspace can use a connector in chats, and can edit or delete it. Keep this in mind when you add credentials to a shared workspace.
 
 A workspace can hold as many connectors as you need:
 
 - Connectors of different types. A workspace might have GitHub, Linear, and Salesforce connectors side by side so a single agent can answer cross-system questions.
 - Multiple connectors of the same type. For example, two GitHub connectors for different organizations, or one Salesforce connector for a sandbox and one for production. Airbyte keeps them separate and the agent picks among them based on your prompt and [context](./chats#context).
 
-Each Chat or Automation runs in one workspace at a time and sees only the connectors in that workspace. If you can't find a connector you expect, check that you're in the right workspace.
+Each Chat runs in one workspace at a time and sees only the connectors in that workspace. If you can't find a connector you expect, check that you're in the right workspace.
 
 ## Add a connector from the Connectors page
 
@@ -47,7 +49,7 @@ The Connectors page is the primary place to add, view, and manage connectors for
 
 6. When authentication finishes, the dialog closes and a **Credential Added** confirmation appears in the slide-out. From there you can click **Add Another Credential** to add more, or **Chat with your Agent** to jump straight into a Chat that uses the new connector.
 
-The new connector appears immediately in the Connectors list and in the **Available context** list on the Chat and Automation landing pages. You don't need to reload other tabs.
+The new connector appears immediately in the Connectors list and in the **Available context** list on the Chat landing page. You don't need to reload other tabs.
 
 ## OAuth versus access tokens {#oauth-vs-tokens}
 
@@ -86,19 +88,9 @@ When this happens, the agent's message includes one or more connector tiles next
 
 4. Once you've handled the tiles you care about, the agent picks up the new connectors automatically and continues its response.
 
-Anything you add through this inline flow is saved to the workspace the Chat is running in, just like connectors added from the Connectors page. It's visible afterward in the Connectors list and usable by other Chats and Automations in the same workspace.
+Anything you add through this inline flow is saved to the workspace the Chat is running in, just like connectors added from the Connectors page. It's visible afterward in the Connectors list and usable by other Chats in the same workspace.
 
 If you'd rather not add a connector inline (for example, because you want to pick a different workspace, or because you need to finish authentication elsewhere first), you can also open the **Connectors** page in another tab, add the connector there, then come back to the Chat. Send the agent a short message like "try again" and it re-reads the available context and picks up the new connector on its next turn.
-
-## Add a connector from the Automation Builder
-
-Automations run without a person sitting in the loop, so every connector an automation uses must be authenticated ahead of time. The [Automation Builder](./automations#the-automation-builder) makes this part of the setup conversation.
-
-The fastest path is to tell the Automation Builder Agent what you want and let it flag missing connectors. Describe the automation in plain language. If a required data source isn't authenticated yet, the agent says so, often with connector tiles right in the chat, exactly like in a regular Chat. Click a tile, authenticate, and continue iterating on the automation. The agent re-reads the workspace context and adjusts its plan once the new connector is available.
-
-You can also ask the Automation Builder Agent to change which connectors the automation uses. Sending a message like "use the Salesforce connector instead" or "add HubSpot" tells it to update the automation's [**Context**](./automations#properties) to match. Airbyte blocks direct edits to the Context list in the Properties panel on purpose, so that the prompt and the connectors it relies on stay in sync.
-
-If you prefer, you can still pre-authenticate everything from the Connectors page first, then open the Automation Builder with the connectors already in place. That path is often faster when you already know exactly which sources the automation needs.
 
 ## Manage existing connectors
 
@@ -106,13 +98,45 @@ The Connectors page also shows every connector that's already been added across 
 
 - **Filter the list**. Use the **All workspaces** and **All connectors** filters at the top of the table to narrow the list by workspace or connector type.
 
-- **Inspect a connector's history**. Click the clock icon on a row to see an agent-request history for that connector, including which tool calls hit it, when, and what succeeded.
+- **Open a connector's detail page**. Click **Details** on a row to open the connector's detail page. The page shows the connector's metadata (connector ID, workspace, and when it was created and last used), its [Context Store](../../concepts/context-store) entities, and an **Activity** section with the agent-request history for that connector, including which tool calls hit it, when, and whether they succeeded. Filter the Activity list by request type (**Direct API** or **Search**) and status, and page through older requests.
 
-- **Re-authenticate a connector**. If credentials expire or get revoked on the third-party side, click the pencil icon to re-launch the authentication module and update them. The connector keeps its identity, so Chats and Automations that reference it don't need to be rewired.
+- **Re-authenticate a connector**. If credentials expire or get revoked on the third-party side, click the pencil icon on a row, or **Edit** on the connector detail page, to re-launch the authentication module and update them. The connector keeps its identity, so Chats that reference it don't need to be rewired.
 
-- **Remove a connector**. Click the trash icon on a row to delete that connector. The credential is removed from the workspace immediately. Any Chat or Automation that was relying on it needs a replacement connector, or a different approach, the next time it runs.
+- **Remove a connector**. Click the trash icon on a row, or **Delete** on the connector detail page, to delete that connector. The credential is removed from the workspace immediately. Any Chat that was relying on it needs a replacement connector, or a different approach, the next time it runs.
 
 You don't have to turn off a connector before deleting it, and there's no minimum number of connectors per workspace. An empty workspace is a valid state. It just means no agent running in it can reach external data.
+
+## Control who can access each entity {#entity-access}
+
+Administrators can control which members of the connector's workspace can read from and write to each entity a connector exposes. This is useful when a workspace is shared but only some of its members should reach a sensitive entity, such as payroll records or customer contacts.
+
+Entity access permissions apply per entity, per member, and per action (read or write). They don't change what the underlying credential can reach on the third-party service; they control which members' agents are allowed to use each entity through this connector.
+
+### Who can see and edit access
+
+The access controls appear only for administrators: organization admins and members who manage the connector's workspace. Members who don't manage the workspace don't see the access columns and can't change access. Because access is granted per member, these controls matter most once the workspace has more than one member, which requires a plan that supports [multiple users](../../admin/users.md). On plans limited to a single user, you're the only member in the list.
+
+### Read the access summary
+
+Open a connector's detail page (**Connectors** > **Details**) and find the Context Store entities table. When you have access to manage the connector, the table shows two extra columns, **Reads** and **Writes**. Each cell holds a pill that summarizes who can perform that action on that entity:
+
+- **Everyone**: Every active member can perform the action.
+- **A count, such as "2 of 5"**: Only some members can. The pill shows how many of the eligible members are allowed.
+- **No one**: No member can perform the action.
+
+The **Writes** column shows a summary only for entities the connector can write to. For read-only entities, the Writes cell stays empty.
+
+### Change who has access
+
+1. On the connector detail page, click the **Reads** or **Writes** pill for the entity you want to adjust. An **Access** slide-out opens for that entity.
+
+2. The slide-out lists every active member of the connector's workspace, grouped into **Reads** and, for writable entities, **Writes**. Each member row shows their name, email, and role (**Admin** or **Member**), with a toggle for each action.
+
+3. Every member starts with access to every entity. Switch a member's toggle **off** to revoke that action for that entity, or back **on** to restore it. Each change saves on its own as you make it, so you can close the slide-out at any time.
+
+4. Close the slide-out when you're done. The summary pill on the connector detail page updates to reflect the new access, for example changing from **Everyone** to a count such as **2 of 5**.
+
+Only active members appear in the slide-out. Members who were invited but haven't signed in yet don't have access to control until their status becomes **Active**. For more about roles and member status, see [Users](../../admin/users.md).
 
 ## Doing this without the web app
 

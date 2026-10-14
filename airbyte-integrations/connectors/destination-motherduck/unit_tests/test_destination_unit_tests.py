@@ -13,11 +13,14 @@ from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,
+    AirbyteStateType,
     AirbyteStream,
+    AirbyteStreamState,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
     Status,
+    StreamDescriptor,
     SyncMode,
     Type,
 )
@@ -177,3 +180,81 @@ def test_null_primary_key_handling(monkeypatch) -> None:
     assert None in ids, "Expected to find record with NULL id"
     assert "record_with_valid_pk" in names, "Expected to find record with valid primary key"
     assert "record_with_null_pk_2" in names, "Expected to find the latest null primary key record (record_with_null_pk_2)"
+
+
+def test_interleaved_multi_stream_write_does_not_drop_buffered_records(monkeypatch) -> None:
+    """Records from a stream buffered while another stream's STATE flushes must not be dropped.
+
+    Reproduces the silent data-loss bug (oncall #13067): when one stream's STATE message
+    triggered a flush, the destination reset the entire shared buffer, discarding other
+    streams' buffered-but-unflushed records. All records for every stream must be persisted.
+    """
+
+    monkeypatch.setattr(DestinationMotherDuck, "_get_destination_path", lambda _, x: x)
+
+    temp_dir = tempfile.mkdtemp()
+    schema_name = "test_schema"
+    config = {"destination_path": f"{temp_dir}/test_interleaved.duckdb", "schema": schema_name}
+
+    table_schema = {
+        "type": "object",
+        "properties": {
+            "id": {"type": ["null", "integer"]},
+            "name": {"type": ["null", "string"]},
+        },
+    }
+
+    def _stream(name: str) -> ConfiguredAirbyteStream:
+        return ConfiguredAirbyteStream(
+            stream=AirbyteStream(
+                name=name,
+                json_schema=table_schema,
+                supported_sync_modes=[SyncMode.incremental],
+            ),
+            sync_mode=SyncMode.incremental,
+            destination_sync_mode=DestinationSyncMode.append,
+        )
+
+    configured_catalog = ConfiguredAirbyteCatalog(streams=[_stream("stream_a"), _stream("stream_b")])
+
+    def _record(stream: str, id_: int, name: str) -> AirbyteMessage:
+        return AirbyteMessage(
+            type=Type.RECORD,
+            record=AirbyteRecordMessage(
+                stream=stream,
+                data={"id": id_, "name": name},
+                emitted_at=int(datetime.now().timestamp()) * 1000,
+            ),
+        )
+
+    # stream_b's records are buffered when stream_a's STATE message triggers a flush.
+    messages = [
+        _record("stream_a", 1, "a1"),
+        _record("stream_b", 1, "b1"),
+        _record("stream_b", 2, "b2"),
+        AirbyteMessage(
+            type=Type.STATE,
+            state=AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="stream_a")),
+            ),
+        ),
+    ]
+
+    destination = DestinationMotherDuck()
+    result = list(destination.write(config, configured_catalog, messages))
+
+    assert len(result) == 1
+    assert result[0].type == Type.STATE
+
+    processor = destination._get_sql_processor(
+        configured_catalog=configured_catalog,
+        schema_name=schema_name,
+        db_path=config["destination_path"],
+    )
+
+    stream_a_rows = processor._execute_sql(f"SELECT id FROM {schema_name}.stream_a")
+    stream_b_rows = processor._execute_sql(f"SELECT id FROM {schema_name}.stream_b")
+
+    assert len(stream_a_rows) == 1, f"Expected 1 stream_a row, got {len(stream_a_rows)}"
+    assert len(stream_b_rows) == 2, f"Expected 2 stream_b rows (none dropped), got {len(stream_b_rows)}"
