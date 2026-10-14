@@ -1,0 +1,313 @@
+> NOTE: CLAUDE.md is a symlink to AGENTS.md; update AGENTS.md (not the symlink) when changing these instructions.
+
+# source-amazon-seller-partner: Unique Behaviors
+
+## 1. Report Responses Are Gzip-Compressed CSV, XML, or JSON (Not Standard REST)
+
+Amazon SP API report streams do not return standard JSON REST responses. Instead, reports are fetched as gzip-compressed files that may contain CSV, XML, or JSON data depending on the report type. The connector uses three custom decoders (`GzipCsvDecoder`, `GzipXmlDecoder`, `GzipJsonDecoder`) to handle each format.
+
+For CSV reports, the column headers can be localized per marketplace. For example, seller feedback reports return different column names depending on the seller's marketplace ID, and some marketplaces use different date formats in their CSV output.
+
+Report streams also support the connector-level `report_stream_lookback_window_in_hours` option. The lookback is applied to report streams whose Amazon report requests accept timestamp boundaries, so incremental report syncs re-request prior windows while preserving the stored cursor checkpoint. The option is not applied to `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH` or `GET_VENDOR_SALES_REPORT` because those streams use monthly or date-only report boundaries.
+
+**Why this matters:** A single connector handles three fundamentally different response formats behind the scenes. Adding a new report stream requires knowing which format that report uses and selecting the correct decoder. CSV reports may also need marketplace-specific date parsing logic. Incremental report streams should include the shared lookback window only when the Amazon report request supports timestamp boundaries.
+
+## 2. Reactive Token Invalidation on 403 Errors
+
+When Amazon SP API returns a 403 with a message indicating the access token has expired, the connector's custom authenticator (`AmazonSPOauthAuthenticator`) forcibly invalidates the current token by setting its expiry date to the Unix epoch. This is triggered by a custom backoff strategy (`AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy`) that detects the 403, calls the authenticator's `invalidate_token()` method via a module-level global reference, and then retries the request with a freshly refreshed token.
+
+**Why this matters:** Token invalidation happens through a global module-level variable linking the backoff strategy to the authenticator instance, which is unusual. If this global reference breaks (e.g., due to refactoring), 403 token-expired errors will not trigger token refresh and will instead fail permanently.
+
+## 3. Reciprocal Retry-After Header for Backoff
+
+The custom backoff strategy computes wait time as the reciprocal of the `Retry-After` header value (i.e., `1 / header_value`) instead of using the header value directly. This is because Amazon's `x-amzn-RateLimit-Limit` header returns requests-per-second, not seconds-to-wait.
+
+**Why this matters:** If you see a `Retry-After` value of 0.5, the connector waits 2 seconds (1/0.5), not 0.5 seconds. This inverted interpretation is specific to Amazon's rate limit header semantics and would produce incorrect wait times if applied to other APIs.
+
+## 4. Regression Tests Will Not Run for This Connector
+
+The OAuth token refresh flow fails when running "locally" or via regression tests due to an issue in the CDK's [`abstract_oauth.py` refresh method](https://github.com/airbytehq/airbyte-python-cdk/blob/9ec30dc780ffc44ef132aee7c728bbc23c77afca/airbyte_cdk/sources/streams/http/requests_native_auth/abstract_oauth.py#L195). This is **only** an issue in local/regression test environments, not in Cloud.
+
+**Alternate testing process:**
+1. Create a dev image of the connector branch
+2. Set up a new source on a Cloud test account using integration test credentials
+3. Set up a destination as `dev/null` — verify source setup succeeds and first sync completes
+4. Pin customer actor IDs to the dev image and verify that existing customer syncs continue to run without issues
+
+**PRs for this connector should be rolled out via progressive rollouts** while this local testing limitation exists.
+
+**Why this matters:** You cannot rely on regression tests or local runs to validate changes to this connector. The only reliable way to test is through Cloud with a dev image. Skipping the Cloud-based testing process risks shipping broken changes that won't be caught until production.
+
+## 5. Standard Tests Will Not Pass for All Streams
+
+The test `test_basic_read['config' Test Scenario]` fails for `GET_VENDOR_FORECASTING_RETAIL_REPORT` and `GET_VENDOR_FORECASTING_FRESH_REPORT` due to sandbox account permissions:
+
+> `Report type 56300 does not support account ID of type class com.amazon.partner.account.id.MerchantAccountId.`
+
+This error has been returning since at least v4.4.7 of the connector (before these streams were migrated to low-code). This should be resolved once Standard Tests can bypass specific streams — an upcoming update expected in the next few weeks.
+
+## 6. Known Stream Failures in Testing
+
+The following streams have known failures when running against test/sandbox credentials. These are **not** connector bugs — they are limitations of the test account or sandbox environment.
+
+### Permission Errors (403 Forbidden)
+
+| Stream | Failure Reason |
+|--------|---------------|
+| VendorDirectFulfillmentShipping | `Forbidden. You don't have permission to access this resource.` |
+| VendorOrders | `Forbidden. You don't have permission to access this resource.` (repeated 5 times) |
+| GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING | `Access to the resource is forbidden` (403 from POST request to SP-API) |
+| GET_ORDER_REPORT_DATA_SHIPPING | `Access to the resource is forbidden` (403 from POST request to SP-API) |
+
+### Timeout Errors
+
+| Stream | Failure Reason |
+|--------|---------------|
+| GET_FBA_STORAGE_FEE_CHARGES_DATA | `Job timed out for slice 2023-09-01 to 2023-09-30` |
+| GET_LEDGER_DETAIL_VIEW_DATA | `Job timed out for slice 2023-09-01 to 2023-09-30` |
+| GET_LEDGER_SUMMARY_VIEW_DATA | `Job timed out for slice 2023-09-01 to 2023-09-30` |
+| GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA | `Job timed out for slice 2023-09-01 to 2023-09-30` |
+| GET_AFN_INVENTORY_DATA_BY_COUNTRY | `Job timed out for slice 2023-09-01 to 2023-09-30` |
+| GET_FBA_INVENTORY_PLANNING_DATA | `Job timed out for slice 2023-09-01 to 2023-09-30` |
+| GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE | `Job timed out for slice 2023-09-01 to 2023-09-30` |
+| GET_STRANDED_INVENTORY_UI_DATA | `Job timed out for slice 2023-09-01 to 2023-09-30` |
+
+### Job Failed to Complete
+
+| Stream | Failure Reason |
+|--------|---------------|
+| GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL | `Job failed for slice 2023-09-01 to 2023-09-30` |
+| GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA | `Job failed for slice 2023-09-01 to 2023-09-30` |
+| GET_FBA_REIMBURSEMENTS_DATA | `Job failed for slice 2023-09-01 to 2023-09-30` |
+| GET_SELLER_FEEDBACK_DATA | `Job failed to start` |
+| GET_FBA_SNS_PERFORMANCE_DATA | `Job failed for slice 2023-09-01 to 2023-09-30` |
+| GET_FBA_SNS_FORECAST_DATA | `Job failed for slice 2023-09-01 to 2023-09-30` |
+| GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA | `Job failed for slice 2023-09-01 to 2023-09-30` |
+| GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA | `Job failed for slice 2023-09-01 to 2023-09-30` |
+| GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA | `Job failed for slice 2023-09-01 to 2023-09-30` |
+| GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA | `Job failed for slice 2023-09-01 to 2023-09-30` |
+| GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA | `Job failed for slice 2023-09-01 to 2023-09-30` |
+| GET_VENDOR_FORECASTING_FRESH_REPORT | `Job failed to start` |
+| GET_VENDOR_FORECASTING_RETAIL_REPORT | `Job failed to start` |
+
+### Invalid Input
+
+| Stream | Failure Reason |
+|--------|---------------|
+| GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE | `RequestedFromDate 2023-09-30T00:00:00.000Z is more than 90 days old` (400 InvalidInput) |
+
+## 7. Report Streams Must Declare Their Own `dataStartTime`/`dataEndTime`
+
+Every report stream's `creation_requester` pulls in the shared requester with `$ref`, but a sibling
+`request_body_json` **replaces** the referenced one wholesale — the manifest reference resolver merges
+one level deep, not recursively. So a stream that writes its own `request_body_json` to set
+`reportType` drops the shared `dataStartTime`/`dataEndTime` entirely, and `createReport` is called
+with no date range while the record is still labelled with the slice's date.
+
+Daily (`step: P1D`) report streams must additionally anchor that window to the slice's calendar day:
+
+```yaml
+dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
+dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
+```
+
+Raw slice bounds drift off midnight as soon as a sync ends mid-day (the cursor's `end_datetime` is
+`now_utc()`), and Amazon rounds an off-midnight window outward to every calendar day it spans and
+sums them. The `AddFields` transformation that emits the cursor value (`endDate` / `endTime` /
+`queryEndDate`) needs the same day-aligned expression so destination deduplication compares stable
+per-day values.
+
+**Why this matters:** adding a report stream by copying an existing one is the common path, and the
+missing window is invisible — either the sync succeeds and returns records labelled with a date the
+report did not cover, or Amazon rejects the request outright. `GET_VENDOR_INVENTORY_REPORT` was the
+second case: it sent no window at all, and Amazon failed every report with `dataStartTime and
+dataEndTime must be supplied`, so the stream returned no records for the entire low-code era. It now
+declares the same daily cursor and day-aligned window as its siblings, and like the other vendor
+retail analytics reports its cursor ends four days back so it never requests a day Amazon has not
+published yet.
+
+Two deliberate exceptions remain: streams whose window is multi-day or monthly (for example
+`GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`) set the window explicitly but not day-aligned, and the
+forecast streams (`GET_VENDOR_FORECASTING_FRESH_REPORT`, `GET_VENDOR_FORECASTING_RETAIL_REPORT`)
+have no cursor and intentionally send no window at all.
+
+## 8. Vendor retail analytics reports forward report options but supply no defaults
+
+Amazon documents `reportPeriod`, `distributorView`, and `sellingProgram` as required for the vendor sales and
+inventory reports, and `reportPeriod` for traffic and net pure product margin. Real-time inventory has no
+documented options.
+
+Because each of these streams declares its own `request_body_json`, which replaces rather than merges with
+the shared requester's body, configured options used to be validated and then silently dropped
+(issue #77617). Each stream's `request_body_json` now references the single `report_options_from_config`
+Jinja block that `creation_requester_with_report_options` also references, so the option matching rules
+exist in exactly one place. Each stream supplies only its `report_type` via `$parameters`.
+
+Do not add default values for these options. The right values are account-specific (`distributorView` is
+`MANUFACTURING` or `SOURCING` depending on how the vendor sells to Amazon; `sellingProgram` is `RETAIL`, `FRESH`
+or, for some reports, `BUSINESS`), so a hardcoded guess can return the wrong numbers with no error and no schema change to signal it.
+A missing option fails loudly instead: Amazon can reject a request that omits them, and on a live Vendor
+connection every vendor sales, inventory and traffic report went `FATAL` with "This report type requires the
+reportPeriod, distributorView, sellingProgram reportOption to be specified" until the user configured them. The
+block ends in `{{ opts if opts else None }}` so an unconfigured connection sends no `reportOptions` key at all and
+its request body is byte-identical to previous versions.
+
+## 9. Vendor retail analytics streams must hold back four days
+
+Amazon publishes the vendor retail analytics reports "72 hours after the close of the period" for the
+`DAY` reportPeriod
+(https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports).
+Requesting a day it has not published yet makes the report `FATAL` with "The report data for the requested
+date range is not yet available". That is a partial failure per slice, not a skip, so before 6.0.4 every
+sync failed on its newest day and a long-running connection hit the platform's 20-partial-failure limit while
+most of its data had loaded.
+
+The vendor analytics cursors (Vendor Sales, Vendor Inventory, Vendor Traffic, Net Pure Product Margin) therefore end at
+`now_utc() - duration('P4D')`. Four, not three: a slice for day D closes at D 23:59:59 and is published 72
+hours after *that*, so a three-day holdback is only safe for a sync that starts at midnight UTC. The cursor's
+end bound is exclusive, so the newest day actually requested is four to five days back depending on the time
+of day.
+
+An explicitly configured `replication_end_date` is used as-is with no holdback, matching the pre-migration
+Python connector where `availability_sla_days` only ever moved the "now" bound. `GET_VENDOR_INVENTORY_REPORT`
+shares the holdback since 6.1.0, when it gained its daily cursor (section 7), because Amazon publishes it on the
+same schedule. Do not apply the holdback to `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` (published five minutes after
+each hour closes) or to the seller `GET_SALES_AND_TRAFFIC_REPORT` streams, which Amazon publishes on a
+different schedule.
+
+A known limitation: the day-aligned window assumes `reportPeriod: DAY`. A connection that configures `WEEK`
+or `MONTH` gets a one-day window that contradicts the configured period, since Amazon expects Sunday- or
+month-aligned bounds for those. This is not handled.
+
+## 10. FATAL reports must surface Amazon's reason
+
+When `getReport` returns `processingStatus: FATAL`, Amazon accepted `createReport` but could not produce the
+report, and the reason lives in a separate document referenced by `reportDocumentId`. The CDK never fetches it:
+it retries and then fails with "Async job failed after exhausting all retry attempts.", which tells the user
+nothing. `ReportPollingRequester` (wired as the `basic_async_retriever.polling_requester`) fetches that document,
+logs Amazon's reason at ERROR, and raises a `config_error` when the reason points at report options.
+The fail-fast applies only to `_REPORT_TYPES_SENDING_USER_REPORT_OPTIONS` - the four vendor retail
+analytics reports and the two ledger reports - because only those send the user's Report Options;
+every other stream keeps the retry path, since a report-options FATAL there is a connector bug,
+not a config error.
+
+The `config_error` message only tells the user to add options when Amazon says one is missing
+(`_MISSING_REPORT_OPTION_MARKERS`). A reason that merely mentions an option, such as a rejected value or a `WEEK`
+period whose dates are not Sunday-aligned, means the option is already set, so the message quotes Amazon and asks
+the user to check the value instead. The polling requester is shared by every report stream, so keep those
+markers narrow: a bare "requires" would also match value errors.
+
+`AsyncJobOrchestrator._is_breaking_exception` treats a `config_error` as breaking, so that path aborts the sync
+immediately rather than waiting out `failed_retry_wait_time_in_seconds` (default 1800s) per retry. Every other
+case - no document, a fetch failure, an unrecognised payload - must leave the response untouched so the existing
+retry and `status_mapping` behaviour is unchanged. This is a diagnostic path: it must never turn a report Amazon
+accepted into a failure.
+
+## 11. Settlement Reports Use `AsyncRetriever` Without Creating Anything
+
+`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` is the one report stream Amazon generates on its own —
+`createReport` is not allowed for it. It still uses `basic_async_retriever`, with the
+`creation_requester` overridden to a **GET** of `reports/2021-06-30/reports/{reportId}` for a report
+that `flat_file_settlement_v2_helper` already listed. Nothing is created; the async machinery is
+there for its `download_target_requester`, which resolves `reportDocumentId` to a pre-signed URL and
+downloads it in the same call.
+
+Five constraints that are easy to break:
+
+- **Do not move the document lookup into a parent stream.** Amazon signs the URL with
+  `X-Amz-Expires=300`. Resolving it in a `SubstreamPartitionRouter` parent minted the URL during
+  partition generation and consumed it during partition read, which blew the five-minute window on
+  any sizeable backfill (`getReportDocument` is budgeted at 1 request/minute, so 100 reports is ~100
+  minutes) and replayed the same dead URL on every retry.
+- **`getReports` pagination must send `nextToken` alone.** Reports 2021-06-30 returns `400
+  InvalidInput` if `nextToken` arrives with `reportTypes`, `pageSize`, `createdSince` or
+  `createdUntil` — unlike Orders v0, which ignores them. Suppressing all four takes two mechanisms:
+  `ignore_stream_slicer_parameters_on_paginated_requests` on the **SimpleRetriever** (the CDK ignores
+  it on the DeclarativeStream) covers the cursor's `createdSince`/`createdUntil`, and
+  `"{{ '' if next_page_token else ... }}"` in the requester's `request_parameters` covers
+  `reportTypes` and `pageSize`. The paginator's `page_size_option` cannot be used, because
+  `DefaultPaginator` injects it on paginated requests too. The response field is also `nextToken`
+  (lower camel case); `NextToken` is the Orders/Finances v0 spelling and resolves to an empty string
+  here, which silently stops pagination after the first page.
+- **The download requester must ignore 403.** If the URL expires anyway, S3 returns `403 Request has
+  expired` and the CDK cannot resolve a new one. `PresignedUrlDownloadRequester` handles this by
+  calling `getReportDocument` again for a fresh URL (up to two times), which only works because the
+  download requester's error handler maps 403 to `IGNORE` so the response reaches the component.
+- **Each report must be downloaded exactly once.** A report is one immutable document and the stream
+  has no primary key, so anything that runs a report twice duplicates its rows in the destination. The
+  listing checkpoint (`listedUntil`) is the end of the previous listing to the second, and the listing
+  has no `lookback_window`, so a report is never listed twice. The child stream's `step` is `P10Y`, so
+  `period_in_days` cannot split one report into several jobs. The checkpoint was named `dataEndTime`
+  up to 6.1.0, which listed reports without downloading them; the new name is what makes that state
+  list the full window again, so do not rename it back.
+- **Only `CANCELLED` and `FATAL` reports are filtered out of the listing.** The listing checkpoint
+  moves past every report it lists, so dropping one that is still `IN_QUEUE` or `IN_PROGRESS` loses it
+  for good. The async retriever polls those until `DONE` instead.
+
+**Why this matters:** each of these fails quietly or only at scale. The stream either emits 0 records
+with a successful sync, stops after one page of reports, fails on large backfills with expired URLs,
+emits the same settlement rows more than once, or silently skips reports.
+
+## Incremental Stream Considerations
+
+The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 7 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
+
+| Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
+|---|---|---|---|---|---|---|
+| get_afn_inventory_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_afn_inventory_data_by_country | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_amazon_fulfilled_shipments_data_general | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_brand_analytics_alternate_purchase_report | medium | top-level parent | none | none | deferred_no_api_support | Brand analytics report; weekly/monthly aggregation |
+| get_brand_analytics_item_comparison_report | medium | top-level parent | none | none | deferred_no_api_support | Brand analytics report; weekly/monthly aggregation |
+| get_brand_analytics_market_basket_report | medium | top-level parent | none | none | deferred_no_api_support | Brand analytics report; weekly/monthly aggregation |
+| get_brand_analytics_repeat_purchase_report | medium | top-level parent | none | none | deferred_no_api_support | Brand analytics report; weekly/monthly aggregation |
+| get_brand_analytics_search_terms_report | medium | top-level parent | none | none | deferred_no_api_support | Brand analytics report; weekly/monthly aggregation |
+| get_fba_estimated_fba_fees_txt_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_fba_fulfillment_customer_returns_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_fba_fulfillment_customer_shipment_promotion_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_fba_fulfillment_customer_shipment_replacement_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_fba_fulfillment_removal_order_detail_data | medium | top-level parent | last-updated-date | last-updated-date | incremental |  |
+| get_fba_fulfillment_removal_shipment_detail_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_fba_inventory_planning_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_fba_myi_unsuppressed_inventory_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_fba_reimbursements_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_fba_storage_fee_charges_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_flat_file_actionable_order_data_shipping | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_flat_file_all_orders_data_by_last_update_general | medium | top-level parent | last-updated-date | last-updated-date | incremental |  |
+| get_flat_file_all_orders_data_by_order_date_general | medium | top-level parent | last-updated-date | last-updated-date | incremental |  |
+| get_flat_file_archived_orders_data_by_order_date | medium | top-level parent | last-updated-date | last-updated-date | incremental |  |
+| get_flat_file_open_listings_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_flat_file_returns_data_by_return_date | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_ledger_detail_view_data | medium | top-level parent | Date | Date | incremental |  |
+| get_ledger_summary_view_data | medium | top-level parent | Date | Date | incremental |  |
+| get_merchant_cancelled_listings_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_merchant_listings_all_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_merchant_listings_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_merchant_listings_data_back_compat | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_merchant_listings_inactive_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_merchants_listings_fyp_report | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_order_report_data_shipping | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_restock_inventory_recommendations_report | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_sales_and_traffic_report | medium | top-level parent | queryEndDate | queryEndDate | incremental |  |
+| get_sales_and_traffic_report_by_date | medium | top-level parent | queryEndDate | queryEndDate | incremental |  |
+| get_sales_and_traffic_report_by_month | medium | top-level parent | queryEndDate | queryEndDate | incremental |  |
+| get_seller_feedback_data | medium | top-level parent | date | date | incremental |  |
+| get_stranded_inventory_ui_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| get_vendor_forecasting_fresh_report | medium | top-level parent | none | none | deferred_no_api_support | Vendor forecast report; uses report date range, not cursor |
+| get_vendor_forecasting_retail_report | medium | top-level parent | none | none | deferred_no_api_support | Vendor forecast report; uses report date range, not cursor |
+| get_vendor_inventory_report | medium | top-level parent | endDate | dataStartTime/dataEndTime | incremental | Daily window |
+| get_vendor_sales_report | medium | top-level parent | endDate | endDate | incremental |  |
+| get_xml_all_orders_data_by_order_date_general | medium | top-level parent | LastUpdatedDate | LastUpdatedDate | incremental |  |
+| get_xml_browse_tree_data | medium | top-level parent | dataEndTime | dataEndTime | incremental |  |
+| list_financial_event_groups | medium | top-level parent | FinancialEventGroupStart | FinancialEventGroupStart | incremental |  |
+| list_financial_events | medium | top-level parent | PostedBefore | PostedBefore | incremental |  |
+| orders | medium | top-level parent | LastUpdateDate | LastUpdateDate | incremental |  |
+| vendor_direct_fulfillment_shipping | medium | top-level parent | createdBefore | createdBefore | incremental |  |
+| vendor_orders | medium | top-level parent | changedBefore | changedBefore | incremental |  |
+| vendor_orders_status | medium | top-level parent | createdBefore | createdBefore | incremental |  |
+| get_v2_settlement_report_data_flat_file | medium | child | dataEndTime | dataEndTime | incremental |  |
+| order_items | medium | child of orders | LastUpdateDate | LastUpdateDate | incremental |  |
+
+### Future incremental stream candidates
+
+- **No API date filter (7 streams):** `get_brand_analytics_alternate_purchase_report`, `get_brand_analytics_item_comparison_report`, `get_brand_analytics_market_basket_report`, `get_brand_analytics_repeat_purchase_report`, `get_brand_analytics_search_terms_report`, `get_vendor_forecasting_fresh_report`, `get_vendor_forecasting_retail_report` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.

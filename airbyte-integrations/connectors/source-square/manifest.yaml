@@ -978,7 +978,6 @@ definitions:
             sort:
               sort_field: UPDATED_AT
               sort_order: ASC
-            limit: "{{ 500 }}"
             filter:
               date_time_filter:
                 updated_at:
@@ -1014,6 +1013,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - orders
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.cursor }}"
+            stop_condition: "{{ 'cursor' not in response }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:

@@ -62,7 +62,7 @@ class PostgresInsertBuffer(
                     "Finished insert of $recordCount row(s) into ${tableName.namespace}.${tableName.name}"
                 }
             } catch (e: Exception) {
-                logger.error(e) { "Unable to flush accumulated data." }
+                throw e
             } finally {
                 filePath.deleteIfExists()
                 csvPrinter?.close()

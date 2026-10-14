@@ -286,7 +286,7 @@ definitions:
           fields:
             - path:
                 - ParentHash
-              value: "{{ stream_slice.form_identifier }}"
+              value: "{{ stream_slice.report_identifier }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
