@@ -7,7 +7,10 @@ acceptance_tests:
       - spec_path: "manifest.yaml"
   connection:
     tests:
+      # The GSM client secret is rejected (AADSTS7000215, HTTP 401 at the token endpoint), so
+      # `check` reports FAILED. Switch back to `status: succeed` once the secret is rotated.
       - config_path: secrets/config.json
+        status: failed
         timeout_seconds: 7200
   discovery:
     bypass_reason: "This is a builder contribution, and we do not have secrets at this time"

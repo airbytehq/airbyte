@@ -24,9 +24,10 @@ concurrency:
   group: ai-breaking-change-ready-${{ inputs.pr || 'unknown' }}
   cancel-in-progress: false
 
-# Edit this list to add or remove reviewers.
+# The Slack user group of breaking-change reviewers, @-mentioned in the channel below. Edit the group in Slack to change who is paged.
 env:
-  BREAKING_CHANGE_REVIEWER_SLACK_IDS: "U04QENY1EDV,U07V1RTGP88"
+  BREAKING_CHANGE_REVIEWER_SLACK_GROUP: S0C7C65AZM5
+  BREAKING_CHANGE_REVIEW_SLACK_CHANNEL: C0BHDAPNPCY # The `#team-apis` channel
 
 permissions:
   contents: read
@@ -134,8 +135,10 @@ jobs:
           pr_data="$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" | jq -c '{url: .html_url, title: .title, author: .user.login}')"
           printf 'pull_request=%s\n' "$pr_data" | tee -a "$GITHUB_OUTPUT"
 
-      - name: Ping breaking-change reviewers in Slack
+      - name: Notify breaking-change reviewers in Slack
         if: steps.check-gate.outputs.result == 'ready'
+        # The gate verdict is already on the PR comment; a Slack failure must not replace it with a failure notice.
+        continue-on-error: true
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
           PR_NUMBER: ${{ inputs.pr }}
@@ -182,36 +185,26 @@ jobs:
           pr_url="$(jq -er '.url' <<<"$PR_DATA")"
           pr_title="$(jq -er '.title | gsub("<"; "‹") | gsub(">"; "›") | gsub("[|]"; "¦")' <<<"$PR_DATA")"
           pr_author="$(jq -er '.author' <<<"$PR_DATA")"
+          mentions="<!subteam^${BREAKING_CHANGE_REVIEWER_SLACK_GROUP}>"
           markdown_message="$(jq -nr \
+            --arg mentions "$mentions" \
             --arg url "$pr_url" \
             --arg title "$pr_title" \
             --arg number "$PR_NUMBER" \
             --arg author "$pr_author" \
             --arg recommendations "$markdown_recommendations" \
-            '"*Breaking change ready for review:* <\($url)|\($title)> · airbyte#\($number) by \($author)\n\n\($recommendations)\n\n<\($url)|Open PR>"')"
+            '"\($mentions) *Breaking change ready for review:* <\($url)|\($title)> · airbyte#\($number) by \($author)\n\n\($recommendations)\n\n<\($url)|Open PR>"')"
           plain_message="$(jq -nr \
+            --arg mentions "$mentions" \
             --arg url "$pr_url" \
             --arg title "$pr_title" \
             --arg number "$PR_NUMBER" \
             --arg author "$pr_author" \
             --arg recommendations "$plain_recommendations" \
-            '"Breaking change ready for review: " + $title + " · airbyte#" + $number + " by " + $author + "\n\n" + $recommendations + "\n\n" + $url')"
-
-          open_payload="$(jq -n --arg users "$BREAKING_CHANGE_REVIEWER_SLACK_IDS" '{users: $users}')"
-          open_response="$(curl --silent --show-error --request POST \
-            --header "Authorization: Bearer $SLACK_BOT_TOKEN" \
-            --header "Content-Type: application/json; charset=utf-8" \
-            --data "$open_payload" \
-            https://slack.com/api/conversations.open)"
-          jq -e '.ok == true' >/dev/null <<<"$open_response" || {
-            slack_error="$(jq -r '.error // "unknown error"' <<<"$open_response")"
-            echo "::error::Slack conversations.open failed: $slack_error"
-            exit 1
-          }
-          channel_id="$(jq -er '.channel.id' <<<"$open_response")"
+            '$mentions + " Breaking change ready for review: " + $title + " · airbyte#" + $number + " by " + $author + "\n\n" + $recommendations + "\n\n" + $url')"
 
           message_payload="$(jq -n \
-            --arg channel "$channel_id" \
+            --arg channel "$BREAKING_CHANGE_REVIEW_SLACK_CHANNEL" \
             --arg text "$plain_message" \
             --arg markdown "$markdown_message" \
             '{channel: $channel, text: $text, mrkdwn: true, blocks: [{type: "section", text: {type: "mrkdwn", text: $markdown}}]}')"
@@ -225,7 +218,7 @@ jobs:
             echo "::error::Slack chat.postMessage failed: $slack_error"
             exit 1
           }
-          echo "Breaking-change reviewers were notified in Slack."
+          echo "Breaking-change reviewers were notified in Slack channel $BREAKING_CHANGE_REVIEW_SLACK_CHANNEL."
 
       - name: Post failure comment
         if: >
