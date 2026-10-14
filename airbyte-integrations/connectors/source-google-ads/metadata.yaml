@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
-  dockerImageTag: 6.1.4
+  dockerImageTag: 6.1.5
   dockerRepository: airbyte/source-google-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   externalDocumentationUrls:
@@ -93,22 +93,22 @@ data:
         upgradeDeadline: "2026-05-31"
   suggestedStreams:
     streams:
-      - campaigns
-      - accounts
-      - ad_group_ads
-      - ad_group_ad_report
-      - ad_groups
+      - campaign
+      - customer
+      - ad_group_ad
+      - ad_group_ad_legacy
+      - ad_group
       - click_view
       - account_performance_report
-      - keyword_report
-      - campaign_labels
-      - ad_group_labels
-      - ad_group_ad_labels
-      - user_location_report
+      - keyword_view
+      - campaign_label
+      - ad_group_label
+      - ad_group_ad_label
+      - user_location_view
       - geographic_view_with_metrics
-      - display_keyword_performance_report
-      - shopping_performance_report
-      - display_topics_performance_report
+      - display_keyword_view
+      - shopping_performance_view
+      - topic_view
   supportLevel: certified
   tags:
     - language:python
