@@ -36,11 +36,15 @@ For more detail, see Ramp's [quickstart](https://docs.ramp.com/developer-api/v1/
 
 </HideInUI>
 
+## Connector settings
+
 ### Start Date
 
 On the first sync, the `transactions` and `reimbursements` streams only read records with an `updated_at` on or after this date, and the `receipts` stream only reads receipts created on or after this date. Later syncs use the saved cursor instead. Other streams ignore Start Date, including `vendors`, which reads every vendor on its first sync. If you leave it empty, the connector uses `2019-01-01T00:00:00Z`.
 
 Enter Start Date as a UTC timestamp with a `Z` suffix, such as `2024-01-01T00:00:00Z`. Fractional seconds, such as `2024-01-01T00:00:00.000Z`, are accepted. Values with a numeric offset, such as `2024-01-01T00:00:00+00:00`, are rejected.
+
+### Connection test
 
 The connection test only reads the `transactions` stream. If your app is missing the scope for another stream, the test still passes, and that stream fails during the sync.
 
@@ -62,10 +66,11 @@ The Ramp source connector supports the following [sync modes](https://docs.airby
 
 Only `transactions`, `reimbursements`, `receipts`, and `vendors` support incremental syncs. Every other stream re-reads all records on every sync.
 
-- **Incremental syncs filter on the server.** For `transactions` and `reimbursements`, the connector sends the cursor as the `updated_after` query parameter. For `receipts`, it sends the cursor as `created_after`, and for `vendors`, as `from_updated_at`. Ramp doesn't list `updated_after` in its published parameters for the transactions endpoint, but in testing the API honors it. If Ramp ever stopped honoring it, each sync would re-read every transaction: you would get duplicate rows, not missing ones.
-- **Records at the cursor boundary are read again.** In testing, `updated_after`, `created_after`, and `from_updated_at` all include records exactly at the given time, so the next sync re-emits records whose cursor value equals the saved cursor. Use the **Incremental - Append + Deduped** sync mode to keep one row per `id`.
+- **Incremental syncs filter on the server.** For `transactions` and `reimbursements`, the connector sends the cursor as the `updated_after` query parameter. For `receipts`, it sends the cursor as `created_after`. For `vendors`, it sends the saved cursor as `from_updated_at`; a full refresh or a first incremental sync of `vendors` sends no filter and reads every vendor. Ramp doesn't list `updated_after` in its published parameters for the transactions endpoint, but in testing the API honors it. If Ramp ever stopped honoring it, each sync would re-read every transaction: you would get duplicate rows, not missing ones.
+- **Records at the cursor boundary are read again.** In testing, `updated_after` and `created_after` include records exactly at the given time. Ramp returns vendor `updated_at` values rounded down to whole seconds, so `from_updated_at` also returns the vendor at the saved cursor. The next sync re-emits records whose cursor value equals the saved cursor. Use the **Incremental - Append + Deduped** sync mode to keep one row per `id`.
 - **`receipts` only picks up new receipts.** Ramp's receipts have no `updated_at` field, so incremental syncs use `created_at`. Changes to a receipt after the sync that first read it aren't synced until you refresh the stream.
 - **Incremental `vendors` leaves spend totals stale.** The `total_spend_last_30_days`, `total_spend_last_365_days`, `total_spend_ytd`, and `total_spend_all_time` fields are running totals that change as days pass. Ramp doesn't document that those changes move the vendor's `updated_at`. An incremental sync only re-reads vendors whose `updated_at` moved, so these totals can keep the value from the last sync that read the vendor. If you report on them, sync `vendors` with a **Full Refresh** mode instead.
+- **Incremental `vendors` keeps deleted vendors.** A vendor deleted in Ramp stops appearing in the API, so an incremental sync never sees the deletion and the destination keeps its last row. **Full Refresh - Overwrite** removes it on the next sync.
 
 ## Supported Streams
 
@@ -114,7 +119,7 @@ The connector also requests the purchase data merchants send to Ramp, and stores
 
 `bills` includes archived (deleted) bills. The connector reads active and archived bills in separate requests.
 
-`vendors` doesn't include draft vendors or vendors still waiting for approval, because Ramp's vendors list leaves them out by default. The connector requests each vendor's ERP subsidiary identifiers. In incremental syncs, the spend total fields aren't kept current; see [Supported sync modes](#supported-sync-modes).
+`vendors` doesn't include draft vendors or vendors still waiting for approval, because Ramp's vendors list leaves them out by default. The connector requests each vendor's ERP subsidiary identifiers. In incremental syncs, the spend total fields aren't kept current and deleted vendors aren't removed; see [Supported sync modes](#supported-sync-modes).
 
 `vendor_contacts` reads the contacts of every vendor on each sync, even when `vendors` syncs incrementally, and adds the `vendor_id` to every record. If Ramp returns `404 Not Found` for a vendor, the connector skips that vendor.
 

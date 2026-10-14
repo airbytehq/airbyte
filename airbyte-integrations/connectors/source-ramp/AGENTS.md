@@ -121,16 +121,27 @@ receipts carry no `updated_at`. If Ramp matches a receipt to a transaction after
 that receipt keeps `transaction_id: null` downstream; `transactions.receipts` always has the current
 link.
 
-`vendors` is incremental on `updated_at` through `from_updated_at`. Ramp's spec calls the filter
-"after", but the sandbox includes a vendor whose `updated_at` equals the value (probed 2026-10-14), so
-the boundary record is re-read, not lost. Ramp added `updated_at` to the Vendor schema between
-2026-10-01 and 2026-10-13; before that the spec listed the filter but not the field. Three details
-matter:
+`vendors` is incremental on `updated_at` through `from_updated_at`. Ramp added `updated_at` to the
+Vendor schema between 2026-10-01 and 2026-10-13; before that the spec listed the filter but not the
+field. These details matter:
 
 - The cursor is set on the `streams:` entry, not on `definitions/streams/vendors`. `vendor_contacts`
   uses the definition as its parent, so it still reads every vendor on each sync.
-- The first sync starts at a fixed `2000-01-01T00:00:00Z`, not at `start_date`: vendors are reference
-  data, and a full refresh of `vendors` must keep returning every vendor.
+- `from_updated_at` is sent only from saved state. It is a conditional `request_parameters` entry on the
+  definition, not a `start_time_option`. The cursor starts at a fixed `2000-01-01T00:00:00Z`, and when
+  the slice starts there (a full refresh or a first sync) the value renders empty and the CDK drops the
+  parameter. That keeps the full-refresh request identical to 1.0.2. `Vendor.updated_at` is nullable in
+  the spec, and an "after" filter may leave such vendors out; the sandbox has none to test with
+  (46 of 49 vendors have `updated_at` equal to `created_at`, so Ramp sets it on creation). The
+  parameter compares against the fixed start; change both together.
+- Ramp's spec calls `from_updated_at` "after". Ramp stores `updated_at` with fractions of a second but
+  returns it truncated to whole seconds: for a vendor shown as `T`, `from_updated_at=T+1µs` still returns
+  it and `T+0.5s` does not (probed 2026-10-14). The saved cursor is the truncated value, so it is never
+  above the stored one, and the boundary vendor is re-read, not lost. Do not add `step` with
+  `to_updated_at` ("on or before"): a vendor stored a fraction of a second after a window's end would fall
+  between two windows and be lost.
+- A deleted vendor stops appearing in the list, so incremental syncs keep its last row. Full Refresh -
+  Overwrite drops it.
 - The `total_spend_*` fields are running totals over moving windows (30 days, 365 days, year to date).
   They change as days pass, and Ramp does not document that this moves `updated_at`, so they can go
   stale under incremental syncs. The sandbox has no vendor spend to test it. The user docs say so and
@@ -142,7 +153,8 @@ created date.
 **Why this matters:** Do not make a stream incremental on `created_at` unless its records never change
 after creation, or updates are lost. Watch Ramp's changelog for `updated_after` on `/transactions`.
 Moving the `vendors` cursor onto the shared definition would make `vendor_contacts` depend on it; a unit
-test fails if the parent request carries `from_updated_at`. Re-diff each stream's schema against the
+test fails if the parent request carries `from_updated_at`, and another fails if a request without state
+does. Re-diff each stream's schema against the
 current OpenAPI spec before a release: a field Ramp adds passes every schema check as an undeclared
 field, and only the platform's "unexpected fields" log line shows it.
 
