@@ -482,14 +482,13 @@ class MsSqlServerDebeziumOperations(
      * schema-history comparator orders records by change_lsn only, so resuming from such an offset
      * goes back to the schema structure of the snapshot and ignores any newly added columns. Every
      * change at or before commit_lsn has already been processed, so commit_lsn is a safe value for
-     * change_lsn at the resume position. Snapshot offsets are left unchanged.
+     * change_lsn at the resume position.
      */
     @VisibleForTesting
     internal fun normalizeHeartbeatChangeLsn(offset: DebeziumOffset): DebeziumOffset {
         if (offset.wrapped.size != 1) return offset
         val (key, value) = offset.wrapped.entries.first()
         val offsetValue = value as? ObjectNode ?: return offset
-        if (offsetValue.has("snapshot")) return offset
         val commitLsn = offsetValue["commit_lsn"]
         if (commitLsn == null || !commitLsn.isTextual || commitLsn.asText() == "NULL") return offset
         val changeLsn = offsetValue["change_lsn"] ?: return offset
