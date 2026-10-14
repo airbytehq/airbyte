@@ -78,6 +78,7 @@ data:
       7.0.0:
         message: "Amazon removes the Flat File Settlement Report (`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`) from the SP-API on November 11, 2026. This version removes that stream and adds its replacement, `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2`, which reports each charge or fee as a row with `amount-type`, `amount-description` and `amount` columns instead of separate price and fee columns. Users syncing `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` must refresh the source schema, enable `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2`, and update downstream models. See https://docs.airbyte.com/integrations/sources/amazon-seller-partner-migrations#upgrading-to-700"
         upgradeDeadline: "2026-11-11"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
