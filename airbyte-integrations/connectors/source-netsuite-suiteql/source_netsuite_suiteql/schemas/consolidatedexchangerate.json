@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": ["null", "integer"] },
+    "postingperiod": { "type": ["null", "integer"] },
+    "fromsubsidiary": { "type": ["null", "integer"] },
+    "fromcurrency": { "type": ["null", "integer"] },
+    "tosubsidiary": { "type": ["null", "integer"] },
+    "tocurrency": { "type": ["null", "integer"] },
+    "averagerate": { "type": ["null", "number"] }
+  }
+}
