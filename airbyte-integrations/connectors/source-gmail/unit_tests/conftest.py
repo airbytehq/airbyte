@@ -2,6 +2,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import sys
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
@@ -13,7 +14,10 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
+pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
+
 _MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
+sys.path.append(str(_MANIFEST_PATH.parent))
 
 
 @pytest.fixture(scope="session")

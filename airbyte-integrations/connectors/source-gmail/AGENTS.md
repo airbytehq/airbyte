@@ -23,3 +23,7 @@ The Gmail API uses a query-based filtering system (`q` parameter) that supports 
 
 - **No API date filter (5 streams):** `drafts`, `labels`, `messages`, `profile`, `threads` — these streams do not have a documented date-based filter on their list endpoints. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
 - **Child streams (3 streams):** `labels_details`, `messages_details`, `threads_details` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate whether these can be made incremental independently or via `incremental_dependency`.
+
+## Rate-limit backoff
+
+Gmail quota responses sometimes include the required wait only in the body as a `Retry after` timestamp, without a `Retry-After` header. The connector honors the header first, then the body timestamp, and falls back to exponential backoff when neither is present. Body waits are capped at 1,800 seconds, below `maxSecondsBetweenMessages: 3600`, leaving headroom under the connector's maximum inter-message interval.
