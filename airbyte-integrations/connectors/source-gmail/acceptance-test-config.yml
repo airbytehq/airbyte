@@ -16,6 +16,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
   incremental:
-    bypass_reason: "The parent messages list is filtered by start_date, not by the messages_details cursor, so an incremental re-sync re-reads every message ID; the CDK standard tests do not run incremental scenarios yet"
+    bypass_reason: "The CDK standard tests do not collect incremental-only configs, and the parent messages list is filtered by start_date rather than the messages_details cursor, so an incremental re-sync re-reads every message ID"
   full_refresh:
-    bypass_reason: "Full refresh reads are covered by basic_read; the CDK standard tests do not run a separate full_refresh scenario"
+    tests:
+      - config_path: "secrets/config.json"
