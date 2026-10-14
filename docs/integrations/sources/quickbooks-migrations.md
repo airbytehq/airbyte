@@ -2,18 +2,18 @@
 
 ## Upgrading to 5.0.0
 
-From version 4.2.0 onward, Airbyte's platform replaces `client_id` and `client_secret` with Airbyte's app credentials whenever `auth_type` is `oauth2.0`. Existing sources use their own Intuit app, so every source must be reconfigured for 5.0.0.
+In 5.0.0, the authentication fields move under `credentials`. No config migration runs, so each existing source must be reconfigured; its current configuration will fail until then.
 
-- To authorize through Airbyte's QuickBooks app, select `oauth2.0` and click **Authenticate your QuickBooks account**. This option supports production companies only.
-- To use your own Intuit app, select `client_credentials` and enter its Client ID, Client Secret, Refresh Token, and Realm ID.
+- To authorize through Airbyte's QuickBooks app, choose **Authenticate via QuickBooks (Airbyte app)** and click **Authenticate your QuickBooks account**. This option supports production companies only.
+- To use your own Intuit app, choose **Use your own Intuit app** and re-enter its Client ID, Client Secret, Refresh Token, and Realm ID.
 
-Sandbox companies require `client_credentials` with your app's development keys and **Sandbox** turned on. Airbyte's app can only access production companies.
+Sandbox companies require **Use your own Intuit app** with your app's development keys and **Sandbox** turned on under that option.
 
 ## Upgrading to 4.0.0
 
 The config no longer has a nested credentials field, while the config fields remain the same, they are now at the root level instead of being nested inside a credentials object. This is done to fix the refresh token issue where it wasn't getting updated after 24 hours.
 
-4.0.0 shipped without a config migration, so connections created before it had to have their config fields repopulated by hand. Since 4.2.0 the connector migrates a nested `credentials` config to the root-level fields on its own and persists the result, so no manual repopulation is needed.
+4.0.0 shipped without a config migration, so connections created before it had to have their config fields repopulated by hand. Versions 4.2.0 through 4.x migrate a nested `credentials` config to root-level fields and persist the result. This migration is removed in 5.0.0; reconfigure each source as described above.
 
 ## Upgrading to 3.0.0
 
