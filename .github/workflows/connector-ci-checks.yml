@@ -353,6 +353,7 @@ jobs:
           set -euo pipefail
 
           SUPPORT_LEVEL=$(yq -r '.data.supportLevel // "unknown"' metadata.yaml 2>/dev/null || echo "unknown")
+          LANGUAGE=$(sed -nE 's/^[[:space:]]*-[[:space:]]*"?language:([a-z-]+).*/\1/p' metadata.yaml | head -n 1)
           SECRET_COUNT=0
           if [[ -d secrets ]]; then
             SECRET_COUNT=$(find secrets -maxdepth 1 -type f -name '*.json' | wc -l | tr -d ' ')
@@ -362,6 +363,10 @@ jobs:
             SECRET_COUNT=unknown
           fi
 
+          # ALLOW_TEST_FAILURES makes the test steps below non-blocking (continue-on-error) for
+          # community connectors whose GSM fetch succeeded with zero secrets: they have no live
+          # credentials to test with. It applies to every test step that reaches the connector's
+          # API: integration tests, the in-process standard tests, and the container tests.
           ALLOW_TEST_FAILURES=false
           # Only treat zero secrets as intentional when GSM fetch completed; fetch errors must keep tests blocking.
           if [[ "$SUPPORT_LEVEL" == "community" &&
@@ -371,6 +376,7 @@ jobs:
           fi
 
           echo "support-level=${SUPPORT_LEVEL}" | tee -a $GITHUB_OUTPUT
+          echo "language=${LANGUAGE:-unknown}" | tee -a $GITHUB_OUTPUT
           echo "secret-count=${SECRET_COUNT}" | tee -a $GITHUB_OUTPUT
           echo "allow-test-failures=${ALLOW_TEST_FAILURES}" | tee -a $GITHUB_OUTPUT
 
@@ -384,6 +390,17 @@ jobs:
         continue-on-error: ${{ steps.connector-test-policy.outputs.allow-test-failures == 'true' }}
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
+
+      # Python connectors only: manifest-only connectors already run the in-process suite through
+      # `poe test-integration-tests` (`airbyte-cdk connector test`). The suite runs in the
+      # connector's own Poetry environment, with the airbyte-cdk version the connector pins; a
+      # connector whose pinned CDK predates the suite gets a warning, not a failure.
+      # Same ALLOW_TEST_FAILURES policy as the integration and container tests.
+      - name: Run Standard Tests (in-process) ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
+        if: matrix.connector && steps.connector-test-policy.outputs.language == 'python'
+        continue-on-error: ${{ steps.connector-test-policy.outputs.allow-test-failures == 'true' }}
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-standard-tests
 
       - name: Build connector image
         if: matrix.connector
