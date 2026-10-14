@@ -64,15 +64,8 @@ class IcebergTableWriterFactory {
         deleteMode: IcebergDeleteMode = IcebergDeleteMode.EQUALITY,
     ): BaseTaskWriter<Record> {
         assertGenerationIdSuffixIsOfValidFormat(generationId)
-        // A delete ref without an explicit mode stays positional for backwards compatibility.
-        val resolvedMode =
-            if (positionalDeleteRef != null && deleteMode == IcebergDeleteMode.EQUALITY) {
-                IcebergDeleteMode.POSITIONAL
-            } else {
-                deleteMode
-            }
         if (importType is Dedupe) {
-            validateDeleteMode(table, resolvedMode)
+            validateDeleteMode(table, deleteMode)
         }
         val format =
             FileFormat.valueOf(
@@ -82,7 +75,10 @@ class IcebergTableWriterFactory {
                     .uppercase()
             )
         val identifierFieldIds = schema.identifierFieldIds()
-        if (positionalDeleteRef != null) {
+        if (deleteMode != IcebergDeleteMode.EQUALITY) {
+            require(positionalDeleteRef != null) {
+                "Resolved delete files require a delete ref to write to"
+            }
             require(identifierFieldIds.isNotEmpty()) {
                 "Positional deletes require at least one identifier field"
             }
@@ -96,13 +92,16 @@ class IcebergTableWriterFactory {
         val outputFileFactory =
             createOutputFileFactory(table = table, format = format, generationId = generationId)
         val positionalDeleteResolver =
-            positionalDeleteRef?.let {
+            if (deleteMode == IcebergDeleteMode.EQUALITY) {
+                null
+            } else {
                 val resolutionState =
-                    positionalDeleteState
-                        ?: error("Positional delete writers require stream-scoped resolution state")
+                    requireNotNull(positionalDeleteState) {
+                        "Positional delete writers require stream-scoped resolution state"
+                    }
                 PositionalDeleteResolver(
                     table,
-                    it,
+                    positionalDeleteRef!!,
                     schema,
                     identifierFieldIds,
                     writerFactory,
@@ -111,7 +110,7 @@ class IcebergTableWriterFactory {
                     state = resolutionState,
                     allowWholeFileSupersession = allowWholeFileSupersession,
                     suppressDeletedPositions = suppressDeletedPositions,
-                    writeDeletionVectors = resolvedMode == IcebergDeleteMode.DELETION_VECTOR,
+                    writeDeletionVectors = deleteMode == IcebergDeleteMode.DELETION_VECTOR,
                 )
             }
         val targetFileSize =

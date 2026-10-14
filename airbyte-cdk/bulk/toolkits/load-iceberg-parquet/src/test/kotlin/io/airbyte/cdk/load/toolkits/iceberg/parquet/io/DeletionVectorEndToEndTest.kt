@@ -259,6 +259,136 @@ class DeletionVectorEndToEndTest {
     }
 
     @Test
+    fun `upgrade converts a mix of equality and position deletes to deletion vectors`() {
+        val (catalog, _) = catalog()
+        val tableId = TableIdentifier.of("db", "records_mixed")
+        val table = createTable(catalog, tableId, 2)
+        seed(catalog, table, listOf("1" to "one", "2" to "two", "3" to "three"))
+        val writerFactory = IcebergTableWriterFactory()
+
+        // A legacy equality delete.
+        val equalityWriter =
+            writerFactory.create(table, "ab-generation-id-1-e", dedupe, schema)
+        equalityWriter.write(RecordWrapper(record("2", "ignored"), Operation.DELETE))
+        equalityWriter.write(RecordWrapper(record("4", "four"), Operation.UPDATE))
+        val equalityResult = equalityWriter.complete()
+        val equalityDelta = table.newRowDelta()
+        equalityResult.dataFiles().forEach { equalityDelta.addRows(it) }
+        equalityResult.deleteFiles().forEach { equalityDelta.addDeletes(it) }
+        equalityDelta.commit()
+
+        // A legacy position delete in a later commit.
+        val positional =
+            writerFactory.create(
+                table,
+                "ab-generation-id-2-e",
+                dedupe,
+                schema,
+                positionalDeleteRef = "main",
+                positionalDeleteState = PositionalDeleteResolutionState(),
+                deleteMode = IcebergDeleteMode.POSITIONAL,
+            ) as BasePositionDeltaTaskWriter
+        positional.write(RecordWrapper(record("3", "ignored"), Operation.DELETE))
+        positional.write(RecordWrapper(record("5", "five"), Operation.UPDATE))
+        commitWriter(table, positional)
+
+        val contents = deleteFiles(table).map { it.content() }
+        assertThat(contents).contains(FileContent.EQUALITY_DELETES)
+        assertThat(contents).contains(FileContent.POSITION_DELETES)
+        val preUpgradeRows = rows(table)
+
+        val upgraded = IcebergTableUpgrader.upgradeToV3(catalog, tableId, backup = false)
+
+        assertThat(tableFormatVersion(upgraded)).isEqualTo(3)
+        val deletes = deleteFiles(table)
+        assertThat(deletes).allMatch { it.format() == FileFormat.PUFFIN }
+        assertThat(deletes).allMatch { it.referencedDataFile() != null }
+        assertThat(deletes.map { it.referencedDataFile() }).doesNotHaveDuplicates()
+        assertThat(rows(table)).containsExactlyInAnyOrderElementsOf(preUpgradeRows)
+    }
+
+    @Test
+    fun `upgrade works on a non-default branch`() {
+        val (catalog, _) = catalog()
+        val tableId = TableIdentifier.of("db", "records_branch")
+        val table = createTable(catalog, tableId, 2)
+        seed(catalog, table, listOf("1" to "one", "2" to "two"))
+
+        // Commit a legacy equality delete to a non-default branch.
+        table.manageSnapshots().createBranch("prod").commit()
+        val equalityWriter =
+            IcebergTableWriterFactory()
+                .create(table, "ab-generation-id-1-e", dedupe, schema)
+        equalityWriter.write(RecordWrapper(record("2", "ignored"), Operation.DELETE))
+        val result = equalityWriter.complete()
+        val delta = table.newRowDelta().toBranch("prod")
+        result.deleteFiles().forEach { delta.addDeletes(it) }
+        delta.commit()
+        table.refresh()
+
+        val upgraded =
+            IcebergTableUpgrader.upgradeToV3(catalog, tableId, backup = false, branch = "prod")
+
+        assertThat(tableFormatVersion(upgraded)).isEqualTo(3)
+        val remaining =
+            upgraded.newScan().useRef("prod").planFiles().use { tasks ->
+                tasks.flatMap { it.deletes() }.filter {
+                    it.format() != FileFormat.PUFFIN
+                }
+            }
+        assertThat(remaining).isEmpty()
+        val prodRows =
+            IcebergGenerics.read(upgraded)
+                .useSnapshot(upgraded.refs()["prod"]!!.snapshotId())
+                .build()
+                .use { records ->
+                    records.map {
+                        it.getField("id").toString() to it.getField("name").toString()
+                    }
+                }
+        assertThat(prodRows).containsExactlyInAnyOrder("1" to "one")
+    }
+
+    @Test
+    fun `a failed upgrade leaves the table at v2 with its original delete files`() {
+        val (catalog, _) = catalog()
+        val tableId = TableIdentifier.of("db", "records_fail")
+        val table = createTable(catalog, tableId, 2)
+        seed(catalog, table, listOf("1" to "one", "2" to "two"))
+
+        val equalityWriter =
+            IcebergTableWriterFactory()
+                .create(table, "ab-generation-id-1-e", dedupe, schema)
+        equalityWriter.write(RecordWrapper(record("2", "ignored"), Operation.DELETE))
+        val result = equalityWriter.complete()
+        val delta = table.newRowDelta()
+        result.dataFiles().forEach { delta.addRows(it) }
+        result.deleteFiles().forEach { delta.addDeletes(it) }
+        delta.commit()
+        val originalDeletes = deleteFiles(table).map { it.location() }
+        assertThat(originalDeletes).isNotEmpty
+
+        // A catalog that hands back a table whose transactions always fail.
+        val failingTable =
+            object : Table by table {
+                override fun newTransaction(): org.apache.iceberg.Transaction =
+                    throw RuntimeException("injected transaction failure")
+            }
+        val failingCatalog =
+            io.mockk.mockk<Catalog> { io.mockk.every { loadTable(tableId) } returns failingTable }
+
+        assertThatThrownBy {
+                IcebergTableUpgrader.upgradeToV3(failingCatalog, tableId, backup = false)
+            }
+            .hasMessageContaining("injected transaction failure")
+
+        table.refresh()
+        assertThat(tableFormatVersion(table)).isEqualTo(2)
+        assertThat(deleteFiles(table).map { it.location() })
+            .containsExactlyInAnyOrderElementsOf(originalDeletes)
+    }
+
+    @Test
     fun `delete mode validation rejects mismatched table versions`() {
         val (catalog, _) = catalog()
         val v2Table = createTable(catalog, TableIdentifier.of("db", "v2_table"), 2)
