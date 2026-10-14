@@ -83,6 +83,11 @@ Use the username and password you created here when configuring the MSSQL source
 plan to use CDC, this user also needs the additional CDC-related permissions described in
 [Setting up CDC for MSSQL](#3-create-a-user-and-grant-appropriate-permissions).
 
+If the connection test fails with `No tables are visible to the configured login in the selected
+database and schemas.`, the user can't see any table in the configured **Database** and **Schemas**.
+Grant `SELECT` as shown above, and check the **Database** and **Schemas** values. Schema names are
+case sensitive.
+
 #### 3. Your database user should now be ready for use with Airbyte!
 
 #### Airbyte Cloud
@@ -97,10 +102,12 @@ bastion host. In practice:
 | **Encryption** set to `Encrypted (trust server certificate)` or `Encrypted (verify certificate)`    | Yes, with or without an SSH tunnel.                                                          |
 | **Encryption** set to `Unencrypted` with an SSH tunnel                                              | Yes. The SSH tunnel provides the encryption.                                                 |
 | **Encryption** set to `Unencrypted` without an SSH tunnel                                           | No. The connection test fails with `Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.` |
-| Database on `localhost` or on a private network (not reachable from the public internet)            | Only through an SSH tunnel to a bastion host that can reach the database, which also provides the encryption Airbyte Cloud requires. With `No Tunnel`, `localhost`, `127.0.0.1` or `0.0.0.0` fails the connection test with `Airbyte Cloud cannot reach a database on your own machine. Use a hostname reachable from the internet, or configure an SSH tunnel.` |
+| Database on `localhost` or on a private network (not reachable from the public internet)            | Only through an SSH tunnel to a bastion host that can reach the database. With `No Tunnel`, a **Host** of `localhost`, `127.x.x.x`, `0.0.0.0`, or `::1` fails the connection test with `Airbyte Cloud cannot reach a database on your own machine. Use a hostname reachable from the internet, or configure an SSH tunnel.` |
 | A URL, credentials or `host:port` pasted into **Host**                                              | No. The connection test fails with `Enter only the hostname in Host; put the port in the Port field.` Enter only the hostname or IP address in **Host** and the port in **Port**. |
 
-On Airbyte Cloud, the **Encryption** option defaults to `Encrypted (trust server certificate)`.
+On Airbyte Cloud, the **Encryption** option defaults to `Encrypted (trust server certificate)`. On
+self-managed deployments, it defaults to `Unencrypted`, and none of the restrictions in this table
+apply.
 
 See [Connection to MSSQL via an SSH Tunnel](#connection-to-mssql-via-an-ssh-tunnel) for how to set
 up the tunnel, and [IP allow list](#ip-allow-list) if your network restricts inbound connections.
@@ -415,51 +422,23 @@ encrypted SSL method; see [Airbyte Cloud](#airbyte-cloud).
 Using this feature requires additional configuration, when creating the source. We will talk through
 what each piece of configuration means.
 
-1. Configure all fields for the source as you normally would, except `SSH Tunnel Method`.
-2. `SSH Tunnel Method` defaults to `No Tunnel` \(meaning a direct connection\). If you want to use
-   an
-
-   SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
-
-   1. Choose `Key Authentication` if you will be using an RSA private key as your secret for
-
-      establishing the SSH Tunnel \(see below for more information on generating this key\).
-
-   2. Choose `Password Authentication` if you will be using a password as your secret for
-      establishing
-
-      the SSH Tunnel.
-
-3. `SSH Tunnel Jump Server Host` refers to the intermediate \(bastion\) server that Airbyte will
-   connect to. This should
-
-   be a hostname or an IP Address.
-
-4. `SSH Connection Port` is the port on the bastion server with which to make the SSH connection.
-   The default port for
-
-   SSH connections is `22`, so unless you have explicitly changed something, go with the default.
-
-5. `SSH Login Username` is the username that Airbyte should use when connecting to the bastion
-   server. This is NOT the
-
-   MSSQL username.
-
-6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the
-
-   password of the User from the previous step. If you are using `SSH Key Authentication` leave this
-
-   blank. Again, this is not the MSSQL password, but the password for the OS-user that Airbyte is
-
-   using to perform commands on the bastion.
-
-7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA
-
-   private Key that you are using to create the SSH connection. This should be the full contents of
-
-   the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending
-
-   with `-----END RSA PRIVATE KEY-----`.
+1. Configure all fields for the source as you normally would, except **SSH Tunnel Method**.
+2. **SSH Tunnel Method** defaults to `No Tunnel`, meaning a direct connection. To use an SSH tunnel,
+   choose `SSH Key Authentication` or `Password Authentication`.
+   - Choose `SSH Key Authentication` if you use an RSA private key to establish the SSH tunnel. See
+     [Generating an SSH Key Pair](#generating-an-ssh-key-pair).
+   - Choose `Password Authentication` if you use a password to establish the SSH tunnel.
+3. **SSH Tunnel Jump Server Host** is the hostname or IP address of the bastion server that Airbyte
+   connects to.
+4. **SSH Connection Port** is the port on the bastion server for the SSH connection. The default SSH
+   port is `22`.
+5. **SSH Login Username** is the operating system user that Airbyte uses to log in to the bastion
+   server. This is not the MSSQL username.
+6. If you use `Password Authentication`, set **Password** to the password of the bastion user from
+   the previous step. This is not the MSSQL password.
+7. If you use `SSH Key Authentication`, set **SSH Private Key** to the full contents of the RSA
+   private key file, starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with
+   `-----END RSA PRIVATE KEY-----`.
 
 ### Generating an SSH Key Pair
 
@@ -585,9 +564,8 @@ or security group allows Airbyte's IP addresses.
 
 This covers a wrong host or port, a host name that does not resolve, an instance that does not
 accept remote TCP connections, and a firewall or security group that does not allow the Airbyte
-Cloud IP addresses. A database on `localhost` or on a private network is not reachable from Airbyte
-Cloud without an [SSH tunnel](#connection-to-mssql-via-an-ssh-tunnel); Airbyte Cloud rejects
-`localhost` with `No Tunnel` before connecting, with `Airbyte Cloud cannot reach a database on your own machine. Use a hostname reachable from the internet, or configure an SSH tunnel.` A URL or `host:port` pasted into **Host** is rejected with `Enter only the hostname in Host; put the port in the Port field.`
+Cloud IP addresses. For the host and encryption checks that Airbyte Cloud runs before it connects,
+see [Airbyte Cloud](#airbyte-cloud).
 
 ## Changelog
 
