@@ -166,7 +166,7 @@ The connector reports these Ramp errors as configuration errors, so Airbyte does
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 1.0.2 | 2026-10-13 | [88895](https://github.com/airbytehq/airbyte/pull/88895) | Replace the outdated README with the shared declarative-source README, and rebuild the icon from Ramp's press-kit glyph |
+| 1.0.2 | 2026-10-14 | [88895](https://github.com/airbytehq/airbyte/pull/88895) | Replace the outdated README with the shared declarative-source README, and rebuild the icon from Ramp's press-kit glyph |
 | 1.0.1 | 2026-10-13 | [88768](https://github.com/airbytehq/airbyte/pull/88768) | Update dependencies |
 | 1.0.0 | 2026-10-12 | [88373](https://github.com/airbytehq/airbyte/pull/88373) | Declare 13 date and timestamp fields on `cards`, `transactions` and `reimbursements` with their real types. See the [migration guide](/integrations/sources/ramp-migrations#upgrading-to-100) |
 | 0.3.0 | 2026-10-08 | [88365](https://github.com/airbytehq/airbyte/pull/88365) | Request merchant purchase data on `transactions` and declare 10 more fields Ramp already returns |
