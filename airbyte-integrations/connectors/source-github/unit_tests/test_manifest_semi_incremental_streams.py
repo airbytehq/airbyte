@@ -573,9 +573,12 @@ def test_stargazers_promote_the_user_id(rate_limit_mock_response, requests_mock)
 def test_stargazers_restricted_repository_is_skipped_with_access_message(
     status_code, body, generic_message, rate_limit_mock_response, requests_mock, caplog
 ):
-    config = _config("torvalds/linux", "docker/compose")
+    config = _config("torvalds/linux", "docker/compose", "rust-lang/rust")
     _mock_repository_resolution(requests_mock, *config["repositories"])
     restricted_endpoint = requests_mock.get("https://api.github.com/repos/torvalds/linux/stargazers", status_code=status_code, json=body)
+    second_restricted_endpoint = requests_mock.get(
+        "https://api.github.com/repos/rust-lang/rust/stargazers", status_code=status_code, json=body
+    )
     requests_mock.get(
         "https://api.github.com/repos/docker/compose/stargazers",
         json=[{"starred_at": _AFTER_START, "user": {"id": 7, "login": "octocat"}}],
@@ -588,7 +591,11 @@ def test_stargazers_restricted_repository_is_skipped_with_access_message(
     assert statuses[-1] == "COMPLETE"
     assert [record["repository"] for record in records] == ["docker/compose"]
     assert restricted_endpoint.call_count == 1
-    assert any("GitHub only lists stargazers to repository admins and collaborators" in message for message in caplog.messages)
+    assert second_restricted_endpoint.call_count == 1
+    skip_messages = [
+        message for message in caplog.messages if "GitHub only lists stargazers to repository admins and collaborators" in message
+    ]
+    assert sorted(message.split(":", 1)[0] for message in skip_messages) == ["Repository `rust-lang/rust`", "Repository `torvalds/linux`"]
     assert all(generic_message not in message for message in caplog.messages)
 
 

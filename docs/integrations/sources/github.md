@@ -238,7 +238,7 @@ The Releases stream uses the GitHub GraphQL API and fetches up to 100 assets per
 
 #### Stargazers stream requires admin or collaborator access
 
-Since July 2026, GitHub only lists a repository's stargazers to the repository's admins and collaborators ([GitHub changelog](https://github.blog/changelog/2026-06-30-upcoming-access-restrictions-to-public-api-endpoints-and-ui-views/)). For a repository where the authenticated user or app is neither, GitHub answers the stargazers listing with `404` or `403`. The connector skips that repository for the `stargazers` stream only, logs a message naming this restriction, and the sync still succeeds; the other streams for that repository are unaffected. Expect the `stargazers` stream to be empty for public or third-party repositories you do not collaborate on. The aggregate star count is still available in the `stargazers_count` field of the `repositories` stream.
+Since July 2026, GitHub only lists a repository's stargazers to the repository's admins and collaborators ([GitHub changelog](https://github.blog/changelog/2026-06-30-upcoming-access-restrictions-to-public-api-endpoints-and-ui-views/)). For a repository where the authenticated user or app is neither, GitHub answers the stargazers listing with `404` or `403`. The connector skips that repository for the `stargazers` stream only, logs a message naming the repository and this restriction, and the sync still succeeds; the other streams for that repository are unaffected. Expect the `stargazers` stream to be empty for public or third-party repositories you do not collaborate on. The aggregate star count is still available in the `stargazers_count` field of the `repositories` stream.
 
 #### Unreadable repositories and repeated server errors
 
@@ -292,7 +292,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.7.8 | 2026-10-13 | [88163](https://github.com/airbytehq/airbyte/pull/88163) | When GitHub refuses to list a repository's stargazers because the token is not an admin or collaborator, the `stargazers` stream now says so in the skip message instead of reporting a missing repository or missing token scopes |
+| 2.7.8 | 2026-10-13 | [88163](https://github.com/airbytehq/airbyte/pull/88163) | When GitHub refuses to list a repository's stargazers because the token is not an admin or collaborator, the `stargazers` stream now says so in the skip message, and names the skipped repository, instead of reporting a missing repository or missing token scopes |
 | 2.7.7 | 2026-10-13 | [88598](https://github.com/airbytehq/airbyte/pull/88598) | Update dependencies |
 | 2.7.6 | 2026-10-12 | [87443](https://github.com/airbytehq/airbyte/pull/87443) | Stop reading the `releases` stream at the first already-synced release instead of the full release history on every sync. Records are unchanged |
 | 2.7.5 | 2026-10-06 | [87862](https://github.com/airbytehq/airbyte/pull/87862) | Update dependencies |

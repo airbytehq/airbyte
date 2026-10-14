@@ -18,11 +18,14 @@ from components import (
     DeepNestedGraphQLPaginationStrategy,
     NestedGraphQLPaginationStrategy,
     ReleasesRecordTransformation,
+    RepositoryNamingErrorHandler,
     _extract_database_id_from_node_id,
     _resolve_page_size,
 )
 
 from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
@@ -504,3 +507,51 @@ def test_resolve_page_size_reports_a_bad_value_as_a_config_error(page_size):
 
     assert exception.value.failure_type == FailureType.config_error
     assert "page size" in exception.value.message
+
+
+# --- RepositoryNamingErrorHandler --------------------------------------------------------
+
+
+def _naming_handler():
+    return RepositoryNamingErrorHandler(
+        config={},
+        parameters={},
+        response_filters=[
+            HttpResponseFilter(config={}, parameters={}, http_codes={404}, action="IGNORE", error_message="Skipping it."),
+            HttpResponseFilter(config={}, parameters={}, http_codes={500}, action="RETRY", error_message="Retrying."),
+        ],
+    )
+
+
+def _status_response(status_code, url):
+    response = requests.Response()
+    response.status_code = status_code
+    response.url = url
+    response._content = b"{}"
+    return response
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        pytest.param("https://api.github.com/repos/torvalds/linux/stargazers?per_page=100", id="github_com"),
+        pytest.param("https://github.example.com/api/v3/repos/torvalds/linux/stargazers?page=2", id="enterprise_server"),
+    ],
+)
+def test_repository_naming_error_handler_prefixes_a_skip_with_the_repository(url):
+    resolution = _naming_handler().interpret_response(_status_response(404, url))
+
+    assert resolution.response_action == ResponseAction.IGNORE
+    assert resolution.error_message == "Repository `torvalds/linux`: Skipping it."
+
+
+def test_repository_naming_error_handler_leaves_other_resolutions_alone():
+    """Only the skip message changes: a retry keeps its message, and a URL without a repository
+    path keeps the skip message as the filter wrote it."""
+    handler = _naming_handler()
+
+    retry = handler.interpret_response(_status_response(500, "https://api.github.com/repos/torvalds/linux/stargazers"))
+    unscoped_skip = handler.interpret_response(_status_response(404, "https://api.github.com/orgs/airbytehq/teams"))
+
+    assert (retry.response_action, retry.error_message) == (ResponseAction.RETRY, "Retrying.")
+    assert (unscoped_skip.response_action, unscoped_skip.error_message) == (ResponseAction.IGNORE, "Skipping it.")
