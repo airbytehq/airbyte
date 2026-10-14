@@ -45,7 +45,9 @@ Account-API
 
 `Start Date` sets the UTC date and time (`YYYY-MM-DDTHH:MM:SSZ`) from which the `messages` and `bounces` streams are replicated, in both full refresh and incremental mode. It defaults to 365 days ago, Postmark's maximum message retention period.
 
-`Slice Window (Minutes)` controls the time-window size for the `messages` and `bounces` streams. It defaults to 10080 minutes (seven days). Postmark returns at most 10,000 records per search, so the connector automatically splits any window that matches more. Lower this setting only if a sync fails because a window could not be split small enough, or to save sync progress more often.
+`Slice Window (Minutes)` controls the time-window size for the `messages` and `bounces` streams. It defaults to 1440 minutes (one day). Postmark returns at most 10,000 records per search, so the connector splits any window that matches more in half, up to 10 times, which shrinks it to about 1/1000 of this setting (about 1.5 minutes by default). Lower this setting if a sync fails because a window could not be split small enough, or to save sync progress more often.
+
+Postmark filters by US Eastern time. On the night daylight saving time ends, 1:00 to 2:00 AM Eastern happens twice, so any request touching that hour covers all of it. If more than 10,000 records fall in that hour, the sync fails for that window regardless of this setting.
 
 ## Supported sync modes
 
@@ -57,7 +59,7 @@ The Postmarkapp source connector supports the following [sync modes](https://doc
 | Incremental Sync  | Yes        |
 | Namespaces        | No         |
 
-Incremental sync is available for the `messages` and `bounces` streams only. Each sync saves the timestamp of the latest record it read, so a stream with no new records checks every window since that timestamp, or since the start date if it has never returned a record, again on the next sync.
+Incremental sync is available for the `messages` and `bounces` streams only. Each sync saves the timestamp of the latest record it read and the next sync starts one hour before it, to pick up records Postmark makes searchable late; use a deduplicated destination sync mode to drop the re-read records. A stream with no new records checks every window since that timestamp, or since the start date if it has never returned a record, again on the next sync. Incremental sync does not pick up later changes to records it has already read, such as a message's status; run a full refresh for those.
 
 ## IP allow list
 
@@ -70,8 +72,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.3.1 | 2026-10-06 | [87518](https://github.com/airbytehq/airbyte/pull/87518) | Cover both daylight saving time changes in Eastern time filters, split windows over Postmark's 10,000-record search limit automatically, default to seven-day windows, stop emitting records twice at window boundaries, and align retries with the CDK backoff limit |
-| 0.3.0 | 2026-10-01 | [87518](https://github.com/airbytehq/airbyte/pull/87518) | Fix pagination that re-read the same page of records indefinitely; add incremental sync, an optional start date, and a configurable time window for the messages and bounces streams |
+| 0.3.0 | 2026-10-14 | [87518](https://github.com/airbytehq/airbyte/pull/87518) | Fix pagination that re-read the same page of records indefinitely; add incremental sync, an optional start date, and a configurable time window for the messages and bounces streams, splitting windows over Postmark's 10,000-record search limit |
 | 0.2.10 | 2025-02-15 | [53947](https://github.com/airbytehq/airbyte/pull/53947) | Update dependencies |
 | 0.2.9 | 2025-02-08 | [53462](https://github.com/airbytehq/airbyte/pull/53462) | Update dependencies |
 | 0.2.8 | 2025-02-01 | [52967](https://github.com/airbytehq/airbyte/pull/52967) | Update dependencies |
