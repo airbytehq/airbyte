@@ -162,7 +162,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.4.0 | 2026-10-17 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Add ad_account, ad_group, ad_account_report, ad_group_report and ad_report streams |
+| 0.4.0 | 2026-10-17 | [88964](https://github.com/airbytehq/airbyte/pull/88964) | Add ad_account, ad_group, ad_account_report, ad_group_report and ad_report streams |
 | 0.3.0 | 2026-10-14 | [88963](https://github.com/airbytehq/airbyte/pull/88963) | Fix campaign_report skipping days and re-reading partial days; add configurable report lookback window |
 | 0.2.0 | 2026-10-14 | [88145](https://github.com/airbytehq/airbyte/pull/88145) | Add OAuth (Authenticate with Reddit) for Airbyte Cloud with automatic config migration to a credentials object; make User Agent optional |
 | 0.1.1 | 2026-10-06 | [88015](https://github.com/airbytehq/airbyte/pull/88015) | Update dependencies |
