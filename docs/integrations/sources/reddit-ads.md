@@ -4,14 +4,20 @@ The Reddit Ads source syncs campaigns, ads, and daily campaign performance metri
 
 ## Prerequisites
 
-- A [Reddit Ads](https://ads.reddit.com) account with at least one ad account.
-- A Reddit developer app, which gives you the app ID and secret this connector uses as its OAuth client ID and client secret. Only business admins with a verified Reddit account can create one.
-- An OAuth refresh token for that app, authorized with the `adsread` scope.
+- A [Reddit Ads](https://ads.reddit.com) account with at least one ad account, and a Reddit user who can access the ad account you want to sync.
 - The ID of the ad account you want to sync.
+- If you use the **Use your own Reddit app** authentication option:
+  - A Reddit developer app, which gives you the app ID and secret this connector uses as its OAuth client ID and client secret. Only business admins with a verified Reddit account can create one.
+  - An OAuth refresh token for that app, authorized with the `adsread` scope.
 
 ## Set up the Reddit Ads source
 
-The source offers two **Authentication** options. **Authenticate with Reddit** (the Airbyte Cloud default): select **Authenticate your Reddit account** and sign in as a Reddit user with access to the ad account you want to sync, then enter the ad account ID ([Step 3](#step-3-find-your-ad-account-id)). **Use your own Reddit app** (self-managed, or if you already have a developer app): follow Steps 1–2 and enter the client ID, client secret, and refresh token. Existing connections are migrated automatically to **Use your own Reddit app**, so they need no action.
+The connector offers two **Authentication** options:
+
+- **Authenticate with Reddit**: Sign in to Reddit from Airbyte, and Airbyte obtains the refresh token for you. This is the default option in Airbyte Cloud. You don't need your own developer app, so skip Steps 1 and 2.
+- **Use your own Reddit app**: Enter the client ID, client secret, and refresh token of a Reddit developer app you manage. Use this option in self-managed Airbyte, or if you already have a developer app. Complete Steps 1 and 2 first.
+
+Sources created before version 0.2.0 move to **Use your own Reddit app** automatically and keep their existing client ID, client secret, and refresh token, so they need no action.
 
 ### Step 1: Create a developer app
 
@@ -55,11 +61,15 @@ In [Reddit Ads Manager](https://ads.reddit.com), open **Business Manager** > **A
 
 ### Step 4: Configure the source in Airbyte
 
-Enter the client ID, client secret, and refresh token under **Authentication** > **Use your own Reddit app**, plus the ad account ID, then set the remaining fields:
+1. Under **Authentication**, choose one option:
+   - **Authenticate with Reddit**: Select **Authenticate your Reddit Ads account**, sign in to Reddit as a user who can access the ad account you want to sync, and select **Allow**.
+   - **Use your own Reddit app**: Enter the **OAuth Client ID**, **OAuth Client Secret**, and **OAuth Refresh Token** from Steps 1 and 2.
+2. Enter the **Ad Account ID** from [Step 3](#step-3-find-your-ad-account-id).
+3. Set the remaining optional fields:
 
-- **User Agent**: Optional. A descriptive user agent in the format `platform:app_id:version (by /u/username)`. For example, `airbyte:reddit-ads-sync:v1.0 (by /u/your-username)`. If you leave it empty, the connector sends an Airbyte user agent. Reddit heavily throttles default user agents such as `Python/urllib` or `Java`.
-- **Start Date**: Optional. The earliest data to sync, in RFC 3339 format with a UTC offset, such as `2024-05-11T00:00:00Z`. It applies to all three streams: it's the earliest `modified_at` for `ad` and `campaign`, and the earliest report date for `campaign_report`. If you leave it empty, all three streams start 24 months before the current sync.
-- **Number of Concurrent Workers**: Optional. The number of requests the connector runs in parallel, from 1 to 10. The default is 3. Higher values can speed up syncs, but they make Reddit rate limiting more likely.
+   - **User Agent**: Optional. A descriptive user agent in the format `platform:app_id:version (by /u/username)`. For example, `airbyte:reddit-ads-sync:v1.0 (by /u/your-username)`. If you leave it empty, the connector sends an Airbyte user agent. Reddit heavily throttles default user agents such as `Python/urllib` or `Java`.
+   - **Start Date**: Optional. The earliest data to sync, in RFC 3339 format with a UTC offset, such as `2024-05-11T00:00:00Z`. It applies to all three streams: it's the earliest `modified_at` for `ad` and `campaign`, and the earliest report date for `campaign_report`. If you leave it empty, all three streams start 24 months before the current sync.
+   - **Number of Concurrent Workers**: Optional. The number of requests the connector runs in parallel, from 1 to 10. The default is 3. Higher values can speed up syncs, but they make Reddit rate limiting more likely.
 
 ## Supported streams
 
@@ -103,8 +113,8 @@ The connector reuses an access token until it expires, then refreshes it. If a r
 
 | Error | Cause and fix |
 | --- | --- |
-| Refresh token was rejected by the OAuth provider | Reddit's token endpoint rejected the refresh token or the client credentials. Confirm the OAuth Client ID and Client Secret, then [get a new refresh token](#step-2-get-a-refresh-token) with `duration=permanent`. |
-| Reddit denied access to ad account (HTTP 403) | The refresh token lacks the `adsread` scope, or the Reddit user who authorized it can't access this ad account. Get a new refresh token with the `adsread` scope while signed in as a user with access to the ad account. |
+| Refresh token was rejected by the OAuth provider | Reddit's token endpoint rejected the refresh token or the client credentials. If you use **Authenticate with Reddit**, select **Authenticate your Reddit Ads account** again. If you use **Use your own Reddit app**, confirm the OAuth Client ID and Client Secret, then [get a new refresh token](#step-2-get-a-refresh-token) with `duration=permanent`. |
+| Reddit denied access to ad account (HTTP 403) | The refresh token lacks the `adsread` scope, or the Reddit user who authorized it can't access this ad account. Re-authenticate, or get a new refresh token with the `adsread` scope, while signed in as a user with access to the ad account. |
 | Reddit could not find ad account (HTTP 404) or Reddit rejected the ad account ID | The **Ad Account ID** is wrong. [Find your ad account ID](#step-3-find-your-ad-account-id), which starts with `a2_`, and update the source. |
 | Reddit rejected the request as invalid (HTTP 400) | Reddit rejected the request for a reason unrelated to the ad account. The error message includes the explanation Reddit returned. |
 
@@ -139,7 +149,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.2.0 | 2026-10-06 | [88145](https://github.com/airbytehq/airbyte/pull/88145) | Add OAuth (Authenticate with Reddit) for Airbyte Cloud with automatic config migration to a credentials object; make User Agent optional |
+| 0.2.0 | 2026-10-14 | [88145](https://github.com/airbytehq/airbyte/pull/88145) | Add OAuth (Authenticate with Reddit) for Airbyte Cloud with automatic config migration to a credentials object; make User Agent optional |
 | 0.1.1 | 2026-10-06 | [88015](https://github.com/airbytehq/airbyte/pull/88015) | Update dependencies |
 | 0.1.0 | 2026-10-05 | [87043](https://github.com/airbytehq/airbyte/pull/87043) | Show actionable errors for rejected refresh tokens or client credentials, invalid ad account IDs, and 400/403/404 responses, add a client-side API budget and configurable concurrency, add suggested streams, make spec titles human-readable, and add unit tests |
 | 0.0.12 | 2026-09-29 | [87338](https://github.com/airbytehq/airbyte/pull/87338) | Update dependencies |
