@@ -340,7 +340,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 #### Checkpointed BULK jobs that return no result
 
-When a bulk job reaches the **BULK Job checkpoint (rows collected)** threshold, the connector cancels it, downloads the rows Shopify collected so far, and starts the next job from the last cursor value in those rows. Sometimes Shopify returns no result URL for the canceled job, or the result has no records to resume from. In that case, the connector runs the same date range again and stops checkpointing that stream for the rest of the sync attempt. The sync logs a warning like this:
+When a bulk job reaches the **BULK Job checkpoint (rows collected)** threshold, the connector cancels it, downloads the rows Shopify collected so far, and starts the next job from the last cursor value in those rows. Sometimes Shopify returns no result URL for the canceled job, or the result has no records within the current date range to resume from. In that case, the connector runs the same date range again and stops checkpointing that stream for the rest of the sync attempt. The sync logs a warning like this:
 
 ```text
 Stream: `<stream_name>`, the BULK Job: `<job_id>` was canceled on checkpointing after `<row_count>` rows collected, but no result was returned by the API. The slice will be re-run and the checkpointing is disabled for the rest of this sync. Consider increasing the `BULK Job checkpoint (rows collected)` value to avoid this.
@@ -348,12 +348,14 @@ Stream: `<stream_name>`, the BULK Job: `<job_id>` was canceled on checkpointing 
 
 The sync continues and doesn't need any action. Checkpointing turns back on at the next sync attempt. If you see this warning often, raise **BULK Job checkpoint (rows collected)** so that fewer jobs are canceled to checkpoint.
 
+Before version 4.2.4, this check only worked for the first date range of a sync. On later date ranges, the connector could resume from a cursor value left over from an earlier date range. It then either re-read earlier data, which produced duplicate records but no data loss, or failed the attempt with a [checkpoint collision](#bulk-job-checkpoint-collisions) error.
+
 #### Failed and expired BULK jobs
 
 GraphQL Bulk streams run each date range as a Shopify [bulk operation](https://shopify.dev/docs/api/usage/bulk-operations/queries). When an operation ends with a `FAILED` or `EXPIRED` [status](https://shopify.dev/docs/api/admin-graphql/latest/enums/BulkOperationStatus), the connector handles it as follows:
 
 - **`FAILED` with error code `ACCESS_DENIED`**: The app is missing an access scope that the stream needs. The sync fails with a configuration error asking you to check your permissions for the stream. With **OAuth2.0**, re-authenticate the source. With **API Password**, add the missing `read_` scope to your custom app. See [Custom app scopes](#custom-app-scopes).
-- **`FAILED` with another error code, such as `INTERNAL_SERVER_ERROR` or `TIMEOUT`**: For incremental streams that checkpoint, if Shopify returns a partial result that contains records, the connector syncs those records and starts the next job from the last cursor value it read. Otherwise, the sync fails with a system error instead of skipping the rest of the date range. For example:
+- **`FAILED` with another error code, such as `INTERNAL_SERVER_ERROR` or `TIMEOUT`**: For incremental streams that checkpoint, if Shopify returns a partial result that contains records within the current date range, the connector syncs those records and starts the next job from the last cursor value it read. Otherwise, the sync fails with a system error instead of skipping the rest of the date range. For example:
 
   ```text
   The BULK Job: `<job_id>` exited with FAILED and returned no partial result to resume from, errorCode: `<error_code>`, objectCount: `<count>`.
@@ -384,8 +386,8 @@ Before version 4.1.1, some failed BULK jobs that returned no usable partial resu
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.2.5 | 2026-10-15 | [89009](https://github.com/airbytehq/airbyte/pull/89009) | Upgrade to Python 3.13 and pendulum 3 |
-| 4.2.4 | 2026-10-13 | [88385](https://github.com/airbytehq/airbyte/pull/88385) | Re-run the slice instead of rewinding to a stale cursor from an earlier slice when a checkpointed BULK job has no records within the current slice |
+| 4.2.5 | 2026-10-16 | [89009](https://github.com/airbytehq/airbyte/pull/89009) | Upgrade to Python 3.13 and pendulum 3 |
+| 4.2.4 | 2026-10-14 | [88385](https://github.com/airbytehq/airbyte/pull/88385) | Re-run the slice instead of rewinding to a stale cursor from an earlier slice when a checkpointed BULK job has no records within the current slice |
 | 4.2.3 | 2026-10-13 | [88469](https://github.com/airbytehq/airbyte/pull/88469) | Upgrade Shopify Admin API to 2026-10 so `discount_codes` and `discount_codes_sync` no longer leave out discounts affected by a serving Shopify Rollout; see [Syncing discount codes](#syncing-discount-codes) to backfill them. Retry GraphQL pages that Shopify fails with a throttling or `INTERNAL_SERVER_ERROR` code in `deleted_products`, `countries`, `market_countries` and `discount_codes_sync`, fail `deleted_products` on other GraphQL errors instead of completing silently, skip discounts deleted mid-sync in `discount_codes_sync`, and stop the `product_images` query from growing with every slice |
 | 4.2.2 | 2026-10-12 | [88405](https://github.com/airbytehq/airbyte/pull/88405) | Fix `countries` returning no records when a second `Countries` stream is read in the same process: keep the dedup list per stream instance instead of on the class |
 | 4.2.1 | 2026-10-08 | [87001](https://github.com/airbytehq/airbyte/pull/87001) | Re-run the slice with checkpointing disabled instead of silently skipping it when a checkpointed BULK job is canceled and returns no result URL |
