@@ -30,7 +30,7 @@ The connector requests an access token with these credentials and refreshes it a
 ## Supported sync modes
 
 | Stream | Primary key | Full Refresh | Incremental | Cursor field |
-|--------|-------------|--------------|-------------|--------------|
+| ------ | ----------- | ------------ | ----------- | ------------ |
 | `conversations` | `id` | Yes | Yes | `userUpdatedAt` |
 | `conversation_threads` | `id` | Yes | Yes | `createdAt` |
 | `customers` | `id` | Yes | Yes | `updatedAt` |
@@ -46,7 +46,7 @@ The connector requests an access token with these credentials and refreshes it a
 ## Supported streams
 
 | Stream | Help Scout endpoint | Notes |
-|--------|---------------------|-------|
+| ------ | ------------------- | ----- |
 | `conversations` | [List Conversations](https://developer.helpscout.com/mailbox-api/endpoints/conversations/list/) | Includes conversations in every status (`status=all`), not only active ones. Records include embedded threads. Incremental syncs request conversations modified since the last sync. |
 | `conversation_threads` | [List Threads](https://developer.helpscout.com/mailbox-api/endpoints/conversations/threads/list/) | Child stream of `conversations`. On incremental syncs, the connector reads threads only for conversations modified since the last sync and emits threads created after the saved cursor. |
 | `customers` | [List Customers](https://developer.helpscout.com/mailbox-api/endpoints/customers/list/) | Incremental syncs request customers modified since the last sync. |
