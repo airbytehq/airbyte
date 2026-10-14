@@ -36,7 +36,7 @@ definitions:
       'deals_property_history', 'deals', 'email_events', 'email_subscriptions', 'engagements',
       'engagements_calls', 'engagements_emails', 'engagements_meetings', 'engagements_notes',
       'engagements_tasks', 'engagements_task_pipelines', 'form_submissions', 'forms', 'goals', 'leads',
-      'line_items', 'marketing_emails', 'owners_archived', 'owners', 'users', 'products',
+      'line_items', 'listings', 'marketing_emails', 'owners_archived', 'owners', 'users', 'products',
       'subscription_changes', 'ticket_pipelines', 'tickets', 'workflows', 'flows', 'properties', 'account_details',
       'contacts_web_analytics', 'companies_web_analytics', 'deals_web_analytics', 'tickets_web_analytics',
       'engagements_calls_web_analytics', 'engagements_emails_web_analytics',
@@ -2234,6 +2234,19 @@ definitions:
           $ref: "#/schemas/leads"
       - $ref: "#/definitions/base_dynamic_schema_loader"
 
+  listings_stream:
+    $ref: "#/definitions/base_crm_search_incremental_stream"
+    $parameters:
+      name: listings
+      entity: listings
+      cursor_filter_property_field: hs_lastmodifieddate
+      required_scopes: crm.objects.listings.read
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/listings"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
+
   tickets_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
@@ -2860,6 +2873,7 @@ streams:
   - "#/definitions/goals_stream"
   - "#/definitions/leads_stream"
   - "#/definitions/line_items_stream"
+  - "#/definitions/listings_stream"
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/owners_archived_stream"
   - "#/definitions/owners_stream"
@@ -6214,6 +6228,37 @@ schemas:
         items:
           description: Details of individual contacts
           type: string
+
+  listings:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the listing
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Date and time when the listing was created
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: Date and time when the listing was last updated
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates whether the listing is archived or active
+        type:
+          - "null"
+          - boolean
 
   marketing_emails:
     $schema: http://json-schema.org/draft-07/schema#
