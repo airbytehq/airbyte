@@ -18,7 +18,7 @@ from source_shopify.shopify_graphql.bulk.external_sort import DEFAULT_SORT_CHUNK
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
 from source_shopify.shopify_graphql.bulk.query import DeliveryZoneList, ShopFeatures, ShopifyBulkQuery
 from source_shopify.transform import DataTypeEnforcer
-from source_shopify.utils import ApiTypeEnum, ShopifyGraphQlErrorHandler, ShopifyNonRetryableErrors, is_throttled_graphql_error
+from source_shopify.utils import ApiTypeEnum, ShopifyGraphQlErrorHandler, ShopifyNonRetryableErrors, is_retryable_graphql_error
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from source_shopify.utils import ShopifyRateLimiter as limiter
 
@@ -35,7 +35,7 @@ class ShopifyStream(HttpStream, ABC):
     logger = logging.getLogger("airbyte")
 
     # Latest Stable Release
-    api_version = "2026-07"
+    api_version = "2026-10"
     # Page size
     limit = 250
 
@@ -948,7 +948,7 @@ class FullRefreshShopifyGraphQlBulkStream(ShopifyStream):
     response_field: str
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
-        # retries HTTP 200 pages that carry a THROTTLED GraphQL error, everything else follows the status-code mapping
+        # retries HTTP 200 pages that carry a transient GraphQL error, everything else follows the status-code mapping
         return ShopifyGraphQlErrorHandler(
             self.logger, max_retries=5, error_mapping=DEFAULT_ERROR_MAPPING | ShopifyNonRetryableErrors(self.name)
         )
@@ -1005,6 +1005,6 @@ class FullRefreshShopifyGraphQlBulkStream(ShopifyStream):
                 raise AirbyteTracedException(
                     message=f"Stream `{self.name}`: Shopify GraphQL request failed: "
                     + "; ".join(str(error.get("message", error)) for error in errors),
-                    failure_type=FailureType.transient_error if is_throttled_graphql_error(errors) else FailureType.system_error,
+                    failure_type=FailureType.transient_error if is_retryable_graphql_error(errors) else FailureType.system_error,
                 )
             yield from ((json_response.get("data") or {}).get(self.response_field) or {}).get("nodes") or []
