@@ -8,6 +8,8 @@ import com.google.cloud.bigquery.Table
 import com.google.cloud.bigquery.TableDefinition
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.TableInfo
+import com.google.cloud.bigquery.storage.v1.BigQueryReadClient
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
@@ -17,6 +19,10 @@ import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.SelectQueryGenerator
+import io.airbyte.integrations.source.bigquery.readapi.BigQueryReadApiClientFactory
+import io.airbyte.integrations.source.bigquery.readapi.BigQueryReadApiConstants
+import io.airbyte.integrations.source.bigquery.readapi.BigQueryReadApiPermissionProbe
+import io.airbyte.integrations.source.bigquery.readapi.BigQueryReadApiPermissionProbe.Companion.qualifiedName
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
@@ -55,6 +61,13 @@ class BigQuerySourceMetadataQuerier(
     private val prefetchNamespaces: Boolean = true,
     /** Receives the type (table, view, ...) of every fetched table, for the query generator. */
     private val tableTypes: BigQueryTableTypes = BigQueryTableTypes(),
+    /**
+     * Verifies during CHECK that the service account may use the Storage Read API; null when the
+     * configuration does not ask for the API.
+     */
+    private val readApiProbe: BigQueryReadApiPermissionProbe? = null,
+    /** The client behind [readApiProbe], closed with the querier if it was ever opened. */
+    private val readApiClient: Lazy<BigQueryReadClient>? = null,
 ) : MetadataQuerier {
 
     private val executorDelegate: Lazy<ExecutorService> = lazy {
@@ -118,11 +131,40 @@ class BigQuerySourceMetadataQuerier(
 
     override fun extraChecks() {
         base.extraChecks()
+        verifyReadApiPermission()
+    }
+
+    /**
+     * CHECK fails when `use_storage_read_api` is on and the Storage Read API cannot be used, so
+     * that a missing role or a disabled API is reported while the source is being set up, with the
+     * fix spelled out, rather than found by the first sync (which falls back to the much slower
+     * query API, or fails outright when the driver is the first to open a read session).
+     */
+    private fun verifyReadApiPermission() {
+        val probe: BigQueryReadApiPermissionProbe = readApiProbe ?: return
+        when (val outcome: BigQueryReadApiPermissionProbe.Outcome = probe.probe()) {
+            is BigQueryReadApiPermissionProbe.Outcome.Allowed ->
+                log.info {
+                    "The Storage Read API is available (probed on ${outcome.table.qualifiedName()} " +
+                        "in project '${config.jobProjectId}')."
+                }
+            is BigQueryReadApiPermissionProbe.Outcome.Denied ->
+                throw ConfigErrorException(outcome.message, outcome.cause)
+            is BigQueryReadApiPermissionProbe.Outcome.Inconclusive ->
+                throw ConfigErrorException(
+                    "${outcome.message}. Retry the connection test; if the error persists, " +
+                        "${BigQueryReadApiPermissionProbe.TURN_OFF_ADVICE}.",
+                    outcome.cause,
+                )
+        }
     }
 
     override fun close() {
         if (executorDelegate.isInitialized()) {
             executor.shutdownNow()
+        }
+        if (readApiClient?.isInitialized() == true) {
+            readApiClient.value.close()
         }
         base.close()
     }
@@ -204,6 +246,7 @@ class BigQuerySourceMetadataQuerier(
         val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
         val checkQueries: JdbcCheckQueries,
         val tableTypes: BigQueryTableTypes,
+        val readApiConstants: BigQueryReadApiConstants,
         @Value("\${${Operation.PROPERTY}:discover}") private val operation: String = "discover",
     ) : MetadataQuerier.Factory<BigQuerySourceConfiguration> {
         /**
@@ -219,12 +262,28 @@ class BigQuerySourceMetadataQuerier(
                     checkQueries,
                     JdbcConnectionFactory(config),
                 )
+            val bigquery: BigQuery = BigQueryClientFactory.create(config)
+            // Only CHECK runs the probe (extraChecks); the client is opened on first use.
+            val readApiClient: Lazy<BigQueryReadClient>? =
+                if (config.useStorageReadApi && config.emulatorHost == null) {
+                    lazy { BigQueryReadApiClientFactory.create(config) }
+                } else null
             return BigQuerySourceMetadataQuerier(
                 base,
-                BigQueryClientFactory.create(config),
+                bigquery,
                 config,
                 prefetchNamespaces = operation != CHECK_OPERATION,
                 tableTypes = tableTypes,
+                readApiProbe =
+                    readApiClient?.let { client: Lazy<BigQueryReadClient> ->
+                        BigQueryReadApiPermissionProbe(
+                            config,
+                            { bigquery },
+                            { client.value },
+                            readApiConstants,
+                        )
+                    },
+                readApiClient = readApiClient,
             )
         }
     }
