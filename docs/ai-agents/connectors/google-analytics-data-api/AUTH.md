@@ -59,7 +59,40 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
 
 
 ### Token
-This authentication method isn't available for this connector.
+Create a connector with Token credentials.
+
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `credentials_json` | `str` | Yes | The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide |
+
+`replication_config` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `property_ids` | `str` | Yes | A list of GA4 Property IDs to replicate data from. |
+
+Example request:
+
+
+```bash
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_name": "<WORKSPACE_NAME>",
+    "connector_type": "Google-Analytics-Data-Api",
+    "name": "My Google-Analytics-Data-Api Connector",
+    "credentials": {
+      "credentials_json": "<The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide>"
+    },
+    "replication_config": {
+      "property_ids": "<A list of GA4 Property IDs to replicate data from.>"
+    }
+  }'
+```
 
 ### Execution
 
@@ -114,6 +147,10 @@ The recommended pattern is `build_connector_tools`, which gives the agent three 
 ```text
 inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
 ```
+
+Pass section IDs verbatim as the outline lists them, prefix included (`actions.<entity>.<action>`, not `<entity>.<action>`); anything else returns an error the agent has to recover from.
+
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, so the tool sets for more than one connector collide when registered on the same agent. Renaming the callables at registration avoids the collision, but the generated `execute` guidance still names `inspect_connector` and `read_skill_docs`, pointing the model at the wrong tools. Use the `agent_tool` pattern below instead: it weaves your own names into that guidance.
 
 **Pydantic AI**
 
@@ -182,9 +219,91 @@ for tool in build_connector_tools(connector, framework="mcp").as_list():
     mcp.tool(tool)
 ```
 
+#### Custom tool bodies
+
+When you need custom tool bodies — or a framework without native support — use `GoogleAnalyticsDataApiConnector.agent_tool`. Register execute, inspect, and docs together so the agent can fetch connector guidance progressively. Pass the framework explicitly when it has a supported failure strategy:
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+
+connector = connect("google-analytics-data-api", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GoogleAnalyticsDataApiConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="google_analytics_data_api_inspect",
+    docs_tool="google_analytics_data_api_read_docs",
+)
+async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@agent.tool_plain
+@GoogleAnalyticsDataApiConnector.agent_tool(framework="pydantic_ai")
+async def google_analytics_data_api_inspect():
+    return await connector.inspect_connector()
+
+@agent.tool_plain
+@GoogleAnalyticsDataApiConnector.agent_tool(framework="pydantic_ai")
+async def google_analytics_data_api_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
+
+Use the same three-function pattern with `framework="langchain"`, `"openai_agents"`, or `"mcp"` and that framework's registration decorator. Each value translates connector failures into the framework's own signal:
+
+| `framework=` | Tool failures surface as |
+|--------------|--------------------------|
+| `"pydantic_ai"` | `pydantic_ai.ModelRetry` |
+| `"langchain"` | `langchain_core.tools.ToolException` (set `handle_tool_error=True` to feed it back to the model) |
+| `"openai_agents"` | the failure message returned to the model as the tool result |
+| `"mcp"` | `fastmcp.exceptions.ToolError` |
+| `"none"` (default) | `airbyte_agent_sdk.AirbyteToolError` |
+
+On a framework the SDK does not support natively — or in a raw LLM dispatch loop — omit `framework=` and handle `AirbyteToolError` yourself:
+
+```python title="No framework"
+from airbyte_agent_sdk import AirbyteToolError
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+
+connector = connect("google-analytics-data-api", workspace_name="<your_workspace_name>")
+
+@GoogleAnalyticsDataApiConnector.agent_tool(
+    inspect_tool="google_analytics_data_api_inspect",
+    docs_tool="google_analytics_data_api_read_docs",
+)
+async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+
+@GoogleAnalyticsDataApiConnector.agent_tool()
+async def google_analytics_data_api_inspect():
+    return await connector.inspect_connector()
+
+@GoogleAnalyticsDataApiConnector.agent_tool()
+async def google_analytics_data_api_read_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+
+# Advertise all three to the model, using each function's docstring as its description.
+handlers = {
+    fn.__name__: fn
+    for fn in (google_analytics_data_api_inspect, google_analytics_data_api_read_docs, google_analytics_data_api_execute)
+}
+
+# `tool_name` and `tool_args` come from the model's tool call in your dispatch loop.
+try:
+    tool_result = await handlers[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)  # hand the message back to the model as an errored tool result
+```
+
+Each function's docstring carries the guidance the model needs, so pass it through as the tool description wherever you register it.
+
 #### Legacy alternatives
 
-These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `GoogleAnalyticsDataApiConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+These examples are kept for existing integrations. The deprecated `GoogleAnalyticsDataApiConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand. For new code, use `build_connector_tools` or `GoogleAnalyticsDataApiConnector.agent_tool` above.
 
 **Pydantic AI**
 
@@ -390,10 +509,10 @@ Example request:
 
 ```python
 from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
-from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiOauth20AuthenticationAuthConfig
 
 connector = GoogleAnalyticsDataApiConnector(
-    auth_config=GoogleAnalyticsDataApiAuthConfig(
+    auth_config=GoogleAnalyticsDataApiOauth20AuthenticationAuthConfig(
         client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
         client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
         refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
@@ -402,5 +521,23 @@ connector = GoogleAnalyticsDataApiConnector(
 ```
 
 ### Token
-This authentication method isn't available for this connector.
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `credentials_json` | `str` | Yes | The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide |
+
+Example request:
+
+```python
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig
+
+connector = GoogleAnalyticsDataApiConnector(
+    auth_config=GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig(
+        credentials_json="<The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide>"
+    )
+)
+```
 

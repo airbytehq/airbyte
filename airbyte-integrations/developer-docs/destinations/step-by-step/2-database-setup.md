@@ -135,11 +135,11 @@ dependencies {
     // Existing dependencies...
 
     // Testcontainers for automated testing (recommended)
-    testImplementation("org.testcontainers:testcontainers:1.19.0")
-    testImplementation("org.testcontainers:{db}:1.19.0")  // e.g., postgresql, mysql, clickhouse
+    testImplementation("org.testcontainers:testcontainers:1.21.4")
+    testImplementation("org.testcontainers:{db}:1.21.4")  // e.g., postgresql, mysql, clickhouse
 
     // For databases without specific Testcontainers module:
-    // testImplementation("org.testcontainers:jdbc:1.19.0")
+    // testImplementation("org.testcontainers:jdbc:1.21.4")
 }
 ```
 

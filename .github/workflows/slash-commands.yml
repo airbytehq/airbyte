@@ -57,6 +57,8 @@ jobs:
           issue-type: both
 
           commands: |
+            ai-breaking-change-review
+            ai-breaking-change-ready
             ai-canary-prerelease
             ai-create-docs-pr
             ai-dev
@@ -73,6 +75,7 @@ jobs:
             enable-autopilot-rollouts
             force-merge
             format-fix
+            hydra-failure
             poe
             publish-connectors-prerelease
             publish-java-cdk

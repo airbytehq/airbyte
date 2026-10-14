@@ -46,7 +46,7 @@ def _load_manifest():
     "definition_path",
     [
         pytest.param(
-            ("definitions", "streams", "get_v2_settlement_report_data_flat_file"),
+            ("definitions", "streams", "get_v2_settlement_report_data_flat_file_v2"),
             id="main_stream",
         ),
         pytest.param(

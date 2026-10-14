@@ -130,7 +130,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.hubspot.types.CallsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsInCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.hubspot.types.CallsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsInCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CallsAnyCondition"></a>
@@ -211,10 +211,24 @@ Classes
     `updated_at: Any`
     :   Timestamp when the call record was last modified
 
+<a id="CallsArrayContainsCondition"></a>
+
+`CallsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.hubspot.types.CallsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CallsContainsCondition"></a>
 
 `CallsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -343,6 +357,20 @@ Classes
     ### Class variables
 
     `call_id: str`
+    :   The type of the None singleton.
+
+<a id="CallsEndswithCondition"></a>
+
+`CallsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.hubspot.types.CallsStringFilter`
     :   The type of the None singleton.
 
 <a id="CallsEqCondition"></a>
@@ -522,20 +550,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.hubspot.types.CallsStringFilter`
     :   The type of the None singleton.
 
-<a id="CallsLikeCondition"></a>
-
-`CallsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.hubspot.types.CallsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CallsListParams"></a>
 
 `CallsListParams(*args, **kwargs)`
@@ -626,7 +640,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.hubspot.types.CallsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsInCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.hubspot.types.CallsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsInCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CallsOrCondition"></a>
@@ -648,7 +662,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.hubspot.types.CallsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsInCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.hubspot.types.CallsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsInCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CallsSearchFilter"></a>
@@ -718,7 +732,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.hubspot.types.CallsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsInCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.hubspot.types.CallsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsInCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.CallsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.hubspot.types.CallsSortFilter]`
@@ -780,10 +794,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Timestamp when the call record was last modified
 
+<a id="CallsStartswithCondition"></a>
+
+`CallsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.hubspot.types.CallsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CallsStringFilter"></a>
 
 `CallsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -913,7 +941,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesInCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesInCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CompaniesAnyCondition"></a>
@@ -985,39 +1013,10 @@ Classes
     `updated_at: Any`
     :   Timestamp when the company record was last modified
 
-<a id="CompaniesApiSearchParams"></a>
+<a id="CompaniesArrayContainsCondition"></a>
 
-`CompaniesApiSearchParams(*args, **kwargs)`
-:   Parameters for companies.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `after: str`
-    :   The type of the None singleton.
-
-    `filter_groups: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesApiSearchParamsFiltergroupsItem]`
-    :   The type of the None singleton.
-
-    `limit: int`
-    :   The type of the None singleton.
-
-    `properties: list[str]`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
-    `sorts: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesApiSearchParamsSortsItem]`
-    :   The type of the None singleton.
-
-<a id="CompaniesApiSearchParamsFiltergroupsItem"></a>
-
-`CompaniesApiSearchParamsFiltergroupsItem(*args, **kwargs)`
-:   Nested schema for CompaniesApiSearchParams.filterGroups_item
+`CompaniesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1025,55 +1024,13 @@ Classes
 
     ### Class variables
 
-    `filters: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesApiSearchParamsFiltergroupsItemFiltersItem]`
-    :   The type of the None singleton.
-
-<a id="CompaniesApiSearchParamsFiltergroupsItemFiltersItem"></a>
-
-`CompaniesApiSearchParamsFiltergroupsItemFiltersItem(*args, **kwargs)`
-:   Nested schema for CompaniesApiSearchParamsFiltergroupsItem.filters_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `operator: str`
-    :   The type of the None singleton.
-
-    `property_name: str`
-    :   The type of the None singleton.
-
-    `value: str`
-    :   The type of the None singleton.
-
-    ### Methods
-
-    `values(self, /) ‑> list[str]`
-    :   Return an object providing a view on the dict's values.
-
-<a id="CompaniesApiSearchParamsSortsItem"></a>
-
-`CompaniesApiSearchParamsSortsItem(*args, **kwargs)`
-:   Nested schema for CompaniesApiSearchParams.sorts_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `direction: str`
-    :   The type of the None singleton.
-
-    `property_name: str`
+    `array_contains: airbyte_agent_sdk.connectors.hubspot.types.CompaniesAnyValueFilter`
     :   The type of the None singleton.
 
 <a id="CompaniesContainsCondition"></a>
 
 `CompaniesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1149,6 +1106,20 @@ Classes
     :   The type of the None singleton.
 
     `zip: str`
+    :   The type of the None singleton.
+
+<a id="CompaniesEndswithCondition"></a>
+
+`CompaniesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.hubspot.types.CompaniesStringFilter`
     :   The type of the None singleton.
 
 <a id="CompaniesEqCondition"></a>
@@ -1319,20 +1290,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.hubspot.types.CompaniesStringFilter`
     :   The type of the None singleton.
 
-<a id="CompaniesLikeCondition"></a>
-
-`CompaniesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.hubspot.types.CompaniesStringFilter`
-    :   The type of the None singleton.
-
 <a id="CompaniesListParams"></a>
 
 `CompaniesListParams(*args, **kwargs)`
@@ -1423,7 +1380,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.hubspot.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesInCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.hubspot.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesInCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesAnyCondition`
     :   The type of the None singleton.
 
 <a id="CompaniesOrCondition"></a>
@@ -1445,7 +1402,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesInCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesInCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CompaniesSearchFilter"></a>
@@ -1495,6 +1452,91 @@ Classes
     `updated_at: str | None`
     :   Timestamp when the company record was last modified
 
+<a id="CompaniesSearchParams"></a>
+
+`CompaniesSearchParams(*args, **kwargs)`
+:   Parameters for companies.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `after: str`
+    :   The type of the None singleton.
+
+    `filter_groups: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesSearchParamsFiltergroupsItem]`
+    :   The type of the None singleton.
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `properties: list[str]`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
+
+    `sorts: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesSearchParamsSortsItem]`
+    :   The type of the None singleton.
+
+<a id="CompaniesSearchParamsFiltergroupsItem"></a>
+
+`CompaniesSearchParamsFiltergroupsItem(*args, **kwargs)`
+:   Nested schema for CompaniesSearchParams.filterGroups_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filters: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesSearchParamsFiltergroupsItemFiltersItem]`
+    :   The type of the None singleton.
+
+<a id="CompaniesSearchParamsFiltergroupsItemFiltersItem"></a>
+
+`CompaniesSearchParamsFiltergroupsItemFiltersItem(*args, **kwargs)`
+:   Nested schema for CompaniesSearchParamsFiltergroupsItem.filters_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `operator: str`
+    :   The type of the None singleton.
+
+    `property_name: str`
+    :   The type of the None singleton.
+
+    `value: str`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `values(self, /) ‑> list[str]`
+    :   Return an object providing a view on the dict's values.
+
+<a id="CompaniesSearchParamsSortsItem"></a>
+
+`CompaniesSearchParamsSortsItem(*args, **kwargs)`
+:   Nested schema for CompaniesSearchParams.sorts_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `direction: str`
+    :   The type of the None singleton.
+
+    `property_name: str`
+    :   The type of the None singleton.
+
 <a id="CompaniesSearchQuery"></a>
 
 `CompaniesSearchQuery(*args, **kwargs)`
@@ -1506,7 +1548,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.hubspot.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesInCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.hubspot.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesInCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.hubspot.types.CompaniesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.hubspot.types.CompaniesSortFilter]`
@@ -1559,10 +1601,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Timestamp when the company record was last modified
 
+<a id="CompaniesStartswithCondition"></a>
+
+`CompaniesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.hubspot.types.CompaniesStringFilter`
+    :   The type of the None singleton.
+
 <a id="CompaniesStringFilter"></a>
 
 `CompaniesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1695,7 +1751,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsInCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsInCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ContactsAnyCondition"></a>
@@ -1773,39 +1829,10 @@ Classes
     `updated_at: Any`
     :   Timestamp indicating when the contact record was last modified
 
-<a id="ContactsApiSearchParams"></a>
+<a id="ContactsArrayContainsCondition"></a>
 
-`ContactsApiSearchParams(*args, **kwargs)`
-:   Parameters for contacts.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `after: str`
-    :   The type of the None singleton.
-
-    `filter_groups: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsApiSearchParamsFiltergroupsItem]`
-    :   The type of the None singleton.
-
-    `limit: int`
-    :   The type of the None singleton.
-
-    `properties: list[str]`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
-    `sorts: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsApiSearchParamsSortsItem]`
-    :   The type of the None singleton.
-
-<a id="ContactsApiSearchParamsFiltergroupsItem"></a>
-
-`ContactsApiSearchParamsFiltergroupsItem(*args, **kwargs)`
-:   Nested schema for ContactsApiSearchParams.filterGroups_item
+`ContactsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1813,55 +1840,13 @@ Classes
 
     ### Class variables
 
-    `filters: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsApiSearchParamsFiltergroupsItemFiltersItem]`
-    :   The type of the None singleton.
-
-<a id="ContactsApiSearchParamsFiltergroupsItemFiltersItem"></a>
-
-`ContactsApiSearchParamsFiltergroupsItemFiltersItem(*args, **kwargs)`
-:   Nested schema for ContactsApiSearchParamsFiltergroupsItem.filters_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `operator: str`
-    :   The type of the None singleton.
-
-    `property_name: str`
-    :   The type of the None singleton.
-
-    `value: str`
-    :   The type of the None singleton.
-
-    ### Methods
-
-    `values(self, /) ‑> list[str]`
-    :   Return an object providing a view on the dict's values.
-
-<a id="ContactsApiSearchParamsSortsItem"></a>
-
-`ContactsApiSearchParamsSortsItem(*args, **kwargs)`
-:   Nested schema for ContactsApiSearchParams.sorts_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `direction: str`
-    :   The type of the None singleton.
-
-    `property_name: str`
+    `array_contains: airbyte_agent_sdk.connectors.hubspot.types.ContactsAnyValueFilter`
     :   The type of the None singleton.
 
 <a id="ContactsContainsCondition"></a>
 
 `ContactsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1922,6 +1907,20 @@ Classes
     :   The type of the None singleton.
 
     `website: str`
+    :   The type of the None singleton.
+
+<a id="ContactsEndswithCondition"></a>
+
+`ContactsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.hubspot.types.ContactsStringFilter`
     :   The type of the None singleton.
 
 <a id="ContactsEqCondition"></a>
@@ -2098,20 +2097,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.hubspot.types.ContactsStringFilter`
     :   The type of the None singleton.
 
-<a id="ContactsLikeCondition"></a>
-
-`ContactsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.hubspot.types.ContactsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ContactsListParams"></a>
 
 `ContactsListParams(*args, **kwargs)`
@@ -2202,7 +2187,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.hubspot.types.ContactsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsInCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.hubspot.types.ContactsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsInCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ContactsOrCondition"></a>
@@ -2224,7 +2209,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsInCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsInCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ContactsSearchFilter"></a>
@@ -2280,6 +2265,91 @@ Classes
     `updated_at: str | None`
     :   Timestamp indicating when the contact record was last modified
 
+<a id="ContactsSearchParams"></a>
+
+`ContactsSearchParams(*args, **kwargs)`
+:   Parameters for contacts.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `after: str`
+    :   The type of the None singleton.
+
+    `filter_groups: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsSearchParamsFiltergroupsItem]`
+    :   The type of the None singleton.
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `properties: list[str]`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
+
+    `sorts: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsSearchParamsSortsItem]`
+    :   The type of the None singleton.
+
+<a id="ContactsSearchParamsFiltergroupsItem"></a>
+
+`ContactsSearchParamsFiltergroupsItem(*args, **kwargs)`
+:   Nested schema for ContactsSearchParams.filterGroups_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filters: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsSearchParamsFiltergroupsItemFiltersItem]`
+    :   The type of the None singleton.
+
+<a id="ContactsSearchParamsFiltergroupsItemFiltersItem"></a>
+
+`ContactsSearchParamsFiltergroupsItemFiltersItem(*args, **kwargs)`
+:   Nested schema for ContactsSearchParamsFiltergroupsItem.filters_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `operator: str`
+    :   The type of the None singleton.
+
+    `property_name: str`
+    :   The type of the None singleton.
+
+    `value: str`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `values(self, /) ‑> list[str]`
+    :   Return an object providing a view on the dict's values.
+
+<a id="ContactsSearchParamsSortsItem"></a>
+
+`ContactsSearchParamsSortsItem(*args, **kwargs)`
+:   Nested schema for ContactsSearchParams.sorts_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `direction: str`
+    :   The type of the None singleton.
+
+    `property_name: str`
+    :   The type of the None singleton.
+
 <a id="ContactsSearchQuery"></a>
 
 `ContactsSearchQuery(*args, **kwargs)`
@@ -2291,7 +2361,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.hubspot.types.ContactsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsInCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.hubspot.types.ContactsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsInCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.hubspot.types.ContactsSortFilter]`
@@ -2350,10 +2420,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Timestamp indicating when the contact record was last modified
 
+<a id="ContactsStartswithCondition"></a>
+
+`ContactsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.hubspot.types.ContactsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ContactsStringFilter"></a>
 
 `ContactsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2477,7 +2561,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.hubspot.types.DealsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsInCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.hubspot.types.DealsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsInCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DealsAnyCondition"></a>
@@ -2564,39 +2648,10 @@ Classes
     `updated_at: Any`
     :   Timestamp when the deal record was last modified
 
-<a id="DealsApiSearchParams"></a>
+<a id="DealsArrayContainsCondition"></a>
 
-`DealsApiSearchParams(*args, **kwargs)`
-:   Parameters for deals.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `after: str`
-    :   The type of the None singleton.
-
-    `filter_groups: list[airbyte_agent_sdk.connectors.hubspot.types.DealsApiSearchParamsFiltergroupsItem]`
-    :   The type of the None singleton.
-
-    `limit: int`
-    :   The type of the None singleton.
-
-    `properties: list[str]`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
-    `sorts: list[airbyte_agent_sdk.connectors.hubspot.types.DealsApiSearchParamsSortsItem]`
-    :   The type of the None singleton.
-
-<a id="DealsApiSearchParamsFiltergroupsItem"></a>
-
-`DealsApiSearchParamsFiltergroupsItem(*args, **kwargs)`
-:   Nested schema for DealsApiSearchParams.filterGroups_item
+`DealsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2604,55 +2659,13 @@ Classes
 
     ### Class variables
 
-    `filters: list[airbyte_agent_sdk.connectors.hubspot.types.DealsApiSearchParamsFiltergroupsItemFiltersItem]`
-    :   The type of the None singleton.
-
-<a id="DealsApiSearchParamsFiltergroupsItemFiltersItem"></a>
-
-`DealsApiSearchParamsFiltergroupsItemFiltersItem(*args, **kwargs)`
-:   Nested schema for DealsApiSearchParamsFiltergroupsItem.filters_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `operator: str`
-    :   The type of the None singleton.
-
-    `property_name: str`
-    :   The type of the None singleton.
-
-    `value: str`
-    :   The type of the None singleton.
-
-    ### Methods
-
-    `values(self, /) ‑> list[str]`
-    :   Return an object providing a view on the dict's values.
-
-<a id="DealsApiSearchParamsSortsItem"></a>
-
-`DealsApiSearchParamsSortsItem(*args, **kwargs)`
-:   Nested schema for DealsApiSearchParams.sorts_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `direction: str`
-    :   The type of the None singleton.
-
-    `property_name: str`
+    `array_contains: airbyte_agent_sdk.connectors.hubspot.types.DealsAnyValueFilter`
     :   The type of the None singleton.
 
 <a id="DealsContainsCondition"></a>
 
 `DealsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2710,6 +2723,20 @@ Classes
     :   The type of the None singleton.
 
     `pipeline: str`
+    :   The type of the None singleton.
+
+<a id="DealsEndswithCondition"></a>
+
+`DealsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.hubspot.types.DealsStringFilter`
     :   The type of the None singleton.
 
 <a id="DealsEqCondition"></a>
@@ -2895,20 +2922,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.hubspot.types.DealsStringFilter`
     :   The type of the None singleton.
 
-<a id="DealsLikeCondition"></a>
-
-`DealsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.hubspot.types.DealsStringFilter`
-    :   The type of the None singleton.
-
 <a id="DealsListParams"></a>
 
 `DealsListParams(*args, **kwargs)`
@@ -2999,7 +3012,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.hubspot.types.DealsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsInCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.hubspot.types.DealsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsInCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsAnyCondition`
     :   The type of the None singleton.
 
 <a id="DealsOrCondition"></a>
@@ -3021,7 +3034,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.hubspot.types.DealsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsInCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.hubspot.types.DealsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsInCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DealsSearchFilter"></a>
@@ -3086,6 +3099,91 @@ Classes
     `updated_at: str | None`
     :   Timestamp when the deal record was last modified
 
+<a id="DealsSearchParams"></a>
+
+`DealsSearchParams(*args, **kwargs)`
+:   Parameters for deals.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `after: str`
+    :   The type of the None singleton.
+
+    `filter_groups: list[airbyte_agent_sdk.connectors.hubspot.types.DealsSearchParamsFiltergroupsItem]`
+    :   The type of the None singleton.
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `properties: list[str]`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
+
+    `sorts: list[airbyte_agent_sdk.connectors.hubspot.types.DealsSearchParamsSortsItem]`
+    :   The type of the None singleton.
+
+<a id="DealsSearchParamsFiltergroupsItem"></a>
+
+`DealsSearchParamsFiltergroupsItem(*args, **kwargs)`
+:   Nested schema for DealsSearchParams.filterGroups_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filters: list[airbyte_agent_sdk.connectors.hubspot.types.DealsSearchParamsFiltergroupsItemFiltersItem]`
+    :   The type of the None singleton.
+
+<a id="DealsSearchParamsFiltergroupsItemFiltersItem"></a>
+
+`DealsSearchParamsFiltergroupsItemFiltersItem(*args, **kwargs)`
+:   Nested schema for DealsSearchParamsFiltergroupsItem.filters_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `operator: str`
+    :   The type of the None singleton.
+
+    `property_name: str`
+    :   The type of the None singleton.
+
+    `value: str`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `values(self, /) ‑> list[str]`
+    :   Return an object providing a view on the dict's values.
+
+<a id="DealsSearchParamsSortsItem"></a>
+
+`DealsSearchParamsSortsItem(*args, **kwargs)`
+:   Nested schema for DealsSearchParams.sorts_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `direction: str`
+    :   The type of the None singleton.
+
+    `property_name: str`
+    :   The type of the None singleton.
+
 <a id="DealsSearchQuery"></a>
 
 `DealsSearchQuery(*args, **kwargs)`
@@ -3097,7 +3195,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.hubspot.types.DealsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsInCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.hubspot.types.DealsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsInCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.DealsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.hubspot.types.DealsSortFilter]`
@@ -3165,10 +3263,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Timestamp when the deal record was last modified
 
+<a id="DealsStartswithCondition"></a>
+
+`DealsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.hubspot.types.DealsStringFilter`
+    :   The type of the None singleton.
+
 <a id="DealsStringFilter"></a>
 
 `DealsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3298,7 +3410,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.hubspot.types.EmailsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsInCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.hubspot.types.EmailsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsInCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EmailsAnyCondition"></a>
@@ -3376,10 +3488,24 @@ Classes
     `updated_at: Any`
     :   Timestamp when the email record was last modified
 
+<a id="EmailsArrayContainsCondition"></a>
+
+`EmailsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.hubspot.types.EmailsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="EmailsContainsCondition"></a>
 
 `EmailsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3505,6 +3631,20 @@ Classes
     ### Class variables
 
     `email_id: str`
+    :   The type of the None singleton.
+
+<a id="EmailsEndswithCondition"></a>
+
+`EmailsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.hubspot.types.EmailsStringFilter`
     :   The type of the None singleton.
 
 <a id="EmailsEqCondition"></a>
@@ -3681,20 +3821,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.hubspot.types.EmailsStringFilter`
     :   The type of the None singleton.
 
-<a id="EmailsLikeCondition"></a>
-
-`EmailsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.hubspot.types.EmailsStringFilter`
-    :   The type of the None singleton.
-
 <a id="EmailsListParams"></a>
 
 `EmailsListParams(*args, **kwargs)`
@@ -3785,7 +3911,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.hubspot.types.EmailsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsInCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.hubspot.types.EmailsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsInCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsAnyCondition`
     :   The type of the None singleton.
 
 <a id="EmailsOrCondition"></a>
@@ -3807,7 +3933,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.hubspot.types.EmailsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsInCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.hubspot.types.EmailsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsInCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EmailsSearchFilter"></a>
@@ -3874,7 +4000,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.hubspot.types.EmailsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsInCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.hubspot.types.EmailsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsInCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.EmailsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.hubspot.types.EmailsSortFilter]`
@@ -3933,10 +4059,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Timestamp when the email record was last modified
 
+<a id="EmailsStartswithCondition"></a>
+
+`EmailsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.hubspot.types.EmailsStringFilter`
+    :   The type of the None singleton.
+
 <a id="EmailsStringFilter"></a>
 
 `EmailsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4054,7 +4194,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.hubspot.types.MeetingsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsInCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.hubspot.types.MeetingsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsInCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MeetingsAnyCondition"></a>
@@ -4138,10 +4278,24 @@ Classes
     `updated_at: Any`
     :   Timestamp when the meeting record was last modified
 
+<a id="MeetingsArrayContainsCondition"></a>
+
+`MeetingsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.hubspot.types.MeetingsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="MeetingsContainsCondition"></a>
 
 `MeetingsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4267,6 +4421,20 @@ Classes
     ### Class variables
 
     `meeting_id: str`
+    :   The type of the None singleton.
+
+<a id="MeetingsEndswithCondition"></a>
+
+`MeetingsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.hubspot.types.MeetingsStringFilter`
     :   The type of the None singleton.
 
 <a id="MeetingsEqCondition"></a>
@@ -4449,20 +4617,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.hubspot.types.MeetingsStringFilter`
     :   The type of the None singleton.
 
-<a id="MeetingsLikeCondition"></a>
-
-`MeetingsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.hubspot.types.MeetingsStringFilter`
-    :   The type of the None singleton.
-
 <a id="MeetingsListParams"></a>
 
 `MeetingsListParams(*args, **kwargs)`
@@ -4553,7 +4707,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.hubspot.types.MeetingsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsInCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.hubspot.types.MeetingsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsInCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsAnyCondition`
     :   The type of the None singleton.
 
 <a id="MeetingsOrCondition"></a>
@@ -4575,7 +4729,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.hubspot.types.MeetingsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsInCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.hubspot.types.MeetingsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsInCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MeetingsSearchFilter"></a>
@@ -4648,7 +4802,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.hubspot.types.MeetingsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsInCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.hubspot.types.MeetingsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsInCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.MeetingsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.hubspot.types.MeetingsSortFilter]`
@@ -4713,10 +4867,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Timestamp when the meeting record was last modified
 
+<a id="MeetingsStartswithCondition"></a>
+
+`MeetingsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.hubspot.types.MeetingsStringFilter`
+    :   The type of the None singleton.
+
 <a id="MeetingsStringFilter"></a>
 
 `MeetingsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4846,7 +5014,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.hubspot.types.NotesEqCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesGtCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesGteCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLtCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLteCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesInCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesNotCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesAndCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesOrCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.hubspot.types.NotesEqCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesGtCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesGteCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLtCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLteCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesInCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesNotCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesAndCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesOrCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="NotesAnyCondition"></a>
@@ -4915,10 +5083,24 @@ Classes
     `updated_at: Any`
     :   Timestamp when the note record was last modified
 
+<a id="NotesArrayContainsCondition"></a>
+
+`NotesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.hubspot.types.NotesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="NotesContainsCondition"></a>
 
 `NotesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5026,6 +5208,20 @@ Classes
     ### Class variables
 
     `note_id: str`
+    :   The type of the None singleton.
+
+<a id="NotesEndswithCondition"></a>
+
+`NotesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.hubspot.types.NotesStringFilter`
     :   The type of the None singleton.
 
 <a id="NotesEqCondition"></a>
@@ -5193,20 +5389,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.hubspot.types.NotesStringFilter`
     :   The type of the None singleton.
 
-<a id="NotesLikeCondition"></a>
-
-`NotesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.hubspot.types.NotesStringFilter`
-    :   The type of the None singleton.
-
 <a id="NotesListParams"></a>
 
 `NotesListParams(*args, **kwargs)`
@@ -5297,7 +5479,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.hubspot.types.NotesEqCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesGtCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesGteCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLtCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLteCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesInCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesNotCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesAndCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesOrCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.hubspot.types.NotesEqCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesGtCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesGteCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLtCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLteCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesInCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesNotCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesAndCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesOrCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesAnyCondition`
     :   The type of the None singleton.
 
 <a id="NotesOrCondition"></a>
@@ -5319,7 +5501,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.hubspot.types.NotesEqCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesGtCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesGteCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLtCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLteCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesInCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesNotCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesAndCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesOrCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.hubspot.types.NotesEqCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesGtCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesGteCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLtCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLteCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesInCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesNotCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesAndCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesOrCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="NotesSearchFilter"></a>
@@ -5377,7 +5559,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.hubspot.types.NotesEqCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesGtCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesGteCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLtCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLteCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesInCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesNotCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesAndCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesOrCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.hubspot.types.NotesEqCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesGtCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesGteCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLtCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesLteCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesInCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesNotCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesAndCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesOrCondition | airbyte_agent_sdk.connectors.hubspot.types.NotesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.hubspot.types.NotesSortFilter]`
@@ -5427,10 +5609,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Timestamp when the note record was last modified
 
+<a id="NotesStartswithCondition"></a>
+
+`NotesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.hubspot.types.NotesStringFilter`
+    :   The type of the None singleton.
+
 <a id="NotesStringFilter"></a>
 
 `NotesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5619,7 +5815,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.hubspot.types.TasksEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksInCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.hubspot.types.TasksEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksInCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TasksAnyCondition"></a>
@@ -5700,10 +5896,24 @@ Classes
     `updated_at: Any`
     :   Timestamp when the task record was last modified
 
+<a id="TasksArrayContainsCondition"></a>
+
+`TasksArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.hubspot.types.TasksAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TasksContainsCondition"></a>
 
 `TasksContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5826,6 +6036,20 @@ Classes
     ### Class variables
 
     `task_id: str`
+    :   The type of the None singleton.
+
+<a id="TasksEndswithCondition"></a>
+
+`TasksEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.hubspot.types.TasksStringFilter`
     :   The type of the None singleton.
 
 <a id="TasksEqCondition"></a>
@@ -6005,20 +6229,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.hubspot.types.TasksStringFilter`
     :   The type of the None singleton.
 
-<a id="TasksLikeCondition"></a>
-
-`TasksLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.hubspot.types.TasksStringFilter`
-    :   The type of the None singleton.
-
 <a id="TasksListParams"></a>
 
 `TasksListParams(*args, **kwargs)`
@@ -6109,7 +6319,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.hubspot.types.TasksEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksInCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksAnyCondition`
+    `not: airbyte_agent_sdk.connectors.hubspot.types.TasksEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksInCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksAnyCondition`
     :   The type of the None singleton.
 
 <a id="TasksOrCondition"></a>
@@ -6131,7 +6341,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.hubspot.types.TasksEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksInCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.hubspot.types.TasksEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksInCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TasksSearchFilter"></a>
@@ -6201,7 +6411,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.hubspot.types.TasksEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksInCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.hubspot.types.TasksEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksInCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TasksAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.hubspot.types.TasksSortFilter]`
@@ -6263,10 +6473,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Timestamp when the task record was last modified
 
+<a id="TasksStartswithCondition"></a>
+
+`TasksStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.hubspot.types.TasksStringFilter`
+    :   The type of the None singleton.
+
 <a id="TasksStringFilter"></a>
 
 `TasksStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -6390,7 +6614,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsInCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsInCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketsAnyCondition"></a>
@@ -6474,39 +6698,10 @@ Classes
     `updated_at: Any`
     :   Timestamp when the ticket record was last modified
 
-<a id="TicketsApiSearchParams"></a>
+<a id="TicketsArrayContainsCondition"></a>
 
-`TicketsApiSearchParams(*args, **kwargs)`
-:   Parameters for tickets.api_search operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `after: str`
-    :   The type of the None singleton.
-
-    `filter_groups: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsApiSearchParamsFiltergroupsItem]`
-    :   The type of the None singleton.
-
-    `limit: int`
-    :   The type of the None singleton.
-
-    `properties: list[str]`
-    :   The type of the None singleton.
-
-    `query: str`
-    :   The type of the None singleton.
-
-    `sorts: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsApiSearchParamsSortsItem]`
-    :   The type of the None singleton.
-
-<a id="TicketsApiSearchParamsFiltergroupsItem"></a>
-
-`TicketsApiSearchParamsFiltergroupsItem(*args, **kwargs)`
-:   Nested schema for TicketsApiSearchParams.filterGroups_item
+`TicketsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
 
     ### Ancestors (in MRO)
 
@@ -6514,55 +6709,13 @@ Classes
 
     ### Class variables
 
-    `filters: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsApiSearchParamsFiltergroupsItemFiltersItem]`
-    :   The type of the None singleton.
-
-<a id="TicketsApiSearchParamsFiltergroupsItemFiltersItem"></a>
-
-`TicketsApiSearchParamsFiltergroupsItemFiltersItem(*args, **kwargs)`
-:   Nested schema for TicketsApiSearchParamsFiltergroupsItem.filters_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `operator: str`
-    :   The type of the None singleton.
-
-    `property_name: str`
-    :   The type of the None singleton.
-
-    `value: str`
-    :   The type of the None singleton.
-
-    ### Methods
-
-    `values(self, /) ‑> list[str]`
-    :   Return an object providing a view on the dict's values.
-
-<a id="TicketsApiSearchParamsSortsItem"></a>
-
-`TicketsApiSearchParamsSortsItem(*args, **kwargs)`
-:   Nested schema for TicketsApiSearchParams.sorts_item
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `direction: str`
-    :   The type of the None singleton.
-
-    `property_name: str`
+    `array_contains: airbyte_agent_sdk.connectors.hubspot.types.TicketsAnyValueFilter`
     :   The type of the None singleton.
 
 <a id="TicketsContainsCondition"></a>
 
 `TicketsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -6617,6 +6770,20 @@ Classes
     :   The type of the None singleton.
 
     `subject: str`
+    :   The type of the None singleton.
+
+<a id="TicketsEndswithCondition"></a>
+
+`TicketsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.hubspot.types.TicketsStringFilter`
     :   The type of the None singleton.
 
 <a id="TicketsEqCondition"></a>
@@ -6799,20 +6966,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.hubspot.types.TicketsStringFilter`
     :   The type of the None singleton.
 
-<a id="TicketsLikeCondition"></a>
-
-`TicketsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.hubspot.types.TicketsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TicketsListParams"></a>
 
 `TicketsListParams(*args, **kwargs)`
@@ -6903,7 +7056,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.hubspot.types.TicketsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsInCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.hubspot.types.TicketsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsInCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TicketsOrCondition"></a>
@@ -6925,7 +7078,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsInCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsInCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketsSearchFilter"></a>
@@ -6987,6 +7140,91 @@ Classes
     `updated_at: str | None`
     :   Timestamp when the ticket record was last modified
 
+<a id="TicketsSearchParams"></a>
+
+`TicketsSearchParams(*args, **kwargs)`
+:   Parameters for tickets.search operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `after: str`
+    :   The type of the None singleton.
+
+    `filter_groups: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsSearchParamsFiltergroupsItem]`
+    :   The type of the None singleton.
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `properties: list[str]`
+    :   The type of the None singleton.
+
+    `query: str`
+    :   The type of the None singleton.
+
+    `sorts: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsSearchParamsSortsItem]`
+    :   The type of the None singleton.
+
+<a id="TicketsSearchParamsFiltergroupsItem"></a>
+
+`TicketsSearchParamsFiltergroupsItem(*args, **kwargs)`
+:   Nested schema for TicketsSearchParams.filterGroups_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filters: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsSearchParamsFiltergroupsItemFiltersItem]`
+    :   The type of the None singleton.
+
+<a id="TicketsSearchParamsFiltergroupsItemFiltersItem"></a>
+
+`TicketsSearchParamsFiltergroupsItemFiltersItem(*args, **kwargs)`
+:   Nested schema for TicketsSearchParamsFiltergroupsItem.filters_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `operator: str`
+    :   The type of the None singleton.
+
+    `property_name: str`
+    :   The type of the None singleton.
+
+    `value: str`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `values(self, /) ‑> list[str]`
+    :   Return an object providing a view on the dict's values.
+
+<a id="TicketsSearchParamsSortsItem"></a>
+
+`TicketsSearchParamsSortsItem(*args, **kwargs)`
+:   Nested schema for TicketsSearchParams.sorts_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `direction: str`
+    :   The type of the None singleton.
+
+    `property_name: str`
+    :   The type of the None singleton.
+
 <a id="TicketsSearchQuery"></a>
 
 `TicketsSearchQuery(*args, **kwargs)`
@@ -6998,7 +7236,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.hubspot.types.TicketsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsInCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.hubspot.types.TicketsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsInCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsStartswithCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsEndswithCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsArrayContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsSortFilter]`
@@ -7063,10 +7301,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Timestamp when the ticket record was last modified
 
+<a id="TicketsStartswithCondition"></a>
+
+`TicketsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.hubspot.types.TicketsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TicketsStringFilter"></a>
 
 `TicketsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

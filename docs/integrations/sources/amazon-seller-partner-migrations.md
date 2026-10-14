@@ -1,37 +1,54 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # Amazon Seller Partner Migration Guide
+
+## Upgrading to 7.0.0
+
+Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) the Flat File Settlement Report (`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`) on March 17, 2025 and [removes it on November 11, 2026](https://developer-docs.amazon.com/sp-api/changelog/update-removal-of-xml-settlement-report-and-flat-file-settlement-report-date-changed-to-november-11-2026). This version removes the `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` stream and adds its replacement, `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` (Flat File V2 Settlement Report).
+
+The V2 report has a different schema. Instead of separate price and fee column pairs, each charge, fee or credit is a row with three general-purpose columns:
+
+- `amount-type`: the type of charge or fee.
+- `amount-description`: the specific charge or fee within that type.
+- `amount`: the value. Amazon formats it in the marketplace's local currency format, for example `95,00` for EU marketplaces instead of `95.00`. The connector emits it as a string.
+
+These columns from the old stream are not in the V2 report: `shipment-fee-type`, `shipment-fee-amount`, `order-fee-type`, `order-fee-amount`, `price-type`, `price-amount`, `item-related-fee-type`, `item-related-fee-amount`, `misc-fee-amount`, `other-fee-amount`, `other-fee-reason-description`, `promotion-type`, `promotion-amount`, `direct-payment-type`, `direct-payment-amount` and `other-amount`. The V2 report adds `posted-date-time`.
+
+The V2 report is available to Seller Central sellers only.
+
+### Who is affected
+
+Connections that sync the `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` stream. Other streams are not affected.
+
+### Steps to upgrade
+
+1. Select **Connections** in the main navbar, then select the affected connection.
+2. Select the **Schema** tab, then select **Refresh source schema**. `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` no longer appears.
+3. Enable the `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` stream, then save the connection.
+4. Update downstream SQL, dbt models and dashboards to read amounts from the `amount-type`, `amount-description` and `amount` columns, and parse `amount` according to the marketplace's number format.
+
+The new stream writes to a new destination table, so you don't need to clear any stream. The existing `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` table is left as-is and stops receiving data. Keep it if you need settlement history: Amazon only lists settlement reports created in the last 90 days, so the first sync of the V2 stream starts at most 89 days back.
 
 ## Upgrading to 6.0.0
 
-The deprecated `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` (Flat File Settlement Report) stream has been removed per [Amazon SP-API deprecation](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) effective October 31, 2026.
+The primary key has been removed from the `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` streams.
 
-A new replacement stream `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` (Flat File V2 Settlement Report) has been added. The V2 report has a different schema — instead of many individual price and fee columns, it uses three general-purpose columns:
+These Amazon flat-file reports contain one row per order item, so the previous primary key (`amazon-order-id`) is not unique: when these streams were synced with `Incremental | Append + Deduped`, the destination collapsed all line items of a multi-item order into a single row, silently dropping data. No column or combination of columns in these reports has been proven to be reliably unique per row, so the streams now have no primary key.
 
-- `amount` — the monetary value
-- `amount-description` — describes what the amount represents
-- `amount-type` — categorizes the amount
+After upgrading, refresh the source schema for your connection. Then:
 
-### Action Required
+**If either stream used `Incremental | Append + Deduped`**, your destination table is missing line items and must be reloaded:
 
-If you have the `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` stream enabled in your connection:
+:::danger
+Clearing a stream deletes its data in the destination. Amazon only supplies order reports for orders less than two years old, and the connector only requests data from your **Replication Start Date** onward, so rows older than that cannot be re-synced. Take a snapshot or backup of the two destination tables before clearing if you need that history.
+:::
 
-1. **Refresh the source schema** to pick up the stream changes
-2. **Enable the new `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` stream** if you need settlement report data
-3. **Update any downstream transformations** — the V2 schema is different from V1 (condensed amount columns instead of individual fee columns)
-4. **A data reset is required** for settlement report data, as the new stream has a different schema
+1. Change the sync mode of `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` to `Incremental | Append` (or `Full Refresh | Overwrite`). `Incremental | Append + Deduped` is no longer offered for these streams.
+2. Clear both streams and run a sync.
 
-### Steps to Update
+**If these streams used `Incremental | Append`, `Full Refresh | Append`, or `Full Refresh | Overwrite`**, no further action is required. Your existing rows are complete; do not clear the streams.
 
-1. Select **Connections** in the main navbar.
-   1. Select the connection(s) affected by the update.
-2. Select the **Replication** tab.
-   1. Select **Refresh source schema**.
-   2. Select **OK**.
-   > **Note:** The deprecated `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` stream will no longer appear. The new `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` stream will be available for selection.
-3. Enable the `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` stream if needed.
-4. Select **Save changes** at the bottom of the page.
-5. Select **Save connection**.
-
-For more information on managing your Airbyte connections, see the [Airbyte documentation](/platform/operator-guides/clear).
+**Downstream impact.** After the reload, these tables contain one row per order *item*, not one row per order. Update SQL, dbt models, and dashboards that count rows as orders or that assume `amazon-order-id` is unique (for example, use `COUNT(DISTINCT "amazon-order-id")` for order counts, and group by `amazon-order-id` before summing item-level amounts). If you use a lookback window, deduplicate downstream on the full row or on `_airbyte_extracted_at`, since the destination no longer deduplicates for you.
 
 ## Upgrading to 5.0.0
 
@@ -172,3 +189,7 @@ Customers, who have the following streams, will have to disable them:
 - `GET_FBA_FULFILLMENT_INVENTORY_RECEIPTS_DATA`
 - `GET_FBA_FULFILLMENT_INVENTORY_SUMMARY_DATA`
 - `GET_FBA_FULFILLMENT_MONTHLY_INVENTORY_DATA`
+
+## Connector upgrade guide
+
+<MigrationGuide />
