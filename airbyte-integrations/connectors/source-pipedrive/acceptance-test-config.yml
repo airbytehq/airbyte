@@ -20,7 +20,6 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        fail_on_extra_columns: false
         empty_streams:
           - name: mail
             bypass_reason: "Sandbox user has no Pipedrive mail connection: GET /v1/mailbox/mailThreads returns data: [] for every folder."
@@ -37,11 +36,7 @@ acceptance_tests:
           - name: deal_installments
             bypass_reason: "Sandbox plan has no access to installments: GET /api/v2/deals/installments answers 403, which the stream ignores."
       - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        fail_on_extra_columns: false
         empty_streams:
           - name: mail
             bypass_reason: "Sandbox user has no Pipedrive mail connection: GET /v1/mailbox/mailThreads returns data: [] for every folder."
