@@ -165,9 +165,7 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
     fun `a converted numeric string is emitted as an exact JSON number`() {
         val expected = BigDecimal("12345678901234567890123456789012345")
         val amount =
-            assertNotNull(
-                deserialize("""{"id": 1, "amount": "$expected"}""").data["amount"]
-            )
+            assertNotNull(deserialize("""{"id": 1, "amount": "$expected"}""").data["amount"])
 
         assertEquals(expected, amount.fieldValue)
         assertEquals(expected, amount.encode().decimalValue())

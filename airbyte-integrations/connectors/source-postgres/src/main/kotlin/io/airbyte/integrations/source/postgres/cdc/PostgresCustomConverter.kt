@@ -163,7 +163,8 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
     }
 
     private fun getNumberConvertedValue(x: Any): String {
-        // PostgresSourceDebeziumOperations reparses this as BigDecimal, so return an exact plain string.
+        // PostgresSourceDebeziumOperations reparses this as BigDecimal, so return an exact plain
+        // string.
         val decimal = x.toString().toBigDecimalOrNull() ?: return legacyDoubleString(x)
         return decimal.stripTrailingZeros().toPlainString()
     }
