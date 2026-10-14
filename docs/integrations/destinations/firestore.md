@@ -44,6 +44,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                           | Subject                       |
 |:--------| :--------- | :----------------------------------------------------- | :---------------------------- |
+| 0.2.23 | 2026-10-14 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Set `additionalProperties` to `true` in the spec so saved configs stay valid when a property is removed |
 | 0.2.22 | 2025-05-10 | [59845](https://github.com/airbytehq/airbyte/pull/59845) | Update dependencies |
 | 0.2.21 | 2025-05-03 | [59334](https://github.com/airbytehq/airbyte/pull/59334) | Update dependencies |
 | 0.2.20 | 2025-04-26 | [58266](https://github.com/airbytehq/airbyte/pull/58266) | Update dependencies |

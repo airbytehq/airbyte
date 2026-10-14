@@ -7,7 +7,7 @@
     "title": "Destination KVdb",
     "type": "object",
     "required": ["bucket_id", "secret_key"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "bucket_id": {
         "title": "Bucket ID",

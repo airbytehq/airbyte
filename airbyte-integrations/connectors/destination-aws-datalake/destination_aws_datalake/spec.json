@@ -12,7 +12,7 @@
       "bucket_name",
       "lakeformation_database_name"
     ],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "aws_account_id": {
         "type": "string",
