@@ -54,13 +54,13 @@ From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open 
 
 To fill out the required information:
 <FieldAnchor field="host, port, database">
-1. Enter the hostname, port number, and name for your Postgres database.
+1. Enter the hostname, port number, and name for your Postgres database. On Airbyte Cloud, the host must be reachable from the internet: a database on `localhost`, `127.0.0.1` or a private network address is reachable from Airbyte Cloud only through an [SSH tunnel](#ssh-tunneling), which also provides the encryption Airbyte Cloud requires. Enter only the hostname or IP address in **Host**, not a URL and not `host:port`.
 </FieldAnchor>
 <FieldAnchor field="schemas">
 2. Optionally list the names of the schemas you want to sync tables from. These are case-sensitive. When not provided, all available schemas are discovered.
 </FieldAnchor>
 3. Enter the username you created in [Step 1](#step-1-create-a-dedicated-read-only-postgres-user). If your Postgres user authenticates with a password, enter it in the **Password** field. The password is optional — some PostgreSQL authentication methods (such as `trust`, `peer`, or certificate-based auth) do not require one.
-4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
+4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database. Airbyte Cloud never connects unencrypted: the unencrypted modes `disable`, `allow` and `prefer` are accepted on Airbyte Cloud only together with an SSH tunnel (see [Connecting with SSL or SSH Tunneling](#connecting-with-ssl-or-ssh-tunneling)).
 5. Select `Standard (xmin)` from available replication methods. This uses the [xmin system column](#xmin) to reliably replicate data from your database.
    1. If your database is particularly large (> 500 GB), you will benefit from [configuring your Postgres source using logical replication (CDC)](#cdc).
 
@@ -71,7 +71,11 @@ To fill out the required information:
 If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
 our [Airbyte Security docs](../../platform/operating-airbyte/ip-allowlist).
 
+Airbyte Cloud never connects to a database unencrypted. The connection must either use TLS/SSL (SSL mode `require`, `verify-ca` or `verify-full`) or go through an [SSH tunnel](#ssh-tunneling), which encrypts the hop between Airbyte Cloud and your network. The unencrypted SSL modes `disable`, `allow` and `prefer` are accepted on Airbyte Cloud only together with an SSH tunnel. A database on `localhost` or on a private network is not reachable from Airbyte Cloud directly: connect to it through an SSH tunnel. Airbyte Cloud checks the **Host** field before it connects: `localhost`, `127.0.0.1` or `0.0.0.0` with `No Tunnel` fails the connection test with `Airbyte Cloud cannot reach a database on your own machine. Use a hostname reachable from the internet, or configure an SSH tunnel.`, and a URL, credentials or `host:port` pasted into the field fail with `Enter only the hostname in Host; put the port in the Port field.`
+
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte Postgres source!
+
+If the test fails with `Airbyte could not reach the database at the configured host and port`, Airbyte could not open a TCP connection to your database. Check the host and port, that Postgres accepts remote connections (`listen_addresses` in `postgresql.conf` and a matching entry in `pg_hba.conf`), and that your firewall or security group allows the Airbyte IP addresses listed above.
 
 <!-- /env:cloud -->
 
@@ -228,7 +232,7 @@ This is a good solution if:
 ### SSL Modes
 
 <FieldAnchor field="ssl_mode">
-Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
+Airbyte uses SSL (`require`) by default. Airbyte Cloud never connects to a database unencrypted: the connection must use TLS/SSL (`require`, `verify-ca` or `verify-full`), or go through an [SSH tunnel](#ssh-tunneling), which encrypts the hop between Airbyte Cloud and your network. The unencrypted modes `disable`, `allow` and `prefer` are accepted on Airbyte Cloud only together with an SSH tunnel; with `No Tunnel` the connection test fails with `Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel`. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
 
 Here is a breakdown of available SSL connection modes:
 
@@ -242,7 +246,7 @@ Here is a breakdown of available SSL connection modes:
 
 ### SSH Tunneling
 
-If you are using SSH tunneling, as Airbyte Cloud requires encrypted communication, select `SSH Key Authentication` or `Password Authentication` if you selected `disable`, `allow`, or `prefer` as the SSL Mode; otherwise, the connection will fail.
+Airbyte Cloud requires encrypted communication, and an SSH tunnel provides it: the hop between Airbyte Cloud and your bastion host is encrypted by SSH. The unencrypted SSL modes `disable`, `allow` and `prefer` are therefore accepted on Airbyte Cloud only when you also select `SSH Key Authentication` or `Password Authentication`; with `No Tunnel` the connection fails. An SSH tunnel is also the only way for Airbyte Cloud to reach a database that is not exposed to the internet, such as one on `localhost` or on a private network: Airbyte connects to a bastion host that you expose to the Airbyte IPs, and the bastion forwards the connection to the database.
 
 For SSH Tunnel Method, select:
 
@@ -363,7 +367,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.8.8 | 2026-10-12 | [88485](https://github.com/airbytehq/airbyte/pull/88485) | Cold-start the CDC initial snapshot when the saved stream state is an empty object instead of skipping the stream; upgrade to Bulk CDK 1.1.15. |
+| 3.8.9 | 2026-10-14 | [88485](https://github.com/airbytehq/airbyte/pull/88485) | Cold-start the CDC initial snapshot when the saved stream state is an empty object instead of skipping the stream. |
+| 3.8.8 | 2026-10-12 | [88498](https://github.com/airbytehq/airbyte/pull/88498) | Classify unreachable-host connection errors (connection refused, unknown host, connect timeout) as configuration errors that point to the host and port, the Postgres remote-connection settings and the Airbyte Cloud IP allowlist. Explain the `Discovered zero tables.` connection-test failure: the message now names the schema `USAGE` and table `SELECT` grants to add and asks to check the database name, the Schemas setting and the table filters. On Airbyte Cloud, reject `localhost` without an SSH tunnel and a URL or `host:port` pasted into Host with an explicit message before the connection is attempted. |
 | 3.8.7 | 2026-10-09 | [88431](https://github.com/airbytehq/airbyte/pull/88431) | Upgrade to Bulk CDK 1.1.14. |
 | 3.8.6   | 2026-09-16 | [86369](https://github.com/airbytehq/airbyte/pull/86369) | Fix NULL array columns taking the previous record's value on the socket/protobuf CDC path.                                                                                 |
 | 3.8.5   | 2026-07-29 | [82773](https://github.com/airbytehq/airbyte/pull/82773) | Fix ClassCastException when an interval column has a default value during CDC.                                                                                             |
