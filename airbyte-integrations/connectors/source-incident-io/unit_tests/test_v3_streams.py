@@ -483,6 +483,39 @@ def test_vendor_fields_are_declared_and_read(stream_name, path, records_field, f
         assert "enum" not in schema["properties"]["external_issue_reference"]["properties"]["provider"]
 
 
+def test_custom_fields_vendor_fields_are_declared_and_read():
+    populated = {
+        "id": "1",
+        "updated_at": "2026-09-18T10:38:18.161Z",
+        "filter_by": {"custom_field_id": "01H2FW182TAH0NHEVBY34SCAK0", "catalog_attribute_id": "01H2FW182TAH0NHEVBY34SCAK1"},
+        "fixed_filter": {"catalog_attribute_id": "01H2FW182TAH0NHEVBY34SCAK1", "values": ["01H2FW182TAH0NHEVBY34SCAK2"]},
+        "helptext_catalog_attribute_id": "01H2FW182TAH0NHEVBY34SCAK3",
+    }
+    # The vendor omits all three when a custom field has no catalog filtering configured.
+    bare = {"id": "2", "updated_at": "2026-09-18T10:38:18.161Z"}
+    response = {"custom_fields": [populated, bare], "pagination_meta": {}}
+    raw_manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    manifest = ManifestReferenceResolver().preprocess_manifest(raw_manifest)
+    schema = manifest["schemas"]["custom_fields"]
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/custom_fields", json=response)
+        output = _read_stream("custom_fields")
+
+    records = [message.record for message in output.records]
+    assert len(records) == 2
+    for field in ("filter_by", "fixed_filter"):
+        assert schema["properties"][field]["type"] == ["object", "null"]
+        assert records[0].data[field] == populated[field]
+    assert schema["properties"]["fixed_filter"]["properties"]["values"]["items"]["type"] == ["string", "null"]
+    assert schema["properties"]["helptext_catalog_attribute_id"]["type"] == ["string", "null"]
+    assert records[0].data["helptext_catalog_attribute_id"] == populated["helptext_catalog_attribute_id"]
+    for field in ("filter_by", "fixed_filter", "helptext_catalog_attribute_id"):
+        assert field not in records[1].data
+    for mocked_record in response["custom_fields"]:
+        jsonschema.validate(mocked_record, schema)
+
+
 @pytest.mark.parametrize(
     ("stream_name", "path", "records_field"),
     [
