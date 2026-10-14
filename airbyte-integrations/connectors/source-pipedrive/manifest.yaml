@@ -180,7 +180,8 @@ definitions:
           http_method: GET
           request_parameters:
             limit: "100"
-            # An immutable sort key: an edit during the read cannot move a row to another page and skip one.
+            # An immutable sort key: an edit during the read cannot move a row to another page and skip one
+            # (a row deleted or archived before the current offset still shifts the next page back by one).
             sort: "id ASC"
         record_selector:
           type: RecordSelector
@@ -273,7 +274,8 @@ definitions:
           http_method: GET
           request_parameters:
             limit: "500"
-            # An immutable sort key: an edit during the read cannot move a row to another page and skip one.
+            # An immutable sort key: an edit during the read cannot move a row to another page and skip one
+            # (a row deleted or archived before the current offset still shifts the next page back by one).
             sort: "id ASC"
         record_selector:
           type: RecordSelector
@@ -325,7 +327,8 @@ definitions:
           http_method: GET
           request_parameters:
             limit: "500"
-            # An immutable sort key: an edit during the read cannot move a row to another page and skip one.
+            # An immutable sort key: an edit during the read cannot move a row to another page and skip one
+            # (a row deleted or archived before the current offset still shifts the next page back by one).
             sort: "id ASC"
         record_selector:
           type: RecordSelector
@@ -359,7 +362,8 @@ definitions:
           http_method: GET
           request_parameters:
             limit: "500"
-            # An immutable sort key: an edit during the read cannot move a row to another page and skip one.
+            # An immutable sort key: an edit during the read cannot move a row to another page and skip one
+            # (a row deleted or archived before the current offset still shifts the next page back by one).
             sort: "id ASC"
         record_selector:
           type: RecordSelector
@@ -949,6 +953,7 @@ definitions:
                   - type: HttpResponseFilter
                     predicate: "{{ 'text/html' in (headers.get('Content-Type') or '') }}"
                     action: FAIL
+                  # A JSON 403 skips this whole batch of up to 100 deals, as the per-deal route skipped one deal before 4.1.0.
                   - type: HttpResponseFilter
                     action: IGNORE
                     http_codes:
@@ -1022,7 +1027,10 @@ definitions:
               parent_key: id
               partition_field: parent_id
               # Every product, not only those updated after the Start Date: variations are catalog data,
-              # so the parent reuses the products retriever without its incremental cursor.
+              # so the parent reuses the products retriever without its incremental cursor. That costs one
+              # request (10 daily-budget tokens) per product on every sync. Keep it: a full refresh stream
+              # must emit every variation, and Pipedrive does not document that editing a variation changes
+              # the product's update_time, so a cursor on products could miss variation changes.
               stream:
                 type: DeclarativeStream
                 name: products
@@ -4847,7 +4855,7 @@ schemas:
             product_variation_id:
               type:
                 - "null"
-                - number
+                - integer
             currency:
               type:
                 - "null"

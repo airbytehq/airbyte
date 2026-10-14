@@ -111,10 +111,12 @@ def test_403_html_body_from_cloudflare_still_produces_readable_message() -> None
 def test_429_is_rate_limited_and_retried_after_ratelimit_reset() -> None:
     with HttpMocker() as http_mocker:
         deals = deals_request()
+        # Spare burst calls, as in the next test: a zero `x-ratelimit-remaining` drains the budget (covered in
+        # test_api_budget.py), and with `time.sleep` patched out fast machines give up before the window rolls.
         http_mocker.get(
             deals,
             [
-                pipedrive_error(429, "request over limit", headers={"x-ratelimit-reset": "2", "x-ratelimit-remaining": "0"}),
+                pipedrive_error(429, "request over limit", headers={"x-ratelimit-reset": "2", "x-ratelimit-remaining": "19"}),
                 collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}]),
             ],
         )
@@ -277,10 +279,10 @@ def test_child_stream_402_reaches_the_shared_handler_instead_of_retrying() -> No
     with HttpMocker() as http_mocker:
         http_mocker.get(deals_archived_request(), empty_v2_page())
         http_mocker.get(deals_request(), collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}]))
-        child = _deal_products_batch(1)
+        child = _deal_flow_request(1)
         http_mocker.get(child, pipedrive_error(402, "Required suites missing"))
 
-        error = _error_trace(read_stream("deal_products", expecting_exception=True))
+        error = _error_trace(read_stream("deal_flow", expecting_exception=True))
 
         assert error.failure_type == FailureType.config_error
         assert "402: Required suites missing" in error.message
@@ -297,13 +299,16 @@ def test_child_stream_402_reaches_the_shared_handler_instead_of_retrying() -> No
 )
 def test_feature_gated_streams_skip_415(stream, paths, query) -> None:
     with HttpMocker() as http_mocker:
-        for path in paths:
-            http_mocker.get(request(path, query), pipedrive_error(415, "Feature is not enabled"))
+        gated_requests = [request(path, query) for path in paths]
+        for gated in gated_requests:
+            http_mocker.get(gated, pipedrive_error(415, "Feature is not enabled"))
 
         output = read_stream(stream)
 
         assert not output.errors
         assert output.records == []
+        for gated in gated_requests:
+            http_mocker.assert_number_of_calls(gated, 1)
 
 
 def test_feature_gated_streams_skip_real_plan_responses() -> None:
@@ -388,13 +393,12 @@ def test_every_error_message_template_survives_unexpected_bodies(body) -> None:
 _CLOUDFLARE_403 = HttpResponse(body="<html><body>Access denied</body></html>", status_code=403, headers={"Content-Type": "text/html"})
 
 
-def test_cloudflare_html_403_on_a_child_stream_fails_instead_of_skipping_the_parent() -> None:
+@pytest.mark.parametrize("stream", ["deal_products", "deal_flow", "product_variations"])
+def test_cloudflare_html_403_on_a_child_stream_fails_instead_of_skipping_the_parent(stream) -> None:
     with HttpMocker() as http_mocker:
-        http_mocker.get(deals_archived_request(), empty_v2_page())
-        http_mocker.get(deals_request(), collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}]))
-        http_mocker.get(_deal_products_batch(1), _CLOUDFLARE_403)
+        _mock_gated_stream(http_mocker, stream, _CLOUDFLARE_403)
 
-        error = _error_trace(read_stream("deal_products", expecting_exception=True))
+        error = _error_trace(read_stream(stream, expecting_exception=True))
 
         assert error.failure_type == FailureType.config_error
         assert "Cloudflare" in error.message
@@ -426,6 +430,11 @@ def _mock_gated_stream(http_mocker, stream, response):
         http_mocker.get(deals_archived_request(), empty_v2_page())
         http_mocker.get(deals_request(), collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}]))
         targets = [_deal_products_batch(1)]
+    elif stream == "product_variations":
+        http_mocker.get(
+            request("api/v2/products", {"limit": "500", "sort_by": "update_time", "sort_direction": "asc"}), collection([{"id": 1}])
+        )
+        targets = [request("api/v2/products/1/variations", {"limit": "500"})]
     for target in targets:
         http_mocker.get(target, response)
     return targets
@@ -462,26 +471,29 @@ def test_plan_responses_with_an_html_body_are_still_skipped(stream, status_code)
 
 
 @pytest.mark.parametrize(
-    "stream, status_code, error",
+    "stream, status_code, error, failure_type",
     [
-        ("legacy_teams", 402, "Company account is not open"),
-        ("legacy_teams", 501, "Not implemented"),
-        ("projects", 410, "Gone"),
-        ("tasks", 410, "Gone"),
-        ("deal_installments", 410, "Gone"),
-        ("permission_set_assignments", 402, "Company account is not open"),
-        ("permission_set_assignments", 415, "Feature is not enabled"),
-        ("deal_flow", 415, "Feature is not enabled"),
-        ("deal_flow", 501, "Not implemented"),
-        ("deal_products", 402, "Company account is not open"),
+        ("legacy_teams", 402, "Company account is not open", FailureType.config_error),
+        ("legacy_teams", 501, "Not implemented", FailureType.system_error),
+        ("projects", 410, "Gone", FailureType.system_error),
+        ("tasks", 410, "Gone", FailureType.system_error),
+        ("deal_installments", 410, "Gone", FailureType.system_error),
+        ("permission_set_assignments", 402, "Company account is not open", FailureType.config_error),
+        ("permission_set_assignments", 415, "Feature is not enabled", FailureType.config_error),
+        ("deal_flow", 415, "Feature is not enabled", FailureType.config_error),
+        ("deal_flow", 501, "Not implemented", FailureType.system_error),
+        ("deal_products", 402, "Company account is not open", FailureType.config_error),
+        ("deal_products", 415, "Feature is not enabled", FailureType.config_error),
+        ("deal_products", 501, "Not implemented", FailureType.system_error),
     ],
 )
-def test_statuses_missing_from_the_cdk_mapping_reach_the_shared_handler(stream, status_code, error) -> None:
+def test_statuses_missing_from_the_cdk_mapping_reach_the_shared_handler(stream, status_code, error, failure_type) -> None:
     with HttpMocker() as http_mocker:
         targets = _mock_gated_stream(http_mocker, stream, pipedrive_error(status_code, error))
 
         error_trace = _error_trace(read_stream(stream, expecting_exception=True))
 
+        assert error_trace.failure_type == failure_type
         assert f"{status_code}: {error}" in error_trace.message
         # Classified once by base_error_handler, not retried as the CDK fallback would.
         http_mocker.assert_number_of_calls(targets[0], 1)
@@ -505,5 +517,21 @@ def test_deal_products_batch_route_failure_is_not_skipped(status_code) -> None:
 
         output = read_stream("deal_products", expecting_exception=True)
 
-        assert output.errors
+        assert _error_trace(output).failure_type == FailureType.system_error
         http_mocker.assert_number_of_calls(targets[0], 1)
+
+
+def test_deal_products_skips_a_forbidden_batch_and_reads_the_next() -> None:
+    # A JSON 403 skips the whole batch of up to 100 deals, as the per-deal route skipped one deal before 4.1.0.
+    deals = [{"id": deal_id, "update_time": "2024-02-01 00:00:00"} for deal_id in range(1, 102)]
+    with HttpMocker() as http_mocker:
+        http_mocker.get(deals_archived_request(), empty_v2_page())
+        http_mocker.get(deals_request(), collection(deals))
+        http_mocker.get(_deal_products_batch(*range(1, 101)), pipedrive_error(403, "You do not have permissions to do this."))
+        http_mocker.get(_deal_products_batch(101), collection([{"id": 1010, "deal_id": 101}]))
+
+        output = read_stream("deal_products")
+
+        assert not output.errors
+        assert [record.record.data["id"] for record in output.records] == [1010]
+        assert output.is_in_logs("You do not have permissions to do this.")

@@ -11,7 +11,8 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    `deals_archived`, `persons`, `organizations`, `activities` and `products` read `api/v2/...` with
    cursor pagination and the inclusive `updated_since` filter; `notes` and `leads` use the same
    filter on API v1, `files` re-reads its list and filters client-side, and all three page in `id`
-   order with a one-hour lookback so an edit during a read cannot skip a row. `leads_archived` reads
+   order with a one-hour lookback so an edit during a read cannot skip a row (a deletion before the
+   current offset still can). `leads_archived` reads
    the archived leads `GET /v1/leads` leaves out; `deal_products` asks for 100 deals per request;
    `product_variations` expands every product regardless of the Start Date; `goals` asks once per
    assignee type, because without one Pipedrive returns only the token owner's goals. `pipelines`,

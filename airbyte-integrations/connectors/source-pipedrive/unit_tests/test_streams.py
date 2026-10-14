@@ -686,6 +686,21 @@ def test_deal_products_expands_archived_deals_too():
     assert output.errors == []
 
 
+def test_deal_products_asks_once_for_a_deal_both_parents_return():
+    # A deal archived between the two parent reads is returned by both; the batch lists it once.
+    with HttpMocker() as http_mocker:
+        _mock_deals(http_mocker, archived=[{"id": 2, "update_time": "2024-02-01T00:00:00Z", "is_archived": True}])
+        http_mocker.get(
+            _deal_products_batch([1, 2]),
+            _response({"data": [{"id": 20, "deal_id": 2}], "additional_data": {"next_cursor": None}}),
+        )
+
+        output = _read_stream("deal_products")
+
+    assert _ids(output) == [20]
+    assert output.errors == []
+
+
 def test_persons_page_without_additional_data_is_a_single_page():
     with HttpMocker() as http_mocker:
         http_mocker.get(
