@@ -44,12 +44,12 @@ The `start_date` filter applies to these five streams in every sync mode, includ
 | ------------- | ---------- | ------------- | ------------ | --------------------- | ---------------------- |
 | actions | `/v3/actions` | id | DefaultPaginator | ✅ | ✅ |
 | alert_attributes | `/v2/alert_attributes` | id | No pagination | ✅ | ❌ |
-| alert_routes | `/v2/alert_routes` | id | DefaultPaginator | ✅ | ❌ |
+| alert_routes | `/v3/alert_routes` | id | DefaultPaginator | ✅ | ❌ |
 | alert_sources | `/v2/alert_sources` | id | No pagination | ✅ | ❌ |
 | alerts | `/v2/alerts` | id | DefaultPaginator | ✅ | ✅ |
 | catalog_entries | `/v3/catalog_entries` | id | DefaultPaginator | ✅ | ❌ |
 | catalog_resources | `/v3/catalog_resources` | type | No pagination | ✅ | ❌ |
-| catalog_types | `/v2/catalog_types` | id | No pagination | ✅ | ❌ |
+| catalog_types | `/v3/catalog_types` | id | No pagination | ✅ | ❌ |
 | custom_field_options | `/v1/custom_field_options` | id | DefaultPaginator | ✅ | ❌ |
 | custom_fields | `/v2/custom_fields` | id | No pagination | ✅ | ❌ |
 | escalation_paths | `/v2/escalation_paths` | id | DefaultPaginator | ✅ | ❌ |
@@ -68,9 +68,9 @@ The `start_date` filter applies to these five streams in every sync mode, includ
 | users | `/v2/users` | id | DefaultPaginator | ✅ | ❌ |
 | workflows | `/v2/workflows` | id | No pagination | ✅ | ❌ |
 
-The `incidents` stream includes incidents in every status category, including `declined`, `canceled` and `merged`, which the API leaves out by default. It doesn't set the API's `mode` filter, so it only includes `standard` and `retrospective` incidents. Test, tutorial, and stream incidents aren't synced.
+The `incidents` stream includes incidents in every status category, including `declined`, `canceled` and `merged`, which the API leaves out by default.
 
-The `actions` and `follow-ups` streams include records from incidents in every incident mode: `standard`, `retrospective`, `test`, `tutorial`, and `stream`. By default, the API only returns records from `standard` and `retrospective` incidents. To exclude records from test, tutorial, and stream incidents, inner join on `incident_id` to the `incidents` stream, which only contains `standard` and `retrospective` incidents.
+The `actions` and `follow-ups` streams include records from incidents in every incident mode: `standard`, `retrospective`, `test`, `tutorial`, and `stream`. The `incidents` stream requests all five modes; `/v2/incidents` doesn't document `stream`, so stream incidents appear only if incident.io returns them. By default, the API only returns records from `standard` and `retrospective` incidents. To exclude test, tutorial or stream incidents, filter on the `mode` field of `incidents`; for `actions` and `follow-ups`, join on `incident_id` to `incidents` first.
 
 The `users` stream includes deactivated and not-yet-active users. Use the `is_active` field to filter them.
 
@@ -91,7 +91,6 @@ The Incident.io API allows 1,200 requests per minute per API key, and the incide
 - **Invalid API key (HTTP 401):** The sync fails if the API key is invalid or has been revoked. Create a new key in Incident.io under **Settings** → **API keys** and update the source configuration.
 - **Missing permission (HTTP 403):** The sync fails with Incident.io's error message, which names the missing permission. Edit the API key in Incident.io under **Settings** → **API keys** to add that permission, or deselect the affected stream in your connection. You don't need to create a new key or update the source configuration.
 - **Transient errors (HTTP 408 and 5xx):** The connector retries these requests automatically.
-- **Deprecated `catalog_types` endpoint:** The `catalog_types` stream reads `/v2/catalog_types`, which the [Incident.io API reference](https://api-docs.incident.io/) marks as deprecated in favor of `/v3/catalog_types`.
 - **Slow syncs with `incident_attachments`:** On every sync, this stream reads the `incidents` endpoint from `start_date`, which allows only 60 requests per minute, and then sends one request per incident. This happens even if you sync the `incidents` stream incrementally. On accounts with many incidents, this can add significant time to each sync. If you don't need attachments, deselect this stream. If someone deletes an incident during a sync, the connector skips its attachments instead of failing.
 
 ### API key scopes by stream
@@ -131,6 +130,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --------- | ------ | -------------- | --------- |
+| 1.0.0 | 2026-10-13 | [88437](https://github.com/airbytehq/airbyte/pull/88437) | Type timestamp fields, move catalog_types and alert_routes to /v3, sync all incident modes. See the [migration guide](/integrations/sources/incident-io-migrations#upgrading-to-100) |
 | 0.4.2 | 2026-10-13 | [88435](https://github.com/airbytehq/airbyte/pull/88435) | Declare `external_issue_reference` on incidents and `holidays_public_config` on schedules |
 | 0.4.1 | 2026-10-13 | [88663](https://github.com/airbytehq/airbyte/pull/88663) | Update dependencies |
 | 0.4.0 | 2026-10-09 | [88418](https://github.com/airbytehq/airbyte/pull/88418) | Add five alerting and escalation path streams |
