@@ -4,7 +4,7 @@
 
 In 5.0.0, the authentication fields move under `credentials`. No config migration runs, so each existing source must be reconfigured; its current configuration will fail until then.
 
-- To authorize through Airbyte's QuickBooks app, choose **Authenticate via QuickBooks (Airbyte app)** and click **Authenticate your QuickBooks account**. This option supports production companies only.
+- To authorize through Airbyte's QuickBooks app, choose **Use the Airbyte OAuth App** and click **Authenticate your QuickBooks account**. This option supports production companies only.
 - To use your own Intuit app, choose **Use your own Intuit app** and re-enter its Client ID, Client Secret, Refresh Token, and Realm ID.
 
 Sandbox companies require **Use your own Intuit app** with your app's development keys and **Sandbox** turned on under that option.

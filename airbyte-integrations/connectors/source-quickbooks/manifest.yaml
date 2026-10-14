@@ -17850,7 +17850,7 @@ spec:
         default: "oauth2.0"
         oneOf:
           - type: object
-            title: Authenticate via QuickBooks (Airbyte app)
+            title: Use the Airbyte OAuth App
             description: Production companies only.
             required:
               - auth_type

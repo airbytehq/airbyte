@@ -34,7 +34,7 @@ Intuit issues a new refresh token roughly every 24 hours, and only the latest on
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **QuickBooks** from the Source type dropdown and enter a name for this connector.
 4. Under **Authentication**, choose one of the options:
-   - **Authenticate via QuickBooks (Airbyte app)** — click **Authenticate your QuickBooks account** (production companies only).
+   - **Use the Airbyte OAuth App** — click **Authenticate your QuickBooks account** (production companies only).
    - **Use your own Intuit app** — enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Realm ID** from your app.
 5. **Start date** - The date starting from which you'd like to replicate data.
 6. **Page Size** (optional) - Records requested per query page (Intuit's `MAXRESULTS`, default 200, maximum 1,000).
@@ -150,7 +150,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version       | Date         | Pull Request                                               | Subject                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ------------- | ------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 5.0.0 | 2026-10-13 | [88914](https://github.com/airbytehq/airbyte/pull/88914) | Breaking: authentication fields moved under `credentials`; existing sources fail until reconfigured — choose **Authenticate via QuickBooks (Airbyte app)** and click Authenticate (production only), or **Use your own Intuit app** and re-enter credentials (required for sandbox) |
+| 5.0.0 | 2026-10-13 | [88914](https://github.com/airbytehq/airbyte/pull/88914) | Breaking: authentication fields moved under `credentials`; existing sources fail until reconfigured — choose **Use the Airbyte OAuth App** and click Authenticate (production only), or **Use your own Intuit app** and re-enter credentials (required for sandbox) |
 | 4.2.2 | 2026-10-13 | [88915](https://github.com/airbytehq/airbyte/pull/88915) | Pin Airbyte Cloud to 4.0.4 and disable progressive rollout while the 4.2.x OAuth credential override is fixed |
 | 4.2.1 | 2026-10-13 | [78925](https://github.com/airbytehq/airbyte/pull/78925) | Update dependencies |
 | 4.2.0 | 2026-09-24 | [85216](https://github.com/airbytehq/airbyte/pull/85216) | Certification: actionable error handling for Intuit fault codes and rejected refresh tokens, SDM 7.30.0 bump, rate-limit budget and stream concurrency, automatic migration of pre-4.0.0 nested credentials configs, Cloud OAuth via advanced_auth, a configurable Page Size, and six new streams (company_info, preferences, exchange_rates, reimburse_charges, attachables, credit_card_payments; first two full refresh) |
