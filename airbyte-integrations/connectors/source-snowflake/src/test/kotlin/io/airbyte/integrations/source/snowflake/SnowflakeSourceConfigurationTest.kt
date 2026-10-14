@@ -250,7 +250,7 @@ class SnowflakeSourceConfigurationTest {
                 // What the driver tolerates is removed.
                 "  acct.snowflakecomputing.com  " to "acct.snowflakecomputing.com",
                 "https://acct.snowflakecomputing.com" to "acct.snowflakecomputing.com",
-                "http://acct.snowflakecomputing.com" to "acct.snowflakecomputing.com",
+                "http://acct.example.com" to "acct.example.com", // # ignore-https-check
                 "https://acct.snowflakecomputing.com/" to "acct.snowflakecomputing.com",
                 "acct.snowflakecomputing.com:443" to "acct.snowflakecomputing.com",
                 "acct.snowflakecomputing.com/" to "acct.snowflakecomputing.com",

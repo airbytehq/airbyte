@@ -59,14 +59,18 @@ class SnowflakeSourceConfigurationFactory :
     > {
 
     companion object {
-        private val SCHEMES_THE_DRIVER_TOLERATES: List<String> = listOf("https://", "http://")
+        private val SCHEMES_THE_DRIVER_TOLERATES: List<String> =
+            listOf(
+                "https://",
+                "http://", // # ignore-https-check
+            )
 
         /**
          * Normalizes the `Host` field to what the Snowflake JDBC driver would use anyway: trims
-         * whitespace, drops a leading `https://` or `http://` (any case), one trailing `/` and a
-         * trailing `:443`, in that order. The result is the bare account domain for the common
-         * paste `https://account.snowflakecomputing.com/`. Anything else (a path, credentials,
-         * another scheme or port) is kept and left to the Cloud-only syntax check.
+         * whitespace, drops a leading `https://` (or plain `http`) scheme in any case, one trailing
+         * `/` and a trailing `:443`, in that order. The result is the bare account domain for the
+         * common paste `https://account.snowflakecomputing.com/`. Anything else (a path,
+         * credentials, another scheme or port) is kept and left to the Cloud-only syntax check.
          */
         internal fun normalizeHost(raw: String): String {
             var host: String = raw.trim()
