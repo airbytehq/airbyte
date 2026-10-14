@@ -256,10 +256,16 @@ To read more, please check the official [Snowflake documentation](https://docs.s
   name; on older versions add `ENABLE_WILDCARDS_IN_SHOW_METADATA_COMMANDS=false` to **JDBC URL Params**.
   If you relied on `%` or `_` to select several schemas at once, add
   `ENABLE_WILDCARDS_IN_SHOW_METADATA_COMMANDS=true` to **JDBC URL Params** to keep that behavior.
-- **Key pair authentication fails with `JWT token is invalid`.** The private key does not match the
-  RSA public key registered on the user, or the username or account URL is wrong. Compare the
-  fingerprint shown by `DESCRIBE USER <user>` (`RSA_PUBLIC_KEY_FP`) with your key, or register the
-  public key again with `ALTER USER <user> SET RSA_PUBLIC_KEY='...'`.
+- **Key pair authentication fails with `JWT token is invalid`.** Snowflake rejected the login, and
+  retrying will not fix it: the private key does not match the RSA public key registered on the
+  user, the **Username** or **Server URL** is wrong, or the clock on the machine running Airbyte is
+  off. Compare the fingerprint shown by `DESCRIBE USER <user>` (`RSA_PUBLIC_KEY_FP`) with your key,
+  or register the public key again with `ALTER USER <user> SET RSA_PUBLIC_KEY='...'`. For the exact
+  cause, take the ID in brackets after the error (`JWT token is invalid. [<id>]`) and have a
+  Snowflake administrator run `SELECT SYSTEM$GET_LOGIN_FAILURE_DETAILS('<id>');`. See Snowflake's
+  [key pair troubleshooting guide](https://docs.snowflake.com/en/user-guide/key-pair-auth-troubleshooting).
+  Older versions reported this error as an expired session token that would reconnect
+  automatically; it is not, and it fails until the key pair configuration is fixed.
 - **Incremental sync on a `TIMESTAMP_NTZ` cursor misses rows (before 2.0.2).** Snowflake sessions
   default to the `America/Los_Angeles` time zone, which shifted the cursor bound. Fixed in 2.0.2; on
   older versions add `TIMEZONE=UTC` to **JDBC URL Params** as a workaround.
