@@ -292,6 +292,57 @@ def test_page_sizes_match_what_the_api_serves(stream_name, path, records_field, 
 
 
 @pytest.mark.parametrize(
+    ("stream_name", "path", "records_field", "field", "values"),
+    [
+        (
+            "incidents",
+            "/v2/incidents",
+            "incidents",
+            "external_issue_reference",
+            [
+                {
+                    "provider": "jira",
+                    "issue_name": "INC-1",
+                    "issue_permalink": "https://example.atlassian.net/browse/INC-1",
+                },
+                None,
+            ],
+        ),
+        ("schedules", "/v2/schedules", "schedules", "holidays_public_config", [{"country_codes": ["US", "GB"]}, None]),
+    ],
+)
+def test_vendor_fields_are_declared_and_read(stream_name, path, records_field, field, values):
+    response = {
+        records_field: [
+            {"id": "1", "updated_at": "2026-09-18T10:38:18.161Z", field: values[0]},
+            {"id": "2", "updated_at": "2026-09-18T10:38:18.161Z", field: values[1]},
+        ],
+        "pagination_meta": {},
+    }
+    raw_manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    manifest = ManifestReferenceResolver().preprocess_manifest(raw_manifest)
+    schema = manifest["schemas"][stream_name]
+    config = {**_CONFIG, "time_window": "P36500D"} if stream_name == "incidents" else _CONFIG
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}{path}", json=response)
+        output = _read_stream(stream_name, config=config)
+
+    records = [message.record for message in output.records]
+    assert len(records) == 2
+    assert field in schema["properties"]
+    assert schema["properties"][field]["type"] == ["object", "null"]
+    assert records[0].data[field] == values[0]
+    # The serializer drops null values from emitted records.
+    assert field not in records[1].data
+    for mocked_record in response[records_field]:
+        jsonschema.validate(mocked_record, schema)
+
+    if stream_name == "incidents":
+        assert "enum" not in schema["properties"]["external_issue_reference"]["properties"]["provider"]
+
+
+@pytest.mark.parametrize(
     ("stream_name", "path", "records_field"),
     [
         ("incidents", "/v2/incidents", "incidents"),
@@ -340,7 +391,10 @@ def test_p30d_slices_tile_without_gaps(stream_name, path, records_field, first_w
         mocker.get(f"{_BASE_URL}{path}", json={records_field: [], "pagination_meta": {}})
         _read_stream(stream_name, SyncMode.incremental)
 
-        windows = [request.qs["updated_at[date_range]"][0].lower() for request in mocker.request_history]
+        windows = sorted(
+            [request.qs["updated_at[date_range]"][0].lower() for request in mocker.request_history],
+            key=lambda w: w.split("~")[0],
+        )
 
     assert len(windows) > 1
     assert windows[0] == first_window
@@ -354,7 +408,10 @@ def test_time_window_config_changes_the_slice_size():
         mocker.get(f"{_BASE_URL}/v2/alerts", json={"alerts": [], "pagination_meta": {}})
         _read_stream("alerts", SyncMode.incremental, config=config)
 
-        windows = [request.qs["updated_at[date_range]"][0].lower() for request in mocker.request_history]
+        windows = sorted(
+            [request.qs["updated_at[date_range]"][0].lower() for request in mocker.request_history],
+            key=lambda w: w.split("~")[0],
+        )
 
     assert windows[0] == "2020-01-01t00:00:00.000000z~2020-12-30t23:59:59.999999z"
     assert windows[1].startswith("2020-12-31t00:00:00.000000z~")
