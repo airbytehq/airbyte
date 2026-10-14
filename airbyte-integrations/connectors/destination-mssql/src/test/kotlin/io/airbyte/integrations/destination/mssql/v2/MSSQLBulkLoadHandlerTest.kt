@@ -185,16 +185,16 @@ class MSSQLBulkLoadHandlerTest {
         val sqlStatements = mutableListOf<String>()
         verify(atLeast = 1) { connection.prepareStatement(capture(sqlStatements)) }
 
-        // 1) The first statement should create temp table
+        // 1) The first statement should create staging table in target schema
         assertTrue(
-            sqlStatements.any { it.contains("SELECT TOP 0 *\nINTO [##TempTable_") },
-            "Expected a statement containing SELECT TOP 0 * INTO [##TempTable_"
+            sqlStatements.any { it.contains("SELECT TOP 0 *\nINTO [dbo].[_airbyte_staging_") },
+            "Expected a statement containing SELECT TOP 0 * INTO [dbo].[_airbyte_staging_"
         )
 
-        // 2) The second statement should do the bulk insert into temp table
+        // 2) The second statement should do the bulk insert into staging table
         assertTrue(
-            sqlStatements.any { it.contains("BULK INSERT [##TempTable_") },
-            "Expected a statement containing BULK INSERT [##TempTable_"
+            sqlStatements.any { it.contains("BULK INSERT [dbo].[_airbyte_staging_") },
+            "Expected a statement containing BULK INSERT [dbo].[_airbyte_staging_"
         )
 
         // 3) The third statement should be MERGE into the main table
@@ -203,8 +203,14 @@ class MSSQLBulkLoadHandlerTest {
             "Expected a statement containing MERGE INTO [dbo].[MyMainTable] AS Target"
         )
 
-        // No rollback, commit should be called once
-        verify(exactly = 2) { connection.commit() }
+        // 4) The staging table should be dropped in the finally block
+        assertTrue(
+            sqlStatements.any { it.contains("DROP TABLE IF EXISTS [dbo].[_airbyte_staging_") },
+            "Expected a DROP TABLE statement for the staging table"
+        )
+
+        // Commits: createStagingTable + main transaction + dropStagingTable
+        verify(exactly = 3) { connection.commit() }
         verify(exactly = 1) { connection.close() }
         verify(exactly = 0) { connection.rollback() }
         assertFalse(
@@ -307,8 +313,8 @@ class MSSQLBulkLoadHandlerTest {
     }
 
     @Test
-    fun `test createTempTable`() {
-        // We indirectly test createTempTable in bulkLoadAndUpsertForDedup.
+    fun `test createStagingTable`() {
+        // We indirectly test createStagingTable in bulkLoadAndUpsertForDedup.
         // But let's verify the actual statement for clarity:
         val dataFilePath = "azure://container/path/to/file.csv"
         val formatFilePath = "azure://container/path/to/format.fmt"
@@ -328,8 +334,8 @@ class MSSQLBulkLoadHandlerTest {
         verify(atLeast = 1) { connection.prepareStatement(capture(sqlSlot)) }
 
         assertTrue(
-            sqlSlot.any { it.contains("SELECT TOP 0 *\nINTO [##TempTable_") },
-            "Expected creation of temp table via SELECT TOP 0 * INTO"
+            sqlSlot.any { it.contains("SELECT TOP 0 *\nINTO [dbo].[_airbyte_staging_") },
+            "Expected creation of staging table via SELECT TOP 0 * INTO [dbo].[_airbyte_staging_"
         )
     }
 
@@ -378,24 +384,18 @@ class MSSQLBulkLoadHandlerTest {
     }
 
     @Test
-    fun `test generateLocalTempTableName returns expected pattern`() {
-        // We'll call the private method via reflection in an actual codebase,
-        // but for demonstration, let's quickly do it by making the method internal
-        // or just trust it's tested indirectly. Here's how you'd do it with reflection:
-
-        val method =
-            MSSQLBulkLoadHandler::class.java.getDeclaredMethod("generateLocalTempTableName")
+    fun `test generateStagingTableName returns expected pattern`() {
+        val method = MSSQLBulkLoadHandler::class.java.getDeclaredMethod("generateStagingTableName")
         method.isAccessible = true
 
-        val tempTableName = method.invoke(bulkLoadHandler) as String
+        val stagingTableName = method.invoke(bulkLoadHandler) as String
         assertTrue(
-            tempTableName.startsWith("##TempTable_"),
-            "Temp table name should start with ##TempTable_"
+            stagingTableName.startsWith("_airbyte_staging_"),
+            "Staging table name should start with _airbyte_staging_"
         )
-        // Then check if it has a timestamp (regex etc.). We'll do a simple length check:
         assertTrue(
-            tempTableName.length > "##TempTable_".length,
-            "Temp table name should contain a timestamp suffix"
+            stagingTableName.length > "_airbyte_staging_".length,
+            "Staging table name should contain a timestamp suffix"
         )
     }
 
@@ -431,14 +431,14 @@ class MSSQLBulkLoadHandlerTest {
 
         // Ensure CREATE TABLE statement is present:
         assertTrue(
-            sqlStatements.any { it.contains("SELECT TOP 0 *\nINTO [##TempTable_") },
-            "Expected the temp table creation statement (SELECT TOP 0 * INTO [##TempTable_...)"
+            sqlStatements.any { it.contains("SELECT TOP 0 *\nINTO [dbo].[_airbyte_staging_") },
+            "Expected the staging table creation statement (SELECT TOP 0 * INTO [dbo].[_airbyte_staging_...)"
         )
 
         // Ensure the bulk insert statement is present:
         assertTrue(
-            sqlStatements.any { it.contains("BULK INSERT [##TempTable_") },
-            "Expected a BULK INSERT statement into the temp table"
+            sqlStatements.any { it.contains("BULK INSERT [dbo].[_airbyte_staging_") },
+            "Expected a BULK INSERT statement into the staging table"
         )
 
         // **Ensure we have a CTE-based deduplication statement:**
@@ -459,10 +459,9 @@ class MSSQLBulkLoadHandlerTest {
             sqlStatements.find { it.contains("MERGE INTO [dbo].[MyMainTable] AS Target") }
         assertTrue(mergeStatement != null, "Expected a MERGE statement into main table")
 
-        // Verify no rollback, one commit, and the connection was closed
-        verify(exactly = 2) {
-            connection.commit()
-        } // Temp table creation + final commit after MERGE
+        // Verify no rollback, commits (staging table creation + main transaction + staging table
+        // drop)
+        verify(exactly = 3) { connection.commit() }
         verify(exactly = 1) { connection.close() }
         verify(exactly = 0) { connection.rollback() }
     }

@@ -1,0 +1,35 @@
+{
+  "payload": {
+    "ShipmentData": [
+      {
+        "ShipmentId": "FBA15D7ABCDE",
+        "ShipmentName": "FBA (2/1/24 10:00 AM) - 1",
+        "ShipFromAddress": {
+          "Name": "Test Seller",
+          "AddressLine1": "410 Terry Ave N",
+          "City": "Seattle",
+          "StateOrProvinceCode": "WA",
+          "CountryCode": "US",
+          "PostalCode": "98109"
+        },
+        "DestinationFulfillmentCenterId": "PHX7",
+        "ShipmentStatus": "CLOSED",
+        "LabelPrepType": "SELLER_LABEL",
+        "AreCasesRequired": false,
+        "ConfirmedNeedByDate": "2024-02-10",
+        "BoxContentsSource": "FEED",
+        "EstimatedBoxContentsFee": {
+          "TotalUnits": 10,
+          "FeePerUnit": {
+            "CurrencyCode": "USD",
+            "Value": 0.15
+          },
+          "TotalFee": {
+            "CurrencyCode": "USD",
+            "Value": 1.5
+          }
+        }
+      }
+    ]
+  }
+}

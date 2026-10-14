@@ -3,10 +3,14 @@
 import logging
 import time
 from datetime import datetime
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
+import yaml
+
+from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
 
 @pytest.fixture
@@ -155,3 +159,40 @@ def test_date_formats_in_config(config):
 @pytest.fixture(name="logger_mock")
 def logger_mock_fixture():
     return patch("source_paypal_transactions.source.AirbyteLogger")
+
+
+@pytest.fixture(name="manifest")
+def manifest_fixture():
+    manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+    return yaml.safe_load(manifest_path.read_text())
+
+
+def test_manifest_transaction_id_has_value_type_string(manifest):
+    """Verify manifest declares value_type: string on transaction_id to prevent
+    scientific-notation IDs (e.g. 35E87645934406417) from being parsed as floats."""
+    transactions = manifest["definitions"]["streams"]["transactions"]
+    add_fields_transforms = [t for t in transactions["transformations"] if t["type"] == "AddFields"]
+    tid_fields = [field for t in add_fields_transforms for field in t["fields"] if field["path"] == ["transaction_id"]]
+    assert len(tid_fields) == 1, "Expected exactly one transaction_id AddFields entry"
+    assert tid_fields[0].get("value_type") == "string", (
+        "transaction_id AddFields must set value_type: string to prevent " "scientific-notation IDs from being coerced to float('inf')"
+    )
+
+
+@pytest.mark.parametrize(
+    "transaction_id,expected",
+    [
+        pytest.param("35E87645934406417", "35E87645934406417", id="scientific_notation_pattern"),
+        pytest.param("1E2", "1E2", id="small_scientific_notation"),
+        pytest.param("ABC123DEF", "ABC123DEF", id="normal_alphanumeric"),
+        pytest.param("99999999999", "99999999999", id="pure_numeric"),
+    ],
+)
+def test_transaction_id_interpolation_preserves_string(transaction_id, expected):
+    """Verify that Jinja interpolation with valid_types=(str,) keeps IDs as strings."""
+    interp = JinjaInterpolation()
+    template = "{{ record['transaction_info']['transaction_id'] }}"
+    record = {"transaction_info": {"transaction_id": transaction_id}}
+    result = interp.eval(template, config={}, default=None, valid_types=(str,), record=record)
+    assert result == expected
+    assert isinstance(result, str)

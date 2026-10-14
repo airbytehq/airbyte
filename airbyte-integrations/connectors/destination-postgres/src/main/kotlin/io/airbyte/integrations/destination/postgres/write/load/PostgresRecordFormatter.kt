@@ -5,11 +5,12 @@
 package io.airbyte.integrations.destination.postgres.write.load
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
 import io.airbyte.cdk.load.util.Jsons
 
 internal val RAW_META_COLUMNS =
@@ -24,12 +25,24 @@ interface PostgresRecordFormatter {
     fun format(record: Map<String, AirbyteValue>): List<Any>
 }
 
+private fun AirbyteValue?.toPostgresCsvValue(): Any =
+    when (this) {
+        is DateValue -> value.toString().removePrefix("+")
+        is TimestampWithTimezoneValue -> value.toString().removePrefix("+")
+        is TimestampWithoutTimezoneValue -> value.toString().removePrefix("+")
+        else -> toCsvValue()
+    }
+
 class PostgresSchemaRecordFormatter(
     private val columns: List<String>,
 ) : PostgresRecordFormatter {
     override fun format(record: Map<String, AirbyteValue>): List<Any> =
         columns.map { columnName ->
-            if (record.containsKey(columnName)) record[columnName].toCsvValue() else ""
+            if (record.containsKey(columnName)) {
+                record[columnName].toPostgresCsvValue()
+            } else {
+                ""
+            }
         }
 }
 

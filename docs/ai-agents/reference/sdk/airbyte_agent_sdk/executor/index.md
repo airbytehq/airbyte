@@ -9,9 +9,9 @@ Executor implementations for connector operations.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.executor.hosted_executor
-* airbyte_agent_sdk.executor.local_executor
-* airbyte_agent_sdk.executor.models
+* [airbyte_agent_sdk.executor.hosted_executor](/ai-agents/reference/sdk/airbyte_agent_sdk/executor/airbyte_agent_sdk-executor-hosted_executor)
+* [airbyte_agent_sdk.executor.local_executor](/ai-agents/reference/sdk/airbyte_agent_sdk/executor/airbyte_agent_sdk-executor-local_executor)
+* [airbyte_agent_sdk.executor.models](/ai-agents/reference/sdk/airbyte_agent_sdk/executor/airbyte_agent_sdk-executor-models)
 
 Classes
 -------
@@ -27,6 +27,39 @@ Classes
     * airbyte_agent_sdk.errors.AirbyteError
     * builtins.Exception
     * builtins.BaseException
+
+<a id="DownloadChunkResult"></a>
+
+`DownloadChunkResult(content: str, encoding: "Literal['utf-8', 'base64']", bytes_returned: int, range_requested: str, next_range_header: str | None, has_more: bool, content_type: str | None = None)`
+:   JSON-safe result for a bounded download byte range.
+
+    ### Instance variables
+
+    `bytes_returned: int`
+    :   The type of the None singleton.
+
+    `content: str`
+    :   The type of the None singleton.
+
+    `content_type: str | None`
+    :   The type of the None singleton.
+
+    `encoding: Literal['utf-8', 'base64']`
+    :   The type of the None singleton.
+
+    `has_more: bool`
+    :   The type of the None singleton.
+
+    `next_range_header: str | None`
+    :   The type of the None singleton.
+
+    `range_requested: str`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `to_dict(self) ‑> dict[str, typing.Any]`
+    :
 
 <a id="EntityNotFoundError"></a>
 
@@ -103,7 +136,8 @@ Classes
         success: True if execution completed successfully, False if it failed
         data: Response data from the execution
             - dict[str, Any] for standard operations (GET, LIST, CREATE, etc.)
-            - AsyncIterator[bytes] for download operations (streaming file content)
+            - AsyncIterator[bytes] for streaming download operations
+            - dict[str, Any] for structured download chunks
         error: Error message if success=False, None otherwise
         meta: Optional metadata extracted from response (e.g., pagination info)
     
@@ -405,7 +439,7 @@ Classes
 
 <a id="LocalExecutor"></a>
 
-`LocalExecutor(config_path: str | None = None, model: ConnectorModel | None = None, secrets: dict[str, SecretStr] | None = None, auth_config: dict[str, SecretStr] | None = None, auth_scheme: str | None = None, enable_logging: bool = False, log_file: str | None = None, execution_context: str | None = None, max_connections: int = 100, max_keepalive_connections: int = 20, max_logs: int | None = 10000, config_values: dict[str, str] | None = None, on_token_refresh: TokenRefreshCallback = None, retry_config: RetryConfig | None = None)`
+`LocalExecutor(config_path: str | None = None, model: ConnectorModel | None = None, secrets: dict[str, SecretStr] | None = None, auth_config: dict[str, SecretStr] | None = None, auth_scheme: str | None = None, enable_logging: bool = False, log_file: str | None = None, execution_context: str | None = None, max_connections: int = 100, max_keepalive_connections: int = 20, max_logs: int | None = 10000, config_values: dict[str, str] | None = None, on_token_refresh: TokenRefreshCallback = None, retry_config: RetryConfig | None = None, client: HTTPClientProtocol | None = None)`
 :   Async executor for Entity×Action operations with direct HTTP execution.
     
     This is the "local mode" executor that makes direct HTTP calls to external APIs.

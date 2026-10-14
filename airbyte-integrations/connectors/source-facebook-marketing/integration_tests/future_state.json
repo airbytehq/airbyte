@@ -67,6 +67,18 @@
         "filter_statuses": ["ARCHIVED"]
       },
       "stream_descriptor": {
+        "name": "ad_creatives_from_ads"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_time": "2121-07-25",
+        "filter_statuses": ["ARCHIVED"]
+      },
+      "stream_descriptor": {
         "name": "ad_sets"
       }
     }

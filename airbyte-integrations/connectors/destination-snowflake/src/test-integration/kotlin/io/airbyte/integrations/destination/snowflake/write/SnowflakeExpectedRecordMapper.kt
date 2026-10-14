@@ -16,13 +16,25 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
+import io.airbyte.integrations.destination.snowflake.spec.NumberDataType
 import io.airbyte.integrations.destination.snowflake.write.transform.SnowflakeValueCoercer
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.mockk.every
 import io.mockk.mockk
 
-object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
+class SnowflakeExpectedRecordMapper(numberDataType: NumberDataType = NumberDataType.FLOAT) :
+    ExpectedRecordMapper {
+
+    // numberDataType must match the `number_data_type` used by the test variant.
+    // This isn't enforced, so a mismatch can silently produce incorrect expectations.
+    private val coercer =
+        SnowflakeValueCoercer(
+            mockk {
+                every { legacyRawTablesOnly } returns false
+                every { numberDataTypeConversion } returns numberDataType
+            }
+        )
 
     override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
         val mappedData =
@@ -43,15 +55,14 @@ object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
 
     private fun mapAirbyteValue(value: AirbyteValue): AirbyteValue {
         val validationResult =
-            SnowflakeValueCoercer(mockk { every { legacyRawTablesOnly } returns false })
-                .validate(
-                    EnrichedAirbyteValue(
-                        value,
-                        value.airbyteType,
-                        name = "unused",
-                        airbyteMetaField = null,
-                    )
+            coercer.validate(
+                EnrichedAirbyteValue(
+                    value,
+                    value.airbyteType,
+                    name = "unused",
+                    airbyteMetaField = null,
                 )
+            )
         return when (validationResult) {
             is ValidationResult.ShouldNullify -> NullValue
             is ValidationResult.ShouldTruncate -> validationResult.truncatedValue

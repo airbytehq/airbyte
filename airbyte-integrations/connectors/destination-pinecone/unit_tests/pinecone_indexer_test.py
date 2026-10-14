@@ -13,7 +13,7 @@ from pinecone import IndexDescription, exceptions
 from pinecone.grpc import PineconeGRPC
 from pinecone.models import IndexList
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
 
 
 def create_pinecone_indexer(embedding_dimensions=3, side_effect=None):
@@ -253,7 +253,7 @@ def test_pinecone_index_upsert_batching():
 
 
 def generate_catalog():
-    return ConfiguredAirbyteCatalog.parse_obj(
+    return ConfiguredAirbyteCatalogSerializer.load(
         {
             "streams": [
                 {

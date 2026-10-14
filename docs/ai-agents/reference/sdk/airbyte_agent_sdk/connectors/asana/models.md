@@ -70,6 +70,7 @@ Classes
     * airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[TeamsSearchData]
     * airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[UsersSearchData]
     * airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[WorkspacesSearchData]
+    * airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

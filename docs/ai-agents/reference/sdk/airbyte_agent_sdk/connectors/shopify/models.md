@@ -355,6 +355,7 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ShopSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[SmartCollectionsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[TenderTransactionsSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

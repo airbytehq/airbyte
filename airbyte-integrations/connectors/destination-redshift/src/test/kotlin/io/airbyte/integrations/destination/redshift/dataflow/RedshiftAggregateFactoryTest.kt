@@ -64,12 +64,12 @@ internal class RedshiftAggregateFactoryTest {
         val executionConfig = DirectLoadTableExecutionConfig(tableName = tableName)
         every { streamStateStore.get(storeKey) } returns executionConfig
         every { redshiftClient.describeTable(tableName) } returns
-            listOf(
-                "_airbyte_raw_id",
-                "_airbyte_extracted_at",
-                "_airbyte_meta",
-                "_airbyte_generation_id",
-                "col1"
+            linkedMapOf(
+                "_airbyte_raw_id" to "varchar(36)",
+                "_airbyte_extracted_at" to "timestamptz",
+                "_airbyte_meta" to "super",
+                "_airbyte_generation_id" to "bigint",
+                "col1" to "varchar(65535)",
             )
 
         val aggregate = factory.create(storeKey)
@@ -84,7 +84,8 @@ internal class RedshiftAggregateFactoryTest {
     fun `create calls describeTable with correct table name`() {
         val executionConfig = DirectLoadTableExecutionConfig(tableName = tableName)
         every { streamStateStore.get(storeKey) } returns executionConfig
-        every { redshiftClient.describeTable(tableName) } returns listOf("id", "name")
+        every { redshiftClient.describeTable(tableName) } returns
+            linkedMapOf("id" to "bigint", "name" to "varchar(65535)")
 
         factory.create(storeKey)
 
@@ -95,7 +96,7 @@ internal class RedshiftAggregateFactoryTest {
     fun `create produces distinct aggregates per invocation`() {
         val executionConfig = DirectLoadTableExecutionConfig(tableName = tableName)
         every { streamStateStore.get(storeKey) } returns executionConfig
-        every { redshiftClient.describeTable(tableName) } returns listOf("id")
+        every { redshiftClient.describeTable(tableName) } returns linkedMapOf("id" to "bigint")
 
         val agg1 = factory.create(storeKey)
         val agg2 = factory.create(storeKey)
