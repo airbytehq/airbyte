@@ -244,7 +244,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.10.38 | 2026-10-14 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Update airbyte-cdk to 7.36.0 |
+| 0.10.38 | 2026-10-14 | [88943](https://github.com/airbytehq/airbyte/pull/88943) | Update airbyte-cdk to 7.36.0 |
 | 0.10.37 | 2026-10-13 | [88608](https://github.com/airbytehq/airbyte/pull/88608) | Update dependencies |
 | 0.10.36 | 2026-10-06 | [87837](https://github.com/airbytehq/airbyte/pull/87837) | Update dependencies |
 | 0.10.35 | 2026-09-29 | [87145](https://github.com/airbytehq/airbyte/pull/87145) | Update dependencies |
