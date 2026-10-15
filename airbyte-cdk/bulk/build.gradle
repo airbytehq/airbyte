@@ -48,7 +48,7 @@ allprojects {
     }
 
     // Fail fast on Micronaut bean definitions that the JVM refuses to load (inject-kotlin 4.8-4.10
-    // emits unverifiable bytecode for Kotlin constructors mixing default values and primitives);
+    // emits unverifiable bytecode for Kotlin constructors mixing default values and primitives).
     // Micronaut's service loader would otherwise drop them silently.
     io.airbyte.gradle.MicronautBeanDefinitionVerification.configure(project)
 

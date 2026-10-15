@@ -222,8 +222,8 @@ allprojects {
 
         testRuntimeOnly platform("org.junit:junit-bom:${vJUnit}")
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${vJUnit}"
-        // JUnit 5.14's engine needs a launcher of the same version on the test runtime classpath;
-        // without this, Gradle falls back to its bundled (older) launcher and discovery fails with
+        // JUnit 5.14's engine needs a launcher of the same version on the test runtime classpath.
+        // Without this, Gradle falls back to its bundled (older) launcher and discovery fails with
         // "OutputDirectoryCreator not available".
         testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 
