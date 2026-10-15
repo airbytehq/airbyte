@@ -10,8 +10,8 @@ import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFactory
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import jakarta.inject.Singleton
 import java.io.OutputStream
+import javax.inject.Singleton
 
 class MSSQLCSVFormattingWriter(
     stream: DestinationStream,

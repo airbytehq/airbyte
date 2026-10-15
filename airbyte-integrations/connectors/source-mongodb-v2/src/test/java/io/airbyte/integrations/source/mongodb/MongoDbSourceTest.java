@@ -18,7 +18,6 @@ import com.mongodb.MongoSecurityException;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -245,7 +244,6 @@ class MongoDbSourceTest {
   }
 
   @Test
-  @SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION", justification = "null catalog and state on purpose to exercise the failure path")
   void testReadClosesMongoClient() {
     final MongoClient mongoClient = mock(MongoClient.class);
     doReturn(mongoClient).when(source).createMongoClient(sourceConfig);

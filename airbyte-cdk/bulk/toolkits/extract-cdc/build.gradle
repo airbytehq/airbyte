@@ -24,7 +24,7 @@ dependencies {
     testImplementation 'io.debezium:debezium-connector-mongodb'
     testImplementation 'io.debezium:debezium-connector-sqlserver'
     testFixturesImplementation 'io.debezium:debezium-testing-testcontainers' // required for testing with mongo
-    testFixturesImplementation 'io.mockk:mockk:1.14.4'
+    testFixturesImplementation 'io.mockk:mockk:1.13.13' // keep in step with the strictly-pinned testImplementation version in airbyte-cdk/bulk/build.gradle
     testImplementation 'org.testcontainers:mysql'
     testImplementation 'org.testcontainers:postgresql'
 }

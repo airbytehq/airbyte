@@ -15,7 +15,7 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.tableIdOf
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.micronaut.context.annotation.Factory
-import jakarta.inject.Singleton
+import javax.inject.Singleton
 import org.apache.iceberg.catalog.TableIdentifier
 
 /** AWS Glue requires lowercase database+table names. */

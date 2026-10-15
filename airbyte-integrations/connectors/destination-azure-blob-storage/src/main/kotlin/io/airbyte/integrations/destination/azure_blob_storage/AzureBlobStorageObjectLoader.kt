@@ -8,7 +8,7 @@ import io.airbyte.cdk.load.pipeline.RoundRobinInputPartitioner
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
-import jakarta.inject.Singleton
+import javax.inject.Singleton
 import kotlin.math.min
 
 @Singleton

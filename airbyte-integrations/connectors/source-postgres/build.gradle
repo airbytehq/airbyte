@@ -23,14 +23,7 @@ dependencies {
     testImplementation("io.mockk:mockk:1.14.7")
 
     testFixturesImplementation 'org.testcontainers:postgresql:1.21.4'
-    // Pin the published test fixtures at cdkVersion like every other CDK dependency. A project
-    // reference here drags the local CDK into this connector's graph and, whenever the local CDK
-    // version is newer than cdkVersion, Gradle substitutes it for the pinned artifacts.
-    testFixturesImplementation testFixtures(
-        airbyteBulkConnector.cdk == 'local'
-            ? project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-source-integration-tests')
-            : "io.airbyte.bulk-cdk:bulk-cdk-toolkit-legacy-source-integration-tests:${airbyteBulkConnector.cdk}"
-    )
+    testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-source-integration-tests"))
 }
 
 configurations {
