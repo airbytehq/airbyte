@@ -1445,10 +1445,10 @@ spec:
       start_time:
         type: string
         description: >-
-          Optional UTC start date applied to all three streams, in
-          YYYY-MM-DDTHH:MM:SSZ format. When omitted, all three streams start 24
+          Optional UTC start date applied to the incremental streams, in
+          YYYY-MM-DDTHH:MM:SSZ format. When omitted, those streams start 24
           months before the current date. A value earlier than 24 months ago is
-          clamped for campaign_report, because Reddit only serves report data
+          clamped for the report streams, because Reddit only serves report data
           for the last 24 months.
         order: 5
         title: Start Date

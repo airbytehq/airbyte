@@ -7,7 +7,6 @@ from collections import Counter
 from datetime import datetime, timedelta
 
 import pytest
-from conftest import base_config, get_source
 from freezegun import freeze_time
 
 from airbyte_cdk.models import SyncMode
@@ -15,6 +14,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
+from conftest import base_config, get_source
 
 
 _TOKEN_URL = "https://www.reddit.com/api/v1/access_token"
@@ -123,38 +123,6 @@ def _mock_token(http_mocker: HttpMocker, response: HttpResponse | None = None) -
     return request
 
 
-def _inclusive_report_response(request, context) -> str:
-    body = request.json()["data"]
-    start = datetime.strptime(body["starts_at"], "%Y-%m-%dT%H:%M:%SZ")
-    end = datetime.strptime(body["ends_at"], "%Y-%m-%dT%H:%M:%SZ")
-    report_dates = []
-    current_date = start.date()
-    while current_date < end.date() or (current_date == end.date() and end.time() != datetime.min.time()):
-        report_dates.append(current_date)
-        current_date += timedelta(days=1)
-    if end.time() == datetime.min.time():
-        report_dates.append(end.date())
-
-    context.status_code = 200
-    return json.dumps(
-        {
-            "data": {
-                "metrics": [
-                    {
-                        "account_id": "a2_abc123",
-                        "ad_group_id": "a2_abc123",
-                        "ad_id": "a2_abc123",
-                        "campaign_id": "a2_abc123",
-                        "date": report_date.isoformat(),
-                        "impressions": 1,
-                    }
-                    for report_date in report_dates
-                ]
-            }
-        }
-    )
-
-
 def _read_report_windows(
     now: str,
     config: dict,
@@ -164,8 +132,8 @@ def _read_report_windows(
 ) -> tuple[list[tuple[str, str]], list[str]]:
     catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
     with freeze_time(now), HttpMocker() as http_mocker:
-        token_request = _mock_token(http_mocker)
-        http_mocker._mocker.post(_REPORT_URL, text=_inclusive_report_response)
+        _mock_token(http_mocker)
+        http_mocker._mocker.post(_REPORT_URL, text=_hourly_report(inclusive_end=True))
         source = get_source(config, catalog, state)
         if bypass_spec_validation:
             output = list(source.read(logging.getLogger("airbyte"), config, catalog, [state] if state is not None else None))
@@ -207,7 +175,17 @@ def _hourly_report(inclusive_end: bool):
         return json.dumps(
             {
                 "data": {
-                    "metrics": [{"campaign_id": "test-campaign", "date": day, "impressions": count} for day, count in sorted(hours.items())]
+                    "metrics": [
+                        {
+                            "account_id": "a2_abc123",
+                            "ad_group_id": "a2_abc123",
+                            "ad_id": "a2_abc123",
+                            "campaign_id": "test-campaign",
+                            "date": day,
+                            "impressions": count,
+                        }
+                        for day, count in sorted(hours.items())
+                    ]
                 }
             }
         )
@@ -276,7 +254,7 @@ def test_campaign_report_retries_503_with_ad_account_message(monkeypatch) -> Non
 @freeze_time("2026-09-28T00:00:00Z")
 def test_campaign_report_decodes_pagination_token_in_next_request() -> None:
     config = base_config(start_time="2026-09-25T00:00:00Z")
-    catalog = CatalogBuilder().with_stream("campaign_report", SyncMode.incremental).build()
+    catalog = CatalogBuilder().with_stream("campaign_report", SyncMode.full_refresh).build()
     request_body = _report_body("2026-09-25T00:00:00Z", "2026-09-28T00:00:00Z")
 
     with HttpMocker() as http_mocker:
@@ -309,7 +287,7 @@ def test_campaign_report_decodes_pagination_token_in_next_request() -> None:
         output = read(get_source(config, catalog), config, catalog)
 
     assert output.errors == []
-    assert sorted(message.record.data["campaign_id"] for message in output.records) == ["campaign-1", "campaign-2"]
+    assert [message.record.data["campaign_id"] for message in output.records] == ["campaign-1", "campaign-2"]
     http_mocker.assert_number_of_calls(first_request, 1)
     http_mocker.assert_number_of_calls(next_page_request, 1)
 

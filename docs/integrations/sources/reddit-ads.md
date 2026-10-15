@@ -87,22 +87,7 @@ In [Reddit Ads Manager](https://ads.reddit.com), open **Business Manager** > **A
 
 All eight streams read from the single ad account you configure. `ad_account` supports full refresh; the other seven streams also support incremental sync. To sync more than one ad account, create one source per account.
 
-`campaign_report`, `ad_account_report`, `ad_group_report`, and `ad_report` return
-one row per campaign, account, ad group, or ad per UTC day, respectively, with
-delivery and conversion metrics such as impressions, clicks, spend, reach,
-frequency, and per-objective conversion counts and values. The report streams
-request contiguous three-day windows with day-aligned cursor boundaries and
-re-read a configurable whole-day lookback (default 7 days, bounded to 0–30) on
-incremental syncs. `starts_at` and `ends_at` are built in `request_body` (the day
-after the window end at 00:00Z, capped at the current hour) because the CDK's
-inclusive slice end would drop each window's last day, and a shared
-`record_filter` drops rows dated after the window in case Reddit treats
-`ends_at` as inclusive. Today's UTC report row stays partial until a sync runs
-after that day ends. Report history is clamped to 24 months because Reddit only
-serves that period. Spend and cost metrics stay in Reddit's micro-units and
-`conversion_*_total_value` stays multiplied by 100; the connector does not
-convert them. Pagination uses `pagination.next_url` and decodes `%3D` in
-`page.token` before sending the next request.
+`campaign_report`, `ad_account_report`, `ad_group_report`, and `ad_report` return one row per campaign, account, ad group, or ad per UTC day, respectively, with delivery and conversion metrics such as impressions, clicks, spend, reach, frequency, and per-objective conversion counts and values.
 
 ## Sync behavior and limitations
 
@@ -123,11 +108,7 @@ Reddit applies rate limits per Reddit app, authorized user, and endpoint group, 
 | `ads-campaign-management-read` | Get Ad Account, List Ads, List Ad Groups, List Campaigns | `ad_account`, `ad`, `ad_group`, `campaign` | 400 requests per 60 seconds |
 | `ads-reporting` | Get A Report | `ad_account_report`, `campaign_report`, `ad_group_report`, `ad_report` | 60 requests per 60 seconds |
 
-The connector throttles its own requests to stay within these quotas. It only
-counts the requests it makes itself, so other sources that use the same app and
-Reddit user can still push the account over the limit. Each report stream
-requests contiguous three-day UTC windows per call, so a long backfill makes
-many report calls in sequence.
+The connector throttles its own requests to stay within these quotas. It only counts the requests it makes itself, so other sources that use the same app and Reddit user can still push it over the limit. Each report stream requests contiguous three-day UTC windows per call, so a long backfill makes many report calls.
 
 By default, the connector runs up to 3 requests in parallel. You can change this with **Number of Concurrent Workers**, up to a maximum of 10. If syncs hit rate limits often, lower this value.
 

@@ -1,18 +1,17 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import json
-from collections import Counter
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 import pytest
-from conftest import base_config, get_source
 from freezegun import freeze_time
-from test_campaign_report import _FIELDS, _REPORT_URL, _mock_token
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from conftest import base_config, get_source
+from test_campaign_report import _FIELDS, _REPORT_URL, _hourly_report, _mock_token
 
 
 _PLACEHOLDER_ID = "a2_abc123"
@@ -58,38 +57,6 @@ def _report_record(report_date: str, identifier: str = _PLACEHOLDER_ID) -> dict:
     }
 
 
-def _hourly_report_response(inclusive_end: bool):
-    def callback(request, context) -> str:
-        body = request.json()["data"]
-        hour = datetime.strptime(body["starts_at"], "%Y-%m-%dT%H:%M:%SZ")
-        end = datetime.strptime(body["ends_at"], "%Y-%m-%dT%H:%M:%SZ")
-        if end < hour:
-            context.status_code = 400
-            return json.dumps({"error": {"code": 400, "message": "The end date time must come after the start date time."}})
-        end += timedelta(hours=inclusive_end)
-        daily_counts = Counter()
-        while hour < end:
-            daily_counts[hour.date().isoformat()] += 1
-            hour += timedelta(hours=1)
-        context.status_code = 200
-        return json.dumps(
-            {
-                "data": {
-                    "metrics": [
-                        {
-                            **_report_record(day),
-                            "impressions": count,
-                        }
-                        for day, count in sorted(daily_counts.items())
-                    ]
-                },
-                "pagination": {},
-            }
-        )
-
-    return callback
-
-
 def _sync_report(
     stream_name: str,
     now: str,
@@ -99,7 +66,7 @@ def _sync_report(
 ) -> tuple[list[tuple[str, str]], list[str], object]:
     catalog = _catalog(stream_name)
     with freeze_time(now), HttpMocker() as http_mocker:
-        http_mocker._mocker.post(_REPORT_URL, text=_hourly_report_response(inclusive_end))
+        http_mocker._mocker.post(_REPORT_URL, text=_hourly_report(inclusive_end))
         _mock_token(http_mocker)
         source = get_source(config, catalog, state)
         output = read(source, config, catalog, state=state) if state is not None else read(source, config, catalog)
