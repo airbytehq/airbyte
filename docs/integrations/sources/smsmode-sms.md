@@ -20,6 +20,7 @@ A source connector for the smsmode API dedicated to standard SMS services, suppo
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.7 | 2026-10-13 | [88816](https://github.com/airbytehq/airbyte/pull/88816) | Update dependencies |
 | 0.0.6 | 2026-10-06 | [88071](https://github.com/airbytehq/airbyte/pull/88071) | Update dependencies |
 | 0.0.5 | 2026-09-29 | [87358](https://github.com/airbytehq/airbyte/pull/87358) | Update dependencies |
 | 0.0.4 | 2026-09-22 | [86847](https://github.com/airbytehq/airbyte/pull/86847) | Update dependencies |
