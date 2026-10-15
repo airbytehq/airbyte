@@ -124,7 +124,7 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
         }
     }
 
-    class PgSystemType(systemType: SystemType) {
+    private class PgSystemType(systemType: SystemType) {
         // TODO: Better user-facing message? Alert Extract team?
         val typeName: String = requireNotNull(systemType.typeName)
         val jdbcType: JDBCType = requireNotNull(systemType.jdbcType)

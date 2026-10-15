@@ -407,13 +407,14 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
         )
 
         // Array of a user-defined type outside the search_path. The driver reports its quoted,
-        // schema-qualified name, e.g. "<schema>"."_kind", which falls back to an array of strings.
+        // schema-qualified name, e.g. "<other schema>"."__enum", which falls back to an array of
+        // strings.
         add(
             testCase(
-                "\"$schema\".\"$OFF_PATH_ENUM\"[]",
+                "$OFF_PATH_ENUM[]",
                 ArrayAirbyteSchemaType(LeafAirbyteSchemaType.STRING),
                 mapOf(
-                    "array['sad', 'happy']::\"$schema\".\"$OFF_PATH_ENUM\"[]" to
+                    "array['sad', 'happy']::$OFF_PATH_ENUM[]" to
                         "[\"sad\",\"happy\"]"
                 ),
                 "SCHEMA QUALIFIED ENUM ARRAY"
@@ -465,14 +466,16 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             )
         private val nulledNaN = mapOf("'NaN'" to "null")
         private const val UNDERSCORE_ENUM = "_status"
-        private const val OFF_PATH_ENUM = "kind"
+        private val OTHER_SCHEMA = TestAssetResourceNamer().getName()
+        private val OFF_PATH_ENUM = "\"$OTHER_SCHEMA\".\"_enum\""
     }
 
     override val setupDdl: List<String> =
         listOf(
                 "CREATE SCHEMA \"$schema\"",
+                "CREATE SCHEMA \"$OTHER_SCHEMA\"",
                 "CREATE TYPE public.\"$UNDERSCORE_ENUM\" AS ENUM ('active', 'inactive')",
-                "CREATE TYPE \"$schema\".\"$OFF_PATH_ENUM\" AS ENUM ('sad', 'happy')",
+                "CREATE TYPE $OFF_PATH_ENUM AS ENUM ('sad', 'happy')",
             )
             .plus(
                 testCases.map {
