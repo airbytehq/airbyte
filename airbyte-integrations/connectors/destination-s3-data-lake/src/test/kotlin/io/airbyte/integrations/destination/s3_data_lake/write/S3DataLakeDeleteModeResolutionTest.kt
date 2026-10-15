@@ -26,7 +26,6 @@ import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergSuperTypeFinder
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator
-import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergDeleteMode
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.tableFormatVersion
@@ -50,9 +49,9 @@ import kotlin.test.assertNull
 import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.CatalogProperties
 import org.apache.iceberg.PartitionSpec
-import org.apache.iceberg.TableProperties
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
+import org.apache.iceberg.TableProperties
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.SupportsNamespaces
 import org.apache.iceberg.catalog.TableIdentifier
@@ -63,8 +62,7 @@ import org.junit.jupiter.api.io.TempDir
 
 internal class S3DataLakeDeleteModeResolutionTest {
 
-    private val streamStateStore: StreamStateStore<S3DataLakeStreamState> =
-        mockk(relaxed = true)
+    private val streamStateStore: StreamStateStore<S3DataLakeStreamState> = mockk(relaxed = true)
 
     @TempDir lateinit var warehouseDir: java.nio.file.Path
 
@@ -72,13 +70,14 @@ internal class S3DataLakeDeleteModeResolutionTest {
 
     private lateinit var catalog: Catalog
 
-    private fun makeStream(importType: ImportType = Dedupe(listOf(listOf("id")), listOf("id"))): DestinationStream {
+    private fun makeStream(
+        importType: ImportType = Dedupe(listOf(listOf("id")), listOf("id"))
+    ): DestinationStream {
         val objectSchema =
             ObjectType(
                 linkedMapOf(
                     "id" to FieldType(IntegerType, nullable = true),
-                    "name" to
-                        FieldType(io.airbyte.cdk.load.data.StringType, nullable = true),
+                    "name" to FieldType(io.airbyte.cdk.load.data.StringType, nullable = true),
                 ),
             )
         return DestinationStream(
@@ -99,8 +98,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
                             finalSchema = mapOf(),
                         ),
                     importType = importType,
-                    tableNames =
-                        TableNames(finalTableName = TableName("namespace", "name")),
+                    tableNames = TableNames(finalTableName = TableName("namespace", "name")),
                 ),
         )
     }
@@ -138,7 +136,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
         }
     }
 
-    private fun icebergSchema(importType: ImportType): Schema =
+    private fun icebergSchema(): Schema =
         ObjectType(
                 linkedMapOf(
                     "id" to FieldType(IntegerType, nullable = true),
@@ -198,13 +196,16 @@ internal class S3DataLakeDeleteModeResolutionTest {
     @BeforeEach
     fun setup() {
         catalog = InMemoryCatalog()
-        catalog.initialize("test", mapOf(CatalogProperties.WAREHOUSE_LOCATION to warehouseDir.toString()))
+        catalog.initialize(
+            "test",
+            mapOf(CatalogProperties.WAREHOUSE_LOCATION to warehouseDir.toString())
+        )
     }
 
     @Test
     fun `new v2 table resolves AUTOMATIC to EQUALITY`() {
         val stream = makeStream()
-        val table = createTableAt(2, icebergSchema(stream.tableSchema.importType))
+        val table = createTableAt(2, icebergSchema())
         val state = captureState(makeLoader(stream, makeConfiguration(), table))
         assertEquals(IcebergDeleteMode.EQUALITY, state.deleteMode)
         assertNull(state.positionalDeleteState)
@@ -213,7 +214,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
     @Test
     fun `new v3 table resolves AUTOMATIC to DELETION_VECTOR`() {
         val stream = makeStream()
-        val table = createTableAt(3, icebergSchema(stream.tableSchema.importType))
+        val table = createTableAt(3, icebergSchema())
         val state =
             captureState(
                 makeLoader(
@@ -229,7 +230,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
     @Test
     fun `existing v2 table targeting v3 with NO stays at v2`() {
         val stream = makeStream()
-        val table = createTableAt(2, icebergSchema(stream.tableSchema.importType))
+        val table = createTableAt(2, icebergSchema())
         val state =
             captureState(
                 makeLoader(
@@ -245,7 +246,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
     @Test
     fun `existing v2 table targeting v3 with explicit DELETION_VECTOR and NO fails`() {
         val stream = makeStream()
-        val table = createTableAt(2, icebergSchema(stream.tableSchema.importType))
+        val table = createTableAt(2, icebergSchema())
         assertFailsWith<ConfigErrorException> {
             runBlocking {
                 makeLoader(
@@ -264,7 +265,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
     @Test
     fun `existing v2 table targeting v3 with YES upgrades and uses deletion vectors`() {
         val stream = makeStream()
-        val table = createTableAt(2, icebergSchema(stream.tableSchema.importType))
+        val table = createTableAt(2, icebergSchema())
         val state =
             captureState(
                 makeLoader(
@@ -284,7 +285,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
     @Test
     fun `existing v2 table targeting v3 with WITH_TABLE_BACKUP registers a v2 backup`() {
         val stream = makeStream()
-        val table = createTableAt(2, icebergSchema(stream.tableSchema.importType))
+        val table = createTableAt(2, icebergSchema())
         captureState(
             makeLoader(
                 stream,
@@ -309,7 +310,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
     @Test
     fun `existing v3 table targeting v2 stays at v3`() {
         val stream = makeStream()
-        val table = createTableAt(3, icebergSchema(stream.tableSchema.importType))
+        val table = createTableAt(3, icebergSchema())
         val state = captureState(makeLoader(stream, makeConfiguration(), table))
         assertEquals(IcebergDeleteMode.DELETION_VECTOR, state.deleteMode)
     }
@@ -317,7 +318,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
     @Test
     fun `append stream targeting v3 with YES also upgrades the existing v2 table`() {
         val stream = makeStream(Append)
-        val table = createTableAt(2, icebergSchema(stream.tableSchema.importType))
+        val table = createTableAt(2, icebergSchema())
         val state =
             captureState(
                 makeLoader(
@@ -337,7 +338,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
     @Test
     fun `explicit POSITIONAL on an existing v3 table fails at stream start`() {
         val stream = makeStream()
-        val table = createTableAt(3, icebergSchema(stream.tableSchema.importType))
+        val table = createTableAt(3, icebergSchema())
         assertFailsWith<ConfigErrorException> {
             runBlocking {
                 makeLoader(
@@ -355,7 +356,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
     @Test
     fun `explicit EQUALITY on an existing v3 table fails at stream start`() {
         val stream = makeStream()
-        val table = createTableAt(3, icebergSchema(stream.tableSchema.importType))
+        val table = createTableAt(3, icebergSchema())
         assertFailsWith<ConfigErrorException> {
             runBlocking {
                 makeLoader(
@@ -373,7 +374,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
     @Test
     fun `explicit EQUALITY on a v2 table allowed to upgrade fails before any upgrade`() {
         val stream = makeStream()
-        val table = createTableAt(2, icebergSchema(stream.tableSchema.importType))
+        val table = createTableAt(2, icebergSchema())
         assertFailsWith<ConfigErrorException> {
             runBlocking {
                 makeLoader(
@@ -395,7 +396,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
     @Test
     fun `explicit POSITIONAL on a v2 table allowed to upgrade fails before any upgrade`() {
         val stream = makeStream()
-        val table = createTableAt(2, icebergSchema(stream.tableSchema.importType))
+        val table = createTableAt(2, icebergSchema())
         assertFailsWith<ConfigErrorException> {
             runBlocking {
                 makeLoader(
@@ -431,7 +432,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
     @Test
     fun `upgrader is called with the configured main branch name`() {
         val stream = makeStream()
-        val table = createTableAt(2, icebergSchema(stream.tableSchema.importType))
+        val table = createTableAt(2, icebergSchema())
         table.manageSnapshots().createBranch("prod").commit()
         captureState(
             makeLoader(
