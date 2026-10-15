@@ -14,7 +14,6 @@ import org.apache.iceberg.io.WriteResult
 object IcebergTableCommitter {
     private val commitLocks = ConcurrentHashMap<String, Any>()
 
-    @Suppress("DEPRECATION")
     fun commit(
         table: Table,
         branch: String,
@@ -22,6 +21,7 @@ object IcebergTableCommitter {
         plannedSnapshotId: Long,
         fullySupersededDataFiles: Set<DataFile>,
         rewrittenDeleteFiles: Set<DeleteFile> = emptySet(),
+        resolvesDeletes: Boolean = false,
     ) {
         synchronized(commitLocks.computeIfAbsent("${table.name()}::$branch") { Any() }) {
             if (fullySupersededDataFiles.isNotEmpty()) {
@@ -43,22 +43,15 @@ object IcebergTableCommitter {
                 delta.commit()
                 val rewriteSnapshotId =
                     transaction.table().refs()[branch]?.snapshotId() ?: plannedSnapshotId
-                transaction
-                    .newRewrite()
-                    .toBranch(branch)
-                    .rewriteFiles(
-                        fullySupersededDataFiles,
-                        deleteFiles,
-                        emptySet(),
-                        emptySet(),
-                    )
-                    .validateFromSnapshot(rewriteSnapshotId)
-                    .commit()
+                val rewrite = transaction.newRewrite().toBranch(branch)
+                fullySupersededDataFiles.forEach(rewrite::deleteFile)
+                deleteFiles.forEach(rewrite::deleteFile)
+                rewrite.validateFromSnapshot(rewriteSnapshotId).commit()
                 transaction.commitTransaction()
             } else if (
                 writeResult.deleteFiles().isNotEmpty() ||
                     (writeResult.dataFiles().isNotEmpty() &&
-                        writeResult.referencedDataFiles().isNotEmpty())
+                        (resolvesDeletes || writeResult.referencedDataFiles().isNotEmpty()))
             ) {
                 val delta =
                     table

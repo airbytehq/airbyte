@@ -220,6 +220,7 @@ class FlushMemoryBenchmark {
                 result,
                 plannedSnapshotId,
                 emptySet(),
+                resolvesDeletes = true,
             )
         }
 
