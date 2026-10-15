@@ -11,8 +11,8 @@ dependencies {
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-object-storage')
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-s3')
 
-    testFixturesApi("io.micronaut.test:micronaut-test-core")
-    testFixturesApi("io.micronaut.test:micronaut-test-junit5")
+    testFixturesApi("io.micronaut.test:micronaut-test-core:4.10.3")
+    testFixturesApi("io.micronaut.test:micronaut-test-junit5:4.10.3")
     testFixturesApi(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader")))
     testFixturesApi(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-object-storage")))
 

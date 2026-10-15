@@ -116,8 +116,8 @@ dependencies {
     testFixturesApi("org.testcontainers:testcontainers") {
         exclude(group="org.apache.commons", module="commons-compress")
     }
-    testFixturesApi("io.micronaut.test:micronaut-test-core")
-    testFixturesApi("io.micronaut.test:micronaut-test-junit5")
+    testFixturesApi("io.micronaut.test:micronaut-test-core:4.10.3")
+    testFixturesApi("io.micronaut.test:micronaut-test-junit5:4.10.3")
     testFixturesApi("io.github.deblockt:json-diff:1.1.0")
 }
 
