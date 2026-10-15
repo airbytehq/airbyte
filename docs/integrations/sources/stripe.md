@@ -19,12 +19,12 @@ To authenticate the Stripe connector, you need to use a Stripe API key. Although
 
 ### Step 1: Set up Stripe
 
-1. Log in to your [Stripe account](https://dashboard.stripe.com/login).
-2. In the top navigation bar, click **Developers**.
-3. In the top-left corner, click **API keys**.
-4. Click **+ Create restricted key**.
-5. Choose a **Key name**, and select **Read** for all available permissions.
-6. Click **Create key**. You may be prompted to enter a confirmation code sent to your email address.
+1. Log in to your [Stripe account](https://dashboard.stripe.com/login) and open the [API keys](https://dashboard.stripe.com/apikeys) page.
+2. Click **+ Create restricted key**.
+3. Choose a **Key name**, and select **Read** for all available permissions.
+4. Click **Create key**. You may be prompted to enter a confirmation code sent to your email address.
+
+For most streams, the connector doesn't fail when the key lacks permission. Stripe returns a `403` error, and the connector logs the error message, skips the request, and continues the sync. `Customer Balance Transactions` is the exception and fails the sync instead. If a stream you selected is unexpectedly empty, check the key's permissions for that resource. For the other errors the connector skips, see [HTTP errors the connector skips](#http-errors-the-connector-skips).
 
 For more information on Stripe API Keys, see the [Stripe documentation](https://stripe.com/docs/keys).
 
@@ -49,7 +49,7 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 <!-- markdownlint-disable MD029 -->
 5. For **Account ID**, enter your Stripe Account ID. This ID begins with `acct_`, and can be found in the top-right corner of your Stripe [account settings page](https://dashboard.stripe.com/settings/account).
 6. For **Secret Key**, enter the restricted key you created for the connection.
-7. For **Replication Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
+7. (Optional) For **Replication Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. The default is `2017-01-25T00:00:00Z`.
 8. (Optional) For **Lookback Window**, you may specify a number of days from the present day to reread data. This allows the connector to retrieve data that might have been updated after its initial creation, and is useful for handling any post-transaction adjustments. This applies only to streams that do not support event-based incremental syncs, please see [the list below](#troubleshooting).
 
    - Leaving the **Lookback Window** at its default value of 0 means Airbyte will not re-export data after it has been synced.
@@ -67,9 +67,9 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
 10. (Optional) For **Streams with API Data Retention Validation**, select the streams whose cursor age the connector checks against Stripe's 30-day [Events API retention limit](https://stripe.com/docs/api/events). If a selected stream's cursor is older than 30 days, the connector runs a full refresh for that stream instead of an incremental sync that would miss older changes. By default, no streams are selected, so the connector never overrides a stream's configured sync mode based on cursor age. For advice on which streams benefit from this check, see [Cursor age validation and automatic full refresh](#cursor-age-validation-and-automatic-full-refresh).
 
-11. (Optional) For **Number of Concurrent Threads**, enter the number of worker threads to use for the sync. The default is 10. You can set this to any value between 2 and 100. Higher values increase throughput but also increase API usage. The effective upper bound depends on your Stripe account's rate limits.
+11. (Optional) For **Number of Concurrent Threads**, enter the number of worker threads to use for the sync. The default is 10, or 4 if the key starts with `sk_test_`. You can set this to any value between 2 and 100. Higher values increase throughput but also increase API usage. The effective upper bound depends on your Stripe account's rate limits.
 
-12. (Optional) For **Max Number of API Calls per Second**, enter the maximum number of API requests per second the connector is allowed to make. If not specified, the connector defaults to 25 calls per second for test and sandbox API keys and 100 calls per second for live API keys. This value cannot exceed Stripe's actual [rate limits](https://stripe.com/docs/rate-limits).
+12. (Optional) For **Max Number of API Calls per Second**, enter the maximum number of API requests per second the connector is allowed to make. If not specified, the connector defaults to 25 calls per second when the key starts with `sk_test_`, and 100 calls per second for all other keys. Restricted sandbox keys start with `rk_test_`, so they get the 100 calls per second default even though Stripe limits sandbox accounts to 25 requests per second. If you use a restricted sandbox key, set this to 25 or lower. This value can't exceed Stripe's actual [rate limits](https://stripe.com/docs/rate-limits).
 
 13. Click **Set up source** and wait for the tests to complete.
 
@@ -93,6 +93,9 @@ The Stripe source connector supports the following streams:
 - [Authorizations](https://stripe.com/docs/api/issuing/authorizations/list) \(Incremental\)
 - [Balance Transactions](https://stripe.com/docs/api/balance_transactions/list) \(Incremental\)
 - [Bank accounts](https://stripe.com/docs/api/customer_bank_accounts/list) \(Incremental\)
+  :::note
+  Full refresh syncs, including the first sync of this stream, read bank accounts from the `sources` list embedded in each customer object. The connector requests customers in 30-day slices of their creation date. This slice size is fixed and doesn't follow the **Data Request Window** setting. When a customer has more sources than Stripe embeds, the connector requests the rest from `/v1/customers/{customer_id}/bank_accounts`. Sources that aren't bank accounts, such as cards, are filtered out. The connector saves this stream's state only after all slices finish. Unlike most streams, this stream fails the sync on `400 Bad Request` responses instead of skipping them. For details, see [HTTP errors the connector skips](#http-errors-the-connector-skips).
+  :::
 - [Cardholders](https://stripe.com/docs/api/issuing/cardholders/list) \(Incremental\)
 - [Cards](https://stripe.com/docs/api/issuing/cards/list) \(Incremental\)
 - [Charges](https://stripe.com/docs/api/charges/list) \(Incremental\)
@@ -104,6 +107,15 @@ The Stripe source connector supports the following streams:
 - [Coupons](https://stripe.com/docs/api/coupons/list) \(Incremental\)
 - [Credit Notes](https://stripe.com/docs/api/credit_notes/list) \(Incremental\)
 - [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list) \(Incremental\)
+  :::note
+  Stripe lists balance transactions per customer, so the connector requests `/v1/customers/{customer_id}/balance_transactions` for each customer it finds. It finds customers in two ways: from `customer.updated` and `customer.deleted` events since the last sync, and by listing customers in 7-day slices of their creation date, starting from **Replication Start Date** on the first sync. The connector saves state after each slice, so an interrupted or retried backfill resumes from the last completed slice instead of skipping the customers it hadn't reached.
+
+  The API key needs **Read** access to customers, events, and customer balance transactions. Unlike most streams, this stream fails the sync on `400` and `403` responses instead of skipping them. For details, see [HTTP errors the connector skips](#http-errors-the-connector-skips).
+
+  In incremental syncs, a customer that's both created and updated between two syncs can be found by both methods, so its balance transactions can be emitted twice. Deduplicating destinations keep one copy.
+
+  If you roll back to a version earlier than 7.0.6 while this stream's state points to a customer creation date more than 30 days in the past, such as during a backfill, the earlier version reads only recent events and ends the backfill without reading the remaining customers. After such a rollback, [refresh](/platform/operator-guides/refreshes) this stream.
+  :::
 - [Customers](https://stripe.com/docs/api/customers/list) \(Incremental\)
 - [Disputes](https://stripe.com/docs/api/disputes/list) \(Incremental\)
 - [Early Fraud Warnings](https://stripe.com/docs/api/radar/early_fraud_warnings/list) \(Incremental\)
@@ -168,9 +180,26 @@ Expand to see details about Stripe connector limitations and troubleshooting.
 
 #### Rate limiting
 
-The Stripe connector automatically manages API rate limits, including retries and backoff for HTTP 429 responses. Stripe enforces a limit of [25 requests per second for sandbox keys and 100 requests per second for live keys](https://stripe.com/docs/rate-limits). The connector respects these limits and adjusts its request rate accordingly.
+Stripe limits each account to 100 requests per second in live mode and 25 requests per second in sandbox mode, and limits the Files API to 20 read requests per second. For details, see Stripe's [Rate limits](https://stripe.com/docs/rate-limits) documentation.
 
-If you experience rate limiting, you can reduce the **Number of concurrent threads** setting in the connector configuration. The default is 10 for live keys and 4 for sandbox keys. You can also configure a **Max number of API calls per second** to set a stricter limit. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see rate limit issues that are not automatically retried successfully.
+The connector throttles its own requests to stay under these limits. Requests to the `Files` and `File Links` streams are limited to 20 calls per second. All other requests are limited by the **Max Number of API Calls per Second** setting. If Stripe still returns a `429 Too Many Requests` response, the connector retries the request with backoff.
+
+If you still see rate limiting, reduce **Number of Concurrent Threads** or set a lower **Max Number of API Calls per Second**. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see rate limit errors that aren't retried successfully.
+
+#### Network timeouts
+
+The connector fails a request if it can't open a connection to Stripe within 30 seconds or if Stripe sends no data for 80 seconds, then retries the request. It also uses TCP keepalive to detect connections that were dropped silently, for example by a NAT gateway. A sync that loses its connection fails and retries instead of hanging. If retries are exhausted, the sync fails with an error.
+
+#### HTTP errors the connector skips
+
+For most streams, the connector logs and skips any request that returns `400 Bad Request`, `403 Forbidden`, or `404 Not Found`, and the sync continues.
+
+- A `403` usually means the API key doesn't have **Read** permission for that resource.
+- A `404` is expected for some child requests during incremental syncs, such as `/v1/checkout/sessions/{session_id}/line_items`, and you can ignore the warning.
+- The `Bank accounts` full refresh is the exception. It skips `403` and `404` responses but fails the sync on `400`, so it can't silently miss a slice of customers.
+- `Customer Balance Transactions` skips only `404` responses and fails the sync on `400` and `403`, so a missing permission can't cause it to silently skip customers. If this stream fails with a `403`, grant the key **Read** access to customers, events, and customer balance transactions, or deselect the stream.
+
+Because skipped requests don't fail the sync, check the sync logs for these warnings if a stream has fewer records than you expect.
 
 :::warning
 **Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only. Use an Append sync mode to ensure historical data is retained.
@@ -321,7 +350,7 @@ The Stripe API also provides a way to implement incremental deletes for a limite
 
 Each record is marked with `is_deleted` flag when the appropriate event happens upstream.
 
-- Check out common troubleshooting issues for the Stripe source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+For common troubleshooting issues with the Stripe source connector, see [GitHub Discussions](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
@@ -336,12 +365,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 7.0.6 | 2026-11-03 | [90261](https://github.com/airbytehq/airbyte/pull/90261) | Make interrupted `customer_balance_transactions` backfills resumable; fail on 400/403 for that stream instead of silently skipping customers |
-| 7.0.5 | 2026-11-01 | [90396](https://github.com/airbytehq/airbyte/pull/90396) | Simplify HTTP error handling configuration with no change to which errors are skipped or fail the sync |
+| 7.0.6 | 2026-11-05 | [90261](https://github.com/airbytehq/airbyte/pull/90261) | Make interrupted `customer_balance_transactions` backfills resumable; fail on 400/403 for that stream instead of silently skipping customers |
+| 7.0.5 | 2026-11-04 | [90396](https://github.com/airbytehq/airbyte/pull/90396) | Simplify HTTP error handling configuration with no change to which errors are skipped or fail the sync |
 | 7.0.4 | 2026-11-03 | [90764](https://github.com/airbytehq/airbyte/pull/90764) | Update dependencies |
-| 7.0.3 | 2026-10-20 | [89581](https://github.com/airbytehq/airbyte/pull/89581) | Read `bank_accounts` full refreshes from 30-day `customers` slices instead of one partition per customer, and fail on HTTP 400 instead of silently skipping a slice |
+| 7.0.3 | 2026-10-28 | [89581](https://github.com/airbytehq/airbyte/pull/89581) | Read `bank_accounts` full refreshes from 30-day `customers` slices instead of one partition per customer, and fail on HTTP 400 instead of silently skipping a slice |
 | 7.0.2 | 2026-10-20 | [89447](https://github.com/airbytehq/airbyte/pull/89447) | Update dependencies |
-| 7.0.1 | 2026-10-13 | [88397](https://github.com/airbytehq/airbyte/pull/88397) | Opt in to TCP keepalive and request timeouts (30 s connect, 80 s read) so dropped connections fail and retry instead of hanging |
+| 7.0.1 | 2026-10-15 | [88397](https://github.com/airbytehq/airbyte/pull/88397) | Opt in to TCP keepalive and request timeouts (30 s connect, 80 s read) so dropped connections fail and retry instead of hanging |
 | 7.0.0 | 2026-10-13 | [87765](https://github.com/airbytehq/airbyte/pull/87765) | Use Stripe's current `il_` line item IDs for `invoice_line_items` on incremental syncs. See the [migration guide](https://docs.airbyte.com/integrations/sources/stripe-migrations#upgrading-to-700). |
 | 6.0.23 | 2026-10-13 | [88809](https://github.com/airbytehq/airbyte/pull/88809) | Update dependencies |
 | 6.0.22 | 2026-10-06 | [88070](https://github.com/airbytehq/airbyte/pull/88070) | Update dependencies |
