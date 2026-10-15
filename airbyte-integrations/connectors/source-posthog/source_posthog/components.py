@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
-from airbyte_cdk.sources.declarative.incremental import Cursor
+from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
@@ -13,9 +13,11 @@ from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamSta
 
 @dataclass
 class EventsSimpleRetriever(SimpleRetriever):
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
-        self.cursor = self.stream_slicer if isinstance(self.stream_slicer, Cursor) else None
+        self.cursor = self.stream_slicer if isinstance(self.stream_slicer, DeclarativeCursor) else None
 
     def request_params(
         self,
@@ -56,7 +58,7 @@ class EventsSimpleRetriever(SimpleRetriever):
 
 
 @dataclass
-class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
+class EventsCartesianProductStreamSlicer(DeclarativeCursor, CartesianProductStreamSlicer):
     """Connector requires support of nested state - each project should have own timestamp value, like:
     {
         "project_id1": {
@@ -74,12 +76,17 @@ class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
     Slicer also produces separate datetime slices for each project
     """
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        self._cursor = {}
+    parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._cursor: StreamState = {}
         self._parameters = parameters
 
     def get_stream_state(self) -> Mapping[str, Any]:
         return self._cursor or {}
+
+    def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
+        return self.get_stream_state()
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         self._cursor = stream_state
@@ -91,6 +98,10 @@ class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
             new_cursor_value = most_recent_record.get("timestamp", "")
 
             self._cursor[project_id] = {"timestamp": max(current_cursor_value, new_cursor_value)}
+
+    @staticmethod
+    def _as_mapping(stream_slice: StreamSlice) -> MutableMapping[str, Any]:
+        return dict(stream_slice)
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         """Since each project has its own state, then we need to have a separate
@@ -112,7 +123,7 @@ class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
 
             # Each project should have own datetime slices depends on its state
             datetime_slicer.set_initial_state(project_state)
-            project_datetime_slices = datetime_slicer.stream_slices()
+            project_datetime_slices = [self._as_mapping(datetime_slice) for datetime_slice in datetime_slicer.stream_slices()]
 
             # fix date ranges: start_time of next slice must be equal to end_time of previous slice
             if project_datetime_slices and project_state:
