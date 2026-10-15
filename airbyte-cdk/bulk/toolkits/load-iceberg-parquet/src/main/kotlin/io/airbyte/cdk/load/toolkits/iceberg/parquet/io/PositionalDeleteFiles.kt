@@ -38,12 +38,30 @@ class PositionalDeleteFiles(
     private fun writeOrdered(
         locations: Sequence<PositionalDeleteResolver.RowLocation>,
     ): List<DeleteFile> {
-        val writers = mutableMapOf<String, WriterState>()
+        // Locations arrive path-sorted, so at most one writer stays open at a time: a new path
+        // closes and collects the previous writer's result.
+        val output = mutableListOf<DeleteFile>()
+        var open: WriterState? = null
+        fun closeOpen() {
+            open?.let { state ->
+                state.writer.close()
+                state.writer.result().deleteFiles().forEach { deleteFile ->
+                    output +=
+                        FileMetadata.deleteFileBuilder(state.spec)
+                            .copy(deleteFile)
+                            .withReferencedDataFile(state.dataFilePath)
+                            .build()
+                }
+                open = null
+            }
+        }
         try {
             locations.forEach { location ->
                 val key = location.path.toString()
-                val writer =
-                    writers.getOrPut(key) {
+                var writer = open
+                if (writer == null || writer.dataFilePath != key) {
+                    closeOpen()
+                    writer =
                         WriterState(
                             writerFactory.newPositionDeleteWriter(
                                 newOutputFile(location),
@@ -53,33 +71,21 @@ class PositionalDeleteFiles(
                             location.spec,
                             key,
                         )
-                    }
-                check(
-                    writer.lastPath == null ||
-                        location.path.toString() > writer.lastPath!! ||
-                        (location.path.toString() == writer.lastPath &&
-                            location.position >= writer.lastPosition),
-                ) {
+                    open = writer
+                }
+                check(location.position >= writer.lastPosition) {
                     "Positional delete locations must be ordered by path then position"
                 }
                 val delete = PositionDelete.create<Record>()
                 delete.set(location.path, location.position)
                 writer.writer.referencedDataFiles().add(location.path.toString())
                 writer.writer.write(delete)
-                writer.lastPath = location.path.toString()
                 writer.lastPosition = location.position
             }
         } finally {
-            writers.values.forEach { it.writer.close() }
+            closeOpen()
         }
-        return writers.values.flatMap { state ->
-            state.writer.result().deleteFiles().map { deleteFile ->
-                FileMetadata.deleteFileBuilder(state.spec)
-                    .copy(deleteFile)
-                    .withReferencedDataFile(state.dataFilePath)
-                    .build()
-            }
-        }
+        return output
     }
 
     /**
@@ -97,7 +103,6 @@ class PositionalDeleteFiles(
         val writer: PositionDeleteWriter<Record>,
         val spec: PartitionSpec,
         val dataFilePath: String,
-        var lastPath: String? = null,
         var lastPosition: Long = Long.MIN_VALUE,
     )
 }

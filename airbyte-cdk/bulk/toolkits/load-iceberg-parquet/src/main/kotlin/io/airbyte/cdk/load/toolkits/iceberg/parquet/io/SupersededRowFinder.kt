@@ -14,6 +14,7 @@ import org.apache.iceberg.Schema
 import org.apache.iceberg.StructLike
 import org.apache.iceberg.Table
 import org.apache.iceberg.data.GenericRecord
+import org.apache.iceberg.data.InternalRecordWrapper
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.data.parquet.GenericParquetReaders
 import org.apache.iceberg.deletes.Deletes
@@ -26,6 +27,7 @@ import org.apache.iceberg.parquet.Parquet
 import org.apache.iceberg.types.Comparators
 import org.apache.iceberg.types.Conversions
 import org.apache.iceberg.types.TypeUtil
+import org.apache.iceberg.util.ContentFileUtil
 
 /** Physical locations of every committed row whose identifier appears in [keys]. */
 class SupersededRowFinder(
@@ -41,6 +43,7 @@ class SupersededRowFinder(
     private val identifierSchema = TypeUtil.select(schema, identifierFieldIds)
     private val identifierFields = identifierSchema.columns()
     private val leadingField = identifierFields.first()
+    private val keyWrapper = InternalRecordWrapper(identifierSchema.asStruct())
 
     val dataFilesOpened: Int
         get() = state.dataFilesOpened.get()
@@ -51,13 +54,24 @@ class SupersededRowFinder(
     val fullySupersededDataFiles: Set<DataFile>
         get() = state.fullySupersededDataFiles
 
-    fun find(keys: TouchedKeys, ref: String): Sequence<PositionalDeleteResolver.RowLocation> {
+    fun find(
+        keys: TouchedKeys,
+        ref: String,
+        snapshotId: Long? = null,
+    ): Sequence<PositionalDeleteResolver.RowLocation> {
         if (keys.isEmpty()) return emptySequence()
         val touched = keys.keys()
+        // A flush whose keys were all resolved by same-flush supersession has nothing to find
+        // in committed files.
+        if (touched.isEmpty()) return emptySequence()
         val expression = rowGroupExpression(touched)
         val bounds = touchedBounds(touched)
         val plannedFiles =
-            table.newScan().useRef(ref).filter(expression).planFiles().use { tasks ->
+            table.newScan()
+                .let { if (snapshotId != null) it.useSnapshot(snapshotId) else it.useRef(ref) }
+                .filter(expression)
+                .planFiles()
+                .use { tasks ->
                 tasks
                     .asSequence()
                     .map { task ->
@@ -129,7 +143,7 @@ class SupersededRowFinder(
                     val position =
                         (record.getField(MetadataColumns.ROW_POSITION.name()) as Number).toLong()
                     if (
-                        touched.contains(keyFrom(record)) &&
+                        touched.contains(keyWrapper.wrap(keyFrom(record))) &&
                             (positionIndex == null || !positionIndex.isDeleted(position))
                     ) {
                         val location =
@@ -165,18 +179,26 @@ class SupersededRowFinder(
         if (positionDeletes.isEmpty()) return null
         val indexes =
             positionDeletes.mapNotNull { deleteFile ->
+                // Several DVs can live in one Puffin file, so the cache key must also carry the
+                // referenced data file.
                 val deletePath = deleteFile.location()
-                if (state.unreadablePositionDeleteFiles.contains(deletePath)) {
+                val cacheKey =
+                    if (ContentFileUtil.isDV(deleteFile)) {
+                        "$deletePath#${deleteFile.contentOffset()}:${deleteFile.referencedDataFile()}"
+                    } else {
+                        deletePath.toString()
+                    }
+                if (state.unreadablePositionDeleteFiles.contains(cacheKey)) {
                     return@mapNotNull null
                 }
                 val indexesByDataFile =
-                    state.positionDeleteIndexes[deletePath]
+                    state.positionDeleteIndexes[cacheKey]
                         ?: try {
                             readPositionDeleteIndexes(deleteFile).also {
-                                state.positionDeleteIndexes[deletePath] = it
+                                state.positionDeleteIndexes[cacheKey] = it
                             }
                         } catch (e: Exception) {
-                            state.unreadablePositionDeleteFiles.add(deletePath)
+                            state.unreadablePositionDeleteFiles.add(cacheKey)
                             logger.warn(e) {
                                 "Unable to load prior position deletes from $deletePath; " +
                                     "position suppression is disabled for data file " +
@@ -197,6 +219,13 @@ class SupersededRowFinder(
         deleteFile: DeleteFile,
     ): Map<String, PositionDeleteIndex> {
         state.positionDeleteFilesRead.incrementAndGet()
+        if (ContentFileUtil.isDV(deleteFile)) {
+            val index = loadDeletionVectorIndex(table.io(), deleteFile)
+            val dataFilePath =
+                deleteFile.referencedDataFile()?.toString()
+                    ?: error("Deletion vector ${deleteFile.location()} has no referenced data file")
+            return mapOf(dataFilePath to index)
+        }
         val deleteSchema = DeleteSchemaUtil.pathPosSchema()
         return Parquet.read(table.io().newInputFile(deleteFile.location()))
             .project(deleteSchema)

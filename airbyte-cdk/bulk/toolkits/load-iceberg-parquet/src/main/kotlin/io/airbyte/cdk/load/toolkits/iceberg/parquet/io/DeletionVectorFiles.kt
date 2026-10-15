@@ -13,6 +13,7 @@ import org.apache.iceberg.deletes.BaseDVFileWriter
 import org.apache.iceberg.deletes.Deletes
 import org.apache.iceberg.deletes.PositionDeleteIndex
 import org.apache.iceberg.io.CloseableIterable
+import org.apache.iceberg.io.FileIO
 import org.apache.iceberg.io.OutputFileFactory
 import org.apache.iceberg.puffin.Puffin
 import org.apache.iceberg.util.ContentFileUtil
@@ -92,24 +93,28 @@ class DeletionVectorFiles(
                         ContentFileUtil.isDV(deleteFile) &&
                         deleteFile.referencedDataFile() != null
                 }
-                .associate { it.referencedDataFile().toString() to it }
+                .associate { it.referencedDataFile() to it }
         }
 
-    private fun loadDvIndex(dv: DeleteFile): PositionDeleteIndex {
-        val input = table.io().newInputFile(dv.location())
-        Puffin.read(input).withFileSize(dv.fileSizeInBytes()).build().use { reader ->
-            val blobs =
-                reader
-                    .fileMetadata()
-                    .blobs()
-                    .filter { it.offset() == dv.contentOffset() }
-                    .toList()
-            val blobData =
-                reader.readAll(blobs).singleOrNull()?.second()
-                    ?: error("No deletion-vector blob found in ${dv.location()}")
-            val bytes = ByteArray(blobData.remaining())
-            blobData.get(bytes)
-            return PositionDeleteIndex.deserialize(bytes, dv)
-        }
+    private fun loadDvIndex(dv: DeleteFile): PositionDeleteIndex =
+        loadDeletionVectorIndex(table.io(), dv)
+}
+
+/** Reads the deletion-vector index for one file-scoped DV from its Puffin blob. */
+internal fun loadDeletionVectorIndex(io: FileIO, dv: DeleteFile): PositionDeleteIndex {
+    val input = io.newInputFile(dv.location())
+    Puffin.read(input).withFileSize(dv.fileSizeInBytes()).build().use { reader ->
+        val blobs =
+            reader
+                .fileMetadata()
+                .blobs()
+                .filter { it.offset() == dv.contentOffset() }
+                .toList()
+        val blobData =
+            reader.readAll(blobs).singleOrNull()?.second()
+                ?: error("No deletion-vector blob found in ${dv.location()}")
+        val bytes = ByteArray(blobData.remaining())
+        blobData.get(bytes)
+        return PositionDeleteIndex.deserialize(bytes, dv)
     }
 }

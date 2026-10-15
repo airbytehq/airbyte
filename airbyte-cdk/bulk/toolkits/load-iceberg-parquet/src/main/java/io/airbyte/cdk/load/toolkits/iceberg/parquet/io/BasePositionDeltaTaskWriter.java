@@ -99,9 +99,6 @@ public abstract class BasePositionDeltaTaskWriter
       touchedKeys.markDeleted(key);
       touchedKeys.markWritten(key, writer.writeAndGetLocation(row));
     }
-    if (touchedKeys.isFull()) {
-      resolvePending();
-    }
   }
 
   private Operation getOperation(final Record row) {
