@@ -52,9 +52,12 @@ test-unit-tests = "${POE_GIT_ROOT}/gradlew test"
 test-integration-tests.shell = '''
 set -eu # Ensure we return non-zero exit code upon failure
 
+# Shell tasks do not get ${POE_GIT_ROOT} substituted (cmd tasks do), so resolve the repo root here.
+repo_root="$(git rev-parse --show-toplevel)"
+
 if [ -d src/test-integration ]; then
   echo "Found 'src/test-integration' directory, running integration tests..."
-  "${POE_GIT_ROOT}/gradlew" integrationTestJava
+  "${repo_root}/gradlew" integrationTestJava
 else
   echo "No integration tests defined; skipping integration tests."
 fi
