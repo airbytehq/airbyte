@@ -4,6 +4,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStream
@@ -26,6 +27,10 @@ internal class CatalogParserTest {
     private lateinit var parser: CatalogParser
 
     @BeforeEach
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment"
+    )
     fun setup() {
         sqlGenerator = Mockito.mock(SqlGenerator::class.java)
         // noop quoting logic

@@ -3,6 +3,7 @@
  */
 package io.airbyte.cdk.integrations.base
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.util.ConnectorExceptionHandler
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage
@@ -24,6 +25,10 @@ class AirbyteExceptionHandlerTest {
     private lateinit var airbyteExceptionHandler: AirbyteExceptionHandler
 
     @BeforeEach
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment"
+    )
     fun setup() {
         System.setOut(PrintStream(outContent, true, StandardCharsets.UTF_8))
 

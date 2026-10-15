@@ -141,6 +141,10 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
         acquiredResources.getAndSet(null)?.forEach { it.value.close() }
     }
 
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment"
+    )
     override suspend fun run() {
         stateFilesAccessor.writeOffset(startingOffset)
         if (startingSchemaHistory != null) {

@@ -158,7 +158,7 @@ class JsonSchemaToAirbyteType(
         }
         val propertiesMapped =
             properties
-                .fields()
+                .properties()
                 .asSequence()
                 .map { (name, node) -> name to nodeToFieldType(node) }
                 .toMap(LinkedHashMap())
