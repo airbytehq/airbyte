@@ -432,6 +432,9 @@ class DynamoDbPartitionReaderTest {
                 concurrencyResource,
                 ResourceAcquirer(listOf(concurrencyResource)),
                 scanPageLimit = 100,
+                segmentTargetBytes = DynamoDbSharedState.DEFAULT_SEGMENT_TARGET_BYTES,
+                maxSegments = DynamoDbSharedState.DEFAULT_MAX_SEGMENTS,
+                featureFlags = emptySet(),
             )
         val output = BufferingOutputConsumer(Clock.systemUTC())
         val stateManager = StateManager(initialStreamStates = mapOf(stream to initialState))
