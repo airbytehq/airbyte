@@ -35,6 +35,9 @@ definitions:
     authenticator:
       $ref: "#/definitions/bearer_authenticator"
     http_method: GET
+    use_tcp_keepalive: true
+    connect_timeout_in_seconds: 30
+    read_timeout_in_seconds: 80
     request_headers:
       Stripe-Version: "2022-11-15"
       Stripe-Account: '{{ config.get("account_id") }}'
