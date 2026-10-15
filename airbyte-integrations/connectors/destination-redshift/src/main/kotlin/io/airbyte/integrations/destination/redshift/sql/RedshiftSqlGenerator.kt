@@ -31,9 +31,22 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
 
         private val EXTRACTED_AT_COLUMN_NAME = quoteIdentifier(COLUMN_NAME_AB_EXTRACTED_AT)
         private val DELETED_AT_COLUMN_NAME = quoteIdentifier(CDC_DELETED_AT_COLUMN)
+        private val NUMERIC_OR_BOOLEAN_TYPES =
+            setOf("smallint", "integer", "bigint", "real", "double precision", "boolean")
+        private val DATETIME_TYPES = setOf("date", "time", "timetz", "timestamp", "timestamptz")
 
         internal fun quoteIdentifier(identifier: String): String =
             RedshiftSqlEscapeUtils.quoteIdentifier(identifier)
+
+        private fun isNumericOrBoolean(type: String) =
+            type in NUMERIC_OR_BOOLEAN_TYPES ||
+                type.startsWith("decimal") ||
+                type.startsWith("numeric")
+
+        /** Redshift has no cast between numeric/boolean types and date/time types. */
+        private fun isCastUnsupported(oldType: String, newType: String) =
+            (isNumericOrBoolean(oldType) && newType in DATETIME_TYPES) ||
+                (oldType in DATETIME_TYPES && isNumericOrBoolean(newType))
 
         /** Airbyte meta columns and their Redshift-specific types. */
         internal val META_COLUMNS =
@@ -459,6 +472,9 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
      * ```
      * 4. DROP the original column
      * 5. RENAME the temp column to the original name
+     *
+     * Incompatible numeric/boolean and date/time pairs are not copied and are recorded as
+     * `DESTINATION_TYPECAST_ERROR`.
      */
     private fun buildTypeChangeStatements(
         fullyQualifiedTableName: String,
@@ -473,6 +489,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
 
         val castExpression =
             when {
+                isCastUnsupported(oldType, newType) -> null
                 // SUPER -> VARCHAR: serialize JSON to string
                 oldType == RedshiftDataType.SUPER.typeName && newType.startsWith("varchar") ->
                     "JSON_SERIALIZE($quotedName)"
@@ -486,8 +503,10 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         return buildList {
             // Step 1: Add temp column with the new type
             add("ALTER TABLE $fullyQualifiedTableName ADD COLUMN $tempColumn $newType;")
-            // Step 2: Cast data from old column to temp column
-            add("UPDATE $fullyQualifiedTableName SET $tempColumn = $castExpression;")
+            // Step 2: Copy data when the type change supports a cast
+            if (castExpression != null) {
+                add("UPDATE $fullyQualifiedTableName SET $tempColumn = $castExpression;")
+            }
             // Step 3: Record DESTINATION_TYPECAST_ERROR in _airbyte_meta for rows where
             // the original value was non-null but the cast produced null.
             add(
