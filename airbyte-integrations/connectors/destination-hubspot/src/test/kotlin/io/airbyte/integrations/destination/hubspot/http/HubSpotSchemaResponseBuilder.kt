@@ -50,6 +50,26 @@ class HubSpotSchemaResponseBuilder {
     }
 }
 
+/**
+ * Builder for HubSpot Properties API responses (GET /crm/v3/properties/{objectType}). Properties
+ * API returns properties under a "results" array instead of "properties".
+ */
+class HubSpotPropertiesApiResponseBuilder {
+    private val response = Jsons.objectNode()
+    private val results = response.putArray("results")
+
+    fun withProperty(
+        property: HubSpotPropertySchemaBuilder,
+    ): HubSpotPropertiesApiResponseBuilder {
+        results.add(property.build())
+        return this
+    }
+
+    fun build(): InputStream {
+        return ObjectMapper().writeValueAsString(response).byteInputStream()
+    }
+}
+
 class HubSpotPropertySchemaBuilder {
     private val node = Jsons.objectNode().apply { this.putObject("modificationMetadata") }
 
@@ -74,6 +94,11 @@ class HubSpotPropertySchemaBuilder {
 
     fun withReadOnlyValue(readOnlyValue: Boolean): HubSpotPropertySchemaBuilder {
         (node.get("modificationMetadata") as ObjectNode).put("readOnlyValue", readOnlyValue)
+        return this
+    }
+
+    fun withHasUniqueValue(hasUniqueValue: Boolean): HubSpotPropertySchemaBuilder {
+        node.put("hasUniqueValue", hasUniqueValue)
         return this
     }
 
