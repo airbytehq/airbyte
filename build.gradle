@@ -226,6 +226,8 @@ allprojects {
         // Spotbugs dependencies.
         def vSpotbugs = "4.8.3"
         implementation "com.github.spotbugs:spotbugs-annotations:${vSpotbugs}"
+        // KGP >= 2.0.10 (KT-68278): testFixtures no longer inherits main's implementation deps.
+        testFixturesImplementation "com.github.spotbugs:spotbugs-annotations:${vSpotbugs}"
     }
 
     tasks.withType(SpotBugsTask).configureEach {
