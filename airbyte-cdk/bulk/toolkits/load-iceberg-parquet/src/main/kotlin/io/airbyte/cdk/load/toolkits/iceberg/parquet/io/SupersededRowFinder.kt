@@ -67,25 +67,26 @@ class SupersededRowFinder(
         val expression = rowGroupExpression(touched)
         val bounds = touchedBounds(touched)
         val plannedFiles =
-            table.newScan()
+            table
+                .newScan()
                 .let { if (snapshotId != null) it.useSnapshot(snapshotId) else it.useRef(ref) }
                 .filter(expression)
                 .planFiles()
                 .use { tasks ->
-                tasks
-                    .asSequence()
-                    .map { task ->
-                        PlannedDataFile(
-                            task.file(),
-                            table.specs()[task.file().specId()]
-                                ?: error("Unknown partition spec ${task.file().specId()}"),
-                            task.partition(),
-                            task.deletes().toList(),
-                        )
-                    }
-                    .filter { mayContainAnyKey(it.file, bounds) }
-                    .toList()
-            }
+                    tasks
+                        .asSequence()
+                        .map { task ->
+                            PlannedDataFile(
+                                task.file(),
+                                table.specs()[task.file().specId()]
+                                    ?: error("Unknown partition spec ${task.file().specId()}"),
+                                task.partition(),
+                                task.deletes().toList(),
+                            )
+                        }
+                        .filter { mayContainAnyKey(it.file, bounds) }
+                        .toList()
+                }
         val legacyEqualityDeleteCount =
             plannedFiles
                 .flatMap { it.deletes }
@@ -186,7 +187,7 @@ class SupersededRowFinder(
                     if (ContentFileUtil.isDV(deleteFile)) {
                         "$deletePath#${deleteFile.contentOffset()}:${deleteFile.referencedDataFile()}"
                     } else {
-                        deletePath.toString()
+                        deletePath
                     }
                 if (state.unreadablePositionDeleteFiles.contains(cacheKey)) {
                     return@mapNotNull null
@@ -222,7 +223,7 @@ class SupersededRowFinder(
         if (ContentFileUtil.isDV(deleteFile)) {
             val index = loadDeletionVectorIndex(table.io(), deleteFile)
             val dataFilePath =
-                deleteFile.referencedDataFile()?.toString()
+                deleteFile.referencedDataFile()
                     ?: error("Deletion vector ${deleteFile.location()} has no referenced data file")
             return mapOf(dataFilePath to index)
         }

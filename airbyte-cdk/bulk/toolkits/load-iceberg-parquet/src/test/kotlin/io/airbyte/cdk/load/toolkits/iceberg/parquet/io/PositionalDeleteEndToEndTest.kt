@@ -374,9 +374,14 @@ class PositionalDeleteEndToEndTest {
             writer.write(RecordWrapper(record(schema, "a", "new-a-$flush"), Operation.UPDATE))
             val result = writer.complete()
             assertThat(result.deleteFiles()).hasSize(flush + 1)
-            IcebergTableCommitter.commit(table, "staging", result, planned, emptySet(),
-            resolvesDeletes = true,
-        )
+            IcebergTableCommitter.commit(
+                table,
+                "staging",
+                result,
+                planned,
+                emptySet(),
+                resolvesDeletes = true,
+            )
         }
         assertThat(state.positionDeleteFilesRead.get()).isZero()
 
@@ -718,8 +723,8 @@ class PositionalDeleteEndToEndTest {
                     result,
                     planned,
                     supersededDataFiles(writer),
-            resolvesDeletes = true,
-        )
+                    resolvesDeletes = true,
+                )
             }
             .isInstanceOfAny(CommitFailedException::class.java, ValidationException::class.java)
         assertThat(table.refs()["staging"]!!.snapshotId()).isEqualTo(snapshotAfterConcurrentRewrite)
@@ -1132,8 +1137,7 @@ class PositionalDeleteEndToEndTest {
             IcebergGenerics.read(table).build().use { records ->
                 records.map { it.getField("id") to it.getField("name") }.toSet()
             }
-        assertThat(rows)
-            .containsExactlyInAnyOrder("9" to "unrelated", "1" to "second")
+        assertThat(rows).containsExactlyInAnyOrder("9" to "unrelated", "1" to "second")
         warehouse.toFile().deleteRecursively()
     }
 
@@ -1168,8 +1172,7 @@ class PositionalDeleteEndToEndTest {
                 )
                 .create()
         val writerFactory = IcebergTableWriterFactory()
-        val initialWriter =
-            writerFactory.create(table, "ab-generation-id-0-e", Append, tsSchema)
+        val initialWriter = writerFactory.create(table, "ab-generation-id-0-e", Append, tsSchema)
         initialWriter.write(tsRecord(ts1, "one"))
         initialWriter.write(tsRecord(ts2, "two"))
         val initialResult = initialWriter.complete()

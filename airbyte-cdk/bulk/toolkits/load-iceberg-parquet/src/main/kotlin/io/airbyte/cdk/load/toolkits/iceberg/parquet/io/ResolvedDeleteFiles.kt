@@ -20,9 +20,8 @@ interface ResolvedDeleteFiles {
     fun finish(): List<DeleteFile> = emptyList()
 
     /**
-     * Existing delete files the written deletes replace. Deletion vectors merge a data file's
-     * prior DV, so the commit must remove the replaced file in the same
-     * [org.apache.iceberg.RowDelta].
+     * Existing delete files the written deletes replace. Deletion vectors merge a data file's prior
+     * DV, so the commit must remove the replaced file in the same [org.apache.iceberg.RowDelta].
      */
     fun rewrittenDeleteFiles(): List<DeleteFile> = emptyList()
 }

@@ -19,7 +19,6 @@ import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.data.IcebergGenerics
-import org.apache.iceberg.data.Record
 import org.apache.iceberg.hadoop.HadoopCatalog
 import org.apache.iceberg.types.Types
 import org.assertj.core.api.Assertions.assertThat
@@ -48,20 +47,13 @@ class DeletionVectorEndToEndTest {
         return HadoopCatalog(Configuration(), warehouse.toString()) to warehouse
     }
 
-    private fun createTable(
-        catalog: HadoopCatalog,
-        tableId: TableIdentifier,
-        version: Int
-    ): Table {
+    private fun createTable(catalog: HadoopCatalog, tableId: TableIdentifier, version: Int): Table {
         if (!catalog.namespaceExists(tableId.namespace())) {
             catalog.createNamespace(tableId.namespace())
         }
         return catalog
             .buildTable(tableId, schema)
-            .withProperty(
-                TableProperties.DEFAULT_FILE_FORMAT,
-                FileFormat.PARQUET.name.lowercase()
-            )
+            .withProperty(TableProperties.DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
             .withProperty(TableProperties.FORMAT_VERSION, version.toString())
             .create()
     }
@@ -137,10 +129,8 @@ class DeletionVectorEndToEndTest {
         assertThat(deletes).isNotEmpty
         assertThat(deletes).allMatch { it.format() == FileFormat.PUFFIN }
         assertThat(deletes).allMatch { it.referencedDataFile() != null }
-        assertThat(deletes.map { it.referencedDataFile() })
-            .doesNotHaveDuplicates()
-        assertThat(rows(table))
-            .containsExactlyInAnyOrder("1" to "one-updated", "3" to "three")
+        assertThat(deletes.map { it.referencedDataFile() }).doesNotHaveDuplicates()
+        assertThat(rows(table)).containsExactlyInAnyOrder("1" to "one-updated", "3" to "three")
 
         // Sync 2: another update plus another delete on the same data file, so the
         // existing DV must be merged and replaced rather than duplicated.
@@ -174,8 +164,7 @@ class DeletionVectorEndToEndTest {
 
         // Produce a legacy equality delete through the standard dedupe writer.
         val equalityWriter =
-            IcebergTableWriterFactory()
-                .create(table, "ab-generation-id-1-e", dedupe, schema)
+            IcebergTableWriterFactory().create(table, "ab-generation-id-1-e", dedupe, schema)
         equalityWriter.write(RecordWrapper(record("2", "ignored"), Operation.DELETE))
         equalityWriter.write(RecordWrapper(record("3", "three"), Operation.UPDATE))
         val result = equalityWriter.complete()
@@ -183,8 +172,7 @@ class DeletionVectorEndToEndTest {
         result.dataFiles().forEach { delta.addRows(it) }
         result.deleteFiles().forEach { delta.addDeletes(it) }
         delta.commit()
-        assertThat(deleteFiles(table).map { it.content() })
-            .contains(FileContent.EQUALITY_DELETES)
+        assertThat(deleteFiles(table).map { it.content() }).contains(FileContent.EQUALITY_DELETES)
         val preUpgradeRows = rows(table)
 
         val upgraded = IcebergTableUpgrader.upgradeToV3(catalog, tableId, backup = false)
@@ -218,8 +206,7 @@ class DeletionVectorEndToEndTest {
         positional.write(RecordWrapper(record("2", "ignored"), Operation.DELETE))
         positional.write(RecordWrapper(record("3", "three"), Operation.UPDATE))
         commitWriter(table, positional)
-        assertThat(deleteFiles(table).map { it.content() })
-            .contains(FileContent.POSITION_DELETES)
+        assertThat(deleteFiles(table).map { it.content() }).contains(FileContent.POSITION_DELETES)
         val preUpgradeRows = rows(table)
 
         val upgraded = IcebergTableUpgrader.upgradeToV3(catalog, tableId, backup = false)
@@ -237,8 +224,7 @@ class DeletionVectorEndToEndTest {
         val table = createTable(catalog, tableId, 2)
         seed(catalog, table, listOf("1" to "one", "2" to "two"))
         val equalityWriter =
-            IcebergTableWriterFactory()
-                .create(table, "ab-generation-id-1-e", dedupe, schema)
+            IcebergTableWriterFactory().create(table, "ab-generation-id-1-e", dedupe, schema)
         equalityWriter.write(RecordWrapper(record("2", "ignored"), Operation.DELETE))
         val result = equalityWriter.complete()
         val delta = table.newRowDelta().toBranch("main")
@@ -268,8 +254,7 @@ class DeletionVectorEndToEndTest {
         val writerFactory = IcebergTableWriterFactory()
 
         // A legacy equality delete.
-        val equalityWriter =
-            writerFactory.create(table, "ab-generation-id-1-e", dedupe, schema)
+        val equalityWriter = writerFactory.create(table, "ab-generation-id-1-e", dedupe, schema)
         equalityWriter.write(RecordWrapper(record("2", "ignored"), Operation.DELETE))
         equalityWriter.write(RecordWrapper(record("4", "four"), Operation.UPDATE))
         val equalityResult = equalityWriter.complete()
@@ -318,8 +303,7 @@ class DeletionVectorEndToEndTest {
         // Commit a legacy equality delete to a non-default branch.
         table.manageSnapshots().createBranch("prod").commit()
         val equalityWriter =
-            IcebergTableWriterFactory()
-                .create(table, "ab-generation-id-1-e", dedupe, schema)
+            IcebergTableWriterFactory().create(table, "ab-generation-id-1-e", dedupe, schema)
         equalityWriter.write(RecordWrapper(record("2", "ignored"), Operation.DELETE))
         val result = equalityWriter.complete()
         val delta = table.newRowDelta().toBranch("prod")
@@ -328,14 +312,17 @@ class DeletionVectorEndToEndTest {
         table.refresh()
 
         val upgraded =
-            IcebergTableUpgrader.upgradeToV3(catalog, tableId, backup = false, branches = listOf("prod"))
+            IcebergTableUpgrader.upgradeToV3(
+                catalog,
+                tableId,
+                backup = false,
+                branches = listOf("prod")
+            )
 
         assertThat(tableFormatVersion(upgraded)).isEqualTo(3)
         val remaining =
             upgraded.newScan().useRef("prod").planFiles().use { tasks ->
-                tasks.flatMap { it.deletes() }.filter {
-                    it.format() != FileFormat.PUFFIN
-                }
+                tasks.flatMap { it.deletes() }.filter { it.format() != FileFormat.PUFFIN }
             }
         assertThat(remaining).isEmpty()
         val prodRows =
@@ -343,9 +330,7 @@ class DeletionVectorEndToEndTest {
                 .useSnapshot(upgraded.refs()["prod"]!!.snapshotId())
                 .build()
                 .use { records ->
-                    records.map {
-                        it.getField("id").toString() to it.getField("name").toString()
-                    }
+                    records.map { it.getField("id").toString() to it.getField("name").toString() }
                 }
         assertThat(prodRows).containsExactlyInAnyOrder("1" to "one")
     }
@@ -358,8 +343,7 @@ class DeletionVectorEndToEndTest {
         seed(catalog, table, listOf("1" to "one", "2" to "two"))
 
         val equalityWriter =
-            IcebergTableWriterFactory()
-                .create(table, "ab-generation-id-1-e", dedupe, schema)
+            IcebergTableWriterFactory().create(table, "ab-generation-id-1-e", dedupe, schema)
         equalityWriter.write(RecordWrapper(record("2", "ignored"), Operation.DELETE))
         val result = equalityWriter.complete()
         val delta = table.newRowDelta()
@@ -431,8 +415,7 @@ class DeletionVectorEndToEndTest {
 
         // A failed v2 sync left equality deletes on the staging branch.
         val equalityWriter =
-            IcebergTableWriterFactory()
-                .create(table, "ab-generation-id-1-e", dedupe, schema)
+            IcebergTableWriterFactory().create(table, "ab-generation-id-1-e", dedupe, schema)
         equalityWriter.write(RecordWrapper(record("2", "ignored"), Operation.DELETE))
         val result = equalityWriter.complete()
         val delta = table.newRowDelta().toBranch("staging")
@@ -453,9 +436,7 @@ class DeletionVectorEndToEndTest {
         listOf("main", "staging").forEach { branch ->
             val remaining =
                 upgraded.newScan().useRef(branch).planFiles().use { tasks ->
-                    tasks.flatMap { it.deletes() }.filter {
-                        it.format() != FileFormat.PUFFIN
-                    }
+                    tasks.flatMap { it.deletes() }.filter { it.format() != FileFormat.PUFFIN }
                 }
             assertThat(remaining).`as`("non-DV deletes on $branch").isEmpty()
             val branchRows =
@@ -501,16 +482,14 @@ class DeletionVectorEndToEndTest {
 
         // The equality delete only applies to partition "a".
         val equalityWriter =
-            IcebergTableWriterFactory()
-                .create(table, "ab-generation-id-1-e", dedupe, schema)
+            IcebergTableWriterFactory().create(table, "ab-generation-id-1-e", dedupe, schema)
         equalityWriter.write(RecordWrapper(record("1", "a"), Operation.DELETE))
         val result = equalityWriter.complete()
         val delta = table.newRowDelta()
         result.dataFiles().forEach { delta.addRows(it) }
         result.deleteFiles().forEach { delta.addDeletes(it) }
         delta.commit()
-        assertThat(deleteFiles(table).map { it.content() })
-            .contains(FileContent.EQUALITY_DELETES)
+        assertThat(deleteFiles(table).map { it.content() }).contains(FileContent.EQUALITY_DELETES)
 
         IcebergTableUpgrader.upgradeToV3(catalog, tableId, backup = false)
 
@@ -620,16 +599,14 @@ class DeletionVectorEndToEndTest {
         table.newAppend().apply { initialResult.dataFiles().forEach(::appendFile) }.commit()
 
         val equalityWriter =
-            IcebergTableWriterFactory()
-                .create(table, "ab-generation-id-1-e", tsDedupe, tsSchema)
+            IcebergTableWriterFactory().create(table, "ab-generation-id-1-e", tsDedupe, tsSchema)
         equalityWriter.write(RecordWrapper(tsRecord(ts1, "ignored"), Operation.DELETE))
         val result = equalityWriter.complete()
         val delta = table.newRowDelta()
         result.dataFiles().forEach { delta.addRows(it) }
         result.deleteFiles().forEach { delta.addDeletes(it) }
         delta.commit()
-        assertThat(deleteFiles(table).map { it.content() })
-            .contains(FileContent.EQUALITY_DELETES)
+        assertThat(deleteFiles(table).map { it.content() }).contains(FileContent.EQUALITY_DELETES)
 
         IcebergTableUpgrader.upgradeToV3(catalog, tableId, backup = false)
 
@@ -672,7 +649,6 @@ class DeletionVectorEndToEndTest {
         assertThat(state.positionDeleteFilesRead.get()).isGreaterThanOrEqualTo(1)
         assertThat(state.unreadablePositionDeleteFiles).isEmpty()
         assertThat(deleteFiles(table)).allMatch { it.format() == FileFormat.PUFFIN }
-        assertThat(rows(table))
-            .containsExactlyInAnyOrder("1" to "updated-1", "2" to "updated-2")
+        assertThat(rows(table)).containsExactlyInAnyOrder("1" to "updated-1", "2" to "updated-2")
     }
 }
