@@ -7,6 +7,7 @@ from collections import Counter
 from datetime import datetime, timedelta
 
 import pytest
+from conftest import base_config, get_source
 from freezegun import freeze_time
 
 from airbyte_cdk.models import SyncMode
@@ -14,7 +15,6 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
-from conftest import base_config, get_source
 
 
 _TOKEN_URL = "https://www.reddit.com/api/v1/access_token"

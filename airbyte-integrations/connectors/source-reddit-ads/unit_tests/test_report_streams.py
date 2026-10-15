@@ -4,14 +4,14 @@ import json
 from datetime import date, timedelta
 
 import pytest
+from conftest import base_config, get_source
 from freezegun import freeze_time
+from test_campaign_report import _FIELDS, _REPORT_URL, _hourly_report, _mock_token
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-from conftest import base_config, get_source
-from test_campaign_report import _FIELDS, _REPORT_URL, _hourly_report, _mock_token
 
 
 _PLACEHOLDER_ID = "a2_abc123"
