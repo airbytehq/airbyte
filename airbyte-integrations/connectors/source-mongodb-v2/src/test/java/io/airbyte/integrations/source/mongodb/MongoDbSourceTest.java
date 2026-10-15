@@ -245,7 +245,8 @@ class MongoDbSourceTest {
   }
 
   @Test
-  @SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION", justification = "null catalog and state on purpose to exercise the failure path")
+  @SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION",
+                      justification = "null catalog and state on purpose to exercise the failure path")
   void testReadClosesMongoClient() {
     final MongoClient mongoClient = mock(MongoClient.class);
     doReturn(mongoClient).when(source).createMongoClient(sourceConfig);
