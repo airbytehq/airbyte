@@ -322,6 +322,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.10.0 | 2026-10-15 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Upgrade to Python 3.13 and base image 4.1.1 |
 | 2.9.3 | 2026-10-07 | [88170](https://github.com/airbytehq/airbyte/pull/88170) | Surface the underlying request error and retry, instead of failing with an `AttributeError`, when a Salesforce request raises a non-HTTP error such as an invalid URL |
 | 2.9.2 | 2026-09-10 | [85166](https://github.com/airbytehq/airbyte/pull/85166) | Report a Salesforce field that no longer exists or is not accessible to the authenticated user as a configuration error naming the stream and field, instead of a system error containing the raw Salesforce response |
 | 2.9.1 | 2026-08-27 | [85057](https://github.com/airbytehq/airbyte/pull/85057) | Send PKCE `code_challenge`/`code_challenge_method=S256` on the consent URL and `code_verifier` on the token exchange, so OAuth works in orgs that require PKCE |
