@@ -172,6 +172,9 @@ def test_epics_milestone_dates_are_normalized(requests_mock):
                 "due_date_from_milestones": "2022-12-30T00:00:00+00:00",
                 "start_date_from_milestones": "2022-12-11T00:00:00+00:00",
                 "due_date": "2022-12-30",
+                "work_item_id": 146029705,
+                "imported": False,
+                "imported_from": "none",
             },
             {"iid": 2},
             {"iid": 3, "due_date_from_milestones": None},
@@ -186,6 +189,9 @@ def test_epics_milestone_dates_are_normalized(requests_mock):
     assert records[0]["due_date_from_milestones"] == "2022-12-30"
     assert records[0]["start_date_from_milestones"] == "2022-12-11"
     assert records[0]["due_date"] == "2022-12-30"
+    assert records[0]["work_item_id"] == 146029705
+    assert records[0]["imported"] is False
+    assert records[0]["imported_from"] == "none"
     assert "due_date_from_milestones" not in records[1]
     assert "start_date_from_milestones" not in records[1]
     assert records[2]["due_date_from_milestones"] is None
