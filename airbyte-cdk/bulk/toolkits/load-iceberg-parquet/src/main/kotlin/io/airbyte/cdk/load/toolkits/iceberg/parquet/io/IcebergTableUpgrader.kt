@@ -140,11 +140,7 @@ object IcebergTableUpgrader {
         // partition, and sequence-number semantics for every delete-file kind.
         val applicability: Map<String, Set<String>> =
             tasks
-                .flatMap { task ->
-                    task.deletes().map {
-                        it.location() to task.file().location()
-                    }
-                }
+                .flatMap { task -> task.deletes().map { it.location() to task.file().location() } }
                 .groupBy({ it.first }, { it.second })
                 .mapValues { it.value.toSet() }
         // (data file path) -> positions to delete, alongside the spec/partition of the data file.
