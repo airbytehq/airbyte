@@ -67,6 +67,7 @@ class S3DataLakeAggregate(
                         ?.rewrittenDeleteFiles()
                         ?.toSet()
                         .orEmpty(),
+                    resolvesDeletes = resolvedDeletesEnabled,
                 )
             } else if (writeResult.deleteFiles().isNotEmpty()) {
                 val delta = table.newRowDelta().toBranch(stagingBranchName)

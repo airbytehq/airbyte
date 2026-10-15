@@ -126,6 +126,23 @@ class S3DataLakeStreamLoader(
                 schema = incomingSchema,
                 formatVersion = targetFormatVersion,
             )
+        // Validate the configured delete mode against the version the table will have
+        // after reconciliation, so an invalid combination fails before the upgrade runs.
+        val actualVersion = tableFormatVersion(table)
+        val plannedVersion =
+            if (
+                tableExisted &&
+                    actualVersion == 2 &&
+                    targetFormatVersion == 3 &&
+                    icebergConfiguration.allowNonReversibleUpgrades != AllowNonReversibleUpgrades.NO
+            ) {
+                3
+            } else if (tableExisted) {
+                actualVersion
+            } else {
+                targetFormatVersion
+            }
+        val deleteMode = resolveDeleteMode(table, plannedVersion)
         val effectiveFormatVersion =
             reconcileFormatVersion(
                 table = table,
@@ -133,7 +150,10 @@ class S3DataLakeStreamLoader(
                 targetFormatVersion = targetFormatVersion,
                 catalog = catalog,
             )
-        val deleteMode = resolveDeleteMode(table, effectiveFormatVersion)
+        check(effectiveFormatVersion == plannedVersion) {
+            "Planned format v$plannedVersion but reconciliation produced " +
+                "v$effectiveFormatVersion for ${table.name()}."
+        }
         failOnNormalizationRenames(table.schema())
 
         // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema
@@ -220,7 +240,10 @@ class S3DataLakeStreamLoader(
                             catalog,
                             tableIdGenerator.toTableIdentifier(stream.mappedDescriptor),
                             backup = backup,
-                            branch = mainBranchName,
+                            // A retained staging branch can carry legacy deletes from a
+                            // failed v2 sync; migrate it in the same transaction so they
+                            // cannot come back on branch promotion.
+                            branches = listOf(mainBranchName, stagingBranchName),
                         )
                         table.refresh()
                         effectiveVersion = 3
@@ -246,7 +269,15 @@ class S3DataLakeStreamLoader(
             IcebergDeleteFileType.AUTOMATIC ->
                 if (effectiveVersion >= 3) IcebergDeleteMode.DELETION_VECTOR
                 else IcebergDeleteMode.EQUALITY
-            IcebergDeleteFileType.EQUALITY -> IcebergDeleteMode.EQUALITY
+            IcebergDeleteFileType.EQUALITY -> {
+                if (effectiveVersion >= 3) {
+                    throw ConfigErrorException(
+                        "iceberg_delete_file_type EQUALITY requires an Iceberg format v2 " +
+                            "table, but ${table.name()} is at format v$effectiveVersion.",
+                    )
+                }
+                IcebergDeleteMode.EQUALITY
+            }
             IcebergDeleteFileType.POSITIONAL -> {
                 if (effectiveVersion >= 3) {
                     throw ConfigErrorException(

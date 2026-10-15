@@ -72,6 +72,15 @@ data class S3DataLakeConfiguration(
             )
         }
         if (
+            icebergDeleteFileType == IcebergDeleteFileType.EQUALITY &&
+                tableFormatVersion == IcebergTableFormatVersion.V3
+        ) {
+            throw ConfigErrorException(
+                "EQUALITY delete files cannot be written to Iceberg format v3 tables. " +
+                    "Use DELETION_VECTOR or AUTOMATIC with table_format_version v3.",
+            )
+        }
+        if (
             icebergDeleteFileType == IcebergDeleteFileType.DELETION_VECTOR &&
                 tableFormatVersion == IcebergTableFormatVersion.V2
         ) {

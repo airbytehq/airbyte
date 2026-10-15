@@ -39,7 +39,6 @@ import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketConfigurati
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketRegion
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.mockk.every
-import io.mockk.impl.annotations.MockK
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
@@ -64,8 +63,8 @@ import org.junit.jupiter.api.io.TempDir
 
 internal class S3DataLakeDeleteModeResolutionTest {
 
-    @MockK(relaxed = true)
-    private lateinit var streamStateStore: StreamStateStore<S3DataLakeStreamState>
+    private val streamStateStore: StreamStateStore<S3DataLakeStreamState> =
+        mockk(relaxed = true)
 
     @TempDir lateinit var warehouseDir: java.nio.file.Path
 
@@ -350,6 +349,82 @@ internal class S3DataLakeDeleteModeResolutionTest {
                     )
                     .start()
             }
+        }
+    }
+
+    @Test
+    fun `explicit EQUALITY on an existing v3 table fails at stream start`() {
+        val stream = makeStream()
+        val table = createTableAt(3, icebergSchema(stream.tableSchema.importType))
+        assertFailsWith<ConfigErrorException> {
+            runBlocking {
+                makeLoader(
+                        stream,
+                        makeConfiguration(
+                            deleteFileType = IcebergDeleteFileType.EQUALITY,
+                        ),
+                        table,
+                    )
+                    .start()
+            }
+        }
+    }
+
+    @Test
+    fun `explicit EQUALITY on a v2 table allowed to upgrade fails before any upgrade`() {
+        val stream = makeStream()
+        val table = createTableAt(2, icebergSchema(stream.tableSchema.importType))
+        assertFailsWith<ConfigErrorException> {
+            runBlocking {
+                makeLoader(
+                        stream,
+                        makeConfiguration(
+                            deleteFileType = IcebergDeleteFileType.EQUALITY,
+                            formatVersion = IcebergTableFormatVersion.V3,
+                            allowUpgrade = AllowNonReversibleUpgrades.YES,
+                        ),
+                        table,
+                    )
+                    .start()
+            }
+        }
+        table.refresh()
+        assertEquals(2, tableFormatVersion(table))
+    }
+
+    @Test
+    fun `explicit POSITIONAL on a v2 table allowed to upgrade fails before any upgrade`() {
+        val stream = makeStream()
+        val table = createTableAt(2, icebergSchema(stream.tableSchema.importType))
+        assertFailsWith<ConfigErrorException> {
+            runBlocking {
+                makeLoader(
+                        stream,
+                        makeConfiguration(
+                            deleteFileType = IcebergDeleteFileType.POSITIONAL,
+                            formatVersion = IcebergTableFormatVersion.V3,
+                            allowUpgrade = AllowNonReversibleUpgrades.YES,
+                        ),
+                        table,
+                    )
+                    .start()
+            }
+        }
+        table.refresh()
+        assertEquals(2, tableFormatVersion(table))
+    }
+
+    @Test
+    fun `check validation rejects EQUALITY with target v3`() {
+        assertFailsWith<ConfigErrorException> {
+            S3DataLakeConfiguration(
+                awsAccessKeyConfiguration = mockk(relaxed = true),
+                s3BucketConfiguration = mockk(relaxed = true),
+                icebergCatalogConfiguration = mockk(relaxed = true),
+                flushBatchSizeMb = null,
+                tableFormatVersion = IcebergTableFormatVersion.V3,
+                icebergDeleteFileType = IcebergDeleteFileType.EQUALITY,
+            )
         }
     }
 
