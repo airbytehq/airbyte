@@ -4,8 +4,8 @@ products: cloud
 
 # Advanced Airbyte MCP configuration
 
-:::info Private beta
-The Airbyte MCP is in private beta. Features and tools may change. It's available to Airbyte Cloud organizations enrolled in the beta.
+:::info Open beta
+The Airbyte MCP is in open beta. Features and tools may change. It's available to all Airbyte Cloud organizations.
 :::
 
 The hosted [Airbyte MCP](readme.md) works without any extra configuration. These optional request headers let you narrow which tools your agent can see and use, or set a default workspace. They apply to the hosted server at `https://mcp.airbyte.com/mcp`.
