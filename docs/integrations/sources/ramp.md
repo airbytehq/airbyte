@@ -25,23 +25,38 @@ These steps are only needed for client credentials.
 
 For more detail, see Ramp's [quickstart](https://docs.ramp.com/developer-api/v1/getting-started) and [authorization guide](https://docs.ramp.com/developer-api/v1/authorization).
 
+<HideInUI>
+
 ## Set up the Ramp connector in Airbyte
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or open your self-managed Airbyte instance.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Ramp** from the Source type dropdown.
 4. Enter a name for the Ramp connector.
-5. Under **Authentication**, choose one method:
-   - **OAuth**: click **Authenticate your Ramp account** and approve access in Ramp. Only a Ramp Admin or Business Owner can approve it. Other users see "Business not authorized to use this application". The approval grants the read scope of every stream.
-   - **Client Credentials**: enter the **Ramp Client ID** and **Ramp Client Secret** from your developer app.
-6. Optionally, set **Start Date**. On the first sync, the `transactions` and `reimbursements` streams only read records with an `updated_at` on or after this date, and the `receipts` stream only reads receipts created on or after this date. Later syncs use the saved cursor instead. Other streams ignore Start Date. If you leave it empty, the connector uses `2019-01-01T00:00:00Z`.
-
-   Enter Start Date as a UTC timestamp with a `Z` suffix, such as `2024-01-01T00:00:00Z`. Fractional seconds, such as `2024-01-01T00:00:00.000Z`, are accepted. Values with a numeric offset, such as `2024-01-01T00:00:00+00:00`, are rejected.
+5. Under **Authentication**, choose **OAuth** or **Client Credentials**. See [Authentication](#authentication).
+6. Optionally, set **Start Date**. See [Start Date](#start-date).
 7. Click **Set up source**.
 
-The connection test only reads the `transactions` stream. With client credentials, if your app is missing the scope for another stream, the test still passes, and that stream fails during the sync.
+</HideInUI>
 
-Sources created before version 1.1.0 use client credentials. They move to the **Client Credentials** option automatically and keep working without changes.
+## Connector settings
+
+### Authentication
+
+- **OAuth**: click **Authenticate your Ramp account** and approve access in Ramp. Only a Ramp Admin or Business Owner can approve it. Other users see "Business not authorized to use this application". The approval grants the read scope of every stream.
+- **Client Credentials**: enter the **Ramp Client ID** and **Ramp Client Secret** from your developer app.
+
+Sources created before version 1.2.0 use client credentials. They move to the **Client Credentials** option automatically and keep working without changes.
+
+### Start Date
+
+On the first sync, the `transactions` and `reimbursements` streams only read records with an `updated_at` on or after this date, and the `receipts` stream only reads receipts created on or after this date. Later syncs use the saved cursor instead. Other streams ignore Start Date, including `vendors`, which reads every vendor on its first sync. If you leave it empty, the connector uses `2019-01-01T00:00:00Z`.
+
+Enter Start Date as a UTC timestamp with a `Z` suffix, such as `2024-01-01T00:00:00Z`. Fractional seconds, such as `2024-01-01T00:00:00.000Z`, are accepted. Values with a numeric offset, such as `2024-01-01T00:00:00+00:00`, are rejected.
+
+### Connection test
+
+The connection test only reads the `transactions` stream. With client credentials, if your app is missing the scope for another stream, the test still passes, and that stream fails during the sync.
 
 ## Test against the Ramp sandbox
 
@@ -59,11 +74,13 @@ The Ramp source connector supports the following [sync modes](https://docs.airby
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-Only `transactions`, `reimbursements`, and `receipts` support incremental syncs. Every other stream re-reads all records on every sync.
+Only `transactions`, `reimbursements`, `receipts`, and `vendors` support incremental syncs. Every other stream re-reads all records on every sync.
 
-- **Incremental syncs filter on the server.** For `transactions` and `reimbursements`, the connector sends the cursor as the `updated_after` query parameter. For `receipts`, it sends the cursor as `created_after`. Ramp doesn't list `updated_after` in its published parameters for the transactions endpoint, but in testing the API honors it. If Ramp ever stopped honoring it, each sync would re-read every transaction: you would get duplicate rows, not missing ones.
-- **Records at the cursor boundary are read again.** In testing, `updated_after` and `created_after` both include records exactly at the given time, so the next sync re-emits records whose cursor value equals the saved cursor. Use the **Incremental - Append + Deduped** sync mode to keep one row per `id`.
+- **Incremental syncs filter on the server.** For `transactions` and `reimbursements`, the connector sends the cursor as the `updated_after` query parameter. For `receipts`, it sends the cursor as `created_after`. For `vendors`, it sends the saved cursor as `from_updated_at`; a full refresh or a first incremental sync of `vendors` sends no filter and reads every vendor. Ramp doesn't list `updated_after` in its published parameters for the transactions endpoint, but in testing the API honors it. If Ramp ever stopped honoring it, each sync would re-read every transaction: you would get duplicate rows, not missing ones.
+- **Records at the cursor boundary are read again.** In testing, `updated_after` and `created_after` include records exactly at the given time. Ramp returns vendor `updated_at` values rounded down to whole seconds, so `from_updated_at` also returns the vendor at the saved cursor. The next sync re-emits records whose cursor value equals the saved cursor. Use the **Incremental - Append + Deduped** sync mode to keep one row per `id`.
 - **`receipts` only picks up new receipts.** Ramp's receipts have no `updated_at` field, so incremental syncs use `created_at`. Changes to a receipt after the sync that first read it aren't synced until you refresh the stream.
+- **Incremental `vendors` leaves spend totals stale.** The `total_spend_last_30_days`, `total_spend_last_365_days`, `total_spend_ytd`, and `total_spend_all_time` fields are running totals that change as days pass. Ramp doesn't document that those changes move the vendor's `updated_at`. An incremental sync only re-reads vendors whose `updated_at` moved, so these totals can keep the value from the last sync that read the vendor. If you report on them, sync `vendors` with a **Full Refresh** mode instead.
+- **Incremental `vendors` keeps deleted vendors.** A vendor deleted in Ramp stops appearing in the API, so an incremental sync never sees the deletion and the destination keeps its last row. **Full Refresh - Overwrite** removes it on the next sync.
 
 ## Supported Streams
 
@@ -83,7 +100,7 @@ All endpoints are under `/developer/v1`.
 | `funds` | `GET /funds` | `funds:read` | `id` | Full refresh | None |
 | `spend_programs` | `GET /spend-programs` | `spend_programs:read` | `id` | Full refresh | None |
 | `bills` | `GET /bills` | `bills:read` | `id` | Full refresh | None |
-| `vendors` | `GET /vendors` | `vendors:read` | `id` | Full refresh | None |
+| `vendors` | `GET /vendors` | `vendors:read` | `id` | Full refresh, incremental | `updated_at` |
 | `vendor_contacts` | `GET /vendors/{vendor_id}/contacts` | `vendors:read` | `vendor_id`, `id` | Full refresh | None |
 | `vendor_agreements` | `POST /vendors/agreements` | `vendors:read` | `id` | Full refresh | None |
 | `receipts` | `GET /receipts` | `receipts:read` | `id` | Full refresh, incremental | `created_at` |
@@ -112,9 +129,9 @@ The connector also requests the purchase data merchants send to Ramp, and stores
 
 `bills` includes archived (deleted) bills. The connector reads active and archived bills in separate requests.
 
-`vendors` doesn't include draft vendors or vendors still waiting for approval, because Ramp's vendors list leaves them out by default. The connector requests each vendor's ERP subsidiary identifiers.
+`vendors` doesn't include draft vendors or vendors still waiting for approval, because Ramp's vendors list leaves them out by default. The connector requests each vendor's ERP subsidiary identifiers. In incremental syncs, the spend total fields aren't kept current and deleted vendors aren't removed; see [Supported sync modes](#supported-sync-modes).
 
-`vendor_contacts` reads the contacts of each vendor in the `vendors` stream and adds the `vendor_id` to every record. If Ramp returns `404 Not Found` for a vendor, the connector skips that vendor.
+`vendor_contacts` reads the contacts of every vendor on each sync, even when `vendors` syncs incrementally, and adds the `vendor_id` to every record. If Ramp returns `404 Not Found` for a vendor, the connector skips that vendor.
 
 `vendor_agreements` and `purchase_orders` include archived records.
 
@@ -174,7 +191,8 @@ The connector reports these Ramp errors as configuration errors, so Airbyte does
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
-| 1.1.0 | 2026-10-14 | [88128](https://github.com/airbytehq/airbyte/pull/88128) | Add OAuth authentication; existing client-credentials configs are migrated automatically |
+| 1.2.0 | 2026-10-15 | [88128](https://github.com/airbytehq/airbyte/pull/88128) | Add OAuth authentication; existing client-credentials configs are migrated automatically |
+| 1.1.0 | 2026-10-14 | [88938](https://github.com/airbytehq/airbyte/pull/88938) | Make `vendors` incremental on `updated_at`, declare the `vendors.updated_at` field, show a readable Start Date format hint, and hide the generic Airbyte setup steps from the in-app guide |
 | 1.0.2 | 2026-10-14 | [88895](https://github.com/airbytehq/airbyte/pull/88895) | Replace the outdated README with the shared declarative-source README, and rebuild the icon from Ramp's press-kit glyph |
 | 1.0.1 | 2026-10-13 | [88768](https://github.com/airbytehq/airbyte/pull/88768) | Update dependencies |
 | 1.0.0 | 2026-10-12 | [88373](https://github.com/airbytehq/airbyte/pull/88373) | Declare 13 date and timestamp fields on `cards`, `transactions` and `reimbursements` with their real types. See the [migration guide](/integrations/sources/ramp-migrations#upgrading-to-100) |
