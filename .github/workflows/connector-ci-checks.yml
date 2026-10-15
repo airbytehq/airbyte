@@ -88,6 +88,20 @@ jobs:
             java-cdk:
               - 'airbyte-cdk/java/**/**/src/main/**/*'
               - 'airbyte-cdk/bulk/**/**/src/main/**/*'
+              - 'airbyte-cdk/**/build.gradle'
+              - 'airbyte-cdk/**/build.gradle.kts'
+            # Shared JVM build configuration (Kotlin/KSP/SpotBugs plugins, compiler flags,
+            # Gradle wrapper, Micronaut version). Every JVM connector is compiled with it,
+            # so a change here must build the connectors even when none of their files changed.
+            jvm-toolchain:
+              - 'build.gradle'
+              - 'settings.gradle'
+              - 'gradle.properties'
+              - 'gradle/wrapper/**'
+              - 'buildSrc/**'
+              - 'spotbugs-exclude-filter-file.xml'
+              - 'airbyte-cdk/bulk/build.gradle'
+              - 'airbyte-cdk/bulk/gradle.properties'
 
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
@@ -95,10 +109,15 @@ jobs:
           # Get the list of modified connectors
           echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
 
-          # If local-cdk-changed is true, get Java connectors with useLocalCdk = true
-          # Otherwise, get modified Java connectors
-          if [[ "${{ steps.cdk-changes.outputs.java-cdk == 'true' }}" == "true" ]]; then
-            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --local-cdk)" | tee -a $GITHUB_OUTPUT
+          # JVM matrix, broadest trigger first:
+          # - shared JVM toolchain changed: modified Java connectors + every Bulk CDK connector
+          #   + legacy-CDK connectors with Kotlin sources
+          # - Java CDK changed: modified Java connectors + connectors pinned to cdkVersion=local
+          # - otherwise: modified Java connectors
+          if [[ "${{ steps.cdk-changes.outputs.jvm-toolchain }}" == "true" ]]; then
+            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java --jvm-toolchain)" | tee -a $GITHUB_OUTPUT
+          elif [[ "${{ steps.cdk-changes.outputs.java-cdk }}" == "true" ]]; then
+            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java --local-cdk)" | tee -a $GITHUB_OUTPUT
           else
             echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
           fi
@@ -174,7 +193,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
         if: matrix.connector
         with:
-          gradle-version: "8.14"
+          gradle-version: wrapper
 
       # TODO: We can delete this step once Airbyte-CI is removed from Java integration tests.
       - name: Set up Python (For Airbyte-CI)
@@ -442,7 +461,7 @@ jobs:
         with:
           cache-read-only: false
           cache-write-only: false
-          gradle-version: "8.14"
+          gradle-version: wrapper
 
       # Python deps
       - name: Set up Python
@@ -599,7 +618,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
         if: matrix.connector
         with:
-          gradle-version: "8.14"
+          gradle-version: wrapper
 
       - name: Install Poe
         if: matrix.connector

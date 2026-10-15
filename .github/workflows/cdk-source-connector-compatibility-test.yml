@@ -5,6 +5,14 @@ on:
     paths:
       - "airbyte-cdk/bulk/core/base/version.properties"
       - "airbyte-cdk/bulk/core/extract/version.properties"
+      # Shared JVM build configuration: also run the local-CDK matrix when the toolchain changes
+      - "build.gradle"
+      - "settings.gradle"
+      - "gradle.properties"
+      - "gradle/wrapper/**"
+      - "buildSrc/**"
+      - "airbyte-cdk/bulk/build.gradle"
+      - "airbyte-cdk/bulk/gradle.properties"
   schedule:
     - cron: "0 12 * * *"
   workflow_dispatch:
@@ -61,7 +69,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
         if: matrix.connector
         with:
-          gradle-version: "8.14"
+          gradle-version: wrapper
 
       - name: Install the latest version of uv
         if: matrix.connector
