@@ -130,8 +130,9 @@ class DynamoDbStreamStateValueTest {
         )
         val parsed: DynamoDbStreamStateValue = DynamoDbStreamStateValue.parse(streamID, json)!!
         Assertions.assertEquals(state, parsed)
-        Assertions.assertEquals(3, parsed.scan!!.segmentCount())
-        Assertions.assertEquals(state.scan!!.segments, parsed.scan!!.segmentProgress())
+        val parsedScan = parsed.scan!!
+        Assertions.assertEquals(3, parsedScan.segmentCount())
+        Assertions.assertEquals(state.scan!!.segments, parsedScan.segmentProgress())
     }
 
     /** The shape written before tables were split into segments reads as segment 0 of 1. */
@@ -143,7 +144,8 @@ class DynamoDbStreamStateValueTest {
                     "scan":{"exclusive_start_key":{"id":{"S":"a"}},"max_cursor":"250","max_cursor_record_count":2}}"""
             )
         val parsed: DynamoDbStreamStateValue = DynamoDbStreamStateValue.parse(streamID, json)!!
-        Assertions.assertEquals(1, parsed.scan!!.segmentCount())
+        val parsedScan = parsed.scan!!
+        Assertions.assertEquals(1, parsedScan.segmentCount())
         Assertions.assertEquals(
             listOf(
                 DynamoDbStreamStateValue.SegmentProgress(
@@ -154,15 +156,16 @@ class DynamoDbStreamStateValueTest {
                     2L,
                 )
             ),
-            parsed.scan!!.segmentProgress(),
+            parsedScan.segmentProgress(),
         )
         val fullRefresh: DynamoDbStreamStateValue =
             DynamoDbStreamStateValue.parse(
                 streamID,
                 Jsons.readTree("""{"scan":{"exclusive_start_key":{"id":{"S":"a"}}}}"""),
             )!!
-        Assertions.assertEquals(1, fullRefresh.scan!!.segmentProgress()!!.size)
-        Assertions.assertNull(fullRefresh.scan!!.segmentProgress()!![0].maxCursor)
+        val fullRefreshSegments = fullRefresh.scan!!.segmentProgress()!!
+        Assertions.assertEquals(1, fullRefreshSegments.size)
+        Assertions.assertNull(fullRefreshSegments[0].maxCursor)
     }
 
     @Test
