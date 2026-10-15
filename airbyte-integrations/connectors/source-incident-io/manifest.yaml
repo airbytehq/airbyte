@@ -979,7 +979,7 @@ spec:
     properties:
       api_key:
         type: string
-        description: API key to use. Find it at https://app.incident.io/settings/api-keys
+        description: An Incident.io API key with view permission for the streams you sync. Create it in Incident.io under Settings > API keys. See https://docs.incident.io/api-reference/introduction#authentication
         name: api_key
         title: API Key
         airbyte_secret: true
