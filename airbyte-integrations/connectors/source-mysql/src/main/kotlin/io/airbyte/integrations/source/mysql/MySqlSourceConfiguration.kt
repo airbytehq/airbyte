@@ -137,7 +137,10 @@ constructor(
                 featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
         ) {
             throw ConfigErrorException(
-                "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel."
+                "Airbyte Cloud does not allow unencrypted database connections. " +
+                    "Either enable TLS on the MySQL server and select SSL mode required, " +
+                    "verify_ca or verify_identity, or configure an SSH tunnel; " +
+                    "the preferred SSL mode is accepted on Airbyte Cloud only together with an SSH tunnel."
             )
         }
         val sslProperties: SslProperties = fromEncryptionSpec(pojo.getEncryptionValue()!!)

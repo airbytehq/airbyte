@@ -13145,19 +13145,19 @@ Classes
 
     ### Class variables
 
-    `image_id: str`
-    :   The type of the None singleton.
-
     `key: str`
     :   The type of the None singleton.
 
     `limit: int`
     :   The type of the None singleton.
 
-    `namespace: str`
+    `metafield_owner_id: int`
     :   The type of the None singleton.
 
-    `product_id: str`
+    `metafield_owner_resource: str`
+    :   The type of the None singleton.
+
+    `namespace: str`
     :   The type of the None singleton.
 
     `since_id: int`
