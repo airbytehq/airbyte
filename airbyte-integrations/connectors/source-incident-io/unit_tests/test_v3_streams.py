@@ -516,6 +516,59 @@ def test_custom_fields_vendor_fields_are_declared_and_read():
         jsonschema.validate(mocked_record, schema)
 
 
+def test_workflows_vendor_fields_are_declared_and_read():
+    populated = {
+        "id": "01H2FW182TAH0NHEVBY34SCAK0",
+        "name": "Page the on-call",
+        "auto_run_mode": "confirm_before_running",
+        "delay": {"conditions_apply_over_delay": True, "for_seconds": 300},
+        "folder": "Escalations",
+        "form_fields": [
+            {
+                "array": False,
+                "description": "Who to page",
+                "id": "ff1",
+                "key": "assignee",
+                "required": True,
+                "title": "Assignee",
+                "type": "User",
+            }
+        ],
+        "owning_team_ids": ["01H2FW182TAH0NHEVBY34SCAK1"],
+        "shortform": "page-oncall",
+    }
+    # auto_run_mode is required by the vendor; the other five are optional and omitted when unset.
+    bare = {"id": "01H2FW182TAH0NHEVBY34SCAK2", "name": "Archive", "auto_run_mode": "run_automatically"}
+    response = {"workflows": [populated, bare], "pagination_meta": {}}
+    raw_manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    manifest = ManifestReferenceResolver().preprocess_manifest(raw_manifest)
+    schema = manifest["schemas"]["workflows"]
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/v2/workflows", json=response)
+        output = _read_stream("workflows")
+
+    records = [message.record for message in output.records]
+    assert len(records) == 2
+    expected_types = {
+        "auto_run_mode": ["string", "null"],
+        "delay": ["object", "null"],
+        "folder": ["string", "null"],
+        "form_fields": ["array", "null"],
+        "owning_team_ids": ["array", "null"],
+        "shortform": ["string", "null"],
+    }
+    for field, expected in expected_types.items():
+        assert schema["properties"][field]["type"] == expected
+        assert records[0].data[field] == populated[field]
+    assert "enum" not in schema["properties"]["auto_run_mode"]
+    assert records[1].data["auto_run_mode"] == "run_automatically"
+    for field in ("delay", "folder", "form_fields", "owning_team_ids", "shortform"):
+        assert field not in records[1].data
+    for mocked_record in response["workflows"]:
+        jsonschema.validate(mocked_record, schema)
+
+
 @pytest.mark.parametrize(
     ("stream_name", "path", "records_field"),
     [

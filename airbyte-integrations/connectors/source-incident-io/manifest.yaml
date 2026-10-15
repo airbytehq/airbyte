@@ -2615,6 +2615,76 @@ schemas:
     type: object
     $schema: http://json-schema.org/schema#
     properties:
+      auto_run_mode:
+        type:
+          - string
+          - "null"
+      delay:
+        type:
+          - object
+          - "null"
+        properties:
+          conditions_apply_over_delay:
+            type:
+              - boolean
+              - "null"
+          for_seconds:
+            type:
+              - integer
+              - "null"
+      folder:
+        type:
+          - string
+          - "null"
+      form_fields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            array:
+              type:
+                - boolean
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            key:
+              type:
+                - string
+                - "null"
+            required:
+              type:
+                - boolean
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            type:
+              type:
+                - string
+                - "null"
+      owning_team_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      shortform:
+        type:
+          - string
+          - "null"
       include_private_escalations:
         type:
           - boolean
