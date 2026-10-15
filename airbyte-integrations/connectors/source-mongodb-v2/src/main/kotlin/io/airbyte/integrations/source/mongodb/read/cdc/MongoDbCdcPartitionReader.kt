@@ -8,6 +8,7 @@ import com.mongodb.client.model.Aggregates
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.changestream.ChangeStreamDocument
 import com.mongodb.client.model.changestream.FullDocument
+import com.mongodb.client.model.changestream.FullDocumentBeforeChange
 import com.mongodb.client.model.changestream.OperationType
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
@@ -20,7 +21,6 @@ import io.airbyte.cdk.read.UnlimitedTimePartitionReader
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mongodb.config.InvalidCdcCursorPositionBehavior
 import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfiguration
-import io.airbyte.integrations.source.mongodb.config.UpdateCaptureMode
 import io.airbyte.integrations.source.mongodb.discover.schemaFieldTypesOf
 import io.airbyte.integrations.source.mongodb.read.partition.MongoDbPartitionReaderBase
 import io.airbyte.integrations.source.mongodb.read.partition.RecordAcceptor
@@ -33,6 +33,7 @@ import java.time.Instant
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import org.bson.BsonDocument
+import org.bson.BsonTimestamp
 import org.bson.Document
 import org.bson.codecs.DecoderContext
 import org.bson.codecs.DocumentCodec
@@ -43,7 +44,8 @@ private val log = KotlinLogging.logger {}
 /**
  * Reads the change stream for the `Global` feed. Cold start: capture the current resume token and
  * emit nothing (the `Global` feed runs before the snapshots, so the next sync replays changes made
- * during them). Warm start: drain the available changes and checkpoint the new token.
+ * during them). Warm start: emit the available changes up to [MongoDbSharedState.cdcTarget] and
+ * checkpoint the token of the last emitted event.
  */
 class MongoDbCdcPartitionReader(
     sharedState: MongoDbSharedState,
@@ -94,26 +96,44 @@ class MongoDbCdcPartitionReader(
     }
 
     /**
-     * Cold start ([resumeAfter] null): one poll to establish the position, nothing emitted. Warm
-     * start: emit every available change. The cursor's final position is the new resume token.
+     * Cold start ([resumeAfter] null): capture the position, emit nothing. Warm start: emit events
+     * until the stream is drained or an event past [MongoDbSharedState.cdcTarget] was emitted.
      */
     private suspend fun drain(resumeAfter: BsonDocument?) {
-        val changeStream: ChangeStreamIterable<Document> = watch().fullDocument(fullDocumentMode())
+        val changeStream: ChangeStreamIterable<Document> =
+            watch()
+                .fullDocument(FullDocument.UPDATE_LOOKUP)
+                .batchSize(Int.MAX_VALUE)
+                .comment(STREAM_COMMENT)
+        if (sharedState.supportsPreImages) {
+            // Legacy `change_streams_update_full_with_pre_image`: deletes carry the pre-image.
+            changeStream.fullDocumentBeforeChange(FullDocumentBeforeChange.WHEN_AVAILABLE)
+        }
         resumeAfter?.let { changeStream.resumeAfter(it) }
+        val target: BsonTimestamp = sharedState.cdcTarget
         changeStream.cursor().use { cursor ->
             if (resumeAfter == null) {
                 cursor.tryNext()
-            } else {
-                while (true) {
-                    currentCoroutineContext().ensureActive()
-                    if (emit(cursor.tryNext() ?: break)) numRecords++
-                }
+                resumeToken = cursor.resumeToken
+                return@use
             }
-            resumeToken = cursor.resumeToken
+            while (true) {
+                currentCoroutineContext().ensureActive()
+                val event: ChangeStreamDocument<Document>? = cursor.tryNext()
+                if (event == null) {
+                    // Drained: the post-batch token is at or past the last event.
+                    resumeToken = cursor.resumeToken
+                    break
+                }
+                if (emit(event)) numRecords++
+                resumeToken = event.resumeToken
+                val clusterTime: BsonTimestamp? = event.clusterTime
+                if (clusterTime != null && clusterTime > target) break
+            }
         }
         log.info {
             if (resumeAfter == null) "CDC cold start; captured resume token."
-            else "CDC read drained $numRecords change(s)."
+            else "CDC read drained $numRecords change(s) up to the target."
         }
     }
 
@@ -130,7 +150,12 @@ class MongoDbCdcPartitionReader(
                         it.errorCode in INVALID_RESUME_TOKEN_ERROR_CODES)
             }
 
-    /** Emits [event] as a record; false for an unselected collection or non-data change. */
+    /**
+     * Emits [event] as a record; false for an unselected collection or non-data change. A delete is
+     * emitted with the document's pre-image when the collection stores one, else with its `_id`
+     * only. An update or replace whose `fullDocument` is null (the document was deleted before the
+     * lookup) is emitted as a delete, as the legacy connector did.
+     */
     private fun emit(event: ChangeStreamDocument<Document>): Boolean {
         val namespace = event.namespace ?: return false
         val streamId =
@@ -142,18 +167,25 @@ class MongoDbCdcPartitionReader(
         val accept: RecordAcceptor = recordAcceptorFor(streamId) ?: return false
         val converter: MongoDbRecordConverter = convertersByStream[streamId] ?: return false
         val changedAt: String = clusterTime(event)
+        fun deleted(): NativeRecordPayload =
+            converter.changePayload(
+                event.fullDocumentBeforeChange ?: toDocument(event.documentKey),
+                deletedAt = changedAt,
+            )
         val payload: NativeRecordPayload =
             when (event.operationType) {
-                OperationType.INSERT,
+                OperationType.INSERT ->
+                    converter.changePayload(event.fullDocument ?: return false, deletedAt = null)
                 OperationType.UPDATE,
                 OperationType.REPLACE ->
-                    converter.changePayload(event.fullDocument ?: return false, deletedAt = null)
-                OperationType.DELETE ->
-                    converter.changePayload(toDocument(event.documentKey), deletedAt = changedAt)
+                    event.fullDocument?.let { converter.changePayload(it, deletedAt = null) }
+                        ?: deleted()
+                OperationType.DELETE -> deleted()
                 else -> return false
             }
         payload[CommonMetaField.CDC_UPDATED_AT.id] =
             FieldValueEncoder(Jsons.textNode(changedAt), MongoStringValueCodec)
+        stampCursor(payload)
         accept(payload, null)
         return true
     }
@@ -168,18 +200,22 @@ class MongoDbCdcPartitionReader(
         }
             ?: sharedState.client.watch(pipeline())
 
-    private fun fullDocumentMode(): FullDocument =
-        when (configuration.updateCaptureMode) {
-            UpdateCaptureMode.LOOKUP -> FullDocument.UPDATE_LOOKUP
-            UpdateCaptureMode.POST_IMAGE -> FullDocument.REQUIRED
-        }
-
-    /** Restrict the change stream to the configured databases and to data-changing operations. */
+    /**
+     * Restrict the change stream, server-side, to the configured streams' collections and to
+     * data-changing operations: events of unselected collections never leave the server.
+     */
     private fun pipeline(): List<Bson> =
         listOf(
             Aggregates.match(
                 Filters.and(
-                    Filters.`in`("ns.db", configuration.databases),
+                    Filters.or(
+                        feedBootstrap.feed.streams.map {
+                            Filters.and(
+                                Filters.eq("ns.db", it.id.namespace),
+                                Filters.eq("ns.coll", it.id.name),
+                            )
+                        },
+                    ),
                     Filters.`in`("operationType", listOf("insert", "update", "replace", "delete")),
                 ),
             ),
@@ -197,9 +233,12 @@ class MongoDbCdcPartitionReader(
         PartitionReadCheckpoint(
             MongoDbCdcState.of(resumeToken, configuration.schemaEnforced).toOpaqueStateValue(),
             numRecords,
+            checkpointPartitionId,
         )
 
     companion object {
+        /** Tags the change-stream cursor in `currentOp` / profiler output for operators. */
+        const val STREAM_COMMENT = "airbyte-source-mongodb"
         /** HistoryLost, FatalError, InvalidResumeToken, FailedToParse, empty, bad KeyString. */
         val INVALID_RESUME_TOKEN_ERROR_CODES: Set<Int> = setOf(286, 280, 260, 9, 40649, 50811)
     }

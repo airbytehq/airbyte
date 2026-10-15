@@ -7,16 +7,19 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoClients
 import com.mongodb.client.MongoDatabase
+import com.mongodb.client.model.CreateCollectionOptions
+import com.mongodb.client.model.TimeSeriesOptions
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.integrations.source.mongodb.MongoDbTestConfigs
 import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfigurationSpecification
 import io.airbyte.protocol.models.v0.AirbyteCatalog
+import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.SyncMode
 import java.io.File
 import java.math.BigDecimal
-import java.util.Date
-import java.util.UUID
+import java.util.*
 import org.bson.BsonBinarySubType
 import org.bson.BsonRegularExpression
 import org.bson.BsonTimestamp
@@ -45,7 +48,8 @@ import org.testcontainers.utility.DockerImageName
 class MongoDbSourceDiscoverTest {
 
     /**
-     * `listCollections` is filtered to `type: collection` server-side, so views are not streams.
+     * `listCollections` is filtered to `type: collection|timeseries` server-side, so views are not
+     * streams.
      */
     @Test
     fun testDiscoverExcludesViews() {
@@ -60,6 +64,28 @@ class MongoDbSourceDiscoverTest {
         val names: Set<String> = catalog.streams.map { it.name }.toSet()
         Assertions.assertFalse("people_view" in names, "views must not be discovered: $names")
         Assertions.assertTrue("people" in names, "the view's source collection is: $names")
+    }
+
+    /** A time-series collection is a stream, but full refresh only (no change stream on it). */
+    @Test
+    fun testDiscoverTimeSeriesCollectionIsFullRefreshOnly() {
+        val catalog: AirbyteCatalog =
+            CliRunner.source(
+                    "discover",
+                    MongoDbTestConfigs.config(replicaSet.connectionString, listOf(TEST_DB)),
+                )
+                .run()
+                .catalogs()
+                .first()
+        val stream: AirbyteStream = catalog.streams.first { it.name == "readings" }
+        Assertions.assertEquals(listOf(SyncMode.FULL_REFRESH), stream.supportedSyncModes)
+        Assertions.assertFalse(stream.sourceDefinedCursor)
+        Assertions.assertTrue(stream.defaultCursorField.isEmpty())
+        val regular: AirbyteStream = catalog.streams.first { it.name == "people" }
+        Assertions.assertEquals(
+            listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+            regular.supportedSyncModes,
+        )
     }
 
     @Test
@@ -238,6 +264,13 @@ class MongoDbSourceDiscoverTest {
                 listOf(Document("\$project", Document("name", 1)))
             )
             testDb.createCollection("system.buckets.ignored")
+            testDb.createCollection(
+                "readings",
+                CreateCollectionOptions().timeSeriesOptions(TimeSeriesOptions("ts")),
+            )
+            testDb
+                .getCollection("readings")
+                .insertOne(Document("ts", Date(1_700_000_000_000L)).append("value", 1.5))
             client
                 .getDatabase(OTHER_DB)
                 .getCollection("orders")

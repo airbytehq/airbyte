@@ -83,6 +83,8 @@ class MongoDbSnapshotPartitionReader(
     /**
      * Ordered `_id` scan after [startId]. Under `schema_enforced` only the catalog's fields are
      * projected (extra fields would be dropped anyway); schemaless needs the whole document.
+     * `allowDiskUse` is a no-op for the index-backed sort but lets a time-series collection, which
+     * has no `_id` index, spill its in-memory sort to disk.
      */
     private fun query(startId: Any?): FindIterable<Document> {
         val find: FindIterable<Document> = collection.find()
@@ -90,16 +92,19 @@ class MongoDbSnapshotPartitionReader(
         if (sharedState.configuration.schemaEnforced) {
             find.projection(Projections.include(schemaFieldTypes.keys.toList()))
         }
-        return find.sort(Sorts.ascending(ID_FIELD))
+        return find.sort(Sorts.ascending(ID_FIELD)).allowDiskUse(true)
     }
 
     /**
      * The `_id` index orders values by BSON type before value, and the resume filter `_id > x` only
      * matches `_id`s of x's type: a collection mixing types would lose every later type after a
      * checkpoint. The smallest and largest `_id` sharing a type means every `_id` does (two index
-     * seeks). Numbers of any width are one type, as they are for the comparison.
+     * seeks). Numbers of any width are one type, as they are for the comparison. Skipped for a
+     * time-series collection: its measurement `_id`s are server-generated ObjectIds and, without an
+     * `_id` index, each seek would be a full sort.
      */
     private fun requireSingleIdType() {
+        if (sharedState.isTimeSeries(stream.id)) return
         fun endpointIdType(sort: Bson): String =
             MongoDbIdKind.of(
                 collection
@@ -148,6 +153,7 @@ class MongoDbSnapshotPartitionReader(
         return PartitionReadCheckpoint(
             MongoDbStreamStateValue.fromLastId(lastId, status).toOpaqueStateValue(),
             numRecords,
+            checkpointPartitionId,
         )
     }
 }

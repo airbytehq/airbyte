@@ -4,7 +4,6 @@ package io.airbyte.integrations.source.mongodb.discover
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.CommonMetaField
@@ -32,7 +31,13 @@ class MongoDbMetaFieldDecorator : MetaFieldDecorator {
             MongoDbMetaField.CDC_CURSOR,
         )
 
-    /** Cursor for non-change-stream records: `emittedAt` epoch seconds × 10^8 + shared counter. */
+    /**
+     * `_ab_cdc_cursor` is null on snapshot rows and `emittedAt` epoch milliseconds × 10^5 + a
+     * per-sync counter on change events, stamped by the CDC reader through [nextCursor]: a change
+     * always sorts above the snapshot row it supersedes (dedup ranks nulls last), change events
+     * sort in event order, and later syncs start above earlier ones. The legacy formula was epoch
+     * seconds × 10^8 — the same magnitude, so new values keep sorting above the rows it wrote.
+     */
     private val cursorBase = AtomicLong(0L)
     private val cursorCounter = AtomicLong(1L)
 
@@ -47,10 +52,7 @@ class MongoDbMetaFieldDecorator : MetaFieldDecorator {
             Jsons.textNode(updatedAt(timestamp))
         )
         recordData.set<JsonNode>(CommonMetaField.CDC_DELETED_AT.id, Jsons.nullNode())
-        recordData.set<JsonNode>(
-            MongoDbMetaField.CDC_CURSOR.id,
-            Jsons.numberNode(nextCursor(timestamp))
-        )
+        recordData.set<JsonNode>(MongoDbMetaField.CDC_CURSOR.id, Jsons.nullNode())
     }
 
     override fun decorateRecordData(
@@ -62,18 +64,17 @@ class MongoDbMetaFieldDecorator : MetaFieldDecorator {
         recordData[CommonMetaField.CDC_UPDATED_AT.id] =
             FieldValueEncoder(updatedAt(timestamp), TextCodec)
         recordData[CommonMetaField.CDC_DELETED_AT.id] = FieldValueEncoder(null, NullCodec)
-        recordData[MongoDbMetaField.CDC_CURSOR.id] =
-            FieldValueEncoder(nextCursor(timestamp), LongCodec)
+        recordData[MongoDbMetaField.CDC_CURSOR.id] = FieldValueEncoder(null, NullCodec)
     }
 
     private fun updatedAt(timestamp: OffsetDateTime): String = timestamp.toInstant().toString()
 
-    private fun nextCursor(timestamp: OffsetDateTime): Long {
-        cursorBase.compareAndSet(0L, timestamp.toEpochSecond() * ONE_HUNDRED_MILLION)
+    fun nextCursor(timestamp: OffsetDateTime): Long {
+        cursorBase.compareAndSet(0L, timestamp.toInstant().toEpochMilli() * CURSORS_PER_MILLI)
         return cursorBase.get() + cursorCounter.getAndIncrement()
     }
 
     companion object {
-        const val ONE_HUNDRED_MILLION = 100_000_000L
+        const val CURSORS_PER_MILLI = 100_000L
     }
 }

@@ -4,7 +4,10 @@ package io.airbyte.integrations.source.mongodb.read
 import com.fasterxml.jackson.databind.JsonNode
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoClients
+import com.mongodb.client.model.ChangeStreamPreAndPostImagesOptions
+import com.mongodb.client.model.CreateCollectionOptions
 import com.mongodb.client.model.Filters
+import com.mongodb.client.model.TimeSeriesOptions
 import com.mongodb.client.model.Updates
 import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
@@ -13,6 +16,7 @@ import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mongodb.MongoDbTestConfigs
 import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfigurationSpecification
+import io.airbyte.integrations.source.mongodb.discover.MongoDbMetaFieldDecorator
 import io.airbyte.integrations.source.mongodb.read.cdc.MongoDbCdcState
 import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbIdType
 import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbSnapshotStatus
@@ -29,9 +33,9 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.protocol.models.v0.SyncMode
 import java.math.BigDecimal
-import java.util.Base64
-import java.util.Date
-import java.util.UUID
+import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import org.bson.BinaryVector
 import org.bson.BsonArray
 import org.bson.BsonBinary
@@ -212,6 +216,182 @@ class MongoDbSourceReadTest {
         Assertions.assertNotNull(
             changes.first { it["_id"] == "660000000000000000000002" }["_ab_cdc_deleted_at"],
             "a delete must set _ab_cdc_deleted_at",
+        )
+        // `_ab_cdc_cursor` is the declared cursor: every change event carries one, strictly
+        // increasing in event order, so dedup orders them after the snapshot rows.
+        val cursors: List<Long> =
+            sync2.records().filter { it.stream == CDC }.map { it.data["_ab_cdc_cursor"].asLong() }
+        Assertions.assertEquals(3, cursors.size)
+        Assertions.assertEquals(cursors.sorted(), cursors)
+        Assertions.assertEquals(cursors.toSet().size, cursors.size, "cursors must be distinct")
+        Assertions.assertTrue(cursors.all { it > 0L }, "cursors must be set, got $cursors")
+        // Snapshot rows carry no cursor; dedup ranks nulls last, so a change to the same `_id`
+        // always supersedes its snapshot row. The cursor is `emittedAt` milliseconds × 10^5 + a
+        // per-sync counter, so a later sync's cursors are larger by construction. The test clock is
+        // fixed (every sync gets the same `emittedAt`), hence the formula is asserted.
+        for (record in sync1.records().filter { it.stream == CDC }) {
+            Assertions.assertTrue(record.data["_ab_cdc_cursor"].isNull, "snapshot row: $record")
+        }
+        for (record in sync2.records().filter { it.stream == CDC }) {
+            val cursor: Long = record.data["_ab_cdc_cursor"].asLong()
+            Assertions.assertEquals(
+                record.emittedAt,
+                cursor / MongoDbMetaFieldDecorator.CURSORS_PER_MILLI,
+                "cursor base must be the record's emittedAt: $cursor",
+            )
+            Assertions.assertTrue(cursor % MongoDbMetaFieldDecorator.CURSORS_PER_MILLI >= 1L)
+        }
+    }
+
+    /**
+     * With pre-images stored on the collection, a delete record carries the deleted document (not
+     * just its `_id`), and an update whose document is already gone by the time of the lookup is
+     * emitted as a delete rather than dropped — both as the legacy connector behaved.
+     */
+    @Test
+    fun testDeletesCarryPreImageAndUpdateOfDeletedDocumentIsADelete() {
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            val db = client.getDatabase(TEST_DB)
+            db.getCollection(PRE_IMAGE_CDC).drop()
+            db.createCollection(
+                PRE_IMAGE_CDC,
+                CreateCollectionOptions()
+                    .changeStreamPreAndPostImagesOptions(ChangeStreamPreAndPostImagesOptions(true)),
+            )
+            db.getCollection(PRE_IMAGE_CDC)
+                .insertMany(
+                    listOf(
+                        Document("_id", 1).append("name", "alice").append("age", 30),
+                        Document("_id", 2).append("name", "bob").append("age", 41),
+                    ),
+                )
+        }
+        // Built before the deletes: an emptied collection is no longer discovered.
+        val catalog: ConfiguredAirbyteCatalog = incrementalCatalog(setOf(PRE_IMAGE_CDC))
+        val sync1: BufferingOutputConsumer = read(catalog)
+        Assertions.assertEquals(2, recordCountFor(sync1, PRE_IMAGE_CDC))
+
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            val coll = client.getDatabase(TEST_DB).getCollection(PRE_IMAGE_CDC)
+            // Update then delete before the connector can look the document up.
+            coll.updateOne(Filters.eq("_id", 1), Updates.set("age", 31))
+            coll.deleteOne(Filters.eq("_id", 1))
+            coll.deleteOne(Filters.eq("_id", 2))
+        }
+        val sync2: BufferingOutputConsumer = read(catalog, sync1.states())
+        val changes: List<Map<String, Any?>> = recordDataFor(sync2, PRE_IMAGE_CDC)
+        Assertions.assertEquals(3, changes.size, "update-of-deleted + 2 deletes: $changes")
+        Assertions.assertTrue(
+            changes.all { it["_ab_cdc_deleted_at"] != null },
+            "every change must be a delete: $changes",
+        )
+        // Pre-images: the deleted documents' fields travel with the delete.
+        Assertions.assertEquals(
+            listOf("alice", "alice", "bob"),
+            changes.map { it["name"] }.sortedBy { it.toString() },
+        )
+        val bob: Map<String, Any?> = changes.first { it["_id"] == 2 }
+        Assertions.assertEquals(41, bob["age"])
+    }
+
+    /**
+     * A busy cluster never lets `tryNext()` come back empty. The read must still end: it stops
+     * after the first event past the cluster time captured when the read started, checkpoints the
+     * token of the last emitted event, and the next sync picks up the rest without loss or repeat.
+     */
+    @Test
+    fun testCdcStopsAtTargetUnderContinuousWrites() {
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            val coll = client.getDatabase(TEST_DB).getCollection(BUSY_CDC)
+            coll.drop()
+            coll.insertOne(Document("_id", 0).append("seq", 0))
+        }
+        val sync1: BufferingOutputConsumer = read(incrementalCatalog(setOf(BUSY_CDC)))
+        Assertions.assertEquals(1, recordCountFor(sync1, BUSY_CDC))
+
+        val inserted = AtomicInteger(0)
+        val writing = AtomicBoolean(true)
+        val writer = Thread {
+            MongoClients.create(replicaSet.connectionString).use { client ->
+                val coll = client.getDatabase(TEST_DB).getCollection(BUSY_CDC)
+                while (writing.get()) {
+                    val seq: Int = inserted.incrementAndGet()
+                    coll.insertOne(Document("_id", seq).append("seq", seq))
+                }
+            }
+        }
+        writer.start()
+        try {
+            Thread.sleep(500) // changes are already flowing when the read starts
+            val sync2: BufferingOutputConsumer =
+                read(incrementalCatalog(setOf(BUSY_CDC)), sync1.states())
+            Assertions.assertTrue(recordCountFor(sync2, BUSY_CDC) > 0, "expected changes in sync 2")
+            Assertions.assertTrue(
+                writing.get() && writer.isAlive,
+                "the writer must still be running when the read returns",
+            )
+            writing.set(false)
+            writer.join()
+
+            val sync3: BufferingOutputConsumer =
+                read(incrementalCatalog(setOf(BUSY_CDC)), sync2.states())
+            val seen: List<Int> =
+                (recordDataFor(sync2, BUSY_CDC) + recordDataFor(sync3, BUSY_CDC)).map {
+                    it["_id"] as Int
+                }
+            Assertions.assertEquals(seen.toSet().size, seen.size, "no change may be emitted twice")
+            Assertions.assertEquals(
+                (1..inserted.get()).toSet(),
+                seen.toSet(),
+                "no change may be lost",
+            )
+        } finally {
+            writing.set(false)
+            writer.join()
+        }
+    }
+
+    /** Without an incremental stream there is nothing to read from the change stream. */
+    @Test
+    fun testFullRefreshOnlyCatalogDoesNotReadTheChangeStream() {
+        val result: BufferingOutputConsumer = read(fullRefreshCatalog())
+        Assertions.assertEquals(3, recordCountFor(result, PEOPLE))
+        val shared: List<JsonNode> = result.states().mapNotNull { it.global?.sharedState }
+        Assertions.assertTrue(
+            shared.none { it.hasNonNull("resumeToken") },
+            "a full-refresh-only sync must not capture a resume token, got $shared",
+        )
+    }
+
+    /** A time-series collection is snapshotted (full refresh); it has no `_id` index. */
+    @Test
+    fun testTimeSeriesCollectionIsReadInFullRefresh() {
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            val db = client.getDatabase(TEST_DB)
+            db.getCollection(TIME_SERIES).drop()
+            db.createCollection(
+                TIME_SERIES,
+                CreateCollectionOptions().timeSeriesOptions(TimeSeriesOptions("t")),
+            )
+            db.getCollection(TIME_SERIES)
+                .insertMany(
+                    (1..3).map {
+                        Document("t", Date(1_700_000_000_000L + it * 1000L)).append("v", it)
+                    },
+                )
+        }
+        val result: BufferingOutputConsumer =
+            read(
+                configuredCatalog(
+                    SyncMode.FULL_REFRESH,
+                    DestinationSyncMode.OVERWRITE,
+                    setOf(TIME_SERIES),
+                    includeEmpty = false,
+                ),
+            )
+        Assertions.assertEquals(
+            listOf(1, 2, 3),
+            recordDataFor(result, TIME_SERIES).map { it["v"] as Int }.sorted(),
         )
     }
 
@@ -958,6 +1138,9 @@ class MongoDbSourceReadTest {
         const val PEOPLE = "people"
         const val EMPTY = "empty_coll"
         const val CDC = "cdc_coll"
+        const val BUSY_CDC = "busy_cdc_coll"
+        const val PRE_IMAGE_CDC = "pre_image_cdc_coll"
+        const val TIME_SERIES = "time_series_coll"
         const val LEGACY_CDC = "legacy_cdc_coll"
         const val DOC_ID = "doc_id_coll"
         const val ALL_TYPES = "all_types_coll"

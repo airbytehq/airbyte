@@ -57,7 +57,6 @@ class MongoDbSourceConfigurationFactoryTest {
             InvalidCdcCursorPositionBehavior.RESYNC_DATA,
             config.invalidCdcCursorPositionBehavior,
         )
-        Assertions.assertEquals(UpdateCaptureMode.POST_IMAGE, config.updateCaptureMode)
         Assertions.assertEquals(Duration.ofHours(12), config.maxSnapshotReadDuration)
         Assertions.assertEquals("cluster0.abcd1.mongodb.net", config.realHost)
         Assertions.assertEquals(27017, config.realPort)
@@ -91,7 +90,6 @@ class MongoDbSourceConfigurationFactoryTest {
             InvalidCdcCursorPositionBehavior.FAIL_SYNC,
             config.invalidCdcCursorPositionBehavior,
         )
-        Assertions.assertEquals(UpdateCaptureMode.LOOKUP, config.updateCaptureMode)
         Assertions.assertEquals(Duration.ofHours(8), config.maxSnapshotReadDuration)
         Assertions.assertEquals("host1", config.realHost)
         Assertions.assertEquals(27018, config.realPort)
@@ -179,9 +177,6 @@ class MongoDbSourceConfigurationFactoryTest {
     fun testInvalidEnumValuesAreRejected() {
         Assertions.assertThrows(ConfigErrorException::class.java) {
             make(selfManaged("\"invalid_cdc_cursor_position_behavior\": \"Explode\""))
-        }
-        Assertions.assertThrows(ConfigErrorException::class.java) {
-            make(selfManaged("\"update_capture_mode\": \"Pre Image\""))
         }
     }
 

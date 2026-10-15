@@ -29,19 +29,22 @@ private val log = KotlinLogging.logger {}
 
 /**
  * Plans a READ: one snapshot partition per `Stream` feed (none once `COMPLETE`, finished in this
- * READ, or yielded to CDC) and one [MongoDbCdcPartitionReader] for the `Global` feed. Completion is
- * tracked in memory because the CDK re-asks after every round and a full-refresh stream's terminal
- * status is not `COMPLETE`. [validateSchemaMode] and [validateSyncModeAgainstState] run first.
+ * READ, or yielded to CDC) and one [MongoDbCdcPartitionReader] for the `Global` feed, which drains
+ * the change stream up to the sync's target (none at all when no stream is incremental: the CDK
+ * always creates the `Global` feed, but a full-refresh-only connection has nothing to read from
+ * it). Completion is tracked in memory because the CDK re-asks after every round and a full-refresh
+ * stream's terminal status is not `COMPLETE`. [validateSchemaMode] and
+ * [validateSyncModeAgainstState] run first.
  */
 @Singleton
 class MongoDbPartitionsCreatorFactory(
     private val sharedState: MongoDbSharedState,
 ) : PartitionsCreatorFactory {
 
-    /** Re-planning guard for the single Global (change-stream) feed. */
-    private val cdcStarted = AtomicBoolean(false)
-
     private val schemaModeValidated = AtomicBoolean(false)
+
+    /** The change stream is read once per READ: the reader drains it up to the sync's target. */
+    private val cdcStarted = AtomicBoolean(false)
 
     override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator {
         if (schemaModeValidated.compareAndSet(false, true)) {
@@ -49,7 +52,10 @@ class MongoDbPartitionsCreatorFactory(
         }
         return when (feedBootstrap) {
             is GlobalFeedBootstrap ->
-                if (cdcStarted.compareAndSet(false, true)) {
+                if (feedBootstrap.feed.streams.isEmpty()) {
+                    log.info { "No incremental stream: the change stream is not read." }
+                    CreateNoPartitions
+                } else if (cdcStarted.compareAndSet(false, true)) {
                     MongoDbPartitionsCreator(sharedState) {
                         MongoDbCdcPartitionReader(sharedState, feedBootstrap)
                     }

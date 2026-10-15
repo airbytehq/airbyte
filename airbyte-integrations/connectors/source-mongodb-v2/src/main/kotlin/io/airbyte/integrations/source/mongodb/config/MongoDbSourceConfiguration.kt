@@ -46,12 +46,6 @@ enum class InvalidCdcCursorPositionBehavior(override val specValue: String) : Sp
     RESYNC_DATA("Re-sync data"),
 }
 
-/** How the change stream reports the new value of an updated document. */
-enum class UpdateCaptureMode(override val specValue: String) : SpecEnum {
-    LOOKUP("Lookup"),
-    POST_IMAGE("Post Image"),
-}
-
 /** MongoDB-specific implementation of [SourceConfiguration]. */
 data class MongoDbSourceConfiguration(
     val clusterType: MongoDbClusterType,
@@ -65,14 +59,14 @@ data class MongoDbSourceConfiguration(
     val discoverSampleSize: Int,
     val discoverTimeout: Duration,
     val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
-    val updateCaptureMode: UpdateCaptureMode,
     override val maxSnapshotReadDuration: Duration?,
     override val maxConcurrency: Int,
     override val realHost: String,
     override val realPort: Int,
     /** MongoDB incremental syncs are CDC-only: READ always produces GLOBAL state. */
     override val global: Boolean = true,
-    override val checkpointTargetInterval: Duration = DEFAULT_CHECKPOINT_TARGET_INTERVAL,
+    /** A collection scan is checkpointed and resumed every 10 minutes. */
+    override val checkpointTargetInterval: Duration = Duration.ofMinutes(10),
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     /** SSH tunnels are not part of the MongoDB spec. */
     override val sshTunnel: SshTunnelMethodConfiguration? = null,
@@ -92,10 +86,6 @@ data class MongoDbSourceConfiguration(
             factory: SourceConfigurationFactory<Spec, MongoDbSourceConfiguration>,
             supplier: ConfigurationSpecificationSupplier<Spec>,
         ): MongoDbSourceConfiguration = factory.make(supplier.get())
-    }
-
-    companion object {
-        val DEFAULT_CHECKPOINT_TARGET_INTERVAL: Duration = Duration.ofMinutes(15)
     }
 }
 
@@ -167,11 +157,6 @@ constructor(
                     "invalid_cdc_cursor_position_behavior",
                     pojo.invalidCdcCursorPositionBehavior
                         ?: InvalidCdcCursorPositionBehavior.FAIL_SYNC.specValue,
-                ),
-            updateCaptureMode =
-                parseSpecEnum(
-                    "update_capture_mode",
-                    pojo.updateCaptureMode ?: UpdateCaptureMode.LOOKUP.specValue,
                 ),
             maxSnapshotReadDuration =
                 Duration.ofHours(

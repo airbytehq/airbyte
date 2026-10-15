@@ -59,7 +59,6 @@ class MongoDbSourceConfigurationSpecificationTest {
         Assertions.assertEquals(100, pojo.discoverSampleSize)
         Assertions.assertEquals(60, pojo.discoverTimeoutSeconds)
         Assertions.assertEquals("Re-sync data", pojo.invalidCdcCursorPositionBehavior)
-        Assertions.assertEquals("Post Image", pojo.updateCaptureMode)
         Assertions.assertEquals(12, pojo.initialLoadTimeoutHours)
     }
 
@@ -82,7 +81,6 @@ class MongoDbSourceConfigurationSpecificationTest {
         Assertions.assertEquals(10000, pojo.discoverSampleSize)
         Assertions.assertEquals(600, pojo.discoverTimeoutSeconds)
         Assertions.assertEquals("Fail sync", pojo.invalidCdcCursorPositionBehavior)
-        Assertions.assertEquals("Lookup", pojo.updateCaptureMode)
         Assertions.assertEquals(8, pojo.initialLoadTimeoutHours)
     }
 

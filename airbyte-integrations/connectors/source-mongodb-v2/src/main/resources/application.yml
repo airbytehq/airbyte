@@ -52,8 +52,7 @@ airbyte:
               CDC (Change Data Capture) change streams. This error occurs specifically during
               incremental/CDC syncs when change stream events become too large. To resolve this issue, you
               have several options: (1) Switch the affected stream(s) to 'Full Refresh' sync mode instead of
-              'Incremental' mode, which does not use change streams. (2) If you are using 'Post Image' update
-              capture mode, switch to 'Lookup' mode to reduce change event size. (3) Identify and restructure
-              the large documents in your MongoDB collection to stay under 16MB. (4) Deselect streams
+              'Incremental' mode, which does not use change streams. (2) Identify and restructure
+              the large documents in your MongoDB collection to stay under 16MB. (3) Deselect streams
               containing documents that are too large. For more information, see
               https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-cdc-limitations

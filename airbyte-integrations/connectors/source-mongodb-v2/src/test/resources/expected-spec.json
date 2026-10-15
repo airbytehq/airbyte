@@ -172,7 +172,8 @@
         "order": 11,
         "minimum": 5,
         "maximum": 1200,
-        "group": "advanced"
+        "group": "advanced",
+        "airbyte_hidden": true
       },
       "invalid_cdc_cursor_position_behavior": {
         "type": "string",
@@ -183,15 +184,6 @@
         "order": 12,
         "group": "advanced"
       },
-      "update_capture_mode": {
-        "type": "string",
-        "description": "Determines how Airbyte looks up the value of an updated document. If 'Lookup' is chosen, the current value of the document will be read. If 'Post Image' is chosen, then the version of the document immediately after an update will be read. WARNING : Severe data loss will occur if this option is chosen and the appropriate settings are not set on your Mongo instance : https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images.",
-        "title": "Capture mode (Advanced)",
-        "enum": ["Lookup", "Post Image"],
-        "default": "Lookup",
-        "order": 13,
-        "group": "advanced"
-      },
       "initial_load_timeout_hours": {
         "type": "integer",
         "description": "The amount of time an initial load is allowed to continue for before catching up on CDC logs.",
@@ -200,7 +192,8 @@
         "min": 4,
         "max": 24,
         "order": 14,
-        "group": "advanced"
+        "group": "advanced",
+        "airbyte_hidden": true
       }
     }
   },

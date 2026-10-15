@@ -25,7 +25,6 @@ import jakarta.inject.Singleton
             "discover_sample_size",
             "discover_timeout_seconds",
             "invalid_cdc_cursor_position_behavior",
-            "update_capture_mode",
             "initial_load_timeout_hours",
         ],
 )
@@ -56,7 +55,8 @@ class MongoDbSourceConfigurationSpecification : ConfigurationSpecification() {
         "The amount of time the connector will wait when it discovers a document. Defaults to 600 seconds. Valid range: 5 seconds to 1200 seconds.",
     )
     @JsonSchemaInject(
-        json = """{"default":600,"order":11,"minimum":5,"maximum":1200,"group":"advanced"}""",
+        json =
+            """{"default":600,"order":11,"minimum":5,"maximum":1200,"group":"advanced","airbyte_hidden":true}""",
     )
     var discoverTimeoutSeconds: Int? = DEFAULT_DISCOVER_TIMEOUT_SECONDS
 
@@ -72,23 +72,15 @@ class MongoDbSourceConfigurationSpecification : ConfigurationSpecification() {
     var invalidCdcCursorPositionBehavior: String? =
         InvalidCdcCursorPositionBehavior.FAIL_SYNC.specValue
 
-    @JsonProperty("update_capture_mode")
-    @JsonSchemaTitle("Capture mode (Advanced)")
-    @JsonSchemaDescription(
-        "Determines how Airbyte looks up the value of an updated document. If 'Lookup' is chosen, the current value of the document will be read. If 'Post Image' is chosen, then the version of the document immediately after an update will be read. WARNING : Severe data loss will occur if this option is chosen and the appropriate settings are not set on your Mongo instance : https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images.",
-    )
-    @JsonSchemaInject(
-        json =
-            """{"enum":["Lookup","Post Image"],"default":"Lookup","order":13,"group":"advanced"}""",
-    )
-    var updateCaptureMode: String? = UpdateCaptureMode.LOOKUP.specValue
-
     @JsonProperty("initial_load_timeout_hours")
     @JsonSchemaTitle("Initial Load Timeout in Hours (Advanced)")
     @JsonSchemaDescription(
         "The amount of time an initial load is allowed to continue for before catching up on CDC logs.",
     )
-    @JsonSchemaInject(json = """{"default":8,"min":4,"max":24,"order":14,"group":"advanced"}""")
+    @JsonSchemaInject(
+        json =
+            """{"default":8,"min":4,"max":24,"order":14,"group":"advanced","airbyte_hidden":true}""",
+    )
     var initialLoadTimeoutHours: Int? = DEFAULT_INITIAL_LOAD_TIMEOUT_HOURS
 
     companion object {

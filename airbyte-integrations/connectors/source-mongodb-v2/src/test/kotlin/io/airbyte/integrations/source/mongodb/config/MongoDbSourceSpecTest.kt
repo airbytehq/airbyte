@@ -13,8 +13,8 @@ import org.junit.jupiter.api.Test
 /**
  * `expected-spec.json` is a snapshot of this connector's generated `spec`. It carries the legacy (≤
  * 2.1.1) property names, titles, descriptions, defaults and `database_config` oneOf (so saved
- * configurations keep loading), minus the two Debezium-only properties 3.0.0 drops
- * (`initial_waiting_seconds`, `queue_size`; see the `3.0.0` breaking change in `metadata.yaml`).
+ * configurations keep loading), minus the properties 3.0.0 drops (`initial_waiting_seconds`,
+ * `queue_size`, `update_capture_mode`; see the `3.0.0` breaking change in `metadata.yaml`).
  * Rendering follows the Bulk CDK schema generator like every other Bulk CDK source (`"type":
  * "object"` on oneOf variants, discriminators as a single-value `enum` + `default`, no
  * `changelogUrl`) rather than v2's hand-written `spec.json`.

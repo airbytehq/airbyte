@@ -45,10 +45,15 @@ class MongoDbSourceMetadataQuerier(
      * fresh random sample can legitimately produce; only the catalog itself is guaranteed to pass.
      */
     private val readModeCatalog: ConfiguredAirbyteCatalog? = null,
+    /** Time-series collections seen by [streamNames]; read by [MongoDbAirbyteStreamFactory]. */
+    private val timeSeriesStreams: MutableSet<StreamIdentifier> = ConcurrentHashMap.newKeySet(),
 ) : MetadataQuerier {
 
     private val fieldsByStream = ConcurrentHashMap<StreamIdentifier, List<EmittedField>>()
     private val sampledNamespaces: MutableSet<String> = ConcurrentHashMap.newKeySet()
+
+    /** The CDK asks per configured stream at READ time; one `listCollections` per database. */
+    private val streamNamesByNamespace = ConcurrentHashMap<String, List<StreamIdentifier>>()
 
     /** Configured databases in which the credentials can read no collection (see [streamNames]). */
     private val databasesWithoutPermission: MutableList<String> = mutableListOf()
@@ -64,6 +69,10 @@ class MongoDbSourceMetadataQuerier(
         if (streamNamespace == null) {
             return emptyList()
         }
+        return streamNamesByNamespace.computeIfAbsent(streamNamespace, ::listStreamNames)
+    }
+
+    private fun listStreamNames(streamNamespace: String): List<StreamIdentifier> {
         val collections: Set<String> = authorizedCollections(streamNamespace)
         if (collections.isEmpty()) {
             databasesWithoutPermission += streamNamespace
@@ -85,21 +94,22 @@ class MongoDbSourceMetadataQuerier(
         }
     }
 
-    /** Names of the collections (not views) in [databaseName] the credentials may read. */
+    /**
+     * Names of the collections (regular and time-series, not views) in [databaseName] the
+     * credentials may read. Time-series collections are remembered so the stream factory can
+     * restrict them to full refresh.
+     */
     fun authorizedCollections(databaseName: String): Set<String> {
-        val command =
-            Document("listCollections", 1)
-                .append("authorizedCollections", true)
-                .append("nameOnly", true)
-                .append("filter", Document("type", "collection"))
-        val result: BsonDocument =
-            client.getDatabase(databaseName).runCommand(command).toBsonDocument()
-        return result
-            .getDocument("cursor")
-            .getArray("firstBatch")
-            .map { it.asDocument().getString("name").value }
-            .filter(::isSupportedCollection)
-            .toSet()
+        val types: Map<String, String> = collectionTypes(client, databaseName)
+        types.forEach { (name, type) ->
+            if (type == TIMESERIES_TYPE) {
+                timeSeriesStreams +=
+                    StreamIdentifier.from(
+                        StreamDescriptor().withName(name).withNamespace(databaseName),
+                    )
+            }
+        }
+        return types.keys.filter(::isSupportedCollection).toSet()
     }
 
     /**
@@ -164,7 +174,7 @@ class MongoDbSourceMetadataQuerier(
 
     /**
      * Top-level field names and BSON types in a random sample of `discover_sample_size` documents
-     * (only `_id` when [idOnly]):
+     * (a single document's `_id` when [idOnly], as the legacy connector sampled for schemaless):
      * ```
      * [ {$sample: {size: N}}, ({$project: {_id: 1}},)
      *   {$project: {fields: {$arrayToObject: {$map: {input: {$objectToArray: "$$ROOT"}, as: "each",
@@ -190,7 +200,7 @@ class MongoDbSourceMetadataQuerier(
             )
         val pipeline: List<Bson> =
             listOfNotNull(
-                Aggregates.sample(configuration.discoverSampleSize),
+                Aggregates.sample(if (idOnly) 1 else configuration.discoverSampleSize),
                 if (idOnly) Aggregates.project(Projections.include(ID_FIELD)) else null,
                 Aggregates.project(
                     Document("fields", Document("\$arrayToObject", typeOfEachField))
@@ -271,6 +281,11 @@ class MongoDbSourceMetadataQuerier(
         /** Present at READ time; empty for spec/check/discover. */
         private val configuredCatalog: ConfiguredAirbyteCatalog? = null,
     ) : MetadataQuerier.Factory<MongoDbSourceConfiguration> {
+        /**
+         * Time-series streams discovered by any session; [MongoDbAirbyteStreamFactory] reads it.
+         */
+        val timeSeriesStreams: MutableSet<StreamIdentifier> = ConcurrentHashMap.newKeySet()
+
         /** The configuration is not injected so tests can pass their own. */
         override fun session(config: MongoDbSourceConfiguration): MetadataQuerier =
             MongoDbSourceMetadataQuerier(
@@ -278,6 +293,7 @@ class MongoDbSourceMetadataQuerier(
                 MongoDbClientFactory.create(config),
                 skipFieldDiscovery = operation == CHECK_OPERATION,
                 readModeCatalog = if (operation == READ_OPERATION) configuredCatalog else null,
+                timeSeriesStreams = timeSeriesStreams,
             )
     }
 
@@ -285,6 +301,8 @@ class MongoDbSourceMetadataQuerier(
         const val ID_FIELD = "_id"
         /** Name of the field holding the whole document in schemaless mode. */
         const val DATA_FIELD = "data"
+        const val COLLECTION_TYPE = "collection"
+        const val TIMESERIES_TYPE = "timeseries"
         private const val CHECK_OPERATION = "check"
         private const val READ_OPERATION = "read"
 
@@ -293,5 +311,31 @@ class MongoDbSourceMetadataQuerier(
 
         fun isSupportedCollection(collectionName: String): Boolean =
             IGNORED_COLLECTION_PREFIXES.none { collectionName.startsWith(it) }
+
+        /**
+         * `listCollections` names and types (`collection` / `timeseries`, views excluded) the
+         * credentials may read in [databaseName], optionally restricted to [collectionName].
+         */
+        fun collectionTypes(
+            client: MongoClient,
+            databaseName: String,
+            collectionName: String? = null,
+        ): Map<String, String> {
+            val filter =
+                Document("type", Document("\$in", listOf(COLLECTION_TYPE, TIMESERIES_TYPE)))
+            collectionName?.let { filter.append("name", it) }
+            val command =
+                Document("listCollections", 1)
+                    .append("authorizedCollections", true)
+                    .append("nameOnly", true)
+                    .append("filter", filter)
+            val result: BsonDocument =
+                client.getDatabase(databaseName).runCommand(command).toBsonDocument()
+            return result
+                .getDocument("cursor")
+                .getArray("firstBatch")
+                .map { it.asDocument() }
+                .associate { it.getString("name").value to it.getString("type").value }
+        }
     }
 }

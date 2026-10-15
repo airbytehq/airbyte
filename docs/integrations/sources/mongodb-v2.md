@@ -21,7 +21,7 @@ Here is an outline of the minimum required steps to configure a MongoDB source:
 ### Requirements
 
 - A **replica set** or a **sharded cluster** (connected through `mongos`). A standalone `mongod` has no oplog and therefore no change streams; the connection test fails with a message saying so.
-- MongoDB 4.0 or later. The connector is tested against MongoDB 7.0. **Post Image** update capture requires MongoDB 6.0 or later.
+- MongoDB 4.0 or later. The connector is tested against MongoDB 7.0.
 - On MongoDB Atlas, a dedicated cluster (M10 tier or above). Shared tiers may fail during connection setup.
 
 ### Step 1: Create a dedicated read-only MongoDB user
@@ -170,15 +170,28 @@ A full refresh reads the whole collection, ordered by `_id`, on every sync. The 
 An incremental sync has two phases:
 
 1. **Initial snapshot.** The first sync reads the whole collection, ordered by `_id` and checkpointed as above. Before the snapshot starts, the connector records the current position of the change stream, so changes made during a long initial load are not lost: they are replayed by the next sync.
-2. **Change streams.** Later syncs resume the change stream from the saved position and emit every insert, update, replace and delete since then. Deletes are emitted as records with `_ab_cdc_deleted_at` set.
+2. **Change streams.** Later syncs resume the change stream from the saved position and emit every insert, update,
+   replace and delete made up to the moment the sync started. An update record carries the document as it is when the
+   event is read (MongoDB's `updateLookup`), so several updates in quick succession can all show the final state;
+   changes made while the sync runs are picked up by the next one, so a busy cluster cannot keep a sync open
+   indefinitely. Deletes are emitted as records with `_ab_cdc_deleted_at` set; they carry the deleted document when the
+   collection [stores pre-images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images)
+   (MongoDB 6.0 or later), and only its `_id` otherwise. An update to a document that was deleted before the connector
+   could read it back is emitted as a delete.
 
 To learn how Airbyte implements CDC in general, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/).
 
-Change streams are built on the [replica set oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/), which only retains a limited window of changes. If the saved position is no longer in the oplog, the sync either fails or starts over, as chosen by the **Invalid CDC position behavior** setting. The **Initial Load Timeout in Hours** setting protects long initial snapshots: a snapshot that runs longer than this pauses so the next sync can advance the change stream position, then resumes. See [MongoDB Oplog and Change Streams](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#mongodb-oplog-and-change-streams) for how to size the oplog.
+Change streams are built on the [replica set oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/), which
+only retains a limited window of changes. If the saved position is no longer in the oplog, the sync either fails or
+starts over, as chosen by the **Invalid CDC position behavior** setting. Long initial snapshots are protected
+automatically: a snapshot that runs longer than 8 hours pauses so the next sync can advance the change stream position,
+then resumes where it left off.
+See [MongoDB Oplog and Change Streams](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#mongodb-oplog-and-change-streams)
+for how to size the oplog.
 
-How update events are turned into records is controlled by the **Update Capture Mode** setting: **Lookup** (the default) reads the document's current state, **Post Image** (MongoDB 6.0 or later, collections configured for post-images) uses the state right after each update. See [Update Capture Mode: Lookup vs Post Image](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#update-capture-mode-lookup-vs-post-image).
-
-Every record of an incremental stream carries three metadata fields: `_ab_cdc_updated_at`, `_ab_cdc_deleted_at` and `_ab_cdc_cursor` (the stream's cursor).
+Every record of an incremental stream carries three metadata fields: `_ab_cdc_updated_at` (the change time of a
+change-stream event, or the sync time for a snapshot row), `_ab_cdc_deleted_at` (set for deletes) and `_ab_cdc_cursor`
+(the stream's cursor: set on change events, `null` on snapshot rows, so a change always supersedes the row it replaces).
 
 ### Requirements on the `_id` field
 
@@ -196,6 +209,8 @@ The schema is inferred, not declared, so keep in mind:
 - A field that is missing from the sampled documents is not in the schema and is not synced until you refresh the schema.
 - When a field holds different types in different documents, the schema uses the type seen first. Values are emitted in their own type regardless (a string stays a string even in a field typed `number`), but typed destinations may not accept such a value, in which case it arrives as `null`. Collections like this are better synced in schemaless mode.
 - Empty collections have no fields to sample and are not discovered. Views are not discovered either; sync the underlying collection.
+- [Time series collections](https://www.mongodb.com/docs/manual/core/timeseries-collections/) are discovered and can be
+  synced in **Full Refresh** mode only: MongoDB does not support change streams on them, so Incremental is not offered.
 
 When **Schema Enforced** is off, collections are read in schemaless mode, which does not assume documents share a structure. Each document produces a record with exactly two top-level fields:
 
@@ -283,10 +298,7 @@ MongoDB has a 16MB maximum document size limit for BSON documents. During CDC sy
 | Authentication Source                            | The database that the supplied credentials are validated against. Defaults to `admin`. See the [MongoDB documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource) for more details.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | Schema Enforced                                  | Controls whether a schema is discovered and enforced. See [Schema Enforcement](#schema-enforcement).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Document discovery sample size (Advanced)        | The maximum number of documents to sample per collection when discovering its fields. Default is 10,000 with a valid range of 10 to 100,000. See the [MongoDB sampling method](https://www.mongodb.com/docs/compass/current/sampling/#sampling-method) for more details.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Document discovery timeout in seconds (Advanced) | The maximum time spent sampling one collection. When it is exceeded, the fields found so far are kept. Defaults to 600 seconds. Valid range: 5 seconds to 1200 seconds.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Invalid CDC position behavior (Advanced)         | What to do when the saved change stream position is no longer valid, usually because the oplog no longer contains it. If "Fail sync" is chosen, the sync fails and you need to reset the connection before syncing again. If "Re-sync data" is chosen, the connector discards the saved position and snapshot progress and takes a new initial snapshot, which increases cost and misses the changes that occurred while the position was invalid. Default is "Fail sync".                                                                                                                                                                                                                                                                                             |
-| Update Capture Mode (Advanced)                   | Determines how Airbyte retrieves update events during CDC (Incremental) syncs.<br/><br/>**Lookup** (default): fetches the document's latest available state when the update event is processed. If a document is updated multiple times in rapid succession, Airbyte may capture the newest available version for multiple events instead of the document state immediately after each individual update. As a result, some intermediate document states may not be captured (see [Troubleshooting: Lookup vs Post Image](https://docs.airbyte.com/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#update-capture-mode-lookup-vs-post-image)).<br/><br/>**Post Image**: uses MongoDB's built-in change stream post-images to capture the document state immediately after each change. **IMPORTANT**: Post Image requires MongoDB 6.0+ and collections must be configured to [return pre and post images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images). Failure to do so may lead to data loss. |
-| Initial Load Timeout in Hours (Advanced)         | How long an initial snapshot may run before it pauses to let the change stream position advance. The snapshot resumes on the next sync. Default is 8 hours. Valid range: 4 to 24 hours.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 ## Changelog
 
