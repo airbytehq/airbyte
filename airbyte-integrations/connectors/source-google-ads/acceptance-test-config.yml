@@ -33,6 +33,8 @@ acceptance_tests:
             bypass_reason: "No data for this date range, tested in integration tests"
           - name: "click_view"
             bypass_reason: "Stream has data only for last 90 days, next config is used for testing it"
+          - name: "happytable"
+            bypass_reason: "The custom query of this config selects campaign.end_date, which the Google Ads API no longer recognizes (use campaign.end_date_time); fix the query in the test secret, then remove this entry"
       - config_path: "secrets/config_click_view.json"
         expect_records:
           path: "integration_tests/expected_records_click.jsonl"
