@@ -41,7 +41,9 @@ The connector authenticates with HTTP basic authentication, using your email add
 | tickets | id | DefaultPaginator | ✅ |  ✅  |
 | messages | id | DefaultPaginator | ✅ |  ✅  |
 | users | id | DefaultPaginator | ✅ |  ✅  |
-| views_items | id | DefaultPaginator | ✅ |  ✅  |
+| views_items | view_id, id | DefaultPaginator | ✅ |  ✅  |
+
+The `views_items` stream reads the items of every view returned by the `views` stream and adds the parent view's `view_id` to each record. Because the same item can appear in more than one view, the stream uses `view_id` and `id` together as its primary key.
 
 ## Rate limits
 

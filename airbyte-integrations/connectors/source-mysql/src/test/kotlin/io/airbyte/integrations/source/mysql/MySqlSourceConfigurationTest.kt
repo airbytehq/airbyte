@@ -4,6 +4,7 @@ package io.airbyte.integrations.source.mysql
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.AIRBYTE_CLOUD_ENV
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.output.sockets.MEDIUM_PROPERTY
 import io.airbyte.cdk.output.sockets.SOCKET_PATHS_PROPERTY
@@ -112,10 +113,50 @@ class MySqlSourceConfigurationTest {
         } catch (e: ConfigErrorException) {
             // Here we verify that the caught exception has the expected message
             Assertions.assertEquals(
-                "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.",
+                "Airbyte Cloud does not allow unencrypted database connections. " +
+                    "Either enable TLS on the MySQL server and select SSL mode required, " +
+                    "verify_ca or verify_identity, or configure an SSH tunnel; " +
+                    "the preferred SSL mode is accepted on Airbyte Cloud only together with an SSH tunnel.",
                 e.message
             )
         }
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.host", value = "localhost")
+    @Property(name = "airbyte.connector.config.port", value = "12345")
+    @Property(name = "airbyte.connector.config.username", value = "FOO")
+    @Property(name = "airbyte.connector.config.password", value = "BAR")
+    @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_V2)
+    fun testCloudRejectionForPreferredWithoutTunnelNamesBothOptions() {
+        val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
+
+        // Built explicitly with the Cloud feature flag, independently of the Micronaut environment.
+        val cloudFactory =
+            MySqlSourceConfigurationFactory(
+                featureFlags = setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
+            )
+        val e: ConfigErrorException =
+            Assertions.assertThrows(ConfigErrorException::class.java) {
+                cloudFactory.makeWithoutExceptionHandling(pojo)
+            }
+        val message: String = e.message!!
+        // Option 1: TLS on the server with an encrypting SSL mode.
+        Assertions.assertTrue(message.contains("enable TLS on the MySQL server"), message)
+        Assertions.assertTrue(message.contains("required, verify_ca or verify_identity"), message)
+        // Option 2: an SSH tunnel.
+        Assertions.assertTrue(message.contains("configure an SSH tunnel"), message)
+        Assertions.assertTrue(
+            message.contains("accepted on Airbyte Cloud only together with an SSH tunnel"),
+            message
+        )
+
+        // Outside Airbyte Cloud the same configuration is accepted as-is.
+        val config: MySqlSourceConfiguration =
+            MySqlSourceConfigurationFactory().makeWithoutExceptionHandling(pojo)
+        Assertions.assertEquals("preferred", config.jdbcProperties["sslMode"])
+        Assertions.assertTrue(config.sshTunnel is SshNoTunnelMethod)
     }
 
     @Test
