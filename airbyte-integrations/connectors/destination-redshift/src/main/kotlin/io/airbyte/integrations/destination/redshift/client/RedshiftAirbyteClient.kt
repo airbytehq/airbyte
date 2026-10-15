@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift.client
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
@@ -40,6 +41,7 @@ private const val SQLSTATE_DEPENDENT_OBJECTS_STILL_EXIST = "2BP01"
 private const val SQLSTATE_UNDEFINED_TABLE = "42P01"
 
 @Singleton
+@SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "kotlin coroutines")
 class RedshiftAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: RedshiftSqlGenerator,
