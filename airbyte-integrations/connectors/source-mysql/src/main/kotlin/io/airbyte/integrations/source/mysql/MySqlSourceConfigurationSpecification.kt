@@ -245,7 +245,8 @@ sealed interface EncryptionSpecification
 
 @JsonSchemaTitle("preferred")
 @JsonSchemaDescription(
-    "To allow unencrypted communication only when the source doesn't support encryption.",
+    "To allow unencrypted communication only when the source doesn't support encryption. " +
+        "On Airbyte Cloud this requires an SSH tunnel.",
 )
 data object EncryptionPreferred : EncryptionSpecification
 
