@@ -1,5 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+from typing import List, Union
+
 from airbyte_cdk.test.mock_http import HttpRequest
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 
@@ -327,6 +329,11 @@ class JiraRequestBuilder:
         self._query_params["startAt"] = str(start_at)
         return self
 
+    def with_next_page_token(self, next_page_token: str) -> "JiraRequestBuilder":
+        """Set the nextPageToken query parameter for cursor pagination."""
+        self._query_params["nextPageToken"] = next_page_token
+        return self
+
     def with_expand(self, expand: str) -> "JiraRequestBuilder":
         """Set the expand query parameter."""
         self._query_params["expand"] = expand
@@ -337,7 +344,7 @@ class JiraRequestBuilder:
         self._query_params["jql"] = jql
         return self
 
-    def with_fields(self, fields: str) -> "JiraRequestBuilder":
+    def with_fields(self, fields: Union[str, List[str]]) -> "JiraRequestBuilder":
         """Set the fields query parameter."""
         self._query_params["fields"] = fields
         return self

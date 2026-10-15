@@ -12158,6 +12158,8 @@ definitions:
           response_filters:
           - http_codes: [500]
             action: IGNORE
+          - predicate: "{{ 'no columns with a mapped status' in (response.get('errorMessages') or []) | join(' ') }}"
+            action: IGNORE
     transformations:
     - type: AddFields
       fields:
