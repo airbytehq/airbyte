@@ -19,12 +19,17 @@ details with full refresh.
 
 `campaign_report`, `ad_account_report`, `ad_group_report`, and `ad_report` post
 daily requests to `/reports`, broken down by campaign, account, ad group, and ad
-respectively. They request contiguous three-day windows with day-aligned cursor
-boundaries and re-read a configurable whole-day lookback (default 7 days,
-bounded to 0–30) on incremental syncs. Today's row is partial until the next
-sync re-reads it. Report history is clamped to 24 months because Reddit only
-serves that period. Metric money fields are kept in the micro-units Reddit
-returns; the connector does not convert them. Pagination uses
+respectively, with UTC `date` breakdowns. They request contiguous three-day
+windows with day-aligned cursor boundaries and re-read a configurable whole-day
+lookback (default 7 days, bounded to 0–30) on incremental syncs. `starts_at` and
+`ends_at` are built in `request_body` (the day after the window end at 00:00Z,
+capped at the current hour) because the CDK's inclusive slice end would drop
+each window's last day, and the shared `record_filter` drops rows dated after
+the window in case Reddit treats `ends_at` as inclusive. The current UTC day's
+row stays partial until a sync runs after that day ends. Report history is
+clamped to 24 months because Reddit only serves that period. Spend and cost
+metrics stay in Reddit's micro-units and `conversion_*_total_value` stays
+multiplied by 100; the connector does not convert them. Pagination uses
 `pagination.next_url` and decodes `%3D` in `page.token` before sending the next
 request.
 

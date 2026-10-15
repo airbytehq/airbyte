@@ -6,6 +6,7 @@ import re
 from collections import Counter
 from datetime import datetime, timedelta
 
+import pytest
 from conftest import base_config, get_source
 from freezegun import freeze_time
 
@@ -163,10 +164,7 @@ def _read_report_windows(
 ) -> tuple[list[tuple[str, str]], list[str]]:
     catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
     with freeze_time(now), HttpMocker() as http_mocker:
-        http_mocker._mocker.post(
-            _TOKEN_URL,
-            json={"access_token": "test-access-token", "expires_in": 3600},
-        )
+        token_request = _mock_token(http_mocker)
         http_mocker._mocker.post(_REPORT_URL, text=_inclusive_report_response)
         source = get_source(config, catalog, state)
         if bypass_spec_validation:
@@ -191,6 +189,32 @@ def _read_report_windows(
     return windows, [message.record.data["date"] for message in records]
 
 
+def _hourly_report(inclusive_end: bool):
+    # One row per UTC date; impressions = hours of that date inside [starts_at, ends_at), or [starts_at, ends_at] when inclusive.
+    def callback(request, context) -> str:
+        body = request.json()["data"]
+        hour = datetime.strptime(body["starts_at"], "%Y-%m-%dT%H:%M:%SZ")
+        end = datetime.strptime(body["ends_at"], "%Y-%m-%dT%H:%M:%SZ")
+        if end < hour:
+            context.status_code = 400
+            return json.dumps({"error": {"code": 400, "message": "The end date time must come after the start date time."}})
+        end += timedelta(hours=inclusive_end)
+        hours = Counter()
+        while hour < end:
+            hours[hour.date().isoformat()] += 1
+            hour += timedelta(hours=1)
+        context.status_code = 200
+        return json.dumps(
+            {
+                "data": {
+                    "metrics": [{"campaign_id": "test-campaign", "date": day, "impressions": count} for day, count in sorted(hours.items())]
+                }
+            }
+        )
+
+    return callback
+
+
 @freeze_time("2026-09-28T00:00:00Z")
 def test_campaign_report_posts_exact_body_for_two_three_day_slices() -> None:
     config = base_config(start_time="2026-09-23T00:00:00Z")
@@ -206,15 +230,13 @@ def test_campaign_report_posts_exact_body_for_two_three_day_slices() -> None:
         second_request = HttpRequest(_REPORT_URL, body=_report_body(second_start, second_end))
         http_mocker.post(first_request, _metric_rows(first_start, first_end))
         http_mocker.post(second_request, _metric_rows(second_start, second_end))
-        http_mocker._mocker.post(
-            _TOKEN_URL,
-            json={"access_token": "test-access-token", "expires_in": 3600},
-        )
+        token_request = _mock_token(http_mocker)
         output = read(source, config, catalog)
 
     assert output.errors == []
     assert Counter(message.record.data["campaign_id"] for message in output.records) == Counter(["campaign-1", "campaign-1"])
     assert output.state_messages[-1].state.stream.stream_state.date == "2026-09-26"
+    http_mocker.assert_number_of_calls(token_request, 1)
     http_mocker.assert_number_of_calls(first_request, 1)
     http_mocker.assert_number_of_calls(second_request, 1)
 
@@ -370,3 +392,66 @@ def test_campaign_report_midnight_end_and_cursor_after_end() -> None:
     state = StateBuilder().with_stream_state("campaign_report", {"date": "2026-10-15"}).build()
     windows, _ = _read_report_windows("2026-10-15T00:30:00Z", config, state)
     assert windows == []
+
+
+def test_campaign_report_normalizes_offset_start_time_to_utc() -> None:
+    config = base_config(start_time="2026-10-11T02:00:00+05:00")
+    windows, _ = _read_report_windows("2026-10-13T23:30:00Z", config)
+    assert windows == [
+        ("2026-10-10T00:00:00Z", "2026-10-13T00:00:00Z"),
+        ("2026-10-13T00:00:00Z", "2026-10-13T23:00:00Z"),
+    ]
+
+
+@freeze_time("2026-09-28T00:00:00Z")
+def test_campaign_report_keeps_window_end_day_when_date_has_time_suffix() -> None:
+    config = base_config(start_time="2026-09-25T00:00:00Z")
+    catalog = CatalogBuilder().with_stream("campaign_report", SyncMode.incremental).build()
+    rows = [{"campaign_id": "campaign-1", "date": f"2026-09-{day}T00:00:00Z"} for day in (25, 26, 27)]
+
+    with HttpMocker() as http_mocker:
+        http_mocker.post(
+            HttpRequest(_REPORT_URL, body=_report_body("2026-09-25T00:00:00Z", "2026-09-28T00:00:00Z")),
+            HttpResponse(body=json.dumps({"data": {"metrics": rows}}), status_code=200),
+        )
+        _mock_token(http_mocker)
+        output = read(get_source(config, catalog), config, catalog)
+
+    assert output.errors == []
+    assert [message.record.data["date"] for message in output.records] == [row["date"] for row in rows]
+
+
+def _sync(now: str, config: dict, inclusive_end: bool, state=None):
+    catalog = CatalogBuilder().with_stream("campaign_report", SyncMode.incremental).build()
+    with freeze_time(now), HttpMocker() as http_mocker:
+        http_mocker._mocker.post(_TOKEN_URL, json={"access_token": "test-access-token", "expires_in": 3600})
+        http_mocker._mocker.post(_REPORT_URL, text=_hourly_report(inclusive_end))
+        output = read(get_source(config, catalog, state), config, catalog, state=state)
+        windows = sorted(
+            (r.json()["data"]["starts_at"], r.json()["data"]["ends_at"])
+            for r in http_mocker._mocker.request_history
+            if r.url == _REPORT_URL
+        )
+    assert output.errors == []
+    rows = [(message.record.data["date"], message.record.data["impressions"]) for message in output.records]
+    assert max(Counter(day for day, _ in rows).values()) == 1, f"date emitted twice in one sync: {rows}"
+    return windows, dict(rows), output.state_messages[-1].state
+
+
+def _days(first: int, last: int) -> dict:
+    return {f"2026-10-{day:02d}": 24 for day in range(first, last + 1)}
+
+
+@pytest.mark.parametrize("inclusive_end", [False, True], ids=["exclusive_ends_at", "inclusive_ends_at"])
+def test_campaign_report_initial_sync_emits_every_whole_day_once(inclusive_end: bool) -> None:
+    _, table, _ = _sync("2026-10-14T16:30:00Z", base_config(start_time="2026-10-02T00:00:00Z"), inclusive_end)
+    assert table == {**_days(2, 13), "2026-10-14": 16 + inclusive_end}
+
+
+@pytest.mark.parametrize("inclusive_end", [False, True], ids=["exclusive_ends_at", "inclusive_ends_at"])
+def test_campaign_report_second_sync_from_emitted_state_rereads_whole_days(inclusive_end: bool) -> None:
+    config = base_config(start_time="2026-10-02T00:00:00Z")
+    _, _, state = _sync("2026-10-14T16:30:00Z", config, inclusive_end)
+    windows, table, _ = _sync("2026-10-15T09:30:00Z", config, inclusive_end, state=[state])
+    assert all(re.fullmatch(r"\d{4}-\d{2}-\d{2}T00:00:00Z", start) for start, _ in windows)
+    assert table == {**_days(7, 14), "2026-10-15": 9 + inclusive_end}

@@ -87,32 +87,51 @@ In [Reddit Ads Manager](https://ads.reddit.com), open **Business Manager** > **A
 
 All eight streams read from the single ad account you configure. `ad_account` supports full refresh; the other seven streams also support incremental sync. To sync more than one ad account, create one source per account.
 
-The report streams return one row per account, campaign, ad group, or ad per UTC day, with delivery and conversion metrics such as impressions, clicks, spend, reach, frequency, and per-objective conversion counts and values. Today's row is partial until the next sync re-reads it.
+`campaign_report`, `ad_account_report`, `ad_group_report`, and `ad_report` return
+one row per campaign, account, ad group, or ad per UTC day, respectively, with
+delivery and conversion metrics such as impressions, clicks, spend, reach,
+frequency, and per-objective conversion counts and values. The report streams
+request contiguous three-day windows with day-aligned cursor boundaries and
+re-read a configurable whole-day lookback (default 7 days, bounded to 0–30) on
+incremental syncs. `starts_at` and `ends_at` are built in `request_body` (the day
+after the window end at 00:00Z, capped at the current hour) because the CDK's
+inclusive slice end would drop each window's last day, and a shared
+`record_filter` drops rows dated after the window in case Reddit treats
+`ends_at` as inclusive. Today's UTC report row stays partial until a sync runs
+after that day ends. Report history is clamped to 24 months because Reddit only
+serves that period. Spend and cost metrics stay in Reddit's micro-units and
+`conversion_*_total_value` stays multiplied by 100; the connector does not
+convert them. Pagination uses `pagination.next_url` and decodes `%3D` in
+`page.token` before sending the next request.
 
 ## Sync behavior and limitations
 
 - **Report metrics use micro-units.** Reddit returns `spend`, `cpc`, `cpv`, `ecpm`, and the `conversion_*_ecpa` metrics multiplied by 1,000,000, and the `conversion_*_total_value` metrics multiplied by 100. The connector loads these values unchanged, so divide them in your destination before reporting on currency amounts.
-- **Recent report data changes after it lands.** Reddit says metrics can take up to 6 hours to stabilize, and conversion data keeps updating as events arrive. The `campaign_report` stream re-reads the configured **Report Lookback Window (Days)** on each incremental sync to pick up late updates and restated metrics. Today's report row is partial until the next sync re-reads that date.
-- **Refresh after upgrading from an earlier version.** Versions before 0.3.0 skipped one day in every three during initial and backfill `campaign_report` syncs. Refresh or backfill `campaign_report` after upgrading to recover those dates.
-- **Report history has a limit.** Delivery data goes back 24 months, and reach and frequency data start in June 2024. If you set **Start Date** earlier than 24 months ago, `campaign_report` still starts 24 months before the current sync, because Reddit rejects requests for older report data. The `ad` and `campaign` streams aren't clamped.
+- **Recent report data changes after it lands.** Reddit says metrics can take up to 6 hours to stabilize, and it applies late conversions for earlier hours or days in a daily refresh. Each incremental report-stream sync re-reads the last synced date plus the configured **Report Lookback Window (Days)**. Conversion metrics follow your ad account's attribution window, so raise the lookback to cover it, up to 30 days, if you need late conversions on older days. Use **Incremental | Append + Deduped** so re-read rows replace the earlier ones. The row for the current UTC day stays partial until a sync runs after that day ends.
+- **Refresh `campaign_report` after upgrading from a version earlier than 0.3.0.** Earlier versions requested report windows with gaps, so any sync that covered more than three days, including the first sync, left some dates missing or partial. Each incremental sync also re-sent the row for the day before the last synced date with only that day's last 7 hours of data. The lookback window only corrects recent days, so run a [refresh](https://docs.airbyte.com/platform/operator-guides/refreshes) with **Refresh stream and retain records**. In **Incremental | Append** mode, keep the latest row for each `campaign_id` and `date`. Don't use **Refresh stream and remove records** or **Clear**: Reddit only serves the last 24 months of report data, so older rows can't be synced again. Full refresh syncs correct themselves on the next sync.
+- **Report history has a limit.** Delivery data goes back 24 months, and reach and frequency data start in June 2024. If you set **Start Date** earlier than 24 months ago, report streams still start 24 months before the current sync, because Reddit rejects requests for older report data. The entity streams aren't clamped.
 - **Reports support account, campaign, ad group, and ad breakdowns.** Each report stream includes daily delivery and conversion metrics for its entity level.
 - **Versions earlier than 0.0.9 synced only the first page of each stream.** Reddit returns the next page token URL-encoded, and earlier versions passed it back without decoding it, so every stream stopped after its first page. If you upgraded from an earlier version and records are missing in your destination, clear the affected streams and run a new sync.
-- **Start Date filtering happens after the fetch.** For `ad` and `campaign`, the Reddit API has no server-side filter on `modified_at`, so the connector requests every record in the ad account on each sync and discards those modified before your cursor value. Sync duration scales with the size of the account, not with the amount of new data.
+- **Start Date filtering happens after the fetch.** For `ad`, `ad_group`, and `campaign`, the Reddit API has no server-side filter on `modified_at`, so the connector requests every record in the ad account on each sync and discards those modified before your cursor value. Sync duration scales with the size of the account, not with the amount of new data.
 
 ## Performance considerations
 
-Reddit applies rate limits per authorized user and per endpoint group, so sources that use the same Reddit user share those limits. The connector calls endpoints in two groups:
+Reddit applies rate limits per Reddit app, authorized user, and endpoint group, so sources that use the same app and Reddit user share those limits. The connector calls endpoints in two groups:
 
 | Reddit rate limit group | Endpoints | Streams | Quota |
 | --- | --- | --- | --- |
 | `ads-campaign-management-read` | Get Ad Account, List Ads, List Ad Groups, List Campaigns | `ad_account`, `ad`, `ad_group`, `campaign` | 400 requests per 60 seconds |
 | `ads-reporting` | Get A Report | `ad_account_report`, `campaign_report`, `ad_group_report`, `ad_report` | 60 requests per 60 seconds |
 
-The connector throttles its own requests to stay within these quotas. It only counts the requests it makes itself, so other sources or applications that use the same Reddit user can still push the account over the limit. Each report stream requests contiguous three-day UTC windows per call, so a long backfill makes many report calls in sequence.
+The connector throttles its own requests to stay within these quotas. It only
+counts the requests it makes itself, so other sources that use the same app and
+Reddit user can still push the account over the limit. Each report stream
+requests contiguous three-day UTC windows per call, so a long backfill makes
+many report calls in sequence.
 
 By default, the connector runs up to 3 requests in parallel. You can change this with **Number of Concurrent Workers**, up to a maximum of 10. If syncs hit rate limits often, lower this value.
 
-The connector retries `429` and `5xx` responses up to 10 times with exponential backoff. For `campaign_report`, it waits 60 seconds between `5xx` retries. For the full list of policies, see Reddit's [rate limiting](https://ads-api.reddit.com/docs/v3/api/reddit-advertising-api) documentation.
+The connector retries `429` and `5xx` responses up to 10 times with exponential backoff. For report streams, it waits 60 seconds between `5xx` retries. For the full list of policies, see Reddit's [rate limiting](https://ads-api.reddit.com/docs/v3/api/reddit-advertising-api) documentation.
 
 The connector reuses an access token until it expires, then refreshes it. If a request still fails with `401`, the connector refreshes the token and retries that request. If Reddit returns a new refresh token during a refresh, the connector saves it to the source configuration, so you don't have to rotate it yourself.
 
@@ -135,11 +154,12 @@ The connector reuses an access token until it expires, then refreshes it. If a r
 | `credentials.refresh_token` | `string` | OAuth Refresh Token. |  |
 | `start_time` | `string` | Optional UTC start date applied to the incremental streams, in YYYY-MM-DDTHH:MM:SSZ format. A value earlier than 24 months ago is clamped for report streams, because Reddit only serves report data for the last 24 months. | 24 months before the current date |
 | `user_agent` | `string` | Optional. User Agent. A unique and descriptive user agent string in the format: platform:app_id:version (by /u/yourusername). If empty, the connector uses an Airbyte user agent. | airbyte:source-reddit-ads:v1 |
-| `ad_account_id` | `string` | The Reddit Ads account ID to sync, shown in Reddit Ads Manager, for example a2_abc123. |  |
+| `ad_account_id` | `string` | The Reddit Ads account ID to sync, shown in Reddit Ads Manager, for example a2_abc123. | |
 | `num_workers` | `integer` | Number of concurrent workers. Higher values speed up syncs but increase the chance of Reddit rate limiting. | 3 |
 | `report_lookback_window_days` | `integer` | Optional. Number of whole days before the last synced report date to re-read for late-attributed conversions and restated metrics (0–30). | 7 |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | ad_account | id | — | ✅ |  ❌  |
@@ -160,10 +180,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
-| 0.4.0 | 2026-10-17 | [88964](https://github.com/airbytehq/airbyte/pull/88964) | Add ad_account, ad_group, ad_account_report, ad_group_report and ad_report streams |
-| 0.3.0 | 2026-10-14 | [88963](https://github.com/airbytehq/airbyte/pull/88963) | Fix campaign_report skipping days and re-reading partial days; add configurable report lookback window |
+| Version | Date | Pull Request | Subject |
+| ------------------ | ------------------- | -------------- | ---------------- |
+| 0.4.0 | 2026-10-15 | [88964](https://github.com/airbytehq/airbyte/pull/88964) | Add ad_account, ad_group, ad_account_report, ad_group_report and ad_report streams |
+| 0.3.0 | 2026-10-14 | [88963](https://github.com/airbytehq/airbyte/pull/88963) | Fix campaign_report windows that skipped report hours and overwrote earlier days with partial data; add a configurable report lookback window |
 | 0.2.0 | 2026-10-14 | [88145](https://github.com/airbytehq/airbyte/pull/88145) | Add OAuth (Authenticate with Reddit) for Airbyte Cloud with automatic config migration to a credentials object; make User Agent optional |
 | 0.1.1 | 2026-10-06 | [88015](https://github.com/airbytehq/airbyte/pull/88015) | Update dependencies |
 | 0.1.0 | 2026-10-05 | [87043](https://github.com/airbytehq/airbyte/pull/87043) | Show actionable errors for rejected refresh tokens or client credentials, invalid ad account IDs, and 400/403/404 responses, add a client-side API budget and configurable concurrency, add suggested streams, make spec titles human-readable, and add unit tests |

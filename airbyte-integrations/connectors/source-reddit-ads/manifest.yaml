@@ -141,7 +141,8 @@ definitions:
     start_datetime:
       type: MinMaxDatetime
       datetime: >-
-        {{ config.get('start_time') or (now_utc() -
+        {{ format_datetime(config['start_time'], '%Y-%m-%dT%H:%M:%SZ') if
+        config.get('start_time') else (now_utc() -
         duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
       min_datetime: "{{ (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
@@ -151,7 +152,7 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     step: P3D
     cursor_granularity: P1D
-    lookback_window: "P{{ config['report_lookback_window_days'] if (config.get('report_lookback_window_days') is integer and config['report_lookback_window_days'] is not boolean and 0 <= config['report_lookback_window_days'] <= 30) else 7 }}D"
+    lookback_window: "P{{ config['report_lookback_window_days'] if (config.get('report_lookback_window_days') is integer and 0 <= config['report_lookback_window_days'] <= 30) else 7 }}D"
     is_data_feed: false
   report_error_handler:
     type: DefaultErrorHandler
@@ -185,7 +186,7 @@ definitions:
         factor: 5
   report_record_filter:
     type: RecordFilter
-    condition: "{{ record['date'] <= stream_slice['end_time'] }}"
+    condition: "{{ record['date'][:10] <= stream_slice['end_time'] }}"
   report_window:
     starts_at: "{{ stream_interval.start_time }}T00:00:00Z"
     ends_at: "{{ min((str_to_datetime(stream_interval.end_time) + duration('P1D')).strftime('%Y-%m-%dT%H:00:00Z'), now_utc().strftime('%Y-%m-%dT%H:00:00Z')) }}"
@@ -252,7 +253,6 @@ definitions:
     - CONVERSION_PURCHASE_ECPA
     - CONVERSION_PURCHASE_TOTAL_ITEMS
     - CONVERSION_SIGN_UP_ECPA
-
 streams:
   - type: DeclarativeStream
     name: ad
