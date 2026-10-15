@@ -1162,6 +1162,8 @@ definitions:
       type: DeclarativeStream
       name: attribution_report_products
       primary_key: []
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_attribution_report_datetime_cursor"
       retriever:
         type: SimpleRetriever
         requester:
@@ -1210,11 +1212,8 @@ definitions:
                 'brandHaloNewToBrandSales14d',
                 ])
               }}
-            startDate: >-
-              {%- set _start_date = config.get("start_date") -%}
-              {%- set start_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
-              {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
-              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P60D")).strftime("%Y%m%d")) | string }}"
+            startDate:
+              $ref: "#/definitions/attribution_report_start_date"
             endDate: >-
               "{{ format_datetime(today_with_timezone(stream_slice.extra_fields['timezone']).strftime('%Y%m%d'), '%Y%m%d', '%Y%m%d') }}"
         partition_router:
@@ -1246,6 +1245,8 @@ definitions:
             page_size: 300
             cursor_value: '{{ response.get("cursorId", "") | tojson }}'
             stop_condition: "{{ response.cursorId is none}}"
+      transformations:
+        $ref: "#/definitions/attribution_report_add_fields"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1255,6 +1256,8 @@ definitions:
       type: DeclarativeStream
       name: attribution_report_performance_adgroup
       primary_key: []
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_attribution_report_datetime_cursor"
       retriever:
         type: SimpleRetriever
         requester:
@@ -1300,11 +1303,8 @@ definitions:
                 'brb_bonus_amount'
                 ])
               }}
-            startDate: >-
-              {%- set _start_date = config.get("start_date") -%}
-              {%- set start_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
-              {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
-              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P60D")).strftime("%Y%m%d")) | string }}"
+            startDate:
+              $ref: "#/definitions/attribution_report_start_date"
             endDate: >-
               "{{ format_datetime(today_with_timezone(stream_slice.extra_fields['timezone']).strftime('%Y%m%d'), '%Y%m%d', '%Y%m%d') }}"
         partition_router:
@@ -1336,6 +1336,8 @@ definitions:
             page_size: 300
             cursor_value: '{{ response.get("cursorId", "") | tojson }}'
             stop_condition: "{{ response.cursorId is none}}"
+      transformations:
+        $ref: "#/definitions/attribution_report_add_fields"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1345,6 +1347,8 @@ definitions:
       type: DeclarativeStream
       name: attribution_report_performance_campaign
       primary_key: []
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_attribution_report_datetime_cursor"
       retriever:
         type: SimpleRetriever
         requester:
@@ -1390,11 +1394,8 @@ definitions:
                 'brb_bonus_amount'
                 ])
               }}
-            startDate: >-
-              {%- set _start_date = config.get("start_date") -%}
-              {%- set start_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
-              {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
-              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P60D")).strftime("%Y%m%d")) | string }}"
+            startDate:
+              $ref: "#/definitions/attribution_report_start_date"
             endDate: >-
               "{{ format_datetime(today_with_timezone(stream_slice.extra_fields['timezone']).strftime('%Y%m%d'), '%Y%m%d', '%Y%m%d') }}"
         partition_router:
@@ -1426,6 +1427,8 @@ definitions:
             page_size: 300
             cursor_value: '{{ response.get("cursorId", "") | tojson }}'
             stop_condition: "{{ response.cursorId is none}}"
+      transformations:
+        $ref: "#/definitions/attribution_report_add_fields"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1435,6 +1438,8 @@ definitions:
       type: DeclarativeStream
       name: attribution_report_performance_creative
       primary_key: []
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_attribution_report_datetime_cursor"
       retriever:
         type: SimpleRetriever
         requester:
@@ -1479,11 +1484,8 @@ definitions:
                 'totalAttributedSales14d',
                 ])
               }}
-            startDate: >-
-              {%- set _start_date = config.get("start_date") -%}
-              {%- set start_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
-              {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
-              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P60D")).strftime("%Y%m%d")) | string }}"
+            startDate:
+              $ref: "#/definitions/attribution_report_start_date"
             endDate: >-
               "{{ format_datetime(today_with_timezone(stream_slice.extra_fields['timezone']).strftime('%Y%m%d'), '%Y%m%d', '%Y%m%d') }}"
         partition_router:
@@ -1515,6 +1517,8 @@ definitions:
             page_size: 300
             cursor_value: '{{ response.get("cursorId", "") | tojson }}'
             stop_condition: "{{ response.cursorId is none}}"
+      transformations:
+        $ref: "#/definitions/attribution_report_add_fields"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -4183,6 +4187,40 @@ definitions:
     $ref: "#/definitions/incremental_sync_report_datetime_cursor"
     cursor_field: date
 
+  # Attribution report rows carry no reliably parseable date, so the cursor is the synthesised `reportDate`
+  # (the sync's end date, as on the other report streams). The request dates stay in `request_body_json`
+  # because they use the profile's timezone; `attribution_report_start_date` narrows `startDate` from state.
+  incremental_sync_attribution_report_datetime_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: reportDate
+    cursor_datetime_formats:
+      - "%Y-%m-%d"
+    datetime_format: "%Y-%m-%d"
+    # Attribution metrics use a 14-day attribution window, so a day's rows can change for 14 days after that day.
+    lookback_window: "P{{ [config.get('look_back_window', 3) | int, 14] | max }}D"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ (today_utc() - duration('P61D')).strftime('%Y-%m-%d') }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ today_utc().strftime('%Y-%m-%d') }}"
+      datetime_format: "%Y-%m-%d"
+
+  # Full refresh and first syncs request max(start_date, today - 60 days) in the profile's timezone, or only today
+  # when start_date is not set. Incremental syncs start no earlier than the cursor's slice start (state minus lookback).
+  attribution_report_start_date: >-
+    {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
+    {%- set window_start = end_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P60D")).strftime("%Y%m%d")) -%}
+    {%- set cursor_start = (stream_interval.get("start_time") or "") | replace("-", "") -%}
+    "{{ [window_start, cursor_start] | max | string }}"
+
+  attribution_report_add_fields:
+    - type: AddFields
+      fields:
+        - path: ["reportDate"]
+          value: "{{ stream_interval.end_time }}"
+
   transformation_report_add_fields:
     - type: AddFields
       fields:
@@ -4554,6 +4592,10 @@ schemas:
   attribution_report_performance_adgroup:
     $schema: http://json-schema.org/draft-07/schema#
     properties:
+      reportDate:
+        type:
+          - "null"
+          - string
       date:
         type:
           - "null"
@@ -4709,6 +4751,10 @@ schemas:
   attribution_report_performance_campaign:
     $schema: http://json-schema.org/draft-07/schema#
     properties:
+      reportDate:
+        type:
+          - "null"
+          - string
       date:
         type:
           - "null"
@@ -4864,6 +4910,10 @@ schemas:
   attribution_report_performance_creative:
     $schema: http://json-schema.org/draft-07/schema#
     properties:
+      reportDate:
+        type:
+          - "null"
+          - string
       date:
         type:
           - "null"
@@ -5019,6 +5069,10 @@ schemas:
   attribution_report_products:
     $schema: http://json-schema.org/draft-07/schema#
     properties:
+      reportDate:
+        type:
+          - "null"
+          - string
       date:
         type:
           - "null"
