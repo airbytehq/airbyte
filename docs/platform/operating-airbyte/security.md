@@ -143,6 +143,6 @@ Do not file GitHub issues or post on our community Slack or forum for security v
 
 Airbyte takes security issues very seriously. To report a vulnerability, go to [Report a security vulnerability](https://airbyte.com/security/vdp). Airbyte Cloud and Airbyte open source each have their own vulnerability disclosure policy. Read the policy for the affected product before you test or submit a report. Each policy explains what's in scope, how to test safely, and how to submit your report.
 
-Use the vulnerability disclosure process only for undisclosed vulnerabilities. For fixed issues or general questions on how to use the security features, use the [Discourse forum](https://discuss.airbyte.io/) or [Community Slack](https://slack.airbyte.com/).
+Use the vulnerability disclosure process only for undisclosed vulnerabilities. For fixed issues or general questions on how to use the security features, use the [Community Slack](https://slack.airbyte.com/) or [GitHub discussions](https://github.com/airbytehq/airbyte/discussions).
 
 Please report any security problems to us before disclosing it publicly.
