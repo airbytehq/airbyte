@@ -148,6 +148,7 @@ class MongoDbSnapshotPartitionReader(
         return PartitionReadCheckpoint(
             MongoDbStreamStateValue.fromLastId(lastId, status).toOpaqueStateValue(),
             numRecords,
+            checkpointPartitionId,
         )
     }
 }

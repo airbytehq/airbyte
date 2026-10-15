@@ -28,6 +28,19 @@ abstract class MongoDbPartitionReaderBase(
 ) : PartitionReader {
 
     private val partitionId: String = generatePartitionId(4)
+
+    /**
+     * The partition ID to report in [io.airbyte.cdk.read.PartitionReadCheckpoint]. On the socket
+     * channel every record is tagged with [partitionId]; the checkpoint must carry the same ID so
+     * the destination can match the records it flushed to the state message. STDIO has no such
+     * bookkeeping and expects `null`.
+     */
+    protected val checkpointPartitionId: String?
+        get() =
+            when (feedBootstrap.dataChannelMedium) {
+                DataChannelMedium.SOCKET -> partitionId
+                DataChannelMedium.STDIO -> null
+            }
     private var acquiredResources: Map<ResourceType, Resource.Acquired>? = null
     private var outputMessageRouter: OutputMessageRouter? = null
 

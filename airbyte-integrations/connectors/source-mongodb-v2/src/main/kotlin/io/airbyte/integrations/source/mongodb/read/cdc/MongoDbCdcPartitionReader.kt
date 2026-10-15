@@ -197,6 +197,7 @@ class MongoDbCdcPartitionReader(
         PartitionReadCheckpoint(
             MongoDbCdcState.of(resumeToken, configuration.schemaEnforced).toOpaqueStateValue(),
             numRecords,
+            checkpointPartitionId,
         )
 
     companion object {
