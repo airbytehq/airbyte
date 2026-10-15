@@ -58,7 +58,7 @@ class DeletionVectorEndToEndTest {
             .create()
     }
 
-    private fun seed(catalog: Catalog, table: Table, rows: List<Pair<String, String>>) {
+    private fun seed(table: Table, rows: List<Pair<String, String>>) {
         val writer =
             IcebergTableWriterFactory().create(table, "ab-generation-id-0-e", Append, schema)
         rows.forEach { (id, name) -> writer.write(record(id, name)) }
@@ -105,7 +105,7 @@ class DeletionVectorEndToEndTest {
         val tableId = TableIdentifier.of("db", "records")
         val table = createTable(catalog, tableId, 3)
         assertThat(tableFormatVersion(table)).isEqualTo(3)
-        seed(catalog, table, listOf("1" to "one", "2" to "two"))
+        seed(table, listOf("1" to "one", "2" to "two"))
 
         val writerFactory = IcebergTableWriterFactory()
 
@@ -160,7 +160,7 @@ class DeletionVectorEndToEndTest {
         val (catalog, _) = catalog()
         val tableId = TableIdentifier.of("db", "records_eq")
         val table = createTable(catalog, tableId, 2)
-        seed(catalog, table, listOf("1" to "one", "2" to "two"))
+        seed(table, listOf("1" to "one", "2" to "two"))
 
         // Produce a legacy equality delete through the standard dedupe writer.
         val equalityWriter =
@@ -189,7 +189,7 @@ class DeletionVectorEndToEndTest {
         val (catalog, _) = catalog()
         val tableId = TableIdentifier.of("db", "records_pos")
         val table = createTable(catalog, tableId, 2)
-        seed(catalog, table, listOf("1" to "one", "2" to "two"))
+        seed(table, listOf("1" to "one", "2" to "two"))
 
         // Produce a legacy position delete through the positional writer.
         val positional =
@@ -222,7 +222,7 @@ class DeletionVectorEndToEndTest {
         val (catalog, _) = catalog()
         val tableId = TableIdentifier.of("db", "records_bak")
         val table = createTable(catalog, tableId, 2)
-        seed(catalog, table, listOf("1" to "one", "2" to "two"))
+        seed(table, listOf("1" to "one", "2" to "two"))
         val equalityWriter =
             IcebergTableWriterFactory().create(table, "ab-generation-id-1-e", dedupe, schema)
         equalityWriter.write(RecordWrapper(record("2", "ignored"), Operation.DELETE))
@@ -250,7 +250,7 @@ class DeletionVectorEndToEndTest {
         val (catalog, _) = catalog()
         val tableId = TableIdentifier.of("db", "records_mixed")
         val table = createTable(catalog, tableId, 2)
-        seed(catalog, table, listOf("1" to "one", "2" to "two", "3" to "three"))
+        seed(table, listOf("1" to "one", "2" to "two", "3" to "three"))
         val writerFactory = IcebergTableWriterFactory()
 
         // A legacy equality delete.
@@ -298,7 +298,7 @@ class DeletionVectorEndToEndTest {
         val (catalog, _) = catalog()
         val tableId = TableIdentifier.of("db", "records_branch")
         val table = createTable(catalog, tableId, 2)
-        seed(catalog, table, listOf("1" to "one", "2" to "two"))
+        seed(table, listOf("1" to "one", "2" to "two"))
 
         // Commit a legacy equality delete to a non-default branch.
         table.manageSnapshots().createBranch("prod").commit()
@@ -340,7 +340,7 @@ class DeletionVectorEndToEndTest {
         val (catalog, _) = catalog()
         val tableId = TableIdentifier.of("db", "records_fail")
         val table = createTable(catalog, tableId, 2)
-        seed(catalog, table, listOf("1" to "one", "2" to "two"))
+        seed(table, listOf("1" to "one", "2" to "two"))
 
         val equalityWriter =
             IcebergTableWriterFactory().create(table, "ab-generation-id-1-e", dedupe, schema)
@@ -410,7 +410,7 @@ class DeletionVectorEndToEndTest {
         val (catalog, _) = catalog()
         val tableId = TableIdentifier.of("db", "records_staging")
         val table = createTable(catalog, tableId, 2)
-        seed(catalog, table, listOf("1" to "one", "2" to "two"))
+        seed(table, listOf("1" to "one", "2" to "two"))
         table.manageSnapshots().createBranch("staging").commit()
 
         // A failed v2 sync left equality deletes on the staging branch.
@@ -478,7 +478,7 @@ class DeletionVectorEndToEndTest {
                 )
                 .create()
         // The same key exists in two partitions.
-        seed(catalog, table, listOf("1" to "a", "1" to "b"))
+        seed(table, listOf("1" to "a", "1" to "b"))
 
         // The equality delete only applies to partition "a".
         val equalityWriter =
@@ -624,7 +624,7 @@ class DeletionVectorEndToEndTest {
         val (catalog, _) = catalog()
         val tableId = TableIdentifier.of("db", "records_dv_reads")
         val table = createTable(catalog, tableId, 3)
-        seed(catalog, table, listOf("1" to "one", "2" to "two"))
+        seed(table, listOf("1" to "one", "2" to "two"))
         val writerFactory = IcebergTableWriterFactory()
         val state = PositionalDeleteResolutionState()
 

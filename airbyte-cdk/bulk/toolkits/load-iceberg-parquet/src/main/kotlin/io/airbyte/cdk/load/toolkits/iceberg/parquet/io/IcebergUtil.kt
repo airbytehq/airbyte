@@ -128,8 +128,12 @@ class IcebergUtil(
             logger.info { "Creating Iceberg table '$tableIdentifier'...." }
             catalog
                 .buildTable(tableIdentifier, schema)
-                .withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
-                .withProperty(TableProperties.FORMAT_VERSION, formatVersion.toString())
+                .withProperties(
+                    mapOf(
+                        DEFAULT_FILE_FORMAT to FileFormat.PARQUET.name.lowercase(),
+                        TableProperties.FORMAT_VERSION to formatVersion.toString(),
+                    )
+                )
                 .withSortOrder(getSortOrder(schema = schema))
                 .create()
         } else {
