@@ -112,12 +112,20 @@ jobs:
           # Get the list of modified connectors
           echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
 
+          # A `skip-jvm-toolchain-matrix` label on the PR opts out of the expanded matrices below
+          # (labels are read when the run starts: add the label before pushing, or re-run the workflow).
+          toolchain_matrix="${{ steps.cdk-changes.outputs.jvm-toolchain }}"
+          if [[ "${{ contains(github.event.pull_request.labels.*.name, 'skip-jvm-toolchain-matrix') }}" == "true" ]]; then
+            echo "skip-jvm-toolchain-matrix label present: not expanding the JVM matrices" >&2
+            toolchain_matrix="false"
+          fi
+
           # JVM matrix, broadest trigger first:
           # - shared JVM toolchain changed: modified Java connectors + every Bulk CDK connector
           #   + legacy-CDK connectors with Kotlin sources
           # - Java CDK changed: modified Java connectors + connectors pinned to cdkVersion=local
           # - otherwise: modified Java connectors
-          if [[ "${{ steps.cdk-changes.outputs.jvm-toolchain }}" == "true" ]]; then
+          if [[ "$toolchain_matrix" == "true" ]]; then
             echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java --jvm-toolchain)" | tee -a $GITHUB_OUTPUT
           elif [[ "${{ steps.cdk-changes.outputs.java-cdk }}" == "true" ]]; then
             echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java --local-cdk)" | tee -a $GITHUB_OUTPUT
@@ -130,7 +138,7 @@ jobs:
           # Lint matrix: modified connectors, plus every JVM connector when the shared JVM toolchain
           # changed. Lint runs `gradle check -x test` (compile + spotbugs, no secrets), so it is the
           # cheap way to cover the pure-Java legacy connectors that the test matrix leaves out.
-          if [[ "${{ steps.cdk-changes.outputs.jvm-toolchain }}" == "true" ]]; then
+          if [[ "$toolchain_matrix" == "true" ]]; then
             echo "lint_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --all-jvm)" | tee -a $GITHUB_OUTPUT
           else
             echo "lint_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT

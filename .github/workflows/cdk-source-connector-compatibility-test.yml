@@ -39,7 +39,8 @@ jobs:
   connectors-test:
     name: Test ${{ matrix.connector }}
     needs: [generate-matrix]
-    if: needs.generate-matrix.outputs.connectors-matrix != '[]'
+    # The `skip-jvm-toolchain-matrix` PR label opts out of this matrix (no-op for scheduled runs).
+    if: needs.generate-matrix.outputs.connectors-matrix != '[]' && !contains(github.event.pull_request.labels.*.name, 'skip-jvm-toolchain-matrix')
     runs-on: linux-24.04-large
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
