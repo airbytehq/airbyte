@@ -20,6 +20,7 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import java.time.ZoneOffset
 
 const val CONFIG_PATH = "secrets/oauth_config.json"
+const val PAT_CONFIG_PATH = "secrets/pat_config.json"
 
 /**
  * Maps expected records to account for Databricks type storage:

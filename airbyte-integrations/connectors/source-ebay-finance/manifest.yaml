@@ -22,6 +22,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /sell/finances/v1/transaction
           http_method: GET
+          request_parameters:
+            filter: "transactionDate:[{{ stream_interval['start_time'] }}..{{ stream_interval['end_time'] }}]"
         record_selector:
           type: RecordSelector
           extractor:
@@ -49,16 +51,15 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: transactionDate
         cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: transactionDate:[%Y-%m-%dT%H:%M:%S.%fZ..2100-01-01T00:00:00.000Z]
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_time_option:
-          type: RequestOption
-          field_name: filter
-          inject_into: request_parameter
+        step: P1Y
+        cursor_granularity: PT0.001S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -74,6 +75,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /sell/finances/v1/payout
           http_method: GET
+          request_parameters:
+            filter: "payoutDate:[{{ stream_interval['start_time'] }}..{{ stream_interval['end_time'] }}]"
         record_selector:
           type: RecordSelector
           extractor:
@@ -93,7 +96,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 1000
+            page_size: 200
             inject_on_first_request: true
         decoder:
           type: JsonDecoder
@@ -101,16 +104,15 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: payoutDate
         cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: payoutDate:[%Y-%m-%dT%H:%M:%S.%fZ..2100-01-01T00:00:00.000Z]
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_time_option:
-          type: RequestOption
-          field_name: filter
-          inject_into: request_parameter
+        step: P1Y
+        cursor_granularity: PT0.001S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -118,6 +120,8 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: "{{ config['api_host'] }}"
+    request_headers:
+      X-EBAY-C-MARKETPLACE-ID: "{{ config.get('marketplace_id') or 'EBAY_US' }}"
     authenticator:
       type: SessionTokenAuthenticator
       login_requester:
@@ -207,8 +211,19 @@ spec:
         type: string
         order: 7
         title: Start date
+        description: >-
+          UTC date and time to start replicating from. eBay only returns
+          transactions and payouts from the last five years.
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      marketplace_id:
+        type: string
+        order: 8
+        title: Marketplace ID
+        description: >-
+          eBay marketplace of the seller, sent as the X-EBAY-C-MARKETPLACE-ID
+          header (for example EBAY_US, EBAY_GB, EBAY_DE).
+        default: EBAY_US
     additionalProperties: true
 
 metadata:
