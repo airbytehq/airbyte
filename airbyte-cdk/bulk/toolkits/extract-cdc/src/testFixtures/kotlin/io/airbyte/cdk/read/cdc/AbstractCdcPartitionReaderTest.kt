@@ -125,10 +125,9 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
                                     .withData(recordData.toJson())
                             )
                             if (shouldSlow) {
-                                // Delay here so that Dbz will paused while sending us records so we
-                                // can
-                                // go to the logic after the engine stopped and events are still
-                                // coming.
+                                // Slow the write down so that the engine close triggered by the
+                                // first record happens while later records are still being
+                                // delivered (see testRecordsCountAfterShutdown).
                                 Thread.sleep(1000)
                             }
                         }
@@ -219,7 +218,6 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
         )
     }
 
-    @Test
     /**
      * Insert multiple rows in a single transaction. The first row reaches the target and triggers
      * the target-lsn close while the remaining rows are still being delivered, so they go through
@@ -228,6 +226,7 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
      *
      * Checks that the STATE count matches the records written (asserted in [read]).
      */
+    @Test
     fun testRecordsCountAfterShutdown() {
         container.createStream()
         val i0 =
