@@ -18,7 +18,7 @@ The following fields change type, to match what the Uptick API returns:
 - `properties.address`, `properties.coords` and `branches.business_hours`: string to object.
 - `servicequotes.product_subtotal`: string to number.
 
-The `majorservices` stream no longer supports incremental sync. Its endpoint has no `updated` timestamp, so incremental syncs re-read every record and, in append mode, duplicated every row on each sync. The stream also drops its `created` and `updated` columns, which were always empty.
+The `majorservices` stream no longer supports incremental sync. Its endpoint has no `updated` timestamp, so incremental syncs re-read every record and, in append mode, duplicated every row on each sync. The stream also drops its `created` and `updated` columns. The Uptick `MajorService` model has no `created` or `updated` field, so the API never returned them and these columns were always `null`.
 
 From this version, the `servicegroups` and `accreditationtypes` streams filter on `updated` server-side, so incremental syncs of these streams fetch only changed rows. This needs no action.
 
@@ -35,7 +35,7 @@ Before upgrading to version 2.0.0:
 After upgrading:
 
 1. Refresh the source schema for each affected connection.
-2. Switch the `majorservices` stream to full refresh. If it was syncing in incremental append mode, reset the stream to remove duplicated rows.
+2. Switch the `majorservices` stream to a full refresh sync mode. **Full refresh | Overwrite** is recommended: the next sync rebuilds the table and removes the rows that earlier incremental syncs duplicated, so you don't need to clear it. If you choose **Full refresh | Append**, clear the stream once to remove the old duplicates, and note that every later sync appends another full copy of the table. Connections that used **Incremental | Append + Deduped** have no duplicate rows and only need the sync mode change. A clear doesn't lose history: the stream re-reads every major service from Uptick, including deleted ones.
 3. Run a sync and verify downstream models against the updated schemas.
 
 ## Upgrading to 1.0.0

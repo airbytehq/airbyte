@@ -172,7 +172,7 @@ Each stream requests a fixed list of fields using Uptick's sparse fieldsets, so 
 
 ### Attribute values
 
-Uptick returns each record as a JSON:API object with an `attributes` block. The connector copies every attribute to the top level of the record without changing its value, and also keeps the original `attributes` object. Monetary and other decimal fields arrive as strings with the precision Uptick sends, such as `"10.00"`, and attributes that Uptick returns as `null` land as `null` in your destination.
+Uptick returns each record as a JSON:API object with an `attributes` block. The connector copies every attribute to the top level of the record without changing its value, and also keeps the original `attributes` object. Monetary and other decimal fields arrive as strings with the precision Uptick sends, such as `"10.00"`. The exception is `servicequotes.product_subtotal`, which Uptick returns as a JSON number and the connector declares as a number from version 2.0.0. Attributes that Uptick returns as `null` land as `null` in your destination.
 
 Before version 1.2.0, the connector re-rendered each attribute through a template, which reformatted decimal strings (`"10.00"` became `"10.0"`) and turned `null` into the string `"None"`. If you filter or join on those fields downstream, check for both representations in data synced before you upgraded.
 
