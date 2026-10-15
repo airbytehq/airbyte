@@ -5,7 +5,9 @@
 package io.airbyte.integrations.source.snowflake
 
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.check.CloudHostCheck
 import io.airbyte.cdk.check.JdbcCheckQueries
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.JdbcMetadataQuerier.ColumnMetadata
@@ -374,6 +376,7 @@ class SnowflakeSourceMetadataQuerier(
             val selectQueryGenerator: SelectQueryGenerator,
             val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
             val checkQueries: JdbcCheckQueries,
+            val featureFlags: Set<FeatureFlag>,
             // The CDK selects the running operation via this property (Operation.PROPERTY);
             // object-level tolerance must apply to discover only.
             @Value("\${airbyte.connector.operation:}") val operationName: String,
@@ -382,6 +385,16 @@ class SnowflakeSourceMetadataQuerier(
 
             override fun session(config: SnowflakeSourceConfiguration): MetadataQuerier {
                 log.info { "Snowflake source metadata session." }
+                // Before the connection opens: with a URL in Host the driver error would win.
+                // realHost is already normalized (scheme, trailing slash and :443 removed), so
+                // only what the driver cannot handle is left to reject. Syntax only: Snowflake
+                // has no SSH tunnel option and no Port field, so the loopback message of
+                // CloudHostCheck.validate() would not apply.
+                CloudHostCheck.validateHostSyntax(
+                    config.realHost,
+                    featureFlags,
+                    HOST_SYNTAX_MESSAGE
+                )
                 val jdbcConnectionFactory = JdbcConnectionFactory(config)
                 val base =
                     JdbcMetadataQuerier(
@@ -401,5 +414,13 @@ class SnowflakeSourceMetadataQuerier(
         }
 
         val EXCLUDED_NAMESPACES = setOf("INFORMATION_SCHEMA", "SNOWFLAKE_SAMPLE_DATA", "UTIL_DB")
+
+        /**
+         * Shown by CHECK on Airbyte Cloud when, after normalization, Host still carries a path,
+         * credentials, a scheme other than http(s) or a port other than 443.
+         */
+        const val HOST_SYNTAX_MESSAGE: String =
+            "Enter only the host domain in Host (for example account.snowflakecomputing.com), " +
+                "without a path or credentials."
     }
 }
