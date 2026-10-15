@@ -84,12 +84,25 @@ definitions:
     airtable_stream:
       type: DeclarativeStream
       name: airtable_stream
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: _airtable_extracted_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        lookback_window: PT15M
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: ""
           http_method: GET
+          request_parameters:
+            filterByFormula: "{% if stream_interval.start_time > '1970-01-01T00:00:00Z' %}OR(IS_AFTER(LAST_MODIFIED_TIME(), '{{ stream_interval.start_time }}'), IS_AFTER(CREATED_TIME(), '{{ stream_interval.start_time }}')){% endif %}"
         record_selector:
           type: RecordSelector
           schema_normalization: Default
@@ -140,6 +153,8 @@ definitions:
                 value: "{{ {'type': ['null', 'string']} }}"
               - path: ["_airtable_table_name"]
                 value: "{{ {'type': ['null', 'string']} }}"
+              - path: ["_airtable_extracted_at"]
+                value: "{{ {'type': ['null', 'string'], 'format': 'date-time', 'airbyte_type': 'timestamp_with_timezone'} }}"
         schema_type_identifier:
           # https://airtable.com/developers/web/api/field-model
           type: SchemaTypeIdentifier
@@ -428,6 +443,8 @@ definitions:
           fields:
             - path: ["_airtable_table_name"]
               value: ""
+            - path: ["_airtable_extracted_at"]
+              value: "{{ stream_interval.end_time }}"
             - path: ["_airtable_id"]
               value: "{{ record.id }}"
             - path: ["_airtable_created_time"]
