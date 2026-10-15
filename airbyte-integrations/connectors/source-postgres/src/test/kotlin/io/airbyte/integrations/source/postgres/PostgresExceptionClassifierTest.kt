@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.postgresql.util.PSQLException
 import org.postgresql.util.PSQLState
+import org.postgresql.util.ServerErrorMessage
 
 /**
  * Exercises the regex rules in `src/main/resources/application.yml`, in particular the
@@ -205,6 +206,69 @@ class PostgresExceptionClassifierTest {
         )
     }
 
+    @Test
+    fun testTooManyConnectionsForRoleIsConfigError() {
+        val exception =
+            tooManyConnectionsException("too many connections for role \"airbyte_delta_ro\"")
+        Assertions.assertEquals(
+            "FATAL: too many connections for role \"airbyte_delta_ro\"",
+            exception.message,
+        )
+        Assertions.assertEquals("53300", exception.sqlState)
+
+        val trace: AirbyteErrorTraceMessage = handler.handle(exception)
+        Assertions.assertEquals(
+            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+            trace.failureType,
+        )
+        Assertions.assertEquals(ROLE_CONNECTION_LIMIT_GUIDANCE, trace.message)
+        Assertions.assertFalse(trace.message.contains("State code"))
+    }
+
+    @Test
+    fun testCheckFailureOnTooManyConnectionsForRoleIsConfigError() {
+        val exception =
+            tooManyConnectionsException("too many connections for role \"airbyte_delta_ro\"")
+        val (trace: AirbyteErrorTraceMessage, status: AirbyteConnectionStatus) =
+            handler.handleCheckFailure(exception)
+
+        Assertions.assertEquals(
+            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+            trace.failureType,
+        )
+        Assertions.assertTrue(
+            status.message.startsWith(
+                "Could not connect with provided configuration. Error: $ROLE_CONNECTION_LIMIT_GUIDANCE"
+            ),
+            "Unexpected connection status message: ${status.message}",
+        )
+    }
+
+    @Test
+    fun testServerConnectionSlotExhaustionIsConfigError() {
+        for (message in
+            listOf(
+                "sorry, too many clients already",
+                "remaining connection slots are reserved for non-replication superuser connections",
+                "remaining connection slots are reserved for roles with the SUPERUSER attribute",
+                "remaining connection slots are reserved for roles with privileges of the \"pg_use_reserved_connections\" role",
+            )) {
+            val exception = tooManyConnectionsException(message)
+            Assertions.assertEquals("FATAL: $message", exception.message)
+            Assertions.assertEquals("53300", exception.sqlState)
+
+            val result = classifier.classify(exception)
+            Assertions.assertInstanceOf(ConfigError::class.java, result)
+            Assertions.assertEquals(
+                SERVER_CONNECTION_SLOTS_GUIDANCE,
+                (result as ConfigError).displayMessage,
+            )
+        }
+    }
+
+    private fun tooManyConnectionsException(message: String): PSQLException =
+        PSQLException(ServerErrorMessage("SFATAL\u0000C53300\u0000M$message\u0000"))
+
     private fun assertUnreachableHostConfigError(result: ConnectorError?) {
         Assertions.assertInstanceOf(ConfigError::class.java, result)
         val displayMessage: String = (result as ConfigError).displayMessage
@@ -225,6 +289,17 @@ class PostgresExceptionClassifierTest {
     }
 
     companion object {
+        const val ROLE_CONNECTION_LIMIT_GUIDANCE: String =
+            "The database user has reached its connection limit, which counts this sync's connections " +
+                "and those of any other client using the same user. " +
+                "Lower \"Max Concurrent Queries to Database\" in the source settings, " +
+                "or raise the user's limit (ALTER ROLE <user> CONNECTION LIMIT <n>)."
+
+        const val SERVER_CONNECTION_SLOTS_GUIDANCE: String =
+            "The Postgres server has no connection slots left: its max_connections limit counts the connections of every client. " +
+                "Lower \"Max Concurrent Queries to Database\" in the source settings, " +
+                "close idle connections from other clients, or raise max_connections on the server."
+
         const val ZERO_TABLES_GUIDANCE: String =
             "No tables are visible to the configured user in the selected database and schemas. " +
                 "Grant USAGE on each schema and SELECT on the tables to sync " +
