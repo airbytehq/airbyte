@@ -34,6 +34,9 @@ dependencies {
     implementation 'com.fasterxml.jackson.module:jackson-module-afterburner'
 
     integrationTestImplementation testFixtures(project)
+    // KSP 2 does not apply the `ksp` configuration to this compilation (KSP 1 did).
+    kspIntegrationTest platform("io.micronaut:micronaut-core-bom:$micronautVersion")
+    kspIntegrationTest 'io.micronaut:micronaut-inject-kotlin'
 }
 
 def integrationTestTask = tasks.register('integrationTest', Test) {
