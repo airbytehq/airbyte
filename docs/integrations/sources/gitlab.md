@@ -186,7 +186,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.5.2 | 2026-10-15 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Refresh the OAuth access token and retry when GitLab rejects it as expired mid-sync, report other 401 errors with an accurate message, and keep the scheme of `api_url` for the OAuth token endpoint |
+| 4.5.2 | 2026-10-15 | [88993](https://github.com/airbytehq/airbyte/pull/88993) | Refresh the OAuth access token and retry when GitLab rejects it as expired mid-sync, report other 401 errors with an accurate message, and keep the scheme of `api_url` for the OAuth token endpoint |
 | 4.5.1 | 2026-10-13 | [88629](https://github.com/airbytehq/airbyte/pull/88629) | Update dependencies |
 | 4.5.0 | 2026-10-07 | [87655](https://github.com/airbytehq/airbyte/pull/87655) | Add incremental sync support to the `pipelines_extended`, `jobs`, and `pipeline_trigger_jobs` streams. Failed Full Refresh attempts of these streams can now resume, which can write duplicate rows under Full Refresh \| Overwrite |
 | 4.4.43 | 2026-10-06 | [87865](https://github.com/airbytehq/airbyte/pull/87865) | Update dependencies |
