@@ -127,10 +127,11 @@ jobs:
 
           echo "non_jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --no-java)" | tee -a $GITHUB_OUTPUT
 
-          # Lint matrix: modified connectors, plus every toolchain-built connector when the shared
-          # JVM toolchain changed (lint runs `gradle check -x test`, which is where spotbugs runs).
+          # Lint matrix: modified connectors, plus every JVM connector when the shared JVM toolchain
+          # changed. Lint runs `gradle check -x test` (compile + spotbugs, no secrets), so it is the
+          # cheap way to cover the pure-Java legacy connectors that the test matrix leaves out.
           if [[ "${{ steps.cdk-changes.outputs.jvm-toolchain }}" == "true" ]]; then
-            echo "lint_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --jvm-toolchain)" | tee -a $GITHUB_OUTPUT
+            echo "lint_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --all-jvm)" | tee -a $GITHUB_OUTPUT
           else
             echo "lint_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
           fi

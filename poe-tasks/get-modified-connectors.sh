@@ -13,6 +13,7 @@ JSON=false
 PREV_COMMIT=false
 LOCAL_CDK=false
 JVM_TOOLCHAIN=false
+ALL_JVM=false
 REQUIRE_VERSION_BUMP=false
 
 # parse flags
@@ -35,6 +36,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --jvm-toolchain|jvm-toolchain)
       JVM_TOOLCHAIN=true
+      ;;
+    --all-jvm|all-jvm)
+      ALL_JVM=true
       ;;
     --require-version-bump)
       REQUIRE_VERSION_BUMP=true
@@ -100,10 +104,10 @@ return_empty_json() {
   exit 0
 }
 
-# 4.6) --local-cdk and --jvm-toolchain add connectors that are not in the diff, so the
-#      "nothing modified" shortcuts below must not return early when either flag is set.
+# 4.6) --local-cdk, --jvm-toolchain and --all-jvm add connectors that are not in the diff, so the
+#      "nothing modified" shortcuts below must not return early when any of them is set.
 ADDS_UNMODIFIED=false
-if $LOCAL_CDK || $JVM_TOOLCHAIN; then
+if $LOCAL_CDK || $JVM_TOOLCHAIN || $ALL_JVM; then
   ADDS_UNMODIFIED=true
 fi
 
@@ -215,12 +219,15 @@ print_list() {
 
 # Allow empty arrays without 'unbound variable' error from here on out.
 set +u
-# 10) --local-cdk and --jvm-toolchain add JVM connectors regardless of changes:
+# 10) --local-cdk, --jvm-toolchain and --all-jvm add JVM connectors regardless of changes:
 #     --local-cdk:     Bulk CDK connectors pinned to the in-repo CDK (cdkVersion=local)
 #     --jvm-toolchain: every connector compiled by the shared JVM toolchain, i.e. all
 #                      Bulk CDK connectors plus legacy-CDK connectors with Kotlin sources
-if $LOCAL_CDK || $JVM_TOOLCHAIN; then
-  if $JVM_TOOLCHAIN; then
+#     --all-jvm:       every connector with a Gradle build file
+if $LOCAL_CDK || $JVM_TOOLCHAIN || $ALL_JVM; then
+  if $ALL_JVM; then
+    echo "Adding every JVM connector..." >&2
+  elif $JVM_TOOLCHAIN; then
     echo "Adding every connector built by the shared JVM toolchain..." >&2
   else
     echo "Finding Java Bulk CDK connectors with version = local..." >&2
@@ -237,6 +244,11 @@ if $LOCAL_CDK || $JVM_TOOLCHAIN; then
       continue
     fi
     connector_name=$(basename "$connector_dir")
+
+    if $ALL_JVM; then
+      connectors+=("$connector_name")
+      continue
+    fi
 
     is_bulk=false
     if grep -q "airbyteBulkConnector" "$build_file"; then
