@@ -50,20 +50,16 @@ allprojects {
     dependencies {
         api platform('org.jetbrains.kotlin:kotlin-bom:2.0.10')
         api platform('org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.1')
-        api platform('com.fasterxml.jackson:jackson-bom:2.17.2')
+        api platform('com.fasterxml.jackson:jackson-bom:2.21.7')
         api platform("io.micronaut:micronaut-core-bom:$micronautVersion")
-        api platform('org.junit:junit-bom:5.10.2')
+        // micronaut-test is not managed by micronaut-core-bom.
+        api platform('io.micronaut.test:micronaut-test-bom:4.10.3')
+        api platform('org.junit:junit-bom:5.14.0')
         api platform('org.slf4j:slf4j-bom:2.0.13')
         api platform('org.apache.logging.log4j:log4j-bom:2.21.1')
         api platform('org.testcontainers:testcontainers-bom:1.21.4')
 
         api 'org.jetbrains.kotlin:kotlin-stdlib'
-        api 'com.google.dagger:dagger:2.51.1'
-        ksp 'com.google.dagger:dagger-compiler:2.52'
-
-        annotationProcessor platform("io.micronaut:micronaut-core-bom:$micronautVersion")
-        annotationProcessor 'info.picocli:picocli-codegen:4.7.6'
-        annotationProcessor 'io.micronaut:micronaut-inject-kotlin'
 
         ksp platform("io.micronaut:micronaut-core-bom:$micronautVersion")
         ksp 'io.micronaut:micronaut-inject-kotlin'

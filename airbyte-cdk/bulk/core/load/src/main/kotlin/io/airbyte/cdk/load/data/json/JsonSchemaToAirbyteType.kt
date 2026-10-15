@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.data.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Property
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 class JsonSchemaToAirbyteType(
