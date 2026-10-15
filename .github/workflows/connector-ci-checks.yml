@@ -102,6 +102,9 @@ jobs:
               - 'spotbugs-exclude-filter-file.xml'
               - 'airbyte-cdk/bulk/build.gradle'
               - 'airbyte-cdk/bulk/gradle.properties'
+              # airbyte-enterprise: its build files are symlinks into this submodule, so a
+              # submodule bump is the only thing that shows up in its diff (inert in this repo).
+              - 'airbyte-submodule'
 
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
@@ -123,6 +126,14 @@ jobs:
           fi
 
           echo "non_jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --no-java)" | tee -a $GITHUB_OUTPUT
+
+          # Lint matrix: modified connectors, plus every toolchain-built connector when the shared
+          # JVM toolchain changed (lint runs `gradle check -x test`, which is where spotbugs runs).
+          if [[ "${{ steps.cdk-changes.outputs.jvm-toolchain }}" == "true" ]]; then
+            echo "lint_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --jvm-toolchain)" | tee -a $GITHUB_OUTPUT
+          else
+            echo "lint_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
+          fi
 
       - name: Set JVM Runner Type
         id: set-jvm-runner-type
@@ -149,6 +160,7 @@ jobs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
       jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.jvm_connectors_matrix }}
       non-jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.non_jvm_connectors_matrix }}
+      lint-connectors-matrix: ${{ steps.generate-matrix.outputs.lint_connectors_matrix }}
       jvm-runner-type: ${{ steps.set-jvm-runner-type.outputs.jvm-runner-type }}
       ruff-version: ${{ steps.resolve-ruff-version.outputs.ruff-version }}
       # The commit SHA of the current branch, used to report test results:
@@ -432,9 +444,9 @@ jobs:
   connectors-lint:
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
-    if: ${{ needs.generate-matrix.outputs.connectors-matrix }}
+    if: ${{ needs.generate-matrix.outputs.lint-connectors-matrix }}
     strategy:
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.lint-connectors-matrix) }}
       max-parallel: 10 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
     name: Lint ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no connectors modified)' || '' }}
