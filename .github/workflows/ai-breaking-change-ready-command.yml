@@ -25,9 +25,10 @@ concurrency:
   cancel-in-progress: false
 
 # The Slack user group of breaking-change reviewers, @-mentioned in the channel below. Edit the group in Slack to change who is paged.
+# The Airbyte Tooling Bot (owner of SLACK_BOT_TOKEN_AIRBYTE_TEAM) must be a member of the channel.
 env:
   BREAKING_CHANGE_REVIEWER_SLACK_GROUP: S0C7C65AZM5
-  BREAKING_CHANGE_REVIEW_SLACK_CHANNEL: C0BHDAPNPCY # The `#team-apis` channel
+  BREAKING_CHANGE_REVIEW_SLACK_CHANNEL: C0C9BD1D3TN # The `#breaking-changes` channel
 
 permissions:
   contents: read
@@ -136,6 +137,7 @@ jobs:
           printf 'pull_request=%s\n' "$pr_data" | tee -a "$GITHUB_OUTPUT"
 
       - name: Notify breaking-change reviewers in Slack
+        id: notify-slack
         if: steps.check-gate.outputs.result == 'ready'
         # The gate verdict is already on the PR comment; a Slack failure must not replace it with a failure notice.
         continue-on-error: true
@@ -152,7 +154,7 @@ jobs:
           markdown_bullets="$(jq -r '
             def snippet:
               gsub("[\r\n]+"; " ")
-              | .[0:150]
+              | (if length > 150 then .[0:150] + "…" else . end)
               | gsub("<"; "‹")
               | gsub(">"; "›")
               | gsub("\\*"; "∗")
@@ -160,17 +162,17 @@ jobs:
               | gsub("~"; "～")
               | gsub("`"; "ˋ");
             map(
-              "• *\(.id)* (\(.title)): _\"" + (.latestHumanReply | snippet) + "…\"_"
+              "• *\(.id)* (\(.title)): _\"" + (.latestHumanReply | snippet) + "\"_"
             ) | join("\n")
           ' <<<"$replies_json")"
           plain_bullets="$(jq -r '
             def snippet:
               gsub("[\r\n]+"; " ")
-              | .[0:150]
+              | (if length > 150 then .[0:150] + "…" else . end)
               | gsub("<"; "‹")
               | gsub(">"; "›");
             map(
-              "• \(.id) (\(.title)): \"" + (.latestHumanReply | snippet) + "…\""
+              "• \(.id) (\(.title)): \"" + (.latestHumanReply | snippet) + "\""
             ) | join("\n")
           ' <<<"$replies_json")"
 
@@ -219,6 +221,16 @@ jobs:
             exit 1
           }
           echo "Breaking-change reviewers were notified in Slack channel $BREAKING_CHANGE_REVIEW_SLACK_CHANNEL."
+
+      - name: Note Slack notification failure on the PR
+        if: steps.check-gate.outputs.result == 'ready' && steps.notify-slack.outcome == 'failure'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > **Slack notification failed**, so the breaking-change reviewers were not pinged in Slack. @airbytehq/breaking-change-reviewers, this PR is ready for your review.
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
       - name: Post failure comment
         if: >
