@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## October 9, 2026
+
+Connectors
+
+- The Klaviyo connector now uses a newer version of the Klaviyo API, so your agents keep reading campaigns accurately after Klaviyo retires its older API version on October 15, 2026. Campaign send settings, such as the scheduled send time and throttle percentage, are now returned in a simpler structure, so update any code that reads the previous send strategy fields. This update is also available in the SDK.
+
 ## October 7, 2026
 
 Connectors
