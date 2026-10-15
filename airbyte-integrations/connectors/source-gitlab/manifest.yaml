@@ -548,6 +548,20 @@ definitions:
           - type: AddedFieldDefinition
             path: ["author_id"]
             value: "{{ (record.get('author') or {}).get('id') }}"
+      - type: AddFields
+        condition: "{{ record.get('due_date_from_milestones') }}"
+        fields:
+          - type: AddedFieldDefinition
+            path: ["due_date_from_milestones"]
+            value: "{{ (record.get('due_date_from_milestones') or '')[:10] }}"
+            value_type: string
+      - type: AddFields
+        condition: "{{ record.get('start_date_from_milestones') }}"
+        fields:
+          - type: AddedFieldDefinition
+            path: ["start_date_from_milestones"]
+            value: "{{ (record.get('start_date_from_milestones') or '')[:10] }}"
+            value_type: string
     primary_key: "iid"
     $parameters:
       path: "groups/{{ stream_slice.id }}/epics"
