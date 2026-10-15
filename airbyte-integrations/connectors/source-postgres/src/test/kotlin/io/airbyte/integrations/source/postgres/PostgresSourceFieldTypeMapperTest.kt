@@ -413,10 +413,7 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             testCase(
                 "$OFF_PATH_ENUM[]",
                 ArrayAirbyteSchemaType(LeafAirbyteSchemaType.STRING),
-                mapOf(
-                    "array['sad', 'happy']::$OFF_PATH_ENUM[]" to
-                        "[\"sad\",\"happy\"]"
-                ),
+                mapOf("array['sad', 'happy']::$OFF_PATH_ENUM[]" to "[\"sad\",\"happy\"]"),
                 "SCHEMA QUALIFIED ENUM ARRAY"
             )
         )
