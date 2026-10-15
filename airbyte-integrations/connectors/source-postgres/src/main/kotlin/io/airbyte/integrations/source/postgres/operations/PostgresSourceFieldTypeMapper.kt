@@ -124,23 +124,27 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
         }
     }
 
-    class PgSystemType(systemType: SystemType) {
-        val isArray: Boolean = systemType.typeName!!.startsWith("_")
-        val scalarTypeName =
-            if (isArray) systemType.typeName!!.substring(1) else systemType.typeName!!
-        val scalarJdbcType: JDBCType =
-            if (isArray) scalarJDBCType(systemType.typeName!!) else systemType.jdbcType!!
+    private class PgSystemType(systemType: SystemType) {
+        // TODO: Better user-facing message? Alert Extract team?
+        val typeName: String = requireNotNull(systemType.typeName)
+        val jdbcType: JDBCType = requireNotNull(systemType.jdbcType)
+        val isArray: Boolean = jdbcType == JDBCType.ARRAY
+
+        // Array type names are "_<element>", e.g. "_int4". For array types outside the
+        // search_path, the driver returns a quoted, schema-qualified name instead, e.g.
+        // "s2"."_kind". Such names don't start with an underscore and never match a built-in name,
+        // so their element type falls through to JDBCType.OTHER and maps to a string. That's the
+        // correct mapping: built-in types are always on the search_path, so the element type of a
+        // schema-qualified array is user-defined or comes from an extension, and the driver doesn't
+        // apply type-specific conversions to such elements (e.g. hstore to Map).
+        val scalarTypeName: String = if (isArray) typeName.removePrefix("_") else typeName
+        val scalarJdbcType: JDBCType = if (isArray) scalarJDBCType(typeName) else jdbcType
+
         // TODO: Fix type handling for numeric arrays.
         //  Requires fetching the correct scale and precision of array elements from another source.
         //  https://github.com/airbytehq/airbyte-internal-issues/issues/15879
         val scale = systemType.scale
         val precision = systemType.precision
-
-        init {
-            // TODO: Better user-facing message? Alert Extract team?
-            requireNotNull(systemType.typeName)
-            requireNotNull(systemType.jdbcType)
-        }
 
         // Postgres reports the JDBC type of all arrays as JDBCType.ARRAY. Here, we use the
         // name of the array type to determine the JDBC type of its elements. Array type names
