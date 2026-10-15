@@ -105,11 +105,7 @@ internal fun loadDeletionVectorIndex(io: FileIO, dv: DeleteFile): PositionDelete
     val input = io.newInputFile(dv.location())
     Puffin.read(input).withFileSize(dv.fileSizeInBytes()).build().use { reader ->
         val blobs =
-            reader
-                .fileMetadata()
-                .blobs()
-                .filter { it.offset() == dv.contentOffset() }
-                .toList()
+            reader.fileMetadata().blobs().filter { it.offset() == dv.contentOffset() }.toList()
         val blobData =
             reader.readAll(blobs).singleOrNull()?.second()
                 ?: error("No deletion-vector blob found in ${dv.location()}")

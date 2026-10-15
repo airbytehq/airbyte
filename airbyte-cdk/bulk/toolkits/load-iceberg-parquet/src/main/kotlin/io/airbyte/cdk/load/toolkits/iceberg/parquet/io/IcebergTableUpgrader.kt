@@ -12,7 +12,6 @@ import java.util.UUID
 import org.apache.iceberg.DeleteFile
 import org.apache.iceberg.FileContent
 import org.apache.iceberg.PartitionSpec
-import org.apache.iceberg.Schema
 import org.apache.iceberg.SnapshotRef
 import org.apache.iceberg.StructLike
 import org.apache.iceberg.Table
@@ -44,13 +43,13 @@ object IcebergTableUpgrader {
 
     /**
      * Upgrades the table identified by [tableId] to format v3. When [backup] is true, the current
-     * metadata is first registered under a sibling table named
-     * `<name>_v2_backup_<yyyyMMddHHmmss>` (UTC) so the pre-upgrade state remains readable.
+     * metadata is first registered under a sibling table named `<name>_v2_backup_<yyyyMMddHHmmss>`
+     * (UTC) so the pre-upgrade state remains readable.
      *
-     * Every branch in [branches] that exists in `table.refs()` is migrated in the same
-     * transaction — the destination's main branch and any retained staging branch both carry
-     * legacy deletes that would otherwise survive. Branches sharing a snapshot are planned once,
-     * so a shared data file never gets two DVs.
+     * Every branch in [branches] that exists in `table.refs()` is migrated in the same transaction
+     * — the destination's main branch and any retained staging branch both carry legacy deletes
+     * that would otherwise survive. Branches sharing a snapshot are planned once, so a shared data
+     * file never gets two DVs.
      *
      * No-op when the table is already v3 or newer. Returns the (re)loaded table.
      */
@@ -75,9 +74,9 @@ object IcebergTableUpgrader {
         // manifest set; a commit that lands between planning and the transaction is rejected
         // by the RowDelta validations below and leaves the table at v2 for a retry.
         val branchSnapshots: Map<String, Long> =
-            branches.mapNotNull { branch ->
-                table.refs()[branch]?.let { branch to it.snapshotId() }
-            }.toMap()
+            branches
+                .mapNotNull { branch -> table.refs()[branch]?.let { branch to it.snapshotId() } }
+                .toMap()
         if (branches.size != branchSnapshots.size) {
             logger.info {
                 "Table $tableId is missing some branches; migrating ${branchSnapshots.keys} " +
@@ -110,8 +109,7 @@ object IcebergTableUpgrader {
 
     private fun registerBackup(catalog: Catalog, table: Table, tableId: TableIdentifier) {
         val timestamp =
-            DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
-                .format(LocalDateTime.now(ZoneOffset.UTC))
+            DateTimeFormatter.ofPattern("yyyyMMddHHmmss").format(LocalDateTime.now(ZoneOffset.UTC))
         val backupId =
             TableIdentifier.of(tableId.namespace(), "${tableId.name()}_v2_backup_$timestamp")
         catalog.registerTable(backupId, currentMetadataFileLocation(table))
@@ -136,14 +134,16 @@ object IcebergTableUpgrader {
      */
     private fun planMigration(table: Table, snapshotId: Long): MigratedDeletes {
         val tasks = table.newScan().useSnapshot(snapshotId).planFiles().use { it.toList() }
-        val dataFileInfo = tasks.associateBy { it.file().location().toString() }
+        val dataFileInfo = tasks.associateBy { it.file().location() }
         // A legacy delete applies to a data file iff Iceberg lists it in that file's scan-task
         // deletes. This is the same applicability rule the read side uses, so it covers spec,
         // partition, and sequence-number semantics for every delete-file kind.
         val applicability: Map<String, Set<String>> =
             tasks
                 .flatMap { task ->
-                    task.deletes().map { it.location().toString() to task.file().location().toString() }
+                    task.deletes().map {
+                        it.location() to task.file().location()
+                    }
                 }
                 .groupBy({ it.first }, { it.second })
                 .mapValues { it.value.toSet() }
@@ -163,19 +163,16 @@ object IcebergTableUpgrader {
                 }
             }
 
-        val legacyDeletes = sortedSetOf<DeleteFile>(compareBy { it.location().toString() })
-        val deleteFiles =
-            tasks.flatMap { it.deletes() }.distinctBy { it.location().toString() }
+        val legacyDeletes = sortedSetOf<DeleteFile>(compareBy { it.location() })
+        val deleteFiles = tasks.flatMap { it.deletes() }.distinctBy { it.location() }
 
         for (deleteFile in deleteFiles) {
-            val appliesTo =
-                applicability[deleteFile.location().toString()] ?: continue
+            val appliesTo = applicability[deleteFile.location()] ?: continue
             when {
                 deleteFile.content() == FileContent.POSITION_DELETES &&
                     !ContentFileUtil.isDV(deleteFile) -> {
                     legacyDeletes += deleteFile
-                    readPositionsByDataFile(table, deleteFile).forEach {
-                        (dataFilePath, index) ->
+                    readPositionsByDataFile(table, deleteFile).forEach { (dataFilePath, index) ->
                         if (dataFilePath in appliesTo) {
                             positionsFor(dataFilePath)?.let { pending ->
                                 index.forEach { pos -> pending.positions += pos }
@@ -199,19 +196,14 @@ object IcebergTableUpgrader {
         }
         val locationProvider = table.locationProvider()
         val writer =
-            BaseDVFileWriter(
-                {
-                    table.io()
-                        .newOutputFile(
-                            locationProvider.newDataLocation("${UUID.randomUUID()}.puffin")
-                        )
-                }
-            ) { path ->
+            BaseDVFileWriter({
+                table
+                    .io()
+                    .newOutputFile(locationProvider.newDataLocation("${UUID.randomUUID()}.puffin"))
+            }) { path ->
                 // Merge an existing DV if the data file already has one.
                 deleteFiles
-                    .firstOrNull {
-                        ContentFileUtil.isDV(it) && it.referencedDataFile() == path
-                    }
+                    .firstOrNull { ContentFileUtil.isDV(it) && it.referencedDataFile() == path }
                     ?.let { loadDeletionVectorIndex(table.io(), it) }
             }
         try {
@@ -232,8 +224,8 @@ object IcebergTableUpgrader {
     /**
      * Bumps `format-version` and swaps each branch's legacy delete files for DVs in a single
      * transaction, so a failure leaves the table untouched at v2 and a later sync can retry the
-     * whole upgrade. Every branch gets a validated RowDelta — even an empty one — so a
-     * conflicting concurrent commit on any migrated branch fails the transaction.
+     * whole upgrade. Every branch gets a validated RowDelta — even an empty one — so a conflicting
+     * concurrent commit on any migrated branch fails the transaction.
      */
     private fun commitUpgrade(
         table: Table,
@@ -241,10 +233,7 @@ object IcebergTableUpgrader {
         migrations: Map<Long, MigratedDeletes>,
     ) {
         val transaction = table.newTransaction()
-        transaction
-            .updateProperties()
-            .set(TableProperties.FORMAT_VERSION, "3")
-            .commit()
+        transaction.updateProperties().set(TableProperties.FORMAT_VERSION, "3").commit()
         branchSnapshots.forEach { (branch, snapshotId) ->
             val migration = migrations.getValue(snapshotId)
             val delta =
@@ -283,8 +272,8 @@ object IcebergTableUpgrader {
     }
 
     /**
-     * Resolves an equality delete file's keys to row positions in the data files the delete
-     * applies to, reusing the same superseded-row scan the positional delete writer uses.
+     * Resolves an equality delete file's keys to row positions in the data files the delete applies
+     * to, reusing the same superseded-row scan the positional delete writer uses.
      */
     private fun resolveEqualityDeletes(
         table: Table,
@@ -293,8 +282,7 @@ object IcebergTableUpgrader {
         dataFileInfo: Map<String, org.apache.iceberg.FileScanTask>,
     ): Sequence<PositionalDeleteResolver.RowLocation> {
         val equalityFieldIds =
-            deleteFile.equalityFieldIds()?.toSet()
-                ?: table.schema().identifierFieldIds()
+            deleteFile.equalityFieldIds()?.toSet() ?: table.schema().identifierFieldIds()
         val finder =
             SupersededRowFinder(
                 table,
@@ -313,14 +301,10 @@ object IcebergTableUpgrader {
                 GenericParquetReaders.buildReader(recordSchema, messageType)
             }
             .build<Record>()
-            .use { records ->
-                records.forEach { touched.markDeleted(wrapper.wrap(it)) }
-            }
+            .use { records -> records.forEach { touched.markDeleted(wrapper.wrap(it)) } }
         return finder.find(touched, "", snapshotId).asIterable().let { locations ->
             // Restrict to the data files this delete applies to.
-            locations
-                .asSequence()
-                .filter { location -> location.path.toString() in dataFileInfo }
+            locations.asSequence().filter { location -> location.path.toString() in dataFileInfo }
         }
     }
 }

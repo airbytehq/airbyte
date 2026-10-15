@@ -24,10 +24,7 @@ private const val DEFAULT_FORMAT_VERSION = 2
  * implementations that do not expose [HasTableOperations].
  */
 fun tableFormatVersion(table: Table): Int =
-    (table as? HasTableOperations)
-        ?.operations()
-        ?.current()
-        ?.formatVersion()
+    (table as? HasTableOperations)?.operations()?.current()?.formatVersion()
         ?: table.properties()[TableProperties.FORMAT_VERSION]?.toIntOrNull()
             ?: DEFAULT_FORMAT_VERSION
 
