@@ -22,8 +22,11 @@ dependencies {
 
     testImplementation("io.mockk:mockk:1.14.7")
 
-    testFixturesImplementation 'org.testcontainers:postgresql:1.21.4'
-    testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-source-integration-tests"))
+    // PostgresTestDatabase extends TestDatabase and exposes PostgreSQLContainer, so both are part
+    // of the testFixtures API: consumers (src/test) compile against them. KGP >= 2.0.10 stops
+    // leaking testFixturesImplementation into the test classpath (KT-68278).
+    testFixturesApi 'org.testcontainers:postgresql:1.21.4'
+    testFixturesApi testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-source-integration-tests"))
 }
 
 configurations {
