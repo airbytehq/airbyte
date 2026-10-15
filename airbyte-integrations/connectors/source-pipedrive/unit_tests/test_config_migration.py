@@ -14,8 +14,8 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 
 
 DEFAULT_START_DATE = "2010-01-01T00:00:00Z"
-_RECENTS_URL = re.compile(r"https://api\.pipedrive\.com/v1/recents.*")
-_EMPTY_PAGE = {"data": [], "additional_data": {"pagination": {"next_start": None}}}
+_DEALS_URL = re.compile(r"https://api\.pipedrive\.com/api/v2/deals.*")
+_EMPTY_PAGE = {"data": [], "additional_data": {"next_cursor": None}}
 
 
 def _spec_start_date_property():
@@ -55,18 +55,18 @@ def test_replication_start_date_pattern(value, expected):
 
 
 @pytest.mark.parametrize(
-    "start_date, expected_since_timestamp",
+    "start_date, expected_updated_since",
     [
-        pytest.param(None, "2010-01-01 00:00:00", id="missing_uses_default"),
-        pytest.param("2017-01-25T00:00:00Z", "2017-01-25 00:00:00", id="iso_z"),
-        pytest.param("2017-01-25 00:00:00Z", "2017-01-25 00:00:00", id="space_separator"),
-        pytest.param("2017-01-25", "2017-01-25 00:00:00", id="date_only"),
-        pytest.param("2017-01-25T00:00:00+02:00", "2017-01-24 22:00:00", id="utc_offset"),
-        pytest.param("2017-01-25T00:00:00.000Z", "2017-01-25 00:00:00", id="fractional_seconds"),
+        pytest.param(None, "2010-01-01t00:00:00z", id="missing_uses_default"),
+        pytest.param("2017-01-25T00:00:00Z", "2017-01-25t00:00:00z", id="iso_z"),
+        pytest.param("2017-01-25 00:00:00Z", "2017-01-25t00:00:00z", id="space_separator"),
+        pytest.param("2017-01-25", "2017-01-25t00:00:00z", id="date_only"),
+        pytest.param("2017-01-25T00:00:00+02:00", "2017-01-24t22:00:00z", id="utc_offset"),
+        pytest.param("2017-01-25T00:00:00.000Z", "2017-01-25t00:00:00z", id="fractional_seconds"),
     ],
 )
-def test_start_date_reaches_the_api_as_since_timestamp(requests_mock, start_date, expected_since_timestamp):
-    requests_mock.get(_RECENTS_URL, json=_EMPTY_PAGE)
+def test_start_date_reaches_the_api_as_updated_since(requests_mock, start_date, expected_updated_since):
+    requests_mock.get(_DEALS_URL, json=_EMPTY_PAGE)
     config = {"api_token": "token"}
     if start_date is not None:
         config["replication_start_date"] = start_date
@@ -74,11 +74,11 @@ def test_start_date_reaches_the_api_as_since_timestamp(requests_mock, start_date
     output = _read_deals(config)
 
     assert output.errors == []
-    assert requests_mock.last_request.qs["since_timestamp"] == [expected_since_timestamp]
+    assert requests_mock.last_request.qs["updated_since"] == [expected_updated_since]
 
 
 def test_malformed_start_date_fails_config_validation(requests_mock):
-    requests_mock.get(_RECENTS_URL, json=_EMPTY_PAGE)
+    requests_mock.get(_DEALS_URL, json=_EMPTY_PAGE)
 
     output = _read_deals({"api_token": "token", "replication_start_date": "2017/01/25"})
 
@@ -102,3 +102,25 @@ def test_current_config_is_not_migrated(capsys):
     source = get_source({"api_token": "current-token", "replication_start_date": "2017-01-25T00:00:00Z"})
     assert source._config["api_token"] == "current-token"
     assert "CONTROL" not in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("saved_value", [20, 40])
+def test_num_workers_above_the_current_maximum_is_lowered(capsys, saved_value):
+    source = get_source({"api_token": "t", "num_workers": saved_value})
+    assert source._config["num_workers"] == 10
+    control_messages = [json.loads(line) for line in capsys.readouterr().out.splitlines() if '"CONTROL"' in line]
+    assert len(control_messages) == 1
+    assert control_messages[0]["control"]["connectorConfig"]["config"]["num_workers"] == 10
+
+
+@pytest.mark.parametrize("saved_value", [1, 10])
+def test_num_workers_within_the_maximum_is_kept(capsys, saved_value):
+    source = get_source({"api_token": "t", "num_workers": saved_value})
+    assert source._config["num_workers"] == saved_value
+    assert "CONTROL" not in capsys.readouterr().out
+
+
+def test_config_saved_by_2_3_x_with_40_workers_still_syncs(requests_mock):
+    requests_mock.get(_DEALS_URL, json=_EMPTY_PAGE)
+    output = _read_deals({"api_token": "t", "num_workers": 40})
+    assert output.errors == []

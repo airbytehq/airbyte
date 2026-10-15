@@ -295,29 +295,6 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="TasksSearchResult"></a>
-
-`TasksSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `AirbyteSearchResult[TeamsSearchData](**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -557,8 +534,8 @@ Classes
     ### Descendants
 
     * airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResultWithMeta[list[Doc], DocsListResultMeta]
-    * airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResultWithMeta[list[Task], TasksApiSearchResultMeta]
     * airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResultWithMeta[list[Task], TasksListResultMeta]
+    * airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResultWithMeta[list[Task], TasksSearchResultMeta]
     * airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResultWithMeta[list[Task], ViewTasksListResultMeta]
 
     ### Class variables
@@ -611,51 +588,6 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`ClickupApiExecuteResultWithMeta[list[Task], TasksApiSearchResultMeta](**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="TasksApiSearchResult"></a>
-
-`TasksApiSearchResult(**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `ClickupApiExecuteResultWithMeta[list[Task], TasksListResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -683,6 +615,51 @@ Classes
 <a id="TasksListResult"></a>
 
 `TasksListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="TasksSearchResult"></a>
+
+`TasksSearchResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+`ClickupApiExecuteResultWithMeta[list[Task], TasksSearchResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -3206,30 +3183,6 @@ Classes
     `username: str | None`
     :   Watcher username
 
-<a id="TasksApiSearchResultMeta"></a>
-
-`TasksApiSearchResultMeta(**data: Any)`
-:   Metadata for tasks.Action.API_SEARCH operation
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `last_page: bool | None`
-    :   The type of the None singleton.
-
-    `model_config`
-    :   The type of the None singleton.
-
 <a id="TasksListResponse"></a>
 
 `TasksListResponse(**data: Any)`
@@ -3328,6 +3281,30 @@ Classes
 
     `url: str | None`
     :   Permalink URL to view the task in ClickUp
+
+<a id="TasksSearchResultMeta"></a>
+
+`TasksSearchResultMeta(**data: Any)`
+:   Metadata for tasks.Action.SEARCH operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `last_page: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
 
 <a id="Team"></a>
 

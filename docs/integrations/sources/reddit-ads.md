@@ -4,12 +4,20 @@ The Reddit Ads source syncs campaigns, ads, and daily campaign performance metri
 
 ## Prerequisites
 
-- A [Reddit Ads](https://ads.reddit.com) account with at least one ad account.
-- A Reddit developer app, which gives you the app ID and secret this connector uses as its OAuth client ID and client secret. Only business admins with a verified Reddit account can create one.
-- An OAuth refresh token for that app, authorized with the `adsread` scope.
+- A [Reddit Ads](https://ads.reddit.com) account with at least one ad account, and a Reddit user who can access the ad account you want to sync.
 - The ID of the ad account you want to sync.
+- If you use the **Use your own Reddit app** authentication option:
+  - A Reddit developer app, which gives you the app ID and secret this connector uses as its OAuth client ID and client secret. Only business admins with a verified Reddit account can create one.
+  - An OAuth refresh token for that app, authorized with the `adsread` scope.
 
 ## Set up the Reddit Ads source
+
+The connector offers two **Authentication** options:
+
+- **Authenticate with Reddit**: Sign in to Reddit from Airbyte, and Airbyte obtains the refresh token for you. This is the default option in Airbyte Cloud. You don't need your own developer app, so skip Steps 1 and 2.
+- **Use your own Reddit app**: Enter the client ID, client secret, and refresh token of a Reddit developer app you manage. Use this option in self-managed Airbyte, or if you already have a developer app. Complete Steps 1 and 2 first.
+
+Sources created before version 0.2.0 move to **Use your own Reddit app** automatically and keep their existing client ID, client secret, and refresh token, so they need no action.
 
 ### Step 1: Create a developer app
 
@@ -53,10 +61,15 @@ In [Reddit Ads Manager](https://ads.reddit.com), open **Business Manager** > **A
 
 ### Step 4: Configure the source in Airbyte
 
-Enter the client ID, client secret, refresh token, and ad account ID, then set the remaining fields:
+1. Under **Authentication**, choose one option:
+   - **Authenticate with Reddit**: Select **Authenticate your Reddit Ads account**, sign in to Reddit as a user who can access the ad account you want to sync, and select **Allow**.
+   - **Use your own Reddit app**: Enter the **OAuth Client ID**, **OAuth Client Secret**, and **OAuth Refresh Token** from Steps 1 and 2.
+2. Enter the **Ad Account ID** from [Step 3](#step-3-find-your-ad-account-id).
+3. Set the remaining optional fields:
 
-- **User Agent**: Reddit requires a descriptive user agent on every request, in the format `platform:app_id:version (by /u/username)`. For example, `airbyte:reddit-ads-sync:v1.0 (by /u/your-username)`. Reddit heavily throttles default user agents such as `Python/urllib` or `Java`.
-- **start_time**: Optional. The earliest data to sync, in RFC 3339 format with a UTC offset, such as `2024-05-11T00:00:00Z`. It applies to all three streams: it's the earliest `modified_at` for `ad` and `campaign`, and the earliest report date for `campaign_report`. If you leave it empty, all three streams start 24 months before the current sync.
+   - **User Agent**: Optional. A descriptive user agent in the format `platform:app_id:version (by /u/username)`. For example, `airbyte:reddit-ads-sync:v1.0 (by /u/your-username)`. If you leave it empty, the connector sends an Airbyte user agent. Reddit heavily throttles default user agents such as `Python/urllib` or `Java`.
+   - **Start Date**: Optional. The earliest data to sync, in RFC 3339 format with a UTC offset, such as `2024-05-11T00:00:00Z`. It applies to all three streams: it's the earliest `modified_at` for `ad` and `campaign`, and the earliest report date for `campaign_report`. If you leave it empty, all three streams start 24 months before the current sync.
+   - **Number of Concurrent Workers**: Optional. The number of requests the connector runs in parallel, from 1 to 10. The default is 3. Higher values can speed up syncs, but they make Reddit rate limiting more likely.
 
 ## Supported streams
 
@@ -74,27 +87,49 @@ All three streams support full refresh and incremental sync, and all read from t
 
 - **Report metrics use micro-units.** Reddit returns `spend`, `cpc`, `cpv`, `ecpm`, and the `conversion_*_ecpa` metrics multiplied by 1,000,000, and the `conversion_*_total_value` metrics multiplied by 100. The connector loads these values unchanged, so divide them in your destination before reporting on currency amounts.
 - **Recent report data changes after it lands.** Reddit says metrics can take up to 6 hours to stabilize, and conversion data keeps updating as events arrive. The `campaign_report` stream re-reads a 7-hour window on each sync to pick up late updates, but rows for the last day or two can still change after they're synced.
-- **Report history has a limit.** Delivery data goes back 24 months, and reach and frequency data start in June 2024. If you set `start_time` earlier than 24 months ago, `campaign_report` still starts 24 months before the current sync, because Reddit rejects requests for older report data. The `ad` and `campaign` streams aren't clamped.
+- **Report history has a limit.** Delivery data goes back 24 months, and reach and frequency data start in June 2024. If you set **Start Date** earlier than 24 months ago, `campaign_report` still starts 24 months before the current sync, because Reddit rejects requests for older report data. The `ad` and `campaign` streams aren't clamped.
 - **Reports are campaign-level only.** `campaign_report` breaks metrics down by campaign and date, so ad group and ad metrics aren't available in this connector.
 - **Versions earlier than 0.0.9 synced only the first page of each stream.** Reddit returns the next page token URL-encoded, and earlier versions passed it back without decoding it, so every stream stopped after its first page. If you upgraded from an earlier version and records are missing in your destination, clear the affected streams and run a new sync.
-- **`start_time` filtering happens after the fetch.** For `ad` and `campaign`, the Reddit API has no server-side filter on `modified_at`, so the connector requests every record in the ad account on each sync and discards those modified before your cursor value. Sync duration scales with the size of the account, not with the amount of new data.
+- **Start Date filtering happens after the fetch.** For `ad` and `campaign`, the Reddit API has no server-side filter on `modified_at`, so the connector requests every record in the ad account on each sync and discards those modified before your cursor value. Sync duration scales with the size of the account, not with the amount of new data.
 
 ## Performance considerations
 
-Reddit applies rate limits per authorized user and per endpoint group, so sources that use the same Reddit user share those limits. The report endpoint this connector calls for `campaign_report` allows 60 requests per minute (the `ads-reporting` group); the campaign and ad read endpoints belong to a separate group with its own quota. `campaign_report` requests three days of report data per call, so a long backfill makes many report calls in sequence. The connector retries `429` and `5xx` responses up to 10 times with exponential backoff, and waits 60 seconds between report retries. For the full list of policies, see Reddit's [rate limiting](https://ads-api.reddit.com/docs/v3/api/reddit-advertising-api) documentation.
+Reddit applies rate limits per authorized user and per endpoint group, so sources that use the same Reddit user share those limits. The connector calls endpoints in two groups:
+
+| Reddit rate limit group | Endpoints | Streams | Quota |
+| --- | --- | --- | --- |
+| `ads-campaign-management-read` | List Ads, List Campaigns | `ad`, `campaign` | 400 requests per 60 seconds |
+| `ads-reporting` | Get A Report | `campaign_report` | 60 requests per 60 seconds |
+
+The connector throttles its own requests to stay within these quotas. It only counts the requests it makes itself, so other sources or applications that use the same Reddit user can still push the account over the limit. `campaign_report` requests three days of report data per call, so a long backfill makes many report calls in sequence.
+
+By default, the connector runs up to 3 requests in parallel. You can change this with **Number of Concurrent Workers**, up to a maximum of 10. If syncs hit rate limits often, lower this value.
+
+The connector retries `429` and `5xx` responses up to 10 times with exponential backoff. For `campaign_report`, it waits 60 seconds between `5xx` retries. For the full list of policies, see Reddit's [rate limiting](https://ads-api.reddit.com/docs/v3/api/reddit-advertising-api) documentation.
 
 The connector reuses an access token until it expires, then refreshes it. If a request still fails with `401`, the connector refreshes the token and retries that request. If Reddit returns a new refresh token during a refresh, the connector saves it to the source configuration, so you don't have to rotate it yourself.
+
+## Troubleshooting
+
+| Error | Cause and fix |
+| --- | --- |
+| Refresh token was rejected by the OAuth provider | Reddit's token endpoint rejected the refresh token or the client credentials. If you use **Authenticate with Reddit**, select **Authenticate your Reddit Ads account** again. If you use **Use your own Reddit app**, confirm the OAuth Client ID and Client Secret, then [get a new refresh token](#step-2-get-a-refresh-token) with `duration=permanent`. |
+| Reddit denied access to ad account (HTTP 403) | The refresh token lacks the `adsread` scope, or the Reddit user who authorized it can't access this ad account. Re-authenticate, or get a new refresh token with the `adsread` scope, while signed in as a user with access to the ad account. |
+| Reddit could not find ad account (HTTP 404) or Reddit rejected the ad account ID | The **Ad Account ID** is wrong. [Find your ad account ID](#step-3-find-your-ad-account-id), which starts with `a2_`, and update the source. |
+| Reddit rejected the request as invalid (HTTP 400) | Reddit rejected the request for a reason unrelated to the ad account. The error message includes the explanation Reddit returned. |
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `client_id` | `string` | OAuth Client ID.  |  |
+| `credentials` | `object` | Authentication: `Authenticate with Reddit` (`auth_type: OAuth2.0`) or `Use your own Reddit app` (`auth_type: OwnApp`). |  |
+| `credentials.client_id` | `string` | OAuth Client ID. The client ID of your Reddit app. |  |
+| `credentials.client_secret` | `string` | OAuth Client Secret. The client secret of your Reddit app. |  |
+| `credentials.refresh_token` | `string` | OAuth Refresh Token. |  |
 | `start_time` | `string` | Optional UTC start date applied to all three streams, in YYYY-MM-DDTHH:MM:SSZ format. A value earlier than 24 months ago is clamped for `campaign_report`, because Reddit only serves report data for the last 24 months. | 24 months before the current date |
-| `user_agent` | `string` | User Agent. A unique and descriptive user agent string in the format: platform:app_id:version (by /u/yourusername). Required for all requests. |  |
-| `ad_account_id` | `string` | ad_account_id.  |  |
-| `client_secret` | `string` | OAuth Client Secret.  |  |
-| `refresh_token` | `string` | OAuth Refresh Token.  |  |
+| `user_agent` | `string` | Optional. User Agent. A unique and descriptive user agent string in the format: platform:app_id:version (by /u/yourusername). If empty, the connector uses an Airbyte user agent. | airbyte:source-reddit-ads:v1 |
+| `ad_account_id` | `string` | The Reddit Ads account ID to sync, shown in Reddit Ads Manager, for example a2_abc123. |  |
+| `num_workers` | `integer` | Number of concurrent workers. Higher values speed up syncs but increase the chance of Reddit rate limiting. | 3 |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -114,6 +149,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.2.0 | 2026-10-14 | [88145](https://github.com/airbytehq/airbyte/pull/88145) | Add OAuth (Authenticate with Reddit) for Airbyte Cloud with automatic config migration to a credentials object; make User Agent optional |
+| 0.1.1 | 2026-10-06 | [88015](https://github.com/airbytehq/airbyte/pull/88015) | Update dependencies |
+| 0.1.0 | 2026-10-05 | [87043](https://github.com/airbytehq/airbyte/pull/87043) | Show actionable errors for rejected refresh tokens or client credentials, invalid ad account IDs, and 400/403/404 responses, add a client-side API budget and configurable concurrency, add suggested streams, make spec titles human-readable, and add unit tests |
+| 0.0.12 | 2026-09-29 | [87338](https://github.com/airbytehq/airbyte/pull/87338) | Update dependencies |
+| 0.0.11 | 2026-09-22 | [86789](https://github.com/airbytehq/airbyte/pull/86789) | Update dependencies |
+| 0.0.10 | 2026-09-15 | [86198](https://github.com/airbytehq/airbyte/pull/86198) | Update dependencies |
 | 0.0.9 | 2026-09-09 | [84850](https://github.com/airbytehq/airbyte/pull/84850) | Fix pagination so every stream syncs all pages instead of only the first |
 | 0.0.8 | 2026-09-08 | [85629](https://github.com/airbytehq/airbyte/pull/85629) | Update dependencies |
 | 0.0.7 | 2026-08-18 | [84348](https://github.com/airbytehq/airbyte/pull/84348) | Enable acceptance test suite with GSM test secrets |
