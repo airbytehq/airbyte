@@ -25,7 +25,7 @@ For more about keys and permissions, see [Authentication](https://docs.incident.
 
 ### Step 2: Set up the Incident.io connector in Airbyte
 
-### For Airbyte Cloud:
+### For Airbyte Cloud
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -35,7 +35,7 @@ For more about keys and permissions, see [Authentication](https://docs.incident.
 6. (Optional) Set **Start Date**, **Time window**, and **Number of concurrent workers**. See [Configuration options](#configuration-options).
 7. Click **Set up source**.
 
-### For Airbyte Open Source:
+### For Airbyte Open Source
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click Sources and then click + New source.
