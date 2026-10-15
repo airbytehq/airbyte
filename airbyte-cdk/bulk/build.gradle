@@ -66,7 +66,14 @@ allprojects {
         kspTest platform("io.micronaut:micronaut-core-bom:$micronautVersion")
         kspTest 'io.micronaut:micronaut-inject-kotlin'
 
-        testImplementation("io.mockk:mockk:1.13.13")
+        // micronaut-test-bom 4.10.3 constrains mockk to 1.13.17. mockk 1.13.16-1.14.7 unbox a value
+        // class returned from any property getter (ValueClassSupport.maybeUnboxValueForMethodReturn)
+        // regardless of the getter's declared type; recording `every { rawData }` on a mocked
+        // DestinationRecordRaw then creates a temporary mock of the sealed DestinationRecordSource
+        // (mockk proxies its first subclass, the DestinationRecordJsonSource value class), unboxes it
+        // by calling the mocked getter, and recurses until the heap is gone. Fixed upstream in
+        // mockk 1.14.9, which needs kotlin-stdlib 2.2. Keep master's version until then.
+        testImplementation("io.mockk:mockk") { version { strictly "1.13.13" } }
     }
 
     publishing {
