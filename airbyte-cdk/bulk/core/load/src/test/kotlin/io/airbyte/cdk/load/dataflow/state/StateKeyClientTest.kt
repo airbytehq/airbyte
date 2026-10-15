@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpoint
-import io.airbyte.cdk.load.state.CheckpointId
 import io.mockk.every
 import io.mockk.mockk
 import kotlin.test.assertEquals
@@ -25,7 +24,7 @@ class StateKeyClientTest {
         // Given
         val client = SelfDescribingStateKeyClient()
         val message = mockk<DestinationRecordRaw>()
-        every { message.checkpointId } returns CheckpointId("namespace-partition-123")
+        every { message.checkpointId!!.value } returns "namespace-partition-123"
 
         // When
         val result = client.getPartitionKey(message)
