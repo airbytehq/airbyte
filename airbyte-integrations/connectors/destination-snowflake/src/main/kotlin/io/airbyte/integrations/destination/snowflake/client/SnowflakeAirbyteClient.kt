@@ -51,7 +51,7 @@ class SnowflakeAirbyteClient(
      * `AIRBYTE_DESTINATION_SNOWFLAKE_META_COLUMN_REPAIR=true`.
      */
     @Value("\${airbyte.destination.snowflake.meta-column-repair:false}")
-    private val metaColumnRepairEnabled: Boolean = false,
+    private val metaColumnRepairEnabled: Boolean,
 ) : TableOperationsClient, TableSchemaEvolutionClient {
     private val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
 
