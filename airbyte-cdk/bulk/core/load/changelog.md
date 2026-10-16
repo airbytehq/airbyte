@@ -7,9 +7,13 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
-### 1.1.4 — 2026-10-14
+### 1.1.5 — 2026-10-16
 
 [#88973](https://github.com/airbytehq/airbyte/pull/88973) — Feat: add positional and deletion-vector delete file support to the Iceberg load toolkit, with duplicate-delete suppression and optional whole-file supersession; add an in-place v2-to-v3 table upgrader that converts legacy delete files to deletion vectors.
+
+### 1.1.4 — 2026-10-15
+
+[#89002](https://github.com/airbytehq/airbyte/pull/89002) — Test and testFixtures dependencies are declared explicitly (Kotlin Gradle plugin 2.0.10+ no longer propagates `implementation` dependencies into testFixtures, nor `testFixturesImplementation` into tests), and K2-lint cleanups that also compile on Kotlin 1.9. No behaviour change.
 
 ### 1.1.3 — 2026-10-12
 
