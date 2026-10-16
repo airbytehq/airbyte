@@ -19,7 +19,7 @@ This page contains the setup guide and reference information for the [Shopify](h
 This connector supports **OAuth2.0** and **API Password** (for private applications) authentication methods.
 
 :::warning
-Shopify's API doesn't support retrieving only the discount codes that changed recently. To work around this, the discount code streams find the discounts that were updated since the last sync and then fetch all of their codes. This ensures you sync every updated discount code, but codes that haven't changed may be synced again. If you have discounts with many codes, this can increase your credit usage.
+Shopify's API doesn't support retrieving only the most recently updated discount codes. Instead, the connector fetches all discount codes associated with each recently updated discount. This ensures you sync every updated discount code, at the cost of possibly re-syncing codes that haven't changed. As a result, credit consumption may be higher than expected for discounts with a large number of discount codes.
 :::
 
 ### Set up Shopify
