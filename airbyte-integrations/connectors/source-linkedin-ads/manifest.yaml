@@ -534,10 +534,6 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          # submittedAtTimeRange is a Rest.li composite param that must NOT be URL-encoded, so it is
-          # embedded in the path (RequestOption request_parameters would encode it). It is omitted
-          # when the cursor start is epoch 0 (full refresh or first incremental sync) so the stream
-          # reads full history regardless of the configured start_date.
           path: /leadFormResponses?owner=(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{{stream_slice.get('account_id')}})&leadType=(leadType:SPONSORED){% if stream_interval.get('start_time') | int > 0 %}&submittedAtTimeRange=(start:{{ stream_interval.get('start_time') }},end:{{ stream_interval.get('end_time') }}){% endif %}
           http_method: GET
           request_parameters:
