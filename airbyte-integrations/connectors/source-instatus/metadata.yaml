@@ -21,7 +21,7 @@ data:
     breakingChanges:
       1.0.0:
         message: >-
-          The `name` field of the `metrics` stream changes type from string to string-or-object,
+          The `name` field of the `metrics` stream changes type from string to object,
           because the Instatus API returns metric names as translation objects, such as
           `{"default": "Response time"}`. Only connections that sync the `metrics` stream are
           affected. After upgrading, refresh the source schema and clear the `metrics` stream.

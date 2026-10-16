@@ -2,9 +2,9 @@
 
 ## Upgrading to 1.0.0
 
-The Instatus API returns some `name` fields as translation objects keyed by language, for example `{"default": "Response time"}`. The connector's schema declared these fields as strings, so the declared type did not match the data. Version 1.0.0 declares them as either a string or an object with a `default` key and one string key per translation.
+The Instatus API returns some `name` fields as translation objects keyed by language, for example `{"default": "Response time"}`. The connector's schema declared these fields as strings, so the declared type did not match the data. Version 1.0.0 declares them as objects with a `default` key and one string key per translation.
 
-The `name` column of the `metrics` stream changes type from string to string-or-object. This is the only change that requires action, and only for connections that sync the `metrics` stream.
+The `name` column of the `metrics` stream changes type from string to object. This is the only change that requires action, and only for connections that sync the `metrics` stream.
 
 The same fix applies to `components[].name` in the `subscribers` stream. That field sits inside the `components` array, so the `components` column keeps its type and the `subscribers` stream needs no action.
 

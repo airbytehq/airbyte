@@ -2415,7 +2415,6 @@ schemas:
             name:
               type:
                 - "null"
-                - string
                 - object
               properties:
                 default:
@@ -2583,7 +2582,6 @@ schemas:
       name:
         type:
           - "null"
-          - string
           - object
         properties:
           default:
