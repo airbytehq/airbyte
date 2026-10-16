@@ -34,7 +34,7 @@ The Kotlin Bulk CDK uses [Dokka](https://kotlinlang.org/docs/dokka-introduction.
 ### Generate Documentation Locally
 
 ```bash
-./gradlew :airbyte-cdk:bulk:docsGenerate
+./gradlew :airbyte-cdk:bulk:dokkaGenerate
 ```
 
 This generates HTML documentation in `airbyte-cdk/bulk/build/dokka/htmlMultiModule/`.

@@ -34,6 +34,26 @@ acceptance_tests:
         empty_streams:
           - name: "project_permission_schemes"
             bypass_reason: "Unable to populate. Jira doesn't support issue security for Free plan."
+          - name: "filter_sharing"
+            bypass_reason: "The service account's test site has one project with a single issue and no data for this stream."
+          - name: "filters"
+            bypass_reason: "The service account's test site has one project with a single issue and no data for this stream."
+          - name: "issue_comments"
+            bypass_reason: "The service account's test site has one project with a single issue and no data for this stream."
+          - name: "issue_properties"
+            bypass_reason: "The service account's test site has one project with a single issue and no data for this stream."
+          - name: "issue_remote_links"
+            bypass_reason: "The service account's test site has one project with a single issue and no data for this stream."
+          - name: "issue_worklogs"
+            bypass_reason: "The service account's test site has one project with a single issue and no data for this stream."
+          - name: "labels"
+            bypass_reason: "The service account's test site has one project with a single issue and no data for this stream."
+          - name: "project_categories"
+            bypass_reason: "The service account's test site has one project with a single issue and no data for this stream."
+          - name: "project_components"
+            bypass_reason: "The service account's test site has one project with a single issue and no data for this stream."
+          - name: "project_versions"
+            bypass_reason: "The service account's test site has one project with a single issue and no data for this stream."
         timeout_seconds: 2400
         fail_on_extra_columns: false
   incremental:
