@@ -9,7 +9,7 @@ The Extract CDK provides functionality for source connectors including schema di
 
 ### 1.1.17 — 2026-10-15
 
-[#88992](https://github.com/airbytehq/airbyte/pull/88992) — Bump Micronaut to 4.10.31, Jackson to 2.21.7 (Kotlin runtime 2.1.21), JUnit to 5.14, mockito-kotlin to 6.4 and SpotBugs to 4.10.5; Dagger and `javax.inject` are removed in favour of `jakarta.inject` only. Released alongside base 1.0.5 and load 1.1.4; no extract behaviour change.
+[#88992](https://github.com/airbytehq/airbyte/pull/88992) — Bump Micronaut to 4.10.31, Jackson to 2.21.7 (Kotlin runtime 2.1.21), JUnit to 5.14 and SpotBugs to 4.10.5; Dagger and `javax.inject` are removed in favour of `jakarta.inject` only. Released alongside base 1.0.5 and load 1.1.4; no extract behaviour change.
 
 ### 1.1.16 — 2026-10-12
 

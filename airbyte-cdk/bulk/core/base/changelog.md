@@ -1,6 +1,6 @@
 ## Version 1.0.5
 
-[#88992](https://github.com/airbytehq/airbyte/pull/88992) — Bump Micronaut to 4.10.31, Jackson to 2.21.7 (Kotlin runtime 2.1.21), JUnit to 5.14, mockito-kotlin to 6.4 and SpotBugs to 4.10.5. Remove Dagger and `javax.inject`; the CDK and connectors use `jakarta.inject` only. New `verifyMicronautBeanDefinitions` Gradle task (wired into `check` and before every test task) loads every KSP-generated bean definition so a bean that Micronaut would silently drop fails the build instead.
+[#88992](https://github.com/airbytehq/airbyte/pull/88992) — Bump Micronaut to 4.10.31, Jackson to 2.21.7 (Kotlin runtime 2.1.21), JUnit to 5.14 and SpotBugs to 4.10.5. Remove Dagger and `javax.inject`; the CDK and connectors use `jakarta.inject` only. New `verifyMicronautBeanDefinitions` Gradle task (wired into `check` and before every test task) loads every KSP-generated bean definition so a bean that Micronaut would silently drop fails the build instead.
 
 ## Version 1.0.4
 
