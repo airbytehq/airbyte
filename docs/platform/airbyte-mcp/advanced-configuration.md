@@ -30,7 +30,7 @@ Add headers to your client's MCP configuration. Configuration syntax can vary by
 }
 ```
 
-Headers can only hide tools. They can't give your agent permissions your Airbyte role doesn't have.
+Headers can't give your agent permissions your Airbyte role doesn't have.
 
 ## Tool restrictions
 
@@ -45,6 +45,16 @@ Headers can only hide tools. They can't give your agent permissions your Airbyte
 | `X-MCP-Exclude-Modules`         | Comma-separated modules       | When set, hides tools from these modules. Can't be combined with `X-MCP-Include-Modules`.                                                                                    |
 
 `X-MCP-Allow-Pipeline-Changes`, `X-MCP-Allow-External-Access`, and `X-MCP-Allow-Destructive-Tools` also accept `true` or `yes` for `1`, and `false` or `no` for `0`. `X-MCP-Readonly-Mode` also accepts `true` for `1`.
+
+## Delete guard
+
+The delete tools only delete a source, destination, or connection whose name contains `delete-me` or `deleteme` (case insensitive). Your agent can rename a resource to add the marker, but only after you explicitly agree to the rename.
+
+| Header                       | Allowed values                | Effect                                                                                |
+| :--------------------------- | :---------------------------- | :------------------------------------------------------------------------------------ |
+| `X-MCP-Disable-Delete-Guard` | `1` (enabled), `0` (disabled) | Disabled by default. When set to `1`, the delete tools don't require the name marker. |
+
+`X-MCP-Disable-Delete-Guard` also accepts `true` or `yes` for `1`, and `false` or `no` for `0`. To block deletions entirely, which is the stronger option, set `X-MCP-Allow-Destructive-Tools` to `0` instead.
 
 ## Default workspace and organization
 
