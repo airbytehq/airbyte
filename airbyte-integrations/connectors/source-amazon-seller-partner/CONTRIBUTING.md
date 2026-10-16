@@ -92,7 +92,7 @@ The following streams have known failures when running against test/sandbox cred
 
 | Stream | Failure Reason |
 |--------|---------------|
-| GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE | `RequestedFromDate 2023-09-30T00:00:00.000Z is more than 90 days old` (400 InvalidInput) |
+| GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2 | `RequestedFromDate 2023-09-30T00:00:00.000Z is more than 90 days old` (400 InvalidInput) |
 
 ## 7. Report Streams Must Declare Their Own `dataStartTime`/`dataEndTime`
 
@@ -167,7 +167,7 @@ month-aligned bounds for those. This is not handled.
 
 ## 10. Settlement Reports Use `AsyncRetriever` Without Creating Anything
 
-`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` is the one report stream Amazon generates on its own —
+`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` is the one report stream Amazon generates on its own —
 `createReport` is not allowed for it. It still uses `basic_async_retriever`, with the
 `creation_requester` overridden to a **GET** of `reports/2021-06-30/reports/{reportId}` for a report
 that `flat_file_settlement_v2_helper` already listed. Nothing is created; the async machinery is
@@ -267,7 +267,7 @@ The Amazon Seller Partner API uses an asynchronous report generation model. Most
 | vendor_direct_fulfillment_shipping | medium | top-level parent | createdBefore | createdBefore | incremental |  |
 | vendor_orders | medium | top-level parent | changedBefore | changedBefore | incremental |  |
 | vendor_orders_status | medium | top-level parent | createdBefore | createdBefore | incremental |  |
-| get_v2_settlement_report_data_flat_file | medium | child | dataEndTime | dataEndTime | incremental |  |
+| get_v2_settlement_report_data_flat_file_v2 | medium | child | dataEndTime | dataEndTime | incremental |  |
 | order_items | medium | child of orders | LastUpdateDate | LastUpdateDate | incremental |  |
 
 ### Future incremental stream candidates

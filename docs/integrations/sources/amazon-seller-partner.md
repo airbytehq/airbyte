@@ -167,7 +167,7 @@ The `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL
 - [Flat File Orders By Last Update Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 - [Flat File Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 - [Flat File Returns Report by Return Date](https://developer-docs.amazon.com/sp-api/docs/report-type-values-returns) \(incremental\)
-- [Flat File Settlement Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-settlement) \(incremental\) — this stream reads `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`, which Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) on March 17, 2025 and plans to remove on November 11, 2026
+- [Flat File V2 Settlement Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-settlement) \(incremental\)
 - [Inactive Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
 - [Inventory Ledger Report - Detailed View](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
 - [Inventory Ledger Report - Summary View](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
@@ -500,6 +500,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 7.0.0 | 2026-10-14 | [74065](https://github.com/airbytehq/airbyte/pull/74065) | Replace `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`, which Amazon removes on November 11, 2026, with `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` |
 | 6.1.2 | 2026-10-13 | [88532](https://github.com/airbytehq/airbyte/pull/88532) | Update dependencies |
 | 6.1.1 | 2026-10-08 | [85912](https://github.com/airbytehq/airbyte/pull/85912) | Fix `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` returning 0 records: download each settlement report document, paginate the report listing correctly, and resolve the pre-signed download URL just before use |
 | 6.1.0 | 2026-09-29 | [86943](https://github.com/airbytehq/airbyte/pull/86943) | Give `GET_VENDOR_INVENTORY_REPORT` the daily date window and `endDate` cursor its sibling reports already have, making it incremental; hold the cursor back four days for Amazon's publishing lag |
