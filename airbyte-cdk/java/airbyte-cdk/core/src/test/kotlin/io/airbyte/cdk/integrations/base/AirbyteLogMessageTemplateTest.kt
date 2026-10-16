@@ -3,6 +3,7 @@
  */
 package io.airbyte.cdk.integrations.base
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.AirbyteLogMessage
 import io.airbyte.protocol.models.AirbyteMessage
@@ -29,6 +30,10 @@ class AirbyteLogMessageTemplateTest {
     private lateinit var outputStreamAppender: OutputStreamAppender
     private lateinit var outputContent: ByteArrayOutputStream
 
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment"
+    )
     fun getLogger() {
         // We are creating a log appender with the same output pattern
         // as the console json appender defined in this project's log4j2.xml file.

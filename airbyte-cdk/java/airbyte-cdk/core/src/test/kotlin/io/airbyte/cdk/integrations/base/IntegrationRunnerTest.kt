@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.base
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.io.IOs
@@ -47,6 +48,10 @@ internal class IntegrationRunnerTest {
 
     @BeforeEach
     @Throws(IOException::class)
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment"
+    )
     fun setup() {
         cliParser = mock()
         stdoutConsumer = mock()

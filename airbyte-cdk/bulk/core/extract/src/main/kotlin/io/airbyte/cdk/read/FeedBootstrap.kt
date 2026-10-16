@@ -134,7 +134,7 @@ sealed class FeedBootstrap<T : Feed>(
 
         private fun acceptWithoutChanges(recordData: ObjectNode) {
             synchronized(this) {
-                for ((fieldName, defaultValue) in defaultRecordData.fields()) {
+                for ((fieldName, defaultValue) in defaultRecordData.properties()) {
                     reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
                 }
                 outputDataChannel.accept(reusedMessageWithoutChanges)
@@ -146,7 +146,7 @@ sealed class FeedBootstrap<T : Feed>(
             changes: List<AirbyteRecordMessageMetaChange>
         ) {
             synchronized(this) {
-                for ((fieldName, defaultValue) in defaultRecordData.fields()) {
+                for ((fieldName, defaultValue) in defaultRecordData.properties()) {
                     reusedRecordData.set<JsonNode>(fieldName, recordData[fieldName] ?: defaultValue)
                 }
                 reusedRecordMeta.changes = changes

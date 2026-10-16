@@ -31,7 +31,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
         if (!areBothEmpty(expectedObject, actualObject)) {
             LOGGER.info("Expected Object : {}", expectedObject)
             LOGGER.info("Actual Object   : {}", actualObject)
-            val expectedDataIterator = expectedObject.fields()
+            val expectedDataIterator = expectedObject.properties().iterator()
             while (expectedDataIterator.hasNext()) {
                 val expectedEntry = expectedDataIterator.next()
                 val expectedValue = expectedEntry.value

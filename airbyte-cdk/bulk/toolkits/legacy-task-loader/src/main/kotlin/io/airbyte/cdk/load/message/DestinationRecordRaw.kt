@@ -97,7 +97,7 @@ data class DestinationRecordRaw(
             declaredFields[fieldName] = enrichedValue
         }
         // Then, get the undeclared fields
-        rawJson.fields().forEach { (fieldName, fieldValue) ->
+        rawJson.properties().forEach { (fieldName, fieldValue) ->
             if (!schemaFields.contains(fieldName)) {
                 undeclaredFields[fieldName] = fieldValue
             }

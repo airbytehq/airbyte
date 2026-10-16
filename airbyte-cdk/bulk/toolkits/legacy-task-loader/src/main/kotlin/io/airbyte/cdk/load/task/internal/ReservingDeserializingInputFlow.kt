@@ -22,7 +22,7 @@ class ReservingDeserializingInputFlow(
     val deserializer: ProtocolMessageDeserializer,
     @Named("queueMemoryManager") val memoryManager: ReservationManager,
     @Named("inputStream") val inputStream: InputStream,
-    @Named("logPerNRecords") val logPerNRecords: Long = 100_000L,
+    @Named("logPerNRecords") val logPerNRecords: Long,
 ) : Flow<Pair<Long, Reserved<DestinationMessage>>> {
     val log = KotlinLogging.logger {}
 
