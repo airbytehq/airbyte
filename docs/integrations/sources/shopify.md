@@ -18,6 +18,10 @@ This page contains the setup guide and reference information for the [Shopify](h
 
 This connector supports **OAuth2.0** and **API Password** (for private applications) authentication methods.
 
+:::warning
+Shopify doesn't expose a last-updated time for individual discount codes, only for the discount they belong to. Both discount code streams use the discount's `updated_at` as their cursor, so whenever a discount is updated, the next incremental sync re-syncs **every** code of that discount, not only the codes that changed. For discounts with many codes, incremental syncs of these streams can behave much like full refreshes, and credit consumption may be higher than expected depending on how many discount codes your store has.
+:::
+
 ### Set up Shopify
 
 <!-- env:cloud -->
@@ -230,9 +234,7 @@ Shopify's Bulk Operations API silently truncates the nested `codes` connection a
 
 **Recommendation:** Enable the **Discount Codes Sync** stream if you have any discounts with more than ~100 redeem codes. You may run both streams simultaneously — they produce records with the same schema, so you can deduplicate downstream by `id`.
 
-:::warning
-Shopify doesn't expose a last-updated time for individual discount codes, only for the discount they belong to. Both discount code streams use the discount's `updated_at` as their cursor, so whenever a discount is updated, the next incremental sync re-syncs **every** code of that discount, not only the codes that changed. For discounts with many codes, incremental syncs of these streams can behave much like full refreshes, and credit consumption may be higher than expected depending on how many discount codes your store has.
-:::
+Both discount code streams re-sync every code of a discount whenever that discount is updated. See the [warning in the setup guide](#setup-guide).
 
 **Discounts in Shopify Rollouts:** Connector versions before 4.2.3 use a Shopify API version that leaves out a discount while a serving [Rollout](https://shopify.dev/docs/apps/build/discounts/rollouts) activates or expires it for some or all buyers. Version 4.2.3 and later return these discounts, but incremental syncs don't backfill codes that were left out earlier, because their `updated_at` is older than the saved cursor. If your store has put discounts into Rollouts, [refresh and retain records](/platform/operator-guides/refreshes) for the discount code streams you sync incrementally after upgrading. While a Rollout is serving, a discount's `status` still reflects its own start and end dates, not what buyers get.
 
