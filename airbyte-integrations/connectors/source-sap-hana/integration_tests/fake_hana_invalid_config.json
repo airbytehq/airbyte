@@ -1,0 +1,9 @@
+{
+  "host": "fake-hana.invalid",
+  "port": 30015,
+  "username": "AIRBYTE",
+  "password": "not-a-real-password",
+  "schemas": ["SCHEMA_THAT_DOES_NOT_EXIST"],
+  "max_retries": 0,
+  "retry_wait_seconds": 0
+}
