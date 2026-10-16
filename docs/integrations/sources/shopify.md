@@ -19,7 +19,7 @@ This page contains the setup guide and reference information for the [Shopify](h
 This connector supports **OAuth2.0** and **API Password** (for private applications) authentication methods.
 
 :::warning
-Shopify doesn't expose a last-updated time for individual discount codes, only for the discount they belong to. Both discount code streams use the discount's `updated_at` as their cursor, so whenever a discount is updated, the next incremental sync re-syncs **every** code of that discount, not only the codes that changed. For discounts with many codes, incremental syncs of these streams can behave much like full refreshes, and credit consumption may be higher than expected depending on how many discount codes your store has.
+Shopify's API doesn't support retrieving only the discount codes that changed recently. To work around this, the discount code streams find the discounts that were updated since the last sync and then fetch all of their codes. This ensures you sync every updated discount code, but codes that haven't changed may be synced again. If you have discounts with many codes, this can increase your credit usage.
 :::
 
 ### Set up Shopify
