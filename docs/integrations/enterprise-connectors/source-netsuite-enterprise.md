@@ -111,6 +111,7 @@ Please consult the [NetSuite OAuth 2.0 for Connect documentation](https://docs.o
 
 | Version | Date       | Pull Request                                                    | Subject                                                                                              |
 |:--------|:-----------|:----------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
+| 0.3.3   | 2026-10-16 | [TBD](https://github.com/airbytehq/airbyte-enterprise/pull/TBD) | Redact the OAuth2 access token and other credentials from the JDBC connection URL in logs           |
 | 0.3.2   | 2026-10-07 | [466](https://github.com/airbytehq/airbyte-enterprise/pull/466) | Persist the `transactionLine` cursor ceiling in grid checkpoints so a retried attempt does not miss rows |
 | 0.3.1   | 2026-08-17 | [461](https://github.com/airbytehq/airbyte-enterprise/pull/461) | Non-splittable `transactionLine` grid partitions                                                     |
 | 0.3.0   | 2026-08-17 | [455](https://github.com/airbytehq/airbyte-enterprise/pull/455) | Read `transactionLine` through a fixed `uniquekey` range grid                                        |

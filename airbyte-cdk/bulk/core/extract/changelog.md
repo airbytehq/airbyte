@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.18 — 2026-10-16
+
+[#TBD](https://github.com/airbytehq/airbyte/pull/TBD) — `JdbcConnectionFactory` now redacts credential-looking parameters (password/secret/token/key-style keys, including inside `CustomProperties=(...)`, plus URL userinfo) from the JDBC URL it logs; the URL passed to the driver is unchanged. New public `redactJdbcUrl()` helper.
+
 ### 1.1.17 — 2026-10-15
 
 [#89002](https://github.com/airbytehq/airbyte/pull/89002) — Test and testFixtures dependencies are declared explicitly (Kotlin Gradle plugin 2.0.10+ no longer propagates `implementation` dependencies into testFixtures, nor `testFixturesImplementation` into tests), `junit-platform-launcher` is on every test runtime classpath, and K2-lint cleanups that also compile on Kotlin 1.9 (`JdbcAccessor` array getter, redundant casts/safe calls). No behaviour change.

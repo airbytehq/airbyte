@@ -41,7 +41,7 @@ open class JdbcConnectionFactory(
                 tunnelSession.address.hostName,
                 tunnelSession.address.port,
             )
-        log.info { "Creating new connection for '$jdbcUrl'." }
+        log.info { "Creating new connection for '${redactJdbcUrl(jdbcUrl)}'." }
         val props = Properties().apply { putAll(config.jdbcProperties) }
         return DriverManager.getConnection(jdbcUrl, props).also { it.isReadOnly = true }
     }

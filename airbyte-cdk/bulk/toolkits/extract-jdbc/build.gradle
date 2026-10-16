@@ -2,6 +2,8 @@ dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract')
 
+    testImplementation 'org.apache.logging.log4j:log4j-core'
+
     api 'org.bouncycastle:bcpkix-jdk18on:1.77'
     api 'org.bouncycastle:bcprov-jdk18on:1.77'
     api 'org.bouncycastle:bctls-jdk18on:1.77'
