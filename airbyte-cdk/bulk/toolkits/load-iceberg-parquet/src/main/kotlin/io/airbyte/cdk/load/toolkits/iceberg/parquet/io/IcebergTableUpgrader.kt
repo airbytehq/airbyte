@@ -46,9 +46,9 @@ object IcebergTableUpgrader {
      * (UTC) so the pre-upgrade state remains readable.
      *
      * Every branch ref in `table.refs()` is migrated in the same transaction — the format version
-     * is table-wide, so any branch left behind would keep legacy v2 deletes (tags are immutable
-     * and skipped). Branches sharing a snapshot are planned once, so a shared data file never
-     * gets two DVs.
+     * is table-wide, so any branch left behind would keep legacy v2 deletes (tags are immutable and
+     * skipped). Branches sharing a snapshot are planned once, so a shared data file never gets two
+     * DVs.
      *
      * No-op when the table is already v3 or newer. Returns the (re)loaded table.
      */
@@ -72,10 +72,7 @@ object IcebergTableUpgrader {
         // manifest set; a commit that lands between planning and the transaction is rejected
         // by the RowDelta validations below and leaves the table at v2 for a retry.
         val branchSnapshots: Map<String, Long> =
-            table
-                .refs()
-                .filterValues { it.isBranch }
-                .mapValues { it.value.snapshotId() }
+            table.refs().filterValues { it.isBranch }.mapValues { it.value.snapshotId() }
         val migrations: Map<Long, MigratedDeletes> =
             branchSnapshots.values.toSet().associateWith { planMigration(table, it) }
         commitUpgrade(table, branchSnapshots, migrations)
