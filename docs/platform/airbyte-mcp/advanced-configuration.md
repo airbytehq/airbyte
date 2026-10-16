@@ -30,7 +30,7 @@ Add headers to your client's MCP configuration. Configuration syntax can vary by
 }
 ```
 
-Headers can't give your agent permissions your Airbyte role doesn't have.
+Headers can only hide tools and customize tool behaviors. They can't give your agent permissions your Airbyte role doesn't have.
 
 ## Tool restrictions
 
