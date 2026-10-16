@@ -62,4 +62,5 @@ dependencies {
     testImplementation 'org.testcontainers:mysql:1.21.4'
     testImplementation 'org.testcontainers:postgresql:1.21.4'
     testImplementation 'org.xbib.elasticsearch:joptsimple:6.3.2.1'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.4.0'
 }

@@ -20,5 +20,6 @@ dependencies {
     testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping'))
 
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping')
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.4.0'
 
 }

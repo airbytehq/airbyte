@@ -50,4 +50,5 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-datastore-postgres'))
 
     testImplementation 'uk.org.webcompere:system-stubs-jupiter:2.1.6'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.4.0'
 }

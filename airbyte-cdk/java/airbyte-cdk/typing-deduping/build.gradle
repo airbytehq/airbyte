@@ -20,6 +20,7 @@ dependencies {
     testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
     testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
-    testFixturesImplementation 'org.mockito.kotlin:mockito-kotlin:6.4.0'
+    testFixturesImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
     testImplementation "io.mockk:mockk:1.13.11"
 }
