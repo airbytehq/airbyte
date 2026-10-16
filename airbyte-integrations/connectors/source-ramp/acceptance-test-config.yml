@@ -5,6 +5,11 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "manifest.yaml"
+        # 1.2.0 moves client_id/client_secret under `credentials` and limits api_url to Ramp's two
+        # hosts. The config migration rewrites saved configs into the new shape, and every live
+        # Cloud config already uses https://api.ramp.com, so no saved config fails validation.
+        backward_compatibility_tests_config:
+          disable_for_version: "1.1.0"
   connection:
     tests:
       - config_path: "secrets/config.json"

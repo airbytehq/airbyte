@@ -4,19 +4,22 @@ The Ramp source syncs data from the [Ramp Developer API](https://docs.ramp.com/d
 
 ## Prerequisites
 
-- A Ramp account with administrator access, so you can create a developer app.
-- A Ramp developer app that uses the **Client Credentials** grant type, with the `transactions:read`, `cards:read`, and `reimbursements:read` scopes enabled, plus the read scope for each other stream you want to sync. See [Supported Streams](#supported-streams) for the scope each stream needs.
-- The client ID and client secret for that app.
+The connector supports two authentication methods:
+
+- **OAuth** (Airbyte Cloud): a Ramp Admin or Business Owner who can approve access for your business.
+- **Client Credentials**: a Ramp account with administrator access, so you can create a developer app. The app uses the **Client Credentials** grant type, with the `transactions:read`, `cards:read`, and `reimbursements:read` scopes enabled, plus the read scope for each other stream you want to sync. See [Supported Streams](#supported-streams) for the scope each stream needs. You need the app's client ID and client secret.
 
 ## Setup guide
 
-Create a developer app in Ramp, then create the source in Airbyte with the app's client ID and client secret.
+With OAuth, you approve access in Ramp while you create the source in Airbyte, so skip to [Set up the Ramp connector in Airbyte](#set-up-the-ramp-connector-in-airbyte). With client credentials, create a developer app in Ramp first, then create the source in Airbyte with the app's client ID and client secret.
 
 ## Set up Ramp
 
+These steps are only needed for client credentials.
+
 1. In your Ramp account, go to **Company** > **Developer**.
 2. Select **Create New App**, name the app, and accept the terms.
-3. Under **Grant types**, select **Add new grant type** > **Client Credentials**. The connector authenticates server-to-server, so it doesn't use the authorization code flow and doesn't need a redirect URI.
+3. Under **Grant types**, select **Add new grant type** > **Client Credentials**. With client credentials, the connector authenticates server-to-server, so the app doesn't need the authorization code grant or a redirect URI.
 4. Under **Scopes**, select **Configure allowed scopes**. Enable `transactions:read`, `cards:read`, and `reimbursements:read`, and the read scope for every other stream you plan to sync.
 5. Copy the client ID and client secret.
 
@@ -30,13 +33,20 @@ For more detail, see Ramp's [quickstart](https://docs.ramp.com/developer-api/v1/
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Ramp** from the Source type dropdown.
 4. Enter a name for the Ramp connector.
-5. Enter the **Ramp Client ID** and **Ramp Client Secret** from your developer app.
+5. Under **Authentication**, choose **OAuth** or **Client Credentials**. See [Authentication](#authentication).
 6. Optionally, set **Start Date**. See [Start Date](#start-date).
 7. Click **Set up source**.
 
 </HideInUI>
 
 ## Connector settings
+
+### Authentication
+
+- **OAuth**: click **Authenticate your Ramp account** and approve access in Ramp. Only a Ramp Admin or Business Owner can approve it. Other users see "Business not authorized to use this application". The approval grants the read scope of every stream.
+- **Client Credentials**: enter the **Ramp Client ID** and **Ramp Client Secret** from your developer app.
+
+Sources created before version 1.2.0 use client credentials. They move to the **Client Credentials** option automatically and keep working without changes.
 
 ### Start Date
 
@@ -46,13 +56,13 @@ Enter Start Date as a UTC timestamp with a `Z` suffix, such as `2024-01-01T00:00
 
 ### Connection test
 
-The connection test only reads the `transactions` stream. If your app is missing the scope for another stream, the test still passes, and that stream fails during the sync.
+The connection test only reads the `transactions` stream. With client credentials, if your app is missing the scope for another stream, the test still passes, and that stream fails during the sync.
 
 ## Test against the Ramp sandbox
 
-The connector calls `https://api.ramp.com` by default. Since version 0.0.4, an **API Base URL** (`api_url`) field can point it at Ramp's [sandbox](https://docs.ramp.com/developer-api/v1/sandbox) at `https://demo-api.ramp.com` instead. The value must start with `https://`. Leave the default for production accounts.
+The connector calls `https://api.ramp.com` by default. Since version 0.0.4, an **API Base URL** (`api_url`) field can point it at Ramp's [sandbox](https://docs.ramp.com/developer-api/v1/sandbox) at `https://demo-api.ramp.com` instead. These are the only two accepted values. Leave the default for production accounts.
 
-The field is hidden in the Airbyte UI, so set it programmatically. For example, include it in the source configuration you send through the Airbyte API, Terraform provider, or PyAirbyte. Sandbox and production credentials aren't interchangeable: create a developer app in the sandbox (`https://demo.ramp.com`) with the same grant type and scopes, and use that app's client ID and secret with the sandbox base URL.
+The field is hidden in the Airbyte UI, so set it programmatically. For example, include it in the source configuration you send through the Airbyte API, Terraform provider, or PyAirbyte. Sandbox and production credentials aren't interchangeable: create a developer app in the sandbox (`https://demo.ramp.com`) with the same grant type and scopes, and use that app's client ID and secret with the sandbox base URL. The **OAuth** option always uses Ramp's production consent and token URLs, so test the sandbox with client credentials.
 
 ## Supported sync modes
 
@@ -139,7 +149,7 @@ Ramp allows 200 requests per rolling 10-second window per source IP address, and
 
 The connector reads 50 records per page. `vendor_contacts` makes at least one request per vendor, so its request count grows with the number of vendors. Ramp terminates requests that take longer than 60 seconds with a `504 Gateway Timeout`. See Ramp's [rate limits and timeouts](https://docs.ramp.com/developer-api/v1/rate-limiting) guide.
 
-Ramp's client credentials access tokens last 10 days. The connector requests a token for each stream it reads and reuses that token for the stream's requests.
+Ramp's OAuth access tokens last 1 hour, and its client credentials access tokens last 10 days. The connector requests a token for each stream it reads, reuses it for the stream's requests, and requests a new one after 50 minutes.
 
 ## Limitations & Troubleshooting
 
@@ -147,7 +157,7 @@ Ramp's client credentials access tokens last 10 days. The connector requests a t
 
 - **Declined transactions from before version 0.1.0 aren't backfilled automatically.** Versions before 0.1.0 didn't sync declined transactions. To pull in declined transactions older than your current cursor, refresh the `transactions` stream.
 - **Date and timestamp fields are typed.** The connector declares Ramp's ISO 8601 date and timestamp fields with `date` or `date-time` formats, so typed destinations store them as dates and timestamps instead of text. The streams added in version 0.2.0 were typed from the start; `cards`, `transactions`, and `reimbursements` were typed in version 1.0.0. Three date-like fields stay strings because Ramp doesn't return them in ISO 8601 format: `cards.expiration` (`MMYY`, for example `0430`), and `business_balance.next_billing_date` and `prev_billing_date` (`MM/DD/YYYY`). If you're upgrading from a version before 1.0.0, follow the [migration guide](/integrations/sources/ramp-migrations#upgrading-to-100).
-- **One business per source.** Client credentials are issued to a single Ramp business. To sync several businesses, create one Airbyte source per business.
+- **One business per source.** An OAuth approval and a developer app's client credentials each cover a single Ramp business. To sync several businesses, create one Airbyte source per business.
 
 ### Deletions
 
@@ -167,19 +177,21 @@ The connector reports these Ramp errors as configuration errors, so Airbyte does
 
 | Error | Cause | Fix |
 | --- | --- | --- |
-| `Ramp rejected the client ID or client secret` | The token request returned `400` or `401`. | Copy the client ID and client secret again from **Company** > **Developer** > your app, and confirm the app has the **Client Credentials** grant type. |
-| `Your Ramp app is not allowed to read this data` | Ramp returned error code `DEVELOPER_7100`. The connector requests every stream's scope when it gets a token. Ramp doesn't fail the token request when the app lacks one of those scopes. It issues a token without that scope, and only the streams that need it fail. | Enable the missing read scope on your app, then test the source again. Or deselect the streams that need it. |
-| `Ramp no longer accepts this connector's access token` | Ramp returned error code `DEVELOPER_7002`. | Check that the Ramp app still exists and that its client secret hasn't been rotated, then test the source again. |
-| `Ramp rejected the connector's credentials` | Any other `401` response. | Re-enter the client ID and client secret. |
-| `Ramp denied access to this data` | Any other `403` response. | Confirm the app has the scope named in the error. For `purchase_orders`, confirm your plan includes Ramp Plus. |
+| `Ramp rejected the connector's OAuth authorization` | OAuth only: the token request returned `400` or `401`, for example because the approval was revoked in Ramp. | Re-authenticate the source as a Ramp Admin or Business Owner. |
+| `Ramp rejected the client ID or client secret` | Client credentials only: the token request returned `400` or `401`. | Copy the client ID and client secret again from **Company** > **Developer** > your app, and confirm the app has the **Client Credentials** grant type. |
+| `The connector is not allowed to read this data from Ramp` | Ramp returned error code `DEVELOPER_7100`. With client credentials, the connector requests every stream's scope when it gets a token. Ramp doesn't fail the token request when the app lacks one of those scopes. It issues a token without that scope, and only the streams that need it fail. | With OAuth, re-authenticate the source as a Ramp Admin or Business Owner. With client credentials, enable the missing read scope on your app, or deselect the streams that need it. Then test the source again. |
+| `Ramp no longer accepts this connector's access token` | Ramp returned error code `DEVELOPER_7002`. | With OAuth, re-authenticate the source. With client credentials, check that the Ramp app still exists and that its client secret hasn't been rotated. Then test the source again. |
+| `Ramp rejected the connector's credentials` | Any other `401` response. | With OAuth, re-authenticate the source. With client credentials, re-enter the client ID and client secret. |
+| `Ramp denied access to this data` | Any other `403` response. | With OAuth, re-authenticate the source as a Ramp Admin or Business Owner. With client credentials, confirm the app has the scope named in the error. For `purchase_orders`, confirm your plan includes Ramp Plus. |
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date | Pull Request | Subject |
+| ------------------ | ------------------- | -------------- | ---------------- |
+| 1.2.0 | 2026-10-15 | [88128](https://github.com/airbytehq/airbyte/pull/88128) | Add OAuth authentication; existing client-credentials configs are migrated automatically |
 | 1.1.0 | 2026-10-15 | [88938](https://github.com/airbytehq/airbyte/pull/88938) | Make `vendors` incremental on `updated_at`, declare the `vendors.updated_at` field, show a readable Start Date format hint, and hide the generic Airbyte setup steps from the in-app guide |
 | 1.0.2 | 2026-10-14 | [88895](https://github.com/airbytehq/airbyte/pull/88895) | Replace the outdated README with the shared declarative-source README, and rebuild the icon from Ramp's press-kit glyph |
 | 1.0.1 | 2026-10-13 | [88768](https://github.com/airbytehq/airbyte/pull/88768) | Update dependencies |
