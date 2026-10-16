@@ -12,6 +12,7 @@ from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.adobjects.adcreative import AdCreative as FBAdCreative
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
+from facebook_business.api import Cursor
 from facebook_business.exceptions import FacebookRequestError
 
 from airbyte_cdk.models import SyncMode
@@ -26,6 +27,44 @@ from .base_streams import FBMarketingIncrementalStream, FBMarketingReversedIncre
 
 
 logger = logging.getLogger("airbyte")
+
+# (code, error_subcode) pairs Facebook returns when reading a creative whose stored object_story_spec fails its own
+# validation, eg 2446211 "First Dof Value Should Match Object Story Spec Field". Only seen when object_story_spec is requested.
+OBJECT_STORY_SPEC_READ_ERRORS = {(100, 2446211), (100, 1443048)}
+OBJECT_STORY_SPEC_FIELD = "object_story_spec"
+
+
+def _unwrap_facebook_error(exc: Exception) -> Optional[FacebookRequestError]:
+    if isinstance(exc, FacebookRequestError):
+        return exc
+    if isinstance(exc, AirbyteTracedException) and isinstance(exc._exception, FacebookRequestError):
+        return exc._exception
+    return None
+
+
+def is_object_story_spec_read_error(exc: Exception) -> bool:
+    fb_error = _unwrap_facebook_error(exc)
+    if fb_error is None:
+        return False
+    return (fb_error.api_error_code(), fb_error.api_error_subcode()) in OBJECT_STORY_SPEC_READ_ERRORS
+
+
+def fetch_creative_with_object_story_spec_fallback(creative_id: str, fields: List[str], stream_name: str) -> Mapping[str, Any]:
+    """Fetch a single creative, re-fetching without object_story_spec when its stored value fails validation."""
+    try:
+        return FBAdCreative(creative_id).api_get(fields=fields).export_all_data()
+    except (FacebookRequestError, AirbyteTracedException) as exc:
+        fb_error = _unwrap_facebook_error(exc)
+        if fb_error is None or OBJECT_STORY_SPEC_FIELD not in fields or not is_object_story_spec_read_error(exc):
+            raise
+        error_body = fb_error.body().get("error", {}) if fb_error.body() else {}
+        logger.warning(
+            f"Stream {stream_name}: creative {creative_id} failed with Facebook error "
+            f"{fb_error.api_error_code()}/{fb_error.api_error_subcode()} ({error_body.get('error_user_msg')}); "
+            f"the creative is emitted with {OBJECT_STORY_SPEC_FIELD} null."
+        )
+        reduced_fields = [f for f in fields if f != OBJECT_STORY_SPEC_FIELD]
+        return FBAdCreative(creative_id).api_get(fields=reduced_fields).export_all_data()
 
 
 def fetch_thumbnail_data_url(url: str) -> Optional[str]:
@@ -78,7 +117,40 @@ class AdCreatives(FBMarketingStream):
             yield record
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
-        return self._api.get_account(account_id=account_id).get_ad_creatives(params=params, fields=self.fields())
+        account = self._api.get_account(account_id=account_id)
+        cursor = Cursor(source_object=account, target_objects_class=FBAdCreative, fields=self.fields(), params=params)
+        while True:
+            try:
+                if not cursor.load_next_page():
+                    return
+            except (FacebookRequestError, AirbyteTracedException) as exc:
+                if OBJECT_STORY_SPEC_FIELD not in self.fields() or not is_object_story_spec_read_error(exc):
+                    raise
+                has_more_pages = yield from self._read_failed_page_creative_by_creative(account, cursor)
+                if not has_more_pages:
+                    return
+                continue
+            for index in range(len(cursor)):
+                yield cursor[index]
+
+    def _read_failed_page_creative_by_creative(self, account: FBAdAccount, cursor: Cursor) -> Iterable[bool]:
+        """Re-read the page that failed on object_story_spec one creative at a time, preserving pagination."""
+        # The SDK only advances cursor.params["after"] after a successful page, so cursor.params still describes the failed page.
+        failed_page_after = cursor.params.get("after")
+        id_params = {k: v for k, v in cursor.params.items() if k != "fields"}
+        id_page = Cursor(source_object=account, target_objects_class=FBAdCreative, fields=["id"], params=id_params)
+        id_page.load_next_page()
+        logger.warning(
+            f"Stream {self.name}: a page of {len(id_page)} creatives for account {account.get_id_assured()} failed on "
+            f"{OBJECT_STORY_SPEC_FIELD}; re-reading it one creative at a time."
+        )
+        for index in range(len(id_page)):
+            yield fetch_creative_with_object_story_spec_fallback(id_page[index]["id"], self.fields(), self.name)
+        next_after = id_page.params.get("after")
+        if len(id_page) == 0 or next_after is None or next_after == failed_page_after:
+            return False
+        cursor.params["after"] = next_after
+        return True
 
 
 class AdCreativesFromAds(FBMarketingIncrementalStream):
@@ -156,9 +228,7 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
     def _fetch_creative_details(self, creative_id: str) -> Optional[Mapping[str, Any]]:
         """Fetch full creative details by ID using the AdCreative API"""
         try:
-            creative = FBAdCreative(creative_id)
-            creative_data = creative.api_get(fields=self._get_creative_fields())
-            return creative_data.export_all_data()
+            return fetch_creative_with_object_story_spec_fallback(creative_id, self._get_creative_fields(), self.name)
         except (FacebookRequestError, TypeError) as e:
             logger.warning(f"Failed to fetch creative {creative_id}: {e}")
             return None
