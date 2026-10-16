@@ -37,8 +37,8 @@ connector's Unix domain sockets, see "Speed mode" below); `BigQuerySourceSpecTes
 There is no `spotlessApply` task for connectors. Format with the ktfmt version CI uses:
 
 ```bash
-curl -sSfL -o /tmp/ktfmt-0.39.jar https://repo1.maven.org/maven2/com/facebook/ktfmt/0.39/ktfmt-0.39-jar-with-dependencies.jar
-find airbyte-integrations/connectors/source-bigquery/src -name '*.kt' | xargs java -jar /tmp/ktfmt-0.39.jar --kotlinlang-style
+curl -sSfL -o /tmp/ktfmt-0.65.jar https://repo1.maven.org/maven2/org/jetbrains/kotlinx/ktfmt/0.65/ktfmt-0.65-with-dependencies.jar
+find airbyte-integrations/connectors/source-bigquery/src -name '*.kt' | xargs java -jar /tmp/ktfmt-0.65.jar --kotlinlang-style
 ```
 
 ## Running the connector locally
