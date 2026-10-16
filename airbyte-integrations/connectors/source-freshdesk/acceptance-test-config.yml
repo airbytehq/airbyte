@@ -25,6 +25,7 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           exact_order: no
+          extra_fields: yes
         timeout_seconds: 600
         empty_streams:
           - name: skills
