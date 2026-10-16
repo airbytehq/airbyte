@@ -415,12 +415,10 @@ open class S3StorageOperations(
             }
         }
 
-        if (lastModifiedObject == null) {
-            // Nothing to retrieve, fallback to null genId behavior
-            return null
-        }
+        // Nothing to retrieve, fallback to null genId behavior
+        val lastModified = lastModifiedObject ?: return null
         // If genId is missing or not parseable we return null
-        return getGenerationIdFromMetadata(bucket, lastModifiedObject!!.key).getOrNull()
+        return getGenerationIdFromMetadata(bucket, lastModified.key).getOrNull()
     }
 
     private fun getGenerationIdFromMetadata(bucket: String, key: String): Optional<Long> {

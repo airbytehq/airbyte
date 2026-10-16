@@ -979,7 +979,7 @@ spec:
     properties:
       api_key:
         type: string
-        description: API key to use. Find it at https://app.incident.io/settings/api-keys
+        description: An Incident.io API key with view permission for the streams you sync. Create it in Incident.io under Settings > API keys. See https://docs.incident.io/api-reference/introduction#authentication
         name: api_key
         title: API Key
         airbyte_secret: true
@@ -2615,6 +2615,39 @@ schemas:
     type: object
     $schema: http://json-schema.org/schema#
     properties:
+      auto_run_mode:
+        type:
+          - string
+          - "null"
+      delay:
+        type:
+          - object
+          - "null"
+        properties:
+          conditions_apply_over_delay:
+            type:
+              - boolean
+              - "null"
+          for_seconds:
+            type:
+              - integer
+              - "null"
+      folder:
+        type:
+          - string
+          - "null"
+      owning_team_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      shortform:
+        type:
+          - string
+          - "null"
       include_private_escalations:
         type:
           - boolean

@@ -2,6 +2,13 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 16, 2026
+
+Platform
+
+- When an AI agent using the Airbyte MCP tries to read from a source or destination that doesn't have agent access turned on, the link it gives you now opens a page where you can confirm and turn on direct access for that connector. If your organization hasn't turned on the context layer yet, an organization admin can turn it on from the same page. Previously, the link opened the connector's settings page.
+- The **Agent access** descriptions on the **Context layer** page and on source and destination settings now correctly say that agents can only read from your sources and destinations. Previously, they said agents could also write to them.
+
 ## October 14, 2026
 
 Platform

@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 internal class PgLsnTest {
     @Test
     fun testLsnToLong() {
-        TEST_LSNS.forEach { (key: String?, value: Long?) ->
+        TEST_LSNS.forEach { (key, value) ->
             Assertions.assertEquals(
                 value,
                 lsnToLong(key),
@@ -24,7 +24,7 @@ internal class PgLsnTest {
 
     @Test
     fun testLongToLsn() {
-        TEST_LSNS.forEach { (key: String?, value: Long?) ->
+        TEST_LSNS.forEach { (key, value) ->
             Assertions.assertEquals(
                 key,
                 longToLsn(value),
@@ -36,7 +36,7 @@ internal class PgLsnTest {
     // Added Test Case to test .toString() method in PgLsn.java
     @Test
     fun testLsnToString() {
-        EXPECTED_TEST_LSNS.forEach { (key: String?, value: Long?) ->
+        EXPECTED_TEST_LSNS.forEach { (key, value) ->
             Assertions.assertEquals(
                 key,
                 fromLong(value).toString(),
