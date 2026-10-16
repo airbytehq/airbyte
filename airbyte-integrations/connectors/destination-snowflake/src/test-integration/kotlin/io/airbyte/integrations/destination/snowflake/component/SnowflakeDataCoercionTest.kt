@@ -194,6 +194,7 @@ class SnowflakeDataCoercionTest(
                     sqlGenerator = trimSpaceDisabledSqlGenerator,
                     snowflakeConfiguration = trimSpaceDisabledConfig,
                     columnManager = columnManager,
+                    metaColumnRepairEnabled = false,
                 )
             val trimSpaceDisabledTestClient =
                 SnowflakeTestTableOperationsClient(

@@ -222,10 +222,14 @@ allprojects {
 
         testRuntimeOnly platform("org.junit:junit-bom:${vJUnit}")
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${vJUnit}"
+        // Gradle no longer injects the JUnit Platform launcher (Gradle 9 removes it); declare it explicitly.
+        testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 
         // Spotbugs dependencies.
         def vSpotbugs = "4.8.3"
         implementation "com.github.spotbugs:spotbugs-annotations:${vSpotbugs}"
+        // KGP >= 2.0.10 (KT-68278): testFixtures no longer inherits main's implementation deps.
+        testFixturesImplementation "com.github.spotbugs:spotbugs-annotations:${vSpotbugs}"
     }
 
     tasks.withType(SpotBugsTask).configureEach {
