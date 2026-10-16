@@ -233,7 +233,7 @@ object JsonSchemas {
                 OBJECT_TYPE -> {
                     val comboKeyWordOptional = getKeywordIfComposite(jsonSchemaNode)
                     if (jsonSchemaNode.has(JSON_SCHEMA_PROPERTIES_KEY)) {
-                        val it = jsonSchemaNode[JSON_SCHEMA_PROPERTIES_KEY].fields()
+                        val it = jsonSchemaNode[JSON_SCHEMA_PROPERTIES_KEY].properties().iterator()
                         while (it.hasNext()) {
                             val child = it.next()
                             val newPath: MutableList<FieldNameOrList> =
