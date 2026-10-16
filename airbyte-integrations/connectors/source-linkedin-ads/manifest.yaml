@@ -534,7 +534,11 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /leadFormResponses?owner=(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{{stream_slice.get('account_id')}})&leadType=(leadType:SPONSORED)
+          # submittedAtTimeRange is a Rest.li composite param that must NOT be URL-encoded, so it is
+          # embedded in the path (RequestOption request_parameters would encode it). It is omitted
+          # when the cursor start is epoch 0 (full refresh or first incremental sync) so the stream
+          # reads full history regardless of the configured start_date.
+          path: /leadFormResponses?owner=(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{{stream_slice.get('account_id')}})&leadType=(leadType:SPONSORED){% if stream_interval.get('start_time') | int > 0 %}&submittedAtTimeRange=(start:{{ stream_interval.get('start_time') }},end:{{ stream_interval.get('end_time') }}){% endif %}
           http_method: GET
           request_parameters:
             q: owner
@@ -573,6 +577,17 @@ definitions:
               partition_field: account_id
               stream:
                 $ref: "#/definitions/streams/accounts"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: submittedAt
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1970-01-01T00:00:00+0000"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       schema_loader:
         type: InlineSchemaLoader
         schema:
