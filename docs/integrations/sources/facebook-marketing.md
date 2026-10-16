@@ -420,6 +420,10 @@ If the `ad_creatives` stream fails with the error "Please reduce the amount of d
 
 Note that `ad_creatives_from_ads` is slower than `ad_creatives` because it makes individual API calls per creative. It also only returns creatives that are associated with ads — orphaned creatives that are not linked to any ad will not be included.
 
+### Ad creatives without `object_story_spec`
+
+For some Degrees of Freedom creatives, the Graph API rejects requests for the `object_story_spec` field with error `100` / `2446211` ("First Dof Value Should Match Object Story Spec Field"). The `ad_creatives` and `ad_creatives_from_ads` streams emit these creatives without `object_story_spec` instead of failing the sync, and log a warning with the creative ID. `ad_creatives` reads every creative on each sync, so the field comes back once the API returns it again. In incremental mode, `ad_creatives_from_ads` reads a creative again only after its parent ad changes, so [refresh](/platform/operator-guides/refreshes) that stream to backfill `object_story_spec`.
+
 ### Missing records in Campaigns, Ad Sets, or Ads streams {#missing-records-status-filtering}
 
 If you notice that some campaigns, ad sets, or ads are missing from your synced data, the most common cause is the status filtering configuration.
@@ -502,7 +506,8 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.1.4 | 2026-10-16 | [89019](https://github.com/airbytehq/airbyte/pull/89019) | Include Meta's user-facing error title and message, plus the error subcode, in otherwise generic Graph API error messages |
+| 6.1.5 | 2026-10-16 | [89019](https://github.com/airbytehq/airbyte/pull/89019) | Include Meta's user-facing error title and message, plus the error subcode, in otherwise generic Graph API error messages |
+| 6.1.4 | 2026-10-16 | [89020](https://github.com/airbytehq/airbyte/pull/89020) | Fix `ad_creatives` and `ad_creatives_from_ads` failing on Facebook error 2446211 by emitting affected creatives with a null `object_story_spec` |
 | 6.1.3 | 2026-09-30 | [87588](https://github.com/airbytehq/airbyte/pull/87588) | Fix insights streams cursor moving backwards after interrupted sync attempts (causing progressively wider re-reads), clean up stale completed slices in state, and fix cursor advancement for monthly/weekly time increments |
 | 6.1.2 | 2026-09-21 | [86315](https://github.com/airbytehq/airbyte/pull/86315) | Fix ad-account quota errors (code 17/2446079) being retried as transient failures: read rate-limit headers on failed calls and wait out the block (API-provided reset estimate when present, 10-minute re-checks otherwise, up to 1 hour); read every business-use-case entry and the ad-account reset time from the rate-limit headers; the connection check fails fast instead of waiting |
 | 6.1.1 | 2026-08-24 | [74266](https://github.com/airbytehq/airbyte/pull/74266) | feat(source-facebook-marketing): add opt-in engaged view (ev) attribution window (AI-Triage PR) |
