@@ -2,57 +2,51 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import urllib.parse
 from dataclasses import dataclass
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.incremental import Cursor
-from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
+EVENTS_ORDER_BY = '["timestamp"]'
+
 
 @dataclass
-class EventsSimpleRetriever(SimpleRetriever):
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        super().__post_init__(parameters)
-        self.cursor = self.stream_slicer if isinstance(self.stream_slicer, Cursor) else None
+class EventsRequester(HttpRequester):
+    """Events API returns records in descendent order (newest first) and paginates with a `next` url.
 
-    def request_params(
-        self,
-        stream_state: StreamSlice,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        """Events API return records in descendent order (newest first).
-        Default page limit is 100 items.
+    response:
+    {
+        "next": "https://app.posthog.com/api/projects/2331/events?after=2021-01-01T00%3A00%3A00.000000Z&before=2021-05-29T16%3A44%3A43.175000%2B00%3A00",
+        "results": [
+            {id ...},
+            {id ...},
+        ]
+    }
 
-        Even though API mentions such pagination params as 'limit' and 'offset', they are actually ignored.
-        Instead, response contains 'next' url with datetime range for next OLDER records, like:
+    That url already carries the keyset boundaries (`after`/`before`) of the page it points to, so on
+    paginated requests the url's query parameters are the ones that define the page. The stream slice's
+    own boundaries must not be sent along with it: they would be appended as duplicate query parameters
+    and the slice boundaries would override the keyset cursor, which makes the connector re-read the
+    first page of the slice instead of moving on to older records.
 
-        response:
-        {
-            "next": "https://app.posthog.com/api/projects/2331/events?after=2021-01-01T00%3A00%3A00.000000Z&before=2021-05-29T16%3A44%3A43.175000%2B00%3A00",
-            "results": [
-                {id ...},
-                {id ...},
-            ]
-        }
+    Requests also ask for ascending order through `orderBy`. In descending order PostHog computes
+    `has_more` inside a probe window that it grows until a page is at least half full, so a window
+    that returns fewer than the page size rows ends the slice early even when older rows exist.
+    Ascending requests skip that probe and paginate the whole slice. The value has to be a
+    pre-serialized string: the CDK rejects list-valued request parameters.
+    """
 
-        So if next_page_token is set (contains 'after'/'before' params),
-        then stream_slice params ('after'/'before') should be ignored.
-        """
-
-        if next_page_token:
-            stream_slice = {}
-
-        return self._get_request_options(
-            stream_slice,
-            next_page_token,
-            self.requester.get_request_params,
-            self.paginator.get_request_params,
-            self.stream_slicer.get_request_params,
-            self.requester.get_authenticator().get_request_body_json,
-        )
+    def deduplicate_query_params(self, url: str, params: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
+        params = super().deduplicate_query_params(url, params)
+        url_query_keys = set(urllib.parse.parse_qs(urllib.parse.urlparse(url).query))
+        filtered = {key: value for key, value in params.items() if key not in url_query_keys}
+        if "orderBy" not in url_query_keys:
+            filtered["orderBy"] = EVENTS_ORDER_BY
+        return filtered
 
 
 @dataclass
