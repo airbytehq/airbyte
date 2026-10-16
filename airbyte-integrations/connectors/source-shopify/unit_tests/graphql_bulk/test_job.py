@@ -3,6 +3,7 @@
 #
 
 
+import json
 from os import remove
 
 import orjson
@@ -80,6 +81,26 @@ def test_job_manager_default_values(auth_config) -> None:
     assert not stream.job_manager._job_should_revert_slice
     # 2 sec is set as default value to cover the case with the empty-fast-completed jobs
     assert stream.job_manager._job_last_elapsed_time == 2.0
+
+
+@pytest.mark.xfail(strict=True, reason="#85372: a self-canceled job without a result URL skips its undownloaded slice")
+def test_self_canceled_job_without_result_retries_undownloaded_slice(auth_config) -> None:
+    stream = Products(auth_config)
+    stream.job_manager._job_size = 1
+    slices = iter(stream.stream_slices())
+    first = next(slices)
+
+    stream.job_manager._job_self_canceled = True
+    stream.job_manager._job_last_rec_count = 4
+    canceled_response = requests.Response()
+    canceled_response.status_code = 200
+    canceled_response._content = json.dumps(
+        {"data": {"node": {"status": "CANCELED", "objectCount": "4", "url": None, "partialDataUrl": None}}}
+    ).encode()
+    stream.job_manager._on_canceled_job(canceled_response)
+
+    assert stream.job_manager._job_result_filename is None
+    assert next(slices)["start"] == first["start"]
 
 
 def test_get_errors_from_response_invalid_response(auth_config) -> None:
