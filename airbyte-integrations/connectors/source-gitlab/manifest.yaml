@@ -246,6 +246,7 @@ definitions:
     error_handler:
       type: CustomErrorHandler
       class_name: source_declarative_manifest.components.AuthTypeAwareErrorHandler
+      max_retries: 10
       response_filters:
         # http_codes and predicate are OR-ed, so this filter keys on the body alone. Only the OAuth
         # credential can be refreshed; AuthTypeAwareErrorHandler drops this filter for Private Tokens.
@@ -268,6 +269,16 @@ definitions:
           action: FAIL
           http_codes: [404]
           error_message: Groups and/or projects that you provide are invalid or you don't have permission to view it.
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          http_codes: [429]
+          error_message: "GitLab API rate limit exceeded. If syncs keep failing, lower the Number of Concurrent Threads setting or sync less frequently."
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+          max_waiting_time_in_seconds: 3660
+        - type: ExponentialBackoffStrategy
+          factor: 5
     request_parameters: "{{ parameters.get('request_parameters', {}) }}"
 
   # Selector
