@@ -68,7 +68,10 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                 logLineSuffix = "execution of DynamicTest ${extensionContext!!.displayName}"
             } else if (methodName == "interceptTestClassConstructor") {
                 logLineSuffix =
-                    "instance creation for %s".formatted(reflectiveInvocationContext!!.targetClass)
+                    String.format(
+                        "instance creation for %s",
+                        reflectiveInvocationContext!!.targetClass
+                    )
             } else if (methodMatcher.matches()) {
                 val interceptedEvent = methodMatcher.group(1)
                 val methodRealClassName =
@@ -79,7 +82,8 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                     if (targetClassName == methodRealClassName) methodName
                     else "$methodName($methodRealClassName)"
                 logLineSuffix =
-                    "execution of @%s method %s.%s".formatted(
+                    String.format(
+                        "execution of @%s method %s.%s",
                         interceptedEvent,
                         targetClassName,
                         methodDisplayName

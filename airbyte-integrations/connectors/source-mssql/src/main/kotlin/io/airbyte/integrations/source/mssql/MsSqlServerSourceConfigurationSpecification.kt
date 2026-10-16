@@ -156,7 +156,7 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonPropertyDescription(
         "The encryption method which is used when communicating with the database.",
     )
-    @JsonSchemaInject(json = """{"order":10,"default":"required"}""")
+    @JsonSchemaInject(json = """{"order":10}""")
     fun getEncryptionValue(): EncryptionSpecification? = encryptionJson ?: encryption.asEncryption()
 
     @JsonIgnore
@@ -263,7 +263,8 @@ sealed interface EncryptionSpecification
 
 @JsonSchemaTitle("Unencrypted")
 @JsonSchemaDescription(
-    "Data transfer will not be encrypted.",
+    "Data transfer will not be encrypted. " +
+        "Not available on Airbyte Cloud unless an SSH tunnel is configured.",
 )
 data object MsSqlServerEncryptionDisabledConfigurationSpecification : EncryptionSpecification
 
