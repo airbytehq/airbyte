@@ -268,16 +268,22 @@ class SalesforceTokenProvider(TokenProvider):
 
     This provider wraps the Salesforce API object and calls login() to obtain a
     fresh token before the session is likely to expire.
+
+    With `proactive_refresh=False` it only returns the current token. REST streams use that: they pick
+    up any refresh, and a dead session is refreshed on INVALID_SESSION_ID, whereas a proactive refresh
+    would only add Refresh Token Rotation rotations.
     """
 
-    def __init__(self, sf_api: "Salesforce") -> None:
+    def __init__(self, sf_api: "Salesforce", proactive_refresh: bool = True) -> None:
         self._sf_api = sf_api
+        self._proactive_refresh = proactive_refresh
 
     def get_token(self) -> str:
         # Timing and locking live on the shared Salesforce object so that, no matter how many
         # per-stream providers/threads ask, at most one refresh happens per interval and every
         # rotated refresh token is persisted (see Salesforce.login).
-        self._sf_api.refresh_access_token_if_stale()
+        if self._proactive_refresh:
+            self._sf_api.refresh_access_token_if_stale()
         return self._sf_api.access_token
 
     @property
@@ -439,6 +445,9 @@ class Salesforce:
         if self._last_login_time is None or time.monotonic() - self._last_login_time < _TOKEN_REFRESH_INTERVAL_SECONDS:
             return
         with self._login_lock:
+            # Re-checked under the lock, as in login(): threads queued behind a rejected grant must not redeem it again
+            if self._login_permanently_failed:
+                return
             if self._last_login_time is not None and time.monotonic() - self._last_login_time < _TOKEN_REFRESH_INTERVAL_SECONDS:
                 return
             try:
