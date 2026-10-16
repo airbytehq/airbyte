@@ -109,6 +109,16 @@ class IcebergTableWriterFactory {
                     allowWholeFileSupersession = allowWholeFileSupersession,
                     suppressDeletedPositions = suppressDeletedPositions,
                     writeDeletionVectors = deleteMode == IcebergDeleteMode.DELETION_VECTOR,
+                    deletionVectorOutputFileFactory =
+                        if (deleteMode == IcebergDeleteMode.DELETION_VECTOR) {
+                            createOutputFileFactory(
+                                table = table,
+                                format = FileFormat.PUFFIN,
+                                generationId = generationId,
+                            )
+                        } else {
+                            null
+                        },
                 )
             }
         val targetFileSize =

@@ -32,6 +32,7 @@ class PositionalDeleteResolver(
     allowWholeFileSupersession: Boolean = false,
     suppressDeletedPositions: Boolean = true,
     writeDeletionVectors: Boolean = false,
+    deletionVectorOutputFileFactory: OutputFileFactory? = null,
 ) {
     private val finder =
         SupersededRowFinder(
@@ -44,7 +45,14 @@ class PositionalDeleteResolver(
         )
     private val deleteFiles: ResolvedDeleteFiles =
         if (writeDeletionVectors) {
-            DeletionVectorFiles(table, ref, outputFileFactory)
+            // DVs are Puffin files: write them through a PUFFIN-format factory so the
+            // location carries the .puffin extension Iceberg readers (and engines that
+            // mirror the table, like Databricks clones) expect.
+            DeletionVectorFiles(
+                table,
+                ref,
+                deletionVectorOutputFileFactory ?: outputFileFactory,
+            )
         } else {
             PositionalDeleteFiles(writerFactory, outputFileFactory)
         }
