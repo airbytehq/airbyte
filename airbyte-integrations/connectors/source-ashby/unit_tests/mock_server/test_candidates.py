@@ -173,7 +173,7 @@ class TestCandidates(TestCase):
         http_mocker.assert_number_of_calls(token_request, 1)
         http_mocker.assert_number_of_calls(bootstrap_request, 1)
 
-    def test_second_token_rejection_fails_without_emitting_a_new_token(self):
+    def test_second_token_rejection_fails_without_emitting_a_different_token(self):
         token_request = _candidates_request(sync_token="tok_old")
         bootstrap_request = _candidates_request()
         with HttpMocker() as http_mocker:
@@ -184,7 +184,7 @@ class TestCandidates(TestCase):
 
         assert output.errors
         assert output.errors[0].trace.error.failure_type == FailureType.system_error
-        assert "tok_new" not in _emitted_tokens(output)
+        assert all(token == "tok_old" for token in _emitted_tokens(output))
         http_mocker.assert_number_of_calls(token_request, 1)
         http_mocker.assert_number_of_calls(bootstrap_request, 1)
 

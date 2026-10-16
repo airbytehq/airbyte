@@ -147,7 +147,7 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
-| 1.8.0 | 2026-10-16 | [PR link](https://github.com/airbytehq/airbyte/pull/XXXXX) | Added incremental sync for the candidates stream using Ashby sync tokens. |
+| 1.8.0 | 2026-10-16 | [89056](https://github.com/airbytehq/airbyte/pull/89056) | Added incremental sync for the candidates stream using Ashby sync tokens. |
 | 1.7.2 | 2026-10-13 | [88502](https://github.com/airbytehq/airbyte/pull/88502) | Update dependencies |
 | 1.7.1 | 2026-10-06 | [87745](https://github.com/airbytehq/airbyte/pull/87745) | Update dependencies |
 | 1.7.0 | 2026-10-05 | [87590](https://github.com/airbytehq/airbyte/pull/87590) | Add openings, job templates, job boards, approvals, and projects streams |
