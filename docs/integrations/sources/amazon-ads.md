@@ -76,6 +76,10 @@ The Amazon Ads source connector supports only **seller** and **vendor** profile 
 Both **view** and **edit** access levels are supported. Accounts with view-only permissions (common for Vendor Central accounts) will retrieve profiles and sync data normally.
 :::
 
+:::important
+Amazon Ads refresh tokens expire **365 days** after the advertiser grants consent. When a refresh token expires, the connector surfaces a configuration error indicating the token is invalid. To resolve this, re-authenticate your Amazon Ads account to generate a new refresh token. For Airbyte Cloud users, click **Authenticate your Amazon Ads account** in the source settings. For Open Source users, follow the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) to obtain a new refresh token.
+:::
+
 ## Supported sync modes
 
 The Amazon Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
@@ -226,8 +230,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-|:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :----------- | :----------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 9.2.10 | 2026-10-14 | [78506](https://github.com/airbytehq/airbyte/pull/78506) | Handle expired refresh tokens as configuration errors |
 | 9.2.9 | 2026-10-13 | [87646](https://github.com/airbytehq/airbyte/pull/87646) | When Amazon rejects a report request as a duplicate (HTTP 425), reuse the report it names if that report matches the request, and otherwise wait and request the report again, reporting a duplicate that persists as a transient error instead of a config error |
 | 9.2.8 | 2026-10-13 | [88523](https://github.com/airbytehq/airbyte/pull/88523) | Update dependencies |
 | 9.2.7 | 2026-10-06 | [87668](https://github.com/airbytehq/airbyte/pull/87668) | Skip profiles that return HTTP 401 Unauthorized on attribution report streams instead of failing the sync |
