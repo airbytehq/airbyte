@@ -112,10 +112,26 @@ def test_transform_ledger_reports(input_data, expected_data):
     ("input_data", "expected_data"),
     (
         (
-            {"posted-date": "2023-11-09T18:44:35+00:00", "dataEndTime": "2022-07-31"},
-            {"posted-date": "2023-11-09T18:44:35+00:00", "dataEndTime": "2022-07-31"},
+            {"posted-date-time": "2023-11-09T18:44:35+00:00", "dataEndTime": "2022-07-31"},
+            {"posted-date-time": "2023-11-09T18:44:35+00:00", "dataEndTime": "2022-07-31"},
         ),
         ({"posted-date": "", "dataEndTime": "2022-07-31"}, {"posted-date": None, "dataEndTime": "2022-07-31"}),
+        ({"posted-date": "2026-09-14", "dataEndTime": "2022-07-31"}, {"posted-date": "2026-09-14", "dataEndTime": "2022-07-31"}),
+        (
+            {
+                "settlement-start-date": "2026-09-14 22:51:31 UTC",
+                "deposit-date": "2026-10-14 22:51:31 UTC",
+                "posted-date-time": "2026-09-15 00:06:35 UTC",
+                "dataEndTime": "2022-07-31",
+            },
+            {
+                "settlement-start-date": "2026-09-14T22:51:31+00:00",
+                "deposit-date": "2026-10-14T22:51:31+00:00",
+                "posted-date-time": "2026-09-15T00:06:35+00:00",
+                "dataEndTime": "2022-07-31",
+            },
+        ),
+        ({"posted-date-time": "", "dataEndTime": "2022-07-31"}, {"posted-date-time": None, "dataEndTime": "2022-07-31"}),
     ),
 )
 def test_transform_settlement_reports(report_init_kwargs, input_data, expected_data):

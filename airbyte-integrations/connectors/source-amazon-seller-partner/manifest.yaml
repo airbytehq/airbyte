@@ -554,6 +554,20 @@ spec:
                 path: ["financial_events_step"]
                 value: "{{ config.get('financial_events_step') ~ 'D' }}"
             condition: "{{ config.get('financial_events_step', False) and config.get('financial_events_step') | string not in ['1H', '2H', '4H', '6H', '8H', '12H', '1D', '7D', '14D', '30D', '60D', '90D', '180D'] }}"
+      - type: ConfigMigration
+        description: Starting from `7.0.0`, `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` is no longer a valid `report_name`. This migration removes report options for it so the config still passes spec validation. They never had an effect, because settlement reports are not created with `createReport`.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["report_options_list"]
+                value: >-
+                  {%- set report_options_list = [] -%}
+                  {%- for option in config.get('report_options_list', []) if option.get('report_name') != 'GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE' -%}
+                    {%- set _ = report_options_list.append(option) -%}
+                  {%- endfor -%}
+                  {{- report_options_list -}}
+            condition: "{{ 'GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE' in config.get('report_options_list', []) | map(attribute='report_name') | list }}"
     transformations:
       - type: ConfigAddFields
         fields:
@@ -8928,11 +8942,11 @@ schemas:
         - 'null'
         - string
       posted-date:
-        description: The date and time when the transaction was posted.
+        description: The date when the transaction was posted.
         type:
         - 'null'
         - string
-        format: date-time
+        format: date
       posted-date-time:
         description: The date and time when the transaction was posted, with full timestamp.
         type:

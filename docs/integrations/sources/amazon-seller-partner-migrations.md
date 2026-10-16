@@ -14,7 +14,11 @@ The V2 report has a different schema. Instead of separate price and fee column p
 
 These columns from the old stream are not in the V2 report: `shipment-fee-type`, `shipment-fee-amount`, `order-fee-type`, `order-fee-amount`, `price-type`, `price-amount`, `item-related-fee-type`, `item-related-fee-amount`, `misc-fee-amount`, `other-fee-amount`, `other-fee-reason-description`, `promotion-type`, `promotion-amount`, `direct-payment-type`, `direct-payment-amount` and `other-amount`. The V2 report adds `posted-date-time`.
 
-The V2 report is available to Seller Central sellers only.
+The V2 report writes timestamps as `2026-09-14 22:51:31 UTC`. The connector converts them to ISO 8601 (`2026-09-14T22:51:31+00:00`), the same format the old stream used. In the V2 stream, `posted-date` contains only the date, for example `2026-09-14`; the time is in `posted-date-time`.
+
+The V2 report is available to Seller Central sellers only, and it requires the **Finance and Accounting** role. The old report also accepted the Inventory and Order Tracking or Amazon Fulfillment roles. If your app doesn't have the Finance and Accounting role, Amazon rejects requests for the V2 report: add the role to your app in Seller Central, then re-authenticate the source in Airbyte.
+
+If you set Report Options for `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`, the connector removes them automatically when it upgrades. They never had an effect, because Amazon generates settlement reports on its own schedule.
 
 ### Who is affected
 
@@ -24,10 +28,15 @@ Connections that sync the `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` stream. Othe
 
 1. Select **Connections** in the main navbar, then select the affected connection.
 2. Select the **Schema** tab, then select **Refresh source schema**. `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` no longer appears.
-3. Enable the `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` stream, then save the connection.
-4. Update downstream SQL, dbt models and dashboards to read amounts from the `amount-type`, `amount-description` and `amount` columns, and parse `amount` according to the marketplace's number format.
+3. Make sure your app has the **Finance and Accounting** role. If you add the role, re-authenticate the source.
+4. Enable the `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` stream, then save the connection.
+5. Update downstream SQL, dbt models and dashboards to read amounts from the `amount-type`, `amount-description` and `amount` columns, and parse `amount` according to the marketplace's number format.
 
 The new stream writes to a new destination table, so you don't need to clear any stream. The existing `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` table is left as-is and stops receiving data. Keep it if you need settlement history: Amazon only lists settlement reports created in the last 90 days, so the first sync of the V2 stream starts at most 89 days back.
+
+:::warning
+Amazon generates both settlement reports for every settlement, with the same `settlement-id`. The settlements from the last 89 days will be in both tables after the first V2 sync. If you combine the two tables, deduplicate by `settlement-id`, for example by taking only settlements from the old table that aren't in the V2 table, or you will count those settlements twice.
+:::
 
 ## Upgrading to 6.0.0
 

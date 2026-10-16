@@ -260,6 +260,9 @@ def test_given_done_settlement_reports_when_read_then_documents_downloaded_and_r
     assert len(output.records) == 2 * _RECORDS_PER_DOCUMENT
     assert {record.record.data["settlement-id"] for record in output.records} == {"12345678901"}
     assert all("dataEndTime" in record.record.data for record in output.records)
+    item_rows = [record.record.data for record in output.records if record.record.data.get("posted-date")]
+    assert {row["posted-date"] for row in item_rows} == {"2023-01-03"}
+    assert {row["posted-date-time"] for row in item_rows} == {"2023-01-03T10:00:00+00:00"}
 
     # Each report resolves its own document exactly once and downloads it exactly once; the
     # CANCELLED and FATAL reports are filtered out of the listing and never reach getReport.
