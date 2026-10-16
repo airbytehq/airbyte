@@ -9,7 +9,7 @@ The Extract CDK provides functionality for source connectors including schema di
 
 ### 1.1.18 — 2026-10-16
 
-[#TBD](https://github.com/airbytehq/airbyte/pull/TBD) — `JdbcConnectionFactory` now redacts credential-looking parameters (password/secret/token/key-style keys, including inside `CustomProperties=(...)`, plus URL userinfo) from the JDBC URL it logs; the URL passed to the driver is unchanged. New public `redactJdbcUrl()` helper.
+[#89029](https://github.com/airbytehq/airbyte/pull/89029) — `JdbcConnectionFactory` now redacts credential-looking parameters (password/secret/token/key-style keys, including inside `CustomProperties=(...)`, plus URL userinfo) from the JDBC URL it logs; the URL passed to the driver is unchanged. New public `redactJdbcUrl()` helper.
 
 ### 1.1.17 — 2026-10-15
 
