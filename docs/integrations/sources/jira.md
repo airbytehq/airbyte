@@ -220,6 +220,10 @@ Jira returns only the records the authenticating user or service account can see
 
 The connector also skips any request that Jira answers with HTTP 400 instead of failing the sync. Jira returns 400 for requests it considers invalid, such as a stream that queries a Jira feature your site doesn't have enabled, so a stream can finish successfully with no records. Check the sync logs for 400 responses if a stream returns less data than you expect.
 
+### Recently updated issues appear one sync later in `board_issues` or `sprint_issues`
+
+The `board_issues` and `sprint_issues` streams read from the Jira Software API (`/rest/software/1.0/`), which is eventually consistent. An issue updated a few seconds before a sync starts may not be returned until the next sync. To re-read recent changes on every incremental sync, set **Lookback window** (`lookback_window_minutes`) to a few minutes, for example `5`.
+
 ### The sync is slow
 
 See [Streams on I/O usage](#streams-on-io-usage). Those streams make one request per issue, so their runtime scales with your issue count.
@@ -262,6 +266,7 @@ The connector uses these configuration fields for programmatic setup with PyAirb
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.0 | 2026-10-15 | [80198](https://github.com/airbytehq/airbyte/pull/80198) | Migrate `board_issues` and `sprint_issues` streams from deprecated `/rest/agile/1.0/` endpoints to `/rest/software/1.0/` with cursor-based pagination per Atlassian RFC-127 |
 | 6.0.4 | 2026-10-13 | [88409](https://github.com/airbytehq/airbyte/pull/88409) | Type rendered comment bodies in `issues` (`renderedFields.comment.comments[].body`) as HTML strings. Avro/Parquet destinations now receive this value (previously null) as a string instead of a struct |
 | 6.0.3 | 2026-09-17 | [86357](https://github.com/airbytehq/airbyte/pull/86357) | Fix `issues` stream failing with `UndefinedError` when an issue has no `fields.project` |
 | 6.0.2 | 2026-09-10 | [85802](https://github.com/airbytehq/airbyte/pull/85802) | Stop config migration from adding empty `api_token`, `email`, and `domain` fields to OAuth or partially-migrated configs |
