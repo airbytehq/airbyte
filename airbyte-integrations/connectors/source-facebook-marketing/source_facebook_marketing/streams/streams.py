@@ -12,7 +12,6 @@ from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.adobjects.adcreative import AdCreative as FBAdCreative
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
-from facebook_business.api import Cursor
 from facebook_business.exceptions import FacebookRequestError
 
 from airbyte_cdk.models import SyncMode
@@ -24,6 +23,7 @@ from source_facebook_marketing.spec import ValidAdSetStatuses, ValidAdStatuses, 
 
 from .base_insight_streams import AdsInsights
 from .base_streams import FBMarketingIncrementalStream, FBMarketingReversedIncrementalStream, FBMarketingStream
+from .patches import CursorPatch
 
 
 logger = logging.getLogger("airbyte")
@@ -58,13 +58,14 @@ def fetch_creative_with_object_story_spec_fallback(creative_id: str, fields: Lis
         if fb_error is None or OBJECT_STORY_SPEC_FIELD not in fields or not is_object_story_spec_read_error(exc):
             raise
         error_body = fb_error.body().get("error", {}) if fb_error.body() else {}
+        reduced_fields = [f for f in fields if f != OBJECT_STORY_SPEC_FIELD]
+        creative = FBAdCreative(creative_id).api_get(fields=reduced_fields).export_all_data()
         logger.warning(
             f"Stream {stream_name}: creative {creative_id} failed with Facebook error "
             f"{fb_error.api_error_code()}/{fb_error.api_error_subcode()} ({error_body.get('error_user_msg')}); "
             f"the creative is emitted with {OBJECT_STORY_SPEC_FIELD} null."
         )
-        reduced_fields = [f for f in fields if f != OBJECT_STORY_SPEC_FIELD]
-        return FBAdCreative(creative_id).api_get(fields=reduced_fields).export_all_data()
+        return creative
 
 
 def fetch_thumbnail_data_url(url: str) -> Optional[str]:
@@ -118,10 +119,12 @@ class AdCreatives(FBMarketingStream):
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         account = self._api.get_account(account_id=account_id)
-        cursor = Cursor(source_object=account, target_objects_class=FBAdCreative, fields=self.fields(), params=params)
+        cursor = CursorPatch(source_object=account, target_objects_class=FBAdCreative, fields=self.fields(), params=params)
+        first_page = True
         while True:
             try:
-                if not cursor.load_next_page():
+                # Like get_ad_creatives(), an empty first page does not end the read: the next page is still loaded.
+                if not cursor.load_next_page() and not first_page:
                     return
             except (FacebookRequestError, AirbyteTracedException) as exc:
                 if OBJECT_STORY_SPEC_FIELD not in self.fields() or not is_object_story_spec_read_error(exc):
@@ -130,15 +133,17 @@ class AdCreatives(FBMarketingStream):
                 if not has_more_pages:
                     return
                 continue
+            first_page = False
             for index in range(len(cursor)):
                 yield cursor[index]
 
-    def _read_failed_page_creative_by_creative(self, account: FBAdAccount, cursor: Cursor) -> Generator[Mapping[str, Any], None, bool]:
+    def _read_failed_page_creative_by_creative(self, account: FBAdAccount, cursor: CursorPatch) -> Generator[Mapping[str, Any], None, bool]:
         """Re-read the page that failed on object_story_spec one creative at a time, preserving pagination."""
-        # The SDK only advances cursor.params["after"] after a successful page, so cursor.params still describes the failed page.
+        # CursorPatch only replaces cursor.params (with the `next` link's query) after a successful page,
+        # so cursor.params still describes the failed page.
         failed_page_after = cursor.params.get("after")
         id_params = {k: v for k, v in cursor.params.items() if k != "fields"}
-        id_page = Cursor(source_object=account, target_objects_class=FBAdCreative, fields=["id"], params=id_params)
+        id_page = CursorPatch(source_object=account, target_objects_class=FBAdCreative, fields=["id"], params=id_params)
         id_page.load_next_page()
         logger.warning(
             f"Stream {self.name}: a page of {len(id_page)} creatives for account {account.get_id_assured()} failed on "

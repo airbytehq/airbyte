@@ -420,6 +420,10 @@ If the `ad_creatives` stream fails with the error "Please reduce the amount of d
 
 Note that `ad_creatives_from_ads` is slower than `ad_creatives` because it makes individual API calls per creative. It also only returns creatives that are associated with ads — orphaned creatives that are not linked to any ad will not be included.
 
+### Ad creatives without `object_story_spec`
+
+For some Degrees of Freedom creatives, the Graph API rejects requests for the `object_story_spec` field with error `100` / `2446211` ("First Dof Value Should Match Object Story Spec Field"). The `ad_creatives` and `ad_creatives_from_ads` streams emit these creatives without `object_story_spec` instead of failing the sync, and log a warning with the creative ID. `ad_creatives` reads every creative on each sync, so the field comes back once the API returns it again. In incremental mode, `ad_creatives_from_ads` reads a creative again only after its parent ad changes, so [refresh](/platform/operator-guides/refreshes) that stream to backfill `object_story_spec`.
+
 ### Missing records in Campaigns, Ad Sets, or Ads streams {#missing-records-status-filtering}
 
 If you notice that some campaigns, ad sets, or ads are missing from your synced data, the most common cause is the status filtering configuration.
