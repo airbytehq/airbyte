@@ -10761,8 +10761,8 @@ airbyte-agent connectors execute --json '{
   "entity": "metafield_product_images",
   "action": "list",
   "params": {
-    "product_id": 0,
-    "image_id": 0
+    "metafield[owner_id]": 0,
+    "metafield[owner_resource]": "<str>"
   }
 }'
 ```
@@ -10771,8 +10771,8 @@ airbyte-agent connectors execute --json '{
 
 ```python
 await shopify.metafield_product_images.list(
-    product_id=0,
-    image_id=0
+    metafield_owner_id=0,
+    metafield_owner_resource="<str>"
 )
 ```
 
@@ -10786,8 +10786,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "entity": "metafield_product_images",
     "action": "list",
     "params": {
-        "product_id": 0,
-        "image_id": 0
+        "metafield[owner_id]": 0,
+        "metafield[owner_resource]": "<str>"
     }
 }'
 ```
@@ -10797,8 +10797,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `product_id` | `integer` | Yes | The product ID |
-| `image_id` | `integer` | Yes | The image ID |
+| `metafield[owner_id]` | `integer` | Yes | The product image ID whose metafields to list |
+| `metafield[owner_resource]` | `"product_image"` | Yes | Owner resource type; always product_image |
 | `limit` | `integer` | No | Maximum number of results to return (max 250) |
 | `since_id` | `integer` | No | Restrict results to after the specified ID |
 | `namespace` | `string` | No | Filter by namespace |

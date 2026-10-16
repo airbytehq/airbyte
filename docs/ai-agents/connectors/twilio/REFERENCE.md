@@ -1810,7 +1810,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `status` | `null \| string` |  |
 | `channels` | `null \| integer` |  |
 | `source` | `null \| string` |  |
-| `error_code` | `null \| string` |  |
+| `error_code` | `null \| integer` |  |
 | `media_url` | `null \| string` |  |
 | `uri` | `null \| string` |  |
 | `encryption_details` | `null \| object` |  |
@@ -1902,7 +1902,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `status` | `null \| string` |  |
 | `channels` | `null \| integer` |  |
 | `source` | `null \| string` |  |
-| `error_code` | `null \| string` |  |
+| `error_code` | `null \| integer` |  |
 | `media_url` | `null \| string` |  |
 | `uri` | `null \| string` |  |
 | `encryption_details` | `null \| object` |  |

@@ -15,7 +15,7 @@ import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 import org.apache.iceberg.catalog.TableIdentifier
 
 @Singleton
