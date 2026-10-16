@@ -140,8 +140,26 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: note_id
+              incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/notes"
+      # Incremental only through the parent `notes` state (incremental_dependency). This cursor
+      # holds state and is never sent to Granola. Each detail record carries the same updated_at as
+      # its parent note. The far-future end_datetime stops it from skipping a note the parent
+      # returned when the stored cursor is later than the worker clock.
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%d')) }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime: "9999-12-31T00:00:00Z"
+        global_substream_cursor: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
