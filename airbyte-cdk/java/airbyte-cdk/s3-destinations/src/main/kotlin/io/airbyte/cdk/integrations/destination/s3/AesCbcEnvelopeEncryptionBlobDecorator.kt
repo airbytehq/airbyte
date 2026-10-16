@@ -5,7 +5,6 @@
 package io.airbyte.cdk.integrations.destination.s3
 
 import com.google.common.annotations.VisibleForTesting
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import java.io.OutputStream
 import java.security.InvalidAlgorithmParameterException
 import java.security.InvalidKeyException
@@ -71,10 +70,6 @@ internal constructor( // The real "secret key". Should be handled with great car
         ),
     )
 
-    @SuppressFBWarnings(
-        value = ["PADORA", "CIPINT"],
-        justification = "We're using this cipher for compatibility with Redshift/Snowflake.",
-    )
     override fun wrap(stream: OutputStream): OutputStream {
         try {
             val dataCipher = Cipher.getInstance(CONTENT_ENCRYPTING_CIPHER_ALGO)
@@ -97,10 +92,6 @@ internal constructor( // The real "secret key". Should be handled with great car
         }
     }
 
-    @SuppressFBWarnings(
-        value = ["CIPINT", "SECECB"],
-        justification = "We're using this cipher for compatibility with Redshift/Snowflake.",
-    )
     override fun updateMetadata(
         metadata: MutableMap<String, String>,
         metadataKeyMapping: Map<String, String>

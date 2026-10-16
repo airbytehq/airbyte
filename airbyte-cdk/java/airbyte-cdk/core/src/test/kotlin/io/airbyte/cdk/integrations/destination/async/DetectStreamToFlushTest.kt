@@ -18,7 +18,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 
-@SuppressFBWarnings(value = ["BC_IMPOSSIBLE_CAST"])
 class DetectStreamToFlushTest {
     val NOW: Instant = Instant.now()
     val FIVE_MIN: Duration = Duration.ofMinutes(5)

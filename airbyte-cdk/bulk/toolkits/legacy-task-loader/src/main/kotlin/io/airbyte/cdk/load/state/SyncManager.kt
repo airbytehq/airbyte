@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.state
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -23,10 +22,6 @@ data class DestinationFailure(
 ) : DestinationResult
 
 @Singleton
-@SuppressFBWarnings(
-    "NP_NONNULL_PARAM_VIOLATION",
-    justification = "exception is guaranteed to be non-null by Kotlin's type system"
-)
 class SyncManager(val catalog: DestinationCatalog) {
     private val streamManagers: ConcurrentHashMap<DestinationStream.Descriptor, StreamManager> =
         ConcurrentHashMap(catalog.streams.associate { it.mappedDescriptor to StreamManager(it) })

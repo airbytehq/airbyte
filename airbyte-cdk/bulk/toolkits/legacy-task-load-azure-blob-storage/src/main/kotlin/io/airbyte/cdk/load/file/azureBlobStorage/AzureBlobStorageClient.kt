@@ -11,7 +11,6 @@ import com.azure.storage.blob.batch.BlobBatchStorageException
 import com.azure.storage.blob.models.BlobStorageException
 import com.azure.storage.blob.models.DeleteSnapshotsOptionType
 import com.azure.storage.blob.models.ListBlobsOptions
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
@@ -35,7 +34,6 @@ data class AzureBlob(
     override val storageConfig: AzureBlobStorageClientConfiguration
 ) : RemoteObject<AzureBlobStorageClientConfiguration>
 
-@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
 class AzureBlobClient(
     private val serviceClient: BlobServiceClient,
     private val blobConfig: AzureBlobStorageClientConfiguration

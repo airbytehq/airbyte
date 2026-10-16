@@ -15,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 
-@SuppressFBWarnings(value = ["BC_IMPOSSIBLE_CAST"])
 class SizeTriggerTest {
     companion object {
         private const val SIZE_10MB = (10 * 1024 * 1024).toLong()
