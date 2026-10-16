@@ -182,13 +182,8 @@ internal class BigQueryCopyLoadFixture(
                 archiveEntered.complete(Unit)
                 archiveResult.await()
                 events.add("archive")
-                Unit
             }
-        coEvery { storage.delete(blob) } coAnswers
-            {
-                events.add("delete")
-                Unit
-            }
+        coEvery { storage.delete(blob) } coAnswers { events.add("delete") }
     }
 
     val loader = newLoader()

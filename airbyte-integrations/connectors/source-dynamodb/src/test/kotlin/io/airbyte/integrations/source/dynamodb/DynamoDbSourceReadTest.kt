@@ -726,9 +726,11 @@ class DynamoDbSourceReadTest {
         Assertions.assertTrue(states.isNotEmpty())
         for (state in states) {
             val parsed: DynamoDbStreamStateValue = DynamoDbStreamStateValue.parse(streamID, state)!!
-            Assertions.assertEquals(totalSegments, parsed.scan!!.totalSegments, state.toString())
-            Assertions.assertEquals(totalSegments, parsed.scan!!.segments!!.size, state.toString())
-            for (segment in parsed.scan!!.segments!!) {
+            val scan = parsed.scan!!
+            Assertions.assertEquals(totalSegments, scan.totalSegments, state.toString())
+            val segments = scan.segments!!
+            Assertions.assertEquals(totalSegments, segments.size, state.toString())
+            for (segment in segments) {
                 Assertions.assertFalse(
                     segment.complete == true && segment.exclusiveStartKey != null,
                     "complete segment with a key: $state",
