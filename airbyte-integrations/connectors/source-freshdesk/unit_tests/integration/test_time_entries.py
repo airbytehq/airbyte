@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
 from unittest import TestCase
@@ -83,7 +83,7 @@ class TimeEntriesTest(TestCase):
         output = _read(config_builder=ConfigBuilder().domain(_DOMAIN))
 
         assert len(output.records) == 2
-        assert output.most_recent_state.stream_state.__dict__["executed_at"] == "2024-03-15T00:00:00Z"
+        assert output.most_recent_state.stream_state.__dict__["executed_at_cursor"] == "2024-03-15T00:00:00Z"
 
     @HttpMocker()
     def test_incremental_state_uses_default_14_day_lookback(self, http_mocker: HttpMocker) -> None:
@@ -94,7 +94,7 @@ class TimeEntriesTest(TestCase):
 
         output = _read(
             config_builder=ConfigBuilder().domain(_DOMAIN),
-            state_builder=StateBuilder().with_stream_state("time_entries", {"executed_at": "2024-03-15T00:00:00Z"}),
+            state_builder=StateBuilder().with_stream_state("time_entries", {"executed_at_cursor": "2024-03-15T00:00:00Z"}),
         )
 
         assert len(output.records) == 1
@@ -108,7 +108,28 @@ class TimeEntriesTest(TestCase):
 
         output = _read(
             config_builder=ConfigBuilder().domain(_DOMAIN).lookback_window_in_days(30),
-            state_builder=StateBuilder().with_stream_state("time_entries", {"executed_at": "2024-03-15T00:00:00Z"}),
+            state_builder=StateBuilder().with_stream_state("time_entries", {"executed_at_cursor": "2024-03-15T00:00:00Z"}),
         )
 
         assert len(output.records) == 1
+
+    @HttpMocker()
+    def test_future_executed_at_is_emitted_but_cursor_is_capped(self, http_mocker: HttpMocker) -> None:
+        future_executed_at = "9999-01-01T00:00:00Z"
+        http_mocker.get(
+            HttpRequest(f"https://{_DOMAIN}/api/v2/time_entries?per_page=100&executed_after=1970-01-01T00%3A00%3A00Z"),
+            _response().with_record(_record().with_id(1).with_cursor(future_executed_at)).build(),
+        )
+
+        output = _read(config_builder=ConfigBuilder().domain(_DOMAIN))
+        sync_completed_at = datetime.now(timezone.utc)
+
+        assert len(output.records) == 1
+        record = output.records[0].record.data
+        assert record["executed_at"] == future_executed_at
+
+        stream_state = output.most_recent_state.stream_state.__dict__
+        cursor_value = stream_state.get("executed_at_cursor", stream_state.get("executed_at"))
+        cursor_datetime = datetime.strptime(cursor_value, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        assert cursor_datetime <= sync_completed_at
+        assert "executed_at_cursor" in stream_state

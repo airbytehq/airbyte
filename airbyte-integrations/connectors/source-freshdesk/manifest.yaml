@@ -1548,9 +1548,15 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path: ["executed_at_cursor"]
+              value: "{{ [record['executed_at'], now_utc().strftime('%Y-%m-%dT%H:%M:%SZ')] | min if record.get('executed_at') else None }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: executed_at
+        cursor_field: executed_at_cursor
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
@@ -3853,6 +3859,10 @@ schemas:
           - string
           - "null"
       executed_at:
+        type:
+          - string
+          - "null"
+      executed_at_cursor:
         type:
           - string
           - "null"

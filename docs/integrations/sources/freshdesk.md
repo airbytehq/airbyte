@@ -64,7 +64,7 @@ Several output streams are available from this source:
 - [Ticket Fields](https://developers.freshdesk.com/api/#ticket-fields)
 - [Time Entries](https://developers.freshdesk.com/api/#time-entries) \(Incremental Sync\)
 
-Companies and Time Entries ignore Start Date so full refreshes and first incremental syncs include all available records. Time Entries use `executed_at` as the cursor and the Lookback Window; edits to entries executed before the window are not picked up incrementally. Conversations are re-read only for tickets whose `updated_at` changed since the last sync.
+Companies and Time Entries ignore Start Date so full refreshes and first incremental syncs include all available records. Time Entries use `executed_at` (capped at sync time and exposed as `executed_at_cursor`) as the cursor with the Lookback Window; edits to entries executed before the window are not picked up incrementally. Conversations are re-read only for tickets whose `updated_at` changed since the last sync.
 
 ## Performance considerations
 
