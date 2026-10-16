@@ -65,7 +65,7 @@ The Granola source connector supports the following streams:
 | Stream | Sync mode | Primary key |
 | :--- | :--- | :--- |
 | `notes` | Incremental | `id` |
-| `detailed_notes` | Full refresh | `id` |
+| `detailed_notes` | Incremental | `id` |
 | `note_transcripts` | Full refresh | None |
 
 ### Notes
@@ -84,7 +84,7 @@ The Granola API doesn't return deleted notes or mark notes as deleted, so the co
 
 The `detailed_notes` stream retrieves each note from the `notes` stream with the [`GET /v1/notes/{note_id}`](https://docs.granola.ai/api-reference/get-note) endpoint. It includes the note metadata plus fields available only on the detail endpoint, including summaries, transcripts, attendees, calendar events, and folder membership.
 
-The stream isn't incremental. On every sync it re-reads the full list of notes updated since your start date and requests each note's details again, so it makes one request for every note in that range. The connector always requests transcript data for this stream. Syncing `detailed_notes` can increase sync time and data volume for workspaces with many notes.
+The stream is incremental through the parent `notes` stream's `updated_after` state: after the initial sync, it requests details only for notes updated since the last sync. The connector always requests transcript data for this stream. In **Incremental | Append** mode, each edit adds a row for the note, and the most recently updated note is repeated on each sync because the parent cursor looks back one second. This is the same behavior as `notes`. A note skipped because Granola returned `413 TRANSCRIPT_TOO_LARGE` isn't retried by later incremental syncs unless it is edited again; use the full-refresh `note_transcripts` stream to retrieve its transcript.
 
 The API returns a 404 for notes that don't have a generated AI summary and transcript. Because `detailed_notes` uses `notes` as its parent stream, it only requests detail records for notes returned by the list endpoint.
 
@@ -94,7 +94,7 @@ Granola returns the transcript inline. If a transcript is too large to return th
 
 The `note_transcripts` stream retrieves each note's transcript from the [`GET /v1/notes/{note_id}/transcript`](https://docs.granola.ai/api-reference/get-transcript) endpoint, one record per transcript segment. Each record carries the segment's speaker, text, and start and end times, plus the `note_id` of the note it belongs to. Because this endpoint is paged, it returns transcripts of any size, including those `detailed_notes` can't return inline.
 
-The stream has no primary key, so records are appended rather than deduplicated. It isn't incremental: on every sync it re-reads the full list of notes updated since your start date and requests each of those notes' transcripts again, so it adds at least one request for every note in that range rather than only for new notes. The connector requests the API's maximum of 100 transcript segments per page, so a transcript longer than 100 segments costs one more request for each additional page. On a workspace with thousands of historical notes this dominates sync time, so size your sync frequency against the total note count.
+The stream has no primary key, so records are appended rather than deduplicated. It remains full refresh: on every sync it re-reads the full list of notes updated since your start date and requests each of those notes' transcripts again, so it adds at least one request for every note in that range rather than only for new notes. The connector requests the API's maximum of 100 transcript segments per page, so a transcript longer than 100 segments costs one more request for each additional page. On a workspace with thousands of historical notes this dominates sync time, so size your sync frequency against the total note count.
 
 If Granola no longer returns a transcript for a note that the `notes` stream listed, such as a note deleted or unshared mid-sync, the API responds with `404` and the connector skips that note instead of failing the stream.
 
@@ -164,6 +164,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.0 | 2026-10-16 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add incremental sync to the detailed_notes stream |
 | 1.0.3 | 2026-10-13 | [88655](https://github.com/airbytehq/airbyte/pull/88655) | Update dependencies |
 | 1.0.2 | 2026-10-06 | [87885](https://github.com/airbytehq/airbyte/pull/87885) | Update dependencies |
 | 1.0.1 | 2026-10-05 | [87682](https://github.com/airbytehq/airbyte/pull/87682) | Promote to certified |
