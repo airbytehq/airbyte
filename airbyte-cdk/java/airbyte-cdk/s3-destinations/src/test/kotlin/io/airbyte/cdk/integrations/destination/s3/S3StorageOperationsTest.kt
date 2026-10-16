@@ -9,6 +9,7 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest
 import com.amazonaws.services.s3.model.ListObjectsRequest
 import com.amazonaws.services.s3.model.ObjectListing
 import com.amazonaws.services.s3.model.S3ObjectSummary
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.cdk.integrations.destination.s3.util.S3NameTransformer
@@ -42,6 +43,10 @@ class S3StorageOperationsTest {
     private lateinit var s3StorageOperations: S3StorageOperations
 
     @BeforeEach
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment"
+    )
     internal fun setup() {
         val nameTransformer: NamingConventionTransformer = S3NameTransformer()
         s3Client = Mockito.mock(AmazonS3::class.java)

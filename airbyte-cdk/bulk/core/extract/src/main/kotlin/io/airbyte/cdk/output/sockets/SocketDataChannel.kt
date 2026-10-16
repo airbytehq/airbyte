@@ -10,6 +10,7 @@ import io.airbyte.protocol.protobuf.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.OutputStream
@@ -20,7 +21,6 @@ import java.nio.channels.ServerSocketChannel
 import java.nio.channels.SocketChannel
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope

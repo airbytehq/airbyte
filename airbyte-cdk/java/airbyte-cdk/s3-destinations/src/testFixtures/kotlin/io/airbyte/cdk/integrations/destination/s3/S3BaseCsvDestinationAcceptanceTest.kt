@@ -77,7 +77,7 @@ abstract class S3BaseCsvDestinationAcceptanceTest :
         private fun getFieldTypes(streamSchema: JsonNode): Map<String, String> {
             val fieldTypes: MutableMap<String, String> = HashMap()
             val fieldDefinitions = streamSchema["properties"]
-            val iterator = fieldDefinitions.fields()
+            val iterator = fieldDefinitions.properties().iterator()
             while (iterator.hasNext()) {
                 val entry = iterator.next()
                 val fieldValue = entry.value

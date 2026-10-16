@@ -25,6 +25,10 @@ class RunningSizeEstimateTest {
     private lateinit var flusher: DestinationFlushFunction
 
     @BeforeEach
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment"
+    )
     internal fun setup() {
         flusher = Mockito.mock(DestinationFlushFunction::class.java)
         Mockito.`when`(flusher.optimalBatchSizeBytes).thenReturn(SIZE_200MB)

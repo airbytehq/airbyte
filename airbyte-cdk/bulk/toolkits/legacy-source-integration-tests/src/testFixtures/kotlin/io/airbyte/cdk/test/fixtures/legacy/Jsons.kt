@@ -362,7 +362,7 @@ object Jsons {
     fun flatten(node: JsonNode, applyFlattenToArray: Boolean = false): Map<String?, Any> {
         if (node.isObject) {
             val output: MutableMap<String, Any> = HashMap()
-            val it = node.fields()
+            val it = node.properties().iterator()
             while (it.hasNext()) {
                 val entry = it.next()
                 val field = entry.key

@@ -5,6 +5,7 @@ package io.airbyte.cdk.integrations.destination.jdbc.copy
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.collect.ImmutableMap
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.base.Destination
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import org.junit.jupiter.api.BeforeEach
@@ -24,6 +25,10 @@ internal class SwitchingDestinationTest {
     private lateinit var destinationMap: Map<SwitchingEnum, Destination>
 
     @BeforeEach
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment"
+    )
     fun setUp() {
         insertDestination = Mockito.mock(Destination::class.java)
         copyDestination = Mockito.mock(Destination::class.java)

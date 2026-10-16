@@ -7,9 +7,13 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
-### 1.1.5 — 2026-10-16
+### 1.1.6 — 2026-10-16
 
 [#88973](https://github.com/airbytehq/airbyte/pull/88973) — Feat: add positional and deletion-vector delete file support to the Iceberg load toolkit, with duplicate-delete suppression and optional whole-file supersession; add an in-place v2-to-v3 table upgrader that converts legacy delete files to deletion vectors.
+
+### 1.1.5 — 2026-10-15
+
+[#88992](https://github.com/airbytehq/airbyte/pull/88992) — Bump Micronaut to 4.10.31, Jackson to 2.21.7 (Kotlin runtime 2.1.21), JUnit to 5.14 and SpotBugs to 4.10.5; Dagger and `javax.inject` are removed in favour of `jakarta.inject` only. `ReservingDeserializingInputFlow`, `DestinationMessageFactory`, `ObjectLoaderPartFormatter` and `DefaultTempTableNameGenerator` get `@Inject` constructors without Kotlin default values on primitive parameters: inject-kotlin 4.8+ emits unverifiable bytecode for such constructors and Micronaut silently dropped the beans (`NoSuchBeanException` in dependants). Runtime behaviour is unchanged.
 
 ### 1.1.4 — 2026-10-15
 
