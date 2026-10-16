@@ -28,6 +28,7 @@ import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
+import java.sql.Connection
 import java.sql.ResultSet
 import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
@@ -75,16 +76,44 @@ class SnowflakeAirbyteClient(
 
     override suspend fun tableExists(table: TableName): Boolean =
         dataSource.connection.use { connection ->
-            val statement =
-                connection.prepareStatement(
-                    """
+            val rawName = table.name.replace("\"\"", "\"")
+            val names =
+                connection
+                    .prepareStatement(
+                        """
                     show tables
                     like ?
                     in schema "$databaseName"."${table.namespace}"
                     """.trimIndent()
+                    )
+                    .use { statement ->
+                        statement.setString(1, rawName)
+                        val resultSet = statement.executeQuery()
+                        buildList {
+                            while (resultSet.next()) {
+                                add(resultSet.getString("name"))
+                            }
+                        }
+                    }
+
+            // SHOW TABLES LIKE is case-insensitive and treats `_` and `%` as wildcards,
+            // so it can return sibling tables. Case-only matches count only when
+            // QUOTED_IDENTIFIERS_IGNORE_CASE is enabled for the session.
+            when {
+                names.any { it == rawName } -> true
+                names.any { it.equals(rawName, ignoreCase = true) } ->
+                    quotedIdentifiersIgnoreCase(connection)
+                else -> false
+            }
+        }
+
+    private fun quotedIdentifiersIgnoreCase(connection: Connection): Boolean =
+        connection.createStatement().use { statement ->
+            val resultSet =
+                statement.executeQuery(
+                    "SHOW PARAMETERS LIKE 'QUOTED_IDENTIFIERS_IGNORE_CASE' IN SESSION"
                 )
-            statement.setString(1, table.name)
-            statement.use { it.executeQuery().next() }
+            resultSet.next() && resultSet.getString("value").equals("true", ignoreCase = true)
         }
 
     override suspend fun namespaceExists(namespace: String): Boolean {
