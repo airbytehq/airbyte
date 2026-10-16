@@ -1,0 +1,144 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "name": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "feature_flag_key": {
+      "type": ["null", "string"]
+    },
+    "start_date": {
+      "type": ["null", "string"]
+    },
+    "end_date": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "conclusion": {
+      "type": ["null", "string"]
+    },
+    "conclusion_comment": {
+      "type": ["null", "string"]
+    },
+    "feature_flag": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "holdout": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "parameters": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "filters": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "created_by": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "running_time_calculation": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "exposure_criteria": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "stats_config": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "metrics": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metrics_secondary": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "saved_metrics": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "excluded_variants": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "tags": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "deleted": {
+      "type": ["null", "boolean"]
+    },
+    "is_legacy": {
+      "type": ["null", "boolean"]
+    },
+    "id": {
+      "type": "integer"
+    },
+    "secondary_metrics": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "primary_metrics_ordered_uuids": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "secondary_metrics_ordered_uuids": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "exposure_cohort": {
+      "type": ["null", "integer"]
+    },
+    "version": {
+      "type": ["null", "integer"]
+    },
+    "original_experiment": {
+      "type": ["null", "integer"]
+    },
+    "user_access_level": {
+      "type": ["null", "string"]
+    },
+    "resolved_exposure_event": {
+      "type": ["null", "string"]
+    },
+    "flag_cleanup_task_id": {
+      "type": ["null", "string"]
+    },
+    "only_count_matured_users": {
+      "type": ["null", "boolean"]
+    },
+    "can_freeze_exposure": {
+      "type": ["null", "boolean"]
+    },
+    "scheduling_config": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    }
+  }
+}

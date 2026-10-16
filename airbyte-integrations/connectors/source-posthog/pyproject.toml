@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.1.25"
+version = "1.2.0"
 name = "source-posthog"
 description = "Source implementation for Posthog."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_posthog"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.9,<3.11"
 airbyte-cdk = "0.60.0"
 
 [tool.poetry.scripts]
