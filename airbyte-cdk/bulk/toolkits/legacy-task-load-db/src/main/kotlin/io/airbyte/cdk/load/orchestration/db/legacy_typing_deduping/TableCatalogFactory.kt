@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TableNames
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 import org.apache.commons.codec.digest.DigestUtils
 
 private val LOGGER = KotlinLogging.logger {}

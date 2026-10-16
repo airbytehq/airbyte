@@ -34,7 +34,7 @@ open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
         val newProperties = MoreMappers.initMapper().createObjectNode()
 
         newSchema.put("type", "object")
-        schema["properties"].fields().forEach { (key, value) ->
+        schema["properties"].properties().forEach { (key, value) ->
             newProperties.set<ObjectNode>(key, mapSchema(value as ObjectNode))
         }
         newSchema.replace("properties", newProperties)
@@ -120,7 +120,7 @@ open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
             val newTypeObj = MoreMappers.initMapper().createObjectNode()
             newTypeObj.put("type", it.asText())
             // Denormalize the (non-type) properties from the parent onto each type
-            schema.fields().forEach { (key, value) ->
+            schema.properties().forEach { (key, value) ->
                 if (key != "type") {
                     newTypeObj.set<ObjectNode>(key, value)
                 }

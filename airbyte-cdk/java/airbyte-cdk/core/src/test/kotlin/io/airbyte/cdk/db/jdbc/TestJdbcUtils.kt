@@ -430,7 +430,7 @@ internal class TestJdbcUtils {
             val actual = sourceOperations.rowToJson(resultSet)
 
             // field-wise comparison to make debugging easier.
-            MoreStreams.toStream(expected.fields()).forEach { e: Map.Entry<String, JsonNode> ->
+            MoreStreams.toStream(expected.properties()).forEach { e: Map.Entry<String, JsonNode> ->
                 Assertions.assertEquals(e.value, actual[e.key], "key: " + e.key)
             }
             Assertions.assertEquals(expected, actual)

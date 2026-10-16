@@ -47,13 +47,13 @@ import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.protocol.AirbyteValueProtobufDecoder
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
+import jakarta.inject.Singleton
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
-import javax.inject.Singleton
 
 /**
  * Converter that extracts typed values from protobuf records and converts them to

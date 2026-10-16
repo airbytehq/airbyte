@@ -25,7 +25,7 @@ class DestinationMessageFactory(
     @Value("\${airbyte.destination.core.file-transfer.enabled}")
     private val fileTransferEnabled: Boolean,
     @Named("requireCheckpointIdOnRecordAndKeyOnState")
-    private val requireCheckpointIdOnRecordAndKeyOnState: Boolean = false,
+    private val requireCheckpointIdOnRecordAndKeyOnState: Boolean,
     private val namespaceMapper: NamespaceMapper,
     private val uuidGenerator: UUIDGenerator,
 ) {

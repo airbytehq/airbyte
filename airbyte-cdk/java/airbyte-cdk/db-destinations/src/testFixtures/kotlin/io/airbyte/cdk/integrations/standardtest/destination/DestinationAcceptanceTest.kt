@@ -175,14 +175,14 @@ abstract class DestinationAcceptanceTest(
 
         val jsons = MoreMappers.initMapper().createObjectNode()
         // Iterate over every key value pair in the json node
-        for (entry in node.fields()) {
+        for (entry in node.properties()) {
             if (entry.key in metaKeys) {
                 continue
             }
 
             // If the message is normalized, flatten it
             if (entry.key == JavaBaseConstants.COLUMN_NAME_DATA) {
-                for (dataEntry in entry.value.fields()) {
+                for (dataEntry in entry.value.properties()) {
                     jsons.replace(dataEntry.key, dataEntry.value)
                 }
             } else {
@@ -1661,7 +1661,7 @@ abstract class DestinationAcceptanceTest(
     ): Map<String, Map<String, Boolean>> {
         return schemaMap.mapValues { schema ->
             schema.value["properties"]
-                .fields()
+                .properties()
                 .asSequence()
                 .filter { (_, value) -> value["format"]?.asText() == format }
                 .map { (key, value) ->
@@ -1713,7 +1713,7 @@ abstract class DestinationAcceptanceTest(
                 expectedByStream[stream.stream.name]!!.map {
                     if (expectNumericTimestamps) {
                         val node = MoreMappers.initMapper().createObjectNode()
-                        it.record.data.fields().forEach { (k, v) ->
+                        it.record.data.properties().forEach { (k, v) ->
                             if (dateFieldMeta[name]!!.containsKey(k)) {
                                 val daysSinceEpoch = LocalDate.parse(v.asText()).toEpochDay()
                                 node.put(k, daysSinceEpoch.toInt())
