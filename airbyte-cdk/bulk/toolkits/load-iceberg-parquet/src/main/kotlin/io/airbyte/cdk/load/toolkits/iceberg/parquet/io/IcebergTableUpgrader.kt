@@ -82,8 +82,9 @@ object IcebergTableUpgrader {
             // Scan tasks don't surface legacy deletes at v3 (and never list ones that apply
             // to no data file), so check the branch's delete manifests directly.
             val remaining =
-                liveDeleteFiles(table, table.refs()[branch]!!.snapshotId())
-                    .filter { !ContentFileUtil.isDV(it) }
+                liveDeleteFiles(table, table.refs()[branch]!!.snapshotId()).filter {
+                    !ContentFileUtil.isDV(it)
+                }
             check(remaining.isEmpty()) {
                 "Table $tableId branch $branch still has ${remaining.size} " +
                     "non-deletion-vector delete file(s) after the v3 upgrade: " +
@@ -248,8 +249,8 @@ object IcebergTableUpgrader {
         return snapshot
             .deleteManifests(table.io())
             .flatMap { manifest ->
-                ManifestFiles.readDeleteManifest(manifest, table.io(), table.specs()).use {
-                    reader ->
+                ManifestFiles.readDeleteManifest(manifest, table.io(), table.specs()).use { reader
+                    ->
                     reader.toList()
                 }
             }
