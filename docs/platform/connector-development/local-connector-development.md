@@ -71,6 +71,55 @@ Using this syntax you can avoid the long task prefixes such as typing `gradle :i
 
 :::
 
+#### Building against mirror repositories
+
+By default the Gradle build resolves artifacts from public repositories. In restricted environments
+where public repositories are unreachable, each repository URL can be pointed at an internal mirror
+using an `airbyte.dependencies.maven.*` property:
+
+| Property | Public default |
+| --- | --- |
+| `airbyte.dependencies.maven.central` | `mavenCentral()` |
+| `airbyte.dependencies.maven.gradlePluginPortal` | `gradlePluginPortal()` |
+| `airbyte.dependencies.maven.airbytePublicJars` | `https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/` |
+| `airbyte.dependencies.maven.jitpack` | `https://jitpack.io` |
+| `airbyte.dependencies.maven.elasticSearchSnapshots` | `https://snapshots.elastic.co/maven/` |
+| `airbyte.dependencies.maven.redshift` | `https://s3.amazonaws.com/redshift-maven-repository/release` |
+| `airbyte.dependencies.maven.confluent` | `https://packages.confluent.io/maven` |
+
+Values can be supplied in any of the ways Gradle accepts project properties:
+
+```bash
+# On the command line
+./gradlew build -P'airbyte.dependencies.maven.central'=https://artifacts.example.com/maven-remote/
+
+# Via the environment, for CI
+export ORG_GRADLE_PROJECT_airbyte.dependencies.maven.central=https://artifacts.example.com/maven-remote/
+
+# Or persistently, in ~/.gradle/gradle.properties
+airbyte.dependencies.maven.central=https://artifacts.example.com/maven-remote/
+```
+
+Setting a property to an empty string omits that repository entirely. This is useful when no mirror
+exists for a given upstream: connectors that need it then fail with a clear dependency resolution
+error rather than hanging on an unreachable host.
+
+```bash
+./gradlew build -P'airbyte.dependencies.maven.redshift'=
+```
+
+To verify which repositories a given invocation resolved, run with `--info` and look for the
+`Searched in the following repositories` output on a resolution failure.
+
+Gradle itself is downloaded by the wrapper before any of these properties are read, so mirroring the
+distribution means changing `distributionUrl` in `gradle/wrapper/gradle-wrapper.properties`. The
+wrapper does not read this value from a system property or environment variable, so either edit the
+file locally or regenerate it:
+
+```bash
+./gradlew wrapper --gradle-distribution-url=https://artifacts.example.com/gradle-service-remote/gradle-8.14-bin.zip
+```
+
 ### Airbyte Connector Development Kits (CDKs)
 
 What we loosely refer to as the "Airbyte CDK" is actually a combination of several CDKs and tools:
