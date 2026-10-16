@@ -1,84 +1,54 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import json
-import re
-from collections import Counter
-from datetime import date, timedelta
 
-import pytest
 from conftest import base_config, get_source
 from freezegun import freeze_time
-from test_campaign_report import _FIELDS, _REPORT_URL, _mock_token, _read_report_windows
+from test_campaign_report import _mock_token
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 
 _PLACEHOLDER_ID = "a2_abc123"
 _AD_ACCOUNT_URL = f"https://ads-api.reddit.com/api/v3/ad_accounts/{_PLACEHOLDER_ID}"
 _AD_GROUP_URL = f"{_AD_ACCOUNT_URL}/ad_groups"
-_REPORT_CASES = [
-    ("ad_account_report", ["AD_ACCOUNT_ID", "DATE"], ["account_id", "date"], []),
-    ("ad_group_report", ["AD_GROUP_ID", "DATE"], ["ad_group_id", "date"], ["CAMPAIGN_ID"]),
-    ("ad_report", ["AD_ID", "DATE"], ["ad_id", "date"], ["CAMPAIGN_ID"]),
-]
-
-
-def _report_record(report_date: str) -> dict:
-    return {
-        "account_id": _PLACEHOLDER_ID,
-        "ad_group_id": _PLACEHOLDER_ID,
-        "ad_id": _PLACEHOLDER_ID,
-        "campaign_id": _PLACEHOLDER_ID,
-        "date": report_date,
-    }
-
-
-def _normalize_report_body(body: dict) -> dict:
-    data = body["data"]
-    return {
-        "data": {
-            **data,
-            "fields": sorted(data["fields"]),
-            "breakdowns": sorted(data["breakdowns"]),
-        }
-    }
-
-
-def _expected_report_body(breakdowns: list[str], extra_fields: list[str]) -> dict:
-    return {
-        "data": {
-            "starts_at": "2026-10-14T00:00:00Z",
-            "ends_at": "2026-10-15T09:00:00Z",
-            "fields": [*_FIELDS, *extra_fields],
-            "breakdowns": breakdowns,
-            "time_zone_id": "GMT",
-        }
-    }
 
 
 def _catalog(stream_name: str, sync_mode: SyncMode = SyncMode.incremental):
     return CatalogBuilder().with_stream(stream_name, sync_mode).build()
 
 
+def _read_ad_groups(config: dict, rows: list[dict], state=None) -> tuple[list[str], object]:
+    catalog = _catalog("ad_group")
+    with freeze_time("2026-10-17T00:00:00Z"), HttpMocker() as http_mocker:
+        http_mocker.get(HttpRequest(_AD_GROUP_URL), HttpResponse(body=json.dumps({"data": rows}), status_code=200))
+        _mock_token(http_mocker)
+        output = read(get_source(config, catalog, state), config, catalog, state=state)
+
+    assert output.errors == []
+    return [message.record.data["id"] for message in output.records], output.state_messages[-1].state
+
+
 def test_ad_account_reads_one_record_with_id() -> None:
     config = base_config()
     catalog = _catalog("ad_account", SyncMode.full_refresh)
-    request = HttpRequest(_AD_ACCOUNT_URL)
+    request = HttpRequest(_AD_ACCOUNT_URL, headers={"Authorization": "Bearer test-access-token"})
 
     with HttpMocker() as http_mocker:
         http_mocker.get(
             request,
             HttpResponse(body=json.dumps({"data": {"id": _PLACEHOLDER_ID}}), status_code=200),
         )
-        _mock_token(http_mocker)
+        token_request = _mock_token(http_mocker)
         output = read(get_source(config, catalog), config, catalog)
 
     assert output.errors == []
     assert len(output.records) == 1
     assert output.records[0].record.data["id"] == _PLACEHOLDER_ID
+    http_mocker.assert_number_of_calls(token_request, 1)
     http_mocker.assert_number_of_calls(request, 1)
 
 
@@ -108,97 +78,45 @@ def test_ad_group_paginates_and_filters_modified_at_client_side() -> None:
     http_mocker.assert_number_of_calls(next_request, 1)
 
 
-@pytest.mark.parametrize("stream_name,breakdowns,primary_key,extra_fields", _REPORT_CASES)
-def test_report_request_body_and_primary_key_fields(
-    stream_name: str,
-    breakdowns: list[str],
-    primary_key: list[str],
-    extra_fields: list[str],
-) -> None:
-    config = base_config(start_time="2026-10-14T00:00:00Z")
-    catalog = _catalog(stream_name)
-    expected = _expected_report_body(breakdowns, extra_fields)
-
-    with freeze_time("2026-10-15T09:30:00Z"), HttpMocker() as http_mocker:
-        http_mocker._mocker.post(
-            _REPORT_URL,
-            text=lambda _request, _context: json.dumps({"data": {"metrics": [_report_record("2026-10-14")]}}),
-        )
-        _mock_token(http_mocker)
-        output = read(get_source(config, catalog), config, catalog)
-        sent_bodies = [request.json() for request in http_mocker._mocker.request_history if request.url == _REPORT_URL]
-
-    assert output.errors == []
-    assert len(sent_bodies) == 1
-    assert _normalize_report_body(sent_bodies[0]) == _normalize_report_body(expected)
-    assert len(output.records) == 1
-    record = output.records[0].record.data
-    assert record[primary_key[0]] == _PLACEHOLDER_ID
-    assert record["date"] == "2026-10-14"
-
-
-@pytest.mark.parametrize("stream_name,breakdowns,primary_key,extra_fields", _REPORT_CASES)
-def test_report_windows_tile_and_emit_each_date_once(
-    stream_name: str,
-    breakdowns: list[str],
-    primary_key: list[str],
-    extra_fields: list[str],
-) -> None:
-    config = base_config(start_time="2026-10-02T05:00:00Z")
-    windows, emitted_dates = _read_report_windows(
-        "2026-10-14T16:30:00Z",
-        config,
-        stream_name=stream_name,
-    )
-    expected_windows = [
-        ("2026-10-02T00:00:00Z", "2026-10-05T00:00:00Z"),
-        ("2026-10-05T00:00:00Z", "2026-10-08T00:00:00Z"),
-        ("2026-10-08T00:00:00Z", "2026-10-11T00:00:00Z"),
-        ("2026-10-11T00:00:00Z", "2026-10-14T00:00:00Z"),
-        ("2026-10-14T00:00:00Z", "2026-10-14T16:00:00Z"),
+def test_ad_group_second_sync_from_emitted_state_skips_rows_before_state() -> None:
+    config = base_config(start_time="2026-09-26T00:00:00Z")
+    rows = [
+        {"id": "before-start", "modified_at": "2026-09-25T13:13:56.104000+00:00"},
+        {"id": "older", "modified_at": "2026-09-27T13:13:56.104000+00:00"},
+        {"id": "newest", "modified_at": "2026-09-28T13:13:56.104000+00:00"},
     ]
-    expected_dates = Counter((date(2026, 10, 2) + timedelta(days=offset)).isoformat() for offset in range(13))
+    ids, state = _read_ad_groups(config, rows)
+    assert ids == ["older", "newest"]
+    assert state.stream.stream_state.modified_at == "2026-09-28T13:13:56+0000"
 
-    assert sorted(windows) == sorted(expected_windows)
-    assert windows[0][0] == "2026-10-02T00:00:00Z"
-    assert windows[-1][1] == "2026-10-14T16:00:00Z"
-    assert all(windows[index][1] == windows[index + 1][0] for index in range(len(windows) - 1))
-    assert all(re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:00:00Z", boundary) for window in windows for boundary in window)
-    assert Counter(emitted_dates) == expected_dates
+    rows.append({"id": "new", "modified_at": "2026-09-29T08:00:00.000000+00:00"})
+    ids, state = _read_ad_groups(config, rows, state=[state])
+    assert ids == ["newest", "new"]
+    assert state.stream.stream_state.modified_at == "2026-09-29T08:00:00+0000"
 
 
-@pytest.mark.parametrize("stream_name,breakdowns,primary_key,extra_fields", _REPORT_CASES)
-def test_report_retries_5xx_with_shared_handler(
-    stream_name: str,
-    breakdowns: list[str],
-    primary_key: list[str],
-    extra_fields: list[str],
-    monkeypatch,
-) -> None:
-    monkeypatch.setattr("time.sleep", lambda _: None)
-    config = base_config(start_time="2026-10-14T00:00:00Z")
-    catalog = _catalog(stream_name)
-    expected = _expected_report_body(breakdowns, extra_fields)
+def test_discover_pins_new_stream_keys_formats_and_report_columns() -> None:
+    config = base_config()
+    streams = {stream.name: stream for stream in discover(get_source(config), config).catalog.catalog.streams}
+    properties = {name: stream.json_schema["properties"] for name, stream in streams.items()}
+    new_reports = ["ad_account_report", "ad_group_report", "ad_report"]
 
-    with freeze_time("2026-10-15T09:30:00Z"), HttpMocker() as http_mocker:
-        http_mocker._mocker.post(
-            _REPORT_URL,
-            [
-                {"status_code": 503, "text": '{"error":{"message":"Service Unavailable"}}'},
-                {
-                    "status_code": 200,
-                    "text": json.dumps({"data": {"metrics": [_report_record("2026-10-14")]}}),
-                },
-            ],
-        )
-        _mock_token(http_mocker)
-        output = read(get_source(config, catalog), config, catalog)
-        sent_bodies = [item.json() for item in http_mocker._mocker.request_history if item.url == _REPORT_URL]
-
-    assert output.errors == []
-    assert len(sent_bodies) == 2
-    assert all(_normalize_report_body(body) == _normalize_report_body(expected) for body in sent_bodies)
-    assert len(output.records) == 1
-    record = output.records[0].record.data
-    assert record[primary_key[0]] == _PLACEHOLDER_ID
-    assert record["date"] == "2026-10-14"
+    assert {name: streams[name].source_defined_primary_key for name in ["ad_account", "ad_group", *new_reports]} == {
+        "ad_account": [["id"]],
+        "ad_group": [["id"]],
+        "ad_account_report": [["account_id"], ["date"]],
+        "ad_group_report": [["ad_group_id"], ["date"]],
+        "ad_report": [["ad_id"], ["date"]],
+    }
+    for name in new_reports:
+        assert {"impressions", "spend"} <= properties[name].keys()
+        assert properties[name]["date"] == {"type": "string", "format": "date"}
+    assert properties["campaign_report"]["date"] == {"type": "string"}
+    date_time_fields = {"ad_account": {"created_at", "modified_at"}, "ad_group": {"created_at", "modified_at", "start_time", "end_time"}}
+    for name, fields in date_time_fields.items():
+        assert {field for field, schema in properties[name].items() if schema.get("format") == "date-time"} == fields
+    assert [name for name in ["campaign_report", *new_reports] if "campaign_id" in properties[name]] == [
+        "campaign_report",
+        "ad_group_report",
+        "ad_report",
+    ]

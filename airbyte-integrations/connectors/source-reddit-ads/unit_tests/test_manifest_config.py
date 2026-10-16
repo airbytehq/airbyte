@@ -3,9 +3,11 @@
 from datetime import timedelta
 
 import requests
-from conftest import base_config, get_source
+import yaml
+from conftest import _MANIFEST_PATH, base_config, get_source
 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConcurrencyLevel, HttpRequestRegexMatcher, Rate
+from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 
 
 def _runtime_matcher(source, manifest_matcher: dict):
@@ -132,3 +134,13 @@ def test_report_lookback_window_spec_is_optional_and_bounded() -> None:
     assert field["minimum"] == 0
     assert field["maximum"] == 30
     assert "report_lookback_window_days" not in connection_specification["required"]
+
+
+def test_report_schemas_resolve_without_yaml_merge_keys() -> None:
+    # yaml.BaseLoader ignores YAML merge keys, like the platform's Jackson parser when the connector is forked in the Connector Builder.
+    manifest = ManifestReferenceResolver().preprocess_manifest(yaml.load(_MANIFEST_PATH.read_text(), Loader=yaml.BaseLoader))
+    report_streams = [stream for stream in manifest["streams"] if stream["name"].endswith("_report")]
+
+    assert len(report_streams) == 4
+    for stream in report_streams:
+        assert {"impressions", "spend"} <= stream["schema_loader"]["schema"]["properties"].keys(), stream["name"]

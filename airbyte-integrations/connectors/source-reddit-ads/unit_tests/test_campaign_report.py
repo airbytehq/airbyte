@@ -123,16 +123,52 @@ def _mock_token(http_mocker: HttpMocker, response: HttpResponse | None = None) -
     return request
 
 
+def _report_record(breakdowns: list[str], report_date: str, identifier: str) -> dict:
+    # Report rows are keyed by the lowercased requested breakdowns; the real row key of AD_ACCOUNT_ID is unverified.
+    return {**{breakdown.lower(): identifier for breakdown in breakdowns}, "date": report_date}
+
+
+def _hourly_report(inclusive_end: bool):
+    # One row per UTC date; impressions = hours of that date inside [starts_at, ends_at), or [starts_at, ends_at] when inclusive.
+    def callback(request, context) -> str:
+        body = request.json()["data"]
+        hour = datetime.strptime(body["starts_at"], "%Y-%m-%dT%H:%M:%SZ")
+        end = datetime.strptime(body["ends_at"], "%Y-%m-%dT%H:%M:%SZ")
+        if end < hour:
+            context.status_code = 400
+            return json.dumps({"error": {"code": 400, "message": "The end date time must come after the start date time."}})
+        end += timedelta(hours=inclusive_end)
+        hours = Counter()
+        while hour < end:
+            hours[hour.date().isoformat()] += 1
+            hour += timedelta(hours=1)
+        context.status_code = 200
+        return json.dumps(
+            {
+                "data": {
+                    "metrics": [
+                        {**_report_record(body["breakdowns"], day, "test-campaign"), "impressions": count}
+                        for day, count in sorted(hours.items())
+                    ]
+                }
+            }
+        )
+
+    return callback
+
+
 def _read_report_windows(
     now: str,
     config: dict,
     state=None,
     bypass_spec_validation: bool = False,
-    stream_name: str = "campaign_report",
 ) -> tuple[list[tuple[str, str]], list[str]]:
-    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
+    catalog = CatalogBuilder().with_stream("campaign_report", SyncMode.incremental).build()
     with freeze_time(now), HttpMocker() as http_mocker:
-        _mock_token(http_mocker)
+        http_mocker._mocker.post(
+            _TOKEN_URL,
+            json={"access_token": "test-access-token", "expires_in": 3600},
+        )
         http_mocker._mocker.post(_REPORT_URL, text=_hourly_report(inclusive_end=True))
         source = get_source(config, catalog, state)
         if bypass_spec_validation:
@@ -155,42 +191,6 @@ def _read_report_windows(
 
     assert errors == []
     return windows, [message.record.data["date"] for message in records]
-
-
-def _hourly_report(inclusive_end: bool):
-    # One row per UTC date; impressions = hours of that date inside [starts_at, ends_at), or [starts_at, ends_at] when inclusive.
-    def callback(request, context) -> str:
-        body = request.json()["data"]
-        hour = datetime.strptime(body["starts_at"], "%Y-%m-%dT%H:%M:%SZ")
-        end = datetime.strptime(body["ends_at"], "%Y-%m-%dT%H:%M:%SZ")
-        if end < hour:
-            context.status_code = 400
-            return json.dumps({"error": {"code": 400, "message": "The end date time must come after the start date time."}})
-        end += timedelta(hours=inclusive_end)
-        hours = Counter()
-        while hour < end:
-            hours[hour.date().isoformat()] += 1
-            hour += timedelta(hours=1)
-        context.status_code = 200
-        return json.dumps(
-            {
-                "data": {
-                    "metrics": [
-                        {
-                            "account_id": "a2_abc123",
-                            "ad_group_id": "a2_abc123",
-                            "ad_id": "a2_abc123",
-                            "campaign_id": "test-campaign",
-                            "date": day,
-                            "impressions": count,
-                        }
-                        for day, count in sorted(hours.items())
-                    ]
-                }
-            }
-        )
-
-    return callback
 
 
 @freeze_time("2026-09-28T00:00:00Z")
@@ -399,8 +399,8 @@ def test_campaign_report_keeps_window_end_day_when_date_has_time_suffix() -> Non
     assert [message.record.data["date"] for message in output.records] == [row["date"] for row in rows]
 
 
-def _sync(now: str, config: dict, inclusive_end: bool, state=None):
-    catalog = CatalogBuilder().with_stream("campaign_report", SyncMode.incremental).build()
+def _sync(now: str, config: dict, inclusive_end: bool, state=None, stream_name: str = "campaign_report"):
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
     with freeze_time(now), HttpMocker() as http_mocker:
         http_mocker._mocker.post(_TOKEN_URL, json={"access_token": "test-access-token", "expires_in": 3600})
         http_mocker._mocker.post(_REPORT_URL, text=_hourly_report(inclusive_end))

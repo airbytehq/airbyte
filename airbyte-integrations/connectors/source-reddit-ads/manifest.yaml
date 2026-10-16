@@ -114,7 +114,13 @@ definitions:
         {{ ((response.get('error', {}).get('message') or
         response.get('error', {}).get('explanation')) if response is mapping and
         response.get('error') is mapping else none) or 'no error message
-        returned' }}.
+        returned' }}
+        {%- set fields = response.get('error').get('fields') if response is
+        mapping and response.get('error') is mapping else none %}
+        {%- set reasons = (fields | selectattr('message') |
+        map(attribute='message') | join('; ')) if fields is iterable and fields
+        is not string else '' %}
+        {{- (' (' ~ (reasons | truncate(500)) ~ ')') if reasons else '' }}.
     SimpleRetriever:
       paginator:
         type: DefaultPaginator
@@ -154,36 +160,6 @@ definitions:
     cursor_granularity: P1D
     lookback_window: "P{{ config['report_lookback_window_days'] if (config.get('report_lookback_window_days') is integer and 0 <= config['report_lookback_window_days'] <= 30) else 7 }}D"
     is_data_feed: false
-  report_error_handler:
-    type: DefaultErrorHandler
-    max_retries: 10
-    response_filters:
-      - type: HttpResponseFilter
-        action: REFRESH_TOKEN_THEN_RETRY
-        http_codes:
-          - 401
-        error_message: Token expired, refreshing...
-      - type: HttpResponseFilter
-        action: RATE_LIMITED
-        http_codes:
-          - 429
-      - type: HttpResponseFilter
-        action: RETRY
-        http_codes:
-          - 500
-          - 502
-          - 503
-          - 504
-        backoff_strategy:
-          type: ConstantBackoffStrategy
-          backoff_time_in_seconds: 60
-      - $ref: "#/definitions/linked/BadAdAccount400Filter"
-      - $ref: "#/definitions/linked/Forbidden403Filter"
-      - $ref: "#/definitions/linked/NotFound404Filter"
-      - $ref: "#/definitions/linked/Generic400Filter"
-    backoff_strategies:
-      - type: ExponentialBackoffStrategy
-        factor: 5
   report_record_filter:
     type: RecordFilter
     condition: "{{ record['date'][:10] <= stream_slice['end_time'] }}"
@@ -253,6 +229,189 @@ definitions:
     - CONVERSION_PURCHASE_ECPA
     - CONVERSION_PURCHASE_TOTAL_ITEMS
     - CONVERSION_SIGN_UP_ECPA
+  report_schema_properties:
+    cpc:
+      type:
+        - number
+        - "null"
+    cpv:
+      type:
+        - number
+        - "null"
+    ctr:
+      type:
+        - number
+        - "null"
+    date:
+      type: string
+    ecpm:
+      type:
+        - number
+        - "null"
+    reach:
+      type:
+        - number
+        - "null"
+    spend:
+      type:
+        - number
+        - "null"
+    clicks:
+      type:
+        - number
+        - "null"
+    post_id:
+      type:
+        - string
+        - "null"
+    frequency:
+      type:
+        - number
+        - "null"
+    impressions:
+      type:
+        - number
+        - "null"
+    reddit_leads:
+      type:
+        - number
+        - "null"
+    engaged_click:
+      type:
+        - number
+        - "null"
+    conversion_roas:
+      type:
+        - number
+        - "null"
+    key_conversion_ecpa:
+      type:
+        - number
+        - "null"
+    key_conversion_rate:
+      type:
+        - number
+        - "null"
+    conversion_lead_ecpa:
+      type:
+        - number
+        - "null"
+    key_conversion_views:
+      type:
+        - number
+        - "null"
+    conversion_lead_views:
+      type:
+        - number
+        - "null"
+    key_conversion_clicks:
+      type:
+        - number
+        - "null"
+    conversion_lead_clicks:
+      type:
+        - number
+        - "null"
+    conversion_search_ecpa:
+      type:
+        - number
+        - "null"
+    conversion_search_views:
+      type:
+        - number
+        - "null"
+    conversion_sign_up_ecpa:
+      type:
+        - number
+        - "null"
+    conversion_purchase_ecpa:
+      type:
+        - number
+        - "null"
+    conversion_search_clicks:
+      type:
+        - number
+        - "null"
+    conversion_sign_up_views:
+      type:
+        - number
+        - "null"
+    conversion_lead_avg_value:
+      type:
+        - number
+        - "null"
+    conversion_purchase_views:
+      type:
+        - number
+        - "null"
+    conversion_sign_up_clicks:
+      type:
+        - number
+        - "null"
+    conversion_page_visit_ecpa:
+      type:
+        - number
+        - "null"
+    conversion_purchase_clicks:
+      type:
+        - number
+        - "null"
+    key_conversion_total_count:
+      type:
+        - number
+        - "null"
+    video_viewable_impressions:
+      type:
+        - number
+        - "null"
+    conversion_lead_total_value:
+      type:
+        - number
+        - "null"
+    conversion_page_visit_views:
+      type:
+        - number
+        - "null"
+    conversion_signup_avg_value:
+      type:
+        - number
+        - "null"
+    conversion_page_visit_clicks:
+      type:
+        - number
+        - "null"
+    conversion_view_content_ecpa:
+      type:
+        - number
+        - "null"
+    conversion_purchase_avg_value:
+      type:
+        - number
+        - "null"
+    conversion_signup_total_value:
+      type:
+        - number
+        - "null"
+    conversion_view_content_views:
+      type:
+        - number
+        - "null"
+    conversion_view_content_clicks:
+      type:
+        - number
+        - "null"
+    conversion_purchase_total_items:
+      type:
+        - number
+        - "null"
+    conversion_purchase_total_value:
+      type:
+        - number
+        - "null"
+    conversion_purchase_total_value_all:
+      type:
+        - number
+        - "null"
 streams:
   - type: DeclarativeStream
     name: ad
@@ -519,7 +678,7 @@ streams:
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
         error_handler:
-          $ref: "#/definitions/report_error_handler"
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -540,191 +699,10 @@ streams:
         required:
           - campaign_id
           - date
-        properties: &report_schema_properties
-          cpc:
-            type:
-              - number
-              - "null"
-          cpv:
-            type:
-              - number
-              - "null"
-          ctr:
-            type:
-              - number
-              - "null"
-          date:
-            type: string
-          ecpm:
-            type:
-              - number
-              - "null"
-          reach:
-            type:
-              - number
-              - "null"
-          spend:
-            type:
-              - number
-              - "null"
-          clicks:
-            type:
-              - number
-              - "null"
-          post_id:
-            type:
-              - string
-              - "null"
-          frequency:
-            type:
-              - number
-              - "null"
+        properties:
+          $ref: "#/definitions/report_schema_properties"
           campaign_id:
             type: string
-          impressions:
-            type:
-              - number
-              - "null"
-          reddit_leads:
-            type:
-              - number
-              - "null"
-          engaged_click:
-            type:
-              - number
-              - "null"
-          conversion_roas:
-            type:
-              - number
-              - "null"
-          key_conversion_ecpa:
-            type:
-              - number
-              - "null"
-          key_conversion_rate:
-            type:
-              - number
-              - "null"
-          conversion_lead_ecpa:
-            type:
-              - number
-              - "null"
-          key_conversion_views:
-            type:
-              - number
-              - "null"
-          conversion_lead_views:
-            type:
-              - number
-              - "null"
-          key_conversion_clicks:
-            type:
-              - number
-              - "null"
-          conversion_lead_clicks:
-            type:
-              - number
-              - "null"
-          conversion_search_ecpa:
-            type:
-              - number
-              - "null"
-          conversion_search_views:
-            type:
-              - number
-              - "null"
-          conversion_sign_up_ecpa:
-            type:
-              - number
-              - "null"
-          conversion_purchase_ecpa:
-            type:
-              - number
-              - "null"
-          conversion_search_clicks:
-            type:
-              - number
-              - "null"
-          conversion_sign_up_views:
-            type:
-              - number
-              - "null"
-          conversion_lead_avg_value:
-            type:
-              - number
-              - "null"
-          conversion_purchase_views:
-            type:
-              - number
-              - "null"
-          conversion_sign_up_clicks:
-            type:
-              - number
-              - "null"
-          conversion_page_visit_ecpa:
-            type:
-              - number
-              - "null"
-          conversion_purchase_clicks:
-            type:
-              - number
-              - "null"
-          key_conversion_total_count:
-            type:
-              - number
-              - "null"
-          video_viewable_impressions:
-            type:
-              - number
-              - "null"
-          conversion_lead_total_value:
-            type:
-              - number
-              - "null"
-          conversion_page_visit_views:
-            type:
-              - number
-              - "null"
-          conversion_signup_avg_value:
-            type:
-              - number
-              - "null"
-          conversion_page_visit_clicks:
-            type:
-              - number
-              - "null"
-          conversion_view_content_ecpa:
-            type:
-              - number
-              - "null"
-          conversion_purchase_avg_value:
-            type:
-              - number
-              - "null"
-          conversion_signup_total_value:
-            type:
-              - number
-              - "null"
-          conversion_view_content_views:
-            type:
-              - number
-              - "null"
-          conversion_view_content_clicks:
-            type:
-              - number
-              - "null"
-          conversion_purchase_total_items:
-            type:
-              - number
-              - "null"
-          conversion_purchase_total_value:
-            type:
-              - number
-              - "null"
-          conversion_purchase_total_value_all:
-            type:
-              - number
-              - "null"
         additionalProperties: true
     transformations: []
     incremental_sync:
@@ -792,6 +770,7 @@ streams:
             type:
               - string
               - "null"
+            format: date-time
           currency:
             type:
               - string
@@ -804,6 +783,7 @@ streams:
             type:
               - string
               - "null"
+            format: date-time
           name:
             type:
               - string
@@ -849,6 +829,10 @@ streams:
           spend_cap_type:
             type:
               - string
+              - "null"
+          ugc_addon_default_on:
+            type:
+              - boolean
               - "null"
         additionalProperties: true
   - type: DeclarativeStream
@@ -916,6 +900,7 @@ streams:
             type:
               - string
               - "null"
+            format: date-time
           delivery_status:
             type:
               - array
@@ -930,6 +915,7 @@ streams:
             type:
               - string
               - "null"
+            format: date-time
           goal_type:
             type:
               - string
@@ -950,6 +936,7 @@ streams:
             type:
               - string
               - "null"
+            format: date-time
           name:
             type:
               - string
@@ -962,6 +949,7 @@ streams:
             type:
               - string
               - "null"
+            format: date-time
           targeting:
             type:
               - object
@@ -1058,7 +1046,7 @@ streams:
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
         error_handler:
-          $ref: "#/definitions/report_error_handler"
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1080,13 +1068,23 @@ streams:
           - account_id
           - date
         properties:
-          <<: *report_schema_properties
+          $ref: "#/definitions/report_schema_properties"
+          date:
+            type: string
+            format: date
           account_id:
             type:
               - string
               - "null"
         additionalProperties: true
-    transformations: []
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - account_id
+            value: "{{ config['ad_account_id'] }}"
+            value_type: string
     incremental_sync:
       $ref: "#/definitions/report_incremental_sync"
   - type: DeclarativeStream
@@ -1110,77 +1108,16 @@ streams:
               ends_at:
                 $ref: "#/definitions/report_window/ends_at"
               fields:
-                - ACCOUNT_ID
-                - AD_CREATE_TIME
-                - AD_EFFECTIVE_STATUS
-                - AD_GROUP_ID
-                - AD_ID
-                - AD_UPDATE_TIME
-                - ADGROUP_CREATE_TIME
-                - ADGROUP_UPDATE_TIME
-                - IMPRESSIONS
-                - KEYWORD
-                - PLACEMENT
-                - POST_ID
-                - REACH
-                - REDDIT_LEADS
-                - REGION
-                - SPEND
-                - VIDEO_VIEWABLE_IMPRESSIONS
-                - ENGAGED_CLICK
-                - KEY_CONVERSION_CLICKS
-                - KEY_CONVERSION_ECPA
-                - KEY_CONVERSION_RATE
-                - KEY_CONVERSION_TOTAL_COUNT
-                - KEY_CONVERSION_VIEWS
-                - CPC
-                - COUNTRY
-                - CPV
-                - CTR
-                - FREQUENCY
-                - DATETIME
-                - ECPM
-                - CONVERSION_SIGN_UP_VIEWS
-                - CONVERSION_ROAS
-                - CONVERSION_SIGNUP_AVG_VALUE
-                - CONVERSION_SIGNUP_TOTAL_VALUE
-                - CONVERSION_VIEW_CONTENT_CLICKS
-                - CONVERSION_VIEW_CONTENT_ECPA
-                - CONVERSION_VIEW_CONTENT_VIEWS
-                - CONVERSION_LEAD_AVG_VALUE
-                - CONVERSION_LEAD_CLICKS
-                - CONVERSION_LEAD_ECPA
-                - CONVERSION_LEAD_TOTAL_VALUE
-                - CONVERSION_LEAD_VIEWS
-                - CONVERSION_PAGE_VISIT_CLICKS
-                - CONVERSION_PAGE_VISIT_ECPA
-                - CONVERSION_PAGE_VISIT_VIEWS
-                - COMMUNITY
-                - CLICKS
-                - CAMPAIGN_UPDATE_TIME
-                - CAMPAIGN_CREATE_TIME
-                - BID_STRATEGY
-                - DMA
-                - CONVERSION_PURCHASE_TOTAL_VALUE
-                - CONVERSION_PURCHASE_VIEWS
-                - CONVERSION_SEARCH_CLICKS
-                - CONVERSION_SEARCH_ECPA
-                - CONVERSION_SEARCH_VIEWS
-                - CONVERSION_SIGN_UP_CLICKS
-                - CONVERSION_PURCHASE_AVG_VALUE
-                - CONVERSION_PURCHASE_CLICKS
-                - CONVERSION_PURCHASE_ECPA
-                - CONVERSION_PURCHASE_TOTAL_ITEMS
-                - CONVERSION_SIGN_UP_ECPA
-                - CAMPAIGN_ID
+                $ref: "#/definitions/report_fields"
               breakdowns:
                 - AD_GROUP_ID
+                - CAMPAIGN_ID
                 - DATE
               time_zone_id: GMT
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
         error_handler:
-          $ref: "#/definitions/report_error_handler"
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1202,13 +1139,19 @@ streams:
           - ad_group_id
           - date
         properties:
-          <<: *report_schema_properties
+          $ref: "#/definitions/report_schema_properties"
+          date:
+            type: string
+            format: date
+          campaign_id:
+            type:
+              - string
+              - "null"
           ad_group_id:
             type:
               - string
               - "null"
         additionalProperties: true
-    transformations: []
     incremental_sync:
       $ref: "#/definitions/report_incremental_sync"
   - type: DeclarativeStream
@@ -1232,77 +1175,16 @@ streams:
               ends_at:
                 $ref: "#/definitions/report_window/ends_at"
               fields:
-                - ACCOUNT_ID
-                - AD_CREATE_TIME
-                - AD_EFFECTIVE_STATUS
-                - AD_GROUP_ID
-                - AD_ID
-                - AD_UPDATE_TIME
-                - ADGROUP_CREATE_TIME
-                - ADGROUP_UPDATE_TIME
-                - IMPRESSIONS
-                - KEYWORD
-                - PLACEMENT
-                - POST_ID
-                - REACH
-                - REDDIT_LEADS
-                - REGION
-                - SPEND
-                - VIDEO_VIEWABLE_IMPRESSIONS
-                - ENGAGED_CLICK
-                - KEY_CONVERSION_CLICKS
-                - KEY_CONVERSION_ECPA
-                - KEY_CONVERSION_RATE
-                - KEY_CONVERSION_TOTAL_COUNT
-                - KEY_CONVERSION_VIEWS
-                - CPC
-                - COUNTRY
-                - CPV
-                - CTR
-                - FREQUENCY
-                - DATETIME
-                - ECPM
-                - CONVERSION_SIGN_UP_VIEWS
-                - CONVERSION_ROAS
-                - CONVERSION_SIGNUP_AVG_VALUE
-                - CONVERSION_SIGNUP_TOTAL_VALUE
-                - CONVERSION_VIEW_CONTENT_CLICKS
-                - CONVERSION_VIEW_CONTENT_ECPA
-                - CONVERSION_VIEW_CONTENT_VIEWS
-                - CONVERSION_LEAD_AVG_VALUE
-                - CONVERSION_LEAD_CLICKS
-                - CONVERSION_LEAD_ECPA
-                - CONVERSION_LEAD_TOTAL_VALUE
-                - CONVERSION_LEAD_VIEWS
-                - CONVERSION_PAGE_VISIT_CLICKS
-                - CONVERSION_PAGE_VISIT_ECPA
-                - CONVERSION_PAGE_VISIT_VIEWS
-                - COMMUNITY
-                - CLICKS
-                - CAMPAIGN_UPDATE_TIME
-                - CAMPAIGN_CREATE_TIME
-                - BID_STRATEGY
-                - DMA
-                - CONVERSION_PURCHASE_TOTAL_VALUE
-                - CONVERSION_PURCHASE_VIEWS
-                - CONVERSION_SEARCH_CLICKS
-                - CONVERSION_SEARCH_ECPA
-                - CONVERSION_SEARCH_VIEWS
-                - CONVERSION_SIGN_UP_CLICKS
-                - CONVERSION_PURCHASE_AVG_VALUE
-                - CONVERSION_PURCHASE_CLICKS
-                - CONVERSION_PURCHASE_ECPA
-                - CONVERSION_PURCHASE_TOTAL_ITEMS
-                - CONVERSION_SIGN_UP_ECPA
-                - CAMPAIGN_ID
+                $ref: "#/definitions/report_fields"
               breakdowns:
                 - AD_ID
+                - CAMPAIGN_ID
                 - DATE
               time_zone_id: GMT
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
         error_handler:
-          $ref: "#/definitions/report_error_handler"
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1324,7 +1206,14 @@ streams:
           - ad_id
           - date
         properties:
-          <<: *report_schema_properties
+          $ref: "#/definitions/report_schema_properties"
+          date:
+            type: string
+            format: date
+          campaign_id:
+            type:
+              - string
+              - "null"
           ad_group_id:
             type:
               - string
@@ -1334,7 +1223,6 @@ streams:
               - string
               - "null"
         additionalProperties: true
-    transformations: []
     incremental_sync:
       $ref: "#/definitions/report_incremental_sync"
 api_budget:
@@ -1651,6 +1539,6 @@ metadata:
     campaign_report: true
     ad_account: false
     ad_group: false
-    ad_account_report: true
-    ad_group_report: true
-    ad_report: true
+    ad_account_report: false
+    ad_group_report: false
+    ad_report: false
