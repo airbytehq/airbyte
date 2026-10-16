@@ -1097,6 +1097,40 @@ def test_ad_creatives_object_story_spec_failed_page_reread(api, some_config, req
     assert "object_story_spec" not in c4_requests[1].qs["fields"][0]
 
 
+def test_ad_creatives_object_story_spec_last_page_fails(api, some_config, requests_mock, account_id):
+    """When the last page fails, the id page keeps the failed page's `after` (no `next`), so the stream ends instead of re-reading it."""
+    stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
+    base_url = f"{FacebookSession.GRAPH}/{FacebookAdsApi.API_VERSION}/"
+    creatives_url = f"{base_url}act_{account_id}/adcreatives"
+
+    page1 = {
+        "json": {
+            "data": [{"id": "c1"}],
+            "paging": {"cursors": {"after": "A"}, "next": f"{creatives_url}?after=A"},
+        },
+        "status_code": 200,
+    }
+    failed_page = {"json": _object_story_spec_read_error(2446211), "status_code": 400}
+    # Facebook keeps cursors.after on the last page and only omits "next".
+    id_page = {"json": {"data": [{"id": "c2"}], "paging": {"cursors": {"after": "Z"}}}, "status_code": 200}
+    requests_mock.register_uri("GET", creatives_url, [page1, failed_page, id_page, failed_page])
+    requests_mock.register_uri("GET", f"{base_url}c2/", json={"id": "c2"})
+
+    records = list(
+        stream.read_records(
+            sync_mode=SyncMode.full_refresh,
+            stream_state={},
+            stream_slice={"account_id": account_id},
+        )
+    )
+
+    assert [r["id"] for r in records] == ["c1", "c2"]
+    edge_requests = [r for r in requests_mock.request_history if r.path.endswith("/adcreatives")]
+    assert len(edge_requests) == 3
+    assert edge_requests[2].qs["fields"] == ["id"]
+    assert edge_requests[2].qs["after"] == ["a"]
+
+
 def test_ad_creatives_object_story_spec_first_page_fails_no_next(api, some_config, requests_mock, account_id):
     """When the very first page fails and the id page has no next, creatives are emitted and the stream ends."""
     stream = AdCreatives(api=api, account_ids=some_config["account_ids"])

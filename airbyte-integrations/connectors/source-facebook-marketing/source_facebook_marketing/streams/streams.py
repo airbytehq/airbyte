@@ -5,7 +5,7 @@
 import base64
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Iterable, List, Mapping, Optional, Set, Tuple
+from typing import Any, Generator, Iterable, List, Mapping, Optional, Set, Tuple
 
 import requests
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
@@ -133,7 +133,7 @@ class AdCreatives(FBMarketingStream):
             for index in range(len(cursor)):
                 yield cursor[index]
 
-    def _read_failed_page_creative_by_creative(self, account: FBAdAccount, cursor: Cursor) -> Iterable[bool]:
+    def _read_failed_page_creative_by_creative(self, account: FBAdAccount, cursor: Cursor) -> Generator[Mapping[str, Any], None, bool]:
         """Re-read the page that failed on object_story_spec one creative at a time, preserving pagination."""
         # The SDK only advances cursor.params["after"] after a successful page, so cursor.params still describes the failed page.
         failed_page_after = cursor.params.get("after")
