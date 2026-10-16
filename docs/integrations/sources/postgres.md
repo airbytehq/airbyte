@@ -9,7 +9,7 @@ Airbyte's certified Postgres connector offers the following features:
 - All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
 - Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
-The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs). See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting) to troubleshoot issues with the Postgres connector.
+The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs). To troubleshoot issues with the Postgres connector, see [Troubleshooting Postgres Sources](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting).
 
 </HideInUI>
 
@@ -46,6 +46,7 @@ GRANT USAGE ON SCHEMA <schema_name> TO <user_name>;
 GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO <user_name>;
 ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <user_name>;
 ```
+
 </FieldAnchor>
 
 ### Step 2: Create a new Postgres source in Airbyte UI
@@ -53,11 +54,17 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <user
 From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account, select `Sources` from the left navigation bar, search for `Postgres`, then create a new Postgres source.
 
 To fill out the required information:
+
 <FieldAnchor field="host, port, database">
+
 1. Enter the hostname, port number, and name for your Postgres database. In **Host**, enter only the hostname or IP address, not a URL or `host:port`. On Airbyte Cloud, the database must be reachable from the internet. To connect to a database on `localhost` or on a private network, use an [SSH tunnel](#ssh-tunneling).
+
 </FieldAnchor>
+
 <FieldAnchor field="schemas">
+
 2. Optionally list the names of the schemas you want to sync tables from. These are case-sensitive. When not provided, all available schemas are discovered.
+
 </FieldAnchor>
 3. Enter the username you created in [Step 1](#step-1-create-a-dedicated-read-only-postgres-user). If your Postgres user authenticates with a password, enter it in the **Password** field. The password is optional — some PostgreSQL authentication methods (such as `trust`, `peer`, or certificate-based auth) do not require one.
 4. Select an SSL mode. The default is `require`. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires your server's CA certificate. On Airbyte Cloud, the unencrypted modes `disable`, `allow`, and `prefer` work only with an [SSH tunnel](#ssh-tunneling).
@@ -92,8 +99,8 @@ If the connection test fails, the error message tells you which part of the setu
 
 Airbyte uses [logical replication](https://www.postgresql.org/docs/current/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin:
 
-- See [here](https://docs.airbyte.com/understanding-airbyte/cdc) to learn more on how Airbyte implements CDC.
-- See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#cdc-requirements) to learn more about Postgres CDC requirements and limitations.
+- To learn how Airbyte implements CDC, see [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc).
+- To learn about Postgres CDC requirements and limitations, see [CDC Requirements](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#cdc-requirements).
 
 We recommend configuring your Postgres source with CDC when:
 
@@ -119,7 +126,7 @@ For CDC, you may connect to primary/master databases or replicas. To use a repli
 
 To configure CDC for the Postgres source connector, grant `REPLICATION` permissions to the user created in [step 1 of the quick start](#step-1-create-a-dedicated-read-only-postgres-user):
 
-```
+```sql
 ALTER USER <user_name> REPLICATION;
 ```
 
@@ -133,7 +140,7 @@ To enable logical replication on bare metal, VMs (EC2/GCE/etc), or Docker, confi
 
 | Parameter             | Description                                                                    | Set value to                                                                                                                         |
 | --------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| wal_level             | Type of coding used within the Postgres write-ahead log                        | `logical`                                                                                                                           |
+| wal_level             | Type of coding used within the Postgres write-ahead log                        | `logical`                                                                                                                            |
 | max_wal_senders       | The maximum number of processes used for handling WAL changes                  | `min: 1`                                                                                                                             |
 | max_replication_slots | The maximum number of replication slots that are allowed to stream WAL changes | `1` (if Airbyte is the only service reading subscribing to WAL changes. More than 1 if other services are also reading from the WAL) |
 
@@ -144,7 +151,7 @@ To enable logical replication on bare metal, VMs (EC2/GCE/etc), or Docker, confi
 3. Within the parameter group page, search for `rds.logical_replication`. Select this row and click Edit parameters. Set this value to `1`.
 4. Wait for a maintenance window to automatically restart the instance or restart it manually.
 
-:::note 
+:::note
 AWS Aurora implements a [CDC caching layer](https://aws.amazon.com/blogs/database/achieve-up-to-17x-lower-replication-lag-with-the-new-write-through-cache-for-aurora-postgresql/) that is incompatible with Airbyte's CDC implementation. To use Airbyte with AWS Aurora, disable the CDC caching layer. Disable CDC caching by setting the [`rds.logical_wal_cache`](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Replication.Logical.html) parameter to `0` in the AWS Aurora parameter group.
 :::
 
@@ -152,10 +159,11 @@ AWS Aurora implements a [CDC caching layer](https://aws.amazon.com/blogs/databas
 
 Change the replication mode of your Postgres DB on Azure to `logical` using the replication menu of your PostgreSQL instance in the Azure Portal. Alternatively, use the Azure CLI to run the following command:
 
-```
+```bash
 az postgres server configuration set --resource-group group --server-name server --name azure.replication_support --value logical
 az postgres server restart --resource-group group --name server
 ```
+
 ### Step 4: Create a replication slot on your Postgres database
 
 <FieldAnchor field="replication_method.replication_slot">
@@ -163,7 +171,7 @@ Airbyte requires a replication slot configured only for its use. Only one source
 
 For this step, Airbyte requires use of the pgoutput plugin. To create a replication slot called `airbyte_slot` using pgoutput, run as the user with the newly granted `REPLICATION` role:
 
-```
+```sql
 SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 ```
 
@@ -177,18 +185,18 @@ For each table you want to replicate with CDC, follow the steps below:
 
 1. Add the replication identity (the method of distinguishing between rows) for each table you want to replicate:
 
-```
-ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;
-```
+   ```sql
+   ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;
+   ```
 
-In rare cases, if your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) or have very large field values, consider instead using replica identity type full: `
-ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.  Ensure that TOAST-able tables use non-TOAST-able primary keys (integers, varchars, etc), and there will only be a [modest increase in resource utilization, in addition to increased WAL storage size](https://xata.io/blog/replica-identity-full-performance).
+   In rare cases, if your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) or have very large field values, consider instead using replica identity type full: `
+   ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.  Ensure that TOAST-able tables use non-TOAST-able primary keys (integers, varchars, etc), and there will only be a [modest increase in resource utilization, in addition to increased WAL storage size](https://xata.io/blog/replica-identity-full-performance).
 
 2. Create the Postgres publication. You should include all tables you want to replicate as part of the publication:
 
-```
-CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;
-```
+   ```sql
+   CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;
+   ```
 
 The publication name is customizable. Refer to the [Postgres docs](https://www.postgresql.org/docs/current/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
 </FieldAnchor>
@@ -310,7 +318,7 @@ To connect to a Postgres instance via an SSH tunnel:
 
 The connector supports any SSH compatible key format such as RSA or Ed25519. To generate an RSA key, for example, run:
 
-```
+```bash
 ssh-keygen -t rsa -m PEM -f myuser_rsa
 ```
 
@@ -426,9 +434,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.8.9   | 2026-10-16 | [88485](https://github.com/airbytehq/airbyte/pull/88485) | Cold-start the CDC initial snapshot when the saved stream state is an empty object instead of skipping the stream. |
-| 3.8.8   | 2026-10-14 | [88498](https://github.com/airbytehq/airbyte/pull/88498) | Upgrade to Bulk CDK 1.1.16. Report unreachable hosts and connection tests that discover zero tables as configuration errors with guidance. On Airbyte Cloud, reject loopback hosts without an SSH tunnel and URL or `host:port` values in **Host** before connecting. |
-| 3.8.7   | 2026-10-09 | [88431](https://github.com/airbytehq/airbyte/pull/88431) | Upgrade to Bulk CDK 1.1.14. |
+| 3.8.9   | 2026-10-16 | [88485](https://github.com/airbytehq/airbyte/pull/88485) | Cold-start the CDC initial snapshot when the saved stream state is an empty object instead of skipping the stream.                                                         |
+| 3.8.8   | 2026-10-14 | [88498](https://github.com/airbytehq/airbyte/pull/88498) | Upgrade to Bulk CDK 1.1.16. Report unreachable hosts and zero-table connection tests as config errors. On Cloud, reject loopback hosts without SSH and URL Host values.    |
+| 3.8.7   | 2026-10-09 | [88431](https://github.com/airbytehq/airbyte/pull/88431) | Upgrade to Bulk CDK 1.1.14.                                                                                                                                                |
 | 3.8.6   | 2026-09-30 | [86369](https://github.com/airbytehq/airbyte/pull/86369) | Fix NULL array columns taking the previous record's value on the socket/protobuf CDC path.                                                                                 |
 | 3.8.5   | 2026-08-12 | [82773](https://github.com/airbytehq/airbyte/pull/82773) | Fix ClassCastException when an interval column has a default value during CDC.                                                                                             |
 | 3.8.4   | 2026-07-29 | [79110](https://github.com/airbytehq/airbyte/pull/79110) | Fix PostGIS geometry/geography columns returning NULL on CDC path. Values now always use hex-EWKB format, for both CDC and snapshots.                                      |
@@ -666,13 +674,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.4.43  | 2022-08-03 | [15226](https://github.com/airbytehq/airbyte/pull/15226) | Make connectionTimeoutMs configurable through JDBC url parameters                                                                                                          |
 | 0.4.42  | 2022-08-03 | [15273](https://github.com/airbytehq/airbyte/pull/15273) | Fix a bug in `0.4.36` and correctly parse the CDC initial record waiting time                                                                                              |
 | 0.4.41  | 2022-08-03 | [15077](https://github.com/airbytehq/airbyte/pull/15077) | Sync data from beginning if the LSN is no longer valid in CDC                                                                                                              |
-|         | 2022-08-03 | [14903](https://github.com/airbytehq/airbyte/pull/14903) | Emit state messages more frequently (⛔ this version has a bug; use `1.0.1` instead                                                                                         |
+|         | 2022-08-03 | [14903](https://github.com/airbytehq/airbyte/pull/14903) | Emit state messages more frequently (⛔ this version has a bug; use `1.0.1` instead                                                                                        |
 | 0.4.40  | 2022-08-03 | [15187](https://github.com/airbytehq/airbyte/pull/15187) | Add support for BCE dates/timestamps                                                                                                                                       |
 |         | 2022-08-03 | [14534](https://github.com/airbytehq/airbyte/pull/14534) | Align regular and CDC integration tests and data mappers                                                                                                                   |
 | 0.4.39  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings                                                                                                                                                  |
 | 0.4.38  | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields.                                                                                                                       |
 | 0.4.37  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected                                                                                                                |
-| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)                                                              |
+| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)                                                             |
 | 0.4.35  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors                                                                                                             |
 | 0.4.34  | 2022-07-17 | [13840](https://github.com/airbytehq/airbyte/pull/13840) | Added the ability to connect using different SSL modes and SSL certificates.                                                                                               |
 | 0.4.33  | 2022-07-14 | [14586](https://github.com/airbytehq/airbyte/pull/14586) | Validate source JDBC url parameters                                                                                                                                        |
