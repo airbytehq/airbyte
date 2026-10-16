@@ -429,7 +429,7 @@ data class ArrayGetter<T>(
             ?.use { rsInner: ResultSet ->
                 mutableListOf<T>().apply {
                     while (rsInner.next()) {
-                        addLast(elementGetter.get(rsInner, 2))
+                        @Suppress("UNCHECKED_CAST") add(elementGetter.get(rsInner, 2) as T)
                     }
                 }
             }

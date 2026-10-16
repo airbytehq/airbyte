@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.4 — 2026-10-15
+
+[#89002](https://github.com/airbytehq/airbyte/pull/89002) — Test and testFixtures dependencies are declared explicitly (Kotlin Gradle plugin 2.0.10+ no longer propagates `implementation` dependencies into testFixtures, nor `testFixturesImplementation` into tests), and K2-lint cleanups that also compile on Kotlin 1.9. No behaviour change.
+
 ### 1.1.3 — 2026-10-12
 
 [#88497](https://github.com/airbytehq/airbyte/pull/88497) — Add `DestinationConfigurationFactory` tests (core and legacy-task-loader) pinning that a connector `ConfigErrorException` passes through `make()` unchanged. No behaviour change; released alongside extract 1.1.16, which gains the same pass-through in `SourceConfigurationFactory`.
