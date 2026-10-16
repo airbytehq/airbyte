@@ -218,9 +218,10 @@ internal class DestinationMessageTest {
         val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
         val parsedMessage = convert(factory, inputMessage) as StreamCheckpoint
 
-        assertNotNull(parsedMessage.checkpointKey)
-        assertEquals(parsedMessage.checkpointKey?.checkpointIndex!!.value, 1234)
-        assertEquals(parsedMessage.checkpointKey?.checkpointId!!.value, "PARTITION_ID")
+        val checkpointKey = parsedMessage.checkpointKey
+        assertNotNull(checkpointKey)
+        assertEquals(checkpointKey!!.checkpointIndex.value, 1234)
+        assertEquals(checkpointKey.checkpointId.value, "PARTITION_ID")
         assertEquals(
             inputMessage
                 .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
@@ -260,9 +261,10 @@ internal class DestinationMessageTest {
         val factory = factory(dataChannelMedium = DataChannelMedium.SOCKET)
         val parsedMessage = convert(factory, inputMessage) as GlobalCheckpoint
 
-        assertNotNull(parsedMessage.checkpointKey)
-        assertEquals(parsedMessage.checkpointKey?.checkpointIndex!!.value, 1234)
-        assertEquals(parsedMessage.checkpointKey?.checkpointId!!.value, "PARTITION_ID")
+        val checkpointKey = parsedMessage.checkpointKey
+        assertNotNull(checkpointKey)
+        assertEquals(checkpointKey!!.checkpointIndex.value, 1234)
+        assertEquals(checkpointKey.checkpointId.value, "PARTITION_ID")
         assertEquals(
             inputMessage
                 .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
