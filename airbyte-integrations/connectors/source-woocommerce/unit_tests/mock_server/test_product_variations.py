@@ -16,6 +16,7 @@ import freezegun
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import ConfigBuilder
 from .request_builder import WooCommerceRequestBuilder
@@ -44,11 +45,16 @@ class TestProductVariationsFullRefresh(TestCase):
     """
 
     @staticmethod
-    def _read(config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+    def _read(
+        config_: ConfigBuilder,
+        state=None,
+        expecting_exception: bool = False,
+    ) -> EntrypointOutput:
         return read_output(
             config_builder=config_,
             stream_name=_STREAM_NAME,
             sync_mode=SyncMode.full_refresh,
+            state=state,
             expecting_exception=expecting_exception,
         )
 
@@ -68,7 +74,11 @@ class TestProductVariationsFullRefresh(TestCase):
             HttpResponse(body=json.dumps(products_response), status_code=200),
         )
         http_mocker.get(
-            WooCommerceRequestBuilder.product_variations_endpoint(product_id).with_default_params().build(),
+            WooCommerceRequestBuilder.product_variations_endpoint(product_id)
+            .with_default_params()
+            .with_modified_after("1970-01-01T00:00:00")
+            .with_modified_before("2024-01-15T12:00:00")
+            .build(),
             HttpResponse(body=json.dumps(_get_response_template()), status_code=200),
         )
 
@@ -119,11 +129,19 @@ class TestProductVariationsFullRefresh(TestCase):
             HttpResponse(body=json.dumps(products_response), status_code=200),
         )
         http_mocker.get(
-            WooCommerceRequestBuilder.product_variations_endpoint(99).with_default_params().build(),
+            WooCommerceRequestBuilder.product_variations_endpoint(99)
+            .with_default_params()
+            .with_modified_after("1970-01-01T00:00:00")
+            .with_modified_before("2024-01-15T12:00:00")
+            .build(),
             HttpResponse(body=json.dumps(variations_for_99), status_code=200),
         )
         http_mocker.get(
-            WooCommerceRequestBuilder.product_variations_endpoint(100).with_default_params().build(),
+            WooCommerceRequestBuilder.product_variations_endpoint(100)
+            .with_default_params()
+            .with_modified_after("1970-01-01T00:00:00")
+            .with_modified_before("2024-01-15T12:00:00")
+            .build(),
             HttpResponse(body=json.dumps(variations_for_100), status_code=200),
         )
 
@@ -165,7 +183,11 @@ class TestProductVariationsFullRefresh(TestCase):
             HttpResponse(body=json.dumps(products_response), status_code=200),
         )
         http_mocker.get(
-            WooCommerceRequestBuilder.product_variations_endpoint(product_id).with_default_params().build(),
+            WooCommerceRequestBuilder.product_variations_endpoint(product_id)
+            .with_default_params()
+            .with_modified_after("1970-01-01T00:00:00")
+            .with_modified_before("2024-01-15T12:00:00")
+            .build(),
             HttpResponse(body=json.dumps([]), status_code=200),
         )
 
@@ -212,13 +234,106 @@ class TestProductVariationsFullRefresh(TestCase):
             HttpResponse(body=json.dumps(products_response), status_code=200),
         )
         http_mocker.get(
-            WooCommerceRequestBuilder.product_variations_endpoint(product_id).with_default_params().build(),
+            WooCommerceRequestBuilder.product_variations_endpoint(product_id)
+            .with_default_params()
+            .with_modified_after("1970-01-01T00:00:00")
+            .with_modified_before("2024-01-15T12:00:00")
+            .build(),
             HttpResponse(body=json.dumps(page1_variations), status_code=200),
         )
         http_mocker.get(
-            WooCommerceRequestBuilder.product_variations_endpoint(product_id).with_default_params().with_offset(100).build(),
+            WooCommerceRequestBuilder.product_variations_endpoint(product_id)
+            .with_default_params()
+            .with_modified_after("1970-01-01T00:00:00")
+            .with_modified_before("2024-01-15T12:00:00")
+            .with_offset(100)
+            .build(),
             HttpResponse(body=json.dumps(page2_variations), status_code=200),
         )
 
         output = self._read(config_=config().with_start_date("2024-01-01"))
         assert len(output.records) == 150
+
+
+class TestProductVariationsIncremental(TestCase):
+    @staticmethod
+    def _read(config_: ConfigBuilder, state=None) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=_STREAM_NAME,
+            sync_mode=SyncMode.incremental,
+            state=state,
+        )
+
+    @HttpMocker()
+    @freezegun.freeze_time("2024-01-15T12:00:00Z")
+    def test_incremental_sync_without_state_uses_epoch_bounds(self, http_mocker: HttpMocker) -> None:
+        products_template = _get_products_response_template()[0]
+        products_response = [{**products_template, "id": 99}, {**products_template, "id": 100}]
+        variations = {
+            99: [{"id": 101, "sku": "PROD-99-VAR-1", "date_modified_gmt": "2024-01-10T08:00:00"}],
+            100: [{"id": 102, "sku": "PROD-100-VAR-1", "date_modified_gmt": "2024-01-11T08:00:00"}],
+        }
+
+        http_mocker.get(
+            WooCommerceRequestBuilder.products_endpoint()
+            .with_default_params()
+            .with_modified_after("2024-01-01T00:00:00")
+            .with_modified_before("2024-01-15T12:00:00")
+            .build(),
+            HttpResponse(body=json.dumps(products_response), status_code=200),
+        )
+        for product_id, response in variations.items():
+            http_mocker.get(
+                WooCommerceRequestBuilder.product_variations_endpoint(product_id)
+                .with_default_params()
+                .with_modified_after("1970-01-01T00:00:00")
+                .with_modified_before("2024-01-15T12:00:00")
+                .build(),
+                HttpResponse(body=json.dumps(response), status_code=200),
+            )
+
+        output = self._read(config_=config().with_start_date("2024-01-01"))
+
+        assert len(output.records) == 2
+        assert {record.record.data["sku"] for record in output.records} == {"PROD-99-VAR-1", "PROD-100-VAR-1"}
+        assert output.state_messages
+        assert output.state_messages[-1].state.stream.stream_state.__dict__["state"]["date_modified_gmt"] == "2024-01-11T08:00:00"
+
+    @HttpMocker()
+    @freezegun.freeze_time("2024-01-15T12:00:00Z")
+    def test_incremental_sync_with_state_uses_global_cursor_for_each_product(self, http_mocker: HttpMocker) -> None:
+        products_template = _get_products_response_template()[0]
+        products_response = [{**products_template, "id": 99}, {**products_template, "id": 100}]
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {"use_global_cursor": True, "state": {"date_modified_gmt": "2024-01-10T00:00:00"}},
+            )
+            .build()
+        )
+
+        http_mocker.get(
+            WooCommerceRequestBuilder.products_endpoint()
+            .with_default_params()
+            .with_modified_after("2024-01-01T00:00:00")
+            .with_modified_before("2024-01-15T12:00:00")
+            .build(),
+            HttpResponse(body=json.dumps(products_response), status_code=200),
+        )
+        for product_id in (99, 100):
+            http_mocker.get(
+                WooCommerceRequestBuilder.product_variations_endpoint(product_id)
+                .with_default_params()
+                .with_modified_after("2024-01-10T00:00:00")
+                .with_modified_before("2024-01-15T12:00:00")
+                .build(),
+                HttpResponse(body=json.dumps([{"id": product_id, "date_modified_gmt": "2024-01-11T00:00:00"}]), status_code=200),
+            )
+
+        output = self._read(config_=config().with_start_date("2024-01-01"), state=state)
+
+        assert len(output.records) == 2
+        final_state = output.state_messages[-1].state.stream.stream_state.__dict__
+        assert final_state["state"] == {"date_modified_gmt": "2024-01-11T00:00:00"}
