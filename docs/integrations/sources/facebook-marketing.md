@@ -114,17 +114,21 @@ If the connection check or a sync fails with a permission error for an ad accoun
 
 <FieldAnchor field="start_date">
 
-2. (Optional) For **Start Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. If you don't set a start date, the connector replicates all data, except for Insights data, which it only pulls for the last 37 months.
+2. (Optional) For **Start Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. If you don't set a start date, the connector replicates all data, except for Insights data, which it only pulls for the last 2 years.
 
 :::info
-Insight tables can only pull data from the last 37 months. If you're syncing insight tables and your start date is older than 37 months, your sync won't succeed for those streams.
+Facebook only keeps Insights data for the last 37 months. If you set a start date older than that, the connector moves it forward to the oldest date Facebook allows and logs a warning instead of failing the sync. This adjusted start date applies to every stream that uses **Start Date**, not only the Insights streams.
 :::
 
 </FieldAnchor>
 
 <FieldAnchor field="end_date">
 
-3. (Optional) For **End Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. This is the date until which you'd like to replicate data for all Incremental streams. All data generated between the start date and this end date will be replicated. Not setting this option will result in always syncing the latest data.
+3. (Optional) For **End Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. This is the date until which you'd like to replicate Insights data. All data generated between the start date and this end date will be replicated. Not setting this option will result in always syncing the latest data.
+
+:::note
+End Date only limits the Insights streams: the built-in Ads Insights stream, the Prebuilt Ads Insights Reports, and Custom Insights streams. The other incremental streams (`activities`, `ad_sets`, `ads`, `ad_creatives_from_ads`, `campaigns`, `images`, and `videos`) ignore End Date and always sync up to the present.
+:::
 
 </FieldAnchor>
 
@@ -152,6 +156,8 @@ Insight tables can only pull data from the last 37 months. If you're syncing ins
 When no statuses are selected for Campaign Statuses, AdSet Statuses, or Ad Statuses, the connector relies on the Facebook Marketing API's default behavior, which **excludes records in ARCHIVED and DELETED states**. This means archived campaigns, ad sets, and ads will not appear in your synced data.
 
 To ensure a complete dataset, explicitly select all statuses you want to include. This is especially important when using Full Refresh sync mode, because previously synced records that have since been archived will not be re-fetched unless you include the ARCHIVED status.
+
+If you later add statuses to any of these settings, records with the new statuses may be older than your saved cursor. When the connector detects the added statuses, it ignores the saved cursor for the affected incremental streams and re-reads from your **Start Date**, or from the beginning of your history if you left Start Date empty.
 :::
 
 <FieldAnchor field="fetch_thumbnail_images">
@@ -247,13 +253,13 @@ To set the time range and attribution window for each custom insight:
 
 <FieldAnchor field="custom_insights.start_date">
 
-3. (Optional) For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate all data.
+3. (Optional) For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If you leave it blank, the connector uses the source's **Start Date**, or the last 2 years if that isn't set either.
 
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.end_date">
 
-4. (Optional) For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is left blank, Airbyte will replicate the latest data.
+4. (Optional) For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If you leave it blank, the connector uses the source's **End Date**, or syncs up to the latest data if that isn't set either.
 
 </FieldAnchor>
 
@@ -269,6 +275,18 @@ To set the time range and attribution window for each custom insight:
 
 </FieldAnchor>
 
+<FieldAnchor field="custom_insights.include_engaged_view">
+
+7. (Optional) Toggle **Include Engaged View** to add the `1d_ev` attribution window to this custom insight stream. This setting applies only to this specific custom insight. For more details, see the global **Include Engaged View** setting in [Advanced settings](#advanced-settings).
+
+</FieldAnchor>
+
+<FieldAnchor field="custom_insights.insights_job_timeout">
+
+8. (Optional) For **Custom Insights Job Timeout**, set the maximum number of minutes, from 10 to 60, to wait for this custom insight's report jobs to complete. If you leave it empty, the connector uses the global **Insights Job Timeout**.
+
+</FieldAnchor>
+
 #### Advanced settings
 
 Most users don't need to change these settings.
@@ -281,13 +299,13 @@ Most users don't need to change these settings.
 
 <FieldAnchor field="insights_lookback_window">
 
-2. (Optional) For **Insights Window Lookback**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for click-through attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. View-through attribution is limited to 1 day. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28 days. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+2. (Optional) For **Insights Lookback Window**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for click-through attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. View-through attribution is limited to 1 day. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28 days. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 
 </FieldAnchor>
 
 <FieldAnchor field="insights_job_timeout">
 
-3. (Optional) For **Insights Job Timeout**, you may set a custom value in range from 10 to 60 minutes. It establishes the maximum amount of time of waiting for the report job to complete.
+3. (Optional) For **Insights Job Timeout**, set the maximum number of minutes, from 10 to 60, to wait for an Insights report job to complete. The default is 60. When a job times out, the connector splits it into smaller jobs and retries them. Lower this value if you know your reports need to be split, so the connector starts splitting sooner.
 
 </FieldAnchor>
 
@@ -296,6 +314,14 @@ Most users don't need to change these settings.
 4. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to all built-in Ads Insights streams. When enabled, the connector appends `"incrementality"` to the `action_attribution_windows` parameter sent to the Facebook API. Action metrics such as `actions`, `action_values`, and `cost_per_action_type` then include an `incrementality` field containing the incremental lift value attributed to the ad. This field is only populated for ad accounts that have active [Conversion Lift](https://developers.facebook.com/docs/marketing-api/guides/lift-studies/) studies configured in Facebook. For accounts without lift studies, the field is `null`. Disabled by default. For more details on the `incrementality` attribution window, refer to the [Ads Action Stats](https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/) API reference.
 
 </FieldAnchor>
+
+<FieldAnchor field="include_engaged_view">
+
+5. (Optional) Toggle **Include Engaged View** to add the engaged-view (`1d_ev`) attribution window to all built-in Ads Insights streams. When enabled, the connector appends `"1d_ev"` to the `action_attribution_windows` parameter sent to the Facebook API, and action metrics such as `actions`, `action_values`, and `cost_per_action_type` include a `1d_ev` field. This field holds conversions attributed to an engaged view of a video ad, which Meta defines as watching at least 10 seconds, or at least 97% of a shorter video. Disabled by default. For details, refer to the [Ads Action Stats](https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/) API reference.
+
+</FieldAnchor>
+
+Enabling **Include Incrementality** or **Include Engaged View** adds fields to the action metrics rather than changing existing ones. Refresh the connection's schema after you enable either setting so the new fields sync.
 
 <HideInUI>
 
@@ -365,14 +391,6 @@ Airbyte also supports the following Prebuilt Facebook Ad Insights Reports:
 Beginning August 6, 2026, Meta requires certain ad accounts to opt in to the `impression_device`, `hourly_stats_aggregated_by_audience_time_zone`, and `frequency_value` breakdowns. This affects the `Ad Insights Platform And Device` stream and any Custom Insights stream configured with these breakdowns. The requirement applies to non-sales-supported accounts only. The connector retrieves insights through asynchronous report jobs, which Meta documents as a supported fallback, but if these streams return no data, ask your account administrator to opt in to the breakdown through Ads Manager. See [Meta's 2026 out-of-cycle changes](https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2026) for details.
 :::
 
-You can segment the Ad Insights table into parts based on the following information. Each part will be synced as a separate table if normalization is enabled:
-
-- Country
-- Comscore Market
-- Gender & Age
-- Platform & Device
-- Region
-
 For more information, see the [Facebook Insights API documentation.](https://developers.facebook.com/docs/marketing-api/insights/)
 
 <!-- Christo: the note below was commented out as its accuracy could not be verified. If it can be verified and clarified for users, it should be added back in.
@@ -406,7 +424,7 @@ If you sync multiple ad accounts in different timezones within a single connecti
 
 ## Facebook Marketing Attribution Reporting
 
-The Facebook Marketing connector uses the `lookback_window` parameter to repeatedly read data from the last `<lookback_window>` days during an Incremental sync. This means some data will be synced twice (or possibly more often) despite the cursor value being up to date, in order to capture updated ads conversion data from Facebook. You can change this date window by adjusting the `lookback_window` parameter when setting up the source, up to a maximum of 28 days. Smaller values will result in fewer duplicates, while larger values provide more accurate results. For a deeper understanding of the purpose and role of the attribution window, refer to this [Meta article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+During an incremental sync, the Insights streams re-read the last **Insights Lookback Window** days (`insights_lookback_window`, 28 by default). This means some data is synced twice or more despite the cursor value being up to date, so that the connector captures updated ad conversion data from Facebook. You can change this window when setting up the source, up to a maximum of 28 days. Each custom insight can override it with its own **Custom Insights Lookback Window**. Smaller values will result in fewer duplicates, while larger values provide more accurate results. For a deeper understanding of the purpose and role of the attribution window, refer to this [Meta article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 
 </HideInUI>
 
@@ -443,13 +461,13 @@ This response indicates that the Facebook Graph API is refusing a synchronous re
 
 ### "Please reduce the amount of data" error on the Ad Creatives stream
 
-If the `ad_creatives` stream fails with the error "Please reduce the amount of data you're asking for, then retry your request" and you do not want to disable any fields, you can switch to the `ad_creatives_from_ads` stream instead. This alternative stream fetches the same creative data but retrieves it through the Ads endpoint one creative at a time, which avoids the data-size limitation. The output schema is identical to `ad_creatives`.
+If the `ad_creatives` stream fails with the error "Please reduce the amount of data you're asking for, then retry your request" and you do not want to disable any fields, you can switch to the `ad_creatives_from_ads` stream instead. This alternative stream fetches the same creative data but retrieves it through the Ads endpoint one creative at a time, which avoids the data-size limitation. The output schema matches `ad_creatives`, plus an `updated_time` field from the parent ad.
 
 Note that `ad_creatives_from_ads` is slower than `ad_creatives` because it makes individual API calls per creative. It also only returns creatives that are associated with ads — orphaned creatives that are not linked to any ad will not be included.
 
 ### Ad creatives without `object_story_spec`
 
-For some Degrees of Freedom creatives, the Graph API rejects requests for the `object_story_spec` field with error `100` / `2446211` ("First Dof Value Should Match Object Story Spec Field"). The `ad_creatives` and `ad_creatives_from_ads` streams emit these creatives without `object_story_spec` instead of failing the sync, and log a warning with the creative ID. `ad_creatives` reads every creative on each sync, so the field comes back once the API returns it again. In incremental mode, `ad_creatives_from_ads` reads a creative again only after its parent ad changes, so [refresh](/platform/operator-guides/refreshes) that stream to backfill `object_story_spec`.
+For some Degrees of Freedom creatives, the Graph API rejects requests for the `object_story_spec` field with error code `100` and subcode `2446211` ("First Dof Value Should Match Object Story Spec Field") or `1443048`. The `ad_creatives` and `ad_creatives_from_ads` streams emit these creatives without `object_story_spec` instead of failing the sync, and log a warning with the creative ID. `ad_creatives` reads every creative on each sync, so the field comes back once the API returns it again. In incremental mode, `ad_creatives_from_ads` reads a creative again only after its parent ad changes, so [refresh](/platform/operator-guides/refreshes) that stream to backfill `object_story_spec`.
 
 ### Missing records in Campaigns, Ad Sets, or Ads streams {#missing-records-status-filtering}
 
@@ -464,6 +482,26 @@ To resolve this:
 1. Go to **Settings > Source > Facebook Marketing**.
 2. For each of **Campaign Statuses**, **AdSet Statuses**, and **Ad Statuses**, select all statuses you want to include. At minimum, add `ARCHIVED` alongside the active statuses.
 3. Trigger a Full Refresh sync to re-fetch the complete dataset.
+
+### Syncs pause for minutes or fail with rate limit errors
+
+Meta enforces [rate limits](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/) per app, per ad account, and per business use case. The connector reads the `x-app-usage`, `x-ad-account-usage`, and `x-business-use-case-usage` response headers and slows down before Meta blocks the account:
+
+- At 85% utilization or higher, the connector pauses for at least 2 minutes.
+- At 95% utilization or higher, the connector pauses for at least 10 minutes.
+- If the headers report a longer time until the limit resets, the connector waits for that instead.
+
+These pauses appear in the sync logs as `Facebook API Utilization is too high`. They're expected and don't fail the sync.
+
+If Meta has already blocked the ad account, the API returns error code `17` with subcode `2446079` ("Ad Account Has Too Many API Calls"). The connector treats this as a quota block: it waits for the reset time Meta reports, up to 10 minutes per attempt (10 minutes when Meta doesn't report one), retries, and repeats for up to 1 hour of total waiting before it fails the sync. The logs show `Facebook API quota block` with the wait budget used so far.
+
+The connection check doesn't wait out rate limits. If you test the connection while the account is rate limited, the check fails right away. Wait for the limit to reset, then test again.
+
+To reduce how often you hit these limits:
+
+- Make sure your app has full access to the Marketing API Access Tier. See [Step 4: Upgrade to the Marketing API Access Tier's full access](#step-4-upgrade-to-the-marketing-api-access-tiers-full-access).
+- Stagger the schedules of connections that use the same access token or ad account.
+- Sync fewer streams, or turn off fields you don't need in the connection's schema.
 
 ### Missing data for 7-day and 28-day view-through attribution windows
 
@@ -536,10 +574,10 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 | 6.1.6 | 2026-10-16 | [89047](https://github.com/airbytehq/airbyte/pull/89047) | Fix in-app setup guide rendering in Airbyte Cloud, update access token setup steps to match Meta's current docs, and correct field descriptions |
 | 6.1.5 | 2026-10-16 | [89006](https://github.com/airbytehq/airbyte/pull/89006) | Upgrade to Python 3.13 and python-connector-base 4.1.1 |
 | 6.1.4 | 2026-10-16 | [89020](https://github.com/airbytehq/airbyte/pull/89020) | Fix `ad_creatives` and `ad_creatives_from_ads` failing on Facebook error 2446211 by emitting affected creatives with a null `object_story_spec` |
-| 6.1.3 | 2026-09-30 | [87588](https://github.com/airbytehq/airbyte/pull/87588) | Fix insights streams cursor moving backwards after interrupted sync attempts (causing progressively wider re-reads), clean up stale completed slices in state, and fix cursor advancement for monthly/weekly time increments |
-| 6.1.2 | 2026-09-21 | [86315](https://github.com/airbytehq/airbyte/pull/86315) | Fix ad-account quota errors (code 17/2446079) being retried as transient failures: read rate-limit headers on failed calls and wait out the block (API-provided reset estimate when present, 10-minute re-checks otherwise, up to 1 hour); read every business-use-case entry and the ad-account reset time from the rate-limit headers; the connection check fails fast instead of waiting |
-| 6.1.1 | 2026-08-24 | [74266](https://github.com/airbytehq/airbyte/pull/74266) | feat(source-facebook-marketing): add opt-in engaged view (ev) attribution window (AI-Triage PR) |
-| 6.1.0 | 2026-08-04 | [83704](https://github.com/airbytehq/airbyte/pull/83704) | Add incremental sync support to the ad_creatives_from_ads stream |
+| 6.1.3 | 2026-10-08 | [87588](https://github.com/airbytehq/airbyte/pull/87588) | Fix insights streams cursor moving backwards after interrupted sync attempts (causing progressively wider re-reads), clean up stale completed slices in state, and fix cursor advancement for monthly/weekly time increments |
+| 6.1.2 | 2026-09-22 | [86315](https://github.com/airbytehq/airbyte/pull/86315) | Fix ad-account quota errors (code 17/2446079) being retried as transient failures: read rate-limit headers on failed calls and wait out the block (API-provided reset estimate when present, 10-minute re-checks otherwise, up to 1 hour); read every business-use-case entry and the ad-account reset time from the rate-limit headers; the connection check fails fast instead of waiting |
+| 6.1.1 | 2026-08-25 | [74266](https://github.com/airbytehq/airbyte/pull/74266) | feat(source-facebook-marketing): add opt-in engaged view (ev) attribution window (AI-Triage PR) |
+| 6.1.0 | 2026-08-12 | [83704](https://github.com/airbytehq/airbyte/pull/83704) | Add incremental sync support to the ad_creatives_from_ads stream |
 | 6.0.2 | 2026-06-30 | [81331](https://github.com/airbytehq/airbyte/pull/81331) | Hide legacy top-level `access_token` field from UI to prevent Chrome autofill from corrupting OAuth tokens |
 | 6.0.1 | 2026-06-24 | [80779](https://github.com/airbytehq/airbyte/pull/80779) | Fix TypeError in `CursorPatch.load_next_page()` when Facebook API returns malformed (non-dict) responses or data items |
 | 6.0.0 | 2026-06-23 | [80324](https://github.com/airbytehq/airbyte/pull/80324) | Replace deprecated `ads_insights_dma` and `ads_insights_demographics_dma_region` streams with `ads_insights_comscore_market` and `ads_insights_demographics_comscore_market_region` following Meta's DMA → Comscore Market transition. Remove `dma` from Custom Insights breakdowns. |
