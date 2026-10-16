@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.17 — 2026-10-15
+
+[#89002](https://github.com/airbytehq/airbyte/pull/89002) — Test and testFixtures dependencies are declared explicitly (Kotlin Gradle plugin 2.0.10+ no longer propagates `implementation` dependencies into testFixtures, nor `testFixturesImplementation` into tests), `junit-platform-launcher` is on every test runtime classpath, and K2-lint cleanups that also compile on Kotlin 1.9 (`JdbcAccessor` array getter, redundant casts/safe calls). No behaviour change.
+
 ### 1.1.16 — 2026-10-12
 
 [#88497](https://github.com/airbytehq/airbyte/pull/88497) — `SourceConfigurationFactory.make()` rethrows a `ConnectorErrorException` (for example the `ConfigErrorException` a connector throws to reject its configuration, such as `Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.`) unchanged instead of wrapping it in the generic `Failed to build ConnectorConfiguration.` error, so the connector's message reaches the user in CHECK. Every other exception is still wrapped. This matches the existing behaviour of `DestinationConfigurationFactory`.
