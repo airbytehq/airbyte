@@ -7,9 +7,13 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
-### 1.1.18 — 2026-10-15
+### 1.1.19 — 2026-10-16
 
 [#88992](https://github.com/airbytehq/airbyte/pull/88992) — Bump Micronaut to 4.10.31, Jackson to 2.21.7 (Kotlin runtime 2.1.21), JUnit to 5.14 and SpotBugs to 4.10.5; Dagger and `javax.inject` are removed in favour of `jakarta.inject` only. Released alongside base 1.0.5 and load 1.1.5; no extract behaviour change.
+
+### 1.1.18 — 2026-10-16
+
+[#88151](https://github.com/airbytehq/airbyte/pull/88151) — CDC: record writes that happen while the Debezium engine is shutting down are queued and performed by `CdcPartitionReader.run()` once the engine thread has ended, so the record count in the final checkpoint includes them. Previously, with Debezium's `AsyncEmbeddedEngine` (source-mssql), a shutdown-path write could still be in flight when the state message was emitted, so the source reported fewer records than it had sent and the platform waited for the checkpoints to flush. A shutdown-path write that fails now fails the read with its cause instead of being lost.
 
 ### 1.1.17 — 2026-10-15
 

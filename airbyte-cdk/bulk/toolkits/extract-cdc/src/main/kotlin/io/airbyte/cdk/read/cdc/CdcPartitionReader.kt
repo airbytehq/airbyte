@@ -7,6 +7,7 @@ package io.airbyte.cdk.read.cdc
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.DataChannelMedium.SOCKET
 import io.airbyte.cdk.output.DataChannelMedium.STDIO
@@ -38,6 +39,7 @@ import java.util.function.Consumer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -78,6 +80,9 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
     private val lastEventTime = AtomicReference(LocalDateTime.now())
     private var watchdogJob: Job? = null
     @Volatile private var watchdogShouldStop = false
+    // Record writes queued by the Debezium thread once the engine is shutting down (see
+    // emitRecord). run() performs them in order after the Debezium thread has ended.
+    private val shutdownWrites = Channel<() -> Unit>(Channel.UNLIMITED)
 
     private var partitionId: String = generatePartitionId(4)
 
@@ -193,6 +198,27 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
             watchdogShouldStop = true
             watchdogJob?.cancel()
         }
+
+        // The Dbz engine thread has ended, so nothing more gets queued: perform the queued writes,
+        // so that checkpoint() reads a numEmittedRecords that includes them.
+        shutdownWrites.close()
+        withContext(Dispatchers.IO) {
+            for (write in shutdownWrites) {
+                try {
+                    write()
+                } catch (e: Throwable) {
+                    engineException.compareAndSet(
+                        null,
+                        TransientErrorException(
+                            "A CDC record write failed while the Debezium engine was shutting down.",
+                            e
+                        )
+                    )
+                    break
+                }
+            }
+        }
+
         // Print a nice log message and re-throw any exception.
         val exception: Throwable? = engineException.get()
         val summary: Map<String, Any?> =
@@ -352,15 +378,19 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
 
             // Emit the record at the end of the happy path.
             when (engineShuttingDown.get()) {
-                // While the engine is shutting down, we emit records in our thread to prevent
-                // debezium from unexpectedly killing the thread.
-                // As this may lead to corrupt hald records or to causing an unexpected socket
-                // closure.
+                // While the engine is shutting down, engine.close() may interrupt this thread at
+                // any moment: queue the write and return at once. run() performs it before
+                // checkpoint().
                 true ->
-                    runBlocking(Dispatchers.IO) {
-                        recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes)
-                        updateCounters(event, EventType.RECORD_EMITTED)
-                    }
+                    shutdownWrites
+                        .trySend {
+                            recordAcceptor.invoke(
+                                deserializedRecord.data,
+                                deserializedRecord.changes
+                            )
+                            updateCounters(event, EventType.RECORD_EMITTED)
+                        }
+                        .getOrThrow()
                 // While the engine is running normally, we can emit records synchronously for
                 // better performance.
                 false -> recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes)
