@@ -305,10 +305,14 @@ class TestProductVariationsIncremental(TestCase):
     def test_incremental_sync_with_state_uses_global_cursor_for_each_product(self, http_mocker: HttpMocker) -> None:
         products_template = _get_products_response_template()[0]
         products_response = [{**products_template, "id": 99}, {**products_template, "id": 100}]
-        state = StateBuilder().with_stream_state(
-            _STREAM_NAME,
-            {"use_global_cursor": True, "state": {"date_modified_gmt": "2024-01-10T00:00:00"}},
-        ).build()
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {"use_global_cursor": True, "state": {"date_modified_gmt": "2024-01-10T00:00:00"}},
+            )
+            .build()
+        )
 
         http_mocker.get(
             WooCommerceRequestBuilder.products_endpoint()
@@ -331,3 +335,5 @@ class TestProductVariationsIncremental(TestCase):
         output = self._read(config_=config().with_start_date("2024-01-01"), state=state)
 
         assert len(output.records) == 2
+        final_state = output.state_messages[-1].state.stream.stream_state.__dict__
+        assert final_state["state"] == {"date_modified_gmt": "2024-01-11T00:00:00"}

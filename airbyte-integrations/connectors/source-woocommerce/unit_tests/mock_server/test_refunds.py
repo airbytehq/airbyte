@@ -223,7 +223,10 @@ class TestRefundsIncremental(TestCase):
     @freezegun.freeze_time("2024-01-15T12:00:00Z")
     def test_incremental_sync_without_state_emits_child_and_parent_state(self, http_mocker: HttpMocker) -> None:
         orders_template = _get_orders_response_template()[0]
-        orders_response = [{**orders_template, "id": 727}, {**orders_template, "id": 728}]
+        orders_response = [
+            {**orders_template, "id": 727, "date_modified_gmt": "2024-01-10T09:00:00"},
+            {**orders_template, "id": 728, "date_modified_gmt": "2024-01-12T09:00:00"},
+        ]
         refunds = {
             727: [{"id": 1001, "amount": "49.99", "date_created_gmt": "2024-01-10T10:00:00"}],
             728: [{"id": 1002, "amount": "29.99", "date_created_gmt": "2024-01-11T11:00:00"}],
@@ -249,22 +252,29 @@ class TestRefundsIncremental(TestCase):
         assert {record.record.data["id"] for record in output.records} == {1001, 1002}
         assert output.state_messages
         state = output.state_messages[-1].state.stream.stream_state.__dict__
-        assert state["state"]["date_created_gmt"] == "2024-01-11T11:00:00"
-        assert "orders" in state["parent_state"]
+        assert state["state"] == {"date_created_gmt": "2024-01-11T11:00:00"}
+        assert state["parent_state"]["orders"] == {"date_modified_gmt": "2024-01-12T09:00:00"}, state
 
     @HttpMocker()
     @freezegun.freeze_time("2024-01-15T12:00:00Z")
     def test_incremental_sync_with_parent_state_resumes_orders(self, http_mocker: HttpMocker) -> None:
         orders_template = _get_orders_response_template()[0]
-        orders_response = [{**orders_template, "id": 727}, {**orders_template, "id": 728}]
-        state = StateBuilder().with_stream_state(
-            _STREAM_NAME,
-            {
-                "use_global_cursor": True,
-                "state": {"date_created_gmt": "2024-01-10T00:00:00"},
-                "parent_state": {"orders": {"date_modified_gmt": "2024-01-10T00:00:00"}},
-            },
-        ).build()
+        orders_response = [
+            {**orders_template, "id": 727, "date_modified_gmt": "2024-01-10T09:00:00"},
+            {**orders_template, "id": 728, "date_modified_gmt": "2024-01-12T09:00:00"},
+        ]
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {
+                    "use_global_cursor": True,
+                    "state": {"date_created_gmt": "2024-01-10T00:00:00"},
+                    "parent_state": {"orders": {"date_modified_gmt": "2024-01-10T00:00:00"}},
+                },
+            )
+            .build()
+        )
 
         http_mocker.get(
             WooCommerceRequestBuilder.orders_endpoint()
@@ -283,3 +293,6 @@ class TestRefundsIncremental(TestCase):
         output = self._read(config_=config().with_start_date("2024-01-01"), state=state)
 
         assert len(output.records) == 2
+        final_state = output.state_messages[-1].state.stream.stream_state.__dict__
+        assert final_state["state"] == {"date_created_gmt": "2024-01-11T00:00:00"}
+        assert final_state["parent_state"]["orders"] == {"date_modified_gmt": "2024-01-12T09:00:00"}, final_state
