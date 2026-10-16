@@ -123,6 +123,11 @@ def _mock_token(http_mocker: HttpMocker, response: HttpResponse | None = None) -
     return request
 
 
+def _report_record(breakdowns: list[str], report_date: str, identifier: str) -> dict:
+    # Report rows are keyed by the lowercased requested breakdowns; the real row key of AD_ACCOUNT_ID is unverified.
+    return {**{breakdown.lower(): identifier for breakdown in breakdowns}, "date": report_date}
+
+
 def _hourly_report(inclusive_end: bool):
     # One row per UTC date; impressions = hours of that date inside [starts_at, ends_at), or [starts_at, ends_at] when inclusive.
     def callback(request, context) -> str:
@@ -141,7 +146,10 @@ def _hourly_report(inclusive_end: bool):
         return json.dumps(
             {
                 "data": {
-                    "metrics": [{"campaign_id": "test-campaign", "date": day, "impressions": count} for day, count in sorted(hours.items())]
+                    "metrics": [
+                        {**_report_record(body["breakdowns"], day, "test-campaign"), "impressions": count}
+                        for day, count in sorted(hours.items())
+                    ]
                 }
             }
         )
@@ -391,8 +399,8 @@ def test_campaign_report_keeps_window_end_day_when_date_has_time_suffix() -> Non
     assert [message.record.data["date"] for message in output.records] == [row["date"] for row in rows]
 
 
-def _sync(now: str, config: dict, inclusive_end: bool, state=None):
-    catalog = CatalogBuilder().with_stream("campaign_report", SyncMode.incremental).build()
+def _sync(now: str, config: dict, inclusive_end: bool, state=None, stream_name: str = "campaign_report"):
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
     with freeze_time(now), HttpMocker() as http_mocker:
         http_mocker._mocker.post(_TOKEN_URL, json={"access_token": "test-access-token", "expires_in": 3600})
         http_mocker._mocker.post(_REPORT_URL, text=_hourly_report(inclusive_end))
