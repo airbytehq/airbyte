@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.task.internal
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
@@ -33,10 +32,6 @@ private val log = KotlinLogging.logger {}
  *
  * TODO: Handle other message types.
  */
-@SuppressFBWarnings(
-    "NP_NONNULL_PARAM_VIOLATION",
-    justification = "message is guaranteed to be non-null by Kotlin's type system"
-)
 class InputConsumerTask(
     private val inputFlow: ReservingDeserializingInputFlow,
     private val pipelineInputQueue:

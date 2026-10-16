@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.test.util.destination_process
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.Property
@@ -73,7 +72,6 @@ interface DestinationProcess {
     fun verifyFileDeleted()
 }
 
-@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", "good old lateinit")
 abstract class DestinationProcessFactory {
     /**
      * Ideally we'd take this in the constructor, but that's annoying because of how junit injects
