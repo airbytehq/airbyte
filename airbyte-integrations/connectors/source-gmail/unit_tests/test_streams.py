@@ -264,7 +264,7 @@ def test_check_fails_when_retry_after_exceeds_body_wait_cap(base_config, request
 
     assert status.status == Status.FAILED
     assert len(_gmail_calls(requests_mock, _PROFILE_URL)) == 1
-    assert retry_at in (status.message or "")
+    assert "longer than the connector is allowed to wait" in (status.message or "")
 
 
 def test_check_uses_one_second_floor_for_past_retry_after_timestamp(base_config, requests_mock, mocker, budget_ignores_429):
