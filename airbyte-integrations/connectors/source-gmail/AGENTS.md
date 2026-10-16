@@ -26,4 +26,4 @@ The Gmail API uses a query-based filtering system (`q` parameter) that supports 
 
 ## Rate-limit backoff
 
-Gmail quota responses sometimes include the required wait only in the body as a `Retry after` timestamp, without a `Retry-After` header. The connector honors the header first, then the body timestamp, and falls back to exponential backoff when neither is present. Body waits are capped at 1,800 seconds, below `maxSecondsBetweenMessages: 3600`, leaving headroom under the connector's maximum inter-message interval.
+Gmail quota responses sometimes include the required wait only in the body as a `Retry after` timestamp, without a `Retry-After` header. The connector honors the header first, then the body timestamp, read by the CDK's `WaitTimeFromResponse` strategy, and falls back to exponential backoff when neither is present. Body waits are capped at 1,800 seconds, below `maxSecondsBetweenMessages: 3600`, leaving headroom under the connector's maximum inter-message interval.

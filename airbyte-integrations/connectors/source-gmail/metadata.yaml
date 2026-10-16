@@ -19,7 +19,7 @@ data:
       enabled: false
       packageName: airbyte-source-gmail
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.35.0@sha256:0557872c74928d6b338b208a97fe52e9e8aed8d9674d85d5b5b540bf91c8110c
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.37.0.post7.dev38886133260@sha256:0ac743950dccb641a3f0a61cd4568c857d1912f07cdf5c3d0927e0ec4fddff4f
   connectorSubtype: api
   maxSecondsBetweenMessages: 3600
   connectorType: source

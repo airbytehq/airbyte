@@ -13,7 +13,6 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 import requests
-from components import GmailRetryAfterFromBodyBackoffStrategy
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
@@ -47,14 +46,6 @@ def _gmail_calls(requests_mock, url_prefix):
 
 def _retry_after_timestamp(seconds_from_now=120):
     return (datetime.now(timezone.utc) + timedelta(seconds=seconds_from_now)).isoformat().replace("+00:00", "Z")
-
-
-def _response_with_text(text):
-    response = requests.Response()
-    response._content = text.encode("utf-8")
-    response._content_consumed = True
-    response.encoding = "utf-8"
-    return response
 
 
 @pytest.fixture
@@ -276,23 +267,41 @@ def test_check_fails_when_retry_after_exceeds_body_wait_cap(base_config, request
     assert retry_at in (status.message or "")
 
 
-def test_body_retry_after_strategy_returns_one_second_for_past_timestamp():
-    strategy = GmailRetryAfterFromBodyBackoffStrategy(config={}, parameters={})
-    response = _response_with_text(f'{{"message":"Retry after {_retry_after_timestamp(seconds_from_now=-1)}"}}')
+def test_check_uses_one_second_floor_for_past_retry_after_timestamp(base_config, requests_mock, mocker, budget_ignores_429):
+    sleep_mock = mocker.patch("time.sleep")
+    retry_at = _retry_after_timestamp(seconds_from_now=-1)
+    requests_mock.get(
+        _PROFILE_URL,
+        [
+            {"status_code": 429, "json": {"error": {"message": f"User-rate limit exceeded. Retry after {retry_at}"}}},
+            {"status_code": 200, "json": {"emailAddress": "user@example.com"}},
+        ],
+    )
 
-    assert strategy.backoff_time(response, attempt_count=1) == 1.0
+    status = build_source(base_config).check(logging.getLogger("test"), base_config)
+
+    sleep_durations = [call.args[0] for call in sleep_mock.call_args_list if call.args]
+    assert status.status == Status.SUCCEEDED
+    assert len(_gmail_calls(requests_mock, _PROFILE_URL)) == 2
+    assert any(duration <= 2 for duration in sleep_durations), sleep_durations
+    assert 11.0 not in sleep_durations
 
 
-def test_body_retry_after_strategy_ignores_text_without_timestamp():
-    strategy = GmailRetryAfterFromBodyBackoffStrategy(config={}, parameters={})
+def test_check_uses_exponential_backoff_for_non_json_rate_limit_body(base_config, requests_mock, mocker, budget_ignores_429):
+    sleep_mock = mocker.patch("time.sleep")
+    requests_mock.get(
+        _PROFILE_URL,
+        [
+            {"status_code": 429, "text": "Too many requests"},
+            {"status_code": 200, "json": {"emailAddress": "user@example.com"}},
+        ],
+    )
 
-    assert strategy.backoff_time(_response_with_text("not JSON"), attempt_count=1) is None
+    status = build_source(base_config).check(logging.getLogger("test"), base_config)
 
-
-def test_body_retry_after_strategy_ignores_request_exception():
-    strategy = GmailRetryAfterFromBodyBackoffStrategy(config={}, parameters={})
-
-    assert strategy.backoff_time(requests.RequestException("network error"), attempt_count=1) is None
+    sleep_durations = [call.args[0] for call in sleep_mock.call_args_list if call.args]
+    assert status.status == Status.SUCCEEDED
+    assert 11.0 in sleep_durations, sleep_durations
 
 
 @pytest.mark.parametrize(

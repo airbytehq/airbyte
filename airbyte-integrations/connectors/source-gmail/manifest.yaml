@@ -388,12 +388,22 @@ definitions:
         # "Retry after" timestamp; otherwise use exponential backoff.
         - type: WaitTimeFromHeader
           header: Retry-After
-        - type: CustomBackoffStrategy
-          class_name: source_declarative_manifest.components.GmailRetryAfterFromBodyBackoffStrategy
+        - type: WaitTimeFromResponse
+          wait_time_in_seconds: "{{ max(1, timestamp(response.error.message | regex_search('Retry after (\\S+Z)')) - now_utc().timestamp()) if (response is mapping and response.get('error') is mapping and ((response.error.message or '') | string | regex_search('Retry after (\\S+Z)'))) else '' }}"
           max_waiting_time_in_seconds: 1800
         - type: ExponentialBackoffStrategy
           factor: 5
       response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          failure_type: transient_error
+          error_message: "{{ response.error.message }}"
+          predicate: >-
+            {{ response is mapping and response.get('error') is mapping and
+            response.error.get('code') in [403, 429] and
+            ((response.error.message or '') | string | regex_search('Retry after (\S+Z)')) and
+            timestamp(response.error.message | regex_search('Retry after (\S+Z)')) - now_utc().timestamp() >= 1800 and
+            (response.error.code != 403 or ((response.get('error', {}).get('errors', [{}]) | first).get('reason', '')) in ['rateLimitExceeded', 'userRateLimitExceeded']) }}
         - type: HttpResponseFilter
           action: RATE_LIMITED
           http_codes:
