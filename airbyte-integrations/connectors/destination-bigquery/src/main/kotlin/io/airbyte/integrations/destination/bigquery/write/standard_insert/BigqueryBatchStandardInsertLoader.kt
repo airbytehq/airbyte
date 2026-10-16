@@ -15,7 +15,6 @@ import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.TableDataWriteChannel
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.WriteChannelConfiguration
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -76,7 +75,6 @@ class BigqueryBatchStandardInsertsLoader(
     private lateinit var writer: TableDataWriteChannel
     private var closed = false
 
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         check(!closed) { "BigQuery standard insert loader is closed" }
         try {
@@ -194,7 +192,6 @@ class BigqueryBatchStandardInsertsLoader(
 
     // Somehow spotbugs thinks that `writer.write(ByteBuffer.wrap(byteArray))` is a redundant null
     // check...
-    @SuppressFBWarnings(value = ["RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"])
     private fun switchToWriteChannel() {
         writer =
             try {
