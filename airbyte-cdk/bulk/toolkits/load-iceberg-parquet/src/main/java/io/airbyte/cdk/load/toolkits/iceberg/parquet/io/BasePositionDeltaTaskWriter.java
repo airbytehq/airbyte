@@ -61,7 +61,7 @@ public abstract class BasePositionDeltaTaskWriter
     this.wrapper = new InternalRecordWrapper(schema.asStruct());
     this.keyWrapper = new InternalRecordWrapper(deleteSchema.asStruct());
     this.resolver = resolver;
-    this.touchedKeys = new TouchedKeys(deleteSchema.asStruct(), resolver.maxTouchedKeys());
+    this.touchedKeys = new TouchedKeys(deleteSchema.asStruct());
   }
 
   public abstract RowDataPositionDeltaWriter route(Record row);

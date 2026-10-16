@@ -311,13 +311,7 @@ class DeletionVectorEndToEndTest {
         delta.commit()
         table.refresh()
 
-        val upgraded =
-            IcebergTableUpgrader.upgradeToV3(
-                catalog,
-                tableId,
-                backup = false,
-                branches = listOf("prod")
-            )
+        val upgraded = IcebergTableUpgrader.upgradeToV3(catalog, tableId, backup = false)
 
         assertThat(tableFormatVersion(upgraded)).isEqualTo(3)
         val remaining =
@@ -424,13 +418,7 @@ class DeletionVectorEndToEndTest {
         delta.commit()
         table.refresh()
 
-        val upgraded =
-            IcebergTableUpgrader.upgradeToV3(
-                catalog,
-                tableId,
-                backup = false,
-                branches = listOf("main", "staging"),
-            )
+        val upgraded = IcebergTableUpgrader.upgradeToV3(catalog, tableId, backup = false)
 
         assertThat(tableFormatVersion(upgraded)).isEqualTo(3)
         listOf("main", "staging").forEach { branch ->
@@ -452,6 +440,52 @@ class DeletionVectorEndToEndTest {
                 .`as`("rows on $branch")
                 .containsExactlyInAnyOrderElementsOf(
                     // Main never saw the staging-only delete.
+                    if (branch == "main") listOf("1" to "one", "2" to "two")
+                    else listOf("1" to "one")
+                )
+        }
+    }
+
+    @Test
+    fun `upgrade migrates every branch including ones the caller did not name`() {
+        val (catalog, _) = catalog()
+        val tableId = TableIdentifier.of("db", "records_other_branch")
+        val table = createTable(catalog, tableId, 2)
+        seed(table, listOf("1" to "one", "2" to "two"))
+
+        // A failed sync left legacy equality deletes on an extra branch.
+        table.manageSnapshots().createBranch("other").commit()
+        val equalityWriter =
+            IcebergTableWriterFactory().create(table, "ab-generation-id-1-e", dedupe, schema)
+        equalityWriter.write(RecordWrapper(record("2", "ignored"), Operation.DELETE))
+        val result = equalityWriter.complete()
+        val delta = table.newRowDelta().toBranch("other")
+        result.dataFiles().forEach { delta.addRows(it) }
+        result.deleteFiles().forEach { delta.addDeletes(it) }
+        delta.commit()
+        table.refresh()
+
+        val upgraded = IcebergTableUpgrader.upgradeToV3(catalog, tableId, backup = false)
+
+        assertThat(tableFormatVersion(upgraded)).isEqualTo(3)
+        listOf("main", "other").forEach { branch ->
+            val remaining =
+                upgraded.newScan().useRef(branch).planFiles().use { tasks ->
+                    tasks.flatMap { it.deletes() }.filter { it.format() != FileFormat.PUFFIN }
+                }
+            assertThat(remaining).`as`("non-DV deletes on $branch").isEmpty()
+            val branchRows =
+                IcebergGenerics.read(upgraded)
+                    .useSnapshot(upgraded.refs()[branch]!!.snapshotId())
+                    .build()
+                    .use { records ->
+                        records.map {
+                            it.getField("id").toString() to it.getField("name").toString()
+                        }
+                    }
+            assertThat(branchRows)
+                .`as`("rows on $branch")
+                .containsExactlyInAnyOrderElementsOf(
                     if (branch == "main") listOf("1" to "one", "2" to "two")
                     else listOf("1" to "one")
                 )

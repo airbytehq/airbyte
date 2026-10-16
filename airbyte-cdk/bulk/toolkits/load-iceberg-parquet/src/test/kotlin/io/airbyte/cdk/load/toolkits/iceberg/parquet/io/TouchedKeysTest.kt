@@ -16,20 +16,19 @@ import org.junit.jupiter.api.Test
 
 class TouchedKeysTest {
     @Test
-    fun `budget flush retains earlier same-flush location for a later repeat`() {
+    fun `clear retains earlier same-flush location for a later repeat`() {
         val schema =
             Schema(
                 listOf(Types.NestedField.required(1, "id", Types.StringType.get())),
                 setOf(1),
             )
-        val keys = TouchedKeys(schema.asStruct(), maximum = 1)
+        val keys = TouchedKeys(schema.asStruct())
         val spec = PartitionSpec.unpartitioned()
         val first = PositionalDeleteResolver.RowLocation("file-a", 0, spec, null)
         val second = PositionalDeleteResolver.RowLocation("file-a", 1, spec, null)
         val key = GenericRecord.create(schema).apply { setField("id", "one") }
 
         keys.markWritten(key, first)
-        assertThat(keys.isFull()).isTrue()
         keys.clear()
         keys.markWritten(key, second)
 
@@ -37,22 +36,20 @@ class TouchedKeysTest {
     }
 
     @Test
-    fun `budget flush includes repeated same-flush superseded locations`() {
+    fun `repeated same-flush writes produce superseded locations`() {
         val schema =
             Schema(
                 listOf(Types.NestedField.required(1, "id", Types.StringType.get())),
                 setOf(1),
             )
-        val keys = TouchedKeys(schema.asStruct(), maximum = 3)
+        val keys = TouchedKeys(schema.asStruct())
         val spec = PartitionSpec.unpartitioned()
         val key = GenericRecord.create(schema).apply { setField("id", "one") }
 
         keys.markWritten(key, PositionalDeleteResolver.RowLocation("file-a", 0, spec, null))
         keys.markWritten(key, PositionalDeleteResolver.RowLocation("file-a", 1, spec, null))
-        assertThat(keys.isFull()).isFalse()
         keys.markWritten(key, PositionalDeleteResolver.RowLocation("file-a", 2, spec, null))
 
-        assertThat(keys.isFull()).isTrue()
         assertThat(keys.supersededWithinFlush().toList()).hasSize(2)
     }
 
@@ -63,12 +60,7 @@ class TouchedKeysTest {
                 listOf(Types.NestedField.required(1, "id", Types.StringType.get())),
                 setOf(1),
             )
-        val keys =
-            TouchedKeys(
-                schema.asStruct(),
-                maximum = 10,
-                maximumCurrentWrites = 2,
-            )
+        val keys = TouchedKeys(schema.asStruct(), maximumCurrentWrites = 2)
         val spec = PartitionSpec.unpartitioned()
 
         keys.markInserted(

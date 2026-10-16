@@ -12,7 +12,6 @@ import java.util.UUID
 import org.apache.iceberg.DeleteFile
 import org.apache.iceberg.FileContent
 import org.apache.iceberg.PartitionSpec
-import org.apache.iceberg.SnapshotRef
 import org.apache.iceberg.StructLike
 import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties
@@ -46,10 +45,10 @@ object IcebergTableUpgrader {
      * metadata is first registered under a sibling table named `<name>_v2_backup_<yyyyMMddHHmmss>`
      * (UTC) so the pre-upgrade state remains readable.
      *
-     * Every branch in [branches] that exists in `table.refs()` is migrated in the same transaction
-     * — the destination's main branch and any retained staging branch both carry legacy deletes
-     * that would otherwise survive. Branches sharing a snapshot are planned once, so a shared data
-     * file never gets two DVs.
+     * Every branch ref in `table.refs()` is migrated in the same transaction — the format version
+     * is table-wide, so any branch left behind would keep legacy v2 deletes (tags are immutable
+     * and skipped). Branches sharing a snapshot are planned once, so a shared data file never
+     * gets two DVs.
      *
      * No-op when the table is already v3 or newer. Returns the (re)loaded table.
      */
@@ -57,7 +56,6 @@ object IcebergTableUpgrader {
         catalog: Catalog,
         tableId: TableIdentifier,
         backup: Boolean = false,
-        branches: List<String> = listOf(SnapshotRef.MAIN_BRANCH),
     ): Table {
         val table = catalog.loadTable(tableId)
         val currentVersion = tableFormatVersion(table)
@@ -74,15 +72,10 @@ object IcebergTableUpgrader {
         // manifest set; a commit that lands between planning and the transaction is rejected
         // by the RowDelta validations below and leaves the table at v2 for a retry.
         val branchSnapshots: Map<String, Long> =
-            branches
-                .mapNotNull { branch -> table.refs()[branch]?.let { branch to it.snapshotId() } }
-                .toMap()
-        if (branches.size != branchSnapshots.size) {
-            logger.info {
-                "Table $tableId is missing some branches; migrating ${branchSnapshots.keys} " +
-                    "out of $branches."
-            }
-        }
+            table
+                .refs()
+                .filterValues { it.isBranch }
+                .mapValues { it.value.snapshotId() }
         val migrations: Map<Long, MigratedDeletes> =
             branchSnapshots.values.toSet().associateWith { planMigration(table, it) }
         commitUpgrade(table, branchSnapshots, migrations)
@@ -288,7 +281,7 @@ object IcebergTableUpgrader {
                 suppressDeletedPositions = true,
             )
         val keyType = TypeUtil.select(table.schema(), equalityFieldIds).asStruct()
-        val touched = TouchedKeys(keyType, Int.MAX_VALUE)
+        val touched = TouchedKeys(keyType)
         val recordSchema = TypeUtil.select(table.schema(), equalityFieldIds)
         val wrapper = InternalRecordWrapper(recordSchema.asStruct())
         Parquet.read(table.io().newInputFile(deleteFile.location()))
