@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 import org.apache.iceberg.DeleteFile
 import org.apache.iceberg.FileContent
+import org.apache.iceberg.ManifestFiles
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.StructLike
 import org.apache.iceberg.Table
@@ -78,15 +79,11 @@ object IcebergTableUpgrader {
         commitUpgrade(table, branchSnapshots, migrations)
         table.refresh()
         branchSnapshots.keys.forEach { branch ->
+            // Scan tasks don't surface legacy deletes at v3 (and never list ones that apply
+            // to no data file), so check the branch's delete manifests directly.
             val remaining =
-                table.newScan().useRef(branch).planFiles().use { tasks ->
-                    tasks
-                        .asSequence()
-                        .flatMap { it.deletes().asSequence() }
-                        .filter { !ContentFileUtil.isDV(it) }
-                        .distinctBy { it.location() }
-                        .toList()
-                }
+                liveDeleteFiles(table, table.refs()[branch]!!.snapshotId())
+                    .filter { !ContentFileUtil.isDV(it) }
             check(remaining.isEmpty()) {
                 "Table $tableId branch $branch still has ${remaining.size} " +
                     "non-deletion-vector delete file(s) after the v3 upgrade: " +
@@ -150,14 +147,22 @@ object IcebergTableUpgrader {
             }
 
         val legacyDeletes = sortedSetOf<DeleteFile>(compareBy { it.location() })
-        val deleteFiles = tasks.flatMap { it.deletes() }.distinctBy { it.location() }
+        // Every live delete file in the snapshot's delete manifests, not only the ones listed
+        // in scan-task deletes: a delete file that applies to no data file (e.g. one committed
+        // at the same sequence number as the data) must still be swapped out, or it survives
+        // at v3 where readers reject it.
+        val deleteFiles = liveDeleteFiles(table, snapshotId)
 
         for (deleteFile in deleteFiles) {
+            if (ContentFileUtil.isDV(deleteFile)) continue
+            when (deleteFile.content()) {
+                FileContent.POSITION_DELETES,
+                FileContent.EQUALITY_DELETES -> legacyDeletes += deleteFile
+                else -> continue
+            }
             val appliesTo = applicability[deleteFile.location()] ?: continue
             when {
-                deleteFile.content() == FileContent.POSITION_DELETES &&
-                    !ContentFileUtil.isDV(deleteFile) -> {
-                    legacyDeletes += deleteFile
+                deleteFile.content() == FileContent.POSITION_DELETES -> {
                     readPositionsByDataFile(table, deleteFile).forEach { (dataFilePath, index) ->
                         if (dataFilePath in appliesTo) {
                             positionsFor(dataFilePath)?.let { pending ->
@@ -167,7 +172,6 @@ object IcebergTableUpgrader {
                     }
                 }
                 deleteFile.content() == FileContent.EQUALITY_DELETES -> {
-                    legacyDeletes += deleteFile
                     val candidates = dataFileInfo.filterKeys { it in appliesTo }
                     resolveEqualityDeletes(table, snapshotId, deleteFile, candidates).forEach {
                         location ->
@@ -236,6 +240,20 @@ object IcebergTableUpgrader {
             delta.commit()
         }
         transaction.commitTransaction()
+    }
+
+    /** Every live delete file at [snapshotId], read from the snapshot's delete manifests. */
+    private fun liveDeleteFiles(table: Table, snapshotId: Long): List<DeleteFile> {
+        val snapshot = table.snapshot(snapshotId) ?: return emptyList()
+        return snapshot
+            .deleteManifests(table.io())
+            .flatMap { manifest ->
+                ManifestFiles.readDeleteManifest(manifest, table.io(), table.specs()).use {
+                    reader ->
+                    reader.toList()
+                }
+            }
+            .distinctBy { it.location() }
     }
 
     /** Positions keyed by data-file path for one position delete file. */
