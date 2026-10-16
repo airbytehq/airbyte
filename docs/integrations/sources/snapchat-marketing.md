@@ -167,7 +167,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 1.6.6 | 2026-10-16 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix organizations stream filtering out organizations last updated before `start_date`, which caused all streams to return 0 records |
+| 1.6.6 | 2026-10-16 | [89027](https://github.com/airbytehq/airbyte/pull/89027) | Fix organizations stream filtering out organizations last updated before `start_date`, which caused all streams to return 0 records |
 | 1.6.5 | 2026-10-13 | [88812](https://github.com/airbytehq/airbyte/pull/88812) | Update dependencies |
 | 1.6.4 | 2026-10-06 | [88076](https://github.com/airbytehq/airbyte/pull/88076) | Update dependencies |
 | 1.6.3 | 2026-09-29 | [87377](https://github.com/airbytehq/airbyte/pull/87377) | Update dependencies |
