@@ -115,9 +115,10 @@ class ObjectLoaderPartFormatterTest {
                 ObjectLoaderPartFormatter.State<T>, ObjectLoaderPartFormatter.FormattedPart>? =
             null
         makeRecords(nRecords).forEach { record ->
-            result = acc.accept(record, state)
-            if (result !is FinalOutput) {
-                state = result!!.nextState!!
+            val next = acc.accept(record, state)
+            result = next
+            if (next !is FinalOutput) {
+                state = next.nextState!!
             }
         }
         return result
@@ -142,11 +143,7 @@ class ObjectLoaderPartFormatterTest {
             )
 
         val bufferSize = AtomicLong(0L)
-        coEvery { bufferedWriter.accept(any()) } answers
-            {
-                bufferSize.getAndIncrement()
-                Unit
-            }
+        coEvery { bufferedWriter.accept(any()) } answers { bufferSize.getAndIncrement() }
         coEvery { bufferedWriter.bufferSize } answers { bufferSize.get().toInt() }
         coEvery { bufferedWriter.takeBytes() } answers
             {
