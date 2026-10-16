@@ -1961,22 +1961,30 @@ definitions:
           - 404
           - 410
         error_message: >-
-          HubSpot refused to serve a recording (HTTP 401/403/404/410), skipping its content. The file written
-          for this record holds the HubSpot error body instead of media.
+          HubSpot refused to serve a recording (HTTP 401/403/404/410). The recording is skipped: no file
+          and no record are emitted for it.
+
+  recording_download_requester:
+    type: HttpRequester
+    url_base: "{{ download_target }}"
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    request_headers:
+      # Cloudflare in front of the recording CDN rejects default library user agents (error 1010).
+      User-Agent: Airbyte
+    error_handler:
+      $ref: "#/definitions/recording_download_error_handler"
+    $parameters:
+      name: recording_download
 
   recording_file_uploader:
     type: FileUploader
     requester:
-      type: HttpRequester
-      url_base: "{{ download_target }}"
-      http_method: GET
-      authenticator:
-        $ref: "#/definitions/authenticator"
-      request_headers:
-        # Cloudflare in front of the recording CDN rejects default library user agents (error 1010).
-        User-Agent: Airbyte
-      error_handler:
-        $ref: "#/definitions/recording_download_error_handler"
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.HubspotRecordingDownloadRequester
+      requester:
+        $ref: "#/definitions/recording_download_requester"
     download_target_extractor:
       type: DpathExtractor
       field_path:
@@ -2047,7 +2055,10 @@ definitions:
             - results
         transform_before_filtering: true
         record_filter:
-          type: RecordFilter
+          type: CustomRecordFilter
+          class_name: source_declarative_manifest.components.HubspotRecordingDownloadFilter
+          requester:
+            $ref: "#/definitions/recording_download_requester"
           condition: >-
             {{ (record.get('recording_url') or '') |
             regex_search('^https://api-([A-Za-z0-9]+)[.]hubspot[.]com(?:[/?#:]|$)') != '' }}

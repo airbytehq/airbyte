@@ -198,33 +198,12 @@ class TestMeetingRecordingsStream(RecordingsStreamTestCase):
 
         assert [message.record.data["meeting_id"] for message in output.records] == ["1199", "2000"]
 
-    def test_given_recording_not_found_when_read_then_emit_record_and_continue(self):
-        missing_url = HUBSPOT_RECORDING_URL.format(id="101")
+    @pytest.mark.parametrize("status", [401, 403, 404, 410])
+    def test_given_recording_refused_when_read_then_skip_record_and_store_no_file(self, status: int, files_directory: Path):
+        refused_url = HUBSPOT_RECORDING_URL.format(id="101")
         present_url = HUBSPOT_RECORDING_URL.format(id="102")
-        with HttpMocker() as http_mocker:
-            http_mocker.post(
-                self.search_request(),
-                self.search_response(
-                    [
-                        self.search_result("101", {"hs_meeting_recording_url": missing_url}),
-                        self.search_result("102", {"hs_meeting_recording_url": present_url}),
-                    ]
-                ),
-            )
-            self.mock_download(http_mocker, missing_url, HttpResponse(json.dumps({"message": "not found"}), http.HTTPStatus.NOT_FOUND))
-            self.mock_download(http_mocker, present_url, HttpResponse("mp4-bytes", 200))
-
-            output = self.read(http_mocker)
-
-        assert [message.record.data["meeting_id"] for message in output.records] == ["101", "102"]
-        assert not output.errors
-
-    def test_given_recording_refused_with_401_when_read_then_emit_record_and_continue(self):
-        """HubSpot answers 401 for some MEETING_BOT recordings even with a valid token."""
-        refused_url = (
-            "https://api-eu1.hubspot.com/recording/auth/getAuthRecording/portal/123/objectTypeId/0-47/objectId/101/source/MEETING_BOT"
-        )
-        present_url = HUBSPOT_RECORDING_URL.format(id="102")
+        refused_download = HttpRequest(url=refused_url)
+        present_download = HttpRequest(url=present_url)
         with HttpMocker() as http_mocker:
             http_mocker.post(
                 self.search_request(),
@@ -235,15 +214,18 @@ class TestMeetingRecordingsStream(RecordingsStreamTestCase):
                     ]
                 ),
             )
-            self.mock_download(
-                http_mocker, refused_url, HttpResponse(json.dumps({"message": "unauthorized"}), http.HTTPStatus.UNAUTHORIZED)
-            )
-            self.mock_download(http_mocker, present_url, HttpResponse("mp4-bytes", 200))
+            http_mocker.get(refused_download, HttpResponse(json.dumps({"message": "refused"}), status))
+            http_mocker.get(present_download, HttpResponse("mp4-bytes", 200))
 
             output = self.read(http_mocker)
 
-        assert [message.record.data["meeting_id"] for message in output.records] == ["101", "102"]
+            # Each recording is downloaded once: the uploader reuses the response the filter checked.
+            http_mocker.assert_number_of_calls(refused_download, 1)
+            http_mocker.assert_number_of_calls(present_download, 1)
+
+        assert [message.record.data["meeting_id"] for message in output.records] == ["102"]
         assert not output.errors
+        assert sorted(path.name for path in (files_directory / "meeting_recordings").iterdir()) == ["102.mp4"]
 
     def test_given_incremental_sync_when_read_then_state_is_latest_hs_lastmodifieddate(self):
         url = HUBSPOT_RECORDING_URL.format(id="101")

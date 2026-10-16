@@ -3,6 +3,7 @@
 #
 
 import logging
+import threading
 from dataclasses import InitVar, dataclass, field
 from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -24,6 +25,7 @@ from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimePar
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
@@ -896,6 +898,69 @@ class HubspotCRMSearchFilteredPaginationStrategy(HubspotCRMSearchPaginationStrat
             last_record=results[-1] if results else None,
             last_page_token_value=last_page_token_value,
         )
+
+
+# The recording a HubspotRecordingDownloadFilter downloaded for the record it just kept. The CDK uploads
+# a kept record's file right after filtering it, on the same thread, so one slot per thread is enough.
+_downloaded_recording = threading.local()
+
+
+def _download_recording(requester: Requester, url: str) -> requests.Response:
+    return requester.send_request(stream_slice=StreamSlice(partition={}, cursor_slice={}, extra_fields={"download_target": url}))
+
+
+@dataclass
+class HubspotRecordingDownloadFilter(RecordFilter):
+    """
+    Keeps a recording record only when HubSpot serves its recording with a 2xx response.
+
+    The CDK FileUploader writes whatever body it gets, so a recording that HubSpot refuses (401 for some
+    meeting-bot recordings, 403/404/410 for deleted or restricted ones) would be stored as a file holding the
+    error body. This filter downloads the recording first and drops the record on any other status, so neither
+    a file nor a record is emitted for it. The response is handed to HubspotRecordingDownloadRequester, so each
+    recording is downloaded once.
+    """
+
+    requester: Optional[Requester] = None
+
+    def filter_records(
+        self,
+        records: Iterable[Mapping[str, Any]],
+        stream_state: StreamState,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        for record in super().filter_records(records, stream_state, stream_slice, next_page_token):
+            url = record["recording_url"]
+            
+            response = _download_recording(self.requester, url)
+            
+            if not 200 <= response.status_code < 300:
+                logger.warning(f"Skipping recording {record.get('file_name')}: HubSpot responded with HTTP {response.status_code}.")
+                continue
+            _downloaded_recording.url, _downloaded_recording.response = url, response
+            
+            yield record
+
+
+@dataclass
+class HubspotRecordingDownloadRequester:
+    """
+    FileUploader requester that returns the response HubspotRecordingDownloadFilter already downloaded for the
+    record, and downloads the recording itself otherwise.
+    """
+
+    requester: Requester
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+
+    def send_request(self, stream_slice: Optional[StreamSlice] = None, **kwargs: Any) -> Optional[requests.Response]:
+        url = stream_slice.extra_fields["download_target"] if stream_slice else None
+        if url is not None and getattr(_downloaded_recording, "url", None) == url:
+            response = _downloaded_recording.response
+            _downloaded_recording.url = _downloaded_recording.response = None
+            return response
+        return self.requester.send_request(stream_slice=stream_slice, **kwargs)
 
 
 @dataclass
