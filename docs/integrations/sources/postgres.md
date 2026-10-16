@@ -63,6 +63,7 @@ To fill out the required information:
 
 <FieldAnchor field="schemas">
 
+<!-- markdownlint-disable-next-line MD029 -->
 2. Optionally list the names of the schemas you want to sync tables from. These are case-sensitive. When not provided, all available schemas are discovered.
 
 </FieldAnchor>
