@@ -19,6 +19,7 @@ import freezegun
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import ConfigBuilder
 from .request_builder import WooCommerceRequestBuilder
@@ -206,3 +207,79 @@ class TestRefundsFullRefresh(TestCase):
 
         output = self._read(config_=config().with_start_date("2024-01-01"))
         assert len(output.records) == 150
+
+
+class TestRefundsIncremental(TestCase):
+    @staticmethod
+    def _read(config_: ConfigBuilder, state=None) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=_STREAM_NAME,
+            sync_mode=SyncMode.incremental,
+            state=state,
+        )
+
+    @HttpMocker()
+    @freezegun.freeze_time("2024-01-15T12:00:00Z")
+    def test_incremental_sync_without_state_emits_child_and_parent_state(self, http_mocker: HttpMocker) -> None:
+        orders_template = _get_orders_response_template()[0]
+        orders_response = [{**orders_template, "id": 727}, {**orders_template, "id": 728}]
+        refunds = {
+            727: [{"id": 1001, "amount": "49.99", "date_created_gmt": "2024-01-10T10:00:00"}],
+            728: [{"id": 1002, "amount": "29.99", "date_created_gmt": "2024-01-11T11:00:00"}],
+        }
+
+        http_mocker.get(
+            WooCommerceRequestBuilder.orders_endpoint()
+            .with_default_params()
+            .with_modified_after("2024-01-01T00:00:00")
+            .with_modified_before("2024-01-15T12:00:00")
+            .build(),
+            HttpResponse(body=json.dumps(orders_response), status_code=200),
+        )
+        for order_id, response in refunds.items():
+            http_mocker.get(
+                WooCommerceRequestBuilder.refunds_endpoint(order_id).with_default_params().build(),
+                HttpResponse(body=json.dumps(response), status_code=200),
+            )
+
+        output = self._read(config_=config().with_start_date("2024-01-01"))
+
+        assert len(output.records) == 2
+        assert {record.record.data["id"] for record in output.records} == {1001, 1002}
+        assert output.state_messages
+        state = output.state_messages[-1].state.stream.stream_state.__dict__
+        assert state["state"]["date_created_gmt"] == "2024-01-11T11:00:00"
+        assert "orders" in state["parent_state"]
+
+    @HttpMocker()
+    @freezegun.freeze_time("2024-01-15T12:00:00Z")
+    def test_incremental_sync_with_parent_state_resumes_orders(self, http_mocker: HttpMocker) -> None:
+        orders_template = _get_orders_response_template()[0]
+        orders_response = [{**orders_template, "id": 727}, {**orders_template, "id": 728}]
+        state = StateBuilder().with_stream_state(
+            _STREAM_NAME,
+            {
+                "use_global_cursor": True,
+                "state": {"date_created_gmt": "2024-01-10T00:00:00"},
+                "parent_state": {"orders": {"date_modified_gmt": "2024-01-10T00:00:00"}},
+            },
+        ).build()
+
+        http_mocker.get(
+            WooCommerceRequestBuilder.orders_endpoint()
+            .with_default_params()
+            .with_modified_after("2024-01-10T00:00:00")
+            .with_modified_before("2024-01-15T12:00:00")
+            .build(),
+            HttpResponse(body=json.dumps(orders_response), status_code=200),
+        )
+        for order_id in (727, 728):
+            http_mocker.get(
+                WooCommerceRequestBuilder.refunds_endpoint(order_id).with_default_params().build(),
+                HttpResponse(body=json.dumps([{"id": order_id, "date_created_gmt": "2024-01-11T00:00:00"}]), status_code=200),
+            )
+
+        output = self._read(config_=config().with_start_date("2024-01-01"), state=state)
+
+        assert len(output.records) == 2

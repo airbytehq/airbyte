@@ -25,12 +25,12 @@ The WooCommerce REST API supports `modified_after` filtering on high-volume endp
 | tax_rates | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup |
 | order_notes | medium | child | none | none | deferred_child |  |
 | product_attribute_terms | medium | child | none | none | deferred_child |  |
-| product_variations | medium | child | none | none | deferred_child |  |
-| refunds | medium | child | none | none | deferred_child |  |
+| product_variations | medium | child | date_modified_gmt | modified_after | incremental | global substream cursor; parent products read fully each sync (variation edits don't reliably bump parent date_modified) |
+| refunds | medium | child | date_created_gmt | none | incremental | incremental_dependency on orders; refund creation bumps order date_modified |
 | shipping_zone_locations | medium | child | none | none | deferred_child |  |
 | shipping_zone_methods | medium | child | none | none | deferred_child |  |
 
 ### Future incremental stream candidates
 
 - **No API date filter (10 streams):** `payment_gateways`, `product_attributes`, `product_categories`, `product_shipping_classes`, `product_tags`, `shipping_methods`, `shipping_zones`, `system_status_tools`, `tax_classes`, `tax_rates` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
-- **Child streams (6 streams):** `order_notes`, `product_attribute_terms`, `product_variations`, `refunds`, `shipping_zone_locations`, `shipping_zone_methods` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.
+- **Child streams (4 streams):** `order_notes`, `product_attribute_terms`, `shipping_zone_locations`, `shipping_zone_methods` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.
