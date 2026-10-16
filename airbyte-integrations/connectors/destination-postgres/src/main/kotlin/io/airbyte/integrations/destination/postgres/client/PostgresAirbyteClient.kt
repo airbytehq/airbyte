@@ -50,7 +50,7 @@ class PostgresAirbyteClient(
      * `AIRBYTE_DESTINATION_POSTGRES_META_COLUMN_REPAIR=true`.
      */
     @Value("\${airbyte.destination.postgres.meta-column-repair:false}")
-    private val metaColumnRepairEnabled: Boolean = false,
+    private val metaColumnRepairEnabled: Boolean,
 ) : TableSchemaEvolutionClient, TableOperationsClient {
 
     companion object {
