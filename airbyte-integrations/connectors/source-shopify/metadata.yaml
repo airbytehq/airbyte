@@ -37,7 +37,7 @@ data:
       autopilotConfig:
         autoStart: true
         autoPromoteStages: true
-        strategy: fast
+        strategy: slow
     breakingChanges:
       1.0.0:
         message: "This upgrade brings changes to certain streams after migration to Shopify API version `2023-07`, more details in this PR: https://github.com/airbytehq/airbyte/pull/29361."
