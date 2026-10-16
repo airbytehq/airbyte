@@ -2415,7 +2415,16 @@ schemas:
             name:
               type:
                 - "null"
-                - string
+                - object
+              properties:
+                default:
+                  type:
+                    - "null"
+                    - string
+              additionalProperties:
+                type:
+                  - "null"
+                  - string
             publicEmail:
               type:
                 - "null"
@@ -2573,7 +2582,16 @@ schemas:
       name:
         type:
           - "null"
-          - string
+          - object
+        properties:
+          default:
+            type:
+              - "null"
+              - string
+        additionalProperties:
+          type:
+            - "null"
+            - string
       order:
         type:
           - "null"
