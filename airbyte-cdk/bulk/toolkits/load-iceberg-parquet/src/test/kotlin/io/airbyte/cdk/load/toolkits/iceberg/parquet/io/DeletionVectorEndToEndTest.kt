@@ -204,29 +204,21 @@ class DeletionVectorEndToEndTest {
         result.dataFiles().forEach { delta.addRows(it) }
         result.deleteFiles().forEach { delta.addDeletes(it) }
         delta.commit()
-        assertThat(
-                table
-                    .currentSnapshot()
-                    .deleteManifests(table.io())
-                    .isNotEmpty()
-            )
+        assertThat(table.currentSnapshot().deleteManifests(table.io()).isNotEmpty())
         assertThat(deleteFiles(table)).isEmpty()
 
         val upgraded = IcebergTableUpgrader.upgradeToV3(catalog, tableId, backup = false)
 
         assertThat(tableFormatVersion(upgraded)).isEqualTo(3)
         val remaining =
-            upgraded
-                .currentSnapshot()
-                .deleteManifests(table.io())
-                .flatMap { manifest ->
-                    org.apache.iceberg.ManifestFiles.readDeleteManifest(
-                            manifest,
-                            table.io(),
-                            table.specs(),
-                        )
-                        .use { reader -> reader.toList() }
-                }
+            upgraded.currentSnapshot().deleteManifests(table.io()).flatMap { manifest ->
+                org.apache.iceberg.ManifestFiles.readDeleteManifest(
+                        manifest,
+                        table.io(),
+                        table.specs(),
+                    )
+                    .use { reader -> reader.toList() }
+            }
         assertThat(remaining).allMatch { ContentFileUtil.isDV(it) }
         assertThat(rows(table)).containsExactlyInAnyOrder("1" to "one")
     }
