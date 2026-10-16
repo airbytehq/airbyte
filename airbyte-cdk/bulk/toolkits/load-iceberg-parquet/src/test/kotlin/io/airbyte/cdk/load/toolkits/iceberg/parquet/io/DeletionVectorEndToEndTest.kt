@@ -21,6 +21,7 @@ import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.data.IcebergGenerics
 import org.apache.iceberg.hadoop.HadoopCatalog
 import org.apache.iceberg.types.Types
+import org.apache.iceberg.util.ContentFileUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
@@ -182,6 +183,52 @@ class DeletionVectorEndToEndTest {
         assertThat(deletes).allMatch { it.format() == FileFormat.PUFFIN }
         assertThat(deletes.map { it.referencedDataFile() }).doesNotHaveDuplicates()
         assertThat(rows(table)).containsExactlyInAnyOrderElementsOf(preUpgradeRows)
+    }
+
+    @Test
+    fun `upgrade removes a delete file that applies to no data file`() {
+        val (catalog, _) = catalog()
+        val tableId = TableIdentifier.of("db", "records_orphan_eq")
+        val table = createTable(catalog, tableId, 2)
+
+        // One commit carrying both the data file and an equality delete at the same
+        // sequence number, as a dedupe insert sync produces: the delete applies to no
+        // committed data file, so scan-task deletes never list it, but its manifest
+        // entry must still be swapped out at v3.
+        val equalityWriter =
+            IcebergTableWriterFactory().create(table, "ab-generation-id-1-e", dedupe, schema)
+        equalityWriter.write(RecordWrapper(record("1", "one"), Operation.INSERT))
+        equalityWriter.write(RecordWrapper(record("2", "two"), Operation.DELETE))
+        val result = equalityWriter.complete()
+        val delta = table.newRowDelta()
+        result.dataFiles().forEach { delta.addRows(it) }
+        result.deleteFiles().forEach { delta.addDeletes(it) }
+        delta.commit()
+        assertThat(
+                table
+                    .currentSnapshot()
+                    .deleteManifests(table.io())
+                    .isNotEmpty()
+            )
+        assertThat(deleteFiles(table)).isEmpty()
+
+        val upgraded = IcebergTableUpgrader.upgradeToV3(catalog, tableId, backup = false)
+
+        assertThat(tableFormatVersion(upgraded)).isEqualTo(3)
+        val remaining =
+            upgraded
+                .currentSnapshot()
+                .deleteManifests(table.io())
+                .flatMap { manifest ->
+                    org.apache.iceberg.ManifestFiles.readDeleteManifest(
+                            manifest,
+                            table.io(),
+                            table.specs(),
+                        )
+                        .use { reader -> reader.toList() }
+                }
+        assertThat(remaining).allMatch { ContentFileUtil.isDV(it) }
+        assertThat(rows(table)).containsExactlyInAnyOrder("1" to "one")
     }
 
     @Test
