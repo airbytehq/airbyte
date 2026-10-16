@@ -226,9 +226,10 @@ internal class DestinationMessageTest {
         val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
         val parsedMessage = convert(factory, inputMessage) as StreamCheckpoint
 
-        assertNotNull(parsedMessage.checkpointKey)
-        assertEquals(parsedMessage.checkpointKey?.checkpointIndex!!.value, 1234)
-        assertEquals(parsedMessage.checkpointKey?.checkpointId!!.value, "PARTITION_ID")
+        val checkpointKey = parsedMessage.checkpointKey
+        assertNotNull(checkpointKey)
+        assertEquals(checkpointKey!!.checkpointIndex.value, 1234)
+        assertEquals(checkpointKey.checkpointId.value, "PARTITION_ID")
         assertEquals(
             inputMessage
                 .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
@@ -268,9 +269,10 @@ internal class DestinationMessageTest {
         val factory = factory(isFileTransferEnabled = false, requireCheckpointKey = true)
         val parsedMessage = convert(factory, inputMessage) as GlobalCheckpoint
 
-        assertNotNull(parsedMessage.checkpointKey)
-        assertEquals(parsedMessage.checkpointKey?.checkpointIndex!!.value, 1234)
-        assertEquals(parsedMessage.checkpointKey?.checkpointId!!.value, "PARTITION_ID")
+        val checkpointKey = parsedMessage.checkpointKey
+        assertNotNull(checkpointKey)
+        assertEquals(checkpointKey!!.checkpointIndex.value, 1234)
+        assertEquals(checkpointKey.checkpointId.value, "PARTITION_ID")
         assertEquals(
             inputMessage
                 .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
@@ -522,9 +524,10 @@ internal class DestinationMessageTest {
                 airbyteRawId = uuidGenerator.v7(),
             )
 
-        assertEquals(stagingFileUrl, internalRecord.fileReference!!.stagingFileUrl)
-        assertEquals(sourceFileRelativePath, internalRecord.fileReference!!.sourceFileRelativePath)
-        assertEquals(fileSizeBytes, internalRecord.fileReference!!.fileSizeBytes)
+        val fileReference = internalRecord.fileReference!!
+        assertEquals(stagingFileUrl, fileReference.stagingFileUrl)
+        assertEquals(sourceFileRelativePath, fileReference.sourceFileRelativePath)
+        assertEquals(fileSizeBytes, fileReference.fileSizeBytes)
     }
 
     @Test

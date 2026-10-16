@@ -96,7 +96,9 @@ object DynamoDbParitySeed {
             is TextNode -> TextNode.valueOf(expandTemplate(node.asText(), i))
             is ObjectNode ->
                 Jsons.objectNode().also { copy: ObjectNode ->
-                    node.fields().forEach { (k, v) -> copy.set<JsonNode>(k, expandTemplate(v, i)) }
+                    node.properties().forEach { (k, v) ->
+                        copy.set<JsonNode>(k, expandTemplate(v, i))
+                    }
                 }
             is ArrayNode ->
                 Jsons.arrayNode().also { copy -> node.forEach { copy.add(expandTemplate(it, i)) } }

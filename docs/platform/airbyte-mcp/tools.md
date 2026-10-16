@@ -4,8 +4,8 @@ products: cloud, oss-community
 
 # Airbyte MCP tools
 
-:::info Private beta
-The Airbyte MCP is in private beta. Features and tools may change. It's available to Airbyte Cloud organizations enrolled in the beta. You can also [run the Airbyte MCP with self-managed Airbyte Core](self-managed.md), with known issues.
+:::info Open beta
+The Airbyte MCP is in open beta. Features and tools may change. It's available to all Airbyte Cloud organizations. You can also [run the Airbyte MCP with self-managed Airbyte Core](self-managed.md), with known issues.
 :::
 
 The Airbyte MCP gives your agent a set of tools. Your agent chooses which tools to call based on your prompt, so you don't need to call them by name. This page lists each tool so you know what your agent can and can't do.
@@ -16,9 +16,11 @@ Direct reads work differently. When your agent [reads directly from a source or 
 
 ## Safety
 
-Your agent can see and use every resource your Airbyte permissions allow. To prevent your agent from accidentally breaking existing pipelines, the Airbyte MCP limits which resources it can change.
+Your agent can see and use every resource your Airbyte permissions allow. To prevent your agent from accidentally breaking existing pipelines, the Airbyte MCP adds safeguards to tools that change or delete resources.
 
-- **Destructive tools are limited to the current session.** Tools that delete, overwrite, or reconfigure resources only act on resources your agent created in the same session. They can't delete a connection someone else built.
+- **Deletes require a marked name.** Tools that permanently delete sources, destinations, connections, and custom connector definitions only work if the resource's name contains `delete-me` or `deleteme`. To let your agent delete a resource, rename it yourself first.
+- **You can turn off tools that change things.** To hide destructive tools or block changes to pipelines, see [Advanced configuration](advanced-configuration.md).
+- **Local demo mode limits changes to the current session.** If you [run the Airbyte MCP locally](self-managed.md), set `AIRBYTE_CLOUD_MCP_LOCAL_DEMO_MODE=1` so tools only change or delete resources your agent created in the same session. The hosted server ignores this setting.
 - **Your MCP client asks before acting.** Each tool tells your client whether it's read-only or destructive. Most clients ask you to approve tools that change things.
 
 ## Workspaces and organizations
@@ -117,4 +119,4 @@ Direct reads can't create, update, or delete records.
 | `get_connector_info` | Get a connector's metadata, documentation URL, and configuration specification. |
 | `get_connector_version_history` | Get a connector's recent versions and changelog. |
 | `get_api_docs_urls` | Get links to the documentation for a connector's third-party API. |
-| `search_airbyte_knowledge_sources` | Look up answers in Airbyte's documentation and source code for the platform and connectors. Only available in the hosted Airbyte MCP. |
+| `search_airbyte_knowledge_sources` | Search Airbyte's documentation, website, API specifications, YouTube videos, and GitHub content. Only available in the hosted Airbyte MCP. |
