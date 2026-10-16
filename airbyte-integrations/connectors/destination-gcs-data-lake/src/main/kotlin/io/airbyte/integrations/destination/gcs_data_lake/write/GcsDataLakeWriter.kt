@@ -15,7 +15,7 @@ import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 import org.apache.iceberg.catalog.TableIdentifier
 
 @Singleton
@@ -42,9 +42,8 @@ class GcsDataLakeWriter(
                 tableIdGenerator.toTableIdentifier(incomingStream.mappedDescriptor)
             if (processedTableIds.containsKey(incomingTableId)) {
                 val conflictingStream = processedTableIds[incomingTableId]!!
-                conflictingStreams.add(
+                conflictingStreams +=
                     Triple(conflictingStream, incomingStream.mappedDescriptor, incomingTableId)
-                )
             } else {
                 processedTableIds[incomingTableId] = incomingStream.mappedDescriptor
             }

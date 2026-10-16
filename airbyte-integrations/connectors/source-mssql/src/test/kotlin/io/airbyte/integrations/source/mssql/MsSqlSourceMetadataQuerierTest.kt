@@ -333,9 +333,12 @@ class MsSqlSourceMetadataQuerierTest {
 
         // Verify specific clustered indexes are discovered
         val tableWithClusteredNoPk = testTables.find { it.name == "table_with_clustered_no_pk" }
-        assertNotNull(tableWithClusteredNoPk, "Should find table_with_clustered_no_pk")
+        Assertions.assertNotNull(tableWithClusteredNoPk, "Should find table_with_clustered_no_pk")
         val clusteredKeys = memoizedClusteredIndexKeys[tableWithClusteredNoPk]
-        assertNotNull(clusteredKeys, "Should have clustered index for table_with_clustered_no_pk")
+        Assertions.assertNotNull(
+            clusteredKeys,
+            "Should have clustered index for table_with_clustered_no_pk"
+        )
         assertEquals(1, clusteredKeys?.size, "Should have single column clustered index")
         assertEquals(
             listOf("id"),
@@ -346,9 +349,12 @@ class MsSqlSourceMetadataQuerierTest {
         // Verify composite clustered index
         val tableWithComposite =
             testTables.find { it.name == "table_with_pk_and_composite_clustered" }
-        assertNotNull(tableWithComposite, "Should find table_with_pk_and_composite_clustered")
+        Assertions.assertNotNull(
+            tableWithComposite,
+            "Should find table_with_pk_and_composite_clustered"
+        )
         val compositeKeys = memoizedClusteredIndexKeys[tableWithComposite]
-        assertNotNull(compositeKeys, "Should have clustered index for composite table")
+        Assertions.assertNotNull(compositeKeys, "Should have clustered index for composite table")
         assertEquals(2, compositeKeys?.size, "Should have two columns in composite clustered index")
         assertEquals(listOf("code"), compositeKeys?.get(0), "First column should be 'code'")
         assertEquals(
@@ -370,17 +376,20 @@ class MsSqlSourceMetadataQuerierTest {
 
         // Verify primary keys are discovered correctly
         val tableWithPkNoCluster = testTables.find { it.name == "table_with_pk_no_clustered" }
-        assertNotNull(tableWithPkNoCluster, "Should find table_with_pk_no_clustered")
+        Assertions.assertNotNull(tableWithPkNoCluster, "Should find table_with_pk_no_clustered")
         val pkKeys = memoizedPrimaryKeys[tableWithPkNoCluster]
-        assertNotNull(pkKeys, "Should have primary key for table_with_pk_no_clustered")
+        Assertions.assertNotNull(pkKeys, "Should have primary key for table_with_pk_no_clustered")
         assertEquals(1, pkKeys?.size, "Should have single column primary key")
         assertEquals(listOf("id"), pkKeys?.get(0), "Primary key should be on 'id' column")
 
         // Verify table without primary key
         val tableNoPk = testTables.find { it.name == "table_with_clustered_no_pk" }
-        assertNotNull(tableNoPk, "Should find table_with_clustered_no_pk")
+        Assertions.assertNotNull(tableNoPk, "Should find table_with_clustered_no_pk")
         val noPkKeys = memoizedPrimaryKeys[tableNoPk]
-        assertNull(noPkKeys, "Should not have primary key for table_with_clustered_no_pk")
+        Assertions.assertNull(
+            noPkKeys,
+            "Should not have primary key for table_with_clustered_no_pk"
+        )
     }
 
     @Test
@@ -450,9 +459,9 @@ class MsSqlSourceMetadataQuerierTest {
         val tables = metadataQuerier.memoizedTableNames
         val table =
             tables.find { it.name == "table_with_non_unique_clustered" && it.schema == "dbo" }
-        assertNotNull(table, "Should find table_with_non_unique_clustered")
+        Assertions.assertNotNull(table, "Should find table_with_non_unique_clustered")
         val clusteredKeys = metadataQuerier.memoizedClusteredIndexKeys[table]
-        assertNull(clusteredKeys, "Non-unique clustered index should be filtered out")
+        Assertions.assertNull(clusteredKeys, "Non-unique clustered index should be filtered out")
 
         // Test sync strategy: should fall back to first PK column (not CI)
         val orderedColumn = metadataQuerier.getOrderedColumnForSync(streamId)

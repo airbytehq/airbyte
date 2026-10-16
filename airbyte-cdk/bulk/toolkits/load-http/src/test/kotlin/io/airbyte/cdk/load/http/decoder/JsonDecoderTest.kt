@@ -31,7 +31,7 @@ class JsonDecoderTest {
 
         Assertions.assertEquals(
             mapOf<String, JsonNode>("field" to Jsons.textNode("value")),
-            jsonBody.fields().asSequence().associate { it.key to it.value }
+            jsonBody.properties().asSequence().associate { it.key to it.value }
         )
     }
 }

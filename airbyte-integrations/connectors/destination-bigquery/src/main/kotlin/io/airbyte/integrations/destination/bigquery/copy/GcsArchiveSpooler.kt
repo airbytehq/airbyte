@@ -196,7 +196,6 @@ class GcsArchiveSpooler(
                 // invoke
                 // their callback on a different thread: runBlocking can exit on interruption first.
                 outcome.fold(result::complete, result::completeExceptionally)
-                Unit
             }
 
         fun drained(): Boolean =

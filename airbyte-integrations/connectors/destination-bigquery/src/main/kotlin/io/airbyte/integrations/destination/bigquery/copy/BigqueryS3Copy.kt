@@ -426,7 +426,7 @@ class EnabledBigqueryS3Copy(
                 }
             } else {
                 try {
-                    Files.deleteIfExists(path)
+                    deleteSpool(path)
                 } catch (t: Throwable) {
                     poisoned.set(true)
                     retainedBytes.addAndGet(runCatching { Files.size(path) }.getOrDefault(0))
@@ -434,6 +434,12 @@ class EnabledBigqueryS3Copy(
                 }
             }
         }
+    }
+
+    // Unit on purpose: with a Boolean-valued branch, Kotlin 2.4 types the `if (retain)` above as
+    // Any, boxes the result, and SpotBugs flags the ignored Boxing.boxBoolean.
+    private fun deleteSpool(path: Path) {
+        Files.deleteIfExists(path)
     }
 
     private fun checkHealthy() {

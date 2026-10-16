@@ -44,7 +44,7 @@ class GcsDestinationConfig(
         S3StorageOperations.DEFAULT_UPLOAD_THREADS
     ) {
     override fun createS3Client(): AmazonS3 {
-        when (gcsCredentialConfig.credentialType) {
+        return when (gcsCredentialConfig.credentialType) {
             GcsCredentialType.HMAC_KEY -> {
                 val hmacKeyCredential = gcsCredentialConfig as GcsHmacKeyCredentialConfig
                 val awsCreds =
@@ -53,17 +53,13 @@ class GcsDestinationConfig(
                         hmacKeyCredential.hmacKeySecret
                     )
 
-                return AmazonS3ClientBuilder.standard()
+                AmazonS3ClientBuilder.standard()
                     .withEndpointConfiguration(
                         AwsClientBuilder.EndpointConfiguration(GCS_ENDPOINT, bucketRegion)
                     )
                     .withCredentials(AWSStaticCredentialsProvider(awsCreds))
                     .build()
             }
-            else ->
-                throw IllegalArgumentException(
-                    "Unsupported credential type: " + gcsCredentialConfig.credentialType.name
-                )
         }
     }
 

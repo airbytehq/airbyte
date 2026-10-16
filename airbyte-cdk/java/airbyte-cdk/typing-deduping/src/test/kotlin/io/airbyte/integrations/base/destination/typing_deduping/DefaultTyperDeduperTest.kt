@@ -95,7 +95,14 @@ class DefaultTyperDeduperTest {
 
     // Something about the Mockito.when(...).thenReturn(initialStates) call is tripping spotbugs,
     // even though we're not doing an explicit null check anywhere. So suppress it.
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    @SuppressFBWarnings(
+        value =
+            [
+                "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+                "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            ],
+        justification = "compiler-generated lateinit null check after the assignment"
+    )
     @BeforeEach
     @Throws(Exception::class)
     fun setup() {
