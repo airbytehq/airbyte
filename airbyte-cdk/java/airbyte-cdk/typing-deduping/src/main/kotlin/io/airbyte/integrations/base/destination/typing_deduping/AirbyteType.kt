@@ -65,7 +65,7 @@ interface AirbyteType {
         private fun getStruct(schema: JsonNode): Struct {
             val propertiesMap = LinkedHashMap<String, AirbyteType>()
             val properties = schema["properties"]
-            properties?.fields()?.forEachRemaining { property: Map.Entry<String, JsonNode> ->
+            properties?.properties()?.forEach { property: Map.Entry<String, JsonNode> ->
                 val key = property.key
                 val value = property.value
                 propertiesMap[key] = fromJsonSchema(value)

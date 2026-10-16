@@ -5,6 +5,7 @@ package io.airbyte.cdk.integrations.destination.s3
 
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.ListObjectsRequest
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.destination.s3.S3BaseChecks.attemptS3WriteAndDelete
 import io.airbyte.cdk.integrations.destination.s3.util.S3NameTransformer
 import org.junit.jupiter.api.BeforeEach
@@ -16,6 +17,10 @@ class S3BaseChecksTest {
     private lateinit var s3Client: AmazonS3
 
     @BeforeEach
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment"
+    )
     fun setup() {
         s3Client = Mockito.mock(AmazonS3::class.java)
         Mockito.`when`(

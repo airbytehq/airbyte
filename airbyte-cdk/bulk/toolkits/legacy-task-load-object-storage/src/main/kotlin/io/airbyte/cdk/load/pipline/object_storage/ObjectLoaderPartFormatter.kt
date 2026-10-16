@@ -42,7 +42,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
     // TODO: This doesn't need to be "DestinationState", just a couple of utility classes
     private val stateManager: DestinationStateManager<ObjectStorageDestinationState>,
     @Value("\${airbyte.destination.core.record-batch-size-override:null}")
-    val batchSizeOverride: Long? = null,
+    val batchSizeOverride: Long?,
     @Named("objectLoaderClampedPartSizeBytes") val clampedPartSizeBytes: Long
 ) :
     BatchAccumulator<

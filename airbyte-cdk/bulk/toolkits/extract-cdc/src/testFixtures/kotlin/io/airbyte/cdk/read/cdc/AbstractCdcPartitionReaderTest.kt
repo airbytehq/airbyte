@@ -365,7 +365,7 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
             val offset =
                 DebeziumOffset(
                     offsetNode
-                        .fields()
+                        .properties()
                         .asSequence()
                         .map { Jsons.readTree(it.key) to Jsons.readTree(it.value.asText()) }
                         .toMap(),

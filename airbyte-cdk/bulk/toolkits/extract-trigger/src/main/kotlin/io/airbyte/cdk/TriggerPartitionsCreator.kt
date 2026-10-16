@@ -99,7 +99,7 @@ class TriggerPartitionsCreator<
             streamState.cursorUpperBound = Jsons.nullNode()
             return
         }
-        val cursorUpperBound: JsonNode? = record.fields().asSequence().firstOrNull()?.value
+        val cursorUpperBound: JsonNode? = record.properties().asSequence().firstOrNull()?.value
         if (cursorUpperBound == null) {
             log.warn { "No cursor column value found in '${stream.label}'." }
             return

@@ -252,11 +252,7 @@ class BigqueryCopyMetadataCheckpointTest {
 
         init {
             val output = mockk<OutputConsumer>(relaxed = true)
-            every { output.accept(any<AirbyteMessage>()) } answers
-                {
-                    emitted.add(firstArg())
-                    Unit
-                }
+            every { output.accept(any<AirbyteMessage>()) } answers { emitted.add(firstArg()) }
             context.registerSingleton(DestinationCatalog::class.java, catalog)
             context.registerSingleton(SyncManager::class.java, sync)
             context.registerSingleton(BigqueryConfiguration::class.java, configuration)
