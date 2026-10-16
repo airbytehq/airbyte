@@ -86,12 +86,8 @@ class SnowflakeConfigurationFactory :
             authType = authTypeConfig,
             cdcDeletionMode = pojo.cdcDeletionMode ?: CdcDeletionMode.HARD_DELETE,
             legacyRawTablesOnly = pojo.legacyRawTablesOnly ?: false,
-            internalTableSchema =
-                if (pojo.internalTableSchema.isNullOrBlank()) {
-                    DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
-                } else {
-                    pojo.internalTableSchema!!
-                },
+            internalTableSchema = pojo.internalTableSchema?.takeUnless(String::isBlank)
+                    ?: DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
             trimSpace = pojo.trimSpace ?: true,
             jdbcUrlParams = pojo.jdbcUrlParams,
             retentionPeriodDays = pojo.retentionPeriodDays ?: 1,

@@ -106,7 +106,7 @@ open class JsonRecordIdentityMapper : JsonRecordMapper<JsonNode?>() {
         val newRecord = MoreMappers.initMapper().createObjectNode()
 
         // TODO: Additional properties?
-        schema["properties"].fields().forEach { (propertyName, propertySchema) ->
+        schema["properties"].properties().forEach { (propertyName, propertySchema) ->
             if (record.has(propertyName)) {
                 val oldValue = record[propertyName]
                 val newValue = mapRecordWithSchema(oldValue, propertySchema as ObjectNode)

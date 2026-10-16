@@ -117,23 +117,19 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
 
     fun toGcsCatalogConfiguration(): GcsCatalogConfiguration {
         val catalogConfig =
-            when (catalogType) {
-                is BigLakeCatalogSpec -> {
-                    val spec = catalogType as BigLakeCatalogSpec
+            when (val spec = catalogType) {
+                is BigLakeCatalogSpec ->
                     BigLakeCatalogConfiguration(
                         catalogName = spec.catalogName,
                         gcpLocation = gcpLocation
                     )
-                }
-                is PolarisCatalogSpec -> {
-                    val spec = catalogType as PolarisCatalogSpec
+                is PolarisCatalogSpec ->
                     PolarisCatalogConfiguration(
                         serverUri = spec.serverUri,
                         catalogName = spec.catalogName,
                         clientId = spec.clientId,
                         clientSecret = spec.clientSecret,
                     )
-                }
             }
 
         return GcsCatalogConfiguration(

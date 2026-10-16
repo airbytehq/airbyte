@@ -4,6 +4,7 @@
 package io.airbyte.cdk.integrations.standardtest.source
 
 import com.fasterxml.jackson.databind.JsonNode
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.api.client.AirbyteApiClient
 import io.airbyte.api.client.generated.SourceApi
 import io.airbyte.api.client.model.generated.DiscoverCatalogResult
@@ -96,6 +97,10 @@ abstract class AbstractSourceConnectorTest {
 
     @BeforeEach
     @Throws(Exception::class)
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment"
+    )
     fun setUpInternal() {
         val testDir = Path.of("/tmp/airbyte_tests/")
         Files.createDirectories(testDir)

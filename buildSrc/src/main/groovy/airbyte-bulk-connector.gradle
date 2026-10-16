@@ -292,6 +292,10 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             dependsOn project.tasks.matching { it.name ==~ /(compile|spotbugs)[a-zA-Z]*Java/ }
         }
 
+        // Connectors compile against the published CDK but run the Micronaut KSP processor declared
+        // above, so their own bean definitions need the same load check as the CDK modules.
+        io.airbyte.gradle.MicronautBeanDefinitionVerification.configure(project)
+
         boolean withSlowTests = System.getProperty('skipSlowTests', 'false') == 'false'
         project.tasks.matching {
                 it.name == 'test' ||
