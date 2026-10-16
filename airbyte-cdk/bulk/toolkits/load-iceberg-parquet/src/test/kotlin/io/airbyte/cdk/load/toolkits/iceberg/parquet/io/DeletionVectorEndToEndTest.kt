@@ -129,6 +129,7 @@ class DeletionVectorEndToEndTest {
         var deletes = deleteFiles(table)
         assertThat(deletes).isNotEmpty
         assertThat(deletes).allMatch { it.format() == FileFormat.PUFFIN }
+        assertThat(deletes).allMatch { it.location().endsWith(".puffin") }
         assertThat(deletes).allMatch { it.referencedDataFile() != null }
         assertThat(deletes.map { it.referencedDataFile() }).doesNotHaveDuplicates()
         assertThat(rows(table)).containsExactlyInAnyOrder("1" to "one-updated", "3" to "three")
