@@ -1,0 +1,369 @@
+version: 7.35.0
+
+type: DeclarativeSource
+
+description: >-
+  SpecStream is a live web data engine. You ask in plain words for companies,
+  local businesses, people at companies, job posts, SEC filings, tenders or
+  grants, and it returns every match as structured data with the page each
+  value was read from. Each request becomes a list in your SpecStream workspace.
+
+  This source syncs the lists your API key can open and their records. It only
+  reads: it never starts a request or spends from your SpecStream balance.
+
+check:
+  type: CheckStream
+  stream_names:
+    - lists
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.specstream.ai
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+    request_headers:
+      Accept: application/json
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+          factor: 2
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          failure_type: config_error
+          http_codes:
+            - 401
+            - 403
+          error_message: >-
+            SpecStream refused the API key. Create a key under Agents & API in
+            SpecStream and update the source.
+
+  streams:
+    lists:
+      type: DeclarativeStream
+      name: lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/workspace/collections
+          http_method: GET
+          request_parameters:
+            limit: "100"
+            sort: recent
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - collections
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.data.next_after }}"
+            stop_condition: "{{ not response.data.next_after }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        is_client_side_incremental: true
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date') or '2020-01-01T00:00:00Z' }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lists"
+
+    records:
+      type: DeclarativeStream
+      name: records
+      primary_key:
+        - list_id
+        - record_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/workspace/collections/{{ stream_partition.list_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - rows
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: list_id
+              incremental_dependency: true
+              extra_fields:
+                - - created_at
+              stream:
+                $ref: "#/definitions/streams/lists"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: list_created_at
+        is_client_side_incremental: true
+        global_substream_cursor: true
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date') or '2020-01-01T00:00:00Z' }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - list_id
+              value: "{{ stream_partition.list_id }}"
+            - type: AddedFieldDefinition
+              path:
+                - list_created_at
+              value: "{{ stream_partition.extra_fields['created_at'] }}"
+            - type: AddedFieldDefinition
+              path:
+                - record_id
+              value: "{{ record['ordinal'] if record.get('ordinal') is not none else record['id'] }}"
+              value_type: string
+        - type: RemoveFields
+          field_pointers:
+            - - target_evidence
+            - - worded_evidence
+            - - match_proof
+            - - predicates
+            - - details
+            - - lineage
+            - - spec_version
+            - - locked
+            - - contact_visibility
+            - - billable
+            - - sources
+            - - alsoIn
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/records"
+
+streams:
+  - $ref: "#/definitions/streams/lists"
+  - $ref: "#/definitions/streams/records"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API key
+        description: >-
+          A SpecStream API key. Create one under Agents & API in SpecStream.
+          The source only reads, so the key can have a spending limit of $0.
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        description: >-
+          Sync only lists created on or after this date, for example
+          2026-01-01T00:00:00Z. Leave empty to sync every list.
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    lists: false
+    records: false
+  testedStreams:
+    lists:
+      streamHash: null
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    records:
+      streamHash: null
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: The list's ID.
+      name:
+        type:
+          - string
+          - "null"
+        description: The list's name.
+      account_id:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+      kind:
+        type:
+          - string
+          - "null"
+        description: find, snapshot, import or combined.
+      imported:
+        type:
+          - boolean
+          - "null"
+        description: Whether you imported the list's rows.
+      source_snapshot_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      row_count:
+        type:
+          - integer
+          - "null"
+      total:
+        type:
+          - integer
+          - "null"
+      duplicates:
+        type:
+          - integer
+          - "null"
+  records:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      list_id:
+        type: string
+        description: The list the record belongs to.
+      record_id:
+        type: string
+        description: The record's ID within its list.
+      list_created_at:
+        type: string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+        description: When the list was created; new and changed records from a schedule arrive as a new list.
+      ordinal:
+        type:
+          - integer
+          - "null"
+      entity_id:
+        type:
+          - string
+          - "null"
+        description: >-
+          Stable across lists for the same company, place, person or posting.
+      cells:
+        type:
+          - array
+          - "null"
+        description: >-
+          One cell per column, with the value and the page it was read from
+          (provenance.source_url, provenance.observed_at).
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            column_id:
+              type:
+                - string
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
+            value: {}
+            display:
+              type:
+                - string
+                - "null"
+            absence:
+              type:
+                - string
+                - "null"
+            provenance:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+            badges:
+              type:
+                - array
+                - "null"
+      id:
+        type:
+          - string
+          - "null"
+        description: The row's ID in an imported or combined list.
+      provided:
+        type:
+          - object
+          - "null"
+        description: The columns you provided, for rows of an imported list.
+        additionalProperties: true
+      field_values:
+        type:
+          - object
+          - "null"
+        description: >-
+          Each column's values with their sources, for rows of a combined list.
+        additionalProperties: true
+      also_in:
+        type:
+          - array
+          - "null"
+        description: The lists a combined row also appears in.
+        items:
+          type: string
+      imported:
+        type:
+          - boolean
+          - "null"
