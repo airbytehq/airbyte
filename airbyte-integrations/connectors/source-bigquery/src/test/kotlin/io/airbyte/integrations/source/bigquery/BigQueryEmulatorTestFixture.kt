@@ -47,6 +47,12 @@ object BigQueryEmulatorTestFixture {
     const val OTHER_DATASET = "other_dataset"
     const val EMPTY_DATASET = "empty_dataset"
 
+    /**
+     * The datasets [seed] creates. Other test classes may add datasets of their own to the shared
+     * emulator (see `BigQueryConcurrentReadTest`); a whole-project DISCOVER is compared on these.
+     */
+    val DATASETS: Set<String> = setOf(DATASET, OTHER_DATASET, EMPTY_DATASET)
+
     /** A service account key the emulator never validates. */
     const val DUMMY_CREDENTIALS_JSON =
         """{"type":"service_account","client_email":"airbyte@test-project.iam.gserviceaccount.com","private_key":"unused"}"""
@@ -116,7 +122,7 @@ object BigQueryEmulatorTestFixture {
      */
     fun seed(bigquery: BigQuery) {
         log.info { "Seeding the BigQuery emulator." }
-        for (dataset in listOf(DATASET, OTHER_DATASET, EMPTY_DATASET)) {
+        for (dataset in DATASETS) {
             bigquery.create(DatasetInfo.newBuilder(DatasetId.of(PROJECT_ID, dataset)).build())
         }
         val allTypes: Schema =

@@ -9,13 +9,35 @@ import java.security.KeyPairGenerator
 import java.util.Base64
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.Isolated
 
+/**
+ * The emulator is selected through a JVM-wide system property ([BigQueryEmulator.SYSTEM_PROPERTY])
+ * which the emulator-backed test classes set for their connector runs. Every test here starts
+ * without it and the value found before is restored afterwards; the class is [Isolated] so that no
+ * connector context started by another class meanwhile reads what a test here sets.
+ */
+@Isolated
 class BigQuerySourceConfigurationFactoryTest {
 
-    @AfterEach
+    private var emulatorHostBefore: String? = null
+
+    @BeforeEach
     fun clearEmulatorProperty() {
+        emulatorHostBefore = System.getProperty(BigQueryEmulator.SYSTEM_PROPERTY)
         System.clearProperty(BigQueryEmulator.SYSTEM_PROPERTY)
+    }
+
+    @AfterEach
+    fun restoreEmulatorProperty() {
+        val before: String? = emulatorHostBefore
+        if (before == null) {
+            System.clearProperty(BigQueryEmulator.SYSTEM_PROPERTY)
+        } else {
+            System.setProperty(BigQueryEmulator.SYSTEM_PROPERTY, before)
+        }
     }
 
     private fun parse(json: String): BigQuerySourceConfigurationSpecification =
