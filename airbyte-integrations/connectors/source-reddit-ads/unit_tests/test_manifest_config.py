@@ -112,3 +112,15 @@ def test_spec_fields_are_human_readable_and_keep_sensitive_fields_secret() -> No
     assert properties["num_workers"]["minimum"] == 1
     assert properties["num_workers"]["maximum"] == 10
     assert "num_workers" not in source.resolved_manifest["spec"]["connection_specification"]["required"]
+
+
+def test_report_lookback_window_spec_is_optional_and_bounded() -> None:
+    source = get_source()
+    connection_specification = source.resolved_manifest["spec"]["connection_specification"]
+    field = connection_specification["properties"]["report_lookback_window_days"]
+
+    assert field["title"] == "Report Lookback Window (Days)"
+    assert field["default"] == 7
+    assert field["minimum"] == 0
+    assert field["maximum"] == 30
+    assert "report_lookback_window_days" not in connection_specification["required"]

@@ -129,6 +129,31 @@ definitions:
             '').split('page.token=')[-1].split('&')[0] | regex_replace('%3[Dd]',
             '=')) if response.get('pagination', {}).get('next_url') else None }}
           stop_condition: "{{ not response.get('pagination', {}).get('next_url') }}"
+  report_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: date
+    datetime_format: "%Y-%m-%d"
+    cursor_datetime_formats:
+      - "%Y-%m-%d"
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S%z"
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: >-
+        {{ format_datetime(config['start_time'], '%Y-%m-%dT%H:%M:%SZ') if
+        config.get('start_time') else (now_utc() -
+        duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+      min_datetime: "{{ (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ (now_utc() - duration('PT1H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    step: P3D
+    cursor_granularity: P1D
+    lookback_window: "P{{ config['report_lookback_window_days'] if (config.get('report_lookback_window_days') is integer and 0 <= config['report_lookback_window_days'] <= 30) else 7 }}D"
+    is_data_feed: false
 
 streams:
   - type: DeclarativeStream
@@ -383,6 +408,8 @@ streams:
           type: RequestBodyJsonObject
           value:
             data:
+              starts_at: "{{ stream_interval.start_time }}T00:00:00Z"
+              ends_at: "{{ min((str_to_datetime(stream_interval.end_time) + duration('P1D')).strftime('%Y-%m-%dT%H:00:00Z'), now_utc().strftime('%Y-%m-%dT%H:00:00Z')) }}"
               fields:
                 - ACCOUNT_ID
                 - AD_CREATE_TIME
@@ -489,6 +516,9 @@ streams:
           field_path:
             - data
             - metrics
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['date'][:10] <= stream_slice['end_time'] }}"
     primary_key:
       - campaign_id
       - date
@@ -688,42 +718,7 @@ streams:
         additionalProperties: true
     transformations: []
     incremental_sync:
-      type: DatetimeBasedCursor
-      step: P3D
-      cursor_field: date
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: >-
-          {{ now_utc().replace(minute=0, second=0,
-          microsecond=0).strftime('%Y-%m-%dT%H:00:00Z') }}
-      is_data_feed: false
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: >-
-          {{ config.get('start_time') or (now_utc() -
-          duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
-        min_datetime: "{{ (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-      datetime_format: "%Y-%m-%dT%H:00:00Z"
-      end_time_option:
-        type: RequestOption
-        field_path:
-          - data
-          - ends_at
-        inject_into: body_json
-      lookback_window: PT7H
-      start_time_option:
-        type: RequestOption
-        field_path:
-          - data
-          - starts_at
-        inject_into: body_json
-      cursor_granularity: P1D
-      cursor_datetime_formats:
-        - "%Y-%m-%d"
-        - "%Y-%m-%dT%H:%M:%SZ"
-        - "%Y-%m-%dT%H:%M:%S%z"
-        - "%Y-%m-%dT%H:%M:%S.%f%z"
+      $ref: "#/definitions/report_incremental_sync"
 
 api_budget:
   type: HTTPAPIBudget
@@ -856,6 +851,17 @@ spec:
         default: 3
         minimum: 1
         maximum: 10
+      report_lookback_window_days:
+        type: integer
+        order: 7
+        title: Report Lookback Window (Days)
+        description: >-
+          How many whole days before the last synced report date each incremental
+          sync re-reads, so late-attributed conversions and other restated metrics
+          are picked up.
+        default: 7
+        minimum: 0
+        maximum: 30
       user_agent:
         type: string
         description: >-

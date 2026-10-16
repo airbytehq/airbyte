@@ -61,7 +61,13 @@ internal class PostgresAirbyteClientTest {
         every { postgresConfiguration.legacyRawTablesOnly } returns false
         every { columnManager.getMetaColumnNames() } returns emptySet()
         client =
-            PostgresAirbyteClient(dataSource, sqlGenerator, columnManager, postgresConfiguration)
+            PostgresAirbyteClient(
+                dataSource,
+                sqlGenerator,
+                columnManager,
+                postgresConfiguration,
+                metaColumnRepairEnabled = false,
+            )
     }
 
     @Test
