@@ -25,7 +25,7 @@ For more about keys and permissions, see [Authentication](https://docs.incident.
 
 ### Step 2: Set up the Incident.io connector in Airbyte
 
-### For Airbyte Cloud
+#### For Airbyte Cloud
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -35,7 +35,7 @@ For more about keys and permissions, see [Authentication](https://docs.incident.
 6. (Optional) Set **Start Date**, **Time window**, and **Number of concurrent workers**. See [Configuration options](#configuration-options).
 7. Click **Set up source**.
 
-### For Airbyte Open Source
+#### For Airbyte Open Source
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click Sources and then click + New source.
@@ -143,7 +143,8 @@ Incident.io returns timestamps as RFC 3339 strings. The connector declares them 
 
 - **Invalid API key (HTTP 401):** The sync fails if the API key is invalid or has been revoked. Create a new key in Incident.io under **Settings** → **API keys** and update the source configuration.
 - **Missing permission (HTTP 403):** The sync fails with Incident.io's error message, which names the missing permission. Find the streams that need it in the [Supported Streams](#supported-streams) table, then either edit the API key in Incident.io under **Settings** → **API keys** to add that permission, or deselect the affected streams in your connection. You don't need to create a new key or update the source configuration.
-- **Transient errors (HTTP 408 and 5xx):** The connector retries these requests automatically. For the full list of API error codes, see [Errors](https://docs.incident.io/api-reference/introduction#errors) in the Incident.io API reference.
+- **Transient errors (HTTP 408, 500, 502, 503, and 504):** The connector retries these requests automatically.
+- **Rejected requests (other HTTP 4xx, such as 400, 404, or 422):** The sync fails with Incident.io's error message. The `incident_attachments` stream is the exception for 404; see the next item. For the full list of API error codes, see [Errors](https://docs.incident.io/api-reference/introduction#errors) in the Incident.io API reference.
 - **Deleted incidents during a sync:** If someone deletes an incident while `incident_attachments` is running, the connector skips that incident's attachments instead of failing.
 - **Upgrading from 0.x to 1.0.0:** Version 1.0.0 changes field types and endpoints. Follow the [migration guide](/integrations/sources/incident-io-migrations#upgrading-to-100) and refresh the source schema after upgrading.
 
@@ -158,7 +159,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --------- | ------ | -------------- | --------- |
-| 1.0.3 | 2026-10-15 | [89010](https://github.com/airbytehq/airbyte/pull/89010) | Promote to Certified (GA) |
+| 1.0.3 | 2026-10-16 | [89010](https://github.com/airbytehq/airbyte/pull/89010) | Promote to Certified (GA) |
 | 1.0.2 | 2026-10-15 | [88989](https://github.com/airbytehq/airbyte/pull/88989) | Declare `auto_run_mode`, `delay`, `folder`, `owning_team_ids` and `shortform` on workflows; restructure the documentation and link to the Incident.io API reference |
 | 1.0.1 | 2026-10-14 | [88962](https://github.com/airbytehq/airbyte/pull/88962) | Declare `filter_by`, `fixed_filter` and `helptext_catalog_attribute_id` on custom fields; update the base image |
 | 1.0.0 | 2026-10-14 | [88437](https://github.com/airbytehq/airbyte/pull/88437) | Type timestamp fields, move catalog_types and alert_routes to /v3, sync all incident modes. See the [migration guide](/integrations/sources/incident-io-migrations#upgrading-to-100) |
