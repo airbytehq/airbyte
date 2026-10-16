@@ -207,7 +207,10 @@ def test_source_check_connection_ok(config, requests_mock):
     [
         (
             {"code": 40105, "message": "Access token is incorrect or has been revoked."},
-            (Status.FAILED, "Stream advertisers is not available: Access token is incorrect or has been revoked."),
+            (
+                Status.FAILED,
+                "Stream advertisers is not available: TikTok Marketing API returned an error (code 40105): Access token is incorrect or has been revoked.",
+            ),
             None,
         ),
         ({"code": 40100, "message": "App reaches the QPS limit."}, None, 10),
@@ -258,3 +261,48 @@ def test_error_40001_classified_as_config_error(requests_mock):
             error_msg.trace.error.failure_type == FailureType.config_error
         ), f"Error 40001 should be config_error but got {error_msg.trace.error.failure_type}"
     assert any("Insufficient permissions for this endpoint (error 40001)" in error_msg.trace.error.message for error_msg in output.errors)
+
+
+def _catch_all_fail_filters(manifest):
+    return [
+        response_filter
+        for response_filters in _walk_response_filters(manifest)
+        for response_filter in response_filters
+        if response_filter.get("predicate") == "{{ response.get('code') != 0 }}" and response_filter.get("action") == "FAIL"
+    ]
+
+
+def test_every_catch_all_fail_filter_includes_tiktok_error_code(config):
+    from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+
+    catch_all_filters = _catch_all_fail_filters(get_source(config=config, state=None).resolved_manifest)
+    assert catch_all_filters
+
+    for response_filter in catch_all_filters:
+        assert "failure_type" not in response_filter, "Catch-all filter must keep the default system_error failure type"
+        error_message = InterpolatedString.create(response_filter["error_message"], parameters={})
+        rendered = error_message.eval(config, response={"code": 51001, "message": "internal service timeout"})
+        assert rendered == "TikTok Marketing API returned an error (code 51001): internal service timeout"
+        assert error_message.eval(config, response={"code": 51001}) == "TikTok Marketing API returned an error (code 51001): "
+
+
+def test_unhandled_error_code_surfaces_tiktok_code_in_message(requests_mock):
+    config = {"access_token": "TOKEN", "start_date": "2024-01-01", "end_date": "2024-01-02"}
+    error_response = {"code": 59999, "message": "internal service timeout", "request_id": "abc", "data": {}}
+    ok_response = {"code": 0, "message": "ok", "data": {"list": [{"advertiser_id": "917429327", "advertiser_name": "name"}]}}
+
+    requests_mock.get("https://business-api.tiktok.com/open_api/v1.3/oauth2/advertiser/get/", json=ok_response)
+    requests_mock.get("https://business-api.tiktok.com/open_api/v1.3/advertiser/info/", json=ok_response)
+    report_mock = requests_mock.get("https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/", json=error_response)
+
+    catalog = CatalogBuilder().with_stream("ads_reports_daily", SyncMode.full_refresh).build()
+    output = read(get_source(config=config, state=None), config, catalog)
+
+    assert report_mock.called, "Expected the report endpoint to be requested"
+    stream_errors = [
+        error_msg
+        for error_msg in output.errors
+        if error_msg.trace.error.message == "TikTok Marketing API returned an error (code 59999): internal service timeout"
+    ]
+    assert stream_errors, f"Expected the TikTok error code in the message, got {[e.trace.error.message for e in output.errors]}"
+    assert all(error_msg.trace.error.failure_type == FailureType.system_error for error_msg in stream_errors)
