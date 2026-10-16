@@ -18,12 +18,15 @@ dependencies {
             }
         }
     }
-    testFixturesImplementation 'com.alibaba:dns-cache-manipulator:1.8.3' // required for testing with mongo
+    // KGP >= 2.0.10 (KT-68278): test no longer inherits testFixturesImplementation deps.
+    testImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
+    testImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract'))
+    testImplementation 'com.alibaba:dns-cache-manipulator:1.8.3' // required for testing with mongo
+    testImplementation 'io.debezium:debezium-testing-testcontainers' // required for testing with mongo
     testImplementation 'io.debezium:debezium-connector-mysql'
     testImplementation 'io.debezium:debezium-connector-postgres'
     testImplementation 'io.debezium:debezium-connector-mongodb'
     testImplementation 'io.debezium:debezium-connector-sqlserver'
-    testFixturesImplementation 'io.debezium:debezium-testing-testcontainers' // required for testing with mongo
     testFixturesImplementation 'io.mockk:mockk:1.13.13' // keep in step with the strictly-pinned testImplementation version in airbyte-cdk/bulk/build.gradle
     testImplementation 'org.testcontainers:mysql'
     testImplementation 'org.testcontainers:postgresql'

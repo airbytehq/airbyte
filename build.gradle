@@ -222,14 +222,17 @@ allprojects {
 
         testRuntimeOnly platform("org.junit:junit-bom:${vJUnit}")
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${vJUnit}"
-        // JUnit 5.14's engine needs a launcher of the same version on the test runtime classpath.
-        // Without this, Gradle falls back to its bundled (older) launcher and discovery fails with
+        // Gradle no longer injects the JUnit Platform launcher (Gradle 9 removes it); declare it explicitly.
+        // JUnit 5.14's engine also needs a launcher of the same version on the test runtime classpath:
+        // without this, Gradle falls back to its bundled (older) launcher and discovery fails with
         // "OutputDirectoryCreator not available".
         testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 
         // Spotbugs dependencies.
         def vSpotbugs = "4.10.5"
         implementation "com.github.spotbugs:spotbugs-annotations:${vSpotbugs}"
+        // KGP >= 2.0.10 (KT-68278): testFixtures no longer inherits main's implementation deps.
+        testFixturesImplementation "com.github.spotbugs:spotbugs-annotations:${vSpotbugs}"
     }
 
     tasks.withType(SpotBugsTask).configureEach {
