@@ -16,24 +16,20 @@ import jakarta.inject.Singleton
 
 /**
  * Builds a collection's [AirbyteStream]: both sync modes, source-defined `_ab_cdc_cursor`, `_id`
- * primary key, resumable, with the `_ab_cdc_*` meta fields. A time-series collection is full
- * refresh only: change streams cannot be opened on one, and on a database-wide stream its writes
- * surface as `system.buckets.*` bucket documents, never as per-document events. The JSON schema is
- * hand-built because `{"type":"array"}` (no `items`) and plain `{"type":"object"}` have no
- * `AirbyteSchemaType` equivalent.
+ * primary key, resumable, with the `_ab_cdc_*` meta fields. The JSON schema is hand-built because
+ * `{"type":"array"}` (no `items`) and plain `{"type":"object"}` have no `AirbyteSchemaType`
+ * equivalent.
  */
 @Singleton
 @Primary
 class MongoDbAirbyteStreamFactory(
     private val metaFieldDecorator: MetaFieldDecorator,
-    private val metadataQuerierFactory: MongoDbSourceMetadataQuerier.Factory,
 ) : AirbyteStreamFactory {
 
     override fun create(
         config: SourceConfiguration,
         discoveredStream: DiscoveredStream
     ): AirbyteStream {
-        val timeSeries: Boolean = discoveredStream.id in metadataQuerierFactory.timeSeriesStreams
         val properties: ObjectNode = Jsons.objectNode()
         for (field in discoveredStream.columns) {
             properties.set<JsonNode>(field.id, jsonSchema(field.type))
@@ -47,11 +43,9 @@ class MongoDbAirbyteStreamFactory(
             .withName(discoveredStream.id.name)
             .withNamespace(discoveredStream.id.namespace)
             .withJsonSchema(jsonSchema)
-            .withSupportedSyncModes(if (timeSeries) FULL_REFRESH_ONLY else SUPPORTED_SYNC_MODES)
-            .withSourceDefinedCursor(!timeSeries)
-            .withDefaultCursorField(
-                if (timeSeries) emptyList() else listOfNotNull(metaFieldDecorator.globalCursor?.id),
-            )
+            .withSupportedSyncModes(SUPPORTED_SYNC_MODES)
+            .withSourceDefinedCursor(true)
+            .withDefaultCursorField(listOfNotNull(metaFieldDecorator.globalCursor?.id))
             .withSourceDefinedPrimaryKey(discoveredStream.primaryKeyColumnIDs)
             .withIsResumable(true)
     }
@@ -65,6 +59,5 @@ class MongoDbAirbyteStreamFactory(
     companion object {
         val SUPPORTED_SYNC_MODES: List<SyncMode> =
             listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
-        val FULL_REFRESH_ONLY: List<SyncMode> = listOf(SyncMode.FULL_REFRESH)
     }
 }

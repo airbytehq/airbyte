@@ -19,7 +19,8 @@ import org.bson.RawBsonDocument
  */
 data class MongoDbCdcState(
     @JsonProperty("resumeToken") val resumeToken: JsonNode?,
-    @JsonProperty("schemaEnforced") val schemaEnforced: Boolean,
+    /** Null when the persisted state carries no flag: the configuration's value applies. */
+    @JsonProperty("schemaEnforced") val schemaEnforced: Boolean?,
 ) {
     fun toOpaqueStateValue(): OpaqueStateValue = Jsons.valueToTree(this)
 
@@ -38,10 +39,13 @@ data class MongoDbCdcState(
                 schemaEnforced = schemaEnforced,
             )
 
-        /** Parses either persisted shape; null when there is no state at all (first sync). */
+        /**
+         * Parses either persisted shape; null when there is no state at all (first sync, or the
+         * empty object the legacy connector wrote after a full-refresh-only sync).
+         */
         fun fromOpaqueStateValue(state: OpaqueStateValue?): MongoDbCdcState? =
             when {
-                state == null -> null
+                state == null || state.isNull || (state.isObject && state.isEmpty) -> null
                 state.has(DEBEZIUM_STATE) -> fromDebeziumOffset(state)
                 else -> Jsons.treeToValue(state, MongoDbCdcState::class.java)
             }
@@ -49,40 +53,52 @@ data class MongoDbCdcState(
         /**
          * Migrates the Debezium-offset shape, checking every expected key; a mismatch fails the
          * sync rather than cold-starting (which would replay the oplog). A JSON-null `state` means
-         * no position yet (persisted after a full-refresh-only sync) and cold-starts.
+         * no position yet (persisted after a full-refresh-only sync) and cold-starts. A missing
+         * `schema_enforced` means `true`, as the legacy connector read it. Debezium keyed offsets
+         * per replica set: one entry per shard in its old `replica_set` connection mode. Such
+         * per-shard tokens cannot resume a cluster-wide stream, so several entries are accepted
+         * only when they carry the same token.
          */
         private fun fromDebeziumOffset(persisted: JsonNode): MongoDbCdcState {
-            val schemaEnforced: JsonNode? = persisted[DEBEZIUM_SCHEMA_ENFORCED]
-            MongoDbStateMigration.require(schemaEnforced?.isBoolean == true) {
-                "'$DEBEZIUM_SCHEMA_ENFORCED' must be a boolean, got $schemaEnforced"
-            }
+            val schemaEnforcedNode: JsonNode? = persisted[DEBEZIUM_SCHEMA_ENFORCED]
+            val schemaEnforced: Boolean =
+                if (schemaEnforcedNode?.isBoolean == true) schemaEnforcedNode.asBoolean() else true
             val offsets: JsonNode = persisted[DEBEZIUM_STATE]
             if (offsets.isNull) {
-                return MongoDbCdcState(
-                    resumeToken = null,
-                    schemaEnforced = schemaEnforced!!.asBoolean()
-                )
+                return MongoDbCdcState(resumeToken = null, schemaEnforced = schemaEnforced)
             }
-            MongoDbStateMigration.require(offsets.isObject && offsets.size() == 1) {
-                "'$DEBEZIUM_STATE' must be an offset map with exactly one entry, got $offsets"
+            MongoDbStateMigration.require(offsets.isObject && offsets.size() >= 1) {
+                "'$DEBEZIUM_STATE' must be a non-empty offset map, got $offsets"
             }
-            val offsetValue: JsonNode = offsets.elements().next()
-            MongoDbStateMigration.require(offsetValue.isTextual) {
-                "the offset value must be a JSON string, got $offsetValue"
-            }
-            val offset: JsonNode =
-                runCatching { Jsons.readTree(offsetValue.asText()) }
-                    .getOrElse {
-                        MongoDbStateMigration.failure(
-                            "the offset value is not valid JSON: ${offsetValue.asText()}",
-                            it
-                        )
+            val tokens: Set<String> =
+                offsets
+                    .elements()
+                    .asSequence()
+                    .map { offsetValue: JsonNode ->
+                        MongoDbStateMigration.require(offsetValue.isTextual) {
+                            "the offset value must be a JSON string, got $offsetValue"
+                        }
+                        val offset: JsonNode =
+                            runCatching { Jsons.readTree(offsetValue.asText()) }
+                                .getOrElse {
+                                    MongoDbStateMigration.failure(
+                                        "the offset value is not valid JSON: ${offsetValue.asText()}",
+                                        it
+                                    )
+                                }
+                        val token: JsonNode? = offset[DEBEZIUM_RESUME_TOKEN]
+                        MongoDbStateMigration.require(token?.isTextual == true) {
+                            "the offset has no textual '$DEBEZIUM_RESUME_TOKEN', got $offset"
+                        }
+                        token!!.asText()
                     }
-            val token: JsonNode? = offset[DEBEZIUM_RESUME_TOKEN]
-            MongoDbStateMigration.require(token?.isTextual == true) {
-                "the offset has no textual '$DEBEZIUM_RESUME_TOKEN', got $offset"
+                    .toSet()
+            MongoDbStateMigration.require(tokens.size == 1) {
+                "'$DEBEZIUM_STATE' holds ${tokens.size} different resume tokens (one per shard, " +
+                    "from a per-replica-set configuration); they cannot resume a cluster-wide " +
+                    "change stream"
             }
-            return of(migrateDebeziumResumeToken(token!!.asText()), schemaEnforced!!.asBoolean())
+            return of(migrateDebeziumResumeToken(tokens.single()), schemaEnforced)
         }
 
         /** The offset's token: hex `_data` (Debezium 2.x) or base64 BSON document (3.x). */

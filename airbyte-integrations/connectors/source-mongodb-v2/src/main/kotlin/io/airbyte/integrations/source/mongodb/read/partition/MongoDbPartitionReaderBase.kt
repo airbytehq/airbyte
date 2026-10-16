@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.mongodb.read.partition
 
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.data.LongCodec
+import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.OutputMessageRouter
@@ -15,10 +16,8 @@ import io.airbyte.cdk.read.Resource
 import io.airbyte.cdk.read.ResourceType
 import io.airbyte.cdk.read.generatePartitionId
 import io.airbyte.integrations.source.mongodb.discover.MongoDbMetaField
-import io.airbyte.integrations.source.mongodb.discover.MongoDbMetaFieldDecorator
 import io.airbyte.integrations.source.mongodb.read.record.MongoDbSharedState
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
+import org.bson.BsonTimestamp
 
 /** A function that emits one record for a stream. */
 typealias RecordAcceptor = (NativeRecordPayload, Map<EmittedField, FieldValueChange>?) -> Unit
@@ -48,22 +47,6 @@ abstract class MongoDbPartitionReaderBase(
                 DataChannelMedium.STDIO -> null
             }
 
-    private val metaFieldDecorator: MongoDbMetaFieldDecorator =
-        feedBootstrap.metaFieldDecorator as MongoDbMetaFieldDecorator
-    private val emittedAt: OffsetDateTime =
-        feedBootstrap.outputConsumer.recordEmittedAt.atOffset(ZoneOffset.UTC)
-
-    /**
-     * Stamps [payload] with the next `_ab_cdc_cursor` of the sync-wide sequence. Only change events
-     * carry a cursor (snapshot rows keep the decorator's null): dedup destinations rank nulls last,
-     * so a change always supersedes the snapshot row, and the CDK never decorates the `Global`
-     * feed's records, hence the reader does it per event.
-     */
-    protected fun stampCursor(payload: NativeRecordPayload) {
-        payload[MongoDbMetaField.CDC_CURSOR.id] =
-            FieldValueEncoder(metaFieldDecorator.nextCursor(emittedAt), LongCodec)
-    }
-
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
         val resourceTypes: List<ResourceType> =
             when (feedBootstrap.dataChannelMedium) {
@@ -90,6 +73,18 @@ abstract class MongoDbPartitionReaderBase(
     /** The record acceptor for [streamId], or null if the stream is not part of this feed. */
     protected fun recordAcceptorFor(streamId: StreamIdentifier): RecordAcceptor? =
         checkNotNull(outputMessageRouter) { "resources not acquired" }.recordAcceptors[streamId]
+
+    /**
+     * Stamps [payload] with `_ab_cdc_cursor`: a MongoDB cluster time as a long — the time the READ
+     * started for a snapshot row, the event's own time for a change — so a change sorts above the
+     * row it supersedes exactly when it happened after the snapshot began, and the same event
+     * always gets the same cursor. The CDK's decorator only fills the default record with null.
+     */
+    protected fun stampCursor(payload: NativeRecordPayload, clusterTime: BsonTimestamp?) {
+        payload[MongoDbMetaField.CDC_CURSOR.id] =
+            if (clusterTime == null) FieldValueEncoder(null, NullCodec)
+            else FieldValueEncoder(clusterTime.value, LongCodec)
+    }
 
     override fun releaseResources() {
         outputMessageRouter?.close()

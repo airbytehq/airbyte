@@ -84,10 +84,9 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   mapping never matched, so it fell through to `string` while the records carried real booleans), and views are not
   streams (the legacy `listCollections` filter `{type: "collection"}` was appended to the command *result* instead of
   the command, so it never reached the server). That broken filter also let time-series collections through, which the
-  legacy connector snapshotted thanks to `allowDiskUse` (they have no `_id` index) and never received changes for
-  (change streams cannot be opened on them; a database-wide stream only sees `system.buckets.*` writes). They are still
-  discovered (`type: {$in: [collection, timeseries]}`), as **full refresh only**:
-  `MongoDbAirbyteStreamFactory` reads the time-series set collected by the querier factory. Set
+  legacy connector snapshotted thanks to `allowDiskUse` (they have no `_id` index, so a resumed round re-sorts the whole
+  collection) and never received changes for (change streams cannot be opened on them). They are **not supported**:
+  the `type: collection` filter excludes them from discovery, documented as a limitation. Set
   `MONGODB_REGENERATE_FIXTURES=true` when running `MongoDbSourceDiscoverTest` to rewrite the
   fixtures from the actual output. To diff the Docker images, run `discover` for both on the parity
   replica set and compare the `CATALOG` lines with streams sorted (scripts in the skill's
@@ -112,9 +111,10 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   `BsonTimestamp` epoch-millis quirk). `MongoDbClientFactory` pins the driver's
   `uuidRepresentation` to `UNSPECIFIED` so that a `?uuidRepresentation=` in the connection string
   cannot make the driver decode binaries to `UUID` objects, which would change the emitted value
-  and lose the subtype the `_id` checkpoint needs. `testEveryBsonTypeIsEmittedAsDocumented` reads
-  one document holding every BSON type through the connector in both schema modes (and once with
-  `?uuidRepresentation=standard`) and asserts each field's value. Two v2 behaviours tied to the configured
+  and lose the subtype the `_id` checkpoint needs (the legacy connector had that hole).
+  `testEveryBsonTypeIsEmittedAsDocumented` reads one document holding every BSON type through the
+  connector in both schema modes (and once with `?uuidRepresentation=standard`) and asserts each
+  field's value. Two v2 behaviours tied to the configured
   catalog are kept as well: a non-array value in a field declared `array` is wrapped in a
   one-element array (a present BSON `null` included → `[null]`) so the structural mismatch does
   not become `null` downstream; and a user-added `<field>_aibyte_transform` (string) catalog
@@ -136,8 +136,11 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   type (`MongoDbStreamStateValueTest` round-trips every type, NaN/-0.0/±Infinity included;
   `testTypedIdCollectionsResumeMidSnapshot` resumes a collection of each `_id` type — string,
   int32, int64, binary, UUID subtype 4 and 3, double, decimal, date, timestamp — against the server
-  after a forced mid-collection checkpoint). Any other `_id` type checkpoints as its text with
-  `idType: STRING`. A stream state that is present but cannot be parsed fails the sync with the
+  after a forced mid-collection checkpoint). Any other `_id` kind (regex, code, symbol, bool, …)
+  checkpoints as its text with `idType: STRING`, which cannot be compared, so such a collection is
+  read by `MongoDbNonResumableSnapshotPartitionReader`: natural order, one `UnlimitedTimePartitionReader`
+  round, checkpoint only at the end (`MongoDbSharedState.isResumable`,
+  `testUnsupportedIdKindIsReadInOneRound`). A stream state that is present but cannot be parsed fails the sync with the
   same "Failed to migrate to the new connector version state protocol" error as an unreadable
   CDC state (`MongoDbStateMigration`), rather than silently restarting the snapshot; absent,
   JSON-null and empty `{}` states mean "no checkpoint".
@@ -166,16 +169,22 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   one, else `_id` only; an update/replace whose `fullDocument` is null (the document was deleted before the lookup) is
   emitted as a delete, not dropped (`testDeletesCarryPreImageAndUpdateOfDeletedDocumentIsADelete`). The read is
   **bounded**:
-  `MongoDbSharedState.cdcTarget` is the cluster time (`hello`'s `$clusterTime`) when the READ started, and the reader
-  stops after the first event past it, checkpointing that event's own token — a resume reads strictly after a token, so
-  nothing is lost or repeated and a busy cluster cannot keep the sync open
+  the reader first takes the stream's current position (the post-batch resume token of one poll on a fresh cursor,
+  decoded to its oplog time by `MongoDbResumeTokens`) and stops after the first event past it, checkpointing that
+  event's own token — a resume reads strictly after a token, so nothing is lost or repeated and a busy cluster cannot
+  keep the sync open
   (`testCdcStopsAtTargetUnderContinuousWrites`). The token is checkpointed once, when the read ends. A catalog without
-  incremental streams gets no CDC partition at all. Every change event carries `_ab_cdc_cursor`
-  (`MongoDbMetaFieldDecorator.nextCursor`, stamped per event by the reader since the CDK never decorates the `Global`
-  feed); snapshot rows carry a null cursor, as MySQL's do: dedup destinations rank nulls last, so a change always
-  supersedes the snapshot row it replaces, and two snapshot rows of one `_id` (a resumed round)
-  fall back to `_airbyte_extracted_at`. `_ab_cdc_updated_at` is the event's cluster time on a change and the sync's
-  `emittedAt` on a snapshot row, like the other Bulk sources. The stream is opened with `fullDocument: updateLookup` —
+  incremental streams gets no CDC partition at all. A view (or dropped collection) left in the
+  catalog fails the CDK's catalog validation until the schema is refreshed — documented in the
+  migration guide. `_ab_cdc_cursor` is a
+  MongoDB oplog time as a long (`BsonTimestamp.value`), stamped per record by the readers: the
+  event's own time on a change, the time of the change-stream position this READ saved
+  (`MongoDbSharedState.snapshotCursorTime`, decoded from the captured or checkpointed token) on a
+  snapshot row. Every event a later sync replays is strictly after that position, so a change
+  always sorts above the snapshot row it supersedes whichever node served the snapshot (the
+  gossiped `$clusterTime` would not do: it can run ahead of a lagging secondary's applied ops), and
+  a re-read event keeps its cursor. `_ab_cdc_updated_at` is the event's cluster time on a change and the sync's `emittedAt`
+  on a snapshot row, like the other Bulk sources. The stream is opened with `fullDocument: updateLookup` —
   the legacy default and now the only behaviour (`update_capture_mode` is dropped from the spec; a saved value is
   ignored):
   no post-image prerequisite on the collections, at the cost of intermediate states of a document updated several times
@@ -218,9 +227,11 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   failed on MongoDB server with error 13" and the old "Command failed with error 13" rule no
   longer matched.
 - **WASS**: an incremental snapshot that exceeds `maxSnapshotReadDuration`
-  (`initial_load_timeout_hours`, hidden in the spec like `discover_timeout_seconds`) yields for the rest of the READ so
-  the next sync's change-stream
-  read advances the resume token before the snapshot resumes.
+  (`initial_load_timeout_hours`, hidden in the spec like `discover_timeout_seconds`) yields; once
+  no stream has anything left to read in this sync, the factory raises a `TransientErrorException`
+  (every yielded round is already checkpointed), so the platform retries at once and the retry's
+  change-stream read advances the resume token before the snapshots resume — as the JDBC sources
+  and the legacy connector do, instead of waiting for the next scheduled sync.
 - **Socket / speed mode (protobuf)**: both readers emit through `OutputMessageRouter`, so records go
   over STDIO (JSONL) or the socket data channel (JSONL/PROTOBUF) per `airbyte.connector.data-channel`
   (declared in `metadata.yaml` `connectorIPCOptions.dataChannel`). Because MongoDB is schemaless, each

@@ -118,39 +118,6 @@
       "is_resumable": true
     },
     {
-      "name": "readings",
-      "json_schema": {
-        "type": "object",
-        "properties": {
-          "_id": {
-            "type": "string"
-          },
-          "ts": {
-            "type": "string"
-          },
-          "value": {
-            "type": "number"
-          },
-          "_ab_cdc_updated_at": {
-            "type": "string"
-          },
-          "_ab_cdc_deleted_at": {
-            "type": "string"
-          },
-          "_ab_cdc_cursor": {
-            "airbyte_type": "integer",
-            "type": "number"
-          }
-        }
-      },
-      "supported_sync_modes": ["full_refresh"],
-      "source_defined_cursor": false,
-      "default_cursor_field": [],
-      "source_defined_primary_key": [["_id"]],
-      "namespace": "test_db",
-      "is_resumable": true
-    },
-    {
       "name": "string_id",
       "json_schema": {
         "type": "object",

@@ -39,7 +39,7 @@ class MongoDbCdcStateTest {
             )
         val parsed = MongoDbCdcState.fromOpaqueStateValue(legacy)!!
         Assertions.assertEquals(TOKEN, parsed.resumeTokenBson()!!.getString("_data").value)
-        Assertions.assertFalse(parsed.schemaEnforced)
+        Assertions.assertEquals(false, parsed.schemaEnforced)
     }
 
     @Test
@@ -79,7 +79,58 @@ class MongoDbCdcStateTest {
                 Jsons.readTree("""{"state": null, "schema_enforced": true}"""),
             )!!
         Assertions.assertNull(parsed.resumeTokenBson())
-        Assertions.assertTrue(parsed.schemaEnforced)
+        Assertions.assertEquals(true, parsed.schemaEnforced)
+    }
+
+    /** The legacy connector read a missing `schema_enforced` as true. */
+    @Test
+    fun testLegacyMissingSchemaEnforcedDefaultsToTrue() {
+        val parsed = MongoDbCdcState.fromOpaqueStateValue(Jsons.readTree("""{"state": null}"""))!!
+        Assertions.assertEquals(true, parsed.schemaEnforced)
+        Assertions.assertNull(parsed.resumeTokenBson())
+    }
+
+    /** `{}` is what the legacy connector wrote after its first full-refresh-only sync. */
+    @Test
+    fun testEmptyObjectIsNoState() {
+        Assertions.assertNull(MongoDbCdcState.fromOpaqueStateValue(Jsons.readTree("{}")))
+        Assertions.assertNull(MongoDbCdcState.fromOpaqueStateValue(Jsons.readTree("null")))
+    }
+
+    /** A native state without the flag (hand-edited or older) leaves it to the configuration. */
+    @Test
+    fun testNativeShapeWithoutSchemaEnforcedIsNull() {
+        val parsed =
+            MongoDbCdcState.fromOpaqueStateValue(
+                Jsons.readTree("""{"resumeToken": {"_data": "$TOKEN"}}""")
+            )!!
+        Assertions.assertNull(parsed.schemaEnforced)
+        Assertions.assertEquals(TOKEN, parsed.resumeTokenBson()!!.getString("_data").value)
+    }
+
+    /** Per-replica-set offsets: accepted when every entry holds the same token, else rejected. */
+    @Test
+    fun testMultiEntryOffsets() {
+        fun entry(key: String, token: String) =
+            "\"$key\": \"{\\\"sec\\\":1,\\\"ord\\\":1,\\\"resume_token\\\":\\\"$token\\\"}\""
+        val same =
+            Jsons.readTree(
+                """{"state": {${entry("rs0", TOKEN)}, ${entry("rs1", TOKEN)}}, "schema_enforced": true}"""
+            )
+        Assertions.assertEquals(
+            TOKEN,
+            MongoDbCdcState.fromOpaqueStateValue(same)!!.resumeTokenBson()!!.getString("_data")
+                .value,
+        )
+        val different =
+            Jsons.readTree(
+                """{"state": {${entry("rs0", TOKEN)}, ${entry("rs1", OTHER_TOKEN)}}, "schema_enforced": true}"""
+            )
+        val e =
+            Assertions.assertThrows(ConfigErrorException::class.java) {
+                MongoDbCdcState.fromOpaqueStateValue(different)
+            }
+        Assertions.assertTrue(e.message!!.contains("one per shard"), e.message)
     }
 
     @Test
@@ -87,10 +138,7 @@ class MongoDbCdcStateTest {
         // Each expected key is checked; nothing is assumed, and nothing silently cold-starts.
         val cases =
             listOf(
-                // schema_enforced missing / not a boolean
-                """{"state": null}""",
-                """{"state": null, "schema_enforced": "yes"}""",
-                // state is not a one-entry offset map
+                // state is not an offset map
                 """{"state": "not-a-map", "schema_enforced": true}""",
                 """{"state": {}, "schema_enforced": true}""",
                 """{"state": {"a": "{}", "b": "{}"}, "schema_enforced": true}""",
@@ -127,5 +175,7 @@ class MongoDbCdcStateTest {
     companion object {
         /** A real-looking `_data` (timestamp 1727740800, inc 1, change-stream version 1). */
         const val TOKEN = "826703D5800000000129295A1004"
+        /** Same shape, a later timestamp. */
+        const val OTHER_TOKEN = "826703D5810000000129295A1004"
     }
 }

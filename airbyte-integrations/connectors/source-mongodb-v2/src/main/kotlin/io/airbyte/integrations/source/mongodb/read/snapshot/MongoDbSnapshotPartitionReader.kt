@@ -6,11 +6,11 @@ import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Projections
 import com.mongodb.client.model.Sorts
-import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
+import io.airbyte.cdk.read.UnlimitedTimePartitionReader
 import io.airbyte.integrations.source.mongodb.discover.MongoDbFieldType
 import io.airbyte.integrations.source.mongodb.discover.MongoDbSourceMetadataQuerier.Companion.ID_FIELD
 import io.airbyte.integrations.source.mongodb.discover.schemaFieldTypesOf
@@ -23,7 +23,6 @@ import java.time.Instant
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import org.bson.Document
-import org.bson.conversions.Bson
 
 private val log = KotlinLogging.logger {}
 
@@ -32,10 +31,15 @@ private val log = KotlinLogging.logger {}
  * checkpoints the terminal status (`COMPLETE` / `FULL_REFRESH`) and marks the stream complete for
  * this READ; being cut short (timeout, WASS budget, `max-records-per-run`) checkpoints
  * `IN_PROGRESS` / `FULL_REFRESH` so the next round continues.
+ *
+ * [MongoDbNonResumableSnapshotPartitionReader] reads a collection that cannot be resumed (see
+ * [MongoDbSharedState.isResumable]) in natural order, in a single round without time limit, and
+ * checkpoints only at the end.
  */
-class MongoDbSnapshotPartitionReader(
+open class MongoDbSnapshotPartitionReader(
     sharedState: MongoDbSharedState,
     private val feedBootstrap: StreamFeedBootstrap,
+    private val resumable: Boolean = true,
 ) : MongoDbPartitionReaderBase(sharedState, feedBootstrap) {
 
     private val stream: Stream = feedBootstrap.feed
@@ -56,20 +60,23 @@ class MongoDbSnapshotPartitionReader(
     override suspend fun run() {
         val emit: RecordAcceptor =
             checkNotNull(recordAcceptorFor(stream.id)) { "No record acceptor for ${stream.id}" }
-        requireSingleIdType()
-        val startId: Any? = resumeFromId()
+        val startId: Any? = if (resumable) resumeFromId() else null
         lastId = startId
-        log.info { "Reading ${stream.namespace}.${stream.name} after _id=$startId." }
+        log.info {
+            if (resumable) "Reading ${stream.namespace}.${stream.name} after _id=$startId."
+            else "Reading ${stream.namespace}.${stream.name} in one non-resumable round."
+        }
 
         query(startId).cursor().use { cursor ->
             while (cursor.hasNext()) {
                 currentCoroutineContext().ensureActive()
-                if (reachedRecordLimit()) return
-                if (shouldYieldToCdc()) {
+                if (resumable && reachedRecordLimit()) return
+                if (resumable && shouldYieldToCdc()) {
                     sharedState.snapshotYielded.add(stream.id)
                     return
                 }
                 val (payload, rawId) = converter.toPayloadWithId(cursor.next())
+                stampCursor(payload, sharedState.snapshotCursorTime)
                 emit(payload, null)
                 lastId = rawId
                 numRecords++
@@ -83,8 +90,6 @@ class MongoDbSnapshotPartitionReader(
     /**
      * Ordered `_id` scan after [startId]. Under `schema_enforced` only the catalog's fields are
      * projected (extra fields would be dropped anyway); schemaless needs the whole document.
-     * `allowDiskUse` is a no-op for the index-backed sort but lets a time-series collection, which
-     * has no `_id` index, spill its in-memory sort to disk.
      */
     private fun query(startId: Any?): FindIterable<Document> {
         val find: FindIterable<Document> = collection.find()
@@ -92,38 +97,8 @@ class MongoDbSnapshotPartitionReader(
         if (sharedState.configuration.schemaEnforced) {
             find.projection(Projections.include(schemaFieldTypes.keys.toList()))
         }
-        return find.sort(Sorts.ascending(ID_FIELD)).allowDiskUse(true)
-    }
-
-    /**
-     * The `_id` index orders values by BSON type before value, and the resume filter `_id > x` only
-     * matches `_id`s of x's type: a collection mixing types would lose every later type after a
-     * checkpoint. The smallest and largest `_id` sharing a type means every `_id` does (two index
-     * seeks). Numbers of any width are one type, as they are for the comparison. Skipped for a
-     * time-series collection: its measurement `_id`s are server-generated ObjectIds and, without an
-     * `_id` index, each seek would be a full sort.
-     */
-    private fun requireSingleIdType() {
-        if (sharedState.isTimeSeries(stream.id)) return
-        fun endpointIdType(sort: Bson): String =
-            MongoDbIdKind.of(
-                collection
-                    .find()
-                    .projection(Projections.include(ID_FIELD))
-                    .sort(sort)
-                    .limit(1)
-                    .first()
-                    ?.get(ID_FIELD)
-            )
-        val first: String = endpointIdType(Sorts.ascending(ID_FIELD))
-        val last: String = endpointIdType(Sorts.descending(ID_FIELD))
-        if (first != last) {
-            throw ConfigErrorException(
-                "Collection ${stream.namespace}.${stream.name} has _id values of more than one " +
-                    "type ($first and $last). The _id type must be the same for every document " +
-                    "in a collection; make it consistent or exclude the collection from the sync.",
-            )
-        }
+        // A non-resumable read needs no order.
+        return if (resumable) find.sort(Sorts.ascending(ID_FIELD)) else find
     }
 
     /** Test hook: stop after `max-records-per-run` records so resume can be exercised quickly. */
@@ -157,3 +132,11 @@ class MongoDbSnapshotPartitionReader(
         )
     }
 }
+
+/** See [MongoDbSnapshotPartitionReader]: one natural-order round, no time limit, no resume. */
+class MongoDbNonResumableSnapshotPartitionReader(
+    sharedState: MongoDbSharedState,
+    feedBootstrap: StreamFeedBootstrap,
+) :
+    MongoDbSnapshotPartitionReader(sharedState, feedBootstrap, resumable = false),
+    UnlimitedTimePartitionReader

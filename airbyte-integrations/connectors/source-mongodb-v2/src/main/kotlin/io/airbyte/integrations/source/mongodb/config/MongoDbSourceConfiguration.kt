@@ -120,12 +120,13 @@ constructor(
             throw ConfigErrorException("No databases specified in the configuration.")
         }
         val connectionString: String = sanitizeConnectionString(databaseConfig.connectionString)
-        val firstHost: ServerAddress =
+        val parsed: ConnectionString =
             try {
-                ServerAddress(ConnectionString(connectionString).hosts.first())
+                ConnectionString(connectionString)
             } catch (e: IllegalArgumentException) {
                 throw ConfigErrorException("Invalid connection string: ${e.message}", e)
             }
+        val firstHost = ServerAddress(parsed.hosts.first())
 
         val maxConcurrency: Int =
             when (DataChannelMedium.valueOf(dataChannelMedium)) {

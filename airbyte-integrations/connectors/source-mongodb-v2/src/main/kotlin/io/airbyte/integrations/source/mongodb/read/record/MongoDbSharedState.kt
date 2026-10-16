@@ -2,6 +2,10 @@
 package io.airbyte.integrations.source.mongodb.read.record
 
 import com.mongodb.client.MongoClient
+import com.mongodb.client.MongoCollection
+import com.mongodb.client.model.Projections
+import com.mongodb.client.model.Sorts
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.Resource
@@ -10,6 +14,8 @@ import io.airbyte.cdk.read.ResourceType
 import io.airbyte.integrations.source.mongodb.config.MongoDbClientFactory
 import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfiguration
 import io.airbyte.integrations.source.mongodb.discover.MongoDbSourceMetadataQuerier
+import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbIdKind
+import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbStreamStateValue
 import io.micronaut.context.annotation.Value
 import jakarta.annotation.PreDestroy
 import jakarta.inject.Singleton
@@ -18,6 +24,7 @@ import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 import org.bson.BsonTimestamp
 import org.bson.Document
+import org.bson.conversions.Bson
 
 /** State shared by a READ's creators and readers: config, one [MongoClient], CDK resources. */
 @Singleton
@@ -39,16 +46,13 @@ class MongoDbSharedState(
     val client: MongoClient by lazy { MongoDbClientFactory.create(configuration) }
 
     /**
-     * The cluster time when the change-stream read started: the CDC reader stops after the first
-     * event past it, so a busy cluster cannot keep the READ open forever (changes made during the
-     * sync are picked up by the next one). `hello` is unprivileged and answered by `mongos` too.
+     * The oplog time of the change-stream position this READ saved (the token it captured on a cold
+     * start, or checkpointed after draining): every event a later sync replays is strictly after
+     * it, so snapshot rows stamped with it always lose to the changes that supersede them,
+     * whichever node served the snapshot. Set by the CDC reader, which runs before the snapshots;
+     * null when no stream is incremental.
      */
-    val cdcTarget: BsonTimestamp by lazy {
-        val hello: Document = client.getDatabase("admin").runCommand(Document("hello", 1))
-        hello.get("\$clusterTime", Document::class.java)?.get("clusterTime") as? BsonTimestamp
-            ?: hello["operationTime"] as? BsonTimestamp
-                ?: BsonTimestamp(Instant.now().epochSecond.toInt(), 0)
-    }
+    @Volatile var snapshotCursorTime: BsonTimestamp? = null
 
     /**
      * Whether the server accepts `fullDocumentBeforeChange` (MongoDB 6.0+): a change stream opened
@@ -60,15 +64,47 @@ class MongoDbSharedState(
         major >= 6
     }
 
-    private val timeSeriesByStream = ConcurrentHashMap<StreamIdentifier, Boolean>()
+    private val idKindByStream = ConcurrentHashMap<StreamIdentifier, String>()
 
-    /** Whether the collection is a time-series collection (`listCollections` type). */
-    fun isTimeSeries(streamId: StreamIdentifier): Boolean =
-        timeSeriesByStream.computeIfAbsent(streamId) {
-            MongoDbSourceMetadataQuerier.collectionTypes(client, it.namespace!!, it.name)[
-                    it.name,
-                ] == MongoDbSourceMetadataQuerier.TIMESERIES_TYPE
+    /**
+     * The BSON kind of the collection's `_id`s ([MongoDbIdKind]). The `_id` index orders values by
+     * BSON type before value, and a resume filter `_id > x` only matches `_id`s of x's type, so a
+     * collection mixing types would lose every later type after a checkpoint: the smallest and
+     * largest `_id` sharing a kind means every `_id` does (two index seeks), else the sync fails.
+     * Numbers of any width are one kind, as they are for the comparison.
+     */
+    fun idKind(streamId: StreamIdentifier): String =
+        idKindByStream.computeIfAbsent(streamId) { id ->
+            val collection: MongoCollection<Document> =
+                client.getDatabase(id.namespace!!).getCollection(id.name)
+            fun endpointKind(sort: Bson): String =
+                MongoDbIdKind.of(
+                    collection
+                        .find()
+                        .projection(Projections.include(MongoDbSourceMetadataQuerier.ID_FIELD))
+                        .sort(sort)
+                        .limit(1)
+                        .first()
+                        ?.get(MongoDbSourceMetadataQuerier.ID_FIELD)
+                )
+            val first: String = endpointKind(Sorts.ascending(MongoDbSourceMetadataQuerier.ID_FIELD))
+            val last: String = endpointKind(Sorts.descending(MongoDbSourceMetadataQuerier.ID_FIELD))
+            if (first != last) {
+                throw ConfigErrorException(
+                    "Collection ${id.namespace}.${id.name} has _id values of more than one type " +
+                        "($first and $last). The _id type must be the same for every document " +
+                        "in a collection; make it consistent or exclude the collection from the sync.",
+                )
+            }
+            first
         }
+
+    /**
+     * Whether a snapshot of the collection can be checkpointed mid-way and resumed with `_id >
+     * last`: not for an `_id` kind the checkpoint cannot encode natively (it is saved as text and
+     * could not be compared). Those are read in a single round instead.
+     */
+    fun isResumable(streamId: StreamIdentifier): Boolean = idKind(streamId) in RESUMABLE_ID_KINDS
 
     /** Snapshot streams that finished in this READ, so the factory stops re-planning them. */
     val completedSnapshots: MutableSet<StreamIdentifier> = ConcurrentHashMap.newKeySet()
@@ -94,5 +130,11 @@ class MongoDbSharedState(
     @PreDestroy
     fun close() {
         client.close()
+    }
+
+    companion object {
+        /** The kinds [MongoDbStreamStateValue] encodes natively (see [MongoDbIdKind]). */
+        val RESUMABLE_ID_KINDS: Set<String> =
+            setOf("number", "string", "object", "binData", "objectId", "date", "timestamp")
     }
 }

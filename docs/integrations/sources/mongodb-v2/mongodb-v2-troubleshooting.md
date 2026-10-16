@@ -42,6 +42,74 @@ For more information about MongoDB's document size limits, see the [MongoDB docu
 
 For an update event, Airbyte reads the document's current state when the event is processed (MongoDB's `updateLookup`).
 If a document is updated several times in quick succession, or several times between two syncs, the records for those
-events can all show the same final version of the document: **intermediate document states are not captured.** A
-document that was deleted before the event could be read is emitted as a delete.
+events can all show the same final version of the document: **intermediate document states are not captured.** A document
+that was deleted before the event could be read is emitted as a delete.
 
+### Supported MongoDB Clusters
+
+- [Replica sets](https://www.mongodb.com/docs/manual/replication/) and [sharded clusters](https://www.mongodb.com/docs/manual/sharding/) connected through `mongos` are supported. A standalone `mongod` has no oplog and no change streams: the connection test fails with "Target MongoDB instance is a standalone server".
+- Connections to MongoDB Atlas always use TLS. For a self-hosted cluster, add `tls=true` to the connection string; see the [MongoDB documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/) for enabling TLS on the server.
+- Views are not discovered and cannot be synced; sync the underlying collection. Capped and clustered collections have not been validated with this connector.
+- Empty collections are excluded from schema discovery.
+- All documents in a collection must use the same BSON type for `_id`; integers, longs, doubles and decimals count as one type. A collection mixing types fails the sync with "Collection &lt;database&gt;.&lt;collection&gt; has \_id values of more than one type", because a sync resuming after a checkpoint on one type would miss the documents of the other.
+- Atlas DB cluster are only supported in a dedicated M10 tier and above. Lower tiers may fail during connection setup.
+
+### Schema Discovery & Enforcement
+
+- Schema discovery uses [sampling](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) of the documents to collect all distinct top-level fields. This value is universally applied to all collections discovered in the target database. The approach is modelled after [MongoDB Compass sampling](https://www.mongodb.com/docs/compass/current/sampling/) and is used for efficiency. By default, 10,000 documents are sampled. This value can be increased up to 100,000 documents to increase the likelihood that all fields will be discovered. However, the trade-off is time, as a higher value will take the process longer to sample the collection.
+- When running with Schema Enforced set to `false`, discovery only determines the type of `_id`; the rest of the document is synced as one JSON object. See more in [Schema Enforcement](/integrations/sources/mongodb-v2#schema-enforcement).
+
+### Schema discovery performance impact
+
+Because MongoDB collections are [schemaless](https://www.mongodb.com/docs/manual/data-modeling/), documents in the same collection can have different fields and data types. The connector attempts to infer a schema by sampling documents, but no sample size can guarantee a complete or stable schema. New fields can be added to documents at any time, and a schema derived from today's sample may not represent tomorrow's data. Keep this inherent limitation in mind when choosing between schema-enforced and schemaless modes.
+
+When schema enforcement is enabled, the Discover phase executes a [`$sample`](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) aggregation pipeline against every collection in each configured database. These pipelines run **concurrently** using parallel threads, one per collection. Each pipeline samples up to 10,000 documents by default, then processes them through `$project`, `$unwind`, and `$group` stages to extract field names and types.
+
+On clusters with hundreds of collections, this means hundreds of simultaneous aggregation queries hitting the database at once. The `$sample` stage performs a [random collection scan](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/#behavior), which can be I/O-intensive on large collections. Combined with the downstream aggregation stages, this can exhaust available CPU and memory on your MongoDB nodes.
+
+#### Recommended approaches
+
+These approaches address the root cause of the performance risk by reducing or eliminating the discovery workload.
+
+1. **Disable schema enforcement.** Set **Schema Enforced** to `false`. In schemaless mode the sample is only used to find the type of `_id`, which avoids the per-field type extraction and reduces the load on your cluster, but all data is returned as a single JSON object per document rather than individual typed fields. See [Schema Enforcement](/integrations/sources/mongodb-v2#schema-enforcement) for configuration details.
+
+2. **Reduce the discovery sample size.** If you need schema enforcement, lower the **Discovery Sample Size** setting to reduce the number of documents sampled per collection. The default is 10,000. A smaller value such as 1,000 reduces the load on your cluster but may miss fields in collections with highly variable document structures. See the [Discovery Sample Size](https://docs.airbyte.com/integrations/sources/mongodb-v2#configuration-parameters) configuration parameter.
+
+#### Other alternatives
+
+These approaches do not reduce the discovery workload itself, but can help isolate it from your production traffic.
+
+1. **Direct reads to a secondary node.** Add [`readPreference=secondary`](https://www.mongodb.com/docs/manual/core/read-preference/#mongodb-readmode-secondary) or [`readPreference=secondaryPreferred`](https://www.mongodb.com/docs/manual/core/read-preference/#mongodb-readmode-secondaryPreferred) to your MongoDB [connection string](https://www.mongodb.com/docs/manual/reference/connection-string/). This routes the discovery queries to a secondary replica set member instead of the primary, protecting your primary node from the additional load.
+
+   ```text
+   mongodb+srv://cluster0.abcd1.mongodb.net/?readPreference=secondaryPreferred
+   ```
+
+2. **Use MongoDB Atlas analytics nodes.** If you use MongoDB Atlas (M10 tier or above), you can provision [analytics nodes](https://www.mongodb.com/docs/atlas/reference/replica-set-tags/) that are isolated from your operational workload. Direct Airbyte's reads to an analytics node by adding [read preference tags](https://www.mongodb.com/docs/manual/core/read-preference-tags/) to your connection string:
+
+   ```text
+   mongodb+srv://cluster0.abcd1.mongodb.net/?readPreference=secondary&readPreferenceTags=nodeType:ANALYTICS
+   ```
+
+   This fully isolates the discovery workload from your production traffic.
+
+3. **Schedule syncs during off-peak hours.** If you cannot isolate the read workload, [schedule your Airbyte syncs](https://docs.airbyte.com/cloud/managing-airbyte-cloud/configuring-connections#connection-schedule) to run during periods of low production traffic. Schema discovery runs at the start of every sync, so timing matters.
+
+4. **Reduce the number of configured databases.** The connector discovers collections across all configured databases. If you only need data from specific databases, remove unnecessary databases from your source configuration to reduce the total number of collections discovered.
+
+### Vendor-Specific Connector Limitations
+
+:::warning
+
+Not all implementations or deployments of a database will be the same. This section lists specific limitations and known issues with the connector based on _how_ or
+_where_ it is deployed.
+
+:::
+
+#### Self Hosted MongoDB
+
+Airbyte does not support self-signed TLS certificates.
+
+#### AWS DocumentDB
+
+The Airbyte connector does not support custom SSL certificates, which DocumentDB requires.

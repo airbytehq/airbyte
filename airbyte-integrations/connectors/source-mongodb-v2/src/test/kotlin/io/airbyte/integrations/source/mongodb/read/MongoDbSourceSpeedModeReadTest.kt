@@ -47,9 +47,9 @@ import org.testcontainers.utility.DockerImageName
  * in `JSONL` format, for a cold start (snapshots) and a warm start (change events). The test plays
  * the destination: it connects to the socket files the connector creates, drains them while the
  * read runs and decodes the messages. The records must match, field by field, what the same read
- * produces on the STDIO channel (minus the sync-specific `_ab_cdc_updated_at` of snapshot rows and
- * `_ab_cdc_cursor`, which must nevertheless be present on every change event and null on every
- * snapshot row), and every state message on the sockets must carry a `partition_id`.
+ * produces on the STDIO channel (minus the sync-specific `_ab_cdc_updated_at` and `_ab_cdc_cursor`
+ * of snapshot rows; the cursor must nevertheless be present on every socket record), and every
+ * state message on the sockets must carry a `partition_id`.
  *
  * The data channel is configured through the Micronaut properties the platform's environment
  * variables map to (`airbyte.connector.data-channel.*`), set as JVM system properties for the
@@ -76,11 +76,7 @@ class MongoDbSourceSpeedModeReadTest {
         // Cold start: both streams are snapshotted; the Global feed only captures a token.
         val coldStdio: BufferingOutputConsumer = CliRunner.source("read", config(), catalog).run()
         val cold: SpeedModeRun = readInSpeedMode(format, catalog, state = emptyList())
-        cold.assertMatches(
-            coldStdio,
-            expectedCounts = mapOf(PEOPLE to 3, CHANGES to 2),
-            cursorExpected = false,
-        )
+        cold.assertMatches(coldStdio, expectedCounts = mapOf(PEOPLE to 3, CHANGES to 2))
 
         // Warm start from the STDIO cold run's state: only the three change events are emitted.
         applyChanges()
@@ -88,7 +84,7 @@ class MongoDbSourceSpeedModeReadTest {
         val warmStdio: BufferingOutputConsumer =
             CliRunner.source("read", config(), catalog, warmState).run()
         val warm: SpeedModeRun = readInSpeedMode(format, catalog, warmState)
-        warm.assertMatches(warmStdio, expectedCounts = mapOf(CHANGES to 3), cursorExpected = true)
+        warm.assertMatches(warmStdio, expectedCounts = mapOf(CHANGES to 3))
         Assertions.assertTrue(
             warm.records.getValue(CHANGES).any { it["_ab_cdc_deleted_at"]?.isNull == false },
             "a delete must reach the sockets with _ab_cdc_deleted_at set",
@@ -235,12 +231,7 @@ class MongoDbSourceSpeedModeReadTest {
             return data
         }
 
-        fun assertMatches(
-            stdio: BufferingOutputConsumer,
-            expectedCounts: Map<String, Int>,
-            /** Change events carry `_ab_cdc_cursor`; snapshot rows carry null. */
-            cursorExpected: Boolean,
-        ) {
+        fun assertMatches(stdio: BufferingOutputConsumer, expectedCounts: Map<String, Int>) {
             val dump =
                 "STDIO baseline:\n${stdio.dumpNonLogs()}\nspeed mode stdout:\n${stdout.dumpNonLogs()}"
             Assertions.assertEquals(
@@ -252,10 +243,9 @@ class MongoDbSourceSpeedModeReadTest {
                 val socketRecords: List<ObjectNode> = records.getValue(stream)
                 Assertions.assertEquals(count, socketRecords.size, "records of $stream\n$dump")
                 for (record in socketRecords) {
-                    Assertions.assertEquals(
-                        cursorExpected,
+                    Assertions.assertTrue(
                         record["_ab_cdc_cursor"]?.isNull == false,
-                        "_ab_cdc_cursor over the sockets: $record",
+                        "_ab_cdc_cursor must be set over the sockets: $record",
                     )
                 }
                 val expected: List<String> =

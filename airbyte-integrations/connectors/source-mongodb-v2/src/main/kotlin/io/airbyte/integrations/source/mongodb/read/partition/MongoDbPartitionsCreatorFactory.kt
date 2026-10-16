@@ -2,6 +2,7 @@
 package io.airbyte.integrations.source.mongodb.read.partition
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.CreateNoPartitions
 import io.airbyte.cdk.read.FeedBootstrap
@@ -18,6 +19,7 @@ import io.airbyte.integrations.source.mongodb.discover.schemaFieldTypesOf
 import io.airbyte.integrations.source.mongodb.read.cdc.MongoDbCdcPartitionReader
 import io.airbyte.integrations.source.mongodb.read.cdc.MongoDbCdcState
 import io.airbyte.integrations.source.mongodb.read.record.MongoDbSharedState
+import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbNonResumableSnapshotPartitionReader
 import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbSnapshotPartitionReader
 import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbSnapshotStatus
 import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbStreamStateValue
@@ -64,18 +66,49 @@ class MongoDbPartitionsCreatorFactory(
                 }
             is StreamFeedBootstrap -> {
                 validateSyncModeAgainstState(feedBootstrap)
+                failIfInitialLoadTimedOut(feedBootstrap)
                 if (snapshotIsDone(feedBootstrap)) {
                     log.info {
                         "No snapshot partition for ${feedBootstrap.feed.id} (complete, read, or " +
                             "yielded to CDC)."
                     }
                     CreateNoPartitions
-                } else {
+                } else if (sharedState.isResumable(feedBootstrap.feed.id)) {
                     MongoDbPartitionsCreator(sharedState) {
                         MongoDbSnapshotPartitionReader(sharedState, feedBootstrap)
                     }
+                } else {
+                    MongoDbPartitionsCreator(sharedState) {
+                        MongoDbNonResumableSnapshotPartitionReader(sharedState, feedBootstrap)
+                    }
                 }
             }
+        }
+    }
+
+    /**
+     * WASS: once an incremental snapshot has yielded on `initial_load_timeout_hours` and no stream
+     * has anything left to read in this sync, the sync ends with a transient error (its state is
+     * already checkpointed), so the platform retries right away and the retry reads the change
+     * stream first — as the JDBC sources and the legacy connector do — instead of waiting for the
+     * next scheduled sync.
+     */
+    private fun failIfInitialLoadTimedOut(feedBootstrap: StreamFeedBootstrap) {
+        if (sharedState.snapshotYielded.isEmpty()) return
+        val pending: List<Stream> =
+            feedBootstrap.feeds.filterIsInstance<Stream>().filter { stream ->
+                stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL &&
+                    stream.id !in sharedState.completedSnapshots &&
+                    stream.id !in sharedState.snapshotYielded &&
+                    MongoDbStreamStateValue.fromCurrentState(feedBootstrap.currentState(stream))
+                        ?.status != MongoDbSnapshotStatus.COMPLETE
+            }
+        if (pending.isEmpty()) {
+            throw TransientErrorException(
+                "Initial load exceeded initial_load_timeout_hours before the snapshot of " +
+                    "${sharedState.snapshotYielded.joinToString { it.toString() }} finished; " +
+                    "progress is saved and the sync will retry, reading the change stream first.",
+            )
         }
     }
 

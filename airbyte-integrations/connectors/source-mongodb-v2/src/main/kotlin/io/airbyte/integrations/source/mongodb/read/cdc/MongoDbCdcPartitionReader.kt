@@ -44,8 +44,8 @@ private val log = KotlinLogging.logger {}
 /**
  * Reads the change stream for the `Global` feed. Cold start: capture the current resume token and
  * emit nothing (the `Global` feed runs before the snapshots, so the next sync replays changes made
- * during them). Warm start: emit the available changes up to [MongoDbSharedState.cdcTarget] and
- * checkpoint the token of the last emitted event.
+ * during them). Warm start: emit the changes made up to the stream's position when the read started
+ * and checkpoint the token of the last emitted event.
  */
 class MongoDbCdcPartitionReader(
     sharedState: MongoDbSharedState,
@@ -96,10 +96,43 @@ class MongoDbCdcPartitionReader(
     }
 
     /**
-     * Cold start ([resumeAfter] null): capture the position, emit nothing. Warm start: emit events
-     * until the stream is drained or an event past [MongoDbSharedState.cdcTarget] was emitted.
+     * Cold start ([resumeAfter] null): capture the current position, emit nothing. Warm start: emit
+     * events until the stream is drained or an event past the position the stream had when this
+     * read started was emitted, so a busy cluster cannot keep the READ open (changes made during
+     * the sync are picked up by the next one). The saved position's oplog time becomes the snapshot
+     * rows' cursor.
      */
     private suspend fun drain(resumeAfter: BsonDocument?) {
+        if (resumeAfter == null) {
+            resumeToken = currentPosition()
+        } else {
+            val target: BsonTimestamp = MongoDbResumeTokens.timestamp(currentPosition())
+            val changeStream: ChangeStreamIterable<Document> =
+                openChangeStream().resumeAfter(resumeAfter)
+            changeStream.cursor().use { cursor ->
+                while (true) {
+                    currentCoroutineContext().ensureActive()
+                    val event: ChangeStreamDocument<Document>? = cursor.tryNext()
+                    if (event == null) {
+                        // Drained: the post-batch token is at or past the last event.
+                        resumeToken = cursor.resumeToken
+                        break
+                    }
+                    if (emit(event)) numRecords++
+                    resumeToken = event.resumeToken
+                    val clusterTime: BsonTimestamp? = event.clusterTime
+                    if (clusterTime != null && clusterTime > target) break
+                }
+            }
+        }
+        sharedState.snapshotCursorTime = MongoDbResumeTokens.timestamp(checkNotNull(resumeToken))
+        log.info {
+            if (resumeAfter == null) "CDC cold start; captured resume token."
+            else "CDC read drained $numRecords change(s) up to the target."
+        }
+    }
+
+    private fun openChangeStream(): ChangeStreamIterable<Document> {
         val changeStream: ChangeStreamIterable<Document> =
             watch()
                 .fullDocument(FullDocument.UPDATE_LOOKUP)
@@ -109,33 +142,22 @@ class MongoDbCdcPartitionReader(
             // Legacy `change_streams_update_full_with_pre_image`: deletes carry the pre-image.
             changeStream.fullDocumentBeforeChange(FullDocumentBeforeChange.WHEN_AVAILABLE)
         }
-        resumeAfter?.let { changeStream.resumeAfter(it) }
-        val target: BsonTimestamp = sharedState.cdcTarget
-        changeStream.cursor().use { cursor ->
-            if (resumeAfter == null) {
-                cursor.tryNext()
-                resumeToken = cursor.resumeToken
-                return@use
-            }
-            while (true) {
-                currentCoroutineContext().ensureActive()
-                val event: ChangeStreamDocument<Document>? = cursor.tryNext()
-                if (event == null) {
-                    // Drained: the post-batch token is at or past the last event.
-                    resumeToken = cursor.resumeToken
-                    break
-                }
-                if (emit(event)) numRecords++
-                resumeToken = event.resumeToken
-                val clusterTime: BsonTimestamp? = event.clusterTime
-                if (clusterTime != null && clusterTime > target) break
-            }
-        }
-        log.info {
-            if (resumeAfter == null) "CDC cold start; captured resume token."
-            else "CDC read drained $numRecords change(s) up to the target."
-        }
+        return changeStream
     }
+
+    /**
+     * The stream's current position: the post-batch resume token of one poll on a fresh cursor
+     * (MongoDB 4.0.7+; earlier servers return none after an empty batch).
+     */
+    private fun currentPosition(): BsonDocument =
+        openChangeStream().cursor().use { cursor ->
+            cursor.tryNext()
+            cursor.resumeToken
+                ?: throw ConfigErrorException(
+                    "The server returned no resume token for an empty change-stream batch; " +
+                        "MongoDB 4.0.7 or later is required."
+                )
+        }
 
     /**
      * Whether the saved token can no longer be resumed from (oplog rolled past it, or the server
@@ -185,7 +207,7 @@ class MongoDbCdcPartitionReader(
             }
         payload[CommonMetaField.CDC_UPDATED_AT.id] =
             FieldValueEncoder(Jsons.textNode(changedAt), MongoStringValueCodec)
-        stampCursor(payload)
+        stampCursor(payload, event.clusterTime)
         accept(payload, null)
         return true
     }

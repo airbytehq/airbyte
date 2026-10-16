@@ -15,8 +15,6 @@ import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.integrations.source.mongodb.MongoDbTestConfigs
 import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfigurationSpecification
 import io.airbyte.protocol.models.v0.AirbyteCatalog
-import io.airbyte.protocol.models.v0.AirbyteStream
-import io.airbyte.protocol.models.v0.SyncMode
 import java.io.File
 import java.math.BigDecimal
 import java.util.*
@@ -48,8 +46,7 @@ import org.testcontainers.utility.DockerImageName
 class MongoDbSourceDiscoverTest {
 
     /**
-     * `listCollections` is filtered to `type: collection|timeseries` server-side, so views are not
-     * streams.
+     * `listCollections` is filtered to `type: collection` server-side, so views are not streams.
      */
     @Test
     fun testDiscoverExcludesViews() {
@@ -66,9 +63,11 @@ class MongoDbSourceDiscoverTest {
         Assertions.assertTrue("people" in names, "the view's source collection is: $names")
     }
 
-    /** A time-series collection is a stream, but full refresh only (no change stream on it). */
+    /**
+     * Time-series collections are not supported: no `_id` index to resume from, no change stream.
+     */
     @Test
-    fun testDiscoverTimeSeriesCollectionIsFullRefreshOnly() {
+    fun testDiscoverExcludesTimeSeriesCollections() {
         val catalog: AirbyteCatalog =
             CliRunner.source(
                     "discover",
@@ -77,15 +76,8 @@ class MongoDbSourceDiscoverTest {
                 .run()
                 .catalogs()
                 .first()
-        val stream: AirbyteStream = catalog.streams.first { it.name == "readings" }
-        Assertions.assertEquals(listOf(SyncMode.FULL_REFRESH), stream.supportedSyncModes)
-        Assertions.assertFalse(stream.sourceDefinedCursor)
-        Assertions.assertTrue(stream.defaultCursorField.isEmpty())
-        val regular: AirbyteStream = catalog.streams.first { it.name == "people" }
-        Assertions.assertEquals(
-            listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
-            regular.supportedSyncModes,
-        )
+        val names: Set<String> = catalog.streams.map { it.name }.toSet()
+        Assertions.assertFalse("readings" in names, "time-series must not be discovered: $names")
     }
 
     @Test

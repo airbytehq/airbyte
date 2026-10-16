@@ -7,7 +7,6 @@ import com.mongodb.client.MongoClients
 import com.mongodb.client.model.ChangeStreamPreAndPostImagesOptions
 import com.mongodb.client.model.CreateCollectionOptions
 import com.mongodb.client.model.Filters
-import com.mongodb.client.model.TimeSeriesOptions
 import com.mongodb.client.model.Updates
 import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
@@ -16,11 +15,12 @@ import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mongodb.MongoDbTestConfigs
 import io.airbyte.integrations.source.mongodb.config.MongoDbSourceConfigurationSpecification
-import io.airbyte.integrations.source.mongodb.discover.MongoDbMetaFieldDecorator
 import io.airbyte.integrations.source.mongodb.read.cdc.MongoDbCdcState
+import io.airbyte.integrations.source.mongodb.read.cdc.MongoDbResumeTokens
 import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbIdType
 import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbSnapshotStatus
 import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbStreamStateValue
+import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
@@ -61,6 +61,7 @@ import org.bson.BsonTimestamp
 import org.bson.BsonUndefined
 import org.bson.Document
 import org.bson.types.Binary
+import org.bson.types.Code
 import org.bson.types.Decimal128
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.AfterAll
@@ -145,10 +146,26 @@ class MongoDbSourceReadTest {
     @Test
     fun testWassSnapshotYieldsToCdcAndResumes() {
         // Negative budget => the incremental snapshot yields to CDC right after the first record.
+        // The sync then ends with a transient error, its progress checkpointed, so the platform
+        // retries immediately and the retry drains the change stream before resuming.
         System.setProperty(MAX_SNAPSHOT_DURATION_PROPERTY, "-1")
         val sync1: BufferingOutputConsumer =
             try {
-                read(incrementalCatalog())
+                val runnable: CliRunnable = CliRunner.source("read", config(), incrementalCatalog())
+                Assertions.assertThrows(ConnectorUncleanExitException::class.java) {
+                    runnable.run()
+                }
+                val errors: List<AirbyteTraceMessage> =
+                    runnable.results.traces().filter { it.type == AirbyteTraceMessage.Type.ERROR }
+                Assertions.assertTrue(
+                    errors.any {
+                        it.error.failureType ==
+                            AirbyteErrorTraceMessage.FailureType.TRANSIENT_ERROR &&
+                            it.error.message.contains("initial_load_timeout_hours")
+                    },
+                    "expected a transient initial-load error, got ${errors.map { it.error.message }}",
+                )
+                runnable.results
             } finally {
                 System.clearProperty(MAX_SNAPSHOT_DURATION_PROPERTY)
             }
@@ -217,30 +234,38 @@ class MongoDbSourceReadTest {
             changes.first { it["_id"] == "660000000000000000000002" }["_ab_cdc_deleted_at"],
             "a delete must set _ab_cdc_deleted_at",
         )
-        // `_ab_cdc_cursor` is the declared cursor: every change event carries one, strictly
-        // increasing in event order, so dedup orders them after the snapshot rows.
+        // `_ab_cdc_cursor` is a MongoDB oplog time: the event's own time on a change, the time of
+        // the change-stream position the sync saved on a snapshot row. Every event a later sync
+        // replays is strictly after that position, so a change always sorts above the snapshot
+        // row it supersedes — whichever node served the snapshot, and across syncs, since the
+        // times come from the server rather than the (fixed) test clock.
         val cursors: List<Long> =
             sync2.records().filter { it.stream == CDC }.map { it.data["_ab_cdc_cursor"].asLong() }
         Assertions.assertEquals(3, cursors.size)
         Assertions.assertEquals(cursors.sorted(), cursors)
         Assertions.assertEquals(cursors.toSet().size, cursors.size, "cursors must be distinct")
-        Assertions.assertTrue(cursors.all { it > 0L }, "cursors must be set, got $cursors")
-        // Snapshot rows carry no cursor; dedup ranks nulls last, so a change to the same `_id`
-        // always supersedes its snapshot row. The cursor is `emittedAt` milliseconds × 10^5 + a
-        // per-sync counter, so a later sync's cursors are larger by construction. The test clock is
-        // fixed (every sync gets the same `emittedAt`), hence the formula is asserted.
-        for (record in sync1.records().filter { it.stream == CDC }) {
-            Assertions.assertTrue(record.data["_ab_cdc_cursor"].isNull, "snapshot row: $record")
-        }
-        for (record in sync2.records().filter { it.stream == CDC }) {
-            val cursor: Long = record.data["_ab_cdc_cursor"].asLong()
-            Assertions.assertEquals(
-                record.emittedAt,
-                cursor / MongoDbMetaFieldDecorator.CURSORS_PER_MILLI,
-                "cursor base must be the record's emittedAt: $cursor",
+        val snapshotCursors: Set<Long> =
+            sync1
+                .records()
+                .filter { it.stream == CDC }
+                .map { it.data["_ab_cdc_cursor"].asLong() }
+                .toSet()
+        val savedPosition: BsonTimestamp =
+            MongoDbResumeTokens.timestamp(
+                MongoDbCdcState.fromOpaqueStateValue(
+                        stateAfterSync1.mapNotNull { it.global?.sharedState }.last()
+                    )!!
+                    .resumeTokenBson()!!
             )
-            Assertions.assertTrue(cursor % MongoDbMetaFieldDecorator.CURSORS_PER_MILLI >= 1L)
-        }
+        Assertions.assertEquals(
+            setOf(savedPosition.value),
+            snapshotCursors,
+            "snapshot rows carry the saved position"
+        )
+        Assertions.assertTrue(
+            cursors.first() > savedPosition.value,
+            "changes must sort above the snapshot rows: $cursors vs $savedPosition",
+        )
     }
 
     /**
@@ -363,36 +388,36 @@ class MongoDbSourceReadTest {
         )
     }
 
-    /** A time-series collection is snapshotted (full refresh); it has no `_id` index. */
+    /**
+     * An `_id` kind the checkpoint cannot encode natively (here JavaScript code; MongoDB itself
+     * forbids array, regex and undefined `_id`s) is saved as text and cannot be compared, so the
+     * collection is read in a single round that ignores the record limit and ends `COMPLETE` — no
+     * mid-collection checkpoint, no silent truncation.
+     */
     @Test
-    fun testTimeSeriesCollectionIsReadInFullRefresh() {
+    fun testUnsupportedIdKindIsReadInOneRound() {
         MongoClients.create(replicaSet.connectionString).use { client ->
-            val db = client.getDatabase(TEST_DB)
-            db.getCollection(TIME_SERIES).drop()
-            db.createCollection(
-                TIME_SERIES,
-                CreateCollectionOptions().timeSeriesOptions(TimeSeriesOptions("t")),
+            val coll = client.getDatabase(TEST_DB).getCollection(CODE_ID)
+            coll.drop()
+            coll.insertMany(
+                listOf("a", "b", "c").map {
+                    Document("_id", Code("function $it() {}")).append("v", it)
+                }
             )
-            db.getCollection(TIME_SERIES)
-                .insertMany(
-                    (1..3).map {
-                        Document("t", Date(1_700_000_000_000L + it * 1000L)).append("v", it)
-                    },
-                )
         }
-        val result: BufferingOutputConsumer =
-            read(
-                configuredCatalog(
-                    SyncMode.FULL_REFRESH,
-                    DestinationSyncMode.OVERWRITE,
-                    setOf(TIME_SERIES),
-                    includeEmpty = false,
-                ),
+        System.setProperty(MAX_RECORDS_PROPERTY, "2")
+        try {
+            val result: BufferingOutputConsumer = read(incrementalCatalog(setOf(CODE_ID)))
+            Assertions.assertEquals(
+                listOf("a", "b", "c"),
+                recordDataFor(result, CODE_ID).map { it["v"] as String }.sorted(),
             )
-        Assertions.assertEquals(
-            listOf(1, 2, 3),
-            recordDataFor(result, TIME_SERIES).map { it["v"] as Int }.sorted(),
-        )
+            val state: MongoDbStreamStateValue = lastStreamStateFor(result, CODE_ID)
+            Assertions.assertEquals(MongoDbSnapshotStatus.COMPLETE, state.status)
+            Assertions.assertEquals(MongoDbIdType.STRING, state.idType)
+        } finally {
+            System.clearProperty(MAX_RECORDS_PROPERTY)
+        }
     }
 
     @Test
@@ -487,6 +512,14 @@ class MongoDbSourceReadTest {
                             BsonTimestamp(1_700_000_001, 1),
                         ),
                         MongoDbIdType.TIMESTAMP,
+                    ),
+                // Document `_id`s resume as `BsonDocument` (extended JSON round trip).
+                OBJECT_MATRIX_ID to
+                    Pair(
+                        listOf(1, 2, 3).map {
+                            BsonDocument("tenant", BsonString("t1")).append("seq", BsonInt32(it))
+                        },
+                        MongoDbIdType.OBJECT,
                     ),
             )
         MongoClients.create(replicaSet.connectionString).use { client ->
@@ -1140,9 +1173,10 @@ class MongoDbSourceReadTest {
         const val CDC = "cdc_coll"
         const val BUSY_CDC = "busy_cdc_coll"
         const val PRE_IMAGE_CDC = "pre_image_cdc_coll"
-        const val TIME_SERIES = "time_series_coll"
+        const val CODE_ID = "code_id_coll"
         const val LEGACY_CDC = "legacy_cdc_coll"
         const val DOC_ID = "doc_id_coll"
+        const val OBJECT_MATRIX_ID = "object_matrix_id_coll"
         const val ALL_TYPES = "all_types_coll"
         const val STRING_ID = "string_id_coll"
         const val INT_ID = "int_id_coll"

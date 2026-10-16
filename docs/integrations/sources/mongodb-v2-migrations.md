@@ -20,27 +20,19 @@ If you have any further questions, don't hesitate to contact us.
 
 ## Upgrading to 3.0.0
 
-Version 3.0.0 is a rewrite of the MongoDB source on Airbyte's Bulk CDK, the same foundation as the certified Postgres, MySQL and SQL Server sources. Change data capture now reads MongoDB change streams directly with the MongoDB driver instead of through Debezium.
+Version 3.0.0 is a rewrite of the MongoDB source on Airbyte's Bulk CDK. Change data capture now reads MongoDB change streams directly with the MongoDB driver instead of through Debezium.
 
-**No reset is required.** Existing connections keep syncing from where they left off: the saved change stream position, the progress of an initial snapshot and the source configuration are all read as-is. Configurations that still contain the removed settings are accepted.
+**No action required.** Existing connections keep syncing from where they left off.
 
 What changes for you:
 
 - **Removed settings.** "Initial Waiting Time in Seconds" and "Size of the queue" only existed for Debezium and are
   gone, and "Capture mode" is removed: update events always read the document's current state (the former "Lookup"
   default). Saved values are ignored.
-- **Views are no longer synced.** Earlier versions discovered views as streams by mistake; views cannot be read incrementally or resumed. Streams for views disappear from the catalog when you refresh the source schema. Sync the underlying collection instead.
-- **Time series collections are Full Refresh only.** They are still discovered, but Incremental is no longer offered for
-  them: MongoDB has no change streams for time series collections, so earlier versions silently stopped delivering
-  changes after the initial snapshot. Switch such streams to Full Refresh when you refresh the source schema.
+- **Views are no longer synced.** Earlier versions discovered views as streams by mistake; views cannot be read incrementally or resumed. A view stream that is still in your connection makes the sync fail ("could not be read due to catalog validation errors") until you refresh the source schema, which removes it. Sync the underlying collection instead.
+- **Time series collections are no longer synced.** Earlier versions discovered them by mistake; they have no `_id` index to resume a snapshot from and MongoDB provides no change streams for them, so changes were never delivered. Their streams disappear from the catalog when you refresh the source schema.
 - **Booleans are typed as `boolean`.** Boolean fields were previously declared as `string` in the schema while the records already carried true JSON booleans. Refresh the source schema to pick up the new type; the values themselves do not change.
 - **Decimals keep their full precision.** `Decimal128` values were previously converted through a double and could lose digits; they are now emitted exactly. Values in your destination may differ in the last digits after the upgrade.
-- **Dates are always rendered in UTC** with millisecond precision, for example `2024-01-01T00:00:00.000Z`. This matches what earlier versions produced in practice.
-- **One `_id` type per collection.** All documents in a collection must use the same BSON type for `_id` (integers, longs, doubles and decimals count as one type). Earlier versions logged a warning for mixed collections and could miss documents when a sync resumed; 3.0.0 fails the sync with an error that names the types found. Fix the data or deselect the collection.
-- **Sharded clusters are supported** when connected through `mongos`. A standalone server, which has no change streams, now fails the connection test with a message saying so instead of failing later.
-- **Privileges are unchanged**: the `read` role on the database when you sync one database, `readAnyDatabase` when you sync several. See [Step 1 of the setup guide](/integrations/sources/mongodb-v2#step-1-create-a-dedicated-read-only-mongodb-user).
-
-No action is required to upgrade. After upgrading, refresh the source schema once to pick up the boolean types and drop any view streams.
 
 ## Upgrading to 2.0.0
 

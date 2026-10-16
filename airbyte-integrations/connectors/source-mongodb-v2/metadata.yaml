@@ -44,7 +44,7 @@ data:
           no reset is required. The settings 'initial_waiting_seconds', 'queue_size'
           and 'update_capture_mode' are removed from the spec; update events always
           read the document's current state. Views are no longer discovered
-          as streams, time series collections are full refresh only, boolean fields
+          or synced, time series collections are not supported, boolean fields
           are now typed as boolean, and a collection whose _id values are of more
           than one type fails the sync. See the migration guide for details."
         upgradeDeadline: "2027-02-01"
@@ -84,13 +84,13 @@ data:
 
           "
         upgradeDeadline: "2023-12-01"
-    rolloutConfiguration:
-      enableProgressiveRollout: true
-      defaultRolloutMode: autopilot
-      autopilotConfig:
-        autoStart: true
-        autoPromoteStages: true
-        strategy: slow
+  rolloutConfiguration:
+    enableProgressiveRollout: true
+    defaultRolloutMode: autopilot
+    autopilotConfig:
+      autoStart: true
+      autoPromoteStages: true
+      strategy: slow
   supportLevel: certified
   tags:
     - language:java
