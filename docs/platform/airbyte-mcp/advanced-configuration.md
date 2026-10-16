@@ -48,13 +48,13 @@ Headers can only hide tools and customize tool behaviors. They can't give your a
 
 ## Delete guard
 
-The delete tools only delete a source, destination, or connection whose name contains `delete-me` or `deleteme` (case insensitive). Your agent can rename a resource to add the marker, but only after you explicitly agree to the rename.
+By default, the delete tools only delete a source, destination, or connection whose name contains `delete-me` or `deleteme` (case insensitive). Your agent can rename a resource to add the marker, but only after you explicitly agree to the rename.
 
-| Header                       | Allowed values                | Effect                                                                                |
-| :--------------------------- | :---------------------------- | :------------------------------------------------------------------------------------ |
-| `X-MCP-Disable-Delete-Guard` | `1` (enabled), `0` (disabled) | Disabled by default. When set to `1`, the delete tools don't require the name marker. |
+| Header                       | Allowed values                  | Effect                                                                                         |
+| :--------------------------- | :------------------------------ | :--------------------------------------------------------------------------------------------- |
+| `X-MCP-Disable-Delete-Guard` | `1` (guard off), `0` (guard on) | The guard is on by default. Set to `1` to let the delete tools delete without the name marker. |
 
-`X-MCP-Disable-Delete-Guard` also accepts `true` or `yes` for `1`, and `false` or `no` for `0`. To block deletions entirely, which is the stronger option, set `X-MCP-Allow-Destructive-Tools` to `0` instead.
+`1` can also be written as `true` or `yes`, and `0` as `false` or `no`. To block deletions entirely, which is the stronger option, set `X-MCP-Allow-Destructive-Tools` to `0` instead.
 
 ## Default workspace and organization
 
