@@ -28,7 +28,6 @@ class PositionalDeleteResolver(
     identifierFieldIds: Set<Int>,
     writerFactory: GenericFileWriterFactory,
     outputFileFactory: OutputFileFactory,
-    private val maxTouchedKeys: Int = DEFAULT_MAX_TOUCHED_KEYS,
     state: PositionalDeleteResolutionState = PositionalDeleteResolutionState(),
     allowWholeFileSupersession: Boolean = false,
     suppressDeletedPositions: Boolean = true,
@@ -61,7 +60,6 @@ class PositionalDeleteResolver(
         get() = finder.fullySupersededDataFiles
 
     init {
-        require(maxTouchedKeys > 0) { "maxTouchedKeys must be positive" }
         // Whole-file supersession counts already-deleted positions, so it is meaningless
         // without them.
         require(suppressDeletedPositions || !allowWholeFileSupersession) {
@@ -88,14 +86,4 @@ class PositionalDeleteResolver(
         val spec: PartitionSpec,
         val partition: StructLike?,
     )
-
-    companion object {
-        // The touched-key map and current-write map each retain a copied key and map overhead;
-        // allowing roughly 320 bytes per key, plus references and temporary values, 250,000
-        // entries reserve about 80 MB. This leaves most of a 2 GB heap for Parquet buffers,
-        // writers, and the destination's other state.
-        const val DEFAULT_MAX_TOUCHED_KEYS = 250_000
-    }
-
-    fun maxTouchedKeys(): Int = maxTouchedKeys
 }

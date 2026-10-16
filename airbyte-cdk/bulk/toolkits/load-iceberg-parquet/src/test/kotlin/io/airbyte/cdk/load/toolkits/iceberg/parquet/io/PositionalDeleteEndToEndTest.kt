@@ -110,7 +110,6 @@ class PositionalDeleteEndToEndTest {
                 positionalDeleteRef = "staging",
                 deleteMode = IcebergDeleteMode.POSITIONAL,
                 positionalDeleteState = positionalState,
-                maxTouchedKeys = 2,
                 allowWholeFileSupersession = true,
             )
         val (firstResult, warningMessages) =
@@ -1047,10 +1046,7 @@ class PositionalDeleteEndToEndTest {
                 positionalDeleteRef = "main",
                 deleteMode = IcebergDeleteMode.POSITIONAL,
                 positionalDeleteState = PositionalDeleteResolutionState(),
-                maxTouchedKeys = 1,
             ) as BasePositionDeltaTaskWriter
-        // The second writer's tiny touched-key budget would have forced a mid-write
-        // resolution against a table that cannot yet see the first writer's commit.
         firstWriter.write(RecordWrapper(record(schema, "1", "first"), Operation.UPDATE))
         secondWriter.write(RecordWrapper(record(schema, "1", "second"), Operation.UPDATE))
 
