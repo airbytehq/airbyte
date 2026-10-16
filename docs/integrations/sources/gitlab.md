@@ -196,7 +196,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.6.0 | 2026-10-16 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add incremental sync support to the `deployments`, `group_milestones`, `project_milestones`, and `merge_request_commits` streams |
+| 4.6.0 | 2026-10-16 | [89052](https://github.com/airbytehq/airbyte/pull/89052) | Add incremental sync support to the `deployments`, `group_milestones`, `project_milestones`, and `merge_request_commits` streams |
 | 4.5.2 | 2026-10-13 | [88467](https://github.com/airbytehq/airbyte/pull/88467) | Honor GitLab Retry-After headers for HTTP 429 rate limits and raise heartbeat timeout to 90 minutes |
 | 4.5.1 | 2026-10-13 | [88629](https://github.com/airbytehq/airbyte/pull/88629) | Update dependencies |
 | 4.5.0 | 2026-10-07 | [87655](https://github.com/airbytehq/airbyte/pull/87655) | Add incremental sync support to the `pipelines_extended`, `jobs`, and `pipeline_trigger_jobs` streams. Failed Full Refresh attempts of these streams can now resume, which can write duplicate rows under Full Refresh \| Overwrite |
