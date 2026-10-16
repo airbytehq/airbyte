@@ -92,24 +92,24 @@ This connector outputs the following streams:
 
 - [Branches](https://docs.gitlab.com/api/branches/)
 - [Commits](https://docs.gitlab.com/api/commits/) (Incremental)
-- [Deployments](https://docs.gitlab.com/api/deployments/)
+- [Deployments](https://docs.gitlab.com/api/deployments/) (Incremental)
 - [Epic Issues](https://docs.gitlab.com/api/epic_issues/) (GitLab Premium and Ultimate only)
 - [Epics](https://docs.gitlab.com/api/epics/) (GitLab Premium and Ultimate only)
 - [Group Issue Boards](https://docs.gitlab.com/api/group_boards/)
 - [Group Labels](https://docs.gitlab.com/api/group_labels/)
 - [Group Members](https://docs.gitlab.com/api/members/)
-- [Group Milestones](https://docs.gitlab.com/api/group_milestones/)
+- [Group Milestones](https://docs.gitlab.com/api/group_milestones/) (Incremental)
 - [Groups](https://docs.gitlab.com/api/groups/)
 - [Issues](https://docs.gitlab.com/api/issues/) (Incremental)
 - [Jobs](https://docs.gitlab.com/api/jobs/) (Incremental; child of Pipelines — one request per pipeline)
-- [Merge Request Commits](https://docs.gitlab.com/api/merge_requests/) (child of Merge Requests — one request per merge request)
+- [Merge Request Commits](https://docs.gitlab.com/api/merge_requests/) (Incremental; child of Merge Requests — one request per merge request)
 - [Merge Requests](https://docs.gitlab.com/api/merge_requests/) (Incremental)
 - [Pipelines](https://docs.gitlab.com/api/pipelines/) (Incremental; includes child pipelines, which GitLab only returns when queried with `source=parent_pipeline`)
 - [Pipeline Trigger Jobs](https://docs.gitlab.com/api/jobs/#list-pipeline-trigger-jobs) (Incremental; bridge jobs that trigger downstream pipelines, child of Pipelines — one request per pipeline)
 - [Pipelines Extended](https://docs.gitlab.com/api/pipelines/) (Incremental; child of Pipelines — one request per pipeline)
 - [Project Labels](https://docs.gitlab.com/api/labels/)
 - [Project Members](https://docs.gitlab.com/api/members/)
-- [Project Milestones](https://docs.gitlab.com/api/milestones/)
+- [Project Milestones](https://docs.gitlab.com/api/milestones/) (Incremental)
 - [Projects](https://docs.gitlab.com/api/projects/)
 - [Releases](https://docs.gitlab.com/api/releases/)
 - [Tags](https://docs.gitlab.com/api/tags/)
@@ -123,7 +123,15 @@ This connector uses GitLab API v4. It works with both GitLab.com and self-hosted
 
 ### Incremental sync window
 
-Incremental streams request data in 180-day windows, so a first sync of a long-lived project issues many requests. Most incremental streams filter on `updated_at`, but `commits` filters on `created_at` using GitLab's `since` and `until` parameters. If you leave **Start date** blank, incremental streams start from 2014-01-01, which is effectively all history for most projects. Set a start date to cut the initial sync short.
+Most incremental streams request data in 180-day windows, so a first sync of a long-lived project issues many requests. Deployments and group and project milestones are not windowed; they filter on `updated_at` using `updated_after` and `updated_before`, and ignore **Start date** to read all history. `merge_request_commits` reads commits for merge requests returned by the incremental `merge_requests` query. `commits` filters on `created_at` using GitLab's `since` and `until` parameters. If you leave **Start date** blank, other incremental streams start from 2014-01-01, which is effectively all history for most projects. Set a start date to cut the initial sync short.
+
+### Incremental deployments and milestones
+
+Deployments and milestones filter on `updated_at` via `updated_after` and `updated_before`, and ignore **Start date** so Full Refresh output is unchanged. Deployments are requested with `order_by=updated_at`. Boundary records may be re-read; use **Incremental | Append + Deduped** to avoid duplicates.
+
+### Incremental merge request commits
+
+Only commits for merge requests returned by the incremental `merge_requests` query are read, using `merge_request_updated_at` as the cursor. Commit changes that do not update the parent merge request's `updated_at` are not picked up.
 
 ### Incremental pipeline child streams
 
@@ -188,6 +196,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.6.0 | 2026-10-16 | [89052](https://github.com/airbytehq/airbyte/pull/89052) | Add incremental sync support to the `deployments`, `group_milestones`, `project_milestones`, and `merge_request_commits` streams |
 | 4.5.2 | 2026-10-13 | [88467](https://github.com/airbytehq/airbyte/pull/88467) | Honor GitLab Retry-After headers for HTTP 429 rate limits and raise heartbeat timeout to 90 minutes |
 | 4.5.1 | 2026-10-13 | [88629](https://github.com/airbytehq/airbyte/pull/88629) | Update dependencies |
 | 4.5.0 | 2026-10-07 | [87655](https://github.com/airbytehq/airbyte/pull/87655) | Add incremental sync support to the `pipelines_extended`, `jobs`, and `pipeline_trigger_jobs` streams. Failed Full Refresh attempts of these streams can now resume, which can write duplicate rows under Full Refresh \| Overwrite |
