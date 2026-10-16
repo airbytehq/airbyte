@@ -57,7 +57,13 @@ internal class SnowflakeAirbyteClientTest {
             mockk(relaxed = true) { every { database } returns "test_database" }
         columnManager = mockk(relaxed = true)
         client =
-            SnowflakeAirbyteClient(dataSource, sqlGenerator, snowflakeConfiguration, columnManager)
+            SnowflakeAirbyteClient(
+                dataSource,
+                sqlGenerator,
+                snowflakeConfiguration,
+                columnManager,
+                metaColumnRepairEnabled = false,
+            )
     }
 
     @Test

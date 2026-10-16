@@ -14,7 +14,6 @@ import io.airbyte.cdk.integrations.destination.s3.csv.UploadCsvFormatConfig
 import io.airbyte.cdk.integrations.destination.s3.jsonl.JsonLSerializedBuffer
 import io.airbyte.cdk.integrations.destination.s3.jsonl.UploadJsonlFormatConfig
 import io.airbyte.cdk.integrations.destination.s3.parquet.ParquetSerializedBuffer
-import io.airbyte.commons.json.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.Callable
 import java.util.function.Function
@@ -50,14 +49,14 @@ class SerializedBufferFactory {
         ): BufferCreateFunction {
             val formatConfig = config.formatConfig!!
             logger.info { "S3 format config: $formatConfig" }
-            when (formatConfig.format) {
+            return when (formatConfig.format) {
                 FileUploadFormat.AVRO -> {
                     val createStorageFunctionWithExtension = Callable {
                         createStorageFunctionWithoutExtension.apply(
                             formatConfig.fileExtension,
                         )
                     }
-                    return AvroSerializedBuffer.createFunction(
+                    AvroSerializedBuffer.createFunction(
                         formatConfig as UploadAvroFormatConfig,
                         createStorageFunctionWithExtension,
                         useV2FieldNames
@@ -69,7 +68,7 @@ class SerializedBufferFactory {
                             formatConfig.fileExtension,
                         )
                     }
-                    return CsvSerializedBuffer.createFunction(
+                    CsvSerializedBuffer.createFunction(
                         formatConfig as UploadCsvFormatConfig,
                         createStorageFunctionWithExtension,
                         useV2FieldNames
@@ -81,7 +80,7 @@ class SerializedBufferFactory {
                             formatConfig.fileExtension,
                         )
                     }
-                    return JsonLSerializedBuffer.createBufferFunction(
+                    JsonLSerializedBuffer.createBufferFunction(
                         formatConfig as UploadJsonlFormatConfig,
                         createStorageFunctionWithExtension,
                         useV2FieldNames
@@ -91,10 +90,7 @@ class SerializedBufferFactory {
                     // we can't choose the type of buffer storage with parquet because of how the
                     // underlying hadoop
                     // library is imposing file usage.
-                    return ParquetSerializedBuffer.createFunction(config, useV2FieldNames)
-                }
-                else -> {
-                    throw RuntimeException("Unexpected output format: ${Jsons.serialize(config)}")
+                    ParquetSerializedBuffer.createFunction(config, useV2FieldNames)
                 }
             }
         }

@@ -10,6 +10,7 @@ The Extract CDK provides functionality for source connectors including schema di
 ### 1.1.17 — 2026-10-15
 
 [#88151](https://github.com/airbytehq/airbyte/pull/88151) — CDC: record writes that happen while the Debezium engine is shutting down are queued and performed by `CdcPartitionReader.run()` once the engine thread has ended, so the record count in the final checkpoint includes them. Previously, with Debezium's `AsyncEmbeddedEngine` (source-mssql), a shutdown-path write could still be in flight when the state message was emitted, so the source reported fewer records than it had sent and the platform waited for the checkpoints to flush. A shutdown-path write that fails now fails the read with its cause instead of being lost.
+[#89002](https://github.com/airbytehq/airbyte/pull/89002) — Test and testFixtures dependencies are declared explicitly (Kotlin Gradle plugin 2.0.10+ no longer propagates `implementation` dependencies into testFixtures, nor `testFixturesImplementation` into tests), `junit-platform-launcher` is on every test runtime classpath, and K2-lint cleanups that also compile on Kotlin 1.9 (`JdbcAccessor` array getter, redundant casts/safe calls). No behaviour change.
 
 ### 1.1.16 — 2026-10-12
 
