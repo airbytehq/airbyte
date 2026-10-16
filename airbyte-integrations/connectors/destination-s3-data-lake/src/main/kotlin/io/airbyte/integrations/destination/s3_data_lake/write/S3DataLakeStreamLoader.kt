@@ -240,10 +240,6 @@ class S3DataLakeStreamLoader(
                             catalog,
                             tableIdGenerator.toTableIdentifier(stream.mappedDescriptor),
                             backup = backup,
-                            // A retained staging branch can carry legacy deletes from a
-                            // failed v2 sync; migrate it in the same transaction so they
-                            // cannot come back on branch promotion.
-                            branches = listOf(mainBranchName, stagingBranchName),
                         )
                         table.refresh()
                         effectiveVersion = 3
