@@ -46,6 +46,9 @@ data:
       url: https://developer.lemlist.com/
       type: api_reference
     - title: Lemlist authentication
-      url: https://developer.lemlist.com/#authentication
+      url: https://developer.lemlist.com/api-reference/getting-started/authentication
       type: authentication_guide
+    - title: Lemlist API versions (v1 deprecation notice)
+      url: https://developer.lemlist.com/api-reference/getting-started/version
+      type: api_deprecations
 metadataSpecVersion: "1.0"
