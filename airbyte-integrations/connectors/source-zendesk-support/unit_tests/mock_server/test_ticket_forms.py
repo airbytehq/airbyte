@@ -1,14 +1,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import json
 from datetime import timedelta
 from unittest import TestCase
 
 import freezegun
 import pytest
 
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.models import Level as LogLevel
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
@@ -111,6 +112,57 @@ class TestTicketFormsErrorHandling(TestCase):
 
     def _get_authenticator(self, config):
         return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
+
+    @HttpMocker()
+    def test_given_404_error_when_read_ticket_forms_then_fail_with_config_error(self, http_mocker):
+        api_token_authenticator = self._get_authenticator(self._config)
+        error_body = {
+            "error": {
+                "title": "No help desk at d3v-airbyte.zendesk.com",
+                "message": "The help desk configured at this address is no longer available.",
+            }
+        }
+
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.ticket_forms_endpoint(api_token_authenticator).build(),
+            HttpResponse(body=json.dumps(error_body), status_code=404),
+        )
+
+        output = read_stream("ticket_forms", SyncMode.full_refresh, self._config, expecting_exception=True)
+
+        assert len(output.records) == 0
+        errors = [message.trace.error for message in output.errors if message.trace.error is not None]
+        assert any(
+            error.failure_type == FailureType.config_error
+            and "Unable to read data for stream ticket_forms because Zendesk returned 404 Not Found" in error.message
+            and "No help desk" in error.message
+            for error in errors
+        ), output.errors
+        assert not any(
+            "The requested resource was not found on the server" in error.message or error.failure_type == FailureType.system_error
+            for error in errors
+        ), output.errors
+
+    @HttpMocker()
+    def test_given_403_error_when_read_ticket_forms_then_fail_with_config_error(self, http_mocker):
+        api_token_authenticator = self._get_authenticator(self._config)
+
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.ticket_forms_endpoint(api_token_authenticator).build(),
+            ErrorResponseBuilder.response_with_status(403).with_error_message("Forbidden").build(),
+        )
+
+        output = read_stream("ticket_forms", SyncMode.full_refresh, self._config, expecting_exception=True)
+
+        assert len(output.records) == 0
+        errors = [message.trace.error for message in output.errors if message.trace.error is not None]
+        assert any(
+            error.failure_type == FailureType.config_error
+            and "Unable to read data for stream ticket_forms due to an issue with permissions" in error.message
+            and "Forbidden" in error.message
+            for error in errors
+        ), output.errors
+        assert not any(error.failure_type == FailureType.system_error for error in errors), output.errors
 
     @HttpMocker()
     def test_given_403_error_when_read_ticket_forms_then_fail_with_error_log(self, http_mocker):
