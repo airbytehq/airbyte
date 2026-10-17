@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.21 — 2026-10-16
+
+[#89039](https://github.com/airbytehq/airbyte/pull/89039) — Compile against the published bulk-cdk-core-base 1.0.6 (Kotlin 2.4 toolchain) instead of 1.0.3; no code change.
+
 ### 1.1.20 — 2026-10-16
 
 [#89031](https://github.com/airbytehq/airbyte/pull/89031) — Kotlin compiler 2.4.21 with K2, KSP 2.3.10, kotlinx-coroutines 1.11.0 and mockk 1.14.11 (lifting the strictly-1.13.13 pin); KSP is now declared per source set (`kspTestFixtures`, `kspIntegrationTest`) because KSP2 no longer applies to every compilation; released alongside base 1.0.6 and load 1.1.6; no runtime behaviour change in extract.
