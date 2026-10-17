@@ -478,7 +478,7 @@ spec:
       domains:
         type: array
         description: |
-          A comma-seperated string of domains (eg bbc.co.uk, techcrunch.com,
+          A comma-separated string of domains (eg bbc.co.uk, techcrunch.com,
           engadget.com) to restrict the search to.
         items:
           type: string
@@ -486,7 +486,7 @@ spec:
       exclude_domains:
         type: array
         description: |
-          A comma-seperated string of domains (eg bbc.co.uk, techcrunch.com,
+          A comma-separated string of domains (eg bbc.co.uk, techcrunch.com,
           engadget.com) to remove from the results.
         items:
           type: string
