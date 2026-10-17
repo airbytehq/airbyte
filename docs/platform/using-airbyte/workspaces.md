@@ -8,7 +8,7 @@ You can create, manage, and delete workspaces, and control access to them.
 
 ## Create a new workspace
 
-Organization admins and readers can create workspaces. Follow these steps to create a new workspace.
+Organization admins can create workspaces. Follow these steps to create a new workspace.
 
 1. Go to your Organization home page.
 
@@ -32,7 +32,7 @@ Workspace admins can rename workspaces. Follow these steps to rename a workspace
 
 ## Delete a workspace
 
-Organizations admins and editors, and workspace admins, can delete a workspace. Follow these steps to delete a workspace.
+Organization admins and workspace admins can delete a workspace. Follow these steps to delete a workspace.
 
 :::danger
 Deleting a workspace deletes all its sources, destinations, and connections. This is irreversible. Think carefully before doing this.
@@ -84,4 +84,4 @@ If you have multiple workspaces in the same organization, you can switch between
 
 ## Managing roles
 
-See [Role based access control](../access-management/rbac) to learn more about the different roles available. If you're on the Cloud Standard or Plus plan, all users are admins.
+See [Manage users and permissions](../access-management/manage-users) to learn which roles are available on your plan and how organization admins and workspace admins differ. If you're on the Cloud Standard or Plus plan, all users are admins and you can't change their roles. On Pro and Enterprise Flex, see [Role-based access control](../access-management/rbac) for the roles you can assign.

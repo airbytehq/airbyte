@@ -406,6 +406,10 @@ module.exports = {
               label: "Access management",
               items: [
                 {
+                  type: "doc",
+                  id: "access-management/manage-users",
+                },
+                {
                   type: "category",
                   label: "Single Sign-On (SSO)",
                   link: {
