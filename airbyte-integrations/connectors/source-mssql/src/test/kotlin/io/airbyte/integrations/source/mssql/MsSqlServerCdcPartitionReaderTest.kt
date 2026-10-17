@@ -9,6 +9,7 @@ import io.airbyte.cdk.read.cdc.CdcPartitionsCreatorDebeziumOperations
 import io.airbyte.cdk.read.cdc.DebeziumOffset
 import io.airbyte.cdk.read.cdc.DebeziumRecordValue
 import java.sql.ResultSet
+import java.sql.SQLException
 import java.time.Duration
 import java.time.Instant
 import org.apache.kafka.connect.source.SourceRecord
@@ -63,10 +64,22 @@ class MsSqlServerCdcPartitionReaderTest :
     override fun MSSQLServerContainer<*>.createStream() {
         execute("EXEC sys.sp_cdc_enable_db")
         execute("CREATE TABLE dbo.tbl (id INT IDENTITY(1,1) PRIMARY KEY, v INT)")
-        execute(
-            "EXEC sys.sp_cdc_enable_table @source_schema = 'dbo', @source_name = 'tbl', " +
-                "@role_name = NULL, @capture_instance = 'dbo_tbl'",
-        )
+        // Enabling the first capture instance creates the capture and cleanup jobs through SQL
+        // Server Agent. Right after the container comes up the Agent is still starting and the
+        // call fails with error 14258 ("Cannot perform this operation while SQLServerAgent is
+        // starting") inside 22832, after rolling back its metadata changes, so it is safe to
+        // resubmit until the Agent accepts jobs. This is the only test class that runs the Agent.
+        awaitCondition("SQL Server Agent to accept the CDC capture job") {
+            try {
+                execute(
+                    "EXEC sys.sp_cdc_enable_table @source_schema = 'dbo', @source_name = 'tbl', " +
+                        "@role_name = NULL, @capture_instance = 'dbo_tbl'",
+                )
+                true
+            } catch (e: SQLException) {
+                if (e.message?.contains("SQLServerAgent is starting") == true) false else throw e
+            }
+        }
         // The cold start offset is sys.fn_cdc_get_max_lsn(), which is NULL until the capture job
         // has run once.
         awaitCondition("sys.fn_cdc_get_max_lsn() to be available") {
