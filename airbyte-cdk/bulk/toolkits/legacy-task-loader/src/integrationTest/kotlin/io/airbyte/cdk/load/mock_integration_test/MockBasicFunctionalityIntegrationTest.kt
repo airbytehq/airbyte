@@ -180,7 +180,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                             blob = """{"foo": "bar"}""",
                             sourceRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
-                        )
+                        ),
                     ),
                 )
             }
@@ -214,7 +214,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                         stream,
                         """{"id": 42}""",
                         emittedAtMs = 1234,
-                        checkpointId = checkpointKeyForMedium()?.checkpointId
+                        checkpointId = checkpointKeyForMedium()?.checkpointId,
                     ),
                     InputGlobalCheckpoint(
                         Jsons.readTree("""{"foo": "bar"}"""),
@@ -235,7 +235,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                             ),
                         ),
                         sourceRecordCount = 1,
-                    )
+                    ),
                 ),
             )
 
@@ -260,7 +260,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                             checkpointKeyForMedium()?.let {
                                 stateMessage.withAdditionalProperty(
                                     "partition_id",
-                                    it.checkpointId.value
+                                    it.checkpointId.value,
                                 )
                                 stateMessage.withAdditionalProperty("id", it.checkpointIndex.value)
                             }
@@ -293,7 +293,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                                     .withStreamDescriptor(
                                         StreamDescriptor()
                                             .withNamespace("potato")
-                                            .withName("tomato")
+                                            .withName("tomato"),
                                     )
                                     .withStreamState(Jsons.readTree("""{"ghi": "jkl"}""")),
                             ),
@@ -307,7 +307,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
 
     private fun testNamespaceMapping(
         namespaceMappingConfig: NamespaceMappingConfig,
-        namespaceValidator: (String?, String?, String, String) -> Unit
+        namespaceValidator: (String?, String?, String, String) -> Unit,
     ) {
         assumeTrue(dataChannelMedium == DataChannelMedium.SOCKET)
         val stream =
@@ -323,8 +323,8 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                     NamespaceMapper(
                         namespaceDefinitionType = namespaceMappingConfig.namespaceDefinitionType,
                         streamPrefix = namespaceMappingConfig.streamPrefix,
-                        namespaceFormat = namespaceMappingConfig.namespaceFormat
-                    )
+                        namespaceFormat = namespaceMappingConfig.namespaceFormat,
+                    ),
             )
         namespaceValidator(
             stream.unmappedNamespace,
@@ -340,12 +340,12 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                     stream,
                     """{"id": 42}""",
                     emittedAtMs = 1234L,
-                    checkpointId = checkpointKeyForMedium()?.checkpointId
-                )
+                    checkpointId = checkpointKeyForMedium()?.checkpointId,
+                ),
             ),
             useFileTransfer = false,
             destinationProcessFactory = destinationProcessFactory,
-            namespaceMappingConfig = namespaceMappingConfig
+            namespaceMappingConfig = namespaceMappingConfig,
         )
         dumpAndDiffRecords(
             parsedConfig,
@@ -355,7 +355,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                     generationId = 1,
                     data = mapOf("id" to 42),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
-                )
+                ),
             ),
             stream,
             primaryKey = listOf(listOf("id")),
@@ -366,7 +366,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
     @Test
     open fun testNamespaceMappingDestinationNoPrefix() {
         testNamespaceMapping(
-            NamespaceMappingConfig(namespaceDefinitionType = NamespaceDefinitionType.DESTINATION)
+            NamespaceMappingConfig(namespaceDefinitionType = NamespaceDefinitionType.DESTINATION),
         ) { _, mappedNamespace, unmappedName, mappedName ->
             // For destination namespace mapping, the namespace should be the unmapped name.
             assertNull(mappedNamespace)
@@ -380,7 +380,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
             NamespaceMappingConfig(
                 namespaceDefinitionType = NamespaceDefinitionType.DESTINATION,
                 streamPrefix = "prefix_",
-            )
+            ),
         ) { _, mappedNamespace, unmappedName, mappedName ->
             // For destination namespace mapping, the namespace should be the unmapped name.
             assertNull(mappedNamespace)
@@ -394,7 +394,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
             NamespaceMappingConfig(
                 namespaceDefinitionType = NamespaceDefinitionType.SOURCE,
                 streamPrefix = "prefix_",
-            )
+            ),
         ) { unmappedNamespace, mappedNamespace, unmappedName, mappedName ->
             // For source namespace mapping, the namespace should be the unmapped namespace.
             assertEquals(unmappedNamespace, mappedNamespace)
@@ -408,7 +408,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
             NamespaceMappingConfig(
                 namespaceDefinitionType = NamespaceDefinitionType.CUSTOM_FORMAT,
                 namespaceFormat = "custom_\${SOURCE_NAMESPACE}_namespace",
-            )
+            ),
         ) { _, mappedNamespace, unmappedName, mappedName ->
             // For custom namespace mapping, the namespace should be the custom format.
             assertEquals("custom_${randomizedNamespace}_namespace", mappedNamespace)
@@ -423,7 +423,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                 namespaceDefinitionType = NamespaceDefinitionType.CUSTOM_FORMAT,
                 namespaceFormat = "custom_$randomizedNamespace",
                 streamPrefix = "prefix_",
-            )
+            ),
         ) { _, mappedNamespace, unmappedName, mappedName ->
             // For custom namespace mapping, the namespace should be the custom format.
             assertEquals("custom_${randomizedNamespace}", mappedNamespace)
@@ -449,7 +449,7 @@ class MockBasicFunctionalityIntegrationTestSocketProtobuf :
     // expected, protobuf mode assumes valid values.
     @Test
     @Disabled(
-        "we need a separate test case that exercises all types, but without bad values - https://github.com/airbytehq/airbyte-internal-issues/issues/13708"
+        "we need a separate test case that exercises all types, but without bad values - https://github.com/airbytehq/airbyte-internal-issues/issues/13708",
     )
     override fun testBasicTypes() {
         super.testBasicTypes()

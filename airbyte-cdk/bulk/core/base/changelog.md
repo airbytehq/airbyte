@@ -1,3 +1,7 @@
+## Version 1.0.7
+
+[#89040](https://github.com/airbytehq/airbyte/pull/89040) — Repo-wide reformat with ktfmt 0.65 (trailing commas on one-per-line parameter and argument lists, blank lines between declarations) and removal of SpotBugs suppressions that 4.10.5 on the K2 compiler no longer needs; no behaviour change.
+
 ## Version 1.0.6
 
 [#89031](https://github.com/airbytehq/airbyte/pull/89031) — Kotlin compiler 2.4.21 with K2, KSP 2.3.10, kotlinx-coroutines 1.11.0 and mockk 1.14.11 (lifting the strictly-1.13.13 pin); KSP is now declared per source set (`kspTestFixtures`, `kspIntegrationTest`) because KSP2 no longer applies to every compilation; released alongside extract 1.1.20 and load 1.1.6; no runtime behaviour change.

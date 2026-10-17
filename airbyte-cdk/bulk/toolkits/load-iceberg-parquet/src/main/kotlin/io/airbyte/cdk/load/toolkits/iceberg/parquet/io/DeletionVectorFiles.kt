@@ -67,7 +67,7 @@ class DeletionVectorFiles(
             pending.forEach { (path, pendingDv) ->
                 val index =
                     Deletes.toPositionIndex(
-                        CloseableIterable.withNoopClose(pendingDv.positions.toList())
+                        CloseableIterable.withNoopClose(pendingDv.positions.toList()),
                     )
                 writer.delete(path, index, pendingDv.spec, pendingDv.partition)
             }

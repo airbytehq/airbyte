@@ -26,7 +26,7 @@ private const val DEFAULT_FORMAT_VERSION = 2
 fun tableFormatVersion(table: Table): Int =
     (table as? HasTableOperations)?.operations()?.current()?.formatVersion()
         ?: table.properties()[TableProperties.FORMAT_VERSION]?.toIntOrNull()
-            ?: DEFAULT_FORMAT_VERSION
+        ?: DEFAULT_FORMAT_VERSION
 
 /**
  * Validates that [mode] can be written to [table], which must be a Dedupe target. Throws

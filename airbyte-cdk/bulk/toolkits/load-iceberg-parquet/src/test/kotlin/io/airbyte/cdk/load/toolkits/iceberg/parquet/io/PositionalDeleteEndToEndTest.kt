@@ -56,7 +56,7 @@ class PositionalDeleteEndToEndTest {
                 .buildTable(tableId, schema)
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .withProperty(TableProperties.DELETE_TARGET_FILE_SIZE_BYTES, "104857600")
                 .create()
@@ -115,25 +115,25 @@ class PositionalDeleteEndToEndTest {
         val (firstResult, warningMessages) =
             captureWarnings {
                 firstUpdateWriter.write(
-                    RecordWrapper(record(schema, "1", "one-updated"), Operation.UPDATE)
+                    RecordWrapper(record(schema, "1", "one-updated"), Operation.UPDATE),
                 )
                 firstUpdateWriter.write(
-                    RecordWrapper(record(schema, "2", "ignored"), Operation.DELETE)
+                    RecordWrapper(record(schema, "2", "ignored"), Operation.DELETE),
                 )
                 firstUpdateWriter.write(
-                    RecordWrapper(record(schema, "1", "one-updated-again"), Operation.UPDATE)
+                    RecordWrapper(record(schema, "1", "one-updated-again"), Operation.UPDATE),
                 )
                 firstUpdateWriter.write(
-                    RecordWrapper(record(schema, "3", "three"), Operation.INSERT)
+                    RecordWrapper(record(schema, "3", "three"), Operation.INSERT),
                 )
                 firstUpdateWriter.write(
                     RecordWrapper(
                         record(schema, StringBuilder("3"), "three-repeated"),
-                        Operation.UPDATE
-                    )
+                        Operation.UPDATE,
+                    ),
                 )
                 firstUpdateWriter.write(
-                    RecordWrapper(record(schema, "9", "missing"), Operation.DELETE)
+                    RecordWrapper(record(schema, "9", "missing"), Operation.DELETE),
                 )
                 firstUpdateWriter.complete()
             }
@@ -165,7 +165,7 @@ class PositionalDeleteEndToEndTest {
                 positionalDeleteState = positionalState,
             )
         secondUpdateWriter.write(
-            RecordWrapper(record(schema, "3", "three-updated"), Operation.UPDATE)
+            RecordWrapper(record(schema, "3", "three-updated"), Operation.UPDATE),
         )
         val (_, secondWarningMessages) =
             captureWarnings { secondUpdateWriter.complete() }
@@ -189,11 +189,11 @@ class PositionalDeleteEndToEndTest {
             positionalDeleteFiles.map { deleteFile -> deleteFile.content() }.toSet()
         assertThat(positionalDeleteContents).containsOnly(FileContent.POSITION_DELETES)
         assertThat(
-                table.snapshot(firstPositionalSnapshotId)!!.addedDeleteFiles(table.io()).toList()
+                table.snapshot(firstPositionalSnapshotId)!!.addedDeleteFiles(table.io()).toList(),
             )
             .allMatch { it.content() == FileContent.POSITION_DELETES }
         assertThat(
-                table.snapshot(secondPositionalSnapshotId)!!.addedDeleteFiles(table.io()).toList()
+                table.snapshot(secondPositionalSnapshotId)!!.addedDeleteFiles(table.io()).toList(),
             )
             .allMatch { it.content() == FileContent.POSITION_DELETES }
         assertThat(positionalDeleteFiles).allMatch { it.referencedDataFile() != null }
@@ -232,7 +232,7 @@ class PositionalDeleteEndToEndTest {
                 .buildTable(tableId, schema)
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .create()
         val writerFactory = IcebergTableWriterFactory()
@@ -343,7 +343,7 @@ class PositionalDeleteEndToEndTest {
                 .buildTable(tableId, schema)
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .create()
         val writerFactory = IcebergTableWriterFactory()
@@ -413,7 +413,7 @@ class PositionalDeleteEndToEndTest {
                 .buildTable(tableId, schema)
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .create()
         val writerFactory = IcebergTableWriterFactory()
@@ -516,7 +516,7 @@ class PositionalDeleteEndToEndTest {
                 .buildTable(tableId, schema)
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .create()
         val writerFactory = IcebergTableWriterFactory()
@@ -540,7 +540,7 @@ class PositionalDeleteEndToEndTest {
                 table,
                 schema,
                 firstResult.dataFiles().single().location(),
-                secondResult.dataFiles().single().location()
+                secondResult.dataFiles().single().location(),
             )
         assertThat(sharedDelete.referencedDataFile()).isNull()
         val planned = table.refs()["staging"]!!.snapshotId()
@@ -612,7 +612,7 @@ class PositionalDeleteEndToEndTest {
                 .buildTable(tableId, schema)
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .create()
         val writerFactory = IcebergTableWriterFactory()
@@ -652,7 +652,7 @@ class PositionalDeleteEndToEndTest {
         assertThat(
                 table.newScan().useRef("staging").planFiles().use {
                     it.map { task -> task.file().location() }.toList()
-                }
+                },
             )
             .doesNotContain(initialResult.dataFiles().single().location())
         val snapshotAfterCommit = table.refs()["staging"]!!.snapshotId()
@@ -680,7 +680,7 @@ class PositionalDeleteEndToEndTest {
                 .buildTable(tableId, schema)
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .create()
         val writerFactory = IcebergTableWriterFactory()
@@ -750,7 +750,7 @@ class PositionalDeleteEndToEndTest {
                 .buildTable(tableId, schema)
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .withProperty(TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES, "1")
                 .withProperty(TableProperties.PARQUET_ROW_GROUP_CHECK_MIN_RECORD_COUNT, "1")
@@ -821,7 +821,7 @@ class PositionalDeleteEndToEndTest {
                 .buildTable(tableId, schema)
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .withProperty(TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES, "1")
                 .withProperty(TableProperties.PARQUET_ROW_GROUP_CHECK_MIN_RECORD_COUNT, "1")
@@ -938,7 +938,7 @@ class PositionalDeleteEndToEndTest {
                 .buildTable(tableId, schema)
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .withProperty(TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES, "1")
                 .withProperty(TableProperties.PARQUET_ROW_GROUP_CHECK_MIN_RECORD_COUNT, "1")
@@ -987,7 +987,7 @@ class PositionalDeleteEndToEndTest {
             println(
                 "benchmark distribution=$distribution size=$size " +
                     "subRanges=$subRanges rowsScanned=${state.rowsScanned.get()} " +
-                    "elapsedMs=$elapsed"
+                    "elapsedMs=$elapsed",
             )
             if (distribution == "clustered" && subRanges == 4) {
                 assertThat(state.rowsScanned.get()).isLessThanOrEqualTo(size.toLong())
@@ -1015,7 +1015,7 @@ class PositionalDeleteEndToEndTest {
                 .buildTable(tableId, schema)
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .create()
         val writerFactory = IcebergTableWriterFactory()
@@ -1096,7 +1096,7 @@ class PositionalDeleteEndToEndTest {
                 .buildTable(tableId, schema)
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .create()
         val writerFactory = IcebergTableWriterFactory()
@@ -1164,7 +1164,7 @@ class PositionalDeleteEndToEndTest {
                 .buildTable(tableId, tsSchema)
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .create()
         val writerFactory = IcebergTableWriterFactory()

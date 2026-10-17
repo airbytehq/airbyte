@@ -61,7 +61,10 @@ class PostgresSourceConcurrentJdbcPartitionsCreatorFactory<
 }
 
 class PostgresSourceJdbcConcurrentPartitionsCreator<
-    A : JdbcSharedState, S : JdbcStreamState<A>, P : JdbcPartition<S>>(
+    A : JdbcSharedState,
+    S : JdbcStreamState<A>,
+    P : JdbcPartition<S>,
+>(
     partition: P,
     partitionFactory: JdbcPartitionFactory<A, S, P>,
 ) : JdbcConcurrentPartitionsCreator<A, S, P>(partition, partitionFactory) {
@@ -167,7 +170,7 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
             { stmt -> stmt.setString(1, toQualifiedTableName(stream.namespace, stream.name)) },
             { rs ->
                 return@querySingleValue rs.getLong(1)
-            }
+            },
         )
     }
 }

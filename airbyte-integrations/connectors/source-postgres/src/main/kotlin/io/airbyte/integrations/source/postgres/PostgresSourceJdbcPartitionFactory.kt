@@ -62,7 +62,7 @@ open class PostgresSourceJdbcPartitionFactory(
     private val streamStates = ConcurrentHashMap<StreamIdentifier, PostgresSourceJdbcStreamState>()
 
     override fun streamState(
-        streamFeedBootstrap: StreamFeedBootstrap
+        streamFeedBootstrap: StreamFeedBootstrap,
     ): PostgresSourceJdbcStreamState =
         streamStates.getOrPut(streamFeedBootstrap.feed.id) {
             PostgresSourceJdbcStreamState(DefaultJdbcStreamState(sharedState, streamFeedBootstrap))
@@ -70,7 +70,7 @@ open class PostgresSourceJdbcPartitionFactory(
 
     private fun coldStart(
         streamState: PostgresSourceJdbcStreamState,
-        filenode: Filenode?
+        filenode: Filenode?,
     ): PostgresSourceJdbcPartition {
         val stream: Stream = streamState.stream
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH || config.global) {
@@ -81,12 +81,12 @@ open class PostgresSourceJdbcPartitionFactory(
                     lowerBound = null,
                     upperBound = null,
                     filenode,
-                    true
+                    true,
                 )
             }
                 ?: PostgresSourceJdbcUnsplittableSnapshotPartition(
                     selectQueryGenerator,
-                    streamState
+                    streamState,
                 )
         }
         when (config.incrementalConfiguration) {
@@ -99,7 +99,7 @@ open class PostgresSourceJdbcPartitionFactory(
                         null,
                         null,
                         filenode,
-                        true
+                        true,
                     )
                 }
                     ?: PostgresSourceJdbcUnsplittableSnapshotWithXminPartition(
@@ -119,7 +119,7 @@ open class PostgresSourceJdbcPartitionFactory(
                         cursorChosenFromCatalog,
                         cursorUpperBound = null,
                         filenode,
-                        true
+                        true,
                     )
                 }
                     ?: PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition(
@@ -200,7 +200,7 @@ open class PostgresSourceJdbcPartitionFactory(
                                 lowerBound = Jsons.textNode(streamState.maybeCtid!!.toString()),
                                 upperBound = null,
                                 filenode,
-                                true
+                                true,
                             )
                         }
                     }
@@ -228,7 +228,7 @@ open class PostgresSourceJdbcPartitionFactory(
                             cursor,
                             cursorCheckpoint,
                             filenode,
-                            true
+                            true,
                         )
                     } else if (cursorCheckpoint == streamState.cursorUpperBound) {
                         // Incremental complete
@@ -274,7 +274,7 @@ open class PostgresSourceJdbcPartitionFactory(
                                 lowerBound = Jsons.textNode(streamState.maybeCtid.toString()),
                                 upperBound = null,
                                 filenode,
-                                true
+                                true,
                             )
                         }
                     }
@@ -293,7 +293,7 @@ open class PostgresSourceJdbcPartitionFactory(
                                 null,
                                 sv.xmin,
                                 filenode,
-                                true
+                                true,
                             )
                         } else if (sv.xmin == streamState.cursorUpperBound) {
                             // Incremental done
@@ -329,7 +329,7 @@ open class PostgresSourceJdbcPartitionFactory(
                         lowerBound = Jsons.textNode(streamState.maybeCtid.toString()),
                         upperBound = null,
                         filenode,
-                        true
+                        true,
                     )
                 }
             }
@@ -350,9 +350,10 @@ open class PostgresSourceJdbcPartitionFactory(
 
     companion object {
         private val log = KotlinLogging.logger {}
+
         fun getStreamFilenode(
             streamState: JdbcStreamState<*>,
-            jdbcConnectionFactory: JdbcConnectionFactory
+            jdbcConnectionFactory: JdbcConnectionFactory,
         ): Filenode? {
             log.info { "Querying filenode for stream ${streamState.stream.id}" }
             val sql = "SELECT pg_relation_filenode(?::regclass)"
@@ -364,16 +365,17 @@ open class PostgresSourceJdbcPartitionFactory(
                     { stmt ->
                         stmt.setString(
                             1,
-                            with(streamState.stream) { toQualifiedTableName(namespace, name) }
+                            with(streamState.stream) { toQualifiedTableName(namespace, name) },
                         )
                     },
-                    { rs -> jdbcFieldType.jdbcGetter.get(rs, 1) }
+                    { rs -> jdbcFieldType.jdbcGetter.get(rs, 1) },
                 )
             log.info { "Filenode for stream ${streamState.stream.id}: ${filenode ?: "not found"}" }
             return filenode as? Filenode
         }
 
         const val POSTGRESQL_VERSION_TID_RANGE_SCAN_CAPABLE: Int = 14
+
         fun isTidRangeScanCapableDBServer(jdbcConnectionFactory: JdbcConnectionFactory): Boolean {
             jdbcConnectionFactory.get().use { connection ->
                 try {
@@ -398,8 +400,8 @@ open class PostgresSourceJdbcPartitionFactory(
                             JdbcConnectionFactory(config),
                             "SELECT current_setting('block_size')::int",
                             null,
-                            { rs -> rs.getLong(1) }
-                        )
+                            { rs -> rs.getLong(1) },
+                        ),
                     )
                 log.info { "Server block size is $cachedBlockSize." }
             }
@@ -409,7 +411,7 @@ open class PostgresSourceJdbcPartitionFactory(
 
     private fun detectStreamFilenodeChange(
         streamState: PostgresSourceJdbcStreamState,
-        filenode: Filenode?
+        filenode: Filenode?,
     ): FilenodeChangeType =
         when {
             // No filenode - a view?
@@ -423,8 +425,9 @@ open class PostgresSourceJdbcPartitionFactory(
             // filenode unchanged - all good
             else -> FILENODE_NO_CHANGE
         }
+
     private fun PostgresSourceJdbcStreamStateValue.cursorPair(
-        stream: Stream
+        stream: Stream,
     ): Pair<DataField, JsonNode>? {
         if (cursors.size > 1) {
             handler.accept(
@@ -457,13 +460,13 @@ open class PostgresSourceJdbcPartitionFactory(
             { stmt -> stmt.setString(1, toQualifiedTableName(stream.namespace, stream.name)) },
             { rs ->
                 return@querySingleValue rs.getLong(1)
-            }
+            },
         )
     }
 
     override fun split(
         unsplitPartition: PostgresSourceJdbcPartition,
-        opaqueStateValues: List<OpaqueStateValue>
+        opaqueStateValues: List<OpaqueStateValue>,
     ): List<PostgresSourceJdbcPartition> {
         val splitPartitionBoundaries: List<PostgresSourceJdbcStreamStateValue> by lazy {
             opaqueStateValues.map {
@@ -479,19 +482,19 @@ open class PostgresSourceJdbcPartitionFactory(
                 unsplitPartition.split(
                     splitPartitionBoundaries.size,
                     splitPartitionBoundaries.first().filenode,
-                    relationSize
+                    relationSize,
                 )
             is PostgresSourceJdbcSplittableSnapshotWithCursorPartition ->
                 unsplitPartition.split(
                     splitPartitionBoundaries.size,
                     splitPartitionBoundaries.first().filenode,
-                    relationSize
+                    relationSize,
                 )
             is PostgresSourceJdbcSplittableSnapshotWithXminPartition ->
                 unsplitPartition.split(
                     splitPartitionBoundaries.size,
                     splitPartitionBoundaries.first().filenode,
-                    relationSize
+                    relationSize,
                 )
             // TODO: implement split for cursor incremental partition
             else -> listOf(unsplitPartition)
@@ -508,7 +511,7 @@ open class PostgresSourceJdbcPartitionFactory(
         lowerBound: JsonNode?,
         numPartitions: Int,
         relationSize: Long,
-        blockSize: Long
+        blockSize: Long,
     ): List<Pair<Ctid?, Ctid?>> {
         val theoreticalLastPage: Long = relationSize / blockSize
         log.info { "Theoretical last page: $theoreticalLastPage" }
@@ -517,8 +520,7 @@ open class PostgresSourceJdbcPartitionFactory(
                 if (it.isNull.not() && it.asText().isEmpty().not()) {
                     Ctid.of(it.asText())
                 } else null
-            }
-                ?: Ctid.ZERO
+            } ?: Ctid.ZERO
         val eachStep: Long =
             ((theoreticalLastPage - lowerBoundCtid.page) / numPartitions).coerceAtLeast(1)
         val lbs: List<Ctid?> =
@@ -545,7 +547,7 @@ open class PostgresSourceJdbcPartitionFactory(
                 upperBound?.let { Jsons.textNode(it.toString()) },
                 filenode,
                 // The first partition includes the lower bound
-                index == 0
+                index == 0,
             )
         }
     }
@@ -568,7 +570,7 @@ open class PostgresSourceJdbcPartitionFactory(
                 cursorUpperBound,
                 filenode,
                 // The first partition includes the lower bound
-                index == 0
+                index == 0,
             )
         }
     }
@@ -588,7 +590,7 @@ open class PostgresSourceJdbcPartitionFactory(
                 upperBound?.let { Jsons.textNode(it.toString()) },
                 cursorUpperBound,
                 filenode,
-                index == 0
+                index == 0,
             )
         }
     }

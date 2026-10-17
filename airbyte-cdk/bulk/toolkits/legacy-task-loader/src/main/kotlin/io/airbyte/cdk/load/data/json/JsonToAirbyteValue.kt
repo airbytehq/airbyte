@@ -32,7 +32,7 @@ class JsonToAirbyteValue {
                 ObjectValue(
                     (json as ObjectNode).properties().associateTo(linkedMapOf()) { (k, v) ->
                         k to convert(v)
-                    }
+                    },
                 )
             JsonNodeType.POJO,
             JsonNodeType.BINARY ->

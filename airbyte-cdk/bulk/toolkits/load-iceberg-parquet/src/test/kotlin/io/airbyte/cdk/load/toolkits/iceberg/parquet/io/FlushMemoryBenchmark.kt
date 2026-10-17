@@ -31,7 +31,6 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
  *
  * Run it against a deliberately small heap, which needs a plain JVM rather than the Gradle test
  * JVM's fixed 3 GB:
- *
  * ```
  * java -Xmx512m -cp "$(cat classpath.txt)" \
  *   io.airbyte.cdk.load.toolkits.iceberg.parquet.io.FlushMemoryBenchmark
@@ -84,11 +83,11 @@ class FlushMemoryBenchmark {
             val rows = mutableListOf<String>()
             rows.add(
                 "heap $heapMb MB, $DATA_FILES data files of $ROWS_PER_DATA_FILE rows, " +
-                    "$PAYLOAD_COLUMNS payload columns of $PAYLOAD_WIDTH chars"
+                    "$PAYLOAD_COLUMNS payload columns of $PAYLOAD_WIDTH chars",
             )
             rows.add(
                 "| rows per flush | row group MB | live heap MB | peak heap MB | " +
-                    "rows scanned (last batch) | files opened (last batch) | wall ms | outcome |"
+                    "rows scanned (last batch) | files opened (last batch) | wall ms | outcome |",
             )
             rows.add("| --- | --- | --- | --- | --- | --- | --- | --- |")
             rowGroupSizesMb.forEach { rowGroupMb ->
@@ -98,7 +97,7 @@ class FlushMemoryBenchmark {
                         "| $rowsPerFlush | $rowGroupMb | ${result.liveHeapMb} | " +
                             "${result.peakHeapMb} | " +
                             "${result.rowsScanned} | ${result.dataFilesOpened} | " +
-                            "${result.wallTimeMillis} | ${result.outcome} |"
+                            "${result.wallTimeMillis} | ${result.outcome} |",
                     )
                     println(rows.last())
                 }
@@ -160,7 +159,7 @@ class FlushMemoryBenchmark {
                 .buildTable(tableId, schema())
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .withProperty(
                     TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES,

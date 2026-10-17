@@ -30,7 +30,7 @@ class PositionalDeleteFiles(
                 sameFlushLocations
                     .toList()
                     .sortedWith(compareBy({ it.path.toString() }, { it.position }))
-                    .asSequence()
+                    .asSequence(),
             )
         return output
     }
