@@ -62,3 +62,37 @@ def test_export_stream_conflict_names(requests_mock, export_response, config):
     assert record["userName"] == "1"
     assert record["_userName"] == "2"
     assert record["__username"] == "3"
+
+
+def test_export_stream_uses_schema_mapping_for_case_colliding_properties(requests_mock, config):
+    stream = Export(authenticator=MagicMock(), **config)
+    stream.reqs_per_hour_limit = 0
+    requests_mock.register_uri(
+        "GET",
+        "https://mixpanel.com/api/query/events/properties/top",
+        setup_response(200, {"FOO": {}, "foo": {}}),
+    )
+    requests_mock.register_uri(
+        "GET",
+        get_url_to_mock(stream),
+        setup_response(
+            200,
+            {
+                "event": "Lowercase property only",
+                "properties": {"distinct_id": "id", "foo": "value", "time": 1485302410},
+            },
+        ),
+    )
+
+    schema = stream.get_json_schema()
+    records = list(
+        stream.read_records(
+            sync_mode=SyncMode.incremental,
+            stream_slice={"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"},
+        )
+    )
+
+    assert "FOO" in schema["properties"]
+    assert "_foo" in schema["properties"]
+    assert records[0]["_foo"] == "value"
+    assert "foo" not in records[0]
