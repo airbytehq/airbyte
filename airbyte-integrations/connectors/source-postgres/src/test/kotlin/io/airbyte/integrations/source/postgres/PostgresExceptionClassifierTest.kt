@@ -238,7 +238,7 @@ class PostgresExceptionClassifierTest {
         )
         Assertions.assertTrue(
             status.message.startsWith(
-                "Could not connect with provided configuration. Error: $ROLE_CONNECTION_LIMIT_GUIDANCE"
+                "Could not connect with provided configuration. Error: $ROLE_CONNECTION_LIMIT_GUIDANCE",
             ),
             "Unexpected connection status message: ${status.message}",
         )
