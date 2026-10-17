@@ -23,9 +23,15 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.SyncMode
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.UUID
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.Isolated
+
+private val log = KotlinLogging.logger {}
 
 /**
  * READ through the JDBC fallback path (the emulator declines the Storage Read API), exercising
@@ -33,7 +39,13 @@ import org.junit.jupiter.api.Test
  * key ranges from `APPROX_QUANTILES`, while a table with no key is read by one query. The forced
  * split (one row per partition, via [BigQueryReadApiConstants.fallbackPartitionTargetRows]) proves
  * the ranges tile the key space with neither gaps nor overlaps end to end.
+ *
+ * The tables live in a dataset of this class's own, created in [seed] and dropped in [dropDataset],
+ * so that they never show up in another class's whole-project DISCOVER (every test class of the JVM
+ * shares the emulator). The class is [Isolated] because [withTargetRows] sets a JVM-wide system
+ * property that any connector context started meanwhile would pick up.
  */
+@Isolated
 class BigQueryConcurrentReadTest {
 
     private val config = BigQueryEmulatorTestFixture.config(datasetId = DATASET)
@@ -118,17 +130,21 @@ class BigQueryConcurrentReadTest {
     }
 
     companion object {
-        private const val DATASET = "quantile_ds"
+        /** Unique per class, see the class documentation. */
+        private val DATASET: String =
+            "concurrent_" + UUID.randomUUID().toString().replace("-", "").take(12)
+
+        private fun client(): BigQuery =
+            BigQueryEmulatorTestFixture.client(
+                BigQueryEmulatorTestFixture.start().emulatorHttpEndpoint
+            )
 
         @JvmStatic
         @BeforeAll
         fun seed() {
-            val endpoint: String = BigQueryEmulatorTestFixture.start().emulatorHttpEndpoint
-            val bigquery: BigQuery = BigQueryEmulatorTestFixture.client(endpoint)
+            val bigquery: BigQuery = client()
             val projectId = BigQueryEmulatorTestFixture.PROJECT_ID
-            runCatching {
-                bigquery.create(DatasetInfo.newBuilder(DatasetId.of(projectId, DATASET)).build())
-            }
+            bigquery.create(DatasetInfo.newBuilder(DatasetId.of(projectId, DATASET)).build())
             bigquery.create(
                 TableInfo.newBuilder(
                         TableId.of(projectId, DATASET, "keyed"),
@@ -168,6 +184,16 @@ class BigQueryConcurrentReadTest {
             bigquery.query(
                 QueryJobConfiguration.of("INSERT INTO `$DATASET`.`no_key` VALUES (1,'a'),(2,'b')")
             )
+        }
+
+        @JvmStatic
+        @AfterAll
+        fun dropDataset() {
+            val datasetId = DatasetId.of(BigQueryEmulatorTestFixture.PROJECT_ID, DATASET)
+            runCatching {
+                    client().delete(datasetId, BigQuery.DatasetDeleteOption.deleteContents())
+                }
+                .onFailure { log.warn(it) { "Could not drop dataset $datasetId." } }
         }
     }
 }
