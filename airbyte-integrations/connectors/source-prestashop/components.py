@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 
 
 class ParserError(Exception):
-    """Replacement for pendulum's ParserError"""
+    """Replacement for ParserError"""
 
     pass
 
