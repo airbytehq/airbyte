@@ -4,6 +4,8 @@ products: oss-*
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import MinioImagePre23Helm from '@site/static/_minio_image_pre_2_3_helm.md';
+import MinioImagePre23Abctl from '@site/static/_minio_image_pre_2_3_abctl.md';
 
 # Upgrading Airbyte
 
@@ -16,6 +18,8 @@ Upgrades require temporarily turning off Airbyte. During upgrades, Airbyte will 
 Refer to [Managing Connector Updates](/platform/managing-airbyte/connector-updates) for more details about keeping connectors updated.
 
 ## Upgrading Airbyte deployed on Kubernetes with Helm
+
+<MinioImagePre23Helm />
 
 Upgrade by updating your `values.yaml` file and redeploying Airbyte. If you're not using a `values.yaml` to deploy Airbyte using Helm, you can jump directly to step `4`.
 
@@ -44,6 +48,8 @@ Upgrade by updating your `values.yaml` file and redeploying Airbyte. If you're n
    ```
 
 ## Upgrading Airbyte deployed with abctl
+
+<MinioImagePre23Abctl />
 
 `abctl` streamlines the way you manage a local installation of Airbyte Core.
 
