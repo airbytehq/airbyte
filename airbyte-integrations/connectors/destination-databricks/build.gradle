@@ -30,7 +30,7 @@ dependencies {
     implementation 'org.apache.avro:avro:1.11.0'
     implementation 'org.xerial.snappy:snappy-java:1.1.10.4'
 
-    testImplementation("io.mockk:mockk:1.14.3")
+    testImplementation("io.mockk:mockk:1.14.11")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

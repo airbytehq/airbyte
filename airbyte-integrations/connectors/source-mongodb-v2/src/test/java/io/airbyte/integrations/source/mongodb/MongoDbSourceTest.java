@@ -18,6 +18,7 @@ import com.mongodb.MongoSecurityException;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -114,20 +115,19 @@ class MongoDbSourceTest {
   }
 
   @Test
-  void testCheckOperationInvalidClusterType() throws IOException {
+  void testCheckOperationShardedClusterType() throws IOException {
     final ClusterDescription clusterDescription = mock(ClusterDescription.class);
     final Document response = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
-    when(clusterDescription.getType()).thenReturn(ClusterType.STANDALONE);
+    when(clusterDescription.getType()).thenReturn(ClusterType.SHARDED);
     when(mongoDatabase.runCommand(any())).thenReturn(response);
     when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
 
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertEquals("Target MongoDB instance is not a replica set cluster.", airbyteConnectionStatus.getMessage());
+    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, airbyteConnectionStatus.getStatus());
   }
 
   @Test
@@ -245,6 +245,8 @@ class MongoDbSourceTest {
   }
 
   @Test
+  @SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION",
+                      justification = "null catalog and state on purpose to exercise the failure path")
   void testReadClosesMongoClient() {
     final MongoClient mongoClient = mock(MongoClient.class);
     doReturn(mongoClient).when(source).createMongoClient(sourceConfig);

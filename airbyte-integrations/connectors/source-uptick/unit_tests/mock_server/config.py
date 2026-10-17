@@ -15,5 +15,9 @@ class ConfigBuilder:
             "password": "test-password",
         }
 
+    def with_base_url(self, base_url: Any) -> "ConfigBuilder":
+        self._config["base_url"] = base_url
+        return self
+
     def build(self) -> dict[str, Any]:
         return dict(self._config)

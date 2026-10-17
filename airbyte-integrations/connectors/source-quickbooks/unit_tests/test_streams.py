@@ -5,9 +5,8 @@ HttpMocker tests for source-quickbooks manifest.yaml.
 
 Each of the 34 streams is read against a mocked Intuit Accounting API: the query
 endpoint returns a single entity record, and the OAuth token endpoint returns a
-rotated token in case the authenticator refreshes. One extra test feeds the
-legacy pre-4.0.0 nested config shape to prove the manifest's config migration
-makes it readable end to end.
+rotated token in case the authenticator refreshes. Authentication fields are
+supplied under `credentials`, with tests for sandbox and production routing.
 """
 
 import datetime
@@ -42,6 +41,7 @@ MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 REALM_ID = "4620816365288779920"
 TOKEN_URL = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
 QUERY_URL = f"https://sandbox-quickbooks.api.intuit.com/v3/company/{REALM_ID}/query"
+PRODUCTION_QUERY_URL = f"https://quickbooks.api.intuit.com/v3/company/{REALM_ID}/query"
 
 STREAM_ENTITY = {
     "accounts": "Account",
@@ -83,25 +83,19 @@ STREAM_ENTITY = {
 FULL_REFRESH_STREAMS = {"company_info", "preferences"}
 
 
-def _flat_config() -> dict:
+def _credentials_config(auth_type: str = "client_credentials", sandbox: bool = True) -> dict:
     return {
-        "client_id": "test-client-id",
-        "client_secret": "test-client-secret",
-        "refresh_token": "test-refresh-token",
-        "realm_id": REALM_ID,
         "start_date": (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=3)).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "sandbox": True,
-        "access_token": "test-access-token",
-        "token_expiry_date": "2124-01-01T00:00:00Z",
-    }
-
-
-def _nested_config() -> dict:
-    flat = _flat_config()
-    return {
-        "sandbox": flat["sandbox"],
-        "start_date": flat["start_date"],
-        "credentials": flat,
+        "credentials": {
+            "auth_type": auth_type,
+            "client_id": "test-client-id",
+            "client_secret": "test-client-secret",
+            "refresh_token": "test-refresh-token",
+            "realm_id": REALM_ID,
+            "sandbox": sandbox,
+            "access_token": "test-access-token",
+            "token_expiry_date": "2124-01-01T00:00:00Z",
+        },
     }
 
 
@@ -150,7 +144,7 @@ def _source(config: dict, manifest: dict) -> ConcurrentDeclarativeSource:
     )
 
 
-def _mock_intuit(http_mocker: HttpMocker, entity: str) -> None:
+def _mock_intuit(http_mocker: HttpMocker, entity: str, query_url: str = QUERY_URL) -> None:
     now = datetime.datetime.now(datetime.timezone.utc)
     create_time = (now - datetime.timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%S-08:00")
     update_time = (now - datetime.timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%S-08:00")
@@ -197,14 +191,14 @@ def _mock_intuit(http_mocker: HttpMocker, entity: str) -> None:
     )
     # First 30-day slice returns the record; any later slices get empty pages.
     http_mocker.get(
-        HttpRequest(QUERY_URL, query_params="any query_parameters"),
+        HttpRequest(query_url, query_params="any query_parameters"),
         [record_page] + [empty_page] * 10,
     )
 
 
 @pytest.mark.parametrize("stream_name,entity", STREAM_ENTITY.items())
 def test_stream_reads_single_record(stream_name: str, entity: str, manifest):
-    config = _flat_config()
+    config = _credentials_config()
     with HttpMocker() as http_mocker:
         _mock_intuit(http_mocker, entity)
 
@@ -233,11 +227,10 @@ def test_stream_reads_single_record(stream_name: str, entity: str, manifest):
         assert any(message.type == Type.STATE for message in output._messages)
 
 
-def test_nested_legacy_config_is_migrated_and_read(manifest):
-    """Pre-4.0.0 `credentials.*` configs are flattened by the manifest migration before spec validation."""
-    config = _nested_config()
+def test_oauth_credentials_use_production_when_sandbox_is_true(manifest):
+    config = _credentials_config(auth_type="oauth2.0")
     with HttpMocker() as http_mocker:
-        _mock_intuit(http_mocker, "Account")
+        _mock_intuit(http_mocker, "Account", query_url=PRODUCTION_QUERY_URL)
 
         output = read(
             _source(config, manifest),
@@ -257,9 +250,13 @@ WINDOW_END = "2026-03-15T12:00:00+00:00"
 
 
 def _frozen_config(**overrides) -> dict:
-    config = _flat_config()
+    config = _credentials_config()
     config["start_date"] = "2026-03-14T00:00:00Z"
-    config.update(overrides)
+    for key, value in overrides.items():
+        if key in {"start_date", "max_results"}:
+            config[key] = value
+        else:
+            config["credentials"][key] = value
     return config
 
 
@@ -384,9 +381,9 @@ def test_expired_access_token_is_refreshed_and_rotation_is_persisted(manifest):
         TOKEN_URL,
         body=(
             "grant_type=refresh_token"
-            f"&client_id={config['client_id']}"
-            f"&client_secret={config['client_secret']}"
-            f"&refresh_token={config['refresh_token']}"
+            f"&client_id={config['credentials']['client_id']}"
+            f"&client_secret={config['credentials']['client_secret']}"
+            f"&refresh_token={config['credentials']['refresh_token']}"
         ),
     )
     query_request = HttpRequest(QUERY_URL, query_params={"query": _incremental_query("Account", 1)})
@@ -419,5 +416,5 @@ def test_expired_access_token_is_refreshed_and_rotation_is_persisted(manifest):
     controls = [message.control for message in output._messages if message.type == Type.CONTROL]
     assert controls, "the rotated refresh token was not emitted as a CONNECTOR_CONFIG control message"
     emitted = controls[-1].connectorConfig.config
-    assert emitted["refresh_token"] == "rotated-refresh-token"
-    assert emitted["access_token"] == "rotated-access-token"
+    assert emitted["credentials"]["refresh_token"] == "rotated-refresh-token"
+    assert emitted["credentials"]["access_token"] == "rotated-access-token"

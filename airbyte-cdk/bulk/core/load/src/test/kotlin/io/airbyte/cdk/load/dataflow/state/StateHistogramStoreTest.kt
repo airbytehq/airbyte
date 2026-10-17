@@ -180,7 +180,7 @@ class StateHistogramStoreTest {
         // Then
         assertEquals(expectedCount, count)
         assertFalse(
-            stateHistogramStore.isComplete(stateKey)
+            stateHistogramStore.isComplete(stateKey),
         ) // Should be false due to missing expected count
     }
 

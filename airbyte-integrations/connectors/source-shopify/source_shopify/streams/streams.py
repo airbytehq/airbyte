@@ -36,7 +36,13 @@ from source_shopify.shopify_graphql.bulk.query import (
     Transaction,
 )
 from source_shopify.shopify_graphql.bulk.tools import BulkTools
-from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors, ShopifyRateLimiter, is_throttled_graphql_error
+from source_shopify.utils import (
+    LimitReducingErrorHandler,
+    ShopifyGraphQlErrorHandler,
+    ShopifyNonRetryableErrors,
+    ShopifyRateLimiter,
+    is_retryable_graphql_error,
+)
 
 from airbyte_cdk import HttpSubStream
 from airbyte_cdk.models import FailureType
@@ -95,6 +101,7 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
     data_field = "orders"
     deleted_events_api_name = "Order"
     initial_limit = 250
+    customer_prefix = "customer_"
 
     def __init__(self, config: Mapping[str, Any]):
         self._error_handler = LimitReducingErrorHandler(
@@ -102,6 +109,8 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
             error_mapping=DEFAULT_ERROR_MAPPING | ShopifyNonRetryableErrors("orders"),
         )
         super().__init__(config)
+        self._customer_fields = tuple(self.get_json_schema()["properties"]["customer"]["properties"])
+        self._customer_redaction_warning_logged = False
 
     def request_params(self, stream_state=None, next_page_token=None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
@@ -112,6 +121,30 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
 
     def get_error_handler(self):
         return self._error_handler
+
+    def flatten_customer(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        populate_customer_fields = self.config.get("populate_top_level_orders_customer_fields", False)
+        if not populate_customer_fields and not self._customer_redaction_warning_logged:
+            selected_properties = (self.configured_json_schema or {}).get("properties", {})
+            if any(f"{self.customer_prefix}{field}" in selected_properties for field in self._customer_fields):
+                self.logger.warning(
+                    'Orders: selected top-level customer fields are redacted to null because "Populate top-level customer fields in Orders" '
+                    "is off. Enable it in source settings to populate these fields, or deselect them. The nested customer object is not redacted."
+                )
+                self._customer_redaction_warning_logged = True
+        customer = record.get("customer")
+        if not populate_customer_fields or not isinstance(customer, Mapping):
+            customer = {}
+        for field in self._customer_fields:
+            record[f"{self.customer_prefix}{field}"] = customer.get(field)
+        return record
+
+    def produce_records(self, records=None):
+        if isinstance(records, MutableMapping):
+            records = self.flatten_customer(records)
+        else:
+            records = (self.flatten_customer(record) for record in records)
+        yield from super().produce_records(records)
 
 
 class Disputes(IncrementalShopifyStream):
@@ -220,16 +253,29 @@ class DeletedProducts(IncrementalShopifyStream):
             "variables": variables,
         }
 
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        return ShopifyGraphQlErrorHandler(
+            self.logger, max_retries=5, error_mapping=DEFAULT_ERROR_MAPPING | ShopifyNonRetryableErrors(self.name)
+        )
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json_response = response.json()
-        page_info = json_response.get("data", {}).get("events", {}).get("pageInfo", {})
+        page_info = ((json_response.get("data") or {}).get("events") or {}).get("pageInfo", {})
         if page_info.get("hasNextPage"):
             return {"cursor": page_info.get("endCursor")}
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
-        events = json_response.get("data", {}).get("events", {}).get("nodes", [])
+        errors = json_response.get("errors")
+        if errors and response.ok:
+            # an HTTP 200 with GraphQL errors has no usable data, reading it as an empty page would end the sync as complete
+            raise AirbyteTracedException(
+                message=f"Stream `{self.name}`: Shopify GraphQL request failed: "
+                + "; ".join(str(error.get("message", error)) for error in errors),
+                failure_type=FailureType.transient_error if is_retryable_graphql_error(errors) else FailureType.system_error,
+            )
+        events = ((json_response.get("data") or {}).get("events") or {}).get("nodes", [])
         for event in events:
             if event.get("subjectType") == "PRODUCT" and event.get("subjectId"):
                 subject_id = event.get("subjectId", "")
@@ -580,18 +626,18 @@ class DiscountCodesSync(IncrementalShopifyStream):
             result = response.json()
             errors = result.get("errors")
             if errors:
-                if is_throttled_graphql_error(errors):
+                if is_retryable_graphql_error(errors):
                     if attempt < self._GRAPHQL_MAX_RETRIES:
                         ShopifyRateLimiter.wait_time(ShopifyRateLimiter.on_unknown_load)
                         continue
                     raise AirbyteTracedException(
-                        message="GraphQL query for stream `discount_codes_sync` exceeded max retries due to throttling."
+                        message="GraphQL query for stream `discount_codes_sync` exceeded max retries on transient errors."
                     )
                 error_messages = "; ".join(e.get("message", str(e)) for e in errors)
                 raise AirbyteTracedException(message=f"GraphQL query failed for stream `discount_codes_sync`: {error_messages}")
             ShopifyRateLimiter.wait_time(ShopifyRateLimiter.get_graphql_api_wait_time(response, threshold=0.9))
             return result
-        raise AirbyteTracedException(message="GraphQL query for stream `discount_codes_sync` exceeded max retries due to throttling.")
+        raise AirbyteTracedException(message="GraphQL query for stream `discount_codes_sync` exceeded max retries on transient errors.")
 
     @staticmethod
     def _extract_codes_connection(code_discount: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -636,7 +682,11 @@ class DiscountCodesSync(IncrementalShopifyStream):
             if child_cursor:
                 variables["after"] = child_cursor
             result = self._graphql_request(self.CHILD_CODES_QUERY, variables)
-            code_discount = result.get("data", {}).get("codeDiscountNode", {}).get("codeDiscount") or {}
+            code_discount_node = (result.get("data") or {}).get("codeDiscountNode")
+            if not code_discount_node:
+                self.logger.warning(f"Stream `{self.name}`: discount `{parent_gid}` no longer exists, skipping its codes.")
+                return
+            code_discount = code_discount_node.get("codeDiscount") or {}
             codes_conn = self._extract_codes_connection(code_discount)
             for code_node in codes_conn.get("nodes", []):
                 record = self._build_child_record(code_node, parent_gid, parent_meta)
@@ -743,10 +793,13 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
     _page_cursor = None
     _sub_page_cursor = None
 
-    _synced_countries_ids = []
-
     query = DeliveryProfile
     response_field = "deliveryProfiles"
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        # per instance: a class-level list is shared by every stream built in the same process
+        self._synced_countries_ids = []
 
     def stream_slices(
         self,

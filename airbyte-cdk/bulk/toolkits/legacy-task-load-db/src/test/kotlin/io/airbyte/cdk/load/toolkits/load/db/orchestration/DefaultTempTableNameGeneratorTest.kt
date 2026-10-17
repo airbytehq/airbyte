@@ -18,7 +18,7 @@ class DefaultTempTableNameGeneratorTest {
                 TableName(
                     namespace = "averylongnamespacewithmanycharacters",
                     name = "similarlylongstreamnamewithlotsoftest",
-                )
+                ),
             )
         // namespace affixes are averylon and aracters
         // name affixes are similarl and tsoftest
@@ -28,7 +28,7 @@ class DefaultTempTableNameGeneratorTest {
         assertEquals(
             TableName(
                 "airbyte_internal",
-                "averylonaracterssimilarltsoftest81e041292e119a43ceaa439325d86a24"
+                "averylonaracterssimilarltsoftest81e041292e119a43ceaa439325d86a24",
             ),
             tempTableName,
         )
@@ -42,7 +42,7 @@ class DefaultTempTableNameGeneratorTest {
                 TableName(
                     namespace = "a",
                     name = "1",
-                )
+                ),
             )
         // name and namespace are unchanged
         // sha256(a_raw__stream_1_airbyte_tmp) is
@@ -62,7 +62,7 @@ class DefaultTempTableNameGeneratorTest {
                 TableName(
                     namespace = "a",
                     name = "1",
-                )
+                ),
             )
         // name and namespace are unchanged
         // sha256(a_raw__stream_1_airbyte_tmp) is
