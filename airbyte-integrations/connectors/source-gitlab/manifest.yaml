@@ -220,7 +220,9 @@ definitions:
     client_id: "{{ config['credentials']['client_id'] }}"
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
-    token_refresh_endpoint: "https://{{ config.get('api_url', 'gitlab.com') }}/oauth/token"
+    token_refresh_endpoint: >-
+      {%- set parts = config.get('api_url', 'gitlab.com').split('://') -%}
+      {{ parts[0] if parts|length > 1 else 'https' }}://{{ parts[1] if parts|length > 1 else parts[0] }}/oauth/token
     refresh_token_updater:
       refresh_token_error_status_codes: [400, 401]
       refresh_token_error_key: "error"
@@ -242,16 +244,24 @@ definitions:
     authenticator: "#/definitions/authenticator"
     use_cache: true
     error_handler:
-      type: DefaultErrorHandler
+      type: CustomErrorHandler
+      class_name: source_declarative_manifest.components.AuthTypeAwareErrorHandler
       max_retries: 10
       response_filters:
+        # http_codes and predicate are OR-ed, so this filter keys on the body alone. Only the OAuth
+        # credential can be refreshed; AuthTypeAwareErrorHandler drops this filter for Private Tokens.
+        - type: HttpResponseFilter
+          action: REFRESH_TOKEN_THEN_RETRY
+          predicate: "{{ response.get('error') == 'invalid_token' }}"
+          error_message: GitLab rejected the OAuth access token as expired or invalid.
         - type: HttpResponseFilter
           action: IGNORE
           http_codes: [403]
         - type: HttpResponseFilter
           action: FAIL
+          failure_type: config_error
           http_codes: [401]
-          error_message: Unable to refresh the `access_token`, please re-authenticate in Sources > Settings.
+          error_message: GitLab rejected the credentials (HTTP 401). Re-authenticate the source or update the access token.
         - type: HttpResponseFilter
           action: RETRY
           http_codes: [500]
@@ -549,6 +559,20 @@ definitions:
           - type: AddedFieldDefinition
             path: ["author_id"]
             value: "{{ (record.get('author') or {}).get('id') }}"
+      - type: AddFields
+        condition: "{{ record.get('due_date_from_milestones') }}"
+        fields:
+          - type: AddedFieldDefinition
+            path: ["due_date_from_milestones"]
+            value: "{{ (record.get('due_date_from_milestones') or '')[:10] }}"
+            value_type: string
+      - type: AddFields
+        condition: "{{ record.get('start_date_from_milestones') }}"
+        fields:
+          - type: AddedFieldDefinition
+            path: ["start_date_from_milestones"]
+            value: "{{ (record.get('start_date_from_milestones') or '')[:10] }}"
+            value_type: string
     primary_key: "iid"
     $parameters:
       path: "groups/{{ stream_slice.id }}/epics"
