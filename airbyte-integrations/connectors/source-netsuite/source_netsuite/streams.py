@@ -4,8 +4,11 @@
 
 
 from abc import ABC
+from collections import deque
+from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from json import JSONDecodeError
+from threading import Lock, local
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -19,8 +22,10 @@ from source_netsuite.constraints import (
     INCREMENTAL_CURSOR,
     MAX_NETSUITE_UTC_OFFSET_HOURS,
     META_PATH,
+    NETSUITE_CONNECT_TIMEOUT_SECONDS,
     NETSUITE_INPUT_DATE_FORMATS,
     NETSUITE_OUTPUT_DATETIME_FORMAT,
+    NETSUITE_READ_TIMEOUT_SECONDS,
     RECORD_PATH,
     REFERAL_SCHEMA,
     REFERAL_SCHEMA_URL,
@@ -32,6 +37,11 @@ from source_netsuite.errors import NETSUITE_ERRORS_MAPPING, DateFormatExeption
 
 
 class NetsuiteStream(HttpStream, ABC):
+    DEFAULT_DETAIL_CONCURRENCY = 8
+    DETAIL_MIN_CONCURRENCY = 1
+    DETAIL_MAX_CONFIGURED_CONCURRENCY = 32
+    DETAIL_ERRORS_BEFORE_SCALE_DOWN = 2
+
     def __init__(
         self,
         auth: OAuth1,
@@ -39,17 +49,37 @@ class NetsuiteStream(HttpStream, ABC):
         base_url: str,
         start_datetime: str,
         window_in_days: int,
+        max_concurrent_detail_requests: int = DEFAULT_DETAIL_CONCURRENCY,
+        schemas: Optional[Mapping[str, Mapping[str, Any]]] = None,
     ):
         self.object_name = object_name
         self.base_url = base_url
         self.start_datetime = start_datetime
         self.window_in_days = window_in_days
-        self.schemas = {}  # store subschemas to reduce API calls
+        self._validate_detail_concurrency(max_concurrent_detail_requests)
+        # Reuse schemas fetched by SourceNetsuite during discover. Without this
+        # seed, the CDK catalog builder fetches each record schema again.
+        self.schemas = {META_PATH + name.lower(): schema for name, schema in (schemas or {}).items()}
         self._records_attempted = 0
         self._user_error_skipped = 0
         super().__init__(authenticator=auth)
+        self._detail_concurrency = max_concurrent_detail_requests
+        self._detail_error_count = 0
+        self._detail_state_lock = Lock()
+        self._detail_thread_state = local()
+        self._session_prepare_lock = Lock()
 
     primary_key = "id"
+
+    @classmethod
+    def _validate_detail_concurrency(cls, concurrency: int) -> None:
+        if isinstance(concurrency, bool) or not isinstance(concurrency, int):
+            raise ValueError("max_concurrent_detail_requests must be an integer")
+        if not cls.DETAIL_MIN_CONCURRENCY <= concurrency <= cls.DETAIL_MAX_CONFIGURED_CONCURRENCY:
+            raise ValueError(
+                "max_concurrent_detail_requests must be between "
+                f"{cls.DETAIL_MIN_CONCURRENCY} and {cls.DETAIL_MAX_CONFIGURED_CONCURRENCY}"
+            )
 
     # instance input date format format selector
     index_datetime_format = 0
@@ -88,7 +118,11 @@ class NetsuiteStream(HttpStream, ABC):
         # try to retrieve the schema from the cache
         schema = self.schemas.get(ref)
         if not schema:
-            resp = self._session.get(url=self.url_base + ref, headers=SCHEMA_HEADERS)
+            resp = self._session.get(
+                url=self.url_base + ref,
+                headers=SCHEMA_HEADERS,
+                timeout=(NETSUITE_CONNECT_TIMEOUT_SECONDS, NETSUITE_READ_TIMEOUT_SECONDS),
+            )
             # some schemas, like transaction, do not exist because they refer to multiple
             # record types, e.g. sales order/invoice ... in this case we can't retrieve
             # the correct schema, so we just put the json in a string
@@ -96,7 +130,7 @@ class NetsuiteStream(HttpStream, ABC):
                 schema = {"title": ref, "type": "string"}
             else:
                 # check for 200 status
-                resp.raise_for_status
+                resp.raise_for_status()
                 # handle response
                 schema = get_json_response(resp)
 
@@ -147,16 +181,53 @@ class NetsuiteStream(HttpStream, ABC):
             params.update(**next_page_token)
         return params
 
-    def fetch_record(self, record: Mapping[str, Any], request_kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+    def _mark_detail_error(self) -> None:
+        with self._detail_state_lock:
+            self._detail_error_count += 1
+            if self._detail_error_count >= self.DETAIL_ERRORS_BEFORE_SCALE_DOWN:
+                self._detail_concurrency = max(self.DETAIL_MIN_CONCURRENCY, self._detail_concurrency - 1)
+                self._detail_error_count = 0
+
+    def _current_detail_concurrency(self) -> int:
+        with self._detail_state_lock:
+            return self._detail_concurrency
+
+    def fetch_record(self, record: Mapping[str, Any], request_kwargs: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         url = record["links"][0]["href"]
         args = {"method": "GET", "url": url, "params": {"expandSubResources": True}}
-        prep_req = self._session.prepare_request(requests.Request(**args))
-        response = self._send_request(prep_req, request_kwargs)
-        self._records_attempted += 1
-        if response.status_code == requests.codes.ok:
-            yield response.json()
-        elif response.status_code == 400:
+        # OAuth signing happens during preparation. Serialize only that operation;
+        # the network send remains concurrent and uses the CDK retry path below.
+        with self._session_prepare_lock:
+            prep_req = self._session.prepare_request(requests.Request(**args))
+        self._detail_thread_state.active = True
+        self._detail_thread_state.error_recorded = False
+        try:
+            response = self._send_request(prep_req, request_kwargs)
+        except Exception:
+            if not self._detail_thread_state.error_recorded:
+                self._mark_detail_error()
+            raise
+        finally:
+            self._detail_thread_state.active = False
+
+        with self._detail_state_lock:
+            self._records_attempted += 1
+
+        if response.status_code == 400:
             self._track_skipped_record(response)
+            return None
+
+        if response.status_code != requests.codes.ok:
+            if not self._detail_thread_state.error_recorded:
+                self._mark_detail_error()
+            raise requests.HTTPError(f"NetSuite detail request for {url} returned HTTP {response.status_code}: {response.text[:500]}")
+        try:
+            result = response.json()
+        except Exception:
+            if not self._detail_thread_state.error_recorded:
+                self._mark_detail_error()
+            raise
+        return result
 
     def parse_response(
         self,
@@ -169,11 +240,37 @@ class NetsuiteStream(HttpStream, ABC):
         records = response.json().get("items")
         request_kwargs = self.request_kwargs(stream_slice, next_page_token)
         if records:
-            for record in records:
-                # make sub-requests for each record fetched
-                yield from self.fetch_record(record, request_kwargs)
+            # Keep one stable window for this page. Errors reduce the window for
+            # the next page, avoiding a moving submission bound mid-page.
+            concurrency = self._current_detail_concurrency()
+            with ThreadPoolExecutor(max_workers=concurrency) as executor:
+                pending: deque[Future[Mapping[str, Any]]] = deque()
+                next_index = 0
+                while next_index < len(records) and len(pending) < concurrency:
+                    pending.append(executor.submit(self.fetch_record, records[next_index], request_kwargs))
+                    next_index += 1
+
+                for _ in records:
+                    future = pending.popleft()
+                    # Consume futures in collection order. This prevents a faster
+                    # later record from advancing incremental state past a slower one.
+                    result = future.result()
+                    if result is not None:
+                        yield result
+                    if next_index < len(records):
+                        pending.append(executor.submit(self.fetch_record, records[next_index], request_kwargs))
+                        next_index += 1
 
     def should_retry(self, response: requests.Response) -> bool:
+        retry = super().should_retry(response)
+        if getattr(self._detail_thread_state, "active", False):
+            if not self._detail_thread_state.error_recorded:
+                if retry:
+                    self._mark_detail_error()
+                    self._detail_thread_state.error_recorded = True
+            # Detail requests must not participate in collection-specific
+            # date-format fallback, which mutates shared stream state.
+            return retry
         if response.status_code in NETSUITE_ERRORS_MAPPING.keys():
             message = response.json().get("o:errorDetails")
             if isinstance(message, list):
@@ -198,8 +295,8 @@ class NetsuiteStream(HttpStream, ABC):
                     self.logger.error(f"Stream `{self.name}`: {error_code} error occurred, full error message: {detail_message}")
                     return False
                 else:
-                    return super().should_retry(response)
-        return super().should_retry(response)
+                    return retry
+        return retry
 
     def _track_skipped_record(self, response: requests.Response) -> None:
         try:

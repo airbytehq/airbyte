@@ -64,3 +64,11 @@ connectionSpecification:
       description: The amount of days used to query the data with date chunks. Set smaller value, if you have lots of data.
       order: 7
       default: 30
+    max_concurrent_detail_requests:
+      type: integer
+      title: Maximum Concurrent Detail Requests
+      description: Maximum number of record-detail requests made concurrently. Keep this within your NetSuite integration concurrency limit.
+      order: 8
+      minimum: 1
+      maximum: 32
+      default: 8
