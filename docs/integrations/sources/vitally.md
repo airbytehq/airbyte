@@ -1,38 +1,57 @@
 # Vitally
 
-## Sync overview
+This page contains the setup guide and reference information for the [Vitally](https://www.vitally.io/) source connector. The connector reads data from the [Vitally REST API](https://docs.vitally.io/en/articles/9880649-rest-api-overview).
 
-The Vitally source supports both Full Refresh only.
+## Prerequisites
 
-This source can sync data for the [Vitally API](https://docs.vitally.io/pushing-data-to-vitally/rest-api).
+- A Vitally account with access to the **Vitally REST API** integration settings.
+- A Vitally REST API secret token. To create one:
+  1. In Vitally, select your account logo in the top left, then open **Settings**.
+  2. Under **Connectors**, select **Integrations**, then select **Vitally REST API**.
+  3. If the integration isn't enabled, turn on the toggle in the top right.
+  4. Copy the **Secret Token** for an existing API key, or create a new key and copy its secret token.
+- Your Vitally subdomain, if your organization uses one. This is the `yoursubdomain` part of the URL you use to sign in to Vitally, for example `https://yoursubdomain.vitally.io`.
 
-### Output schema
+The connector only supports the Vitally US data center (`rest.vitally.io`). Accounts hosted in the Vitally EU data center (`rest.vitally-eu.io`) aren't supported.
 
-This Source is capable of syncing the following core Streams:
+## Set up the Vitally connector in Airbyte
 
-- [Accounts](https://docs.vitally.io/pushing-data-to-vitally/rest-api/accounts)
-- [Admins](https://docs.vitally.io/pushing-data-to-vitally/rest-api/admins)
-- [Conversations](https://docs.vitally.io/pushing-data-to-vitally/rest-api/conversations)
-- [Notes](https://docs.vitally.io/pushing-data-to-vitally/rest-api/notes)
-- [NPS Responses](https://docs.vitally.io/pushing-data-to-vitally/rest-api/nps-responses)
-- [Tasks](https://docs.vitally.io/pushing-data-to-vitally/rest-api/tasks)
-- [Users](https://docs.vitally.io/pushing-data-to-vitally/rest-api/users)
+1. In Airbyte, create a new source and select **Vitally**.
+2. For **Custom Subdomain**, enter only your Vitally subdomain, for example `yoursubdomain`. The connector sends requests to `https://yoursubdomain.rest.vitally.io`. If your organization doesn't use a subdomain, leave this field empty and the connector sends requests to `https://rest.vitally.io`.
+3. For **Status**, select which accounts to sync in the `accounts` stream:
+   - `active`: tracked accounts that haven't churned.
+   - `churned`: tracked accounts that have churned.
+   - `activeOrChurned`: all tracked accounts.
+4. For **Secret Token**, paste the secret token you copied from Vitally. It starts with `sk_live_`.
+5. **Basic Auth Header** is optional. The connector authenticates with HTTP basic authentication, using the secret token as the username and this field, if set, as the password.
+6. Select **Set up source**.
 
-### Features
+## Supported sync modes
 
-| Feature                   | Supported?\(Yes/No\) | Notes |
-| :------------------------ | :------------------- | :---- |
-| Full Refresh Sync         | Yes                  |       |
-| Incremental - Append Sync | No                   |       |
-| Namespaces                | No                   |       |
+The Vitally source connector supports the following sync modes:
 
-### Performance considerations
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
 
-The Vitally connector should not run into Vitally API limitations under normal usage.
+The connector doesn't support incremental syncs. Each sync reads every record from each selected stream.
 
-## Requirements
+## Supported streams
 
-- **Vitaly API key**. See the [Vitally docs](https://docs.vitally.io/pushing-data-to-vitally/rest-api#authentication) for information on how to obtain an API key.
+| Stream | Vitally endpoint | Notes |
+| :----- | :--------------- | :---- |
+| `accounts` | [Accounts](https://docs.vitally.io/en/articles/9880654-rest-api-accounts) | Filtered by the **Status** setting. |
+| `admins` | [Admins](https://docs.vitally.io/en/articles/9880663-rest-api-admins) | |
+| `conversations` | [Conversations](https://docs.vitally.io/en/articles/9880665-rest-api-conversations) | |
+| `notes` | [Notes](https://docs.vitally.io/en/articles/9880672-rest-api-notes) | |
+| `tasks` | [Tasks](https://docs.vitally.io/en/articles/9880855-rest-api-tasks) | |
+| `users` | [Users](https://docs.vitally.io/en/articles/9880661-rest-api-users) | |
+
+All streams use `id` as the primary key.
+
+## Limitations and performance considerations
+
+- Vitally limits REST API traffic to 1,000 requests per minute by default. The connector requests up to 100 records per page, which is the maximum Vitally allows.
+- The connector doesn't set Vitally's `sortBy` parameter, so Vitally returns records sorted by `updatedAt`. According to [Vitally's pagination documentation](https://docs.vitally.io/en/articles/9880649-rest-api-overview), if records change while a sync is paginating, the results can contain duplicates or gaps.
 
 ## IP allow list
 
@@ -45,7 +64,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
-| 0.4.4 | 2026-06-30 | [81345](https://github.com/airbytehq/airbyte/pull/81345) | Add missing `airbyte_secret` flag to `secret_token` spec field |
+| 0.4.4 | 2026-09-30 | [81345](https://github.com/airbytehq/airbyte/pull/81345) | Add missing `airbyte_secret` flag to `secret_token` spec field |
 | 0.4.3 | 2026-06-02 | [79008](https://github.com/airbytehq/airbyte/pull/79008) | Update dependencies |
 | 0.4.2 | 2025-05-24 | [60783](https://github.com/airbytehq/airbyte/pull/60783) | Update dependencies |
 | 0.4.1 | 2025-05-10 | [59942](https://github.com/airbytehq/airbyte/pull/59942) | Update dependencies |
