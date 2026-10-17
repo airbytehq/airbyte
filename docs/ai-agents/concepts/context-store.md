@@ -86,6 +86,8 @@ Agents choose semantic search automatically when a prompt calls for meaning-base
 
 To learn how semantic search works, which connectors and fields support it, and to see complete CLI, API, and SDK examples, see [Semantic search](./semantic-search).
 
+A single search can also span every connector in a workspace with [workspace-wide semantic search](./semantic-search#search-across-your-whole-workspace).
+
 ## Initial index
 
 When the Context Store populates data for a connector, Airbyte runs an initial index. Indexing time depends on the amount of data and third-party API rate limits, and can range from minutes to days.
