@@ -1,0 +1,370 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "title" : "MSSQL Source Spec",
+  "type" : "object",
+  "additionalProperties" : true,
+  "groups" : [ {
+    "id" : "db"
+  }, {
+    "id" : "auth"
+  }, {
+    "id" : "entra_id",
+    "title" : "Microsoft Entra ID"
+  } ],
+  "properties" : {
+    "host" : {
+      "type" : "string",
+      "description" : "The hostname of the database.",
+      "title" : "Host",
+      "order" : 0,
+      "group" : "db"
+    },
+    "port" : {
+      "type" : "integer",
+      "default" : 1433,
+      "description" : "The port of the database.",
+      "title" : "Port",
+      "order" : 1,
+      "minimum" : 0,
+      "maximum" : 65536,
+      "examples" : [ "1433" ],
+      "group" : "db"
+    },
+    "database" : {
+      "type" : "string",
+      "description" : "The name of the database.",
+      "title" : "Database",
+      "order" : 2,
+      "examples" : [ "master" ],
+      "group" : "db"
+    },
+    "username" : {
+      "type" : "string",
+      "description" : "The username which is used to access the database. Not required if Microsoft Entra ID authentication is configured below.",
+      "title" : "Username",
+      "order" : 4,
+      "always_show" : true,
+      "group" : "auth"
+    },
+    "replication_method" : {
+      "oneOf" : [ {
+        "title" : "Scan Changes with User Defined Cursor",
+        "type" : "object",
+        "additionalProperties" : true,
+        "description" : "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
+        "properties" : {
+          "method" : {
+            "type" : "string",
+            "enum" : [ "STANDARD" ],
+            "default" : "STANDARD"
+          },
+          "exclude_todays_data" : {
+            "type" : "boolean",
+            "default" : false,
+            "description" : "When enabled incremental syncs using a cursor of a temporal type (date or datetime) will include cursor values only up until the previous midnight UTC",
+            "title" : "Exclude Today's Data",
+            "order" : 1,
+            "always_show" : true
+          }
+        },
+        "required" : [ "method" ]
+      }, {
+        "title" : "Read Changes using Change Data Capture (CDC)",
+        "type" : "object",
+        "additionalProperties" : true,
+        "description" : "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using MSSQL's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
+        "properties" : {
+          "method" : {
+            "type" : "string",
+            "enum" : [ "CDC" ],
+            "default" : "CDC"
+          },
+          "initial_waiting_seconds" : {
+            "type" : "integer",
+            "description" : "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 3600 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/mssql#setting-up-cdc-for-mssql\">initial waiting time</a>",
+            "title" : "Initial Waiting Time in Seconds (Advanced)",
+            "order" : 1,
+            "always_show" : true
+          },
+          "invalid_cdc_cursor_position_behavior" : {
+            "type" : "string",
+            "default" : "Fail sync",
+            "description" : "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value in the mined logs. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
+            "title" : "Invalid CDC Position Behavior (Advanced)",
+            "order" : 2,
+            "always_show" : true,
+            "enum" : [ "Fail sync", "Re-sync data" ]
+          },
+          "initial_load_timeout_hours" : {
+            "type" : "integer",
+            "default" : 8,
+            "description" : "The amount of time an initial load is allowed to continue for before catching up on CDC logs.",
+            "title" : "Initial Load Timeout in Hours (Advanced)",
+            "order" : 3,
+            "max" : 24,
+            "min" : 4,
+            "always_show" : true
+          },
+          "poll_interval_ms" : {
+            "type" : "integer",
+            "default" : 500,
+            "description" : "How often (in milliseconds) Debezium should poll for new data. Must be smaller than heartbeat interval (15000ms). Lower values provide more responsive data capture but may increase database load.",
+            "title" : "Poll Interval in Milliseconds (Advanced)",
+            "order" : 4,
+            "max" : 14999,
+            "min" : 100,
+            "always_show" : true
+          }
+        },
+        "required" : [ "method" ]
+      } ],
+      "description" : "Configures how data is extracted from the database.",
+      "title" : "Update Method",
+      "order" : 12,
+      "display_type" : "radio",
+      "type" : "object"
+    },
+    "additionalProperties" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "object",
+        "additionalProperties" : true,
+        "properties" : { }
+      }
+    },
+    "schemas" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      },
+      "description" : "The list of schemas to sync from. If not specified, all schemas will be discovered. Case sensitive.",
+      "title" : "Schemas",
+      "order" : 3,
+      "minItems" : 0,
+      "uniqueItems" : true
+    },
+    "password" : {
+      "type" : "string",
+      "description" : "The password associated with the username. Not required if Microsoft Entra ID authentication is configured below.",
+      "title" : "Password",
+      "order" : 5,
+      "airbyte_secret" : true,
+      "always_show" : true,
+      "group" : "auth"
+    },
+    "jdbc_url_params" : {
+      "type" : "string",
+      "description" : "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+      "title" : "JDBC URL Params",
+      "order" : 6
+    },
+    "client_id" : {
+      "type" : "string",
+      "description" : "Application (client) ID of a Microsoft Entra ID service principal. When provided together with Client Secret, Entra ID authentication is used instead of username and password.",
+      "title" : "Entra ID Client ID",
+      "order" : 7,
+      "group" : "entra_id"
+    },
+    "client_secret" : {
+      "type" : "string",
+      "description" : "Client secret for the Microsoft Entra ID service principal. When provided together with Client ID, Entra ID authentication is used instead of username and password.",
+      "title" : "Entra ID Client Secret",
+      "order" : 8,
+      "airbyte_secret" : true,
+      "group" : "entra_id"
+    },
+    "tenant_id" : {
+      "type" : "string",
+      "description" : "Optional Microsoft Entra tenant ID. If omitted, the driver uses the tenant inferred from the service principal.",
+      "title" : "Entra ID Tenant ID",
+      "order" : 9,
+      "group" : "entra_id",
+      "airbyte_hidden" : true
+    },
+    "checkpoint_target_interval_seconds" : {
+      "type" : "integer",
+      "default" : 300,
+      "description" : "How often (in seconds) a stream should checkpoint, when possible.",
+      "title" : "Checkpoint Target Time Interval",
+      "order" : 13
+    },
+    "concurrency" : {
+      "type" : "integer",
+      "description" : "Maximum number of concurrent queries to the database.",
+      "title" : "Concurrency",
+      "order" : 14
+    },
+    "check_privileges" : {
+      "type" : "boolean",
+      "default" : true,
+      "description" : "When this feature is enabled, during schema discovery the connector will query each table or view individually to check access privileges and inaccessible tables, views, or columns therein will be removed. In large schemas, this might cause schema discovery to take too long, in which case it might be advisable to disable this feature.",
+      "title" : "Check Table and Column Access Privileges",
+      "order" : 15
+    },
+    "ssl_mode" : {
+      "oneOf" : [ {
+        "title" : "Unencrypted",
+        "type" : "object",
+        "additionalProperties" : true,
+        "description" : "Data transfer will not be encrypted.",
+        "properties" : {
+          "mode" : {
+            "type" : "string",
+            "enum" : [ "unencrypted" ],
+            "default" : "unencrypted"
+          }
+        },
+        "required" : [ "mode" ]
+      }, {
+        "title" : "Encrypted (trust server certificate)",
+        "type" : "object",
+        "additionalProperties" : true,
+        "description" : "Use the certificate provided by the server without verification. (For testing purposes only!)",
+        "properties" : {
+          "mode" : {
+            "type" : "string",
+            "enum" : [ "encrypted_trust_server_certificate" ],
+            "default" : "encrypted_trust_server_certificate"
+          }
+        },
+        "required" : [ "mode" ]
+      }, {
+        "title" : "Encrypted (verify certificate)",
+        "type" : "object",
+        "additionalProperties" : true,
+        "description" : "Verify and use the certificate provided by the server.",
+        "properties" : {
+          "mode" : {
+            "type" : "string",
+            "enum" : [ "encrypted_verify_certificate" ],
+            "default" : "encrypted_verify_certificate"
+          },
+          "hostNameInCertificate" : {
+            "type" : "string",
+            "description" : "Specifies the host name of the server. The value of this property must match the subject property of the certificate.",
+            "title" : "Host Name In Certificate",
+            "order" : 0
+          },
+          "certificate" : {
+            "type" : "string",
+            "description" : "certificate of the server, or of the CA that signed the server certificate",
+            "title" : "Certificate",
+            "order" : 1,
+            "airbyte_secret" : true,
+            "multiline" : true
+          }
+        },
+        "required" : [ "mode" ]
+      } ],
+      "description" : "The encryption method which is used when communicating with the database.",
+      "title" : "Encryption",
+      "order" : 10,
+      "default" : "required",
+      "type" : "object"
+    },
+    "tunnel_method" : {
+      "oneOf" : [ {
+        "title" : "No Tunnel",
+        "type" : "object",
+        "additionalProperties" : true,
+        "description" : "No ssh tunnel needed to connect to database",
+        "properties" : {
+          "tunnel_method" : {
+            "type" : "string",
+            "enum" : [ "NO_TUNNEL" ],
+            "default" : "NO_TUNNEL"
+          }
+        },
+        "required" : [ "tunnel_method" ]
+      }, {
+        "title" : "SSH Key Authentication",
+        "type" : "object",
+        "additionalProperties" : true,
+        "description" : "Connect through a jump server tunnel host using username and ssh key",
+        "properties" : {
+          "tunnel_method" : {
+            "type" : "string",
+            "enum" : [ "SSH_KEY_AUTH" ],
+            "default" : "SSH_KEY_AUTH"
+          },
+          "tunnel_host" : {
+            "type" : "string",
+            "description" : "Hostname of the jump server host that allows inbound ssh tunnel.",
+            "title" : "SSH Tunnel Jump Server Host",
+            "order" : 1
+          },
+          "tunnel_port" : {
+            "type" : "integer",
+            "default" : 22,
+            "description" : "Port on the proxy/jump server that accepts inbound ssh connections.",
+            "title" : "SSH Connection Port",
+            "order" : 2,
+            "minimum" : 0,
+            "maximum" : 65536
+          },
+          "tunnel_user" : {
+            "type" : "string",
+            "description" : "OS-level username for logging into the jump server host",
+            "title" : "SSH Login Username",
+            "order" : 3
+          },
+          "ssh_key" : {
+            "type" : "string",
+            "description" : "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
+            "title" : "SSH Private Key",
+            "order" : 4,
+            "multiline" : true,
+            "airbyte_secret" : true
+          }
+        },
+        "required" : [ "tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user", "ssh_key" ]
+      }, {
+        "title" : "Password Authentication",
+        "type" : "object",
+        "additionalProperties" : true,
+        "description" : "Connect through a jump server tunnel host using username and password authentication",
+        "properties" : {
+          "tunnel_method" : {
+            "type" : "string",
+            "enum" : [ "SSH_PASSWORD_AUTH" ],
+            "default" : "SSH_PASSWORD_AUTH"
+          },
+          "tunnel_host" : {
+            "type" : "string",
+            "description" : "Hostname of the jump server host that allows inbound ssh tunnel.",
+            "title" : "SSH Tunnel Jump Server Host",
+            "order" : 1
+          },
+          "tunnel_port" : {
+            "type" : "integer",
+            "default" : 22,
+            "description" : "Port on the proxy/jump server that accepts inbound ssh connections.",
+            "title" : "SSH Connection Port",
+            "order" : 2,
+            "minimum" : 0,
+            "maximum" : 65536
+          },
+          "tunnel_user" : {
+            "type" : "string",
+            "description" : "OS-level username for logging into the jump server host",
+            "title" : "SSH Login Username",
+            "order" : 3
+          },
+          "tunnel_user_password" : {
+            "type" : "string",
+            "description" : "OS-level password for logging into the jump server host",
+            "title" : "Password",
+            "order" : 4,
+            "airbyte_secret" : true
+          }
+        },
+        "required" : [ "tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user", "tunnel_user_password" ]
+      } ],
+      "description" : "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
+      "title" : "SSH Tunnel Method",
+      "order" : 11,
+      "type" : "object"
+    }
+  },
+  "required" : [ "host", "port", "database", "replication_method" ]
+}
