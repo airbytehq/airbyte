@@ -40,10 +40,11 @@ class TestGroupStreamsPartitionRouter:
 class TestProjectStreamsPartitionRouter:
     projects_config = {"projects_list": ["group_id_1/project_id_1", "group_id_2/project_id_2"]}
 
-    def test_projects_stream_slices_without_group_project_ids(self, requests_mock):
+    def test_projects_stream_slices_with_only_projects_list_skips_groups_api(self, requests_mock):
+        """When projects_list is set and groups_list is empty, use projects directly without calling groups API."""
         config = BASE_CONFIG | self.projects_config
         source = get_source(config=config)
-        requests_mock.get(url=GROUPS_LIST_URL, json=[])
+        # Note: We intentionally do NOT mock the groups API here to verify it's not called
         projects_stream = get_stream_by_name(source=source, stream_name="projects", config=config)
         assert list(map(lambda partition: partition.to_slice(), projects_stream.generate_partitions())) == [
             StreamSlice(partition={"id": "group_id_1%2Fproject_id_1"}, cursor_slice={}),
@@ -71,12 +72,18 @@ class TestProjectStreamsPartitionRouter:
         assert list(map(lambda partition: partition.to_slice(), projects_stream.generate_partitions())) == expected_stream_slices
 
     def test_projects_stream_slices_with_group_project_ids_filtered_by_projects_list_config(self, requests_mock):
-        config = BASE_CONFIG | self.projects_config
-        source = get_source(config=config)
+        """When both groups_list and projects_list are set, filter group projects by projects_list."""
         group_id = "group_id_1"
         project_id = self.projects_config["projects_list"][0]
         unknown_project_id = "unknown_project_id"
-        requests_mock.get(url=GROUPS_LIST_URL, json=[{"id": group_id}])
+        # Include groups_list to trigger the group-based discovery path
+        config = BASE_CONFIG | self.projects_config | {"groups_list": [group_id]}
+        source = get_source(config=config)
+        requests_mock.get(url=f"https://gitlab.com/api/v4/groups/{group_id}?per_page=50", json=[{"id": group_id}])
+        requests_mock.get(
+            url=f"https://gitlab.com/api/v4/groups/{group_id}/descendant_groups?per_page=50",
+            json=[],
+        )
         requests_mock.get(
             url=f"https://gitlab.com/api/v4/groups/{group_id}?per_page=50",
             json=[
