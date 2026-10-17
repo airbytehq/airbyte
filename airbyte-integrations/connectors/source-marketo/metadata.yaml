@@ -71,12 +71,24 @@ data:
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: Marketo REST API
-      url: https://developers.marketo.com/rest-api/
+      url: https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/rest-api
+      type: api_reference
+    - title: Marketo REST API endpoint reference
+      url: https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/endpoint-reference
       type: api_reference
     - title: Marketo authentication
-      url: https://developers.marketo.com/rest-api/authentication/
+      url: https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/authentication
       type: authentication_guide
-    - title: Marketo rate limits
-      url: https://developers.marketo.com/rest-api/marketo-integration-best-practices/#api_limits
+    - title: Marketo custom services (API credentials)
+      url: https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/custom-services
+      type: authentication_guide
+    - title: Marketo integration best practices (API limits)
+      url: https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/marketo-integration-best-practices
       type: rate_limits
+    - title: Marketo Engage release notes
+      url: https://experienceleague.adobe.com/en/docs/marketo/using/release-notes/current
+      type: api_release_history
+    - title: Marketo Get Lead API updates (migration guide)
+      url: https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/lead-database/migration
+      type: api_deprecations
 metadataSpecVersion: "1.0"
