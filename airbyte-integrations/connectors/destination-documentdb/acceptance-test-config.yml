@@ -1,0 +1,9 @@
+# Connector Acceptance Tests are deprecated in this repository; integration coverage lives in src/test-integration.
+connector_image: airbyte/destination-documentdb:dev
+acceptance_tests:
+  spec:
+    bypass_reason: "CAT Tests have been deprecated."
+  connection:
+    bypass_reason: "CAT Tests have been deprecated."
+  basic_read:
+    bypass_reason: "CAT Tests have been deprecated."
