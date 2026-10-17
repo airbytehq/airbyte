@@ -26,7 +26,7 @@ This page guides you through setting up the [Mailchimp](https://mailchimp.com/) 
 
 ### Airbyte Open Source: Generate a Mailchimp API key
 
-1. Navigate to the API Keys section of your Mailchimp account.
+1. Go to the [API keys section](https://admin.mailchimp.com/account/api/) of your Mailchimp account. You can also reach it by clicking your profile icon, then **Account & billing** > **Extras** > **API keys**.
 2. Click **Create New Key**, and give the key a name to help you identify it. You won't be able to see or copy the key once you finish generating it, so be sure to copy the key and store it in a secure location.
 
 For more information on Mailchimp API Keys, please refer to the [official Mailchimp docs](https://mailchimp.com/help/about-api-keys/#api+key+security). If you want to use OAuth authentication with Airbyte Open Source, please follow the steps laid out [here](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/) to obtain your OAuth **Client ID**, **Client Secret** and **Access Token**.
@@ -63,29 +63,43 @@ For more information on Mailchimp API Keys, please refer to the [official Mailch
 
 The Mailchimp source connector supports the following streams and [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
 
-| Stream                                                                                                             | Full Refresh | Incremental |
-| :----------------------------------------------------------------------------------------------------------------- | :----------- | :---------- |
-| [Automations](https://mailchimp.com/developer/marketing/api/automation/list-automations/)                          | ✓            | ✓           |
-| [Campaigns](https://mailchimp.com/developer/marketing/api/campaigns/get-campaign-info/)                            | ✓            | ✓           |
-| [Email Activity](https://mailchimp.com/developer/marketing/api/email-activity-reports/list-email-activity/)        | ✓            | ✓           |
-| [Interests](https://mailchimp.com/developer/marketing/api/interests/list-interests-in-category/)                   | ✓            |             |
-| [Interest Categories](https://mailchimp.com/developer/marketing/api/interest-categories/list-interest-categories/) | ✓            |             |
-| [Lists](https://mailchimp.com/developer/marketing/api/lists/get-list-info/)                                         | ✓            | ✓           |
-| [List Members](https://mailchimp.com/developer/marketing/api/list-members/list-members-info/)                      | ✓            | ✓           |
-| [Reports](https://mailchimp.com/developer/marketing/api/reports/list-campaign-reports/)                            | ✓            | ✓           |
-| [Segments](https://mailchimp.com/developer/marketing/api/list-segments/list-segments/)                             | ✓            | ✓           |
-| [Segment Members](https://mailchimp.com/developer/marketing/api/list-segment-members/list-members-in-segment/)     | ✓            | ✓           |
-| [Tags](https://mailchimp.com/developer/marketing/api/lists-tags-search/search-for-tags-on-a-list-by-name/)         | ✓            |             |
-| [Unsubscribes](https://mailchimp.com/developer/marketing/api/unsub-reports/list-unsubscribed-members/)             | ✓            | ✓           |
+| Stream | Full Refresh | Incremental | Cursor field | Read once per |
+| :--- | :--- | :--- | :--- | :--- |
+| [`automations`](https://mailchimp.com/developer/marketing/api/automation/list-automations/) | ✓ | ✓ | `create_time` | account |
+| [`campaigns`](https://mailchimp.com/developer/marketing/api/campaigns/get-campaign-info/) | ✓ | ✓ | `create_time` | account |
+| [`email_activity`](https://mailchimp.com/developer/marketing/api/email-activity-reports/list-email-activity/) | ✓ | ✓ | `timestamp` | campaign |
+| [`interest_categories`](https://mailchimp.com/developer/marketing/api/interest-categories/list-interest-categories/) | ✓ | | | audience |
+| [`interests`](https://mailchimp.com/developer/marketing/api/interests/list-interests-in-category/) | ✓ | | | interest category |
+| [`list_members`](https://mailchimp.com/developer/marketing/api/list-members/list-members-info/) | ✓ | ✓ | `last_changed` | audience |
+| [`lists`](https://mailchimp.com/developer/marketing/api/lists/get-list-info/) | ✓ | ✓ | `date_created` | account |
+| [`reports`](https://mailchimp.com/developer/marketing/api/reports/list-campaign-reports/) | ✓ | ✓ | `send_time` | account |
+| [`segment_members`](https://mailchimp.com/developer/marketing/api/list-segment-members/list-members-in-segment/) | ✓ | ✓ | `last_changed` | segment |
+| [`segments`](https://mailchimp.com/developer/marketing/api/list-segments/list-segments/) | ✓ | ✓ | `updated_at` | audience |
+| [`tags`](https://mailchimp.com/developer/marketing/api/lists-tags-search/search-for-tags-on-a-list-by-name/) | ✓ | | | audience |
+| [`unsubscribes`](https://mailchimp.com/developer/marketing/api/unsub-reports/list-unsubscribed-members/) | ✓ | ✓ | `timestamp` | campaign |
 
-### A note on primary keys
+Mailchimp calls audiences "lists" in its API, so the `lists` stream contains your audiences.
 
-The `EmailActivity` and `Unsubscribes` streams do not have an `id` primary key, and therefore use the following composite keys as unique identifiers:
+Streams read once per campaign, audience, segment, or interest category make one API request for each parent record, plus more requests for pagination. On accounts with many campaigns or audiences, these streams dominate sync duration and are the most likely to hit Mailchimp's connection limit. The `interests` stream is nested two levels deep: the connector reads audiences, then interest categories, then interests.
 
-- EmailActivity [`email_id`, `action`, `timestamp`]
-- Unsubscribes [`campaign_id`, `email_id`, `timestamp`]
+### Primary keys
 
-All other streams contain an `id` primary key.
+Most streams use `id` as their primary key. These streams use composite keys instead:
+
+| Stream | Primary key |
+| :--- | :--- |
+| `email_activity` | `timestamp`, `email_id`, `action` |
+| `list_members` | `id`, `list_id` |
+| `segment_members` | `id`, `segment_id` |
+| `unsubscribes` | `campaign_id`, `email_id`, `timestamp` |
+
+### Incremental syncs
+
+Most incremental streams send the cursor value to Mailchimp as a request parameter, so each sync only retrieves records created or modified since the last sync.
+
+The `segment_members` and `unsubscribes` endpoints don't accept a date filter, so the connector requests every record for each segment or campaign on every sync and then discards records older than the cursor. Setting an **Incremental Sync Start Date** limits what these two streams emit, but it doesn't reduce the number of requests they make.
+
+The `email_activity` and `unsubscribes` streams read campaign reports, so they only return data for campaigns Mailchimp has already sent.
 
 ## Data type mapping
 
@@ -113,13 +127,25 @@ The [Mailchimp Marketing API](https://mailchimp.com/developer/marketing/docs/fun
 
 The connector includes a **Number of concurrent threads** configuration parameter (default: 2, min: 2, max: 10) that controls the number of concurrent threads used during syncing. You can increase this value to speed up syncs, but keep the total number of simultaneous connections across all consumers within Mailchimp's 10-connection limit.
 
+The connector also throttles itself to 10 requests per second, and treats HTTP 429 and 403 responses as signals that it has hit the limit, so it backs off instead of failing the sync outright.
+
+### Authentication and data centers
+
+Mailchimp scopes every account to a data center, which appears as a prefix in the API host name, such as `us14.api.mailchimp.com`. Your API key ends with the same data center suffix (for example, `-us14`), and the connector reads it from the key, so you don't configure the data center yourself. When you authenticate with OAuth, the connector retrieves the data center from Mailchimp after you authorize.
+
+If your organization restricts outbound traffic, allow both `*.api.mailchimp.com` and `login.mailchimp.com`.
+
+### Connection checks
+
+The connector verifies your credentials by reading the `campaigns` endpoint. An account with no campaigns still passes the check, because the endpoint returns an empty result rather than an error.
+
 </details>
 
 ## Tutorials
 
 Now that you have set up the Mailchimp source connector, check out the following Mailchimp tutorial:
 
-- [Build a data ingestion pipeline from Mailchimp to Snowflake](https://airbyte.com/tutorials/data-ingestion-pipeline-mailchimp-snowflake)
+- [Sync Mailchimp data to Snowflake](https://airbyte.com/how-to-sync/mailchimp-to-snowflake-data-cloud)
 
 ## IP allow list
 
