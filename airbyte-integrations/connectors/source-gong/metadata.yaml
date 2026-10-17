@@ -70,4 +70,10 @@ data:
     - title: Gong rate limits
       url: https://us-66463.app.gong.io/settings/api/documentation#rate-limits
       type: rate_limits
+    - title: Gong release notes (planned change management)
+      url: https://help.gong.io/docs/release-notes
+      type: api_release_history
+    - title: Gong trusted IPs for OAuth integrations
+      url: https://help.gong.io/docs/configure-trusted-ips-for-your-integration
+      type: authentication_guide
 metadataSpecVersion: "1.0"
