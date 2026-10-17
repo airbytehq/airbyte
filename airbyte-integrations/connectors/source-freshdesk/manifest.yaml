@@ -2115,10 +2115,6 @@ schemas:
         type:
           - string
           - "null"
-      ticket_updated_at:
-        type:
-          - string
-          - "null"
       updated_at:
         type:
           - string
@@ -2345,6 +2341,10 @@ schemas:
           - string
           - "null"
       updated_at:
+        type:
+          - string
+          - "null"
+      ticket_updated_at:
         type:
           - string
           - "null"
