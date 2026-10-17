@@ -20,7 +20,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 59353119-f0f2-4e5a-a8ba-15d887bc34f6
-  dockerImageTag: 0.10.4
+  dockerImageTag: 0.10.5
   dockerRepository: airbyte/source-microsoft-sharepoint
   githubIssueLabel: source-microsoft-sharepoint
   icon: microsoft-sharepoint.svg
@@ -48,6 +48,15 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
+    - title: Microsoft Graph changelog
+      url: https://developer.microsoft.com/en-us/graph/changelog
+      type: api_release_history
+    - title: Microsoft Graph versioning and support
+      url: https://learn.microsoft.com/en-us/graph/versioning-and-support
+      type: api_deprecations
+    - title: Microsoft Graph SharePoint API
+      url: https://learn.microsoft.com/en-us/graph/api/resources/sharepoint
+      type: api_reference
     - title: SharePoint REST API
       url: https://learn.microsoft.com/en-us/sharepoint/dev/sp-add-ins/get-to-know-the-sharepoint-rest-service
       type: api_reference
