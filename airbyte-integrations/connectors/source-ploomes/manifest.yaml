@@ -1,0 +1,1729 @@
+version: 7.10.0
+
+type: DeclarativeSource
+
+description: Connector to the Brazilian CRM Ploomes
+
+check:
+  type: CheckStream
+  stream_names:
+    - contacts
+    - deals
+    - quotes
+    - tasks
+    - fields
+    - fields_options_tables
+    - fields_options_tables_options
+    - contact_status
+    - contact_types
+    - deal_pipelines
+    - deal_stages
+    - deals_status
+    - cities
+    - states
+    - tags
+    - task_email_reminders
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: ApiKeyAuthenticator
+        header: User-Key
+        api_token: "{{ config['api_key'] }}"
+      request_parameters:
+        $expand: OtherProperties
+        $filter: LastUpdateDate gt {{ stream_interval['start_time'] }}
+        $orderby: LastUpdateDate asc
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+
+streams:
+  - type: DeclarativeStream
+    name: contacts
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+      requester:
+        type: HttpRequester
+        url: https://public-api2.ploomes.com/Contacts
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: User-Key
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          $expand: OtherProperties
+          $filter: LastUpdateDate gt {{ stream_interval['start_time'] }}
+          $orderby: LastUpdateDate asc
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - LastUpdateDate
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          CPF:
+            type:
+              - string
+              - "null"
+          Key:
+            type:
+              - string
+              - "null"
+          CNPJ:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+          Note:
+            type:
+              - string
+              - "null"
+          Email:
+            type:
+              - string
+              - "null"
+          Skype:
+            type:
+              - string
+              - "null"
+          CityId:
+            type:
+              - number
+              - "null"
+          LeadId:
+            type:
+              - number
+              - "null"
+          RoleId:
+            type:
+              - number
+              - "null"
+          TypeId:
+            type:
+              - number
+              - "null"
+          ClassId:
+            type:
+              - number
+              - "null"
+          OwnerId:
+            type:
+              - number
+              - "null"
+          StateId:
+            type:
+              - number
+              - "null"
+          Website:
+            type:
+              - string
+              - "null"
+          ZipCode:
+            type:
+              - number
+              - "null"
+          Birthday:
+            type:
+              - string
+              - "null"
+          CNAECode:
+            type:
+              - string
+              - "null"
+          CNAEName:
+            type:
+              - string
+              - "null"
+          Editable:
+            type:
+              - boolean
+              - "null"
+          Facebook:
+            type:
+              - string
+              - "null"
+          ImportId:
+            type:
+              - number
+              - "null"
+          Latitude:
+            type:
+              - number
+              - "null"
+          OriginId:
+            type:
+              - number
+              - "null"
+          Register:
+            type:
+              - string
+              - "null"
+          StatusId:
+            type:
+              - number
+              - "null"
+          AvatarUrl:
+            type:
+              - string
+              - "null"
+          CompanyId:
+            type:
+              - number
+              - "null"
+          CountryId:
+            type:
+              - number
+              - "null"
+          CreatorId:
+            type:
+              - number
+              - "null"
+          Deletable:
+            type:
+              - boolean
+              - "null"
+          LegalName:
+            type:
+              - string
+              - "null"
+          Longitude:
+            type:
+              - number
+              - "null"
+          UpdaterId:
+            type:
+              - number
+              - "null"
+          CreateDate:
+            type:
+              - string
+              - "null"
+          CurrencyId:
+            type:
+              - number
+              - "null"
+          LastDealId:
+            type:
+              - number
+              - "null"
+          FirstTaskId:
+            type:
+              - number
+              - "null"
+          LastOrderId:
+            type:
+              - number
+              - "null"
+          LastQuoteId:
+            type:
+              - number
+              - "null"
+          DepartmentId:
+            type:
+              - number
+              - "null"
+          Neighborhood:
+            type:
+              - string
+              - "null"
+          CNAESecondary:
+            type:
+              - string
+              - "null"
+          FirstTaskDate:
+            type:
+              - string
+              - "null"
+          LastCompanyId:
+            type:
+              - number
+              - "null"
+          StreetAddress:
+            type:
+              - string
+              - "null"
+          EmailMarketing:
+            type:
+              - boolean
+              - "null"
+          ForeignZipCode:
+            type:
+              - string
+              - "null"
+          LastDocumentId:
+            type:
+              - number
+              - "null"
+          LastUpdateDate:
+            type: string
+          RelationshipId:
+            type:
+              - number
+              - "null"
+          NextAnniversary:
+            type:
+              - string
+              - "null"
+          OtherProperties:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              additionalProperties: true
+          TasksOrdination:
+            type:
+              - number
+              - "null"
+          IdentityDocument:
+            type:
+              - string
+              - "null"
+          LineOfBusinessId:
+            type:
+              - number
+              - "null"
+          HasScheduledTasks:
+            type:
+              - boolean
+              - "null"
+          PublicFormIdCreate:
+            type:
+              - string
+              - "null"
+          PublicFormIdUpdate:
+            type:
+              - string
+              - "null"
+          StreetAddressLine2:
+            type:
+              - string
+              - "null"
+          CreateImportationId:
+            type:
+              - number
+              - "null"
+          ImportationIdCreate:
+            type:
+              - string
+              - "null"
+          ImportationIdUpdate:
+            type:
+              - string
+              - "null"
+          NumberOfEmployeesId:
+            type:
+              - number
+              - "null"
+          PreviousAnniversary:
+            type:
+              - string
+              - "null"
+          StreetAddressNumber:
+            type:
+              - string
+              - "null"
+          UpdateImportationId:
+            type:
+              - number
+              - "null"
+          ForeignZipCodeCountryId:
+            type:
+              - number
+              - "null"
+          LastInteractionRecordId:
+            type:
+              - number
+              - "null"
+          ForeignZipCodeWithoutMask:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: LastUpdateDate
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "2010-01-01T00:00:00Z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: deals
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+      requester:
+        type: HttpRequester
+        url: https://public-api2.ploomes.com/Deals
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: User-Key
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          $expand: OtherProperties
+          $filter: LastUpdateDate gt {{ stream_interval['start_time'] }}
+          $orderby: LastUpdateDate asc
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - LastUpdateDate
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Date:
+            type:
+              - string
+              - "null"
+          Read:
+            type:
+              - boolean
+              - "null"
+          Title:
+            type:
+              - string
+              - "null"
+          Amount:
+            type:
+              - number
+              - "null"
+          IsRead:
+            type:
+              - boolean
+              - "null"
+          LeadId:
+            type:
+              - number
+              - "null"
+          Length:
+            type:
+              - number
+              - "null"
+          ReevId:
+            type:
+              - string
+              - "null"
+          OwnerId:
+            type:
+              - number
+              - "null"
+          StageId:
+            type:
+              - number
+              - "null"
+          Editable:
+            type:
+              - boolean
+              - "null"
+          PersonId:
+            type:
+              - number
+              - "null"
+          StatusId:
+            type:
+              - number
+              - "null"
+          ContactId:
+            type:
+              - number
+              - "null"
+          CreatorId:
+            type:
+              - number
+              - "null"
+          Deletable:
+            type:
+              - boolean
+              - "null"
+          UpdaterId:
+            type:
+              - number
+              - "null"
+          WasMerged:
+            type:
+              - boolean
+              - "null"
+          CreateDate:
+            type:
+              - string
+              - "null"
+          CurrencyId:
+            type:
+              - number
+              - "null"
+          DealNumber:
+            type:
+              - string
+              - "null"
+          FinishDate:
+            type:
+              - string
+              - "null"
+          PipelineId:
+            type:
+              - number
+              - "null"
+          PriorityId:
+            type:
+              - number
+              - "null"
+          DaysInStage:
+            type:
+              - number
+              - "null"
+          LastOrderId:
+            type:
+              - number
+              - "null"
+          MergeStatus:
+            type:
+              - string
+              - "null"
+          StartAmount:
+            type:
+              - number
+              - "null"
+          HoursInStage:
+            type:
+              - number
+              - "null"
+          OriginDealId:
+            type:
+              - number
+              - "null"
+          FieldStatusId:
+            type:
+              - number
+              - "null"
+          QuoteAmountId:
+            type:
+              - number
+              - "null"
+          CreateImportId:
+            type:
+              - number
+              - "null"
+          LastDocumentId:
+            type:
+              - number
+              - "null"
+          LastUpdateDate:
+            type: string
+          UpdateImportId:
+            type:
+              - number
+              - "null"
+          OtherProperties:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              additionalProperties: true
+          StartCurrencyId:
+            type:
+              - number
+              - "null"
+          StatusChangeDate:
+            type:
+              - string
+              - "null"
+          PublicFormIdCreate:
+            type:
+              - string
+              - "null"
+          PublicFormIdUpdate:
+            type:
+              - string
+              - "null"
+          ImportationIdCreate:
+            type:
+              - string
+              - "null"
+          ImportationIdUpdate:
+            type:
+              - string
+              - "null"
+          LastInteractionRecordId:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: LastUpdateDate
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "2010-01-01T00:00:00Z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+  - type: DeclarativeStream
+    name: quotes
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+      requester:
+        type: HttpRequester
+        url: https://public-api2.ploomes.com/Quotes
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: User-Key
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          $expand: OtherProperties
+          $filter: LastUpdateDate gt {{ stream_interval['start_time'] }}
+          $orderby: LastUpdateDate asc
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - LastUpdateDate
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Amount:
+            type:
+              - number
+              - "null"
+          DealId:
+            type:
+              - number
+              - "null"
+          ContactId:
+            type:
+              - number
+              - "null"
+          CreateDate:
+            type:
+              - string
+              - "null"
+          CurrencyId:
+            type:
+              - number
+              - "null"
+          LastUpdateDate:
+            type: string
+          OtherProperties:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              additionalProperties: true
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: LastUpdateDate
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "2010-01-01T00:00:00Z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+  - type: DeclarativeStream
+    name: tasks
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+      requester:
+        type: HttpRequester
+        url: https://public-api2.ploomes.com/Tasks
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: User-Key
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          $expand: OtherProperties
+          $filter: LastUpdateDate gt {{ stream_interval['start_time'] }}
+          $orderby: LastUpdateDate asc
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - LastUpdateDate
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Title:
+            type:
+              - string
+              - "null"
+          DealId:
+            type:
+              - number
+              - "null"
+          Length:
+            type:
+              - number
+              - "null"
+          NoTime:
+            type:
+              - boolean
+              - "null"
+          TypeId:
+            type:
+              - number
+              - "null"
+          Address:
+            type:
+              - string
+              - "null"
+          EndTime:
+            type:
+              - string
+              - "null"
+          OwnerId:
+            type:
+              - number
+              - "null"
+          Pending:
+            type:
+              - boolean
+              - "null"
+          DateTime:
+            type:
+              - string
+              - "null"
+          Editable:
+            type:
+              - boolean
+              - "null"
+          Finished:
+            type:
+              - boolean
+              - "null"
+          Latitude:
+            type:
+              - number
+              - "null"
+          ContactId:
+            type:
+              - number
+              - "null"
+          CreatorId:
+            type:
+              - number
+              - "null"
+          Longitude:
+            type:
+              - number
+              - "null"
+          UpdaterId:
+            type:
+              - number
+              - "null"
+          CreateDate:
+            type:
+              - string
+              - "null"
+          FinishDate:
+            type:
+              - string
+              - "null"
+          Finishable:
+            type:
+              - boolean
+              - "null"
+          FinisherId:
+            type:
+              - number
+              - "null"
+          ContactName:
+            type:
+              - string
+              - "null"
+          Description:
+            type:
+              - string
+              - "null"
+          OwnerTypeId:
+            type:
+              - number
+              - "null"
+          OriginTaskId:
+            type:
+              - number
+              - "null"
+          LastUpdateDate:
+            type: string
+          EmailReminderId:
+            type:
+              - number
+              - "null"
+          InteractionRecordId:
+            type:
+              - number
+              - "null"
+          RepeatIntervalLength:
+            type:
+              - number
+              - "null"
+          RepeatIntervalUnitId:
+            type:
+              - number
+              - "null"
+          OriginalTaskCreatorId:
+            type:
+              - number
+              - "null"
+          CreatesGoogleCalendarEvent:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: LastUpdateDate
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "2010-01-01T00:00:00Z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+  - type: DeclarativeStream
+    name: fields
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+      requester:
+        type: HttpRequester
+        url: https://public-api2.ploomes.com/Fields
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: User-Key
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Key:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+          Hidden:
+            type:
+              - boolean
+              - "null"
+          TypeId:
+            type:
+              - number
+              - "null"
+          Dynamic:
+            type:
+              - boolean
+              - "null"
+          Disabled:
+            type:
+              - boolean
+              - "null"
+          EntityId:
+            type:
+              - number
+              - "null"
+          Multiple:
+            type:
+              - boolean
+              - "null"
+          Required:
+            type:
+              - boolean
+              - "null"
+          Filterable:
+            type:
+              - boolean
+              - "null"
+          PropertyName:
+            type:
+              - string
+              - "null"
+          LastUpdateDate:
+            type:
+              - string
+              - "null"
+          OptionsTableId:
+            type:
+              - number
+              - "null"
+          FieldDescription:
+            type:
+              - string
+              - "null"
+          SecondaryEntityId:
+            type:
+              - number
+              - "null"
+          UpdatePropertyName:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: fields_options_tables
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+      requester:
+        type: HttpRequester
+        url: https://public-api2.ploomes.com/Fields@OptionsTables
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: User-Key
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: fields_options_tables_options
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+      requester:
+        type: HttpRequester
+        url: https://public-api2.ploomes.com/Fields@OptionsTables@Options
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: User-Key
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+          TableId:
+            type:
+              - number
+              - "null"
+          ExternalKey:
+            type:
+              - string
+              - "null"
+          LastUpdateDate:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: contact_status
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+      requester:
+        type: HttpRequester
+        url: https://public-api2.ploomes.com/Contacts@Status
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: User-Key
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Icon:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+          Color:
+            type:
+              - string
+              - "null"
+          Label:
+            type:
+              - string
+              - "null"
+          Prospect:
+            type:
+              - boolean
+              - "null"
+          Discarded:
+            type:
+              - boolean
+              - "null"
+          ImageName:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: contact_types
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+      requester:
+        type: HttpRequester
+        url: https://public-api2.ploomes.com/Contacts@Types
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: User-Key
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: deal_pipelines
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+      requester:
+        type: HttpRequester
+        url: https://public-api2.ploomes.com/Deals@Pipelines
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: User-Key
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+          Color:
+            type:
+              - string
+              - "null"
+          FormId:
+            type:
+              - number
+              - "null"
+          Archived:
+            type:
+              - boolean
+              - "null"
+          Ordination:
+            type:
+              - number
+              - "null"
+          QuickFormId:
+            type:
+              - number
+              - "null"
+          LastUpdateDate:
+            type:
+              - string
+              - "null"
+          PluralUnitName:
+            type:
+              - string
+              - "null"
+          SingularUnitName:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: deal_stages
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+      requester:
+        type: HttpRequester
+        url: https://public-api2.ploomes.com/Deals@Stages
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: User-Key
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+          TriggerId:
+            type:
+              - number
+              - "null"
+          Ordination:
+            type:
+              - number
+              - "null"
+          PipelineId:
+            type:
+              - number
+              - "null"
+          LastPipelineStage:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: deals_status
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+      requester:
+        type: HttpRequester
+        url: https://public-api2.ploomes.com/Deals@Status
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: User-Key
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: cities
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+      requester:
+        type: HttpRequester
+        url: https://public-api2.ploomes.com/Cities
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: User-Key
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+          StateId:
+            type:
+              - number
+              - "null"
+          Editable:
+            type:
+              - boolean
+              - "null"
+          IBGECode:
+            type:
+              - number
+              - "null"
+          Latitude:
+            type:
+              - string
+              - "null"
+          CountryId:
+            type:
+              - number
+              - "null"
+          Longitude:
+            type:
+              - string
+              - "null"
+          LastUpdateDate:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: states
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+      requester:
+        type: HttpRequester
+        url: https://public-api2.ploomes.com/Cities@Countries@States
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: User-Key
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+          Short:
+            type:
+              - string
+              - "null"
+          CountryId:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: tags
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+      requester:
+        type: HttpRequester
+        url: https://public-api2.ploomes.com/Tags
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: User-Key
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+          Color:
+            type:
+              - string
+              - "null"
+          EntityId:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: task_email_reminders
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 300
+      requester:
+        type: HttpRequester
+        url: https://public-api2.ploomes.com/Tasks@EmailReminders
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: User-Key
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    deals:
+      isStale: false
+      hasRecords: true
+      streamHash: ef16cef9af2c08aa3e1606bba54b0195deae0eed
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    cities:
+      isStale: false
+      hasRecords: true
+      streamHash: 589197b4191efcca464295a381c66dfad940845a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts:
+      isStale: false
+      hasRecords: true
+      streamHash: 5f9a468316d18eac700a6eaa76c14e91848599ad
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    quotes:
+      streamHash: 0e02d1813bbea48547945641a681326ea9cf0955
+    tasks:
+      streamHash: 4ed2df423ed54670a2d50b2fdb56ed541954b6c2
+    fields:
+      streamHash: e211a3a12fe0976c0bfab733f71247ec4164e694
+    fields_options_tables:
+      streamHash: ab503d2c8440e23e1f09b5ffb21c6c9055fa5d71
+    fields_options_tables_options:
+      streamHash: 44f482884ec4b32e5133355c50b39203920d2d4e
+    contact_status:
+      streamHash: a2e51a8f497e47ff42568025ae88106bce601126
+    contact_types:
+      streamHash: d236b43122fc3f7ce076b5486549b5f55828bc4b
+    deal_pipelines:
+      streamHash: c467ceb59d2eb7a1660530dd8a6eb45c6cacef49
+    deal_stages:
+      streamHash: 6ed39aa18dc5c42109fbb740ba295a0e7f261e2b
+    deals_status:
+      streamHash: eebcf91b7c1314a2ea0b119393b92439879a0128
+    states:
+      streamHash: ef33e905e324d65695c7adfe2a479bf63701e3f6
+    tags:
+      streamHash: 1c8648c79209f39ce35f9ad10a1677090aaf737d
+    task_email_reminders:
+      streamHash: 25ab89d62841aa74f1d4f48ded6b332f41abd6df
+  autoImportSchema:
+    tags: false
+    deals: false
+    tasks: false
+    cities: false
+    fields: false
+    quotes: false
+    states: false
+    contacts: false
+    deal_stages: false
+    deals_status: false
+    contact_types: false
+    contact_status: false
+    deal_pipelines: false
+    task_email_reminders: false
+    fields_options_tables: false
+    fields_options_tables_options: false
