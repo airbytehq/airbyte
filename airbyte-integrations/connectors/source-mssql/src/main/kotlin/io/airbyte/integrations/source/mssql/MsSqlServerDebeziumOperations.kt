@@ -466,7 +466,8 @@ class MsSqlServerDebeziumOperations(
         }
 
         val sanitizedValue = currentValue.deepCopy()
-        if (eventSerialNoRegressed && startEventSerialNo != null) {
+        if (eventSerialNoRegressed) {
+            // eventSerialNoRegressed implies startEventSerialNo != null.
             sanitizedValue.put("event_serial_no", startEventSerialNo)
         }
         if (changeLsnRegressed && !startChangeLsn.isNull) {

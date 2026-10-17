@@ -42,9 +42,8 @@ class GcsDataLakeWriter(
                 tableIdGenerator.toTableIdentifier(incomingStream.mappedDescriptor)
             if (processedTableIds.containsKey(incomingTableId)) {
                 val conflictingStream = processedTableIds[incomingTableId]!!
-                conflictingStreams.add(
+                conflictingStreams +=
                     Triple(conflictingStream, incomingStream.mappedDescriptor, incomingTableId)
-                )
             } else {
                 processedTableIds[incomingTableId] = incomingStream.mappedDescriptor
             }

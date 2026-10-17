@@ -100,10 +100,11 @@ class BigqueryS3CopyTest {
                 archive
             }
         )
-        assertEquals("platform-bucket", captured!!.bucket)
-        assertEquals("us-east-2", captured!!.region)
-        assertEquals("platform-prefix", captured!!.prefix)
-        assertEquals(UUID(0, 42), captured!!.sourceId)
+        val configuration = captured!!
+        assertEquals("platform-bucket", configuration.bucket)
+        assertEquals("us-east-2", configuration.region)
+        assertEquals("platform-prefix", configuration.prefix)
+        assertEquals(UUID(0, 42), configuration.sourceId)
         assertSame(
             DisabledBigqueryS3Copy,
             BigqueryS3CopyFactory.createForOperation(
@@ -914,11 +915,13 @@ class BigqueryS3CopyTest {
                 try {
                     session.close()
                 } catch (error: Throwable) {
-                    if (failure == null) failure = error else failure!!.addSuppressed(error)
+                    val previous = failure
+                    if (previous == null) failure = error else previous.addSuppressed(error)
                 }
             }
             closeFailure?.let { error ->
-                if (failure == null) failure = error else failure!!.addSuppressed(error)
+                val previous = failure
+                if (previous == null) failure = error else previous.addSuppressed(error)
             }
             failure?.let { throw it }
         }

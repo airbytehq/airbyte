@@ -100,7 +100,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
     ): MutableList<Field<*>> {
         return columns.entries
             .stream()
-            .map<Field<out Any>> { column: Map.Entry<ColumnId, AirbyteType> ->
+            .map<Field<*>> { column: Map.Entry<ColumnId, AirbyteType> ->
                 val type: AirbyteType = column.value
                 val isStruct: Boolean = type is Struct
                 val isArray: Boolean = type is Array

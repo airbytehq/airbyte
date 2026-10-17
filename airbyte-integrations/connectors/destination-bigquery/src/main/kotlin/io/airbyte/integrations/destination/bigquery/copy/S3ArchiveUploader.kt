@@ -264,7 +264,8 @@ internal constructor(
                     try {
                         block()
                     } catch (t: Throwable) {
-                        if (failure == null) failure = t else failure!!.addSuppressed(t)
+                        val previous = failure
+                        if (previous == null) failure = t else previous.addSuppressed(t)
                     }
                 }
                 activeStreaming.forEach { session -> attempt { session.close() } }
@@ -543,7 +544,7 @@ internal class ArchiveFileBody(
         if (subscription.closing.compareAndSet(false, true)) scheduleClose()
     }
 
-    private fun scheduleClose() =
+    private fun scheduleClose() {
         synchronized(closeSchedulingLock) {
             if (streamCloser.isShutdown) return
             closeRequests++
@@ -586,6 +587,7 @@ internal class ArchiveFileBody(
                 }
             }
         }
+    }
 
     fun stop(cleanupWorkers: ExecutorService, timeout: Duration) {
         val task =

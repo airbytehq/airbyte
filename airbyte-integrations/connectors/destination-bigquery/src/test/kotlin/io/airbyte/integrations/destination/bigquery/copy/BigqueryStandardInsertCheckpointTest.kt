@@ -352,10 +352,7 @@ class BigqueryStandardInsertCheckpointTest {
             CheckpointManager(
                 catalog,
                 sync,
-                { reservation, _, _, _ ->
-                    emitted.add(reservation.value)
-                    Unit
-                },
+                { reservation, _, _, _ -> emitted.add(reservation.value) },
                 mockk { every { currentTimeMillis() } returns 0L },
                 medium == DataChannelMedium.SOCKET,
                 NamespaceMapper(),
