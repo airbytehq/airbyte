@@ -8,9 +8,8 @@ This page contains the setup guide and reference information for the [Amazon Ads
 
 ## Prerequisites
 
-- Client ID
-- Client Secret
-- Refresh Token
+- An Amazon Ads account with at least one seller or vendor profile
+- For Airbyte Open Source only: the Client ID, Client Secret, and Refresh Token of your Amazon Ads API application. Airbyte Cloud authenticates with OAuth instead.
 - Region
 - Start Date (Optional)
 - Profile IDs (Optional)
@@ -140,9 +139,18 @@ Each report stream is available in two variants:
 
 For more information on time units, see the Amazon Ads documentation on [timeUnit and supported columns](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#timeunit-and-supported-columns).
 
-:::note
-Amazon rejects a report request that duplicates one it is still generating, for example when a sync attempt is retried after an earlier attempt already requested the report. When the report Amazon names matches the request, the connector syncs that report instead of failing. Otherwise the connector waits and requests the report again. Amazon can also treat requests from different streams as duplicates, such as the keywords and targets reports or the summary and daily versions of a report, so syncing both can add several minutes to each report.
-:::
+### Duplicate report requests
+
+Amazon rejects a report request with HTTP 425 when it considers the request a duplicate of a report it's still generating. This usually happens when a sync attempt is retried after an earlier attempt already requested the same report.
+
+The connector handles this response in two ways:
+
+- If Amazon names the existing report and that report matches the request (same dates, report type, time unit, columns, grouping, and filters), the connector syncs that report instead of requesting a new one.
+- Otherwise, the connector waits 60 seconds and requests the report again, up to four requests in all. If every request is rejected, the report job fails and the connector starts it again, up to three attempts per report, so a single report can wait about nine minutes in total.
+
+Amazon can also treat requests from different streams as duplicates of each other. This has been observed between `sponsored_products_keywords_report_stream` and `sponsored_products_targets_report_stream`, which request the same `spTargeting` report type, and between the summary and daily variants of a report. Syncing both streams in such a pair works, but can add several minutes per report.
+
+If the duplicate persists through every retry, the stream fails with a transient error that begins `Amazon rejected the report request as a duplicate of a report that is still being generated, and that report could not be reused.` The duplicate clears once Amazon finishes the earlier report, so a later sync attempt should succeed.
 
 ### Sponsored Brands report types
 
