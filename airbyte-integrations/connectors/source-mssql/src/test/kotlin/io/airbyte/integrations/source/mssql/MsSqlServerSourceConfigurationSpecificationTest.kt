@@ -40,7 +40,7 @@ class MsSqlServerSourceConfigurationSpecificationTest {
         Assertions.assertTrue(
             encryption
                 is MsSqlServerEncryptionRequiredTrustServerCertificateConfigurationSpecification,
-            encryption::class.toString()
+            encryption::class.toString(),
         )
 
         val tunnelMethod: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
@@ -57,7 +57,7 @@ class MsSqlServerSourceConfigurationSpecificationTest {
         Assertions.assertEquals(true, pojo.checkPrivileges)
         Assertions.assertEquals(
             "integratedSecurity=false&trustServerCertificate=true",
-            pojo.jdbcUrlParams
+            pojo.jdbcUrlParams,
         )
     }
 
@@ -72,7 +72,7 @@ class MsSqlServerSourceConfigurationSpecificationTest {
         val encryption: EncryptionSpecification = pojo.getEncryptionValue()!!
         Assertions.assertTrue(
             encryption is MsSqlServerEncryptionDisabledConfigurationSpecification,
-            encryption::class.toString()
+            encryption::class.toString(),
         )
     }
 
@@ -84,7 +84,7 @@ class MsSqlServerSourceConfigurationSpecificationTest {
         val replicationMethod: IncrementalConfigurationSpecification = pojo.getIncrementalValue()
         Assertions.assertTrue(
             replicationMethod is UserDefinedCursor,
-            replicationMethod::class.toString()
+            replicationMethod::class.toString(),
         )
     }
 

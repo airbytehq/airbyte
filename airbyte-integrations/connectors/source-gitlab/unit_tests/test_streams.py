@@ -6,6 +6,7 @@
 import pytest
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .conftest import BASE_CONFIG, GROUPS_LIST_URL, get_source, get_stream_by_name
 
@@ -39,6 +40,99 @@ def test_should_retry(requests_mock, stream_name, extra_mocks):
         records.extend(list(partition.read()))
     assert records == []
     assert requests_mock.call_count == len(extra_mocks) + 1
+
+
+def test_retries_after_rate_limit_using_retry_after(requests_mock, mocker):
+    rate_limiting_time = mocker.patch("airbyte_cdk.sources.streams.http.rate_limiting.time")
+    sleep = rate_limiting_time.sleep
+    requests_mock.get(url=GROUPS_LIST_URL, json=[])
+    requests_mock.register_uri(
+        "GET",
+        "/api/v4/projects/p_1",
+        [
+            {
+                "status_code": 429,
+                "headers": {"Retry-After": "30", "RateLimit-Remaining": "1999"},
+            },
+            {"status_code": 200, "json": [{"id": "p_1"}]},
+        ],
+    )
+    source = get_source(config=CONFIG)
+    migrated_config = source.configure(config=CONFIG, temp_dir="/not/a/real/path")
+    stream = get_stream_by_name(source=source, stream_name="projects", config=migrated_config)
+
+    records = [dict(record) for partition in stream.generate_partitions() for record in partition.read()]
+
+    assert records == [{"id": "p_1"}]
+    sleep.assert_called_once_with(31)
+
+
+def test_retries_after_rate_limit_without_retry_after(requests_mock, mocker):
+    rate_limiting_time = mocker.patch("airbyte_cdk.sources.streams.http.rate_limiting.time")
+    sleep = rate_limiting_time.sleep
+    requests_mock.get(url=GROUPS_LIST_URL, json=[])
+    requests_mock.register_uri(
+        "GET",
+        "/api/v4/projects/p_1",
+        [
+            {"status_code": 429, "headers": {"RateLimit-Remaining": "1999"}},
+            {"status_code": 200, "json": [{"id": "p_1"}]},
+        ],
+    )
+    source = get_source(config=CONFIG)
+    migrated_config = source.configure(config=CONFIG, temp_dir="/not/a/real/path")
+    stream = get_stream_by_name(source=source, stream_name="projects", config=migrated_config)
+
+    records = [dict(record) for partition in stream.generate_partitions() for record in partition.read()]
+
+    assert records == [{"id": "p_1"}]
+    sleep.assert_called_once_with(11)
+
+
+def test_rate_limit_fails_when_retry_after_exceeds_max_wait(requests_mock, mocker):
+    rate_limiting_time = mocker.patch("airbyte_cdk.sources.streams.http.rate_limiting.time")
+    sleep = rate_limiting_time.sleep
+    requests_mock.get(url=GROUPS_LIST_URL, json=[])
+    projects_request = requests_mock.register_uri(
+        "GET",
+        "/api/v4/projects/p_1",
+        status_code=429,
+        headers={"Retry-After": "5000", "RateLimit-Remaining": "1999"},
+    )
+    source = get_source(config=CONFIG)
+    migrated_config = source.configure(config=CONFIG, temp_dir="/not/a/real/path")
+    stream = get_stream_by_name(source=source, stream_name="projects", config=migrated_config)
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        [dict(record) for partition in stream.generate_partitions() for record in partition.read()]
+
+    assert "greater than or equal to the maximum of 3660" in exc_info.value.internal_message
+    sleep.assert_not_called()
+    assert projects_request.call_count == 1
+
+
+def test_rate_limit_fails_after_max_retries(requests_mock, mocker):
+    rate_limiting_time = mocker.patch("airbyte_cdk.sources.streams.http.rate_limiting.time")
+    sleep = rate_limiting_time.sleep
+    requests_mock.get(url=GROUPS_LIST_URL, json=[])
+
+    def always_rate_limited(_request, context):
+        context.status_code = 429
+        context.headers["Retry-After"] = "1"
+        context.headers["RateLimit-Remaining"] = "1999"
+        return '{"message": "Too many requests"}'
+
+    projects_request = requests_mock.register_uri("GET", "/api/v4/projects/p_1", text=always_rate_limited)
+    source = get_source(config=CONFIG)
+    migrated_config = source.configure(config=CONFIG, temp_dir="/not/a/real/path")
+    stream = get_stream_by_name(source=source, stream_name="projects", config=migrated_config)
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        [dict(record) for partition in stream.generate_partitions() for record in partition.read()]
+
+    assert "Rate limit retry budget exhausted" in exc_info.value.internal_message
+    assert projects_request.call_count == 11
+    assert sleep.call_count == 10
 
 
 test_cases = (

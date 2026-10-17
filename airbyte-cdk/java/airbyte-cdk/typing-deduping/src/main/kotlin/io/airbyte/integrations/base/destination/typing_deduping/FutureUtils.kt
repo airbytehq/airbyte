@@ -29,7 +29,7 @@ object FutureUtils {
     @Throws(Exception::class)
     fun reduceExceptions(
         potentialExceptions: Collection<CompletableFuture<Optional<Exception>>>,
-        initialMessage: String
+        initialMessage: String,
     ) {
         val exceptions =
             potentialExceptions
