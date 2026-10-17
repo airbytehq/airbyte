@@ -53,6 +53,9 @@ data:
     - title: YouTube API changelog
       url: https://developers.google.com/youtube/v3/revision_history
       type: api_release_history
+    - title: YouTube Analytics and Reporting APIs revision history
+      url: https://developers.google.com/youtube/analytics/revision_history
+      type: api_release_history
     - title: Google OAuth 2.0
       url: https://developers.google.com/identity/protocols/oauth2
       type: authentication_guide
