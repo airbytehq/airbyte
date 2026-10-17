@@ -1,10 +1,13 @@
-version: "0.78.5"
+version: 7.30.0
+
+type: DeclarativeSource
 
 definitions:
   selector:
     type: RecordSelector
     extractor:
-      class_name: source_rss.components.CustomExtractor
+      type: CustomRecordExtractor
+      class_name: source_declarative_manifest.components.CustomExtractor
 
   requester:
     type: HttpRequester
@@ -36,8 +39,6 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/items_schema"
-    $parameters:
-      path: "/"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: published

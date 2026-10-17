@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Example Atom Feed</title>
+  <link href="https://example.com/"/>
+  <updated>2023-01-04T12:00:00Z</updated>
+  <id>https://example.com/feed</id>
+  <entry>
+    <id>https://example.com/entry1</id>
+    <title>Atom Entry One</title>
+    <link href="https://example.com/entry1"/>
+    <summary>Summary of entry one</summary>
+    <content type="html">&lt;p&gt;Full content one&lt;/p&gt;</content>
+    <author><name>Alice Smith</name></author>
+    <category term="Updates"/>
+    <published>2023-01-02T10:00:00Z</published>
+    <updated>2023-01-02T11:00:00Z</updated>
+  </entry>
+  <entry>
+    <id>https://example.com/entry2</id>
+    <title>Atom Entry Two</title>
+    <link href="https://example.com/entry2"/>
+    <summary>Summary of entry two</summary>
+    <content type="html">&lt;p&gt;Full content two&lt;/p&gt;</content>
+    <author><name>Bob Jones</name></author>
+    <category term="News"/>
+    <published>2023-01-03T10:00:00Z</published>
+    <updated>2023-01-03T11:00:00Z</updated>
+  </entry>
+</feed>
