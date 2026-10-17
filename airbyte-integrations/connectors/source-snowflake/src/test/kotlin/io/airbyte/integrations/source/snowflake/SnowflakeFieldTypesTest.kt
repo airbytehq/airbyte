@@ -122,7 +122,7 @@ class SnowflakeFieldTypesTest {
             .setObject(
                 eq(1),
                 eq(Timestamp.valueOf(value)),
-                eq(SnowflakeType.EXTRA_TYPES_TIMESTAMP_NTZ)
+                eq(SnowflakeType.EXTRA_TYPES_TIMESTAMP_NTZ),
             )
     }
 
@@ -191,9 +191,9 @@ class SnowflakeFieldTypesTest {
             .thenReturn(
                 value?.let {
                     Timestamp.valueOf(
-                        LocalDateTime.of(1970, 1, 1, it.hour, it.minute, it.second, it.nano)
+                        LocalDateTime.of(1970, 1, 1, it.hour, it.minute, it.second, it.nano),
                     )
-                }
+                },
             )
         `when`(rs.wasNull()).thenReturn(value == null)
         return rs
@@ -214,7 +214,7 @@ class SnowflakeFieldTypesTest {
         assertEquals(exact, SnowflakeLocalTimeAccessor.get(timeResultSet(exact), 1))
         assertEquals(
             LocalTime.MIDNIGHT,
-            SnowflakeLocalTimeAccessor.get(timeResultSet(LocalTime.MIDNIGHT), 1)
+            SnowflakeLocalTimeAccessor.get(timeResultSet(LocalTime.MIDNIGHT), 1),
         )
     }
 
@@ -249,11 +249,11 @@ class SnowflakeFieldTypesTest {
 
         assertEquals(
             LocalDateTime.of(9999, 12, 31, 23, 59, 59, 999999000),
-            SnowflakeLocalDateTimeAccessor.get(rs, 1)
+            SnowflakeLocalDateTimeAccessor.get(rs, 1),
         )
         assertEquals(
             LocalDateTime.of(9999, 12, 31, 23, 59, 59, 999999000),
-            SnowflakeOffsetDateTimeFieldType.jdbcGetter.get(rs, 1)?.toLocalDateTime()
+            SnowflakeOffsetDateTimeFieldType.jdbcGetter.get(rs, 1)?.toLocalDateTime(),
         )
     }
 }
