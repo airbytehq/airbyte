@@ -38,9 +38,9 @@ Several output streams are available from this source:
 - [Business Hours](https://developers.freshdesk.com/api/#business-hours)
 - [Canned Responses](https://developers.freshdesk.com/api/#canned-responses)
 - [Canned Response Folders](https://developers.freshdesk.com/api/#list_all_canned_response_folders)
-- [Companies](https://developers.freshdesk.com/api/#companies)
+- [Companies](https://developers.freshdesk.com/api/#companies) \(Incremental Sync\)
 - [Contacts](https://developers.freshdesk.com/api/#contacts) \(Native Incremental Sync\)
-- [Conversations](https://developers.freshdesk.com/api/#conversations)
+- [Conversations](https://developers.freshdesk.com/api/#conversations) \(Incremental Sync\)
 - [Discussion Categories](https://developers.freshdesk.com/api/#category_attributes)
 - [Discussion Comments](https://developers.freshdesk.com/api/#comment_attributes)
 - [Discussion Forums](https://developers.freshdesk.com/api/#forum_attributes)
@@ -62,7 +62,9 @@ Several output streams are available from this source:
 - [Tickets](https://developers.freshdesk.com/api/#tickets) \(Native Incremental Sync\)
 - [Ticket Activities](https://support.freshdesk.com/support/solutions/articles/226460-export-ticket-activities-from-your-helpdesk) \(Incremental Sync\)
 - [Ticket Fields](https://developers.freshdesk.com/api/#ticket-fields)
-- [Time Entries](https://developers.freshdesk.com/api/#time-entries)
+- [Time Entries](https://developers.freshdesk.com/api/#time-entries) \(Incremental Sync\)
+
+Companies and Time Entries ignore Start Date so full refreshes and first incremental syncs include all available records. Time Entries use `executed_at` (capped at sync time and exposed as `executed_at_cursor`) as the cursor with the Lookback Window; edits to entries executed before the window are not picked up incrementally. Conversations are re-read only for tickets whose `updated_at` changed since the last sync.
 
 ## Performance considerations
 
@@ -90,6 +92,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 3.4.0 | 2026-10-16 | [89055](https://github.com/airbytehq/airbyte/pull/89055) | Add incremental sync to the `companies`, `time_entries`, and `conversations` streams |
 | 3.3.8 | 2026-10-13 | [88631](https://github.com/airbytehq/airbyte/pull/88631) | Update dependencies |
 | 3.3.7 | 2026-10-09 | [88407](https://github.com/airbytehq/airbyte/pull/88407) | Cast `sla_policies` ids back to integers: the API currently returns them as strings, which Freshdesk's docs do not mention |
 | 3.3.6 | 2026-10-06 | [87870](https://github.com/airbytehq/airbyte/pull/87870) | Update dependencies |
