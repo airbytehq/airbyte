@@ -102,7 +102,7 @@ class BigQueryArrowRecordDecoderTest {
     private val geoMeta =
         mapOf(
             "ARROW:extension:name" to "google:sqlType:geography",
-            "ARROW:extension:metadata" to """{"encoding": "WKT"}"""
+            "ARROW:extension:metadata" to """{"encoding": "WKT"}""",
         )
     private val intervalMeta = mapOf("ARROW:extension:name" to "google:sqlType:interval")
     private val rangeMeta = mapOf("google:sqlType" to "range")
@@ -133,7 +133,7 @@ class BigQueryArrowRecordDecoderTest {
                     field(
                         "local_ts",
                         ArrowType.Timestamp(TimeUnit.MICROSECOND, null),
-                        metadata = datetimeMeta
+                        metadata = datetimeMeta,
                     ),
                     field("ts", ArrowType.Timestamp(TimeUnit.MICROSECOND, "UTC")),
                     field("tod", timeMicro),
@@ -142,15 +142,15 @@ class BigQueryArrowRecordDecoderTest {
                     field(
                         "span",
                         ArrowType.Interval(IntervalUnit.MONTH_DAY_NANO),
-                        metadata = intervalMeta
+                        metadata = intervalMeta,
                     ),
                     field(
                         "dr",
                         ArrowType.Struct(),
                         listOf(field("start", dateDay), field("end", dateDay)),
-                        metadata = rangeMeta
+                        metadata = rangeMeta,
                     ),
-                )
+                ),
             )
         val fields: List<EmittedField> =
             listOf(
@@ -193,8 +193,8 @@ class BigQueryArrowRecordDecoderTest {
                 setSafe(
                     0,
                     BigDecimal(
-                        "-99999999999999999999999999999999999999.99999999999999999999999999999999999999"
-                    )
+                        "-99999999999999999999999999999999999999.99999999999999999999999999999999999999",
+                    ),
                 )
                 setNull(1)
                 setSafe(2, BigDecimal("1E-38").setScale(38))
@@ -279,7 +279,7 @@ class BigQueryArrowRecordDecoderTest {
                         "price" to BigDecimal("12345.6789"),
                         "big" to
                             BigDecimal(
-                                "-99999999999999999999999999999999999999.99999999999999999999999999999999999999"
+                                "-99999999999999999999999999999999999999.99999999999999999999999999999999999999",
                             ),
                         "ratio" to 1.9500000000001,
                         "active" to true,
@@ -292,11 +292,11 @@ class BigQueryArrowRecordDecoderTest {
                         "doc" to """{"a":1,"b":[true,null,"x"],"n":3.14}""",
                         "span" to "1-2 3 4:5:6.789",
                         "dr" to "[2020-01-01, 2020-12-31)",
-                    )
+                    ),
                 )
             Assertions.assertEquals(
                 Jsons.writeValueAsString(expectedRow0),
-                Jsons.writeValueAsString(payload.toJson())
+                Jsons.writeValueAsString(payload.toJson()),
             )
             Assertions.assertEquals(expectedRow0, payload.toJson())
 
@@ -305,7 +305,7 @@ class BigQueryArrowRecordDecoderTest {
             val expectedNulls: JsonNode = encode(fields, mapOf("id" to 2L))
             Assertions.assertEquals(
                 Jsons.writeValueAsString(expectedNulls),
-                Jsons.writeValueAsString(payload.toJson())
+                Jsons.writeValueAsString(payload.toJson()),
             )
 
             decoder.decode(2, payload, changes)
@@ -330,11 +330,11 @@ class BigQueryArrowRecordDecoderTest {
                         "doc" to "null",
                         "span" to "0-0 -5 0:0:0",
                         "dr" to "[UNBOUNDED, 2021-01-01)",
-                    )
+                    ),
                 )
             Assertions.assertEquals(
                 Jsons.writeValueAsString(expectedRow2),
-                Jsons.writeValueAsString(payload.toJson())
+                Jsons.writeValueAsString(payload.toJson()),
             )
         }
     }
@@ -354,14 +354,14 @@ class BigQueryArrowRecordDecoderTest {
                     EmittedField("city", StringFieldType),
                     EmittedField("zip", BigQueryLongFieldType),
                     EmittedField("geo", geoStruct),
-                )
+                ),
             )
         val lineItemType =
             BigQueryStructFieldType(
                 listOf(
                     EmittedField("sku", StringFieldType),
-                    EmittedField("qty", BigQueryLongFieldType)
-                )
+                    EmittedField("qty", BigQueryLongFieldType),
+                ),
             )
         val mixType =
             BigQueryStructFieldType(
@@ -381,7 +381,7 @@ class BigQueryArrowRecordDecoderTest {
                     EmittedField("j", JsonStringFieldType),
                     EmittedField("ok", BigQueryBooleanFieldType),
                     EmittedField("g", StringFieldType),
-                )
+                ),
             )
         val schema =
             Schema(
@@ -395,7 +395,7 @@ class BigQueryArrowRecordDecoderTest {
                             field(
                                 "geo",
                                 ArrowType.Struct(),
-                                listOf(field("observed_at", timeMicro))
+                                listOf(field("observed_at", timeMicro)),
                             ),
                         ),
                     ),
@@ -407,8 +407,8 @@ class BigQueryArrowRecordDecoderTest {
                             field(
                                 "item",
                                 ArrowType.Struct(),
-                                listOf(field("sku", utf8), field("qty", int64))
-                            )
+                                listOf(field("sku", utf8), field("qty", int64)),
+                            ),
                         ),
                     ),
                     field(
@@ -424,13 +424,13 @@ class BigQueryArrowRecordDecoderTest {
                             field(
                                 "i",
                                 ArrowType.Interval(IntervalUnit.MONTH_DAY_NANO),
-                                metadata = intervalMeta
+                                metadata = intervalMeta,
                             ),
                             field(
                                 "r",
                                 ArrowType.Struct(),
                                 listOf(field("start", dateDay), field("end", dateDay)),
-                                metadata = rangeMeta
+                                metadata = rangeMeta,
                             ),
                             field("b", ArrowType.Binary()),
                             field("t", ArrowType.Timestamp(TimeUnit.MICROSECOND, "UTC")),
@@ -438,14 +438,14 @@ class BigQueryArrowRecordDecoderTest {
                             field(
                                 "dt",
                                 ArrowType.Timestamp(TimeUnit.MICROSECOND, null),
-                                metadata = datetimeMeta
+                                metadata = datetimeMeta,
                             ),
                             field("j", utf8, metadata = jsonMeta),
                             field("ok", ArrowType.Bool()),
                             field("g", utf8, metadata = geoMeta),
                         ),
                     ),
-                )
+                ),
             )
         VectorSchemaRoot.create(schema, allocator).use { root ->
             root.allocateNew()
@@ -506,7 +506,7 @@ class BigQueryArrowRecordDecoderTest {
                 0,
                 14,
                 3,
-                4L * 3_600_000_000_000L + 5L * 60_000_000_000L + 6_789_000_000L
+                4L * 3_600_000_000_000L + 5L * 60_000_000_000L + 6_789_000_000L,
             )
             val range = mix.getChild("r") as StructVector
             (range.getChild("start") as DateDayVector).setSafe(0, 18262)
@@ -540,14 +540,14 @@ class BigQueryArrowRecordDecoderTest {
                 name: String,
                 row: Int,
                 type: io.airbyte.cdk.discover.FieldType,
-                toJsonStringText: String
+                toJsonStringText: String,
             ) {
                 val e: JsonNode = expected(toJsonStringText, type)
                 val a: JsonNode = actual(name, row, type)
                 Assertions.assertEquals(
                     Jsons.writeValueAsString(e),
                     Jsons.writeValueAsString(a),
-                    "$name row $row"
+                    "$name row $row",
                 )
                 Assertions.assertEquals(e, a, "$name row $row")
             }
@@ -556,14 +556,14 @@ class BigQueryArrowRecordDecoderTest {
                 "address",
                 0,
                 addressType,
-                """{"city":"Seattle","zip":98109,"geo":{"observed_at":"08:00:00.000001"}}"""
+                """{"city":"Seattle","zip":98109,"geo":{"observed_at":"08:00:00.000001"}}""",
             )
             check("address", 1, addressType, "null")
             check(
                 "address",
                 2,
                 addressType,
-                """{"city":null,"zip":null,"geo":{"observed_at":null}}"""
+                """{"city":null,"zip":null,"geo":{"observed_at":null}}""",
             )
             check("tags", 0, BigQueryArrayFieldType(StringFieldType), """["a","b",""]""")
             check("tags", 1, BigQueryArrayFieldType(StringFieldType), "[]")
@@ -572,14 +572,14 @@ class BigQueryArrowRecordDecoderTest {
                 "line_items",
                 0,
                 BigQueryArrayFieldType(lineItemType),
-                """[{"sku":"sku1","qty":2},{"sku":"sku2","qty":0}]"""
+                """[{"sku":"sku1","qty":2},{"sku":"sku2","qty":0}]""",
             )
             check("line_items", 1, BigQueryArrayFieldType(lineItemType), "[]")
             check(
                 "line_items",
                 2,
                 BigQueryArrayFieldType(lineItemType),
-                """[{"sku":null,"qty":null}]"""
+                """[{"sku":null,"qty":null}]""",
             )
             check(
                 "mix",
@@ -608,7 +608,7 @@ class BigQueryArrowRecordDecoderTest {
                     field("name", utf8),
                     field("ts", ArrowType.Timestamp(TimeUnit.MICROSECOND, "UTC")),
                     field("tags", ArrowType.List(), listOf(field("item", utf8))),
-                )
+                ),
             )
         val fields: List<EmittedField> =
             listOf(
@@ -679,7 +679,7 @@ class BigQueryArrowRecordDecoderTest {
                     Assertions.assertEquals(
                         """{"id":5,"name":"name-5-café","ts":"2023-07-12T05:18:39.531839Z","tags":["t0","t1"]}""",
                         Jsons.writeValueAsString(
-                            actual.also { it.decode(5, a, changes) }.let { a.toJson() }
+                            actual.also { it.decode(5, a, changes) }.let { a.toJson() },
                         ),
                     )
                 }
@@ -691,50 +691,50 @@ class BigQueryArrowRecordDecoderTest {
     fun testTextRenderings() {
         Assertions.assertEquals(
             "1-2 3 4:5:6.789",
-            BigQueryArrowValues.intervalText(14, 3, 14_706_789_000_000L)
+            BigQueryArrowValues.intervalText(14, 3, 14_706_789_000_000L),
         )
         Assertions.assertEquals(
             "-1-2 -3 -4:5:6.789012",
-            BigQueryArrowValues.intervalText(-14, -3, -14_706_789_012_000L)
+            BigQueryArrowValues.intervalText(-14, -3, -14_706_789_012_000L),
         )
         Assertions.assertEquals("0-0 -5 0:0:0", BigQueryArrowValues.intervalText(0, -5, 0))
         Assertions.assertEquals(
             "0-0 0 100:0:0",
-            BigQueryArrowValues.intervalText(0, 0, 360_000_000_000_000L)
+            BigQueryArrowValues.intervalText(0, 0, 360_000_000_000_000L),
         )
         Assertions.assertEquals(
             "P1Y2M3DT4H5M6.789S",
-            BigQueryArrowValues.intervalIsoText(14, 3, 14_706_789_000_000L)
+            BigQueryArrowValues.intervalIsoText(14, 3, 14_706_789_000_000L),
         )
         Assertions.assertEquals(
             "P-1Y-2M-3DT-4H-5M-6.789012S",
-            BigQueryArrowValues.intervalIsoText(-14, -3, -14_706_789_012_000L)
+            BigQueryArrowValues.intervalIsoText(-14, -3, -14_706_789_012_000L),
         )
         Assertions.assertEquals("P-5D", BigQueryArrowValues.intervalIsoText(0, -5, 0))
         Assertions.assertEquals(
             "PT100H",
-            BigQueryArrowValues.intervalIsoText(0, 0, 360_000_000_000_000L)
+            BigQueryArrowValues.intervalIsoText(0, 0, 360_000_000_000_000L),
         )
         Assertions.assertEquals("P0D", BigQueryArrowValues.intervalIsoText(0, 0, 0))
         Assertions.assertEquals(
             BigDecimal("12345.6789"),
-            BigQueryArrowValues.normalizeDecimal(BigDecimal("12345.678900000"))
+            BigQueryArrowValues.normalizeDecimal(BigDecimal("12345.678900000")),
         )
         Assertions.assertEquals(
             BigDecimal("100"),
-            BigQueryArrowValues.normalizeDecimal(BigDecimal("100.000000000"))
+            BigQueryArrowValues.normalizeDecimal(BigDecimal("100.000000000")),
         )
         Assertions.assertEquals(
             "100",
-            BigQueryArrowValues.normalizeDecimal(BigDecimal("100.000000000")).toString()
+            BigQueryArrowValues.normalizeDecimal(BigDecimal("100.000000000")).toString(),
         )
         Assertions.assertEquals(
             BigDecimal("0"),
-            BigQueryArrowValues.normalizeDecimal(BigDecimal("0.000000000"))
+            BigQueryArrowValues.normalizeDecimal(BigDecimal("0.000000000")),
         )
         Assertions.assertEquals(
             "1E-38",
-            BigQueryArrowValues.normalizeDecimal(BigDecimal("1E-38").setScale(38)).toString()
+            BigQueryArrowValues.normalizeDecimal(BigDecimal("1E-38").setScale(38)).toString(),
         )
         Assertions.assertEquals(
             "\"0.00000000000000000000000000000000000001\"",
@@ -742,7 +742,7 @@ class BigQueryArrowRecordDecoderTest {
         )
         Assertions.assertEquals(
             "100",
-            BigQueryArrowValues.nestedDecimalNode(BigDecimal("100.000000000")).toString()
+            BigQueryArrowValues.nestedDecimalNode(BigDecimal("100.000000000")).toString(),
         )
     }
 }

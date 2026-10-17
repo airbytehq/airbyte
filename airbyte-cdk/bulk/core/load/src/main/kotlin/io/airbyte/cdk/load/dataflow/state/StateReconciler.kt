@@ -32,14 +32,13 @@ class StateReconciler(
     private lateinit var job: Job
 
     fun run() {
-        job =
-            scope.launch {
-                while (true) {
-                    delay(interval)
-                    flushCompleteStates()
-                    flushEmittedStats()
-                }
+        job = scope.launch {
+            while (true) {
+                delay(interval)
+                flushCompleteStates()
+                flushEmittedStats()
             }
+        }
     }
 
     fun flushCompleteStates() {

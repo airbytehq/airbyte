@@ -148,7 +148,7 @@ class ProtoToParquetFormattingTest : ProtoFixtures(addUnknownTypeToSchema = fals
                 stream,
                 ByteArrayOutputStream(),
                 cfg(),
-                rootLevelFlattening = false
+                rootLevelFlattening = false,
             )
         }
     }
@@ -208,7 +208,7 @@ class ProtoToParquetFormattingTest : ProtoFixtures(addUnknownTypeToSchema = fals
         base.add(
             AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
                 .setJson(jsonForDu.toByteArray().toByteString())
-                .build()
+                .build(),
         )
 
         val recProto =
@@ -223,7 +223,7 @@ class ProtoToParquetFormattingTest : ProtoFixtures(addUnknownTypeToSchema = fals
     }
 
     private fun buildModifiedRecord(
-        intBigInteger: String? = null
+        intBigInteger: String? = null,
     ): DestinationRecordProtobufSource {
         val base = protoSource!!.source.record.dataList.toMutableList()
 
@@ -257,6 +257,7 @@ class ProtoToParquetFormattingTest : ProtoFixtures(addUnknownTypeToSchema = fals
 
     private class ByteArrayInputFile(private val data: ByteArray) : InputFile {
         override fun getLength(): Long = data.size.toLong()
+
         override fun newStream(): SeekableInputStream {
             val bais = ByteArrayInputStream(data)
             var pos = 0L
@@ -266,12 +267,15 @@ class ProtoToParquetFormattingTest : ProtoFixtures(addUnknownTypeToSchema = fals
                     if (r >= 0) pos++
                     return r
                 }
+
                 override fun read(b: ByteArray, off: Int, len: Int): Int {
                     val n = super.read(b, off, len)
                     if (n > 0) pos += n
                     return n
                 }
+
                 override fun getPos(): Long = pos
+
                 override fun seek(newPos: Long) {
                     require(newPos >= 0 && newPos <= data.size) { "bad seek" }
                     bais.reset()
