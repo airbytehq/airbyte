@@ -40,3 +40,6 @@ data:
     - title: Pylon authentication
       url: https://docs.usepylon.com/pylon-docs/developer/api/authentication
       type: authentication_guide
+    - title: Pylon Changelog
+      url: https://usepylon.com/changelog
+      type: api_release_history
