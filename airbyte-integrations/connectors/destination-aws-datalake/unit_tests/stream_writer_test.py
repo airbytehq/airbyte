@@ -9,6 +9,7 @@ from typing import Any, Dict, Mapping
 
 import numpy as np
 import pandas as pd
+import pytest
 from destination_aws_datalake import DestinationAwsDatalake
 from destination_aws_datalake.aws import AwsHandler
 from destination_aws_datalake.config_reader import ConnectorConfig
@@ -728,6 +729,28 @@ def test_json_schema_cast_bad_values():
     assert np.isnan(exchange_rate)
     assert np.isnan(line_amount)
     assert pd.isna(created_time)
+
+
+@pytest.mark.parametrize(
+    "input_value,expected_output",
+    [
+        pytest.param("3092727991;3881228353;15895321999", None, id="semicolon_separated_ids"),
+        pytest.param("not_a_number", None, id="non_numeric_string"),
+        pytest.param("abc;def", None, id="non_numeric_with_separator"),
+        pytest.param("123.45", Decimal("123.45"), id="valid_decimal_string"),
+        pytest.param("3092727991", Decimal("3092727991"), id="valid_integer_string"),
+        pytest.param("", Decimal("0"), id="empty_string"),
+        pytest.param(0, Decimal("0"), id="zero_integer"),
+    ],
+)
+def test_json_schema_cast_decimal_invalid_values(input_value, expected_output):
+    config = get_config()
+    config["glue_catalog_float_as_decimal"] = True
+    connector_config = ConnectorConfig(**config)
+    aws_handler = AwsHandler(connector_config, DestinationAwsDatalake())
+    writer = StreamWriter(aws_handler, connector_config, get_camelcase_configured_stream())
+
+    assert writer._json_schema_cast_value(input_value, {"type": "number"}) == expected_output
 
 
 def test_json_dict_encoder():
