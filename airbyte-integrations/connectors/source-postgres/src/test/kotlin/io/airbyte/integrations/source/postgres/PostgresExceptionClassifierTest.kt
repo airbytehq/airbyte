@@ -132,7 +132,7 @@ class PostgresExceptionClassifierTest {
         // the DefaultExceptionClassifier (1) and the JdbcExceptionClassifier (100).
         Assertions.assertInstanceOf(
             RegexExceptionClassifier::class.java,
-            handler.classifiers.first()
+            handler.classifiers.first(),
         )
     }
 
@@ -143,7 +143,7 @@ class PostgresExceptionClassifierTest {
             handler.handle(ConfigErrorException("Discovered zero tables."))
         Assertions.assertEquals(
             AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
-            trace.failureType
+            trace.failureType,
         )
         Assertions.assertTrue(
             trace.message.startsWith(ZERO_TABLES_GUIDANCE),
@@ -152,7 +152,7 @@ class PostgresExceptionClassifierTest {
         Assertions.assertTrue(
             trace.message.contains(
                 "https://docs.airbyte.com/integrations/sources/postgres" +
-                    "#step-1-create-a-dedicated-read-only-postgres-user"
+                    "#step-1-create-a-dedicated-read-only-postgres-user",
             ),
             "Expected the read-only user docs link in: ${trace.message}",
         )
@@ -168,7 +168,7 @@ class PostgresExceptionClassifierTest {
         val trace: AirbyteErrorTraceMessage = handler.handle(ConfigErrorException(message))
         Assertions.assertEquals(
             AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
-            trace.failureType
+            trace.failureType,
         )
         Assertions.assertEquals(message, trace.message)
     }
@@ -195,12 +195,12 @@ class PostgresExceptionClassifierTest {
             handler.handleCheckFailure(ConfigErrorException("Discovered zero tables."))
         Assertions.assertEquals(
             AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
-            trace.failureType
+            trace.failureType,
         )
         Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.status)
         Assertions.assertTrue(
             status.message.startsWith(
-                "Could not connect with provided configuration. Error: $ZERO_TABLES_GUIDANCE"
+                "Could not connect with provided configuration. Error: $ZERO_TABLES_GUIDANCE",
             ),
             "Unexpected connection status message: ${status.message}",
         )
