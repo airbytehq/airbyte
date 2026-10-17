@@ -180,6 +180,12 @@ data:
     - title: HubSpot API changelog
       url: https://developers.hubspot.com/changelog
       type: api_release_history
+    - title: HubSpot legacy API to date-based versioning migration guide
+      url: https://developers.hubspot.com/docs/api-reference/legacy/migration-guide
+      type: migration_guide
+    - title: HubSpot legacy app migration guide
+      url: https://developers.hubspot.com/docs/apps/developer-platform/build-apps/migrate-an-app/overview
+      type: migration_guide
     - title: HubSpot authentication
       url: https://developers.hubspot.com/docs/api/oauth-quickstart-guide
       type: authentication_guide
