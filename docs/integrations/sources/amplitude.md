@@ -4,11 +4,14 @@ This page guides you through setting up the Amplitude source connector. This con
 
 ## Prerequisites
 
-To set up the Amplitude source connector, you need an Amplitude API key and secret key. To find these credentials:
+To set up the Amplitude source connector, you need an Amplitude API key and secret key for the project you want to sync. You need the Manager or Admin role in Amplitude to create these keys.
 
-1. In the Amplitude Analytics web app, select **Organization Settings** in the upper navigation.
-2. Select **Projects**, then select your target project.
-3. Copy the **API Key** and **Secret Key**.
+1. In Amplitude, select **Organization settings** in the upper navigation, then select **API Keys** in the side navigation.
+2. Select your project.
+3. Copy an existing API key, or click **Generate API Key** to create one.
+4. Click **Generate Secret Key**, name the key, and copy it. Amplitude doesn't store secret keys, so you can't view the key again after you leave this page.
+
+Use keys from a project that ingests data. The Export API, which the Events stream uses, doesn't support cross-project views.
 
 For more information, see [Manage your API keys and secret keys](https://amplitude.com/docs/admin/account-management/manage-your-api-keys-and-secret-keys) in the Amplitude documentation.
 
@@ -19,7 +22,7 @@ For more information, see [Manage your API keys and secret keys](https://amplitu
 3. On the Set up the source page, select **Amplitude** from the Source type dropdown.
 4. Enter a name for your source.
 5. For **API Key** and **Secret Key**, enter your Amplitude API key and secret key.
-6. For **Replication Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. Data added on and after this date is replicated. If this field is blank, Airbyte replicates all data.
+6. For **Replication Start Date**, enter a UTC date and time in `YYYY-MM-DDTHH:mm:ssZ` format, for example `2021-01-25T00:00:00Z`. The connector doesn't replicate data before this date. The Active Users Counts and Average Session Length streams use only the date part of this value.
 7. Optionally, configure the following fields:
    - **Data Region**: Select **EU Residency Server** if your Amplitude project is hosted in the EU data center. Defaults to **Standard Server**.
    - **Request Time Range**: The time interval in hours for each Events stream request. Requests that Amplitude rejects as too large or that time out are split automatically. Defaults to 24 hours. See [Amplitude's Export API considerations](https://amplitude.com/docs/apis/analytics/export#considerations) for details.
@@ -39,8 +42,6 @@ The Amplitude source connector supports the following streams:
 
 If there are more endpoints you'd like Airbyte to support, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
-<!-- env:oss -->
-
 ## Supported sync modes
 
 The Amplitude source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
@@ -53,6 +54,8 @@ The Amplitude source connector supports the following [sync modes](https://docs.
 The connector automatically handles Amplitude's [API rate limits](https://amplitude.com/docs/apis/analytics/dashboard-rest#rate-limits). The Dashboard REST API enforces cost-based rate limits with a budget of 108,000 cost per hour and 1,000 cost per 5-minute burst window, plus a maximum of 5 concurrent requests. The connector tracks per-request costs and throttles automatically to stay within these limits.
 
 The Export API (used by the Events stream) limits each export to 4 GB and returns an error when a request exceeds that limit. Large exports can also time out. In either case, the connector automatically splits the time window in half and retries each half. With a **Request Time Range** of up to 1024 hours, splitting can reach a one-hour window; above that, it stops at windows of 8-9 hours. A split that succeeds never duplicates records. If a window is still rejected, the sync fails with a transient error, and each retry re-reads the parts already read. The Append + Deduped sync mode removes these duplicates by `uuid`. An hour of data over 4 GB can only be exported with Amplitude's [Amazon S3 export](https://amplitude.com/docs/data/destination-catalog/amazon-s3). Splitting restarts for every window, so if most syncs need to split, lower the **Request Time Range** to avoid the extra failing requests.
+
+The Events stream filters by `server_upload_time`, the time Amplitude received each event. Amplitude makes event data available to the Export API up to two hours after it receives it. To pick up these late events, each incremental sync of the Events stream starts two hours before the saved cursor, so some events are read again. The Append + Deduped sync mode removes these duplicates by `uuid`.
 
 If you encounter rate limit issues that are not automatically retried, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
