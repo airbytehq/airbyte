@@ -23,8 +23,9 @@ install = ["install-project", "install-cdk-cli", "install-ops-cli"]
 install-project = "poetry install --all-extras"
 install-cdk-cli = "uv tool install --upgrade 'airbyte-cdk[dev]'"
 install-ops-cli = "uv tool install --upgrade airbyte-internal-ops"
-test-all = ["test-unit-tests", "test-integration-tests"]
+test-all = ["test-unit-tests", "test-integration-tests", "test-standard-tests"]
 test-integration-tests = ["pytest-integration-tests"]
+test-standard-tests = ["pytest-standard-tests"]
 test-unit-tests = ["pytest-unit-tests"]
 test-fast = ["pytest-fast"]
 format-check = ["check-ruff-format"]
@@ -54,8 +55,124 @@ set -eu # Ensure we return non-zero exit code upon failure
 if ls integration_tests/test_*.py >/dev/null 2>&1; then
   poetry run pytest --junitxml=build/test-results/pytest-integration-tests-junit.xml integration_tests
 else
-  echo "No 'integration_tests' directory found; skipping integration tests."
+  echo "No integration_tests/test_*.py files; skipping connector-specific integration tests."
 fi
+'''
+
+# The in-process Standard Tests (FAST) suite: the tests `airbyte-cdk connector test` generates, run
+# inside the connector's own Poetry environment, against the airbyte-cdk version the connector pins.
+# The suite imports the connector in-process, so it can only use the CDK the connector ships with;
+# the Docker subset (`airbyte-cdk image test`) is run separately, by the latest CDK CLI.
+#
+# The task calls pytest on a generated test file instead of `airbyte-cdk connector test`, because
+# that command's options changed across the CDK versions connectors pin (6.46.0 took
+# `--connector-directory` and had no `--pytest-arg` or JUnit output). The file only needs
+# `create_connector_test_suite` and `pytest_hooks`, which every CDK since 6.46.0 has.
+#
+# A source that the generated suite cannot build (its constructor requires `catalog`, `config` and
+# `state`, or a `FileBasedSource` stream reader and spec class, or it evaluates its config when it is
+# built, or its package does not export the source class) ships its own suite in
+# integration_tests/standard_tests.py: a `SourceTestSuiteBase` subclass that overrides
+# `create_connector()` to build the source as its `run.py` does. The task runs that file instead of
+# generating one. The file is not named `test_*.py`, so that `test-integration-tests` does not
+# collect it a second time and run its Docker tests with the pinned CDK before the image is built.
+#
+# pytest runs with `--noconftest`: the suite is self-contained, and the conftest.py files next to it
+# (integration_tests/conftest.py in source-gcs, source-sftp-bulk and source-azure-blob-storage) start
+# Docker fixture servers in autouse session fixtures or import modules the connector does not install.
+#
+# Sources only: `DestinationTestSuiteBase` adds no test beyond `check`, which the Docker subset
+# already runs (see airbytehq/airbyte-internal-issues#17133).
+#
+# A connector whose pinned CDK predates the suite gets a warning annotation and a step summary line
+# instead of a failure: making it run needs a CDK upgrade, which is a code migration, not a test fix.
+pytest-standard-tests.shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
+CONNECTOR_NAME=$(basename "$PWD")
+summary() {
+  if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+    echo "$1" >> "$GITHUB_STEP_SUMMARY"
+  fi
+}
+
+case "$CONNECTOR_NAME" in
+  source-*) ;;
+  *)
+    echo "The in-process standard tests cover sources only; skipping them for ${CONNECTOR_NAME}."
+    exit 0
+    ;;
+esac
+
+# Probe the connector's environment, without importing the CDK (some old CDKs do not import on
+# the CI Python). Prints "<status> <airbyte-cdk version>".
+PROBE=$(poetry run python - <<'PY'
+from importlib.metadata import PackageNotFoundError, version
+from importlib.util import find_spec
+from pathlib import Path
+
+try:
+    cdk_version = version("airbyte-cdk")
+except PackageNotFoundError:
+    cdk_version = "(not installed)"
+cdk = find_spec("airbyte_cdk")
+cdk_dirs = list(cdk.submodule_search_locations or []) if cdk else []
+if not any((Path(d) / "test" / "standard_tests" / "util.py").exists() for d in cdk_dirs):
+    print("too-old", cdk_version)
+elif find_spec("pytest") is None:
+    print("no-pytest", cdk_version)
+else:
+    print("ok", cdk_version)
+PY
+)
+STATUS=${PROBE%% *}
+CDK_VERSION=${PROBE#* }
+
+if [ "$STATUS" = "too-old" ]; then
+  MESSAGE="pinned airbyte-cdk ${CDK_VERSION} lacks the standard tests; bump the CDK to 6.46.0 or later to run them. Only the Docker subset (airbyte-cdk image test) runs for this connector."
+  echo "::warning title=${CONNECTOR_NAME}: in-process standard tests not run::${MESSAGE}"
+  summary "⚠️ \`${CONNECTOR_NAME}\`: ${MESSAGE}"
+  exit 0
+fi
+if [ "$STATUS" = "no-pytest" ]; then
+  echo "::error title=${CONNECTOR_NAME}: pytest missing::pytest is not installed in the connector's Poetry environment; add it to the dev dependencies."
+  exit 1
+fi
+
+mkdir -p build/test-results
+TEST_FILE=integration_tests/standard_tests.py
+if [ -f "$TEST_FILE" ]; then
+  echo "Using the connector's own standard test suite in ${TEST_FILE}."
+else
+  TEST_FILE=.tmp/standard_tests/test_standard_tests_in_process.py
+  mkdir -p "$(dirname "$TEST_FILE")"
+  cat > "$TEST_FILE" <<'PY'
+"""In-process FAST Airbyte Standard Tests, generated by `poe test-standard-tests`."""
+
+from pathlib import Path
+
+from airbyte_cdk.test.standard_tests.util import create_connector_test_suite
+
+TestSuite = create_connector_test_suite(connector_directory=Path.cwd())
+PY
+fi
+
+echo "Running the in-process standard tests for ${CONNECTOR_NAME} with its pinned airbyte-cdk ${CDK_VERSION}."
+summary "\`${CONNECTOR_NAME}\`: in-process standard tests ran with the pinned airbyte-cdk ${CDK_VERSION}."
+# The Docker tests (marked image_tests) are left to `airbyte-cdk image test`, which runs them with
+# the latest CDK against the built image.
+# --tb=short: the default traceback style prints the arguments of the failing frame, and the suite
+# passes the real test config into the source's constructor. Printed there, the config would reach
+# the JUnit file, whose failures "Publish Test Results" turns into check-run annotations that
+# GitHub's log masking never sees. The short style keeps the source lines and the exception.
+poetry run pytest \
+  -p airbyte_cdk.test.standard_tests.pytest_hooks \
+  --noconftest \
+  --rootdir=. \
+  --tb=short \
+  -m "not image_tests" \
+  --junitxml=build/test-results/standard-tests-in-process-junit.xml \
+  "$TEST_FILE"
 '''
 
 # Coverage checks
