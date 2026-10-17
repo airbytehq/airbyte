@@ -1,0 +1,5 @@
+# Read by the CDK standard tests (`airbyte-cdk connector test` / `image test`).
+# This connector lists no test config, so the top-level bypass_reason says why.
+bypass_reason: "Standard-test scenarios not configured: GSM holds a test config for this connector, but no acceptance-test entry lists it"
+# Empty, so that CDK versions without top-level `bypass_reason` support still load this file.
+acceptance_tests: {}
