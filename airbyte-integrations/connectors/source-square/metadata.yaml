@@ -59,15 +59,21 @@ data:
     - title: Square API Release Notes
       url: https://developer.squareup.com/docs/release-notes
       type: api_release_history
-    - title: Square API changelog
-      url: https://developer.squareup.com/docs/changelog
+    - title: Square Connect API changelog
+      url: https://developer.squareup.com/docs/changelog/connect
       type: api_release_history
+    - title: Square API lifecycle (deprecation and retirement policy)
+      url: https://developer.squareup.com/docs/build-basics/api-lifecycle
+      type: api_deprecations
+    - title: Square Labor API (Shift to Timecard migration)
+      url: https://developer.squareup.com/docs/labor-api/what-it-does
+      type: api_reference
     - title: Square authentication
       url: https://developer.squareup.com/docs/build-basics/access-tokens
       type: authentication_guide
-    - title: Square rate limits
-      url: https://developer.squareup.com/docs/build-basics/api-rate-limits
-      type: rate_limits
+    - title: Square OAuth API overview
+      url: https://developer.squareup.com/docs/oauth-api/overview
+      type: authentication_guide
     - title: Square Status
       url: https://www.issquareup.com/
       type: status_page
