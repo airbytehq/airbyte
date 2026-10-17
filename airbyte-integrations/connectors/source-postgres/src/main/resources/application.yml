@@ -208,6 +208,27 @@ airbyte:
               - https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist
               - https://docs.airbyte.com/integrations/sources/postgres
 
+          # SQLSTATE 53300 is raised at connection open: the role rule covers CREATE/ALTER ROLE
+          # ... CONNECTION LIMIT, and the server rule covers max_connections / reserved slots. Both serve CHECK and sync.
+          - pattern: (?i).*too many connections for role.*
+            input-example: 'org.postgresql.util.PSQLException: FATAL: too many connections for role "airbyte_user"'
+            error: config
+            output: >-
+              The database user has reached its connection limit, which counts this sync's connections
+              and those of any other client using the same user.
+              Lower "Max Concurrent Queries to Database" in the source settings,
+              or raise the user's limit (ALTER ROLE <user> CONNECTION LIMIT <n>).
+
+          - pattern: (?i).*(sorry, too many clients already|remaining connection slots are reserved).*
+            input-example: |
+              org.postgresql.util.PSQLException: FATAL: sorry, too many clients already
+              org.postgresql.util.PSQLException: FATAL: remaining connection slots are reserved for roles with the SUPERUSER attribute
+            error: config
+            output: >-
+              The Postgres server has no connection slots left: its max_connections limit counts the connections of every client.
+              Lower "Max Concurrent Queries to Database" in the source settings,
+              close idle connections from other clients, or raise max_connections on the server.
+
           # The CDK's CheckOperation throws ConfigErrorException("Discovered zero tables.") when the
           # connection test finds no table in any discovered schema. The rule only sees that
           # exception because this classifier runs ahead of the default one (order above).
