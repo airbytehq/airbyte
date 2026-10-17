@@ -19,5 +19,5 @@ dependencies {
     implementation 'io.debezium:debezium-connector-mysql'
 
     testImplementation 'org.testcontainers:mysql'
-    testImplementation 'io.mockk:mockk:1.12.0'
+    testImplementation 'io.mockk:mockk:1.14.11'
 }
