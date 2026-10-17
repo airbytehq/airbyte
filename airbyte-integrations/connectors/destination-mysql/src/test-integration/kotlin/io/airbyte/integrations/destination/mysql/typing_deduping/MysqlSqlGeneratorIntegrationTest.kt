@@ -59,7 +59,7 @@ class MysqlSqlGeneratorIntegrationTest :
         includeCdcDeletedAt: Boolean,
         streamId: StreamId,
         suffix: String?,
-        records: List<JsonNode>
+        records: List<JsonNode>,
     ) {
         reformatMetaColumnTimestamps(records)
         super.insertFinalTableRecords(includeCdcDeletedAt, streamId, suffix, records)
@@ -124,7 +124,7 @@ class MysqlSqlGeneratorIntegrationTest :
         database.execute(
             dslContext
                 .createSchemaIfNotExists(nameTransformer.getIdentifier(namespace))
-                .getSQL(ParamType.INLINED)
+                .getSQL(ParamType.INLINED),
         )
     }
 
@@ -132,7 +132,7 @@ class MysqlSqlGeneratorIntegrationTest :
         database.execute(
             dslContext
                 .dropDatabaseIfExists(nameTransformer.getIdentifier(namespace))
-                .getSQL(ParamType.INLINED)
+                .getSQL(ParamType.INLINED),
         )
     }
 
