@@ -101,11 +101,12 @@ class BigQueryConcurrentReadTest {
             .withPrimaryKey(stream.sourceDefinedPrimaryKey)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
 
-    private fun AirbyteCatalog.stream(name: String): AirbyteStream =
-        streams.first { it.name == name }
+    private fun AirbyteCatalog.stream(name: String): AirbyteStream = streams.first {
+        it.name == name
+    }
 
     private fun BufferingOutputConsumer.statuses(
-        stream: String
+        stream: String,
     ): List<AirbyteStreamStatusTraceMessage.AirbyteStreamStatus> =
         traces()
             .filter { it.type == AirbyteTraceMessage.Type.STREAM_STATUS }
@@ -136,7 +137,7 @@ class BigQueryConcurrentReadTest {
 
         private fun client(): BigQuery =
             BigQueryEmulatorTestFixture.client(
-                BigQueryEmulatorTestFixture.start().emulatorHttpEndpoint
+                BigQueryEmulatorTestFixture.start().emulatorHttpEndpoint,
             )
 
         @JvmStatic
@@ -154,21 +155,21 @@ class BigQueryConcurrentReadTest {
                                     .setMode(Field.Mode.REQUIRED)
                                     .build(),
                                 Field.of("v", StandardSQLTypeName.STRING),
-                            )
+                            ),
                         ),
                     )
                     .setTableConstraints(
                         TableConstraints.newBuilder()
                             .setPrimaryKey(PrimaryKey.newBuilder().setColumns(listOf("id")).build())
-                            .build()
+                            .build(),
                     )
-                    .build()
+                    .build(),
             )
             bigquery.query(
                 QueryJobConfiguration.of(
                     "INSERT INTO `$DATASET`.`keyed` VALUES " +
-                        "(1,'a'),(2,'b'),(3,'c'),(4,'d'),(5,'e'),(6,'f')"
-                )
+                        "(1,'a'),(2,'b'),(3,'c'),(4,'d'),(5,'e'),(6,'f')",
+                ),
             )
             bigquery.create(
                 TableInfo.of(
@@ -177,12 +178,12 @@ class BigQueryConcurrentReadTest {
                         Schema.of(
                             Field.of("k", StandardSQLTypeName.INT64),
                             Field.of("v", StandardSQLTypeName.STRING),
-                        )
+                        ),
                     ),
-                )
+                ),
             )
             bigquery.query(
-                QueryJobConfiguration.of("INSERT INTO `$DATASET`.`no_key` VALUES (1,'a'),(2,'b')")
+                QueryJobConfiguration.of("INSERT INTO `$DATASET`.`no_key` VALUES (1,'a'),(2,'b')"),
             )
         }
 
@@ -191,8 +192,8 @@ class BigQueryConcurrentReadTest {
         fun dropDataset() {
             val datasetId = DatasetId.of(BigQueryEmulatorTestFixture.PROJECT_ID, DATASET)
             runCatching {
-                    client().delete(datasetId, BigQuery.DatasetDeleteOption.deleteContents())
-                }
+                client().delete(datasetId, BigQuery.DatasetDeleteOption.deleteContents())
+            }
                 .onFailure { log.warn(it) { "Could not drop dataset $datasetId." } }
         }
     }

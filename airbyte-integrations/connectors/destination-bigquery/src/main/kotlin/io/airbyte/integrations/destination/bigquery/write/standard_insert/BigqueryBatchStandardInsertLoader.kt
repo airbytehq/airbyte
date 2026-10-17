@@ -121,15 +121,17 @@ class BigqueryBatchStandardInsertsLoader(
             val completedJob = checkNotNull(loadJob.reload()) { "BigQuery load job disappeared" }
             check(
                 completedJob.status.state == JobStatus.State.DONE &&
-                    completedJob.status.error == null
-            ) { "BigQuery load job did not complete successfully: ${completedJob.status}" }
+                    completedJob.status.error == null,
+            ) {
+                "BigQuery load job did not complete successfully: ${completedJob.status}"
+            }
             val stats = completedJob.getStatistics<JobStatistics.LoadStatistics>()
             if (stats.badRecords > 0) {
                 // This should be impossible: the load job uses the default setting of
                 // maxBadRecords=0,
                 // so the job is supposed to fail if there were any bad records.
                 throw RuntimeException(
-                    "${writeChannelConfiguration.destinationTable.toPrettyString()}: Nonzero bad records detected: ${stats.badRecords}"
+                    "${writeChannelConfiguration.destinationTable.toPrettyString()}: Nonzero bad records detected: ${stats.badRecords}",
                 )
             }
             currentCoroutineContext().ensureActive()
@@ -309,7 +311,7 @@ class BigqueryBatchStandardInsertsLoaderFactory(
 
     private fun <S> waitForStateStore(
         stateStore: StreamStateStore<S>,
-        streamDescriptor: DestinationStream.Descriptor
+        streamDescriptor: DestinationStream.Descriptor,
     ): S {
         // Poll the state store until it's populated by the coordinating StreamLoader thread
         var attempts = 0
@@ -341,6 +343,7 @@ class BigqueryBatchStandardInsertsLoaderFactory(
             |   2. Make sure that the actual destination schema's location corresponds to the location provided in the connector's config.
             |   3. Try to change the "Destination schema" from "Mirror Source Structure" (if it's set) to the "Destination Default" option.
             |More details:
-            |""".trimMargin()
+            |"""
+                .trimMargin()
     }
 }

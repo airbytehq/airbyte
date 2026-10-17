@@ -45,7 +45,7 @@ abstract class DatabricksBaseAcceptanceTest(
                 when (cdcDeletionMode) {
                     CdcDeletionMode.HARD_DELETE -> DedupBehavior.CdcDeletionMode.HARD_DELETE
                     CdcDeletionMode.SOFT_DELETE -> DedupBehavior.CdcDeletionMode.SOFT_DELETE
-                }
+                },
             ),
         stringifySchemalessObjects = true,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,

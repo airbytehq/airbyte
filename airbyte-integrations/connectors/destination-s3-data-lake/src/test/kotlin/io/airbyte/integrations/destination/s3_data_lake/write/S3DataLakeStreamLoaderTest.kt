@@ -413,12 +413,12 @@ internal class S3DataLakeStreamLoaderTest {
                 Types.NestedField.required(
                     3,
                     Meta.Companion.COLUMN_NAME_AB_RAW_ID,
-                    Types.StringType.get()
+                    Types.StringType.get(),
                 ),
                 Types.NestedField.required(
                     4,
                     Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT,
-                    Types.LongType.get()
+                    Types.LongType.get(),
                 ),
                 Types.NestedField.required(
                     5,
@@ -450,7 +450,7 @@ internal class S3DataLakeStreamLoaderTest {
                 Types.NestedField.required(
                     12,
                     Meta.Companion.COLUMN_NAME_AB_GENERATION_ID,
-                    Types.LongType.get()
+                    Types.LongType.get(),
                 ),
             )
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
@@ -645,7 +645,7 @@ internal class S3DataLakeStreamLoaderTest {
                 tableSchema =
                     makeTableSchema(
                         objectSchema,
-                        Dedupe(primaryKey = listOf(primaryKeys), cursor = primaryKeys)
+                        Dedupe(primaryKey = listOf(primaryKeys), cursor = primaryKeys),
                     ),
             )
         val columns =
@@ -655,12 +655,12 @@ internal class S3DataLakeStreamLoaderTest {
                 Types.NestedField.required(
                     3,
                     Meta.Companion.COLUMN_NAME_AB_RAW_ID,
-                    Types.StringType.get()
+                    Types.StringType.get(),
                 ),
                 Types.NestedField.required(
                     4,
                     Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT,
-                    Types.LongType.get()
+                    Types.LongType.get(),
                 ),
                 Types.NestedField.required(
                     5,
@@ -692,7 +692,7 @@ internal class S3DataLakeStreamLoaderTest {
                 Types.NestedField.required(
                     12,
                     Meta.Companion.COLUMN_NAME_AB_GENERATION_ID,
-                    Types.LongType.get()
+                    Types.LongType.get(),
                 ),
             )
         val icebergSchema = Schema(columns, emptySet())
@@ -880,7 +880,7 @@ internal class S3DataLakeStreamLoaderTest {
             makeStreamLoader(
                 stream,
                 makeIcebergConfiguration(normalizeColumnNames = true),
-                icebergUtil
+                icebergUtil,
             )
 
         runBlocking { streamLoader.start() }
@@ -931,7 +931,7 @@ internal class S3DataLakeStreamLoaderTest {
             makeStreamLoader(
                 stream,
                 makeIcebergConfiguration(normalizeColumnNames = true),
-                icebergUtil
+                icebergUtil,
             )
 
         val failure = assertFailsWith<ConfigErrorException> { runBlocking { streamLoader.start() } }
@@ -985,7 +985,7 @@ internal class S3DataLakeStreamLoaderTest {
             makeStreamLoader(
                 stream,
                 makeIcebergConfiguration(normalizeColumnNames = true),
-                icebergUtil
+                icebergUtil,
             )
 
         runBlocking { streamLoader.start() }
