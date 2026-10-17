@@ -113,16 +113,17 @@ class S3DataLakeStreamLoader(
         val targetFormatVersion = icebergConfiguration.tableFormatVersion.formatVersion
         val tableExisted =
             catalog.tableExists(tableIdGenerator.toTableIdentifier(stream.mappedDescriptor))
-        table =
+        val createdTable =
             icebergUtil.createTable(
                 streamDescriptor = stream.mappedDescriptor,
                 catalog = catalog,
                 schema = incomingSchema,
                 formatVersion = targetFormatVersion,
             )
+        table = createdTable
         // Validate the configured delete mode against the version the table will have
         // after reconciliation, so an invalid combination fails before the upgrade runs.
-        val actualVersion = tableFormatVersion(table)
+        val actualVersion = tableFormatVersion(createdTable)
         val plannedVersion =
             if (
                 tableExisted &&
@@ -136,19 +137,19 @@ class S3DataLakeStreamLoader(
             } else {
                 targetFormatVersion
             }
-        val deleteMode = resolveDeleteMode(table, plannedVersion)
+        val deleteMode = resolveDeleteMode(createdTable, plannedVersion)
         val effectiveFormatVersion =
             reconcileFormatVersion(
-                table = table,
+                table = createdTable,
                 tableExisted = tableExisted,
                 targetFormatVersion = targetFormatVersion,
                 catalog = catalog,
             )
         check(effectiveFormatVersion == plannedVersion) {
             "Planned format v$plannedVersion but reconciliation produced " +
-                "v$effectiveFormatVersion for ${table.name()}."
+                "v$effectiveFormatVersion for ${createdTable.name()}."
         }
-        failOnNormalizationRenames(table.schema())
+        failOnNormalizationRenames(createdTable.schema())
 
         // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema
         // change immediately. This is intentional.
@@ -165,7 +166,7 @@ class S3DataLakeStreamLoader(
             "Creating staging branch $stagingBranchName for stream ${stream.mappedDescriptor}"
         }
         try {
-            table.manageSnapshots().createBranch(stagingBranchName).commit()
+            createdTable.manageSnapshots().createBranch(stagingBranchName).commit()
         } catch (_: IllegalArgumentException) {
             logger.info {
                 "Staging branch $stagingBranchName already exists for stream ${stream.mappedDescriptor}; reusing it for recovery."
@@ -184,7 +185,7 @@ class S3DataLakeStreamLoader(
         val optimizePriorIcebergDeleteFiles = icebergConfiguration.optimizePriorIcebergDeleteFiles
         val positionalDeleteState =
             if (resolvedDeletesEnabled) {
-                enableIdentifierBloomFilters(table, targetSchema, identifierFieldIds)
+                enableIdentifierBloomFilters(createdTable, targetSchema, identifierFieldIds)
                 PositionalDeleteResolutionState()
             } else {
                 null
@@ -192,7 +193,7 @@ class S3DataLakeStreamLoader(
 
         val state =
             S3DataLakeStreamState(
-                table = table,
+                table = createdTable,
                 schema = targetSchema,
                 stagingBranchName = stagingBranchName,
                 positionalDeleteState = positionalDeleteState,
