@@ -51,4 +51,13 @@ data:
     - title: Convex Status
       url: https://status.convex.dev/
       type: status_page
+    - title: Convex Data Sync API (streaming export)
+      url: https://docs.convex.dev/deployment-api/data-sync
+      type: api_reference
+    - title: Convex streaming import/export integrations
+      url: https://docs.convex.dev/production/integrations/streaming-import-export
+      type: api_reference
+    - title: Convex backend source (streaming export routes and Fivetran connector changelog)
+      url: https://github.com/get-convex/convex-backend
+      type: code_repository
 metadataSpecVersion: "1.0"
