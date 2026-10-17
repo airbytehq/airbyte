@@ -18,6 +18,7 @@
 
 get-connector-name = 'basename "$PWD"' # Use with -qq to get just the connector name
 fetch-secrets = "airbyte-ops secrets fetch"
+push-secrets = "airbyte-ops secrets push" # Upload configs rotated during tests back to GSM
 
 install = ["install-project", "install-cdk-cli", "install-ops-cli"]
 install-project = "poetry install --all-extras"

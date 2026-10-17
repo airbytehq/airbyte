@@ -12,6 +12,7 @@
 
 get-connector-name = "basename ${POE_PWD}" # Use with -qq to get just the connector name
 fetch-secrets = "airbyte-ops secrets fetch ${POE_PWD}"
+push-secrets = "airbyte-ops secrets push ${POE_PWD}" # Upload configs rotated during tests back to GSM
 
 install = [
   "install-cdk-cli",
