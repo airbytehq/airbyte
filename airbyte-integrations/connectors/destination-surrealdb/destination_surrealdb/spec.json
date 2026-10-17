@@ -13,7 +13,7 @@
       "surrealdb_username",
       "surrealdb_password"
     ],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "surrealdb_url": {
         "type": "string",
