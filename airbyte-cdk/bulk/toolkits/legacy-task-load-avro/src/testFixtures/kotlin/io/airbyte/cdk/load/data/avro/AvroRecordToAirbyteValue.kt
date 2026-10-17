@@ -24,7 +24,7 @@ object AvroRecordToAirbyteValue {
                 ObjectValue(
                     avroValue.schema.fields.associateTo(linkedMapOf()) { field ->
                         field.name() to convert(avroValue.get(field.name()))
-                    }
+                    },
                 )
             is GenericArray<*> -> ArrayValue(avroValue.map { convert(it) })
             is Boolean -> BooleanValue(avroValue)
@@ -35,7 +35,7 @@ object AvroRecordToAirbyteValue {
             is String -> StringValue(avroValue)
             else ->
                 throw IllegalArgumentException(
-                    "Unrecognized avro value type: ${avroValue::class.qualifiedName} with value: $avroValue"
+                    "Unrecognized avro value type: ${avroValue::class.qualifiedName} with value: $avroValue",
                 )
         }
     }

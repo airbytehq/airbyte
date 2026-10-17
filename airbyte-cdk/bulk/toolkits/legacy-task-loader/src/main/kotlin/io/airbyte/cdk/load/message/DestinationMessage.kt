@@ -182,11 +182,11 @@ data class Meta(
 
         fun getEmittedAtMs(
             emittedAtMs: Long,
-            extractedAtAsTimestampWithTimezone: Boolean
+            extractedAtAsTimestampWithTimezone: Boolean,
         ): AirbyteValue {
             return if (extractedAtAsTimestampWithTimezone) {
                 TimestampWithTimezoneValue(
-                    OffsetDateTime.ofInstant(Instant.ofEpochMilli(emittedAtMs), ZoneOffset.UTC)
+                    OffsetDateTime.ofInstant(Instant.ofEpochMilli(emittedAtMs), ZoneOffset.UTC),
                 )
             } else {
                 IntegerValue(emittedAtMs)
@@ -242,7 +242,7 @@ data class DestinationRecord(
                                         .asProtocolObject()
                                 },
                             ),
-                    )
+                    ),
             )
 
     fun asDestinationRecordRaw(): DestinationRecordRaw {
@@ -268,7 +268,7 @@ data class DestinationRecordAirbyteValue(
     val data: AirbyteValue,
     val emittedAtMs: Long,
     val meta: Meta?,
-    val serializedSizeBytes: Long = 0L
+    val serializedSizeBytes: Long = 0L,
 )
 
 data class EnrichedDestinationRecordAirbyteValue(
@@ -357,7 +357,7 @@ data class FileReference(
 data class DestinationFile(
     override val stream: DestinationStream,
     val emittedAtMs: Long,
-    val fileMessage: AirbyteRecordMessageFile
+    val fileMessage: AirbyteRecordMessageFile,
 ) : DestinationFileDomainMessage {
     /** Convenience constructor, primarily intended for use in tests. */
     class AirbyteRecordMessageFile {
@@ -366,7 +366,7 @@ data class DestinationFile(
             bytes: Long? = null,
             fileRelativePath: String? = null,
             modified: Long? = null,
-            sourceFileUrl: String? = null
+            sourceFileUrl: String? = null,
         ) {
             this.fileUrl = fileUrl
             this.bytes = bytes
@@ -374,6 +374,7 @@ data class DestinationFile(
             this.modified = modified
             this.sourceFileUrl = sourceFileUrl
         }
+
         constructor() :
             this(
                 fileUrl = null,
@@ -447,7 +448,7 @@ private fun statusToProtocolMessage(
                         .withStreamDescriptor(
                             StreamDescriptor()
                                 .withNamespace(destinationStream.unmappedNamespace)
-                                .withName(destinationStream.unmappedName)
+                                .withName(destinationStream.unmappedName),
                         )
                         .withStatus(status),
                 ),
@@ -476,6 +477,7 @@ sealed interface CheckpointMessage : DestinationMessage {
         const val COMMITTED_BYTES_COUNT = "committedBytesCount"
         const val REJECTED_RECORDS_COUNT = "rejectedRecordsCount"
     }
+
     data class Stats(
         val recordCount: Long,
         val rejectedRecordCount: Long = 0, // TODO should not have a default?
@@ -486,7 +488,7 @@ sealed interface CheckpointMessage : DestinationMessage {
         val unmappedNamespace: String?,
         val unmappedName: String,
         val state: JsonNode?,
-        val additionalProperties: LinkedHashMap<String, Any> = LinkedHashMap()
+        val additionalProperties: LinkedHashMap<String, Any> = LinkedHashMap(),
     ) {
         val unmappedDescriptor = DestinationStream.Descriptor(unmappedNamespace, unmappedName)
 
@@ -521,10 +523,13 @@ sealed interface CheckpointMessage : DestinationMessage {
     val checkpointKey: CheckpointKey?
     val checkpointIdRaw: String?
         get() = checkpointKey?.checkpointId?.value
+
     val checkpointOrdinalRaw: Int?
         get() = checkpointKey?.checkpointIndex?.value
+
     val checkpointPartitionIds: List<String>
         get() = checkpointIdRaw?.let { listOf(it) } ?: listOf()
+
     val checkpoints: List<Checkpoint>
 
     val sourceStats: Stats?
@@ -541,8 +546,9 @@ sealed interface CheckpointMessage : DestinationMessage {
         totalRecords: Long? = null,
         totalBytes: Long? = null,
         totalRejectedRecords: Long? = null,
-        additionalStats: Map<String, Double> = emptyMap()
+        additionalStats: Map<String, Double> = emptyMap(),
     )
+
     fun withDestinationStats(stats: Stats): CheckpointMessage
 
     fun decorateStateMessage(message: AirbyteStateMessage) {
@@ -569,7 +575,7 @@ sealed interface CheckpointMessage : DestinationMessage {
                                 additionalStatsToAdd.forEach {
                                     additionalProperties[it.key] = it.value
                                 }
-                            }
+                            },
                         )
                     }
                 }
@@ -642,7 +648,7 @@ data class StreamCheckpoint(
         totalRecords: Long?,
         totalBytes: Long?,
         totalRejectedRecords: Long?,
-        additionalStats: Map<String, Double>
+        additionalStats: Map<String, Double>,
     ) {
         destinationStats?.let { this.destinationStats = it }
         totalRecords?.let { this.totalRecords = it }
@@ -650,6 +656,7 @@ data class StreamCheckpoint(
         totalRejectedRecords?.let { this.totalRejectedRecords = it }
         this.additionalStats.putAll(additionalStats)
     }
+
     override fun withDestinationStats(stats: Stats) =
         copy(destinationStats = stats, additionalStats = additionalStats)
 
@@ -694,7 +701,7 @@ data class GlobalCheckpoint(
         totalRecords: Long?,
         totalBytes: Long?,
         totalRejectedRecords: Long?,
-        additionalStats: Map<String, Double>
+        additionalStats: Map<String, Double>,
     ) {
         destinationStats?.let { this.destinationStats = it }
         totalRecords?.let { this.totalRecords = it }
@@ -702,6 +709,7 @@ data class GlobalCheckpoint(
         totalRejectedRecords?.let { this.totalRejectedRecords = it }
         this.additionalStats.putAll(additionalStats)
     }
+
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
 
     override fun asProtocolMessage(): AirbyteMessage {
@@ -732,7 +740,7 @@ data class GlobalSnapshotCheckpoint(
     override var totalBytes: Long? = null,
     override var totalRejectedRecords: Long? = null,
     override var additionalStats: MutableMap<String, Double> = mutableMapOf(),
-    val streamCheckpoints: Map<DestinationStream.Descriptor, CheckpointKey>
+    val streamCheckpoints: Map<DestinationStream.Descriptor, CheckpointKey>,
 ) : CheckpointMessage {
 
     override val checkpointPartitionIds: List<String>
@@ -746,7 +754,7 @@ data class GlobalSnapshotCheckpoint(
         totalRecords: Long?,
         totalBytes: Long?,
         totalRejectedRecords: Long?,
-        additionalStats: Map<String, Double>
+        additionalStats: Map<String, Double>,
     ) {
         destinationStats?.let { this.destinationStats = it }
         totalRecords?.let { this.totalRecords = it }
@@ -754,6 +762,7 @@ data class GlobalSnapshotCheckpoint(
         totalRejectedRecords?.let { this.totalRejectedRecords = it }
         this.additionalStats.putAll(additionalStats)
     }
+
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
 
     override fun asProtocolMessage(): AirbyteMessage {

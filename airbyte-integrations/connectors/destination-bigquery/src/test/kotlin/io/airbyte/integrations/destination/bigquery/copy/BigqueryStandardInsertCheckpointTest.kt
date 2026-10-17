@@ -85,7 +85,7 @@ class BigqueryStandardInsertCheckpointTest {
     @ParameterizedTest
     @EnumSource(DataChannelMedium::class)
     fun `EOF partial batch cannot emit covering state until archive completes`(
-        medium: DataChannelMedium
+        medium: DataChannelMedium,
     ) =
         runTest(timeout = 30.seconds) {
             val h = Harness(this, medium)
@@ -97,7 +97,7 @@ class BigqueryStandardInsertCheckpointTest {
             assertEquals(2L, h.fixture().acceptedRecords)
             assertFalse(
                 h.fixture().archiveEntered.isCompleted,
-                "Partial batch must wait for finish"
+                "Partial batch must wait for finish",
             )
             verify(exactly = 0) { h.fixture().bigQuery.writer(any<JobId>(), any()) }
 
@@ -119,7 +119,7 @@ class BigqueryStandardInsertCheckpointTest {
     @ParameterizedTest
     @EnumSource(DataChannelMedium::class)
     fun `CDK forced flush waits for archive before acknowledging an open stream`(
-        medium: DataChannelMedium
+        medium: DataChannelMedium,
     ) =
         runTest(timeout = 30.seconds) {
             val h = Harness(this, medium, flushAfterRecords = 1)
@@ -143,7 +143,7 @@ class BigqueryStandardInsertCheckpointTest {
     @ParameterizedTest
     @EnumSource(DataChannelMedium::class)
     fun `archive failure during EOF finish cannot emit covering state even on failed sync flush`(
-        medium: DataChannelMedium
+        medium: DataChannelMedium,
     ) =
         runTest(timeout = 30.seconds) {
             val h = Harness(this, medium)
@@ -181,7 +181,7 @@ class BigqueryStandardInsertCheckpointTest {
     @ParameterizedTest
     @EnumSource(DataChannelMedium::class)
     fun `cancellation during archive completion cannot emit covering state`(
-        medium: DataChannelMedium
+        medium: DataChannelMedium,
     ) =
         runTest(timeout = 30.seconds) {
             val h = Harness(this, medium)
@@ -223,7 +223,7 @@ class BigqueryStandardInsertCheckpointTest {
     @ParameterizedTest
     @ValueSource(booleans = [false, true])
     fun `socket state arriving before records requires all partition archives`(
-        failSecondArchive: Boolean
+        failSecondArchive: Boolean,
     ) =
         runTest(timeout = 30.seconds) {
             val h = Harness(this, DataChannelMedium.SOCKET, partitions = 2)
@@ -352,10 +352,7 @@ class BigqueryStandardInsertCheckpointTest {
             CheckpointManager(
                 catalog,
                 sync,
-                { reservation, _, _, _ ->
-                    emitted.add(reservation.value)
-                    Unit
-                },
+                { reservation, _, _, _ -> emitted.add(reservation.value) },
                 mockk { every { currentTimeMillis() } returns 0L },
                 medium == DataChannelMedium.SOCKET,
                 NamespaceMapper(),
@@ -400,8 +397,9 @@ class BigqueryStandardInsertCheckpointTest {
                         streamDescriptor: DestinationStream.Descriptor,
                         part: Int,
                     ): BigqueryBatchStandardInsertsLoader {
-                        val stream =
-                            streams.indexOfFirst { it.mappedDescriptor == streamDescriptor }
+                        val stream = streams.indexOfFirst {
+                            it.mappedDescriptor == streamDescriptor
+                        }
                         return fixtures[stream][part].loader
                     }
                 }
@@ -419,7 +417,7 @@ class BigqueryStandardInsertCheckpointTest {
                 DirectLoadPipelineStep(
                     factory,
                     DirectLoadRecordAccumulator<BigqueryBatchStandardInsertsLoader, StreamKey>(
-                        factory
+                        factory,
                     ),
                     taskFactory,
                     partitions,
@@ -453,8 +451,8 @@ class BigqueryStandardInsertCheckpointTest {
                         serializedSizeBytes = 10L,
                         checkpointId = checkpointKey()?.checkpointId,
                         airbyteRawId = UUID.randomUUID(),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
@@ -468,8 +466,8 @@ class BigqueryStandardInsertCheckpointTest {
                             "{}",
                             recordCount,
                             checkpointKey = checkpointKey(),
-                        )
-                )
+                        ),
+                ),
             )
         }
 
@@ -483,8 +481,8 @@ class BigqueryStandardInsertCheckpointTest {
                             additionalProperties = emptyMap(),
                             serializedSizeBytes = 0L,
                             checkpointKey = checkpointKey(),
-                        )
-                )
+                        ),
+                ),
             )
         }
 
@@ -492,7 +490,7 @@ class BigqueryStandardInsertCheckpointTest {
             repeat(partitions) { partition ->
                 streams.forEach { stream ->
                     input[partition].publish(
-                        router.handleStreamMessage(DestinationRecordStreamComplete(stream, 0L))
+                        router.handleStreamMessage(DestinationRecordStreamComplete(stream, 0L)),
                     )
                 }
                 input[partition].close()

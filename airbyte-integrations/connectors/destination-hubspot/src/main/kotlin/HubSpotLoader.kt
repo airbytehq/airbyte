@@ -29,7 +29,7 @@ private val logger = KotlinLogging.logger {}
 class HubSpotState(
     private val httpClient: HttpClient,
     private val objectDao: HubSpotObjectTypeIdMapper,
-    private val stream: DestinationStream
+    private val stream: DestinationStream,
 ) : AutoCloseable {
     val requestBody: ObjectNode = Jsons.objectNode()
     val batch: ArrayNode = requestBody.putArray("inputs")
@@ -46,8 +46,8 @@ class HubSpotState(
                 this.replace(
                     "id",
                     data.extract(
-                        stream.matchingKey ?: throw IllegalStateException("Missing matching key")
-                    )
+                        stream.matchingKey ?: throw IllegalStateException("Missing matching key"),
+                    ),
                 )
                 val properties = this.putObject("properties")
                 data.properties().forEach { (key, value) -> properties.replace(key, value) }
@@ -69,8 +69,8 @@ class HubSpotState(
                     url =
                         "https://api.hubapi.com/crm/v3/objects/${objectDao.fetchObjectTypeId(stream.destinationObjectName ?: throw IllegalStateException("destinationObjectName required"))}/batch/upsert",
                     headers = mapOf("Content-Type" to "application/json"),
-                    body = requestBody.serializeToJsonBytes()
-                )
+                    body = requestBody.serializeToJsonBytes(),
+                ),
             )
 
         response.use {
@@ -79,7 +79,7 @@ class HubSpotState(
                 207 -> null // FIXME generate dlq record with error from hubspot
                 else ->
                     throw IllegalStateException(
-                        "Invalid response with status code ${response.statusCode} while starting ingestion: ${response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()}"
+                        "Invalid response with status code ${response.statusCode} while starting ingestion: ${response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()}",
                     )
             }
         }
@@ -91,12 +91,12 @@ class HubSpotState(
         val matchingKey = stream.matchingKey ?: emptyList()
         if (matchingKey.isEmpty()) {
             throw IllegalStateException(
-                "In order to perform upserts, a matching key needs to be provided"
+                "In order to perform upserts, a matching key needs to be provided",
             )
         }
         if (matchingKey.size != 1) {
             throw IllegalStateException(
-                "Matching keys for Salesforce need to have only one field but got $matchingKey"
+                "Matching keys for Salesforce need to have only one field but got $matchingKey",
             )
         }
         return matchingKey.get(0)
@@ -106,7 +106,7 @@ class HubSpotState(
 class HubSpotLoader(
     private val httpClient: HttpClient,
     private val objectDao: HubSpotObjectTypeIdMapper,
-    private val catalog: DestinationCatalog
+    private val catalog: DestinationCatalog,
 ) : DlqLoader<HubSpotState> {
     override fun start(key: StreamKey, part: Int): HubSpotState {
         return HubSpotState(
@@ -114,14 +114,14 @@ class HubSpotLoader(
             objectDao,
             catalog.streams.find { it.mappedDescriptor == key.stream }
                 ?: throw IllegalStateException(
-                    "Could not find stream ${key.stream} as part of the catalog."
+                    "Could not find stream ${key.stream} as part of the catalog.",
                 ),
         )
     }
 
     override fun accept(
         record: DestinationRecordRaw,
-        state: HubSpotState
+        state: HubSpotState,
     ): DlqLoader.DlqLoadResult {
         state.accumulate(record)
         if (state.isFull()) {
