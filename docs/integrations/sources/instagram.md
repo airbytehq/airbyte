@@ -32,7 +32,7 @@ This page contains the setup guide and reference information for the [Instagram]
 4. Enter a name for the Instagram connector.
 5. Click **Authenticate your Instagram account**.
 6. Log in and authorize the Instagram account.
-7. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. This date applies to the User Insights stream only. All data generated after this date will be replicated. If left blank, the start date will be set to 2 years before the present date.
+7. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. This date applies to the User Insights stream only. The connector never requests User Insights data older than 30 days, so a start date more than 30 days in the past has no effect. If left blank, the connector syncs the last 30 days.
 8. Click **Set up source**.
 
 <!-- /env:cloud -->
@@ -46,7 +46,7 @@ This page contains the setup guide and reference information for the [Instagram]
 3. On the Set up the source page, select **Instagram** from the **Source type** dropdown.
 4. Enter a name for your source.
 5. Enter the **Access Token** generated using the [Graph API Explorer](https://developers.facebook.com/tools/explorer/) or a [Facebook app](https://developers.facebook.com/docs/instagram-platform/getting-started) with the required permissions: `instagram_basic`, `instagram_manage_insights`, `pages_show_list`, `pages_read_engagement`.
-6. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. This date applies to the User Insights stream only. All data generated after this date will be replicated. If left blank, the start date will be set to 2 years before the present date.
+6. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. This date applies to the User Insights stream only. The connector never requests User Insights data older than 30 days, so a start date more than 30 days in the past has no effect. If left blank, the connector syncs the last 30 days.
 7. Click **Set up source**.
 
 <!-- /env:oss -->
@@ -76,7 +76,7 @@ The following streams are available:
 
 - [Users](https://developers.facebook.com/docs/instagram-api/reference/ig-user)—Profile information for each connected Instagram Business or Creator account.
 - [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)—Daily account-level metrics such as `follower_count`, `reach`, and `online_followers`. This is the only incremental stream; it uses the `date` field as its cursor.
-- [User Lifetime Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)—Demographic breakdowns of followers by city, country, and age/gender.
+- [User Lifetime Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)—Demographic breakdowns of followers from the `follower_demographics` metric. Each account produces one record per breakdown: `city`, `country`, and `age,gender`. The `value` field is an object that maps each dimension value to a follower count. For the `age,gender` breakdown, keys combine both dimensions, for example `25-34,F`. Versions before 4.2.47 keyed this breakdown by age only and dropped the gender dimension.
 - [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)—All media objects (photos, videos, reels, carousel albums) published by each account. For carousel albums, the connector fetches detailed information for each child media item.
 - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)—Per-media engagement metrics. The specific metrics requested vary by media type (Reels, Video, Carousel Album, or Image).
 - [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)—Currently published stories. The Instagram API only returns stories that are live at the time of the sync; expired stories are not available.
@@ -119,7 +119,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.2.47 | 2026-10-13 | [88126](https://github.com/airbytehq/airbyte/pull/88126) | Fix `user_lifetime_insights` dropping the gender dimension of the `age,gender` breakdown |
+| 4.2.47 | 2026-10-15 | [88126](https://github.com/airbytehq/airbyte/pull/88126) | Fix `user_lifetime_insights` dropping the gender dimension of the `age,gender` breakdown |
 | 4.2.46 | 2026-10-13 | [88648](https://github.com/airbytehq/airbyte/pull/88648) | Update dependencies |
 | 4.2.45 | 2026-10-06 | [87887](https://github.com/airbytehq/airbyte/pull/87887) | Update dependencies |
 | 4.2.44 | 2026-09-29 | [87211](https://github.com/airbytehq/airbyte/pull/87211) | Update dependencies |
