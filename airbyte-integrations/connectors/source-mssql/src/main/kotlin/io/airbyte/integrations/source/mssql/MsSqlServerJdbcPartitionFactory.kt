@@ -197,7 +197,7 @@ open class MsSqlServerJdbcPartitionFactory(
 
     /**
      * Flowchart:
-     * 1. If the input state is null - using coldstart.
+     * 1. If the input state is null or an empty object `{}` - using coldstart.
      *
      * ```
      *    a. If it's global but without PK, use non-resumable snapshot.
@@ -228,7 +228,9 @@ open class MsSqlServerJdbcPartitionFactory(
             return null
         }
 
-        if (opaqueStateValue == null) {
+        // The CDK emits an empty object as the placeholder state for a stream that has not
+        // checkpointed yet; it carries no resume point, so treat it like no state at all.
+        if (opaqueStateValue == null || (opaqueStateValue.isObject && opaqueStateValue.isEmpty)) {
             return coldStart(streamState)
         }
 
