@@ -1,7 +1,6 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mysql
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonAnySetter
 import com.fasterxml.jackson.annotation.JsonGetter
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -198,7 +197,10 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonIgnore var additionalPropertiesMap: MutableMap<String, Any>? = mutableMapOf<String, Any>()
 
-    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any>? = additionalPropertiesMap
+    // Jackson 2.19 (pulled in by Debezium 3.4) exposes a @JsonAnyGetter as a bean property, which
+    // the schema generator would emit as a spurious `additionalProperties` field in the spec.
+    // The connector reads this map directly, so hide it from Jackson instead.
+    @JsonIgnore fun getAdditionalProperties(): Map<String, Any>? = additionalPropertiesMap
 
     @JsonAnySetter
     fun setAdditionalProperty(
