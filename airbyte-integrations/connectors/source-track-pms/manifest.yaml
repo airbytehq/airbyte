@@ -1,4 +1,4 @@
-version: 7.23.7
+version: 7.28.2
 
 type: DeclarativeSource
 
@@ -214,6 +214,10 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           immediateOriginName:
             type:
               - string
@@ -231,10 +235,6 @@ streams:
               - string
               - "null"
           immediateDestinationName:
-            type:
-              - string
-              - "null"
-          _airbyte_record_md5:
             type:
               - string
               - "null"
@@ -2878,6 +2878,10 @@ streams:
             type:
               - array
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           homeawayProductCode:
             type:
               - string
@@ -2895,10 +2899,6 @@ streams:
               - string
               - "null"
           bookingDotComProductCode:
-            type:
-              - string
-              - "null"
-          _airbyte_record_md5:
             type:
               - string
               - "null"
@@ -3108,6 +3108,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           travelAgentCommission:
             type:
               - number
@@ -3123,10 +3127,6 @@ streams:
           travelAgentDeductCommission:
             type:
               - boolean
-              - "null"
-          _airbyte_record_md5:
-            type:
-              - string
               - "null"
         additionalProperties: true
     transformations:
@@ -4021,13 +4021,13 @@ streams:
             type:
               - string
               - "null"
-          minLosOwnerOverride:
-            type:
-              - boolean
-              - "null"
           _airbyte_record_md5:
             type:
               - string
+              - "null"
+          minLosOwnerOverride:
+            type:
+              - boolean
               - "null"
         additionalProperties: true
     transformations:
@@ -4397,6 +4397,10 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           additionalProperties:
             anyOf:
               - type: array
@@ -4416,10 +4420,6 @@ streams:
                     type:
                       - boolean
                       - "null"
-          _airbyte_record_md5:
-            type:
-              - string
-              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -5052,6 +5052,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           breakdownFeePercent:
             type:
               - string
@@ -5083,10 +5087,6 @@ streams:
           breakdownChargesIncludeTax:
             type:
               - boolean
-              - "null"
-          _airbyte_record_md5:
-            type:
-              - string
               - "null"
         additionalProperties: true
     transformations:
@@ -7564,6 +7564,10 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           duplicateInventoryCount:
             type:
               - number
@@ -7575,10 +7579,6 @@ streams:
           futureInventoryTimePeriods:
             type:
               - number
-              - "null"
-          _airbyte_record_md5:
-            type:
-              - string
               - "null"
         additionalProperties: true
     transformations:
@@ -10142,13 +10142,13 @@ streams:
             type:
               - number
               - "null"
-          generateReservation:
-            type:
-              - boolean
-              - "null"
           _airbyte_record_md5:
             type:
               - string
+              - "null"
+          generateReservation:
+            type:
+              - boolean
               - "null"
         additionalProperties: true
     transformations:
@@ -10688,6 +10688,14 @@ streams:
             path:
               - group_id
             value: "{{ stream_partition.group_id }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - unitId
+            value: >-
+              {{ ((record.get('_embedded') or {}).get('unit') or {}).get('id')
+              }}
       - type: RemoveFields
         field_pointers:
           - - _embedded
@@ -11305,15 +11313,15 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           generateLinenTicket:
             type:
               - boolean
               - "null"
           chargeOwnerDefaultAmount:
-            type:
-              - string
-              - "null"
-          _airbyte_record_md5:
             type:
               - string
               - "null"
@@ -11805,11 +11813,11 @@ streams:
             type:
               - number
               - "null"
-          originalScheduledAt:
+          _airbyte_record_md5:
             type:
               - string
               - "null"
-          _airbyte_record_md5:
+          originalScheduledAt:
             type:
               - string
               - "null"
@@ -12932,6 +12940,10 @@ streams:
             type:
               - number
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           guaranteePoliciesIds:
             type:
               - array
@@ -12943,10 +12955,6 @@ streams:
           cancellationPoliciesIds:
             type:
               - array
-              - "null"
-          _airbyte_record_md5:
-            type:
-              - string
               - "null"
         additionalProperties: true
     transformations:
@@ -13413,6 +13421,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           minDeferredTxnAmount:
             type:
               - object
@@ -13420,10 +13432,6 @@ streams:
           alwaysShowInStatements:
             type:
               - boolean
-              - "null"
-          _airbyte_record_md5:
-            type:
-              - string
               - "null"
         additionalProperties: true
     transformations:
@@ -13580,13 +13588,13 @@ streams:
             type:
               - string
               - "null"
-          minLosOwnerOverride:
-            type:
-              - boolean
-              - "null"
           _airbyte_record_md5:
             type:
               - string
+              - "null"
+          minLosOwnerOverride:
+            type:
+              - boolean
               - "null"
         additionalProperties: true
     transformations:
@@ -13828,6 +13836,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           minDeferredTxnAmount:
             type:
               - object
@@ -13835,10 +13847,6 @@ streams:
           alwaysShowInStatements:
             type:
               - boolean
-              - "null"
-          _airbyte_record_md5:
-            type:
-              - string
               - "null"
         additionalProperties: true
     transformations:
@@ -14121,11 +14129,11 @@ streams:
             type:
               - string
               - "null"
-          trustAccountBalance:
+          _airbyte_record_md5:
             type:
               - string
               - "null"
-          _airbyte_record_md5:
+          trustAccountBalance:
             type:
               - string
               - "null"
@@ -15782,6 +15790,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           constraintMaxNights:
             type:
               - number
@@ -15836,10 +15848,6 @@ streams:
                   type:
                     - string
                     - "null"
-          _airbyte_record_md5:
-            type:
-              - string
-              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -18053,6 +18061,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           guestNetDisplayRent:
             type:
               - string
@@ -18072,10 +18084,6 @@ streams:
           guestIntendsInsurance:
             type:
               - boolean
-              - "null"
-          _airbyte_record_md5:
-            type:
-              - string
               - "null"
         additionalProperties: true
     transformations:
@@ -18354,13 +18362,13 @@ streams:
             type:
               - string
               - "null"
-          occupancyPricingByType:
-            type:
-              - boolean
-              - "null"
           _airbyte_record_md5:
             type:
               - string
+              - "null"
+          occupancyPricingByType:
+            type:
+              - boolean
               - "null"
         additionalProperties: true
     transformations:
@@ -18385,11 +18393,11 @@ streams:
         type: JsonDecoder
       paginator:
         type: DefaultPaginator
-        reset_page_token_on_error: true
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{ response.scroll }}"
           stop_condition: "{{ not response._embedded.reservations }}"
+        reset_page_token_on_error: true
       requester:
         type: HttpRequester
         url: https://{{ config.customer_domain }}/api/pms/reservations
@@ -20136,6 +20144,10 @@ streams:
             type:
               - object
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           cancellationPolicyId:
             type:
               - number
@@ -20151,10 +20163,6 @@ streams:
           remainingSecurityDeposit:
             type:
               - number
-              - "null"
-          _airbyte_record_md5:
-            type:
-              - string
               - "null"
         additionalProperties: true
     transformations:
@@ -20244,8 +20252,8 @@ streams:
       requester:
         type: HttpRequester
         url: https://{{ config.customer_domain }}/api/pms/reservations
-        http_method: GET
         use_cache: false
+        http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
         error_handler:
@@ -21987,6 +21995,10 @@ streams:
             type:
               - object
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           cancellationPolicyId:
             type:
               - number
@@ -22002,10 +22014,6 @@ streams:
           remainingSecurityDeposit:
             type:
               - number
-              - "null"
-          _airbyte_record_md5:
-            type:
-              - string
               - "null"
         additionalProperties: true
     transformations:
@@ -23001,6 +23009,10 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           includeFolioCharges:
             type:
               - boolean
@@ -23012,10 +23024,6 @@ streams:
           travelInsuranceWithFirstPayment:
             type:
               - boolean
-              - "null"
-          _airbyte_record_md5:
-            type:
-              - string
               - "null"
         additionalProperties: true
     transformations:
@@ -23708,6 +23716,10 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           schedulePercentage1:
             type:
               - number
@@ -23736,10 +23748,6 @@ streams:
             type:
               - boolean
               - "null"
-          _airbyte_record_md5:
-            type:
-              - string
-              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -23759,11 +23767,11 @@ streams:
         type: JsonDecoder
       paginator:
         type: DefaultPaginator
-        reset_page_token_on_error: true
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{ response.scroll }}"
           stop_condition: "{{ not response._embedded.reservations }}"
+        reset_page_token_on_error: true
       requester:
         type: HttpRequester
         url: https://{{ config.customer_domain }}/api/v2/pms/reservations
@@ -25257,6 +25265,10 @@ streams:
             type:
               - object
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           autoCheckinAttempts:
             type:
               - number
@@ -25314,10 +25326,6 @@ streams:
                   type:
                     - string
                     - "null"
-          _airbyte_record_md5:
-            type:
-              - string
-              - "null"
         additionalProperties: true
     transformations:
       - type: RemoveFields
@@ -25572,6 +25580,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           hostReviewExpiresAt:
             type:
               - string
@@ -25606,10 +25618,6 @@ streams:
               - number
               - "null"
           reservationConfirmationCode:
-            type:
-              - string
-              - "null"
-          _airbyte_record_md5:
             type:
               - string
               - "null"
@@ -27472,6 +27480,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           noTotRegistrationId:
             type:
               - string
@@ -27485,10 +27497,6 @@ streams:
               - array
               - "null"
           bookingDotComTaxApplication:
-            type:
-              - string
-              - "null"
-          _airbyte_record_md5:
             type:
               - string
               - "null"
@@ -27646,6 +27654,10 @@ streams:
             type:
               - object
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           allowCancelOverride:
             type:
               - boolean
@@ -27653,10 +27665,6 @@ streams:
           allowExternalNotification:
             type:
               - boolean
-              - "null"
-          _airbyte_record_md5:
-            type:
-              - string
               - "null"
         additionalProperties: true
     transformations:
@@ -28126,6 +28134,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           housekeepingMessage:
             type:
               - string
@@ -28153,10 +28165,6 @@ streams:
           travelInsuranceProductId:
             type:
               - number
-              - "null"
-          _airbyte_record_md5:
-            type:
-              - string
               - "null"
         additionalProperties: true
     transformations:
@@ -28295,15 +28303,15 @@ streams:
             type:
               - boolean
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           bookingDotComPropertyType:
             type:
               - string
               - "null"
           bookingDotComAccommodationType:
-            type:
-              - string
-              - "null"
-          _airbyte_record_md5:
             type:
               - string
               - "null"
@@ -30016,6 +30024,10 @@ streams:
             type:
               - object
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           allowAboveMaxNights:
             type:
               - boolean
@@ -30085,10 +30097,6 @@ streams:
               - boolean
               - "null"
           airbnbPassThroughTaxesCollectionType:
-            type:
-              - string
-              - "null"
-          _airbyte_record_md5:
             type:
               - string
               - "null"
@@ -30805,6 +30813,10 @@ streams:
             type:
               - string
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           housekeepingMessage:
             type:
               - string
@@ -30832,10 +30844,6 @@ streams:
           travelInsuranceProductId:
             type:
               - number
-              - "null"
-          _airbyte_record_md5:
-            type:
-              - string
               - "null"
         additionalProperties: true
     transformations:
@@ -31258,6 +31266,10 @@ streams:
             type:
               - object
               - "null"
+          _airbyte_record_md5:
+            type:
+              - string
+              - "null"
           housekeepingMessage:
             type:
               - object
@@ -31285,10 +31297,6 @@ streams:
           travelInsuranceProductId:
             type:
               - object
-              - "null"
-          _airbyte_record_md5:
-            type:
-              - string
               - "null"
         additionalProperties: true
     transformations:
@@ -32005,11 +32013,12 @@ metadata:
       responsesAreSuccessful: true
     groups_blocks:
       hasRecords: true
-      streamHash: 818feb1b873fe70ed3806bf634094b835e715645
+      streamHash: 6eb270f08b2fdafe5a6984cd2a8e0bd132db961e
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+      isStale: false
     lodging_types:
       hasRecords: true
       streamHash: f470e47770066280db2e8fa7f208308adb0db042
