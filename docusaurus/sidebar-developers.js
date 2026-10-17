@@ -9,7 +9,17 @@ module.exports = {
         id: "README",
       },
       items: [
-        "api-documentation",
+        {
+          type: "category",
+          label: "API documentation",
+          link: {
+            type: "doc",
+            id: "api-documentation",
+          },
+          items: [
+            "connector-definitions",
+          ],
+        },
         {
           type: "category",
           label: "Terraform Provider",
