@@ -24,7 +24,6 @@ import org.apache.iceberg.types.Types
 
 private val logger = KotlinLogging.logger {}
 
-@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class GcsDataLakeStreamLoader(
     private val icebergConfiguration: GcsDataLakeConfiguration,
     override val stream: DestinationStream,
