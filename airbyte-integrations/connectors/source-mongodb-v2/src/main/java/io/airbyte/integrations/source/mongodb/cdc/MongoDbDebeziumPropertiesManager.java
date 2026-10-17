@@ -39,6 +39,8 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   // For single db
   static final String CAPTURE_SCOPE_KEY = "capture.scope";
   static final String CAPTURE_TARGET_KEY = "capture.target";
+  static final String FILTERS_MATCH_MODE_KEY = "filters.match.mode";
+  static final String FILTERS_MATCH_MODE_VALUE = "literal";
   static final String MONGODB_POST_IMAGE_KEY = "capture.mode.full.update.type";
   static final String MONGODB_POST_IMAGE_VALUE = "post_image";
   static final String DOUBLE_QUOTES_PATTERN = "\"";
@@ -113,6 +115,12 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
     final Properties properties = new Properties();
     // Database/collection selection
 
+    // Match databases and collections as literals rather than regexes. In regex mode, Debezium wraps
+    // each change event with $replaceRoot to match on a computed namespace, which prevents MongoDB from
+    // pushing the filter down into the oplog scan: every event of the watched database (including
+    // update lookups for non-synced collections) is materialized before being discarded. In literal
+    // mode the pipeline is a plain $match on ns.db / ns, which MongoDB rewrites into the oplog filter.
+    properties.setProperty(FILTERS_MATCH_MODE_KEY, FILTERS_MATCH_MODE_VALUE);
     properties.setProperty(COLLECTION_INCLUDE_LIST_KEY, createCollectionIncludeString(catalog.getStreams(), cdcStreamNames));
     properties.setProperty(DATABASE_INCLUDE_LIST_KEY, StreamSupport.stream(config.get(DATABASE_CONFIGURATION_KEY).spliterator(), false)
         .map(JsonNode::asText)
@@ -130,10 +138,19 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
     return properties;
   }
 
+  /**
+   * Builds the literal collection include list ({@code <database>.<collection>}) expected by
+   * {@code filters.match.mode=literal}.
+   *
+   * @param streams The configured streams.
+   * @param cdcStreamNames The CDC stream names, in the {@code <database>\.<collection>} form built by
+   *        {@link MongoDbCdcInitializer}.
+   * @return The comma-separated list of fully-qualified collection names to capture.
+   */
   protected String createCollectionIncludeString(final List<ConfiguredAirbyteStream> streams, final List<String> cdcStreamNames) {
     return streams.stream()
-        .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
-        .filter(cdcStreamNames::contains)
+        .filter(s -> cdcStreamNames.contains(s.getStream().getNamespace() + "\\." + s.getStream().getName()))
+        .map(s -> s.getStream().getNamespace() + "." + s.getStream().getName())
         .collect(Collectors.joining(","));
   }
 
