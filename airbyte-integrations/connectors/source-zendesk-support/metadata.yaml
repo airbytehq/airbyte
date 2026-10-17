@@ -132,4 +132,10 @@ data:
     - title: Zendesk feature removal announcements
       url: https://support.zendesk.com/hc/en-us/articles/4408843026714-What-is-being-removed-updated-April-2026
       type: api_deprecations
+    - title: Zendesk end of availability of Incremental APIs for third-party developers
+      url: https://support.zendesk.com/hc/en-us/articles/11275429993498-Announcing-end-of-availability-of-Incremental-APIs-for-third-party-developers
+      type: api_deprecations
+    - title: Migrating third-party integrations from Incremental APIs
+      url: https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/incremental-third-party/
+      type: api_deprecations
 metadataSpecVersion: "1.0"
