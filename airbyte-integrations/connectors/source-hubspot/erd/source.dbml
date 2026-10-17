@@ -1697,6 +1697,26 @@ Table "engagements_task_pipelines" {
     "updatedAt" string
 }
 
+Table "call_recordings" {
+    "call_id" string [pk]
+    "object_type" string
+    "recording_url" string
+    "file_name" string
+    "hs_createdate" string
+    "hs_lastmodifieddate" string
+    "archived" boolean
+}
+
+Table "meeting_recordings" {
+    "meeting_id" string [pk]
+    "object_type" string
+    "recording_url" string
+    "file_name" string
+    "hs_createdate" string
+    "hs_lastmodifieddate" string
+    "archived" boolean
+}
+
 Table "forms" {
     "id" string [pk]
     "name" string
@@ -3480,4 +3500,12 @@ Ref {
 
 Ref {
     "workflows"."originalAuthorUserId" <> "owners"."userId"
+}
+
+Ref {
+    "call_recordings"."call_id" - "engagements_calls"."id"
+}
+
+Ref {
+    "meeting_recordings"."meeting_id" - "engagements_meetings"."id"
 }
