@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.23 — 2026-10-17
+
+[#89029](https://github.com/airbytehq/airbyte/pull/89029) — `JdbcConnectionFactory` now redacts credential-looking parameters (password/secret/token/key-style keys, including inside `CustomProperties=(...)`, plus URL userinfo) from the JDBC URL it logs; the URL passed to the driver is unchanged. New public `redactJdbcUrl()` helper.
+
 ### 1.1.22 — 2026-10-16
 
 [#89040](https://github.com/airbytehq/airbyte/pull/89040) — Repo-wide reformat with ktfmt 0.65 (trailing commas on one-per-line parameter and argument lists, blank lines between declarations) and removal of SpotBugs suppressions that 4.10.5 on the K2 compiler no longer needs; no behaviour change.
