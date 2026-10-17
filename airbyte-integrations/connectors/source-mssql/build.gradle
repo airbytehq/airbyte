@@ -23,5 +23,5 @@ dependencies {
     // Used directly by src/test (there is no src/testFixtures here); declare it on the test
     // classpath instead of relying on the KGP < 2.0.10 leak of testFixtures deps into test.
     testImplementation 'org.testcontainers:mssqlserver:1.21.4'
-    testImplementation("io.mockk:mockk:1.12.0")
+    testImplementation("io.mockk:mockk:1.14.11")
 }
