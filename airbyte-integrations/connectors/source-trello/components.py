@@ -3,11 +3,12 @@
 #
 
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Iterable, Mapping, cast
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.core import Stream
 
 
@@ -23,21 +24,33 @@ class OrderIdsPartitionRouter(SubstreamPartitionRouter):
         for board_id in board_ids:
             yield StreamSlice(partition={"id": board_id}, cursor_slice={})
 
-    def read_all_boards(self, stream_boards: Stream, stream_organizations: Stream):
+    def read_all_boards(self, stream_boards: Stream | AbstractStream, stream_organizations: Stream | AbstractStream) -> Iterable[str]:
         """
         Method to get id of each board in the boards stream,
         get ids of boards associated with each organization in the organizations stream
         and yield each unique board id
         """
-        board_ids = set()
+        board_ids: set[str] = set()
 
-        for record in stream_boards.read_records(sync_mode=SyncMode.full_refresh):
-            if record["id"] not in board_ids:
-                board_ids.add(record["id"])
-                yield record["id"]
+        for record in self._read_parent_records(stream_boards):
+            board_id = cast(str, record["id"])
+            if board_id not in board_ids:
+                board_ids.add(board_id)
+                yield board_id
 
-        for record in stream_organizations.read_records(sync_mode=SyncMode.full_refresh):
-            for board_id in record["idBoards"]:
+        for record in self._read_parent_records(stream_organizations):
+            for board_id in cast(Iterable[str], record["idBoards"]):
                 if board_id not in board_ids:
                     board_ids.add(board_id)
                     yield board_id
+
+    @staticmethod
+    def _read_parent_records(stream: Stream | AbstractStream) -> Iterable[Mapping[str, object]]:
+        if isinstance(stream, Stream):
+            for record in stream.read_records(sync_mode=SyncMode.full_refresh):
+                yield cast(Mapping[str, object], record)
+            return
+
+        for partition in stream.generate_partitions():
+            for record in partition.read():
+                yield cast(Mapping[str, object], record)
