@@ -18,6 +18,7 @@ Connectors can be written in any language. However the most common languages are
 
 - Python 3.9 or higher
 - [Java 21](https://jdk.java.net/archive/)
+- [Kotlin 2.4](https://kotlinlang.org/) (K2 compiler) for JVM connectors built on the [Bulk CDK](https://github.com/airbytehq/airbyte/tree/master/airbyte-cdk/bulk)
 
 ## **Frontend**
 
