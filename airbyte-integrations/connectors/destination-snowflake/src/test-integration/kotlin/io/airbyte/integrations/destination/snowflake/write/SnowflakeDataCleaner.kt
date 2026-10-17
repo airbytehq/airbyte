@@ -26,9 +26,9 @@ object SnowflakeDataCleaner : DestinationCleaner {
             SnowflakeConfigurationFactory()
                 .make(
                     SnowflakeMigratingConfigurationSpecificationSupplier(
-                            Files.readString(CONFIG_PATH)
+                            Files.readString(CONFIG_PATH),
                         )
-                        .get()
+                        .get(),
                 )
         val dataSource =
             SnowflakeBeanFactory()
@@ -47,7 +47,7 @@ object SnowflakeDataCleaner : DestinationCleaner {
         val statement = connection.createStatement()
         val schemas =
             statement.executeQuery(
-                "SHOW SCHEMAS IN DATABASE ${config.database.toSnowflakeCompatibleName().quote()}"
+                "SHOW SCHEMAS IN DATABASE ${config.database.toSnowflakeCompatibleName().quote()}",
             )
         while (schemas.next()) {
             val schemaName = schemas.getString("name")
@@ -58,7 +58,7 @@ object SnowflakeDataCleaner : DestinationCleaner {
                     createdOn.toInstant().isBefore(Instant.now().minus(RETENTION_PERIOD))
             ) {
                 statement.execute(
-                    "DROP SCHEMA IF EXISTS \"${escapeJsonIdentifier(schemaName)}\" CASCADE"
+                    "DROP SCHEMA IF EXISTS \"${escapeJsonIdentifier(schemaName)}\" CASCADE",
                 )
             }
         }
@@ -70,7 +70,8 @@ object SnowflakeDataCleaner : DestinationCleaner {
             """SHOW TABLES
                     IN SCHEMA ${config.internalTableSchema?.toSnowflakeCompatibleName()?.quote()}
                     STARTS WITH 'TEST'
-                """.trimIndent()
+                """
+                .trimIndent()
         val tables = statement.executeQuery(tableSql)
         while (tables.next()) {
             val databaseName = tables.getString("database_name")
@@ -89,7 +90,8 @@ object SnowflakeDataCleaner : DestinationCleaner {
             """SHOW STAGES
                     IN SCHEMA ${config.internalTableSchema?.toSnowflakeCompatibleName()?.quote()} 
                     STARTS WITH '${STAGE_NAME_PREFIX}TEST'
-                """.trimIndent()
+                """
+                .trimIndent()
         val stages = statement.executeQuery(stagesSql)
         while (stages.next()) {
             val databaseName = stages.getString("database_name")

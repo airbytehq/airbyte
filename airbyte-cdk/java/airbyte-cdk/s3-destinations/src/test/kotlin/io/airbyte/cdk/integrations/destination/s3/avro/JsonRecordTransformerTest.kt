@@ -51,14 +51,14 @@ class JsonRecordTransformerTest {
                 transformer.mapRecordWithSchema(jsonRecord as ObjectNode, jsonSchema as ObjectNode)
             Assertions.assertEquals(
                 jsonRecord["object_without_schema"].toString(),
-                transformedRecord?.get("object_without_schema")?.asText()
+                transformedRecord?.get("object_without_schema")?.asText(),
             )
 
             val objWithSchemaExpected = jsonRecord["object_with_schema"]
             val objWithSchemaActual = transformedRecord?.get("object_with_schema")
             Assertions.assertEquals(
                 objWithSchemaExpected["nested_schemaless_object"].toString(),
-                objWithSchemaActual?.get("nested_schemaless_object")?.asText()
+                objWithSchemaActual?.get("nested_schemaless_object")?.asText(),
             )
 
             val arrayOfSchemalessExpected =
@@ -74,7 +74,7 @@ class JsonRecordTransformerTest {
             if (unionSchemalessNumericActual?.isTextual == true) {
                 Assertions.assertEquals(
                     unionSchemalessNumericExpected.toString(),
-                    unionSchemalessNumericActual.asText()
+                    unionSchemalessNumericActual.asText(),
                 )
                 sawUnionChoice += 1
             }
@@ -151,14 +151,15 @@ class JsonRecordTransformerTest {
         val avroSchemaOut = JsonSchemaAvroPreprocessor().mapSchema(jsonSchema as ObjectNode)
         val parquetRecordTransformer =
             JsonRecordParquetPreprocessor() // Use schema produced by AvroJsonSchemaPreprocessor
-        val avroRecordsOut =
-            jsonRecordsIn.map { avroRecordTransformer.mapRecordWithSchema(it, jsonSchema) }
+        val avroRecordsOut = jsonRecordsIn.map {
+            avroRecordTransformer.mapRecordWithSchema(it, jsonSchema)
+        }
 
         for ((index, jsonRecord) in avroRecordsOut.withIndex()) {
             val transformedRecord =
                 parquetRecordTransformer.mapRecordWithSchema(
                     jsonRecord,
-                    avroSchemaOut as ObjectNode
+                    avroSchemaOut as ObjectNode,
                 )
             Assertions.assertEquals(jsonExpectedOut[index], transformedRecord)
         }
@@ -169,26 +170,28 @@ class JsonRecordTransformerTest {
         val inputSchema =
             Jsons.deserialize(
                 """
-            {
-              "type": "object",
-              "properties": {
-                "foo": {},
-                "bar": {
-                  "type": "array",
-                  "items": {}
+                {
+                  "type": "object",
+                  "properties": {
+                    "foo": {},
+                    "bar": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  }
                 }
-              }
-            }
-            """.trimIndent()
+                """
+                    .trimIndent(),
             ) as ObjectNode
         val inputRecord =
             Jsons.deserialize(
                 """
-            {
-              "foo": {"a": 42},
-              "bar": [1, null, {}]
-            }
-            """.trimIndent()
+                {
+                  "foo": {"a": 42},
+                  "bar": [1, null, {}]
+                }
+                """
+                    .trimIndent(),
             )
 
         val avroMappedRecord =
@@ -204,9 +207,10 @@ class JsonRecordTransformerTest {
                   "foo": "{\"a\":42}",
                   "bar": ["1", null, "{}"]
                 }
-                """.trimIndent()
+                """
+                    .trimIndent(),
             ),
-            avroMappedRecord
+            avroMappedRecord,
         )
     }
 }
