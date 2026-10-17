@@ -1,0 +1,489 @@
+version: 7.28.2
+
+type: DeclarativeSource
+
+description: >-
+  Contentful is a headless content management system (CMS) that stores
+  structured content and delivers it through APIs. This connector reads
+  published content from one Contentful space and environment using the
+  read-only Content Delivery API: the content model (content types), entries,
+  assets, locales, and tags. Entries for every content type are synced into a
+  single entries stream; join entries.content_type_id to content_types.id to
+  split them by type. Draft (unpublished) content and deletions are not
+  captured.
+
+check:
+  type: CheckStream
+  stream_names:
+    - content_types
+
+definitions:
+  linked:
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+    HttpRequester:
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['cda_token'] }}"
+      error_handler:
+        type: DefaultErrorHandler
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            header: X-Contentful-RateLimit-Reset
+      request_parameters:
+        order: sys.updatedAt
+        locale: "{{ config['locale'] }}"
+
+streams:
+  - type: DeclarativeStream
+    name: content_types
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://cdn.contentful.com/spaces/{{ config['space_id']
+          }}/environments/{{ config.get('environment') or 'master'
+          }}/content_types
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          metadata:
+            type:
+              - object
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          sys:
+            type:
+              - object
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          fields:
+            type:
+              - array
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          displayField:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: "{{ record['sys']['id'] }}"
+            value_type: string
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - updated_at
+            value: "{{ record['sys']['updatedAt'] }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2015-01-01T00:00:00.000Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: entries
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://cdn.contentful.com/spaces/{{ config['space_id']
+          }}/environments/{{ config.get('environment') or 'master' }}/entries
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          $ref: "#/definitions/linked/HttpRequester/request_parameters"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          metadata:
+            type:
+              - object
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          sys:
+            type:
+              - object
+              - "null"
+          fields:
+            type:
+              - object
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          content_type_id:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: "{{ record['sys']['id'] }}"
+            value_type: string
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - updated_at
+            value: "{{ record['sys']['updatedAt'] }}"
+            value_type: string
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - content_type_id
+            value: >-
+              {{ record['sys'].get('contentType', {}).get('sys', {}).get('id')
+              }}
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2015-01-01T00:00:00.000Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_time_option:
+        type: RequestOption
+        field_name: sys.updatedAt[gte]
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: assets
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://cdn.contentful.com/spaces/{{ config['space_id']
+          }}/environments/{{ config.get('environment') or 'master' }}/assets
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          $ref: "#/definitions/linked/HttpRequester/request_parameters"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          metadata:
+            type:
+              - object
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          sys:
+            type:
+              - object
+              - "null"
+          fields:
+            type:
+              - object
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: "{{ record['sys']['id'] }}"
+            value_type: string
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - updated_at
+            value: "{{ record['sys']['updatedAt'] }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2015-01-01T00:00:00.000Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_time_option:
+        type: RequestOption
+        field_name: sys.updatedAt[gte]
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: locales
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://cdn.contentful.com/spaces/{{ config['space_id']
+          }}/environments/{{ config.get('environment') or 'master' }}/locales
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          sys:
+            type:
+              - object
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          default:
+            type:
+              - boolean
+              - "null"
+          fallbackCode:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: "{{ record['sys']['id'] }}"
+            value_type: string
+  - type: DeclarativeStream
+    name: tags
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://cdn.contentful.com/spaces/{{ config['space_id']
+          }}/environments/{{ config.get('environment') or 'master' }}/tags
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          sys:
+            type:
+              - object
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: "{{ record['sys']['id'] }}"
+            value_type: string
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - cda_token
+      - space_id
+    properties:
+      locale:
+        type: string
+        description: >-
+          Locale code to request for entry/asset fields (e.g. en-US). Leave
+          blank to use the space's default locale.
+        order: 3
+        title: Locale
+      space_id:
+        type: string
+        description: Contentful space ID.
+        order: 1
+        title: Space ID
+      cda_token:
+        type: string
+        description: Contentful Content Delivery API (read-only) access token.
+        order: 0
+        title: Content Delivery API token
+        airbyte_secret: true
+      start_date:
+        type: string
+        description: >-
+          Earliest sys.updatedAt to sync on the first incremental run (ISO
+          8601).
+        order: 4
+        title: Start Date
+        format: date-time
+        default: "2015-01-01T00:00:00.000Z"
+      environment:
+        type: string
+        description: Contentful environment. Defaults to master.
+        order: 2
+        title: Environment
+        default: master
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    content_types:
+      streamHash: b575569163eca20954339ad6d60f07334e21eca8
+    entries:
+      streamHash: 559221b2e7275e1123c233baf726825d06deaca5
+    assets:
+      streamHash: ab5de821578d1a04ee03b9240ccb6655ad6b8b9f
+    locales:
+      streamHash: 52274057f4d7243028e1f0fc2b9e8ef420345cdf
+    tags:
+      streamHash: 63e13c8cb148f2e85fccea6d6e715e60fd6e0739
