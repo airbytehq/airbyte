@@ -60,13 +60,13 @@ object PolarisEnvironment {
     private val GCS_SERVICE_ACCOUNT_CREDS: String by lazy {
         if (!GCS_SA_FILE.exists()) {
             error(
-                "Service account file not found: ${GCS_SA_FILE.absolutePath}. Please update the file with your GCS credentials."
+                "Service account file not found: ${GCS_SA_FILE.absolutePath}. Please update the file with your GCS credentials.",
             )
         }
         val content = GCS_SA_FILE.readText().trim()
         if (content.contains("TODO")) {
             error(
-                "Please update ${GCS_SA_FILE.absolutePath} with your actual GCS service account credentials"
+                "Please update ${GCS_SA_FILE.absolutePath} with your actual GCS service account credentials",
             )
         }
         // Escape the JSON for embedding in a JSON string
@@ -142,7 +142,8 @@ object PolarisEnvironment {
           "gcp_location" : "$GCS_BUCKET_LOCATION",
           "main_branch_name": "main"
         }
-        """.trimIndent()
+        """
+                .trimIndent()
 
         return a
     }
@@ -158,7 +159,7 @@ object PolarisEnvironment {
                             .timeout(Duration.ofSeconds(3))
                             .GET()
                             .build(),
-                        HttpResponse.BodyHandlers.discarding()
+                        HttpResponse.BodyHandlers.discarding(),
                     )
                 if (res.statusCode() in 200..299) return
                 lastErr = RuntimeException("HTTP ${res.statusCode()}")
@@ -274,7 +275,8 @@ object PolarisEnvironment {
               }
             }
           }
-        """.trimIndent()
+        """
+                .trimIndent()
 
         val res = postJsonAdmin("/catalogs", body)
         when (res.statusCode()) {
@@ -295,7 +297,7 @@ object PolarisEnvironment {
                 "TABLE_WRITE_DATA",
                 "NAMESPACE_LIST",
                 "NAMESPACE_CREATE",
-                "NAMESPACE_READ_PROPERTIES"
+                "NAMESPACE_READ_PROPERTIES",
             )
         required.forEach { priv ->
             val body = """{"grant":{"type":"catalog","privilege":"$priv"}}"""
@@ -313,7 +315,7 @@ object PolarisEnvironment {
         val createPrincipalRes = postJsonAdmin("/principals", """{"name":"$principalName"}""")
         if (createPrincipalRes.statusCode() !in 200..299) {
             error(
-                "Principal create failed: ${createPrincipalRes.statusCode()} ${createPrincipalRes.body()}"
+                "Principal create failed: ${createPrincipalRes.statusCode()} ${createPrincipalRes.body()}",
             )
         }
         val id =
@@ -344,7 +346,7 @@ object PolarisEnvironment {
             putJsonAdmin("/principal-roles/$PRINCIPAL_ROLE/catalog-roles/$CATALOG_NAME", linkBody)
         if (linkRes.statusCode() !in listOf(200, 201, 204, 409)) {
             error(
-                "Link catalog-role -> principal-role failed: ${linkRes.statusCode()} ${linkRes.body()}"
+                "Link catalog-role -> principal-role failed: ${linkRes.statusCode()} ${linkRes.body()}",
             )
         }
 
@@ -356,7 +358,7 @@ object PolarisEnvironment {
         val attachRes = putJsonAdmin("/principals/$principalName/principal-roles", attachBody)
         if (attachRes.statusCode() !in listOf(200, 201, 204, 409)) {
             error(
-                "Attach principal-role -> principal failed: ${attachRes.statusCode()} ${attachRes.body()}"
+                "Attach principal-role -> principal failed: ${attachRes.statusCode()} ${attachRes.body()}",
             )
         }
     }
