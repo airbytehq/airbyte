@@ -31,7 +31,9 @@ class MsSqlServerCdcPartitionReaderTest :
     private val config: MsSqlServerSourceConfiguration by lazy {
         MsSqlServerSourceConfigurationFactory()
             .make(
-                MsSqlServerContainerFactory.config(container).also { it.setIncrementalValue(Cdc()) }
+                MsSqlServerContainerFactory.config(container).also {
+                    it.setIncrementalValue(Cdc())
+                },
             )
     }
 
@@ -54,7 +56,7 @@ class MsSqlServerCdcPartitionReaderTest :
         Assumptions.assumeTrue(
             false,
             "The CDK integrationTest expects a heartbeat-triggered close; on SQL Server the last " +
-                "captured change itself reaches the target LSN"
+                "captured change itself reaches the target LSN",
         )
     }
 
@@ -63,7 +65,7 @@ class MsSqlServerCdcPartitionReaderTest :
         execute("CREATE TABLE dbo.tbl (id INT IDENTITY(1,1) PRIMARY KEY, v INT)")
         execute(
             "EXEC sys.sp_cdc_enable_table @source_schema = 'dbo', @source_name = 'tbl', " +
-                "@role_name = NULL, @capture_instance = 'dbo_tbl'"
+                "@role_name = NULL, @capture_instance = 'dbo_tbl'",
         )
         // The cold start offset is sys.fn_cdc_get_max_lsn(), which is NULL until the capture job
         // has run once.
