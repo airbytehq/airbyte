@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.jetbrains.annotations.NotNull;
@@ -42,6 +43,12 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   static final String MONGODB_POST_IMAGE_KEY = "capture.mode.full.update.type";
   static final String MONGODB_POST_IMAGE_VALUE = "post_image";
   static final String DOUBLE_QUOTES_PATTERN = "\"";
+  /**
+   * Matches the userinfo section (everything between the scheme and the last '@' before the host
+   * list) of a MongoDB connection string, e.g. {@code user:pass@} in
+   * {@code mongodb://user:pass@host}.
+   */
+  static final Pattern CONNECTION_STRING_USERINFO_PATTERN = Pattern.compile("^([a-zA-Z][a-zA-Z0-9+.-]*://)[^/?#]*@");
   static final String MONGODB_AUTHSOURCE_KEY = "mongodb.authsource";
   static final String MONGODB_CONNECTION_MODE_KEY = "mongodb.connection.mode";
   static final String MONGODB_CONNECTION_MODE_VALUE = "sharded";
@@ -142,17 +149,22 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
    * removing any values accidentally copied and pasted from the MongoDB Atlas UI.
    *
    * @param config The connector configuration.
-   * @return The connection string.
+   * @return The connection string. When the dedicated username and password configuration fields are
+   *         set, any URI-embedded userinfo (such as the Atlas {@code <db_username>:<db_password>@}
+   *         template) is removed so that it cannot override the configured credentials in the MongoDB
+   *         client or Debezium. Otherwise only the literal {@code <username>:<password>@} placeholder
+   *         is removed, so that credentials supplied solely through the connection string keep
+   *         working.
    */
   public static String buildConnectionString(final JsonNode config) {
     final String connectionString = config.get(CONNECTION_STRING_CONFIGURATION_KEY)
         .asText()
         .trim()
-        .replaceAll(DOUBLE_QUOTES_PATTERN, "")
-        .replaceAll(CREDENTIALS_PLACEHOLDER, "");
-    final StringBuilder builder = new StringBuilder();
-    builder.append(connectionString);
-    return builder.toString();
+        .replaceAll(DOUBLE_QUOTES_PATTERN, "");
+    if (config.has(USERNAME_CONFIGURATION_KEY) && config.has(PASSWORD_CONFIGURATION_KEY)) {
+      return CONNECTION_STRING_USERINFO_PATTERN.matcher(connectionString).replaceFirst("$1");
+    }
+    return connectionString.replaceAll(CREDENTIALS_PLACEHOLDER, "");
   }
 
 }

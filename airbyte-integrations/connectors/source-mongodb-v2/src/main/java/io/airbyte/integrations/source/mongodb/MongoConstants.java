@@ -48,6 +48,9 @@ public class MongoConstants {
   public static final String CAPTURE_MODE_LOOKUP_OPTION = "Lookup";
   public static final String CAPTURE_MODE_POST_IMAGE_OPTION = "Post Image";
 
+  public static final String AUTHENTICATION_FAILED_ERROR_MESSAGE = "Authentication failed. Please check the source's configured credentials.";
+  public static final String DEBEZIUM_AUTHENTICATION_FAILURE_MESSAGE_FRAGMENT = "Exception authenticating MongoCredential";
+
   public static final int BSON_OBJECT_TOO_LARGE_ERROR_CODE = 10334;
   public static final String BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE =
       "A document in your MongoDB database exceeds the 16MB BSON size limit when processed through CDC (Change Data Capture) change streams. " +
