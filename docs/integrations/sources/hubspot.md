@@ -92,6 +92,7 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 | `leads`                     | `crm.objects.leads.read`, `crm.schemas.leads.read`                                                   |
 | `list_memberships`          | `crm.lists.read`                                                                                             |
 | `line_items`                | `e-commerce`                                                                                                 |
+| `listings`                  | `crm.objects.listings.read`                                                                                  |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
 | `contacts_property_history` | `crm.objects.contacts.read`                                                                                  |
@@ -295,6 +296,7 @@ The HubSpot source connector supports the following streams:
 - [Leads](https://developers.hubspot.com/docs/api/crm/leads) \(Incremental\)
 - [List Memberships](https://developers.hubspot.com/docs/reference/api/crm/lists#retrieve-records-with-list-memberships) \(Full Refresh\)
 - [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
+- [Listings](https://developers.hubspot.com/docs/api-reference/latest/crm/objects/listings/guide) \(Incremental\)
 - [Marketing Emails](https://developers.hubspot.com/docs/api-reference/marketing-marketing-emails-v3-v3/marketing-emails/get-marketing-v3-emails-) \(Incremental\)
 - [Owners](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental\)
 - [Owners Archived](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental)
@@ -505,6 +507,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.13.0 | 2026-10-14 | [88970](https://github.com/airbytehq/airbyte/pull/88970) | Add `listings` stream |
 | 6.12.1 | 2026-10-13 | [87204](https://github.com/airbytehq/airbyte/pull/87204) | Update dependencies |
 | 6.12.0 | 2026-09-12 | [85854](https://github.com/airbytehq/airbyte/pull/85854) | Add the `flows` stream, which syncs full workflow definitions (action graph, enrollment criteria, data sources, schedules) from HubSpot's Automation v4 Flows API. Each flow summary from `GET /automation/v4/flows` is enriched with `GET /automation/v4/flows/{flowId}`. Requires the `automation` scope and is gated behind `enable_experimental_streams` because the upstream API is a HubSpot developer preview. The legacy `workflows` stream is unchanged. |
 | 6.11.0 | 2026-10-01 | [87604](https://github.com/airbytehq/airbyte/pull/87604) | Add `deals_property_history_properties`, `contacts_property_history_properties`, and `companies_property_history_properties` config options to limit property history streams to a configured list of properties |
