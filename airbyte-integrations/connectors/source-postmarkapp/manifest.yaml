@@ -1,4 +1,4 @@
-version: 5.10.2
+version: 7.32.0
 
 type: DeclarativeSource
 
@@ -8,6 +8,109 @@ check:
     - message-streams
 
 definitions:
+  offset_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: offset
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: count
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 500
+      inject_on_first_request: true
+  incremental_cursor:
+    type: DatetimeBasedCursor
+    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    # Postmark timestamps can contain seven fractional digits; each trailing-digit format handles them with strptime's six-digit limit.
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+      - "%Y-%m-%dT%H:%M:%S.%f0%z"
+      - "%Y-%m-%dT%H:%M:%S.%f1%z"
+      - "%Y-%m-%dT%H:%M:%S.%f2%z"
+      - "%Y-%m-%dT%H:%M:%S.%f3%z"
+      - "%Y-%m-%dT%H:%M:%S.%f4%z"
+      - "%Y-%m-%dT%H:%M:%S.%f5%z"
+      - "%Y-%m-%dT%H:%M:%S.%f6%z"
+      - "%Y-%m-%dT%H:%M:%S.%f7%z"
+      - "%Y-%m-%dT%H:%M:%S.%f8%z"
+      - "%Y-%m-%dT%H:%M:%S.%f9%z"
+      - "%Y-%m-%dT%H:%M:%S%z"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ (now_utc() - duration('PT5M')).strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    step: "PT{{ config.get('slice_window_minutes') or 1440 }}M"
+    cursor_granularity: PT1S
+    # State moves to the latest record's timestamp; re-reading the hour before it picks up records Postmark indexed late.
+    lookback_window: PT1H
+  windowed_request_parameters:
+    # Postmark filters use US Eastern wall time without an offset: EDT from the 2nd Sunday of March 07:00Z to the 1st Sunday of
+    # November 06:00Z, EST otherwise. Both templates convert with the same rule; they only differ in how they handle the November
+    # fall-back, when 01:00-02:00 Eastern covers both 05:00-06:00Z and 06:00-07:00Z and Postmark may read it as either hour.
+    # fromdate must not start after the window under either reading, so a start in 05:00-06:00Z is moved to 04:59:59Z (00:59:59);
+    # todate must not end before it, so an end in 06:00-07:00Z is moved to 07:00Z (02:00:00). Everything else converts exactly.
+    # The record filter drops the extra records. A request touching that hour can't be narrower than it, however small the window.
+    # todate converts end_time + 1s, so it never lands in the 02:00-03:00 hour skipped in March.
+    fromdate: >-
+      {%- set t = str_to_datetime(stream_interval.start_time) -%}
+      {%- set march = t.replace(month=3, day=1, hour=7, minute=0, second=0, microsecond=0) -%}
+      {%- set november = t.replace(month=11, day=1, hour=6, minute=0, second=0, microsecond=0) -%}
+      {%- set dst_start = march + duration('P' ~ ((6 - march.weekday()) % 7 + 7) ~ 'D') -%}
+      {%- set dst_end = november + duration('P' ~ ((6 - november.weekday()) % 7) ~ 'D') -%}
+      {%- set t = dst_end - duration('PT1H1S') if dst_end - duration('PT1H') <= t < dst_end else t -%}
+      {{ format_datetime(t - duration('PT4H' if dst_start <= t < dst_end else 'PT5H'), '%Y-%m-%dT%H:%M:%S') }}
+    todate: >-
+      {%- set t = str_to_datetime(stream_interval.end_time) + duration('PT1S') -%}
+      {%- set march = t.replace(month=3, day=1, hour=7, minute=0, second=0, microsecond=0) -%}
+      {%- set november = t.replace(month=11, day=1, hour=6, minute=0, second=0, microsecond=0) -%}
+      {%- set dst_start = march + duration('P' ~ ((6 - march.weekday()) % 7 + 7) ~ 'D') -%}
+      {%- set dst_end = november + duration('P' ~ ((6 - november.weekday()) % 7) ~ 'D') -%}
+      {%- set t = dst_end + duration('PT1H') if dst_end <= t < dst_end + duration('PT1H') else t -%}
+      {{ format_datetime(t - duration('PT4H' if dst_start <= t < dst_end else 'PT5H'), '%Y-%m-%dT%H:%M:%S') }}
+  window_record_filter:
+    type: RecordFilter
+    # Adjacent windows share their boundary second (fromdate and todate are both inclusive); keep each record only in the window containing it.
+    condition: "{{ str_to_datetime(stream_slice.start_time) <= str_to_datetime(record[parameters.window_cursor_field]) < str_to_datetime(stream_slice.end_time) + duration('PT1S') }}"
+  error_handler:
+    type: DefaultErrorHandler
+    # Backoff is 5 * 2^attempt (10s, 20s, ...); the CDK caps total backoff at 600s, so more than 5 retries is never reached.
+    max_retries: 5
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - $ref: "#/definitions/rejected_request_filter"
+  rejected_request_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    http_codes: [422]
+    error_message: "Postmark rejected the request (ErrorCode {{ response.ErrorCode }}): {{ response.Message }}"
+  windowed_error_handler:
+    # Postmark searches return at most 10,000 records (count + offset <= 10,000), so a window that matches more is split in half
+    # and each half read in turn; the CDK stops after 10 splits, so a window can shrink to about 1/1000 of slice_window_minutes.
+    # TotalCount on the first page triggers the split before any record of the window is emitted; the offset error is a fallback
+    # in case the count grows while paging. ErrorCode 700 (messages) and 1000 (bounces) cover every query validation error on
+    # their endpoint, so they only split when Postmark names the offset.
+    $ref: "#/definitions/error_handler"
+    response_filters:
+      - type: HttpResponseFilter
+        action: SPLIT_REQUEST_WINDOW
+        predicate: "{{ (response.TotalCount or 0) >= 10000 }}"
+      - type: HttpResponseFilter
+        action: SPLIT_REQUEST_WINDOW
+        predicate: "{{ response.ErrorCode in [700, 1000] and 'offset' in (response.Message or '') | lower }}"
+      - $ref: "#/definitions/rejected_request_filter"
+  request_window_splitting:
+    type: RequestWindowSplitting
+    failure_message: Lower the Slice Window (Minutes) setting so that each request covers less time.
   streams:
     deliverystats:
       type: DeclarativeStream
@@ -20,10 +123,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /deliverystats
           http_method: GET
-          request_parameters:
-            count: "500"
-          request_body_json:
-            Accept: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -31,18 +130,7 @@ definitions:
             field_path:
               - Bounces
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          $ref: "#/definitions/offset_paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -58,10 +146,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /message-streams
           http_method: GET
-          request_parameters:
-            count: "500"
-          request_body_json:
-            Accept: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -69,18 +153,7 @@ definitions:
             field_path:
               - MessageStreams
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          $ref: "#/definitions/offset_paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -96,10 +169,6 @@ definitions:
           $ref: "#/definitions/account_base_requester"
           path: /domains
           http_method: GET
-          request_parameters:
-            count: "500"
-          request_body_json:
-            Accept: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -107,18 +176,7 @@ definitions:
             field_path:
               - Domains
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          $ref: "#/definitions/offset_paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -128,35 +186,33 @@ definitions:
       name: messages
       primary_key:
         - MessageID
+      incremental_sync:
+        $ref: "#/definitions/incremental_cursor"
+        cursor_field: ReceivedAt
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: /messages/outbound
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/windowed_error_handler"
           request_parameters:
-            count: "500"
-          request_body_json:
-            Accept: application/json
+            $ref: "#/definitions/windowed_request_parameters"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - Messages
+          record_filter:
+            $ref: "#/definitions/window_record_filter"
+            $parameters:
+              window_cursor_field: ReceivedAt
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          $ref: "#/definitions/offset_paginator"
+        request_window_splitting:
+          $ref: "#/definitions/request_window_splitting"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -166,35 +222,33 @@ definitions:
       name: bounces
       primary_key:
         - ID
+      incremental_sync:
+        $ref: "#/definitions/incremental_cursor"
+        cursor_field: BouncedAt
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: /bounces
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/windowed_error_handler"
           request_parameters:
-            count: "500"
-          request_body_json:
-            Accept: application/json
+            $ref: "#/definitions/windowed_request_parameters"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - Bounces
+          record_filter:
+            $ref: "#/definitions/window_record_filter"
+            $parameters:
+              window_cursor_field: BouncedAt
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          $ref: "#/definitions/offset_paginator"
+        request_window_splitting:
+          $ref: "#/definitions/request_window_splitting"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -210,10 +264,6 @@ definitions:
           $ref: "#/definitions/account_base_requester"
           path: /servers
           http_method: GET
-          request_parameters:
-            count: "500"
-          request_body_json:
-            Accept: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -221,18 +271,7 @@ definitions:
             field_path:
               - Servers
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+          $ref: "#/definitions/offset_paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -240,6 +279,10 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.postmarkapp.com
+    error_handler:
+      $ref: "#/definitions/error_handler"
+    request_headers:
+      Accept: application/json
     authenticator:
       type: ApiKeyAuthenticator
       api_token: "{{ config[\"X-Postmark-Server-Token\"] }}"
@@ -250,6 +293,10 @@ definitions:
   account_base_requester:
     type: HttpRequester
     url_base: https://api.postmarkapp.com
+    error_handler:
+      $ref: "#/definitions/error_handler"
+    request_headers:
+      Accept: application/json
     authenticator:
       type: ApiKeyAuthenticator
       api_token: "{{ config[\"X-Postmark-Account-Token\"] }}"
@@ -287,6 +334,22 @@ spec:
         order: 1
         title: X-Postmark-Account-Token
         airbyte_secret: true
+      start_date:
+        type: string
+        title: Start Date
+        description: UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ from which to replicate the messages and bounces streams. Defaults to 365 days ago, Postmark's maximum message retention period.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples: ["2025-01-01T00:00:00Z"]
+        format: date-time
+        order: 2
+      slice_window_minutes:
+        type: integer
+        title: Slice Window (Minutes)
+        description: Length in minutes of each time window requested for the messages and bounces streams. Postmark returns at most 10,000 records per search, so a window that matches more is split in half, up to 10 times (to about 1/1000 of this value). Lower this value if a sync fails because a window could not be split small enough, or to save progress more often. Defaults to 1440 (one day).
+        minimum: 1
+        maximum: 10080
+        examples: [1440, 60, 10080]
+        order: 3
     additionalProperties: true
 
 metadata:
