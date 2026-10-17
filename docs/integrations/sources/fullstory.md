@@ -77,6 +77,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.2.25 | 2026-10-13 | [78687](https://github.com/airbytehq/airbyte/pull/78687) | Update dependencies |
 | 0.2.24 | 2026-10-07 | [88221](https://github.com/airbytehq/airbyte/pull/88221) | Fix settings streams returning no records, fix `webhooks` extraction, apply pagination to `segments`, `operations` and `webhooks` |
 | 0.2.23 | 2025-05-24 | [60356](https://github.com/airbytehq/airbyte/pull/60356) | Update dependencies |
 | 0.2.22 | 2025-05-10 | [59932](https://github.com/airbytehq/airbyte/pull/59932) | Update dependencies |
