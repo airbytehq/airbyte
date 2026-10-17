@@ -10,7 +10,7 @@ class JdbcUrlRedactionTest {
         Assertions.assertEquals(
             "jdbc:ns://host.example:1708;ServerDataSource=NetSuite2.com;encrypted=1;NegotiateSSLClose=false;CustomProperties=(AccountID=TSTACCT;RoleID=5;OAuth2Token=****)",
             redactJdbcUrl(
-                "jdbc:ns://host.example:1708;ServerDataSource=NetSuite2.com;encrypted=1;NegotiateSSLClose=false;CustomProperties=(AccountID=TSTACCT;RoleID=5;OAuth2Token=fake-oauth2-token-value)"
+                "jdbc:ns://host.example:1708;ServerDataSource=NetSuite2.com;encrypted=1;NegotiateSSLClose=false;CustomProperties=(AccountID=TSTACCT;RoleID=5;OAuth2Token=fake-oauth2-token-value)",
             ),
         )
     }
@@ -20,7 +20,7 @@ class JdbcUrlRedactionTest {
         Assertions.assertEquals(
             "jdbc:ns://host.example:1708;ServerDataSource=NetSuite2.com;encrypted=1;NegotiateSSLClose=false;CustomProperties=(OAuth2Token=****;AccountID=TSTACCT;RoleID=5)",
             redactJdbcUrl(
-                "jdbc:ns://host.example:1708;ServerDataSource=NetSuite2.com;encrypted=1;NegotiateSSLClose=false;CustomProperties=(OAuth2Token=fake-oauth2-token-value;AccountID=TSTACCT;RoleID=5)"
+                "jdbc:ns://host.example:1708;ServerDataSource=NetSuite2.com;encrypted=1;NegotiateSSLClose=false;CustomProperties=(OAuth2Token=fake-oauth2-token-value;AccountID=TSTACCT;RoleID=5)",
             ),
         )
     }
@@ -30,7 +30,7 @@ class JdbcUrlRedactionTest {
         Assertions.assertEquals(
             "jdbc:postgresql://host:5432/db?user=u&password=****&sslmode=require&sslpassword=****",
             redactJdbcUrl(
-                "jdbc:postgresql://host:5432/db?user=u&password=p1&sslmode=require&sslpassword=p2"
+                "jdbc:postgresql://host:5432/db?user=u&password=p1&sslmode=require&sslpassword=p2",
             ),
         )
     }

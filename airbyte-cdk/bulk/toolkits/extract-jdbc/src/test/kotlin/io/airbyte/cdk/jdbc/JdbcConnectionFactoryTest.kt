@@ -45,7 +45,7 @@ class JdbcConnectionFactoryTest {
                     null,
                     null,
                     false,
-                    Property.EMPTY_ARRAY
+                    Property.EMPTY_ARRAY,
                 ) {
                 val messages = mutableListOf<String>()
 
@@ -66,7 +66,7 @@ class JdbcConnectionFactoryTest {
             val configWithSecret =
                 config.copy(
                     jdbcUrlFmt =
-                        "${config.jdbcUrlFmt};CustomProperties=(AccountID=TSTACCT;OAuth2Token=fake-oauth2-token-value)"
+                        "${config.jdbcUrlFmt};CustomProperties=(AccountID=TSTACCT;OAuth2Token=fake-oauth2-token-value)",
                 )
 
             runCatching { JdbcConnectionFactory(configWithSecret).get() }
