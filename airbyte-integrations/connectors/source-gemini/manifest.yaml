@@ -1,0 +1,349 @@
+version: 7.28.2
+
+type: DeclarativeSource
+
+description: >-
+  Google Gemini for Workspace source connector. Syncs Gemini in Google Workspace
+  activity from the Google Workspace Admin SDK Reports API
+  (gemini_in_workspace_apps application, feature_utilization events). Admins can
+  use it to track Gemini feature adoption and usage across Workspace apps such
+  as Gmail, Docs, Sheets, Slides and Meet, and to support auditing and
+  governance.
+
+
+  Stream: activity_events (incremental, primary key: time + id). Records include
+  the actor (email, profile ID, caller type, application info), events and their
+  parameters, resource IDs, and an isAgenticAction flag.
+
+
+  Authentication: OAuth 2.0 with a refresh token (scopes:
+  admin.reports.audit.readonly and admin.reports.usage.readonly). Requires a
+  Google Workspace admin with access to the Reports API.
+
+
+  Sync behavior: incremental on time in 1-day slices with a 1-day lookback
+  window. The Reports API only retains 180 days of data, so the default start is
+  180 days ago and earlier start times are moved forward to that limit. The
+  default end is the start of the current UTC day, so only complete days are
+  synced. Retries on 429, 500, 502, 503 and 504 with exponential backoff. The
+  ipAddress, networkInfo, resourceDetails, etag and kind fields are removed from
+  records.
+
+check:
+  type: CheckStream
+  stream_names:
+    - activity_events
+
+streams:
+  - type: DeclarativeStream
+    name: activity_events
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: pageToken
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response['nextPageToken'] }}"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://admin.googleapis.com/admin/reports/v1/activity/users/all/applications/gemini_in_workspace_apps
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - https://www.googleapis.com/auth/admin.reports.audit.readonly
+            - https://www.googleapis.com/auth/admin.reports.usage.readonly
+          client_id: "{{ config['client_id'] }}"
+          grant_type: refresh_token
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
+          client_id_name: client_id
+          expires_in_name: expires_in
+          grant_type_name: grant_type
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          token_refresh_endpoint: https://oauth2.googleapis.com/token
+          send_refresh_request_as_query_params: false
+          access_token_name: ""
+          token_expiry_date: ""
+          token_expiry_date_format: ""
+          refresh_token_error_key: ""
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 500
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 502
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 503
+              error_message_contains: ""
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 504
+              error_message_contains: ""
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+              jitter_range_in_seconds: null
+        request_parameters:
+          eventName: feature_utilization
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+    primary_key:
+      - time
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - time
+          - id
+        properties:
+          id:
+            type: object
+            properties:
+              time:
+                type:
+                  - string
+                  - "null"
+              customerId:
+                type:
+                  - string
+                  - "null"
+              applicationName:
+                type:
+                  - string
+                  - "null"
+              uniqueQualifier:
+                type:
+                  - string
+                  - "null"
+          time:
+            type: string
+          actor:
+            type:
+              - object
+              - "null"
+            properties:
+              email:
+                type:
+                  - string
+                  - "null"
+              profileId:
+                type:
+                  - string
+                  - "null"
+              callerType:
+                type:
+                  - string
+                  - "null"
+              applicationInfo:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  impersonation:
+                    type:
+                      - boolean
+                      - "null"
+                  oauthClientId:
+                    type:
+                      - string
+                      - "null"
+                  applicationName:
+                    type:
+                      - string
+                      - "null"
+          events:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                parameters:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                resourceIds:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          isAgenticAction:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - time
+            value: "{{ record['id'].get('time')  }}"
+            value_type: string
+      - type: RemoveFields
+        field_pointers:
+          - - resourceDetails
+          - - etag
+          - - ipAddress
+          - - networkInfo
+          - - kind
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: time
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{  config['end_time'] or  (today_utc() -
+          duration('PT0.001S')).strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {{ config['start_time'] or (today_utc() -
+          duration('P180D')).strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}
+        min_datetime: >-
+          {{ (today_utc() - duration('P180D')).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+          }}
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      end_time_option:
+        type: RequestOption
+        field_name: endTime
+        inject_into: request_parameter
+      lookback_window: P1D
+      start_time_option:
+        type: RequestOption
+        field_name: startTime
+        inject_into: request_parameter
+      cursor_granularity: PT0.001S
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      partition_field_end: ""
+      partition_field_start: ""
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token
+    properties:
+      end_time:
+        type: string
+        description: >-
+          End of the report time range in RFC 3339 format  (e.g.
+          2010-10-28T10:26:35.000Z). If not provided, defaults to the  start of
+          the current day (00:00:00 UTC), meaning only complete  days up to
+          yesterday are synced. The default is derived from  today_utc()
+          (midnight UTC, start-of-day), not now_utc() (the current  timestamp),
+          so the nominal minus-1ms is a no-op against that  start-of-day base
+          and no partial same-day activity is included.
+        order: 5
+        title: End Time
+        pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      start_time:
+        type: string
+        description: >-
+          Start of the report time range in RFC 3339 format (e.g.
+          2010-10-28T10:26:35.000Z). The API only allows data from the  last 180
+          days, so earlier dates are automatically adjusted forward  to stay
+          within that window. If not provided, defaults to the start  of the day
+          (00:00:00 UTC) 180 days before the current date, syncing  the maximum
+          available history in whole days.
+        order: 4
+        title: Start Time
+        pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      client_access_token:
+        type: string
+        order: 3
+        title: Access token
+        airbyte_hidden: true
+        airbyte_secret: true
+      client_refresh_token:
+        type: string
+        order: 2
+        title: Refresh token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    activity_events:
+      isStale: false
+      hasRecords: true
+      streamHash: b53af51eb3f4628b8a97b12f30bd9fd15c3a3256
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema: {}
