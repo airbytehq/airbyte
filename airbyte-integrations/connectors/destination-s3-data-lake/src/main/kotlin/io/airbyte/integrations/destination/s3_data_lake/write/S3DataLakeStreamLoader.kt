@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.write
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta
@@ -26,7 +25,6 @@ import org.apache.iceberg.types.Types
 
 private val logger = KotlinLogging.logger {}
 
-@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class S3DataLakeStreamLoader(
     private val icebergConfiguration: S3DataLakeConfiguration,
     override val stream: DestinationStream,
@@ -98,10 +96,6 @@ class S3DataLakeStreamLoader(
         }
     }
 
-    @SuppressFBWarnings(
-        "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
-        "something about the `table` lateinit var is confusing spotbugs"
-    )
     override suspend fun start() {
         val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
@@ -185,10 +179,6 @@ class S3DataLakeStreamLoader(
         removeStagingBranch()
     }
 
-    @SuppressFBWarnings(
-        "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
-        justification = "Kotlin lateinit table access confuses spotbugs"
-    )
     private fun removeStagingBranch() {
         if (!this::table.isInitialized || !stagingBranchCreated) {
             return

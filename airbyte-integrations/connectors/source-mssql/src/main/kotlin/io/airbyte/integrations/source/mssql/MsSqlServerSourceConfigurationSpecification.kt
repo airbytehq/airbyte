@@ -277,7 +277,6 @@ data object MsSqlServerEncryptionRequiredTrustServerCertificateConfigurationSpec
 
 @JsonSchemaTitle("Encrypted (verify certificate)")
 @JsonSchemaDescription("Verify and use the certificate provided by the server.")
-@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslVerifyCertificate : EncryptionSpecification {
     @JsonProperty("hostNameInCertificate")
     @JsonSchemaTitle("Host Name In Certificate")

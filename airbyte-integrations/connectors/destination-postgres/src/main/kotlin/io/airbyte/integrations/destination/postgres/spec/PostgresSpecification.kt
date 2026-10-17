@@ -15,7 +15,6 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.AIRBYTE_CLOUD_ENV
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
@@ -46,7 +45,6 @@ sealed class PostgresSpecification : ConfigurationSpecification() {
 
 @Singleton
 @JsonSchemaTitle("Postgres Destination Specification")
-@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
 @Requires(notEnv = [AIRBYTE_CLOUD_ENV])
 class PostgresSpecificationOss : PostgresSpecification() {
     @get:JsonSchemaTitle("Host")
@@ -196,7 +194,6 @@ class PostgresSpecificationOss : PostgresSpecification() {
 
 @Singleton
 @JsonSchemaTitle("Postgres Destination Specification")
-@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
 @Requires(env = [AIRBYTE_CLOUD_ENV])
 class PostgresSpecificationCloud : PostgresSpecification() {
     @get:JsonSchemaTitle("Host")
