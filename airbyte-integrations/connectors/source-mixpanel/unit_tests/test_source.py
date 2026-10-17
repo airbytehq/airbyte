@@ -32,6 +32,28 @@ def test_check_connection(requests_mock, check_connection_url, config_raw, respo
     assert ok == expect_success
 
 
+@pytest.mark.parametrize(
+    "selected_streams",
+    [
+        pytest.param(["export"], id="export_only"),
+        pytest.param(["annotations"], id="declarative_stream_only"),
+    ],
+)
+def test_check_connection_with_filtered_catalog(requests_mock, config_raw, selected_streams):
+    requests_mock.get("https://mixpanel.com/api/query/cohorts/list", status_code=200, json=[])
+    config = {
+        **config_raw,
+        "start_date": "2024-01-25T00:00:00Z",
+        "end_date": "2024-02-25T00:00:00Z",
+        "streams": selected_streams,
+    }
+
+    ok, error = SourceMixpanel(MagicMock(), config, MagicMock()).check_connection(logger, config)
+
+    assert ok is True
+    assert error is None
+
+
 def test_check_connection_bad_config():
     config = {}
     source = SourceMixpanel(MagicMock(), config, MagicMock())
@@ -66,6 +88,79 @@ def test_streams(requests_mock, config_raw):
     streams = SourceMixpanel(MagicMock(), config_raw, MagicMock()).streams(config_raw)
     assert len(streams) == 6
     assert "revenue" not in [stream.name for stream in streams]
+
+
+@pytest.mark.parametrize(
+    "selected_streams,expected_count,expected_names",
+    [
+        pytest.param(None, 6, None, id="no_filter_returns_all"),
+        pytest.param([], 6, None, id="empty_list_returns_all"),
+        pytest.param(["cohorts", "annotations"], 2, {"cohorts", "annotations"}, id="subset_filter"),
+        pytest.param(["export"], 1, {"export"}, id="single_stream_filter"),
+        pytest.param(
+            ["cohorts", "engage", "annotations", "cohort_members", "funnels", "export"],
+            6,
+            {"cohorts", "engage", "annotations", "cohort_members", "funnels", "export"},
+            id="all_streams_explicit",
+        ),
+    ],
+)
+def test_streams_filtering(requests_mock, config_raw, selected_streams, expected_count, expected_names):
+    requests_mock.register_uri("POST", "https://mixpanel.com/api/query/engage?page_size=1000", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/properties", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/annotations", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/cohorts/list", setup_response(200, {"id": 123}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/funnels", setup_response(200, {}))
+    requests_mock.register_uri(
+        "GET", "https://mixpanel.com/api/query/funnels/list", setup_response(200, {"funnel_id": 123, "name": "name"})
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://data.mixpanel.com/api/2.0/export",
+        setup_response(200, {"event": "some event", "properties": {"event": 124, "time": 124124}}),
+    )
+
+    config = copy.deepcopy(config_raw)
+    if selected_streams is not None:
+        config["streams"] = selected_streams
+
+    streams = SourceMixpanel(MagicMock(), config, MagicMock()).streams(config)
+    assert len(streams) == expected_count
+    if expected_names:
+        assert {s.name for s in streams} == expected_names
+
+
+@pytest.mark.parametrize(
+    "enable_export_raw,selected_streams,expected_names",
+    [
+        pytest.param(False, ["export"], {"export"}, id="disabled"),
+        pytest.param(True, ["export"], {"export"}, id="enabled_but_filtered"),
+        pytest.param(True, ["export_raw"], {"export_raw"}, id="enabled_and_selected"),
+        pytest.param(
+            True, None, {"cohorts", "engage", "annotations", "cohort_members", "funnels", "export", "export_raw"}, id="enabled_all"
+        ),
+    ],
+)
+def test_export_raw_stream_selection(requests_mock, config_raw, enable_export_raw, selected_streams, expected_names):
+    requests_mock.register_uri("POST", "https://mixpanel.com/api/query/engage?page_size=1000", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/properties", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/annotations", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/cohorts/list", setup_response(200, {"id": 123}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/funnels", setup_response(200, {}))
+    requests_mock.register_uri(
+        "GET", "https://mixpanel.com/api/query/funnels/list", setup_response(200, {"funnel_id": 123, "name": "name"})
+    )
+
+    config = copy.deepcopy(config_raw)
+    config["enable_export_raw"] = enable_export_raw
+    if selected_streams is not None:
+        config["streams"] = selected_streams
+
+    streams = SourceMixpanel(MagicMock(), config, MagicMock()).streams(config)
+
+    assert {stream.name for stream in streams} == expected_names
 
 
 def test_streams_string_date(requests_mock, config_raw):
