@@ -23,7 +23,7 @@ class BigQueryConcurrentPartitionsCreatorTest {
                 "sales",
                 id,
                 numQuantiles = 4,
-                where = NoWhere
+                where = NoWhere,
             )
         Assertions.assertEquals(
             "SELECT `id` FROM UNNEST((SELECT APPROX_QUANTILES(`id`, 4) " +
@@ -42,7 +42,7 @@ class BigQueryConcurrentPartitionsCreatorTest {
                 "sales",
                 day,
                 numQuantiles = 8,
-                where = NoWhere
+                where = NoWhere,
             )
         // The key is CAST to STRING for reading (as on the normal read path), while
         // APPROX_QUANTILES
@@ -99,7 +99,7 @@ class BigQueryConcurrentPartitionsCreatorTest {
                 1_000_000_000,
                 32L shl 30,
                 targetRows = 1,
-                maxPartitions = 1_000
+                maxPartitions = 1_000,
             ),
         )
     }

@@ -72,7 +72,7 @@ class BigQuerySourceSpeedModeReadTest {
                     Assertions.assertEquals(
                         fieldNames.size,
                         record.dataCount,
-                        "${record.streamName}: $record"
+                        "${record.streamName}: $record",
                     )
                     val data: ObjectNode = Jsons.objectNode()
                     fieldNames.forEachIndexed { i, name ->
@@ -80,17 +80,17 @@ class BigQuerySourceSpeedModeReadTest {
                             name,
                             SpeedModeTestSupport.protobufValueToJson(
                                 SpeedModeTestSupport.decode(record.getData(i)),
-                                schema[name]
-                            )
+                                schema[name],
+                            ),
                         )
                     }
                     Assertions.assertEquals(
                         BigQueryEmulatorTestFixture.DATASET,
-                        record.streamNamespace
+                        record.streamNamespace,
                     )
                     Assertions.assertTrue(
                         record.partitionId.isNotBlank(),
-                        "partition_id of $record"
+                        "partition_id of $record",
                     )
                     data
                 }
@@ -114,11 +114,11 @@ class BigQuerySourceSpeedModeReadTest {
                 .onEach {
                     Assertions.assertEquals(
                         BigQueryEmulatorTestFixture.DATASET,
-                        it["namespace"].asText()
+                        it["namespace"].asText(),
                     )
                     Assertions.assertTrue(
                         it["partition_id"]?.asText()?.isNotBlank() == true,
-                        "partition_id of $it"
+                        "partition_id of $it",
                     )
                 }
                 .groupBy({ it["stream"].asText() }) { it["data"] }
@@ -131,7 +131,7 @@ class BigQuerySourceSpeedModeReadTest {
         val configured =
             ConfiguredAirbyteCatalog()
                 .withStreams(
-                    streams.map { configured(catalog.streams.first { s -> s.name == it }) }
+                    streams.map { configured(catalog.streams.first { s -> s.name == it }) },
                 )
         // Speed mode is an Airbyte Cloud feature: the Cloud flag keeps one query per socket
         // (elsewhere the connector reads one stream at a time).
@@ -144,11 +144,12 @@ class BigQuerySourceSpeedModeReadTest {
             Files.createTempDirectory(
                 Path.of("/tmp").takeIf { Files.isDirectory(it) }
                     ?: Path.of(System.getProperty("java.io.tmpdir")),
-                "bq-sockets-"
+                "bq-sockets-",
             )
         val socketPaths: List<Path> = (1..NUM_SOCKETS).map { socketDir.resolve("socket-$it.sock") }
-        val readers: List<SpeedModeTestSupport.UnixSocketReader> =
-            socketPaths.map { SpeedModeTestSupport.UnixSocketReader(it) }
+        val readers: List<SpeedModeTestSupport.UnixSocketReader> = socketPaths.map {
+            SpeedModeTestSupport.UnixSocketReader(it)
+        }
         val properties: Map<String, String> =
             mapOf(
                 MEDIUM_PROPERTY to "SOCKET",
@@ -176,7 +177,7 @@ class BigQuerySourceSpeedModeReadTest {
                 while (connector.isAlive) {
                     Assertions.assertTrue(
                         Instant.now().isBefore(deadline),
-                        "read did not finish within $TIMEOUT"
+                        "read did not finish within $TIMEOUT",
                     )
                     readers.forEach { it.poll() }
                     Thread.sleep(20)
@@ -202,7 +203,7 @@ class BigQuerySourceSpeedModeReadTest {
         }
         Assertions.assertTrue(
             readers.all { it.isConnected },
-            "the connector did not create every socket"
+            "the connector did not create every socket",
         )
         log.info {
             "Speed mode ($format): ${readers.map { it.bytes().size }} bytes received per socket, " +
@@ -226,7 +227,7 @@ class BigQuerySourceSpeedModeReadTest {
          */
         fun assertMatchesStdio(
             socketRecords: Map<String, List<JsonNode>>,
-            socketProtocolMessages: List<JsonNode>
+            socketProtocolMessages: List<JsonNode>,
         ) {
             val expected: Map<String, List<JsonNode>> =
                 stdio.records().groupBy({ it.stream }) { SpeedModeTestSupport.normalize(it.data) }
@@ -242,7 +243,7 @@ class BigQuerySourceSpeedModeReadTest {
             }
             Assertions.assertEquals(
                 mapOf("all_types" to 2, "with_pk" to 3, "all_types_view" to 2),
-                socketRecords.mapValues { it.value.size }
+                socketRecords.mapValues { it.value.size },
             )
 
             // States are emitted to the destination over the sockets (and to the platform on
@@ -257,14 +258,14 @@ class BigQuerySourceSpeedModeReadTest {
             Assertions.assertEquals(
                 streams.toSet(),
                 socketStates,
-                "streams with a STATE over the sockets\n${dump()}"
+                "streams with a STATE over the sockets\n${dump()}",
             )
             val stdoutStates: Set<String> =
                 speedModeStdout.states().mapNotNull { it.stream?.streamDescriptor?.name }.toSet()
             Assertions.assertEquals(
                 streams.toSet(),
                 stdoutStates,
-                "streams with a STATE on stdout\n${dump()}"
+                "streams with a STATE on stdout\n${dump()}",
             )
 
             // Stream statuses may travel on either channel; every stream must start and complete.
@@ -292,12 +293,12 @@ class BigQuerySourceSpeedModeReadTest {
                 Assertions.assertEquals(
                     setOf("STARTED", "COMPLETE"),
                     statuses,
-                    "statuses of $stream\n${dump()}"
+                    "statuses of $stream\n${dump()}",
                 )
             }
             Assertions.assertTrue(
                 speedModeStdout.traces().none { it.type == AirbyteTraceMessage.Type.ERROR },
-                "error traces\n${dump()}"
+                "error traces\n${dump()}",
             )
         }
     }

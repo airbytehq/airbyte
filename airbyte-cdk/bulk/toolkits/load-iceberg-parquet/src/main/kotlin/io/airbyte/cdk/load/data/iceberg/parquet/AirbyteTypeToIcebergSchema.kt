@@ -32,7 +32,7 @@ class AirbyteTypeToIcebergSchema {
 
     /**
      * @param insideList true when converting a list's element type. Everything inside a list is
-     * optional, since Delta/Databricks rejects NOT NULL nested in arrays.
+     *   optional, since Delta/Databricks rejects NOT NULL nested in arrays.
      */
     fun convert(
         airbyteSchema: AirbyteType,
@@ -51,24 +51,24 @@ class AirbyteTypeToIcebergSchema {
                                     NestedField.optional(
                                         UUID.randomUUID().hashCode(),
                                         name,
-                                        convert(field.type, stringifyObjects, insideList)
+                                        convert(field.type, stringifyObjects, insideList),
                                     )
                                 } else {
                                     NestedField.required(
                                         UUID.randomUUID().hashCode(),
                                         name,
-                                        convert(field.type, stringifyObjects, insideList)
+                                        convert(field.type, stringifyObjects, insideList),
                                     )
                                 }
                             }
-                            .toTypedArray()
+                            .toTypedArray(),
                     )
                 }
             }
             is ArrayType -> {
                 Types.ListType.ofOptional(
                     UUID.randomUUID().hashCode(),
-                    convert(airbyteSchema.items.type, stringifyObjects, insideList = true)
+                    convert(airbyteSchema.items.type, stringifyObjects, insideList = true),
                 )
             }
             is BooleanType -> Types.BooleanType.get()
@@ -91,7 +91,7 @@ class AirbyteTypeToIcebergSchema {
                 if (airbyteSchema.options.size == 1) {
                     return Types.ListType.ofOptional(
                         UUID.randomUUID().hashCode(),
-                        convert(airbyteSchema.options.first(), stringifyObjects, insideList = true)
+                        convert(airbyteSchema.options.first(), stringifyObjects, insideList = true),
                     )
                 }
                 // We stringify nontrivial unions

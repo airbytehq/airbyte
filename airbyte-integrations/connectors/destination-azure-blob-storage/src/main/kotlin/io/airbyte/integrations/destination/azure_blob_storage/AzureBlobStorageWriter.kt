@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlob
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.object_storage.ObjectStorageStreamLoaderFactory
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 class AzureBlobStorageWriter(
