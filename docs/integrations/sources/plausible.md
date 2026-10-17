@@ -1,45 +1,59 @@
 # Plausible
 
-## Requirements
+The Plausible source connector syncs daily website metrics from [Plausible Analytics](https://plausible.io/) using the [Stats API v1](https://plausible.io/docs/stats-api-v1) `timeseries` endpoint. It works with Plausible Cloud and with self-hosted Plausible instances.
 
-- [Plausible account](https://plausible.io/)
-- Plausible [API key](https://plausible.io/docs/stats-api)
+## Prerequisites
+
+- A Plausible account with at least one site. On Plausible Cloud, the Stats API is a [Business plan feature](https://plausible.io/docs/stats-api).
+- A Stats API key. To create one, sign in to Plausible, click your account name in the top-right menu, go to **Settings** > **API Keys**, click **New API Key**, and choose the **Stats API** key type. Plausible shows the key only once, so copy it before you leave the page.
+
+## Set up the Plausible source connector
+
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or your self-managed Airbyte workspace.
+2. Click **Sources**, then click **+ New source**.
+3. Select **Plausible** from the list of connectors.
+4. Fill in the following fields:
+
+   - **Plausible API key**: The Stats API key you created.
+   - **Target website domain**: The site you want to sync, exactly as it appears in the `domain` field of your Plausible site settings. Don't include a scheme or a `www.` prefix. For example, use `airbyte.com`, not `https://www.airbyte.com`.
+   - **API URL**: Only set this if you self-host Plausible. Enter the full base URL of your instance's Stats API, including the `/api/v1/stats` path and no trailing slash, for example `https://plausible.example.com/api/v1/stats`. The connector appends `/timeseries` to this value. Leave the field empty to use Plausible Cloud at `https://plausible.io/api/v1/stats`.
+   - **Data start date**: The earliest date to sync, in `YYYY-MM-DD` format. Defaults to `2019-01-01`.
+
+5. Click **Set up source**.
 
 ## Supported sync modes
 
-| Feature           | Supported?\(Yes/No\) | Notes                                                                                          |
-| :---------------- | :------------------- | :--------------------------------------------------------------------------------------------- |
-| Full Refresh Sync | Yes                  | [Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite) |
-| Incremental Sync  | No                   |                                                                                                |
+| Feature           | Supported? |
+| :---------------- | :--------- |
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | No         |
 
-## Supported Streams
+Each sync requests the entire range from your start date through today's date in Coordinated Universal Time, then replaces the data in your destination. Set **Data start date** as late as your use case allows: a longer range means more data transferred on every sync.
 
-- [Stats - Time Series](https://plausible.io/docs/stats-api#get-apiv1statstimeseries)
+## Supported streams
 
-## Setup steps
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Plausible** from the Source type dropdown.
-4. Enter a name for the connector
-5. Enter the following configurations:
-    - **API Key**: Plausible API Key. See the <a href="https://plausible.io/docs/stats-api">docs</a> for information on how to generate this key.
-    - **Site ID**: The domain of the site you want to retrieve data for. Enter the name of your site as configured on Plausible, i.e., excluding "https://" and "www". Can be retrieved from the 'domain' field in your Plausible site settings.
-    - **API URL**: The API URL of your plausible instance. Change this if you self-host plausible. Otherwise it will default to https://plausible.io/api/v1/stats
-    - **start_date**: Data start date Start date for data to retrieve, in ISO-8601 format.
+The connector syncs one stream, `stats`, from the [timeseries endpoint](https://plausible.io/docs/stats-api-v1#get-apiv1statstimeseries). Each record is one day of site-wide stats, keyed on `date`, and contains these [metrics](https://plausible.io/docs/stats-api-v1#metrics):
 
+| Field            | Description                                       |
+| :--------------- | :------------------------------------------------ |
+| `date`           | The day the stats cover, in the site's time zone. |
+| `visitors`       | Unique visitors.                                  |
+| `visits`         | Visits or sessions.                               |
+| `pageviews`      | Pageview events.                                  |
+| `bounce_rate`    | Bounce rate percentage.                           |
+| `visit_duration` | Visit duration, in seconds.                       |
 
-### Notes
+The connector drops days with no recorded visits, so you may see gaps in the date sequence for low-traffic sites.
 
-Plausible is a privacy-first analytics service, and the data available from its API is intentionally 1) less granular and 2) less comprehensive than those available from Google Analytics. As such:
+Plausible is a privacy-first analytics service, and its Stats API is less granular than analytics APIs such as Google Analytics. You can't read individual pageviews or custom events, and dimensions such as referrer, entry page, and exit page are only available through the API's `breakdown` endpoint, which this connector doesn't sync. Other v1 metrics, including `views_per_visit`, `events`, and `time_on_page`, aren't synced either.
 
-1. when retrieving multi-day data, [metrics](https://plausible.io/docs/stats-api#metrics) are aggregated to a daily grain; and
-2. [non-metric properties](https://plausible.io/docs/stats-api#properties) (e.g., referrer, entry page, exit page) cannot be directly exported, only [grouped on](https://plausible.io/docs/stats-api#get-apiv1statsbreakdown).
+## Performance considerations
 
-Thus, this source connector retrieves [all possible metrics](https://plausible.io/docs/stats-api#metrics) on a daily grain, for all days with nonzero website activity.
+Plausible limits Stats API keys to [600 requests per hour](https://plausible.io/docs/stats-api-v1) by default. Each sync of the `stats` stream uses a single request, so the limit is unlikely to affect this connector. Contact Plausible if you need more capacity.
 
-## Performance Considerations
+## Limitations
 
-The [stated rate limit](https://plausible.io/docs/stats-api) is 600 requests per hour per API key, with higher capacities potentially available [upon request](https://plausible.io/contact).
+Plausible has released a [Stats API v2](https://plausible.io/docs/stats-api) and marks v1 as legacy. This connector still uses v1. If Plausible retires v1 on your instance, syncs fail until Airbyte updates the connector.
 
 ## IP allow list
 
