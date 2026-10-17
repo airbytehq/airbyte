@@ -56,9 +56,12 @@ data:
     - title: SurveyMonkey API reference
       url: https://developer.surveymonkey.com/api/v3/
       type: api_reference
-    - title: SurveyMonkey API Changelog
-      url: https://developer.surveymonkey.com/api/v3/#changelog
+    - title: SurveyMonkey API v3 Change Log (public_api_docs)
+      url: https://github.com/SurveyMonkey/public_api_docs/blob/main/includes/_change_log.md
       type: api_release_history
+    - title: SurveyMonkey scopes
+      url: https://developer.surveymonkey.com/api/v3/#scopes
+      type: permissions_scopes
     - title: SurveyMonkey authentication
       url: https://developer.surveymonkey.com/api/v3/#authentication
       type: authentication_guide
