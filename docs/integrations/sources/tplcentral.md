@@ -53,6 +53,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                            |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------- |
+| 0.1.49 | 2026-10-14 | [88928](https://github.com/airbytehq/airbyte/pull/88928) | Set `additionalProperties` to `true` in the spec so saved configs stay valid when a property is removed |
 | 0.1.48 | 2026-06-02 | [79024](https://github.com/airbytehq/airbyte/pull/79024) | Update dependencies |
 | 0.1.47 | 2025-05-24 | [60431](https://github.com/airbytehq/airbyte/pull/60431) | Update dependencies |
 | 0.1.46 | 2025-05-10 | [60051](https://github.com/airbytehq/airbyte/pull/60051) | Update dependencies |
