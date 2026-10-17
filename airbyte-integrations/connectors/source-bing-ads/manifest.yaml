@@ -19,6 +19,11 @@ definitions:
     client_id: '{{ config["client_id"] }}'
     client_secret: '{{ config["client_secret"] }}'
     refresh_token: '{{ config["refresh_token"] }}'
+    refresh_token_error_messages:
+      AADSTS50078: "Microsoft Entra refused the refresh because the tenant's MFA policy now requires a new MFA sign-in. Re-authenticate this source to restore syncs. This can recur on a fixed schedule set by the tenant's MFA session settings, such as \"remember multi-factor authentication on trusted devices\"."
+      AADSTS70043: "A Microsoft Entra Conditional Access sign-in frequency policy expired the refresh token. Re-authenticate this source to restore syncs. The tenant's Entra administrator sets how often this is required."
+      AADSTS700082: "The Microsoft Entra refresh token expired after a period of inactivity. Re-authenticate this source to restore syncs, and keep its connection syncing regularly to avoid a recurrence."
+      AADSTS50173: "Microsoft Entra revoked the grant, typically because the authorizing user's password was changed or reset. Re-authenticate this source to restore syncs."
     refresh_token_updater:
       refresh_token_name: refresh_token
       access_token_config_path:
