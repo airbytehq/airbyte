@@ -1,0 +1,17 @@
+{
+  "advertiser_report_daily": {
+    "day": "2999-01-01"
+  },
+  "advertiser_report_hourly": {
+    "day": "2999-01-01"
+  },
+  "web_report_daily": {
+    "day": "2999-01-01"
+  },
+  "web_report_hourly": {
+    "day": "2999-01-01"
+  },
+  "asset_report_daily": {
+    "date": "2999-01-01"
+  }
+}
