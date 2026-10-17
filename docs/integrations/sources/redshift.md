@@ -12,6 +12,16 @@ This Redshift source connector is built on top of the source-jdbc code base and 
 
 The Redshift source does not alter the schema present in your warehouse. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
+Redshift temporal columns map to the following Airbyte types:
+
+| Redshift type | Airbyte type                  |
+| :------------ | :---------------------------- |
+| `date`        | `date`                        |
+| `timestamp`   | `timestamp_without_timezone`  |
+| `timestamptz` | `timestamp_with_timezone`     |
+| `time`        | `string`                      |
+| `timetz`      | `string`                      |
+
 ### Features
 
 | Feature                       | Supported                 | Notes                                                                                   |
@@ -63,6 +73,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0.0 | 2026-10-13 | [88912](https://github.com/airbytehq/airbyte/pull/88912) | **Breaking**: Discover `date`, `timestamp`, and `timestamptz` columns as date and timestamp types instead of strings. See the [migration guide](/integrations/sources/redshift-migrations) |
 | 0.5.5 | 2026-06-03 | [74769](https://github.com/airbytehq/airbyte/pull/74769) | Handle timezone-aware timestamps in cursor parsing and fix DST offset in `timestamptz` reads |
 | 0.5.4 | 2025-07-10 | [62922](https://github.com/airbytehq/airbyte/pull/62922) | Convert to new gradle build flow |
 | 0.5.3 | 2024-12-18 | [49893](https://github.com/airbytehq/airbyte/pull/49893) | Use a base image: airbyte/java-connector-base:1.0.0 |
