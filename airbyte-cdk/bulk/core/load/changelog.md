@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.6 — 2026-10-16
+
+[#89031](https://github.com/airbytehq/airbyte/pull/89031) — Kotlin compiler 2.4.21 with K2, KSP 2.3.10, kotlinx-coroutines 1.11.0 and mockk 1.14.11 (lifting the strictly-1.13.13 pin); KSP is now declared per source set (`kspTestFixtures`, `kspIntegrationTest`) because KSP2 no longer applies to every compilation; released alongside base 1.0.6 and extract 1.1.20; no runtime behaviour change in load.
+
 ### 1.1.5 — 2026-10-15
 
 [#88992](https://github.com/airbytehq/airbyte/pull/88992) — Bump Micronaut to 4.10.31, Jackson to 2.21.7 (Kotlin runtime 2.1.21), JUnit to 5.14 and SpotBugs to 4.10.5; Dagger and `javax.inject` are removed in favour of `jakarta.inject` only. `ReservingDeserializingInputFlow`, `DestinationMessageFactory`, `ObjectLoaderPartFormatter` and `DefaultTempTableNameGenerator` get `@Inject` constructors without Kotlin default values on primitive parameters: inject-kotlin 4.8+ emits unverifiable bytecode for such constructors and Micronaut silently dropped the beans (`NoSuchBeanException` in dependants). Runtime behaviour is unchanged.

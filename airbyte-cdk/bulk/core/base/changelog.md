@@ -1,3 +1,7 @@
+## Version 1.0.6
+
+[#89031](https://github.com/airbytehq/airbyte/pull/89031) — Kotlin compiler 2.4.21 with K2, KSP 2.3.10, kotlinx-coroutines 1.11.0 and mockk 1.14.11 (lifting the strictly-1.13.13 pin); KSP is now declared per source set (`kspTestFixtures`, `kspIntegrationTest`) because KSP2 no longer applies to every compilation; released alongside extract 1.1.20 and load 1.1.6; no runtime behaviour change.
+
 ## Version 1.0.5
 
 [#88992](https://github.com/airbytehq/airbyte/pull/88992) — Bump Micronaut to 4.10.31, Jackson to 2.21.7 (Kotlin runtime 2.1.21), JUnit to 5.14 and SpotBugs to 4.10.5. Remove Dagger and `javax.inject`; the CDK and connectors use `jakarta.inject` only. New `verifyMicronautBeanDefinitions` Gradle task (wired into `check` and before every test task) loads every KSP-generated bean definition so a bean that Micronaut would silently drop fails the build instead.

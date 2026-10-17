@@ -306,6 +306,7 @@ internal constructor(
         }
     }
 
+    @ConsistentCopyVisibility
     data class OrphanedThreadInfo
     private constructor(
         val thread: Thread,

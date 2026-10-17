@@ -222,7 +222,8 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
      * Insert multiple rows in a single transaction. The first row reaches the target and triggers
      * the target-lsn close while the remaining rows are still being delivered, so they go through
      * the shutdown path of [CdcPartitionReader.emitRecord]. Record writes are slowed down so that
-     * the close happens while a write is in progress.
+     * the close happens while a write is in progress. Heartbeats are disabled for that read so that
+     * only a record can trigger the close.
      *
      * Checks that the STATE count matches the records written (asserted in [read]).
      */
@@ -253,9 +254,18 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
         val insert = (1..5).map { Insert(it, it) }
 
         Assertions.assertTrue(r0.state is ValidDebeziumWarmStartState)
+        // Debezium dispatches a timer-based heartbeat after any log event once
+        // heartbeat.interval.ms has elapsed since the task started, and that heartbeat carries the
+        // restart offset, which is p1 until the first record is processed. When connecting to the
+        // log takes longer than the interval (seen on loaded CI runners) the heartbeat precedes the
+        // first record in the first batch and closes the engine with
+        // HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION. heartbeat.interval.ms=0 disables them.
         val i1 =
             ReadInput(
-                cdcPartitionsCreatorDbzOps.generateWarmStartProperties(listOf(stream)),
+                DebeziumPropertiesBuilder()
+                    .with(cdcPartitionsCreatorDbzOps.generateWarmStartProperties(listOf(stream)))
+                    .withHeartbeats(Duration.ZERO)
+                    .buildMap(),
                 (r0.state as ValidDebeziumWarmStartState).offset,
                 r0.state.schemaHistory,
                 isSynthetic = false,
