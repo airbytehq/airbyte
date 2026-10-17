@@ -1,0 +1,9 @@
+{
+  "credentials": {
+    "auth_type": "access_token",
+    "access_token": "invalid-dropbox-access-token"
+  },
+  "path": "",
+  "recursive": true,
+  "include_deleted": true
+}
