@@ -51,9 +51,6 @@
                             <includes>
                                 <include>**/*.kt</include>
                             </includes>
-                            <excludes>
-                                <exclude>airbyte-integrations/connectors/**/*.kt</exclude>
-                            </excludes>
                             <toggleOffOn />
                             <ktfmt>
                                 <version>0.65</version>

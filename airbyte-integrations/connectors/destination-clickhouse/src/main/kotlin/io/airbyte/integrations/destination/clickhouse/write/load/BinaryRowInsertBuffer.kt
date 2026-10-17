@@ -58,7 +58,7 @@ class BinaryRowInsertBuffer(
                 .insert(
                     "`${tableName.namespace}`.`${tableName.name}`",
                     inner.toInputStream(),
-                    ClickHouseFormat.RowBinary
+                    ClickHouseFormat.RowBinary,
                 )
                 .await()
 
@@ -96,6 +96,7 @@ class BinaryRowInsertBuffer(
         /**
          * Get an input stream based on the contents of this output stream. Do not use the output
          * stream after calling this method.
+         *
          * @return an {@link InputStream}
          */
         fun toInputStream(): ByteArrayInputStream {
