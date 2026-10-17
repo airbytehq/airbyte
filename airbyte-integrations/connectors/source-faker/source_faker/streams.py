@@ -92,24 +92,29 @@ class Users(Stream, IncrementalMixin):
     def state(self, value: Mapping[str, Any]):
         self._state = value
 
+    # Cap per-sync record emission to prevent OOM on resource-constrained runners
+    MAX_RECORDS_PER_SYNC = 500
+
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         """
         This is a multi-process implementation of read_records.
-        We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
+        We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON.
+        Caps emission at MAX_RECORDS_PER_SYNC to prevent memory pressure.
         """
 
         if "updated_at" in self.state and not self.always_updated:
             return iter([])
 
         updated_at = ""
+        effective_count = min(self.count, self.MAX_RECORDS_PER_SYNC)
 
         median_record_byte_size = 450
-        yield generate_estimate(self.name, self.count, median_record_byte_size)
+        yield generate_estimate(self.name, effective_count, median_record_byte_size)
 
         loop_offset = 0
         with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
-            while loop_offset < self.count:
-                records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
+            while loop_offset < effective_count:
+                records_remaining_this_loop = min(self.records_per_slice, (effective_count - loop_offset))
                 users = pool.map(self.generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
                 for user in users:
                     updated_at = user.record.data["updated_at"]
