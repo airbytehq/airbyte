@@ -158,9 +158,14 @@ The connector respects per-endpoint rate limits based on [GitLab.com's documente
 | `GET /projects/:id/members/all` | 200 requests/min |
 | All other authenticated requests | 2,000 requests/min |
 
-Starting October 19, 2026, GitLab.com also applies rate limits by subscription tier: Free namespaces get 5,000 requests per hour and 100 requests per minute per user, and Premium and Ultimate follow in January 2027. See [rate limits on GitLab.com](https://docs.gitlab.com/user/gitlab_com/rate_limits/). Under these limits, syncs can pause for long periods while the connector waits for the limit to reset.
+Starting October 19, 2026, GitLab.com also applies rate limits based on your subscription plan, enforced for each user and for each top-level group. On the Free plan, authenticated traffic is limited to 5,000 requests per hour and 100 requests per minute for each user, and to 5,000 requests per hour and 400 requests per minute for each top-level group. Premium and Ultimate limits take effect in January 2027. See [GitLab.com rate limits](https://docs.gitlab.com/user/gitlab_com/rate_limits/) for each plan's limits. The per-user limit counts every request made as your GitLab user, so other tools that use the same account share the quota. Under these limits, syncs can pause for long periods while the connector waits for the limit to reset.
 
-Self-hosted GitLab instances may have different rate limits configured by the administrator. The connector also reads the `RateLimit-Remaining` and `RateLimit-Reset` response headers. When GitLab returns HTTP 429, the connector waits for the time in the `Retry-After` header, up to about one hour, and then retries. If the header is missing, it retries with exponential backoff. If you encounter persistent rate limit errors, [create an issue](https://github.com/airbytehq/airbyte/issues).
+Self-hosted GitLab instances may have different rate limits configured by the administrator. The connector also reads the `RateLimit-Remaining` and `RateLimit-Reset` response headers. When GitLab returns HTTP 429, the connector waits for the number of seconds in the `Retry-After` header and then retries. If the header is missing, it retries with exponential backoff. The affected stream fails in these cases:
+
+- `Retry-After` asks for a wait of 3,660 seconds (61 minutes) or longer. The error is `The rate limit wait time is longer than the connector is allowed to wait.`
+- GitLab keeps returning HTTP 429 after the connector retries. The error is `GitLab API rate limit exceeded. If syncs keep failing, lower the Number of Concurrent Threads setting or sync less frequently.`
+
+If you encounter persistent rate limit errors, [create an issue](https://github.com/airbytehq/airbyte/issues).
 
 You can adjust the **Number of Concurrent Threads** setting to control how many parallel requests the connector makes. Lower this value if you share your API quota with other integrations or if you experience rate limiting.
 
@@ -188,7 +193,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.5.2 | 2026-10-13 | [88467](https://github.com/airbytehq/airbyte/pull/88467) | Honor GitLab Retry-After headers for HTTP 429 rate limits and raise heartbeat timeout to 90 minutes |
+| 4.5.2 | 2026-10-16 | [88467](https://github.com/airbytehq/airbyte/pull/88467) | Honor GitLab Retry-After headers for HTTP 429 rate limits and raise heartbeat timeout to 90 minutes |
 | 4.5.1 | 2026-10-13 | [88629](https://github.com/airbytehq/airbyte/pull/88629) | Update dependencies |
 | 4.5.0 | 2026-10-07 | [87655](https://github.com/airbytehq/airbyte/pull/87655) | Add incremental sync support to the `pipelines_extended`, `jobs`, and `pipeline_trigger_jobs` streams. Failed Full Refresh attempts of these streams can now resume, which can write duplicate rows under Full Refresh \| Overwrite |
 | 4.4.43 | 2026-10-06 | [87865](https://github.com/airbytehq/airbyte/pull/87865) | Update dependencies |
