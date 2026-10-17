@@ -31,12 +31,12 @@ private const val DELETE_BATCH_SIZE = 256
 /** Represents a single blob in Azure. */
 data class AzureBlob(
     override val key: String,
-    override val storageConfig: AzureBlobStorageClientConfiguration
+    override val storageConfig: AzureBlobStorageClientConfiguration,
 ) : RemoteObject<AzureBlobStorageClientConfiguration>
 
 class AzureBlobClient(
     private val serviceClient: BlobServiceClient,
-    private val blobConfig: AzureBlobStorageClientConfiguration
+    private val blobConfig: AzureBlobStorageClientConfiguration,
 ) : ObjectStorageClient<AzureBlob> {
 
     /** List all blobs that start with [prefix]. We emit them as a Flow. */
@@ -145,7 +145,7 @@ class AzureBlobClient(
                     blobConfig.containerName,
                     key,
                     DeleteSnapshotsOptionType.INCLUDE,
-                    null
+                    null,
                 )
             }
 
@@ -166,7 +166,7 @@ class AzureBlobClient(
 
     override suspend fun startStreamingUpload(
         key: String,
-        metadata: Map<String, String>
+        metadata: Map<String, String>,
     ): StreamingUpload<AzureBlob> {
         val blobClient =
             serviceClient

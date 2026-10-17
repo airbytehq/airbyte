@@ -29,10 +29,10 @@ private val logger = KotlinLogging.logger {}
  * This becomes particularly useful in the following scenarios:
  *
  * * 1. When the incoming records belong to a single stream. Dynamic allocation ensures this one
- * stream can utilise all memory.
+ *   stream can utilise all memory.
  * * 2. When the incoming records are from multiple streams, such as with Change Data Capture (CDC).
- * Here, dynamic allocation let us create as many queues as possible, allowing all streams to be
- * processed in parallel without accidental backpressure from unnecessary eager flushing.
+ *   Here, dynamic allocation let us create as many queues as possible, allowing all streams to be
+ *   processed in parallel without accidental backpressure from unnecessary eager flushing.
  */
 class GlobalMemoryManager(val maxMemoryBytes: Long) {
     val currentMemoryBytes = AtomicLong(0)

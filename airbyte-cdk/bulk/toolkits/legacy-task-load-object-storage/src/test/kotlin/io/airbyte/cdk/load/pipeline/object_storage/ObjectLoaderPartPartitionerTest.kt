@@ -18,17 +18,16 @@ class ObjectLoaderPartPartitionerTest<K : WithStream, T> {
     @Test
     fun `partitioner uses object key as accumulator key`() {
         val keys = listOf("foo", "bar", "baz")
-        val parts =
-            keys.mapIndexed { index, key ->
-                Part(
-                        key = key,
-                        fileNumber = index * 10L,
-                        partIndex = index,
-                        bytes = null,
-                        isFinal = false
-                    )
-                    .let { ObjectLoaderPartFormatter.FormattedPart(it) }
-            }
+        val parts = keys.mapIndexed { index, key ->
+            Part(
+                    key = key,
+                    fileNumber = index * 10L,
+                    partIndex = index,
+                    bytes = null,
+                    isFinal = false,
+                )
+                .let { ObjectLoaderPartFormatter.FormattedPart(it) }
+        }
         val partitioner = ObjectLoaderFormattedPartPartitioner<StreamKey, T>()
         val stream = DestinationStream.Descriptor("test", "stream")
         val outputKeys = parts.map { part -> partitioner.getOutputKey(StreamKey(stream), part) }

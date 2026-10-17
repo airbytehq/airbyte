@@ -21,13 +21,13 @@ class SSLCertificateUtilsTest {
         CertificateException::class,
         IOException::class,
         KeyStoreException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     fun testkeyStoreFromCertificateInternal(
         certString: String,
         pwd: String,
         fs: FileSystem,
-        directory: String
+        directory: String,
     ) {
         val ksUri = SSLCertificateUtils.keyStoreFromCertificate(certString, pwd, fs, directory)
 
@@ -43,14 +43,14 @@ class SSLCertificateUtilsTest {
         CertificateException::class,
         IOException::class,
         KeyStoreException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     fun testkeyStoreFromCertificate() {
         testkeyStoreFromCertificateInternal(
             caPem,
             KEY_STORE_PASSWORD,
             FileSystems.getDefault(),
-            SLASH_TMP
+            SLASH_TMP,
         )
 
         val exception: Exception =
@@ -59,7 +59,7 @@ class SSLCertificateUtilsTest {
                     caPem_Bad,
                     KEY_STORE_PASSWORD,
                     FileSystems.getDefault(),
-                    SLASH_TMP
+                    SLASH_TMP,
                 )
             }
         Assertions.assertNotNull(exception)
@@ -70,7 +70,7 @@ class SSLCertificateUtilsTest {
         CertificateException::class,
         IOException::class,
         KeyStoreException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     fun testkeyStoreFromCertificateInMemory() {
         testkeyStoreFromCertificateInternal(caPem, KEY_STORE_PASSWORD, FileSystems.getDefault(), "")
@@ -81,7 +81,7 @@ class SSLCertificateUtilsTest {
                     caPem_Bad,
                     KEY_STORE_PASSWORD,
                     FileSystems.getDefault(),
-                    ""
+                    "",
                 )
             }
         Assertions.assertNotNull(exception)
@@ -93,14 +93,14 @@ class SSLCertificateUtilsTest {
         CertificateException::class,
         NoSuchAlgorithmException::class,
         InvalidKeySpecException::class,
-        InterruptedException::class
+        InterruptedException::class,
     )
     fun testKeyStoreFromClientCertificateInternal(
         certString: String,
         keyString: String,
         keyStorePassword: String,
         filesystem: FileSystem,
-        directory: String
+        directory: String,
     ) {
         val ksUri =
             SSLCertificateUtils.keyStoreFromClientCertificate(
@@ -108,7 +108,7 @@ class SSLCertificateUtilsTest {
                 keyString,
                 keyStorePassword,
                 filesystem,
-                directory
+                directory,
             )
         val ks = KeyStore.getInstance("PKCS12")
         val inputStream = Files.newInputStream(Path.of(ksUri))
@@ -126,7 +126,7 @@ class SSLCertificateUtilsTest {
         NoSuchAlgorithmException::class,
         InvalidKeySpecException::class,
         KeyStoreException::class,
-        InterruptedException::class
+        InterruptedException::class,
     )
     fun testKeyStoreFromClientCertificate() {
         testKeyStoreFromClientCertificateInternal(
@@ -134,7 +134,7 @@ class SSLCertificateUtilsTest {
             clientKey,
             KEY_STORE_PASSWORD,
             FileSystems.getDefault(),
-            SLASH_TMP
+            SLASH_TMP,
         )
 
         val exceptionKey: Exception =
@@ -144,7 +144,7 @@ class SSLCertificateUtilsTest {
                     clientKey_wrong_format,
                     KEY_STORE_PASSWORD,
                     FileSystems.getDefault(),
-                    SLASH_TMP
+                    SLASH_TMP,
                 )
             }
         Assertions.assertNotNull(exceptionKey)
@@ -156,7 +156,7 @@ class SSLCertificateUtilsTest {
                     clientKey,
                     KEY_STORE_PASSWORD,
                     FileSystems.getDefault(),
-                    SLASH_TMP
+                    SLASH_TMP,
                 )
             }
         Assertions.assertNotNull(exceptionCert)
@@ -169,7 +169,7 @@ class SSLCertificateUtilsTest {
         NoSuchAlgorithmException::class,
         InvalidKeySpecException::class,
         KeyStoreException::class,
-        InterruptedException::class
+        InterruptedException::class,
     )
     fun testKeyStoreFromClientCertificateInMemory() {
         testKeyStoreFromClientCertificateInternal(
@@ -177,7 +177,7 @@ class SSLCertificateUtilsTest {
             clientKey,
             KEY_STORE_PASSWORD,
             FileSystems.getDefault(),
-            ""
+            "",
         )
 
         val exceptionKey: Exception =
@@ -187,7 +187,7 @@ class SSLCertificateUtilsTest {
                     clientKey_wrong_format,
                     KEY_STORE_PASSWORD,
                     FileSystems.getDefault(),
-                    ""
+                    "",
                 )
             }
         Assertions.assertNotNull(exceptionKey)
@@ -199,7 +199,7 @@ class SSLCertificateUtilsTest {
                     clientKey,
                     KEY_STORE_PASSWORD,
                     FileSystems.getDefault(),
-                    ""
+                    "",
                 )
             }
         Assertions.assertNotNull(exceptionCert)
@@ -229,7 +229,9 @@ class SSLCertificateUtilsTest {
             LUNeYd9wXefwMrEWwDn0DZSsShZmgJoppA15qOnq+FVW/bhZwRv5L4l3AJv0SGoA
             o7DXxD0VGHDA6aC4tJssZbrnoDCBPzYmt9s9GwVupuEroJHZ0Wks4pt4Wx50DUgA
             KC3v0Mo/gg==
-            -----END CERTIFICATE-----""".trimIndent())
+            -----END CERTIFICATE-----
+            """
+                .trimIndent())
 
         val caPem_Bad: String =
             ("""
@@ -247,7 +249,9 @@ class SSLCertificateUtilsTest {
             LUNeYd9wXefwMrEWwDn0DZSsShZmgJoppA15qOnq+FVW/bhZwRv5L4l3AJv0SGoA
             o7DXxD0VGHDA6aC4tJssZbrnoDCBPzYmt9s9GwVupuEroJHZ0Wks4pt4Wx50DUgA
             KC3v0Mo/gg==
-            -----END CERTIFICATE-----""".trimIndent())
+            -----END CERTIFICATE-----
+            """
+                .trimIndent())
 
         val clientPem: String =
             ("""
@@ -269,7 +273,9 @@ class SSLCertificateUtilsTest {
             RnU7Uzr745xw7LKJglCgO20t4302wzsUAEPuCTcB9wJy1/cRbMmoLAdUdn6XhFb4
             pR3UDNJvXGc8by6VWrXOeB0BFeB3beMxezlTHDOWoWeJwvEfAAD/dpwHXwp5dm9L
             VjtlERcTfH8=
-            -----END CERTIFICATE-----""".trimIndent())
+            -----END CERTIFICATE-----
+            """
+                .trimIndent())
 
         val clientKey: String =
             ("""
@@ -299,7 +305,9 @@ class SSLCertificateUtilsTest {
             L9m+CQKBgG3kkQTtsT7k1kQt/6cqjAaBq9Koi0gbS8hWjTioqPKHVQAAEjqVkmqa
             uuD/3Knh1gCgxW4jAUokRwfM7IgVA/plQQDQaKBzcFUl94Hl+t6VuvdvtA02MboE
             7TicEc38QKFoLN2hti0Bmm1eJCionsSPiuyDYH5XnhSz7TDjV9sM
-            -----END RSA PRIVATE KEY-----""".trimIndent())
+            -----END RSA PRIVATE KEY-----
+            """
+                .trimIndent())
 
         const val clientKey_wrong_format: String =
             ("""MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDBmUvDIVGZ5HsRgnXKns2fTf26pfKND45xu

@@ -26,7 +26,7 @@ class CloudHostCheckTest {
             "bastion.example.com",
             22,
             "airbyte",
-            "-----BEGIN RSA PRIVATE KEY-----"
+            "-----BEGIN RSA PRIVATE KEY-----",
         )
     private val passwordTunnel: SshTunnelMethodConfiguration =
         SshPasswordAuthTunnelMethod("bastion.example.com", 22, "airbyte", "secret")
@@ -48,7 +48,7 @@ class CloudHostCheckTest {
                 "::",
                 "[::]",
                 "::ffff:127.0.0.1",
-            ]
+            ],
     )
     fun testLocalHostWithoutTunnelOnCloudIsRejected(host: String) {
         assertRejected(CloudHostCheck.LOCAL_HOST_MESSAGE, host, SshNoTunnelMethod, cloud)
@@ -82,7 +82,7 @@ class CloudHostCheckTest {
                 "[::1]:5432",
                 "[2001:db8::1]:5432",
                 "[2001:db8::1]:",
-            ]
+            ],
     )
     fun testHostWithExtraSyntaxOnCloudIsRejected(host: String) {
         // The syntax message does not depend on the tunnel: the field content is wrong either way.
@@ -108,7 +108,7 @@ class CloudHostCheckTest {
                 "::ffff:10.0.0.5",
                 "xyz:abc:def",
                 "",
-            ]
+            ],
     )
     fun testReachableHostOnCloudIsAccepted(host: String) {
         assertAccepted(host, SshNoTunnelMethod, cloud)
@@ -131,7 +131,7 @@ class CloudHostCheckTest {
                 "host:5432",
                 "localhost:5432",
                 "[::1]:5432",
-            ]
+            ],
     )
     fun testEverythingIsAcceptedOutsideCloud(host: String) {
         assertAccepted(host, SshNoTunnelMethod, notCloud)
@@ -151,7 +151,7 @@ class CloudHostCheckTest {
                 "acct.snowflakecomputing.com:443",
                 " https://acct.snowflakecomputing.com ",
                 "postgres://user@localhost:5432/db",
-            ]
+            ],
     )
     fun testSyntaxOnlyCheckRejectsExtraSyntaxOnCloud(host: String) {
         assertSyntaxRejected(CloudHostCheck.HOST_SYNTAX_MESSAGE, host, cloud, message = null)
@@ -174,7 +174,7 @@ class CloudHostCheckTest {
                 "0.0.0.0",
                 "::1",
                 "[::1]",
-            ]
+            ],
     )
     fun testSyntaxOnlyCheckAcceptsPlainHostOnCloud(host: String) {
         CloudHostCheck.validateHostSyntax(host, cloud)
@@ -190,7 +190,7 @@ class CloudHostCheckTest {
                 "acct.snowflakecomputing.com/console",
                 "acct.snowflakecomputing.com:443",
                 "localhost",
-            ]
+            ],
     )
     fun testSyntaxOnlyCheckAcceptsEverythingOutsideCloud(host: String) {
         CloudHostCheck.validateHostSyntax(host, notCloud)

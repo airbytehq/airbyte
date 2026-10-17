@@ -75,7 +75,7 @@ abstract class IntegrationTest(
     val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     val micronautProperties: Map<Property, String> = emptyMap(),
     val dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
-    val dataChannelFormat: DataChannelFormat = DataChannelFormat.PROTOBUF
+    val dataChannelFormat: DataChannelFormat = DataChannelFormat.PROTOBUF,
 ) {
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
@@ -129,7 +129,8 @@ abstract class IntegrationTest(
                 Cleaners detected:
                   $destinationCleaner
                   ${cleanerSeen.get()}
-                """.trimIndent()
+                """
+                    .trimIndent(),
             )
         }
     }
@@ -144,8 +145,9 @@ abstract class IntegrationTest(
         allowUnexpectedRecord: Boolean = false,
     ) {
         val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
-        val expectedRecords: List<OutputRecord> =
-            canonicalExpectedRecords.map { recordMangler.mapRecord(it, stream.schema) }
+        val expectedRecords: List<OutputRecord> = canonicalExpectedRecords.map {
+            recordMangler.mapRecord(it, stream.schema)
+        }
         val descriptor = recordMangler.mapStreamDescriptor(stream.mappedDescriptor)
 
         RecordDiffer(
@@ -222,6 +224,7 @@ abstract class IntegrationTest(
          * If you set this to anything other than `COMPLETE`, you may run into a race condition.
          * It's recommended that you send an explicit state message in [messages], and run the sync
          * in a loop until it acks the state message, e.g.
+         *
          * ```
          * while (true) {
          *   val e = assertThrows<DestinationUncleanExitException> {
@@ -257,7 +260,8 @@ abstract class IntegrationTest(
                 micronautProperties = micronautProperties,
                 dataChannelMedium = dataChannelMedium,
                 dataChannelFormat = dataChannelFormat,
-                namespaceMappingConfig = namespaceMappingConfig
+                namespaceMappingConfig =
+                    namespaceMappingConfig
                         ?: NamespaceMappingConfig(
                             NamespaceDefinitionType.SOURCE,
                         ),
@@ -271,11 +275,11 @@ abstract class IntegrationTest(
                         when (streamStatus) {
                             AirbyteStreamStatus.COMPLETE ->
                                 InputStreamComplete(
-                                    DestinationRecordStreamComplete(it, System.currentTimeMillis())
+                                    DestinationRecordStreamComplete(it, System.currentTimeMillis()),
                                 )
                             else ->
                                 throw IllegalStateException(
-                                    "Impossible: We checked that the stream status was valid at the start of this method. Somehow got $streamStatus."
+                                    "Impossible: We checked that the stream status was valid at the start of this method. Somehow got $streamStatus.",
                                 )
                         }
                     destination.sendMessage(
@@ -359,9 +363,9 @@ abstract class IntegrationTest(
                             AirbyteTraceMessage()
                                 .withType(AirbyteTraceMessage.Type.ANALYTICS)
                                 .withAnalytics(
-                                    AirbyteAnalyticsTraceMessage().withType("foo").withValue("bar")
+                                    AirbyteAnalyticsTraceMessage().withType("foo").withValue("bar"),
                                 )
-                                .withEmittedAt(System.currentTimeMillis().toDouble())
+                                .withEmittedAt(System.currentTimeMillis().toDouble()),
                         )
 
                 while (true) {
@@ -394,14 +398,14 @@ abstract class IntegrationTest(
                                                 .withStreamDescriptor(
                                                     StreamDescriptor()
                                                         .withNamespace(stream.unmappedNamespace)
-                                                        .withName(stream.unmappedName)
+                                                        .withName(stream.unmappedName),
                                                 )
-                                                .withStatus(AirbyteStreamStatus.INCOMPLETE)
-                                        )
+                                                .withStatus(AirbyteStreamStatus.INCOMPLETE),
+                                        ),
                                 )
                         destination.sendMessage(
                             InputMessageOther(incompleteTrace),
-                            broadcast = true
+                            broadcast = true,
                         )
                         destination.shutdown()
                     }

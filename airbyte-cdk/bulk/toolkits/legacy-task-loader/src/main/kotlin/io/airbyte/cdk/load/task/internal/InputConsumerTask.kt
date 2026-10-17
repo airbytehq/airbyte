@@ -27,8 +27,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 private val log = KotlinLogging.logger {}
 
 /**
- * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel and @
- * [CheckpointMessage]s to the state manager.
+ * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel
+ * and @ [CheckpointMessage]s to the state manager.
  *
  * TODO: Handle other message types.
  */
@@ -37,7 +37,7 @@ class InputConsumerTask(
     private val pipelineInputQueue:
         PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val partitioner: InputPartitioner,
-    private val pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter
+    private val pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter,
 ) : Task {
 
     override val terminalCondition: TerminalCondition = OnSyncFailureOnly
@@ -79,7 +79,7 @@ class InputConsumerTask(
                             handleRecordForPipeline(reserved.replace(message))
                         is CheckpointMessage ->
                             pipelineEventBookkeepingRouter.handleCheckpoint(
-                                reserved.replace(message)
+                                reserved.replace(message),
                             )
                         Undefined -> log.warn { "Unhandled message: $message" }
                         ProbeMessage,

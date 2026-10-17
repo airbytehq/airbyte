@@ -13,6 +13,7 @@ interface DestinationState
 
 interface DestinationStateManager<T : DestinationState> {
     suspend fun getState(stream: DestinationStream): T
+
     suspend fun persistState(stream: DestinationStream)
 }
 
@@ -34,5 +35,6 @@ class DefaultDestinationStateManager<T : DestinationState>(
 
 interface DestinationStatePersister<T : DestinationState> {
     suspend fun load(stream: DestinationStream): T
+
     suspend fun persist(stream: DestinationStream, state: T)
 }

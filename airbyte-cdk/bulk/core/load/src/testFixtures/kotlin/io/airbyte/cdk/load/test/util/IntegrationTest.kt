@@ -75,7 +75,7 @@ abstract class IntegrationTest(
     val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     val micronautProperties: Map<Property, String> = emptyMap(),
     val dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
-    val dataChannelFormat: DataChannelFormat = DataChannelFormat.PROTOBUF
+    val dataChannelFormat: DataChannelFormat = DataChannelFormat.PROTOBUF,
 ) {
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
@@ -125,7 +125,8 @@ abstract class IntegrationTest(
                 Cleaners detected:
                   $destinationCleaner
                   ${cleanerSeen.get()}
-                """.trimIndent()
+                """
+                    .trimIndent(),
             )
         }
     }
@@ -141,8 +142,9 @@ abstract class IntegrationTest(
     ) {
         val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
         val schema = ObjectType(LinkedHashMap(stream.tableSchema.columnSchema.inputSchema))
-        val expectedRecords: List<OutputRecord> =
-            canonicalExpectedRecords.map { recordMangler.mapRecord(it, schema) }
+        val expectedRecords: List<OutputRecord> = canonicalExpectedRecords.map {
+            recordMangler.mapRecord(it, schema)
+        }
         val descriptor = recordMangler.mapStreamDescriptor(stream.mappedDescriptor)
 
         RecordDiffer(
@@ -221,6 +223,7 @@ abstract class IntegrationTest(
          * If you set this to anything other than `COMPLETE`, you may run into a race condition.
          * It's recommended that you send an explicit state message in [messages], and run the sync
          * in a loop until it acks the state message, e.g.
+         *
          * ```
          * while (true) {
          *   val e = assertThrows<DestinationUncleanExitException> {
@@ -324,9 +327,9 @@ abstract class IntegrationTest(
                             AirbyteTraceMessage()
                                 .withType(AirbyteTraceMessage.Type.ANALYTICS)
                                 .withAnalytics(
-                                    AirbyteAnalyticsTraceMessage().withType("foo").withValue("bar")
+                                    AirbyteAnalyticsTraceMessage().withType("foo").withValue("bar"),
                                 )
-                                .withEmittedAt(System.currentTimeMillis().toDouble())
+                                .withEmittedAt(System.currentTimeMillis().toDouble()),
                         )
 
                 while (true) {
@@ -359,14 +362,14 @@ abstract class IntegrationTest(
                                                 .withStreamDescriptor(
                                                     StreamDescriptor()
                                                         .withNamespace(stream.unmappedNamespace)
-                                                        .withName(stream.unmappedName)
+                                                        .withName(stream.unmappedName),
                                                 )
-                                                .withStatus(AirbyteStreamStatus.INCOMPLETE)
-                                        )
+                                                .withStatus(AirbyteStreamStatus.INCOMPLETE),
+                                        ),
                                 )
                         destination.sendMessage(
                             InputMessageOther(incompleteTrace),
-                            broadcast = true
+                            broadcast = true,
                         )
                         destination.shutdown()
                     }

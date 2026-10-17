@@ -31,7 +31,7 @@ class DetectStreamToFlushTest {
     @BeforeEach
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-        justification = "compiler-generated lateinit null check after the assignment"
+        justification = "compiler-generated lateinit null check after the assignment",
     )
     internal fun setup() {
         flusher = Mockito.mock(DestinationFlushFunction::class.java)
@@ -57,7 +57,7 @@ class DetectStreamToFlushTest {
                 runningFlushWorkers,
                 AtomicBoolean(false),
                 flusher,
-                flushOnEveryMessage = false
+                flushOnEveryMessage = false,
             )
         Assertions.assertEquals(Optional.empty<Any>(), detect.getNextStreamToFlush(0))
     }
@@ -80,7 +80,7 @@ class DetectStreamToFlushTest {
                 runningFlushWorkers,
                 AtomicBoolean(false),
                 flusher,
-                flushOnEveryMessage = false
+                flushOnEveryMessage = false,
             )
         // if above threshold, triggers
         Assertions.assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0))
@@ -114,7 +114,7 @@ class DetectStreamToFlushTest {
                 runningFlushWorkers,
                 AtomicBoolean(false),
                 flusher,
-                flushOnEveryMessage = false
+                flushOnEveryMessage = false,
             )
         Assertions.assertEquals(Optional.empty<Any>(), detect.getNextStreamToFlush(0))
     }
@@ -138,7 +138,7 @@ class DetectStreamToFlushTest {
                 runningFlushWorkers,
                 AtomicBoolean(false),
                 flusher,
-                flushOnEveryMessage = true
+                flushOnEveryMessage = true,
             )
         Assertions.assertEquals(0, detect.computeQueueThreshold())
         Assertions.assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0))
@@ -173,7 +173,7 @@ class DetectStreamToFlushTest {
                 AtomicBoolean(false),
                 flusher,
                 mockedNowProvider,
-                flushOnEveryMessage = false
+                flushOnEveryMessage = false,
             )
 
         // initialize flush time

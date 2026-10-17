@@ -27,7 +27,7 @@ class FilePartAccumulatorLegacy(
     private val stream: DestinationStream,
     private val outputQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
-    private val loadStrategy: ObjectLoader
+    private val loadStrategy: ObjectLoader,
 ) {
     val log = KotlinLogging.logger {}
     val partitioner =
@@ -96,7 +96,7 @@ class FilePartAccumulatorFactory(
     private val pathFactory: ObjectStoragePathFactory,
     private val outputQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
-    private val loadStrategy: ObjectLoader
+    private val loadStrategy: ObjectLoader,
 ) {
     fun make(
         stream: DestinationStream,

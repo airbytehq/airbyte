@@ -108,7 +108,7 @@ class FileChunkTaskTest<T> {
 
         val expected =
             PipelineEndOfStream<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>(
-                Fixtures.unmappedDescriptor
+                Fixtures.unmappedDescriptor,
             )
         coVerify { partQueue.broadcast(eq(expected)) }
     }
@@ -168,7 +168,7 @@ class FileChunkTaskTest<T> {
                     PipelineContext(
                         mapOf(CheckpointId("1") to CheckpointValue(2, 2)),
                         record,
-                    )
+                    ),
             )
         task.handleEvent(input)
 
@@ -223,11 +223,11 @@ class FileChunkTaskTest<T> {
 
         assertEquals(
             FieldType(StringType, nullable = true),
-            schema.properties[COLUMN_NAME_AIRBYTE_FILE_PATH]
+            schema.properties[COLUMN_NAME_AIRBYTE_FILE_PATH],
         )
         assertContains(
             Jsons.serialize(record.asJsonRecord()),
-            """"$COLUMN_NAME_AIRBYTE_FILE_PATH":"$myFilePath""""
+            """"$COLUMN_NAME_AIRBYTE_FILE_PATH":"$myFilePath"""",
         )
     }
 
@@ -246,13 +246,13 @@ class FileChunkTaskTest<T> {
                 .withRecord(
                     AirbyteRecordMessage()
                         .withData(Jsons.deserialize("""{"something": "has to give"}"""))
-                        .withFileReference(fileReference)
+                        .withFileReference(fileReference),
                 )
 
         fun schema() =
             ObjectType(
                 properties =
-                    LinkedHashMap(mapOf("something" to FieldType(StringType, nullable = true)))
+                    LinkedHashMap(mapOf("something" to FieldType(StringType, nullable = true))),
             )
 
         fun stream(schema: ObjectType = schema()) =
@@ -271,7 +271,7 @@ class FileChunkTaskTest<T> {
         fun record(
             message: AirbyteMessage = message(),
             schema: ObjectType = schema(),
-            stream: DestinationStream = stream(schema)
+            stream: DestinationStream = stream(schema),
         ) =
             DestinationRecordRaw(
                 stream = stream,

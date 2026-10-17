@@ -42,16 +42,19 @@ import kotlinx.coroutines.channels.Channel
  * 2. Start the spill-to-disk task for each stream
  * 3. When setup completes, start the open stream task for each stream
  * 4. When each new spilled file is ready, start the process records task
+ *
  * ```
  *    (This task will wait if open stream is not yet complete for that stream.)
  * ```
  * 5. When each batch is ready
+ *
  * ```
  *    - update the batch state in the stream manager
  *    - if the batch is not complete, start the process batch task
  *    - if the batch is complete and all batches are complete, start the close stream task
  * ```
  * 6. When the stream is closed
+ *
  * ```
  *    - mark the stream as closed in the stream manager
  *    - start the teardown task
@@ -95,7 +98,7 @@ class DestinationTaskLauncher(
     init {
         if (loadPipeline == null) {
             throw IllegalStateException(
-                "A legal sync requires a declared @Singleton of a type that implements LoadStrategy"
+                "A legal sync requires a declared @Singleton of a type that implements LoadStrategy",
             )
         }
     }

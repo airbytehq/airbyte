@@ -27,7 +27,7 @@ class SizeTriggerTest {
     @BeforeEach
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-        justification = "compiler-generated lateinit null check after the assignment"
+        justification = "compiler-generated lateinit null check after the assignment",
     )
     internal fun setup() {
         flusher = Mockito.mock(DestinationFlushFunction::class.java)
