@@ -565,13 +565,8 @@ internal class S3DataLakeStreamLoaderTest {
                 any<Type.PrimitiveType>(),
             )
         } returns updateSchema
-        every {
-            updateSchema.addColumn(
-                any<String>(),
-                any<String>(),
-                any<Type.PrimitiveType>(),
-            )
-        } returns updateSchema
+        every { updateSchema.addColumn(any<String>(), any<String>(), any<Type>()) } returns
+            updateSchema
         every { updateSchema.setIdentifierFields(any<Collection<String>>()) } returns updateSchema
 
         every { updateSchema.commit() } just runs
@@ -735,15 +730,14 @@ internal class S3DataLakeStreamLoaderTest {
                 any<Type.PrimitiveType>(),
             )
         } returns updateSchema
-        every {
-            updateSchema.addColumn(
-                any<String>(),
-                any<String>(),
-                any<Type.PrimitiveType>(),
-            )
-        } returns updateSchema
+        every { updateSchema.addColumn(any<String>(), any<String>(), any<Type>()) } returns
+            updateSchema
         every { updateSchema.requireColumn("id") } returns updateSchema
         every { updateSchema.setIdentifierFields(primaryKeys) } returns updateSchema
+        // Bulk CDK load >= 1.1.2 generates `_airbyte_meta.changes` with optional list elements and
+        // relaxes the required ones in the existing table through makeColumnOptional (1.1.1 did not
+        // call it at all). Answer it so the test runs on both, and assert on it below.
+        every { updateSchema.makeColumnOptional(any()) } returns updateSchema
         every { updateSchema.commit() } just runs
         every { updateSchema.apply() } returns icebergSchema
         every { table.refresh() } just runs
@@ -784,10 +778,12 @@ internal class S3DataLakeStreamLoaderTest {
 
         verify(exactly = 0) { updateSchema.deleteColumn(any()) }
         verify(exactly = 0) { updateSchema.updateColumn(any(), any<Type.PrimitiveType>()) }
-        verify(exactly = 0) { updateSchema.makeColumnOptional(any()) }
+        // User columns keep their nullability; only the CDK-owned `_airbyte_meta.changes` subtree
+        // may be relaxed, and only by CDK versions that generate optional list elements.
         verify(exactly = 0) {
-            updateSchema.addColumn(any<String>(), any<String>(), any<Type.PrimitiveType>())
+            updateSchema.makeColumnOptional(match { !it.startsWith("_airbyte_meta.") })
         }
+        verify(exactly = 0) { updateSchema.addColumn(any<String>(), any<String>(), any<Type>()) }
         verify(exactly = 1) { updateSchema.requireColumn("id") }
         verify(exactly = 1) { updateSchema.setIdentifierFields(primaryKeys) }
         verify(exactly = 0) { updateSchema.commit() }
