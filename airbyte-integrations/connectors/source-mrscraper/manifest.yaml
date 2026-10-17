@@ -1,0 +1,254 @@
+version: 7.33.0
+
+type: DeclarativeSource
+
+description: >-
+  Syncs the results MrScraper stores for your scraper runs: AI extraction runs and reruns, bulk jobs, manual and
+  workflow runs, and Web Unblocker page fetches.
+
+check:
+  type: CheckStream
+  stream_names:
+    - results
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['api_key'] }}"
+      inject_into:
+        type: RequestOption
+        inject_into: header
+        field_name: x-api-token
+    request_headers:
+      # api.app.mrscraper.com reads the token from x-api-token. MrScraper's own clients also send it as a bearer
+      # credential, which other MrScraper hosts require, so every request carries both headers.
+      Authorization: "Bearer {{ config['api_key'] }}"
+      Accept: application/json
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+            - 403
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            MrScraper rejected the API token. Copy an active token from https://app.mrscraper.com/api-tokens into the
+            API Token field.
+
+  streams:
+    results:
+      type: DeclarativeStream
+      name: results
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://api.app.mrscraper.com/api/v1/results
+          http_method: GET
+          request_parameters:
+            sortField: createdAt
+            sortOrder: ASC
+            dateRangeColumn: createdAt
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            # The first request omits `page`, which MrScraper treats as page 1. The stop condition reads the page
+            # count from `meta` instead of comparing page sizes, so a server-side page-size cap can't end a read early.
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response['meta']['page'] + 1 }}"
+            stop_condition: "{{ not response.get('meta') or response['meta']['page'] >= response['meta']['totalPage'] }}"
+      incremental_sync:
+        # MrScraper applies startAt and endAt to the calendar date of createdAt, inclusive on both ends, so windows
+        # are whole days. The one-day lookback re-reads results that finished after the previous sync started.
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date') or '2020-01-01' }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
+        step: P30D
+        cursor_granularity: P1D
+        lookback_window: P1D
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: startAt
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: endAt
+      transformations:
+        # `curl` replays the original request, including the caller's API token in plain text. Never sync it.
+        - type: RemoveFields
+          field_pointers:
+            - - curl
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/results"
+
+streams:
+  - $ref: "#/definitions/streams/results"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/mrscraper
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: MrScraper Spec
+    type: object
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Token
+        description: >-
+          Your MrScraper API token. Create one on the API Tokens page of the MrScraper dashboard:
+          https://app.mrscraper.com/api-tokens
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start Date
+        description: >-
+          Earliest creation date (UTC) of the results to sync, in YYYY-MM-DD format. Leave it empty to sync every
+          stored result.
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        pattern_descriptor: YYYY-MM-DD
+        examples:
+          - "2026-01-01"
+        order: 1
+    additionalProperties: true
+
+schemas:
+  results:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: UUID of the stored result.
+      createdAt:
+        type: string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+        description: When MrScraper created the result, in UTC.
+      userId:
+        type:
+          - "null"
+          - string
+        description: UUID of the MrScraper user that owns the result.
+      scraperId:
+        type:
+          - "null"
+          - string
+        description: >-
+          UUID of the saved scraper that produced the result. Null for runs without a saved scraper, such as Web
+          Unblocker fetches.
+      type:
+        type:
+          - "null"
+          - string
+        description: >-
+          Run type, such as AI, Rerun-AI, Bulk-AI, Manual, Rerun-Manual, Bulk-Manual, Workflow, Scrape-HTML, or
+          Playground (a Web Unblocker fetch).
+      url:
+        type:
+          - "null"
+          - string
+        description: Target URL of the run.
+      status:
+        type:
+          - "null"
+          - string
+        description: Run status, such as Running, Finished, Failed, or Cancelled.
+      error:
+        type:
+          - "null"
+          - string
+        description: Error message of a failed run. Null or empty otherwise.
+      tokenUsage:
+        type:
+          - "null"
+          - integer
+        description: Plan tokens the run consumed.
+      bandwidthUsage:
+        type:
+          - "null"
+          - number
+          - string
+        description: Bandwidth MrScraper recorded for the run, in megabytes.
+      runtime:
+        type:
+          - "null"
+          - string
+        description: Run time in seconds, as the decimal string the API returns.
+      data:
+        type:
+          - "null"
+          - object
+          - array
+          - string
+        description: >-
+          Stored output of the run. AI runs hold the extracted record or records; Web Unblocker and HTML runs hold an
+          object whose html field contains the page body.
+      htmlPath:
+        type:
+          - "null"
+          - string
+        description: Storage key of the page HTML, when MrScraper stored it separately.
+      dataPath:
+        type:
+          - "null"
+          - string
+        description: Storage key of the extracted data, when MrScraper stored it separately.
+      recordingPath:
+        type:
+          - "null"
+          - string
+        description: Storage key of the session recording, when one exists.
+      screenshotPath:
+        type:
+          - "null"
+          - string
+        description: Storage key of the page screenshot, when one exists.
+      sqlDeliveryStatus:
+        type:
+          - "null"
+          - string
+        description: >-
+          Status of delivering the result to a SQL database connection configured in MrScraper. Null when no SQL
+          delivery applies.

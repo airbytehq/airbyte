@@ -1,0 +1,19 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-mrscraper:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    tests:
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    bypass_reason: "Requires a MrScraper API token; Airbyte's test secret store has none yet."
+  basic_read:
+    bypass_reason: "Requires a MrScraper API token; Airbyte's test secret store has none yet."
+  incremental:
+    bypass_reason: "Requires a MrScraper API token; Airbyte's test secret store has none yet."
+  full_refresh:
+    bypass_reason: "Requires a MrScraper API token; Airbyte's test secret store has none yet."
