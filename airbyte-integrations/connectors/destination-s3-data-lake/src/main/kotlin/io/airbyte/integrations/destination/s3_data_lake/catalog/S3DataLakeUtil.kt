@@ -94,10 +94,6 @@ class S3DataLakeUtil(
             is PolarisCatalogConfiguration -> {
                 buildPolarisProperties(config, catalogConfig, s3Properties, region)
             }
-            else ->
-                throw IllegalArgumentException(
-                    "Unsupported catalog type: ${catalogConfig::class.java.name}"
-                )
         }
     }
 
