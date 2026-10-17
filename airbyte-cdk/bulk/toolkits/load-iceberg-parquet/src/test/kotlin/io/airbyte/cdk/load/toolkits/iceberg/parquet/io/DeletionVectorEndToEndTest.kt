@@ -481,7 +481,7 @@ class DeletionVectorEndToEndTest {
                 .containsExactlyInAnyOrderElementsOf(
                     // Main never saw the staging-only delete.
                     if (branch == "main") listOf("1" to "one", "2" to "two")
-                    else listOf("1" to "one")
+                    else listOf("1" to "one"),
                 )
         }
     }
@@ -527,7 +527,7 @@ class DeletionVectorEndToEndTest {
                 .`as`("rows on $branch")
                 .containsExactlyInAnyOrderElementsOf(
                     if (branch == "main") listOf("1" to "one", "2" to "two")
-                    else listOf("1" to "one")
+                    else listOf("1" to "one"),
                 )
         }
     }
@@ -544,11 +544,11 @@ class DeletionVectorEndToEndTest {
                 .buildTable(tableId, schema)
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .withProperty(TableProperties.FORMAT_VERSION, "2")
                 .withPartitionSpec(
-                    org.apache.iceberg.PartitionSpec.builderFor(schema).identity("name").build()
+                    org.apache.iceberg.PartitionSpec.builderFor(schema).identity("name").build(),
                 )
                 .create()
         // The same key exists in two partitions.
@@ -599,7 +599,7 @@ class DeletionVectorEndToEndTest {
                 .buildTable(tableId, tsSchema)
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .withProperty(TableProperties.FORMAT_VERSION, "3")
                 .create()
@@ -661,7 +661,7 @@ class DeletionVectorEndToEndTest {
                 .buildTable(tableId, tsSchema)
                 .withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
                 .withProperty(TableProperties.FORMAT_VERSION, "2")
                 .create()
@@ -714,7 +714,7 @@ class DeletionVectorEndToEndTest {
                     deleteMode = IcebergDeleteMode.DELETION_VECTOR,
                 ) as BasePositionDeltaTaskWriter
             writer.write(
-                RecordWrapper(record("${sync + 1}", "updated-${sync + 1}"), Operation.UPDATE)
+                RecordWrapper(record("${sync + 1}", "updated-${sync + 1}"), Operation.UPDATE),
             )
             commitWriter(table, writer)
         }

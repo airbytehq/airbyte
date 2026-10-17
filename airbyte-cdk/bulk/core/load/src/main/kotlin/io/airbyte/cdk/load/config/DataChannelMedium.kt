@@ -6,5 +6,5 @@ package io.airbyte.cdk.load.config
 
 enum class DataChannelMedium {
     SOCKET,
-    STDIO
+    STDIO,
 }

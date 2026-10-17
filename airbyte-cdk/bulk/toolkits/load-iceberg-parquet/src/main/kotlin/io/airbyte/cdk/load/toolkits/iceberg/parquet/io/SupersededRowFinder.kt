@@ -178,37 +178,36 @@ class SupersededRowFinder(
         val positionDeletes =
             planned.deletes.filter { it.content() == FileContent.POSITION_DELETES }
         if (positionDeletes.isEmpty()) return null
-        val indexes =
-            positionDeletes.mapNotNull { deleteFile ->
-                // Several DVs can live in one Puffin file, so the cache key must also carry the
-                // referenced data file.
-                val deletePath = deleteFile.location()
-                val cacheKey =
-                    if (ContentFileUtil.isDV(deleteFile)) {
-                        "$deletePath#${deleteFile.contentOffset()}:${deleteFile.referencedDataFile()}"
-                    } else {
-                        deletePath
-                    }
-                if (state.unreadablePositionDeleteFiles.contains(cacheKey)) {
-                    return@mapNotNull null
+        val indexes = positionDeletes.mapNotNull { deleteFile ->
+            // Several DVs can live in one Puffin file, so the cache key must also carry the
+            // referenced data file.
+            val deletePath = deleteFile.location()
+            val cacheKey =
+                if (ContentFileUtil.isDV(deleteFile)) {
+                    "$deletePath#${deleteFile.contentOffset()}:${deleteFile.referencedDataFile()}"
+                } else {
+                    deletePath
                 }
-                val indexesByDataFile =
-                    state.positionDeleteIndexes[cacheKey]
-                        ?: try {
-                            readPositionDeleteIndexes(deleteFile).also {
-                                state.positionDeleteIndexes[cacheKey] = it
-                            }
-                        } catch (e: Exception) {
-                            state.unreadablePositionDeleteFiles.add(cacheKey)
-                            logger.warn(e) {
-                                "Unable to load prior position deletes from $deletePath; " +
-                                    "position suppression is disabled for data file " +
-                                    "${planned.file.location()}"
-                            }
-                            return@mapNotNull null
-                        }
-                indexesByDataFile[planned.file.location()]
+            if (state.unreadablePositionDeleteFiles.contains(cacheKey)) {
+                return@mapNotNull null
             }
+            val indexesByDataFile =
+                state.positionDeleteIndexes[cacheKey]
+                    ?: try {
+                        readPositionDeleteIndexes(deleteFile).also {
+                            state.positionDeleteIndexes[cacheKey] = it
+                        }
+                    } catch (e: Exception) {
+                        state.unreadablePositionDeleteFiles.add(cacheKey)
+                        logger.warn(e) {
+                            "Unable to load prior position deletes from $deletePath; " +
+                                "position suppression is disabled for data file " +
+                                "${planned.file.location()}"
+                        }
+                        return@mapNotNull null
+                    }
+            indexesByDataFile[planned.file.location()]
+        }
         return if (indexes.isEmpty()) {
             null
         } else {
@@ -292,14 +291,14 @@ class SupersededRowFinder(
                 bound.ranges.any { (minimum, maximum) ->
                     bound.comparator.compare(
                         maximum,
-                        Conversions.fromByteBuffer<Any>(bound.field.type(), fileLower.duplicate())
+                        Conversions.fromByteBuffer<Any>(bound.field.type(), fileLower.duplicate()),
                     ) >= 0 &&
                         bound.comparator.compare(
                             minimum,
                             Conversions.fromByteBuffer<Any>(
                                 bound.field.type(),
-                                fileUpper.duplicate()
-                            )
+                                fileUpper.duplicate(),
+                            ),
                         ) <= 0
                 }
         }

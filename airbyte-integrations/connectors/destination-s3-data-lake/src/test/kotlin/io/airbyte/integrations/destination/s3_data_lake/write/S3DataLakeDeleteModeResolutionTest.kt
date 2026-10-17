@@ -71,7 +71,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
     private lateinit var catalog: Catalog
 
     private fun makeStream(
-        importType: ImportType = Dedupe(listOf(listOf("id")), listOf("id"))
+        importType: ImportType = Dedupe(listOf(listOf("id")), listOf("id")),
     ): DestinationStream {
         val objectSchema =
             ObjectType(
@@ -198,7 +198,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
         catalog = InMemoryCatalog()
         catalog.initialize(
             "test",
-            mapOf(CatalogProperties.WAREHOUSE_LOCATION to warehouseDir.toString())
+            mapOf(CatalogProperties.WAREHOUSE_LOCATION to warehouseDir.toString()),
         )
     }
 
@@ -221,7 +221,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
                     stream,
                     makeConfiguration(formatVersion = IcebergTableFormatVersion.V3),
                     table,
-                )
+                ),
             )
         assertEquals(IcebergDeleteMode.DELETION_VECTOR, state.deleteMode)
         assertNotNull(state.positionalDeleteState)
@@ -237,7 +237,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
                     stream,
                     makeConfiguration(formatVersion = IcebergTableFormatVersion.V3),
                     table,
-                )
+                ),
             )
         assertEquals(IcebergDeleteMode.EQUALITY, state.deleteMode)
         assertEquals(2, tableFormatVersion(table))
@@ -275,7 +275,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
                         allowUpgrade = AllowNonReversibleUpgrades.YES,
                     ),
                     table,
-                )
+                ),
             )
         assertEquals(IcebergDeleteMode.DELETION_VECTOR, state.deleteMode)
         table.refresh()
@@ -294,7 +294,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
                     allowUpgrade = AllowNonReversibleUpgrades.WITH_TABLE_BACKUP,
                 ),
                 table,
-            )
+            ),
         )
         table.refresh()
         assertEquals(3, tableFormatVersion(table))
@@ -328,7 +328,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
                         allowUpgrade = AllowNonReversibleUpgrades.YES,
                     ),
                     table,
-                )
+                ),
             )
         assertEquals(IcebergDeleteMode.EQUALITY, state.deleteMode)
         table.refresh()
@@ -444,7 +444,7 @@ internal class S3DataLakeDeleteModeResolutionTest {
                 ),
                 table,
                 mainBranchName = "prod",
-            )
+            ),
         )
         table.refresh()
         assertEquals(3, tableFormatVersion(table))

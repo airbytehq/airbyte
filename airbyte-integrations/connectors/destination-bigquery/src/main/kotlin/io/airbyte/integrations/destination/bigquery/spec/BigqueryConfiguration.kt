@@ -59,7 +59,8 @@ class BigqueryConfigurationFactory :
             credentialsJson = pojo.credentialsJson,
             // default to hard delete for backwards compatibility.
             cdcDeletionMode = pojo.cdcDeletionMode ?: CdcDeletionMode.HARD_DELETE,
-            internalTableDataset = pojo.internalTableDataset?.takeUnless(String::isBlank)
+            internalTableDataset =
+                pojo.internalTableDataset?.takeUnless(String::isBlank)
                     ?: DbConstants.DEFAULT_RAW_TABLE_NAMESPACE,
             legacyRawTablesOnly = pojo.legacyRawTablesOnly ?: false,
         )

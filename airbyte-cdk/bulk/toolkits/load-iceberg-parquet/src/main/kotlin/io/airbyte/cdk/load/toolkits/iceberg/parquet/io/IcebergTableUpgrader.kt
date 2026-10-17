@@ -187,11 +187,15 @@ object IcebergTableUpgrader {
         }
         val locationProvider = table.locationProvider()
         val writer =
-            BaseDVFileWriter({
-                table
-                    .io()
-                    .newOutputFile(locationProvider.newDataLocation("${UUID.randomUUID()}.puffin"))
-            }) { path ->
+            BaseDVFileWriter(
+                {
+                    table
+                        .io()
+                        .newOutputFile(
+                            locationProvider.newDataLocation("${UUID.randomUUID()}.puffin"),
+                        )
+                },
+            ) { path ->
                 // Merge an existing DV if the data file already has one.
                 deleteFiles
                     .firstOrNull { ContentFileUtil.isDV(it) && it.referencedDataFile() == path }
@@ -201,7 +205,7 @@ object IcebergTableUpgrader {
             positionsByDataFile.forEach { (path, pending) ->
                 val index =
                     Deletes.toPositionIndex(
-                        CloseableIterable.withNoopClose(pending.positions.toList())
+                        CloseableIterable.withNoopClose(pending.positions.toList()),
                     )
                 writer.delete(path, index, pending.spec, pending.partition)
             }

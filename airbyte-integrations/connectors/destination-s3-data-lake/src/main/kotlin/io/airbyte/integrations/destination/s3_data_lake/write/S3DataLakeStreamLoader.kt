@@ -101,7 +101,7 @@ class S3DataLakeStreamLoader(
                     "names match columns in the incoming schema: ${renames.joinToString(", ")}. " +
                     "This usually means the 'Normalize Column Names' option was changed after the " +
                     "table was created. Clear this stream's data and run a full refresh so the " +
-                    "table is recreated with the new column names."
+                    "table is recreated with the new column names.",
             )
         }
     }

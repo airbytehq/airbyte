@@ -27,7 +27,7 @@ private val LOGGER = KotlinLogging.logger {}
 
 class DbtTransformationRunner(
     private val processFactory: ProcessFactory,
-    private val normalizationRunner: NormalizationRunner
+    private val normalizationRunner: NormalizationRunner,
 ) : AutoCloseable {
     private lateinit var process: Process
 
@@ -53,7 +53,7 @@ class DbtTransformationRunner(
         jobRoot: Path,
         config: JsonNode?,
         resourceRequirements: ResourceRequirements?,
-        dbtConfig: OperatorDbt
+        dbtConfig: OperatorDbt,
     ): Boolean {
         if (
             !normalizationRunner.configureDbt(
@@ -62,7 +62,7 @@ class DbtTransformationRunner(
                 jobRoot,
                 config,
                 resourceRequirements,
-                dbtConfig
+                dbtConfig,
             )
         ) {
             return false
@@ -77,7 +77,7 @@ class DbtTransformationRunner(
         jobRoot: Path,
         config: JsonNode?,
         resourceRequirements: ResourceRequirements?,
-        dbtConfig: OperatorDbt
+        dbtConfig: OperatorDbt,
     ): Boolean {
         try {
             val files: Map<String?, String?> =
@@ -85,7 +85,7 @@ class DbtTransformationRunner(
                     DBT_ENTRYPOINT_SH,
                     MoreResources.readResource("dbt_transformation_entrypoint.sh"),
                     "sshtunneling.sh",
-                    MoreResources.readResource("sshtunneling.sh")
+                    MoreResources.readResource("sshtunneling.sh"),
                 )
             val dbtArguments: MutableList<String> = ArrayList()
             dbtArguments.add(DBT_ENTRYPOINT_SH)
@@ -94,7 +94,7 @@ class DbtTransformationRunner(
             }
             Collections.addAll(
                 dbtArguments,
-                *Commandline.translateCommandline(dbtConfig.dbtArguments)
+                *Commandline.translateCommandline(dbtConfig.dbtArguments),
             )
             val process =
                 processFactory.create(
@@ -113,23 +113,23 @@ class DbtTransformationRunner(
                         Metadata.JOB_TYPE_KEY,
                         Metadata.SYNC_JOB,
                         Metadata.SYNC_STEP_KEY,
-                        Metadata.CUSTOM_STEP
+                        Metadata.CUSTOM_STEP,
                     ),
                     emptyMap(),
                     emptyMap(),
                     emptyMap(),
-                    *dbtArguments.toTypedArray<String>()
+                    *dbtArguments.toTypedArray<String>(),
                 )
             this.process = process
             LineGobbler.gobble(
                 process.inputStream,
                 { msg: String -> LOGGER.info(msg) },
-                CONTAINER_LOG_MDC_BUILDER
+                CONTAINER_LOG_MDC_BUILDER,
             )
             LineGobbler.gobble(
                 process.errorStream,
                 { msg: String -> LOGGER.error(msg) },
-                CONTAINER_LOG_MDC_BUILDER
+                CONTAINER_LOG_MDC_BUILDER,
             )
 
             TestHarnessUtils.wait(process)

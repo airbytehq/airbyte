@@ -18,7 +18,7 @@ object ConfigTestUtils {
     "credential_type": "HMAC_KEY",
     "hmac_key_access_id": "some_hmac_key",
     "hmac_key_secret": "some_key_secret"
-  },  "format": $formatConfig}"""
+  },  "format": $formatConfig}""",
         )
     }
 

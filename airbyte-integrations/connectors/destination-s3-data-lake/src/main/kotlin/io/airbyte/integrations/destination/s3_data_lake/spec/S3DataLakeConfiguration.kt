@@ -116,7 +116,7 @@ class S3DataLakeConfigurationFactory :
     DestinationConfigurationFactory<S3DataLakeSpecification, S3DataLakeConfiguration> {
 
     override fun makeWithoutExceptionHandling(
-        pojo: S3DataLakeSpecification
+        pojo: S3DataLakeSpecification,
     ): S3DataLakeConfiguration {
         return S3DataLakeConfiguration(
             awsAccessKeyConfiguration = pojo.toAWSAccessKeyConfiguration(),
@@ -126,8 +126,8 @@ class S3DataLakeConfigurationFactory :
             maxRecordsPerFlush = pojo.maxRecordsPerFlush,
             tableFormatVersion = pojo.tableFormatVersion ?: IcebergTableFormatVersion.V2,
             icebergDeleteFileType = pojo.icebergDeleteFileType ?: IcebergDeleteFileType.AUTOMATIC,
-            allowNonReversibleUpgrades = pojo.allowNonReversibleUpgrades
-                    ?: AllowNonReversibleUpgrades.NO,
+            allowNonReversibleUpgrades =
+                pojo.allowNonReversibleUpgrades ?: AllowNonReversibleUpgrades.NO,
             optimizePriorIcebergDeleteFiles = pojo.optimizePriorIcebergDeleteFiles ?: true,
             normalizeColumnNames = pojo.normalizeColumnNames ?: false,
         )

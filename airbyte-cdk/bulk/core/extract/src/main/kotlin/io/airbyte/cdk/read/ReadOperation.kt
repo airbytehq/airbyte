@@ -104,14 +104,13 @@ class ReadOperation(
             var children: List<Job> = job.children.toList()
             // Collapse chains of jobs with identical names.
             while (children.any { label(it) == name }) {
-                children =
-                    children.flatMap {
-                        if (label(it) == name) {
-                            it.children.toList()
-                        } else {
-                            listOf(it)
-                        }
+                children = children.flatMap {
+                    if (label(it) == name) {
+                        it.children.toList()
+                    } else {
+                        listOf(it)
                     }
+                }
             }
             for (child in children) {
                 node.addChild(recursiveBuildTree(child))

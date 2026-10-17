@@ -9,7 +9,7 @@ class AlterTableReport(
     columnsToAdd: Set<String>,
     columnsToRemove: Set<String>,
     columnsToChangeType: Set<String>,
-    isDestinationV2Format: Boolean
+    isDestinationV2Format: Boolean,
 ) {
     val isNoOp: Boolean
         /**

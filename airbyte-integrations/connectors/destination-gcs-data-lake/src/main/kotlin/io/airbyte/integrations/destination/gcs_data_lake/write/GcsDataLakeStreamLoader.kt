@@ -60,14 +60,14 @@ class GcsDataLakeStreamLoader(
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
-        "something about the `table` lateinit var is confusing spotbugs"
+        "something about the `table` lateinit var is confusing spotbugs",
     )
     override suspend fun start() {
         val properties = gcsDataLakeCatalogUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog =
             icebergUtil.createCatalog(
                 io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_CATALOG_NAME,
-                properties
+                properties,
             )
         gcsDataLakeCatalogUtil.createNamespace(stream.mappedDescriptor, catalog)
         table =
@@ -248,14 +248,14 @@ internal fun transformSchemaWithMappedNames(
                         field.fieldId(),
                         mappedName,
                         field.type(),
-                        field.doc()
+                        field.doc(),
                     )
                 } else {
                     Types.NestedField.required(
                         field.fieldId(),
                         mappedName,
                         field.type(),
-                        field.doc()
+                        field.doc(),
                     )
                 }
             } else {
