@@ -82,7 +82,7 @@ jobs:
     steps:
       - name: Link comment to Workflow Run
         if: github.event.inputs.comment-id
-        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
@@ -160,7 +160,7 @@ jobs:
 
       - name: Add Success Comment
         if: github.event.inputs.comment-id && success()
-        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           edit-mode: append
@@ -169,7 +169,7 @@ jobs:
 
       - name: Add Failure Comment
         if: github.event.inputs.comment-id && failure()
-        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           edit-mode: append
