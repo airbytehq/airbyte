@@ -40,3 +40,9 @@ data:
     - title: WordPress authentication
       url: https://developer.wordpress.org/rest-api/using-the-rest-api/authentication/
       type: authentication_guide
+    - title: WordPress REST API changelog
+      url: https://developer.wordpress.org/rest-api/changelog/
+      type: api_release_history
+    - title: WordPress core REST API dev notes
+      url: https://make.wordpress.org/core/tag/rest-api/
+      type: api_release_history
