@@ -150,6 +150,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:---------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.11 | 2026-10-11 | [78501](https://github.com/airbytehq/airbyte/pull/78501) | Fix overwrite/truncate cleanup failure for SAS-authenticated destinations by falling back to per-blob delete when batch delete is not supported |
 | 1.1.10 | 2026-10-09 | [87614](https://github.com/airbytehq/airbyte/pull/87614) | Upgrade to Bulk CDK 1.1.1. |
 | 1.1.9 | 2026-09-01 | [84984](https://github.com/airbytehq/airbyte/pull/84984) | Upgrade to Bulk CDK 1.0.25. |
 | 1.1.8 | 2026-08-10 | [83810](https://github.com/airbytehq/airbyte/pull/83810) | Upgrade CDK to 1.0.24 |
