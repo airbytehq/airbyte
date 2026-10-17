@@ -182,6 +182,1012 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/products"
+    brand:
+      type: DeclarativeStream
+      name: brand
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/reporting_requester'
+          path: brands/current
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: reporting_enabled
+          values: '{{ [True] if config.get(''enable_reporting'', False) else [] }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            brandID:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+            website:
+              type:
+              - 'null'
+              - string
+            currency:
+              type:
+              - 'null'
+              - string
+            timezone:
+              type:
+              - 'null'
+              - string
+      primary_key:
+      - brandID
+    campaigns_v2026:
+      type: DeclarativeStream
+      name: campaigns_v2026
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/reporting_requester'
+          path: campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - campaigns
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: reporting_enabled
+          values: '{{ [True] if config.get(''enable_reporting'', False) else [] }}'
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 250
+            cursor_value: '{{ response.get(''paging'', {}).get(''cursors'', {}).get(''after'') }}'
+            stop_condition: '{{ not response.get(''paging'', {}).get(''hasMore'', False) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            abTest:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            audience:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            boosterSettings:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            brandID:
+              type:
+              - 'null'
+              - string
+            channel:
+              type:
+              - 'null'
+              - string
+            content:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            createdAt:
+              type:
+              - 'null'
+              - string
+            endedAt:
+              type:
+              - 'null'
+              - string
+            id:
+              type: string
+            language:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+            sendingSettings:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            startedAt:
+              type:
+              - 'null'
+              - string
+            status:
+              type:
+              - 'null'
+              - string
+            type:
+              type:
+              - 'null'
+              - string
+            updatedAt:
+              type:
+              - 'null'
+              - string
+            url:
+              type:
+              - 'null'
+              - string
+      primary_key:
+      - id
+    automations:
+      type: DeclarativeStream
+      name: automations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/reporting_requester'
+          path: automations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - automations
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: reporting_enabled
+          values: '{{ [True] if config.get(''enable_reporting'', False) else [] }}'
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 250
+            cursor_value: '{{ response.get(''paging'', {}).get(''cursors'', {}).get(''after'') }}'
+            stop_condition: '{{ not response.get(''paging'', {}).get(''hasMore'', False) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            blocks:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+            brandID:
+              type:
+              - 'null'
+              - string
+            createdAt:
+              type:
+              - 'null'
+              - string
+            disabledAt:
+              type:
+              - 'null'
+              - string
+            enabledAt:
+              type:
+              - 'null'
+              - string
+            exitConditions:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+            id:
+              type: string
+            isEnabled:
+              type:
+              - 'null'
+              - boolean
+            name:
+              type:
+              - 'null'
+              - string
+            settings:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            trigger:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            updatedAt:
+              type:
+              - 'null'
+              - string
+            url:
+              type:
+              - 'null'
+              - string
+      primary_key:
+      - id
+    forms:
+      type: DeclarativeStream
+      name: forms
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/reporting_requester'
+          path: forms
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - forms
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: reporting_enabled
+          values: '{{ [True] if config.get(''enable_reporting'', False) else [] }}'
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 250
+            cursor_value: '{{ response.get(''paging'', {}).get(''cursors'', {}).get(''after'') }}'
+            stop_condition: '{{ not response.get(''paging'', {}).get(''hasMore'', False) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            abSetupID:
+              type:
+              - 'null'
+              - string
+            abStatus:
+              type:
+              - 'null'
+              - string
+            autoRedirect:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            clickOutside:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            contactTags:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - string
+            content:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            createdAt:
+              type:
+              - 'null'
+              - string
+            disabledAt:
+              type:
+              - 'null'
+              - string
+            displayType:
+              type:
+              - 'null'
+              - string
+            doubleOptIn:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            enabledAt:
+              type:
+              - 'null'
+              - string
+            id:
+              type: string
+            launchedAt:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+            recaptcha:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            socialMediaSharing:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            status:
+              type:
+              - 'null'
+              - string
+            targeting:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            updatedAt:
+              type:
+              - 'null'
+              - string
+      primary_key:
+      - id
+    segments:
+      type: DeclarativeStream
+      name: segments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/reporting_requester'
+          path: segments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - segments
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: reporting_enabled
+          values: '{{ [True] if config.get(''enable_reporting'', False) else [] }}'
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ response.get(''paging'', {}).get(''cursors'', {}).get(''after'') }}'
+            stop_condition: '{{ not response.get(''paging'', {}).get(''hasMore'', False) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            archivedAt:
+              type:
+              - 'null'
+              - string
+            conditionGroups:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+            createdAt:
+              type:
+              - 'null'
+              - string
+            isStarred:
+              type:
+              - 'null'
+              - boolean
+            name:
+              type:
+              - 'null'
+              - string
+            segmentID:
+              type: string
+            status:
+              type:
+              - 'null'
+              - string
+            updatedAt:
+              type:
+              - 'null'
+              - string
+      primary_key:
+      - segmentID
+    analytics_reports:
+      type: DeclarativeStream
+      name: analytics_reports
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/reporting_requester'
+          path: analytics/reports
+          http_method: POST
+          request_body_json:
+            queries:
+            - alias: activity
+              metrics:
+              - name: sent
+              - name: failed
+              - name: markedAsSpamUnique
+              - name: unsubscribedUnique
+              - name: openedUnique
+              - name: opened
+              - name: clickedUnique
+              - name: clicked
+              - name: attributedOrders
+              - name: attributedOrdersUnique
+              - name: attributedRevenue
+              - name: openRate
+              - name: clickRate
+              - name: failRate
+              - name: markedAsSpamRate
+              - name: unsubscribeRate
+              - name: attributedOrderRate
+              - name: attributedRevenuePerOrder
+              - name: attributedRevenuePerSent
+              dimensions:
+              - name: marketingActivityID
+              - name: marketingActivityType
+              dateRange:
+                interval: '{{ stream_partition.period }}'
+            - alias: channel
+              metrics:
+              - name: sent
+              - name: failed
+              - name: markedAsSpamUnique
+              - name: unsubscribedUnique
+              - name: openedUnique
+              - name: opened
+              - name: clickedUnique
+              - name: clicked
+              - name: attributedOrders
+              - name: attributedOrdersUnique
+              - name: attributedRevenue
+              - name: openRate
+              - name: clickRate
+              - name: failRate
+              - name: markedAsSpamRate
+              - name: unsubscribeRate
+              - name: attributedOrderRate
+              - name: attributedRevenuePerOrder
+              - name: attributedRevenuePerSent
+              dimensions:
+              - name: marketingActivityType
+              - name: messageChannel
+              dateRange:
+                interval: '{{ stream_partition.period }}'
+            - alias: automation_message
+              metrics:
+              - name: sent
+              - name: failed
+              - name: markedAsSpamUnique
+              - name: unsubscribedUnique
+              - name: openedUnique
+              - name: opened
+              - name: clickedUnique
+              - name: clicked
+              - name: attributedOrders
+              - name: attributedOrdersUnique
+              - name: attributedRevenue
+              - name: openRate
+              - name: clickRate
+              - name: failRate
+              - name: markedAsSpamRate
+              - name: unsubscribeRate
+              - name: attributedOrderRate
+              - name: attributedRevenuePerOrder
+              - name: attributedRevenuePerSent
+              dimensions:
+              - name: marketingActivityID
+              - name: messageID
+              filters:
+              - name: marketingActivityType
+                operator: in
+                values:
+                - Automation
+              dateRange:
+                interval: '{{ stream_partition.period }}'
+            - alias: overview
+              metrics:
+              - name: sent
+              - name: failed
+              - name: markedAsSpamUnique
+              - name: unsubscribedUnique
+              - name: openedUnique
+              - name: opened
+              - name: clickedUnique
+              - name: clicked
+              - name: attributedOrders
+              - name: attributedOrdersUnique
+              - name: attributedRevenue
+              - name: openRate
+              - name: clickRate
+              - name: failRate
+              - name: markedAsSpamRate
+              - name: unsubscribeRate
+              - name: attributedOrderRate
+              - name: attributedRevenuePerOrder
+              - name: attributedRevenuePerSent
+              dimensions: []
+              dateRange:
+                interval: '{{ stream_partition.period }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - reports
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: period
+          values: '{{ config.get(''reporting_periods'', [''lastMonth'']) if config.get(''enable_reporting'', False) else [] }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            alias:
+              type: string
+            rows:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            metrics:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            dimensions:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            query_period:
+              type: string
+            date_basis:
+              type: string
+            query_window_start:
+              type: string
+            query_window_end:
+              type: string
+      transformations:
+      - type: AddFields
+        fields:
+        - type: AddedFieldDefinition
+          path:
+          - query_period
+          value: '{{ stream_partition.period }}'
+        - type: AddedFieldDefinition
+          path:
+          - date_basis
+          value: send
+    analytics_statistics:
+      type: DeclarativeStream
+      name: analytics_statistics
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/reporting_requester'
+          path: analytics/statistics
+          http_method: POST
+          request_body_json:
+            queries:
+            - alias: audience_growth
+              metrics:
+              - name: subscribedEmail
+              - name: unsubscribedEmail
+              - name: subscribedSms
+              - name: unsubscribedSms
+              - name: subscribedPush
+              - name: unsubscribedPush
+              dimensions:
+              - name: timestamp
+                granularity: month
+              dateRange:
+                from: '{{ stream_partition.window[''from''] }}'
+                to: '{{ stream_partition.window[''to''] }}'
+            - alias: sales
+              metrics:
+              - name: totalOrders
+              - name: totalRevenue
+              - name: attributedOrders
+              - name: attributedRevenue
+              dimensions:
+              - name: timestamp
+                granularity: month
+              dateRange:
+                from: '{{ stream_partition.window[''from''] }}'
+                to: '{{ stream_partition.window[''to''] }}'
+            - alias: delivery_failures
+              metrics:
+              - name: failed
+              dimensions:
+              - name: timestamp
+                granularity: month
+              - name: bounceType
+              - name: deliveryFailureReason
+              dateRange:
+                from: '{{ stream_partition.window[''from''] }}'
+                to: '{{ stream_partition.window[''to''] }}'
+            - alias: subscription_sources
+              metrics:
+              - name: subscribedEmail
+              - name: subscribedSms
+              - name: subscribedPush
+              dimensions:
+              - name: timestamp
+                granularity: month
+              - name: subscriptionMethod
+              dateRange:
+                from: '{{ stream_partition.window[''from''] }}'
+                to: '{{ stream_partition.window[''to''] }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - statistics
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: window
+          values: '{{ config.get(''statistics_windows'', []) if config.get(''enable_reporting'', False) else [] }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            alias:
+              type: string
+            rows:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            metrics:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            dimensions:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            query_period:
+              type: string
+            date_basis:
+              type: string
+            query_window_start:
+              type: string
+            query_window_end:
+              type: string
+      transformations:
+      - type: AddFields
+        fields:
+        - type: AddedFieldDefinition
+          path:
+          - query_period
+          value: '{{ stream_partition.window[''from''] }}'
+        - type: AddedFieldDefinition
+          path:
+          - date_basis
+          value: event
+        - type: AddedFieldDefinition
+          path:
+          - query_window_start
+          value: '{{ stream_partition.window[''from''] }}'
+        - type: AddedFieldDefinition
+          path:
+          - query_window_end
+          value: '{{ stream_partition.window[''to''] }}'
+    form_reports:
+      type: DeclarativeStream
+      name: form_reports
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/reporting_requester'
+          path: forms/{{ stream_partition.form_id }}/report/periodic
+          http_method: GET
+          request_parameters:
+            createdAtFrom: '{{ stream_partition.window[''from''] }}'
+            createdAtTo: '{{ stream_partition.window[''to''] }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: '#/definitions/streams/forms'
+            parent_key: id
+            partition_field: form_id
+        - type: ListPartitionRouter
+          cursor_field: window
+          values: '{{ config.get(''form_report_windows'', []) if config.get(''enable_reporting'', False) else [] }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            formID:
+              type:
+              - 'null'
+              - string
+            form_id:
+              type: string
+            granularity:
+              type:
+              - 'null'
+              - string
+            rows:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            date_basis:
+              type: string
+            query_window_start:
+              type: string
+            query_window_end:
+              type: string
+      transformations:
+      - type: AddFields
+        fields:
+        - type: AddedFieldDefinition
+          path:
+          - form_id
+          value: '{{ stream_partition.form_id }}'
+        - type: AddedFieldDefinition
+          path:
+          - date_basis
+          value: form_activity
+        - type: AddedFieldDefinition
+          path:
+          - query_window_start
+          value: '{{ stream_partition.window[''from''] }}'
+        - type: AddedFieldDefinition
+          path:
+          - query_window_end
+          value: '{{ stream_partition.window[''to''] }}'
+    analytics_reports_daily:
+      type: DeclarativeStream
+      name: analytics_reports_daily
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/reporting_requester'
+          path: analytics/reports
+          http_method: POST
+          request_body_json:
+            queries:
+            - alias: performance_daily
+              metrics:
+              - name: sent
+              - name: failed
+              - name: markedAsSpamUnique
+              - name: unsubscribedUnique
+              - name: openedUnique
+              - name: opened
+              - name: clickedUnique
+              - name: clicked
+              - name: attributedOrders
+              - name: attributedOrdersUnique
+              - name: attributedRevenue
+              - name: openRate
+              - name: clickRate
+              - name: failRate
+              - name: markedAsSpamRate
+              - name: unsubscribeRate
+              - name: attributedOrderRate
+              - name: attributedRevenuePerOrder
+              - name: attributedRevenuePerSent
+              dimensions:
+              - name: timestamp
+                granularity: day
+              - name: marketingActivityType
+              dateRange:
+                interval: '{{ stream_partition.period }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - reports
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: period
+          values: '{{ [''lastMonth''] if config.get(''enable_reporting'', False) else [] }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            alias:
+              type: string
+            rows:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            metrics:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            dimensions:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            query_period:
+              type: string
+            date_basis:
+              type: string
+            query_window_start:
+              type: string
+            query_window_end:
+              type: string
+      transformations:
+      - type: AddFields
+        fields:
+        - type: AddedFieldDefinition
+          path:
+          - query_period
+          value: '{{ stream_partition.period }}'
+        - type: AddedFieldDefinition
+          path:
+          - date_basis
+          value: send
+    analytics_statistics_daily:
+      type: DeclarativeStream
+      name: analytics_statistics_daily
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/reporting_requester'
+          path: analytics/statistics
+          http_method: POST
+          request_body_json:
+            queries:
+            - alias: audience_growth_hourly
+              metrics:
+              - name: subscribedEmail
+              - name: unsubscribedEmail
+              - name: subscribedSms
+              - name: unsubscribedSms
+              - name: subscribedPush
+              - name: unsubscribedPush
+              dimensions:
+              - name: timestamp
+                granularity: hour
+              dateRange:
+                from: '{{ stream_partition.window[''from''] }}'
+                to: '{{ stream_partition.window[''to''] }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+            - statistics
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: window
+          values: '{{ config.get(''daily_statistics_windows'', []) if config.get(''enable_reporting'', False) else [] }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            alias:
+              type: string
+            rows:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            metrics:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            dimensions:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            query_period:
+              type: string
+            date_basis:
+              type: string
+            query_window_start:
+              type: string
+            query_window_end:
+              type: string
+      transformations:
+      - type: AddFields
+        fields:
+        - type: AddedFieldDefinition
+          path:
+          - query_period
+          value: '{{ stream_partition.window[''from''] }}'
+        - type: AddedFieldDefinition
+          path:
+          - date_basis
+          value: event
+        - type: AddedFieldDefinition
+          path:
+          - query_window_start
+          value: '{{ stream_partition.window[''from''] }}'
+        - type: AddedFieldDefinition
+          path:
+          - query_window_end
+          value: '{{ stream_partition.window[''to''] }}'
   base_requester:
     type: HttpRequester
     url_base: https://api.omnisend.com/v3/
@@ -193,12 +1199,69 @@ definitions:
         field_name: X-API-KEY
         inject_into: header
 
+  reporting_requester:
+    type: HttpRequester
+    url_base: https://api.omnisend.com/api/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: Omnisend-API-Key {{ config.get('reporting_api_key') or config['api_key'] }}
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+    request_headers:
+      Omnisend-Version: '2026-03-15'
+      Content-Type: application/json
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 3
+      backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: 30
+      response_filters:
+      - type: HttpResponseFilter
+        http_codes: [400, 401, 403, 404, 410, 415, 422]
+        action: FAIL
+        failure_type: config_error
+      - type: HttpResponseFilter
+        http_codes:
+        - 429
+        action: FAIL
+        failure_type: transient_error
+        error_message: 'Omnisend rate limit reached. No automatic retry is made. Wait for the brand''s sliding-window quota before restarting. retryAfter
+          seconds: {{ response.get(''retryAfter'', headers.get(''Retry-After'', ''not supplied'')) }}'
+
 streams:
   - $ref: "#/definitions/streams/contacts"
   - $ref: "#/definitions/streams/campaigns"
   - $ref: "#/definitions/streams/carts"
   - $ref: "#/definitions/streams/orders"
   - $ref: "#/definitions/streams/products"
+
+  - $ref: "#/definitions/streams/brand"
+  - $ref: "#/definitions/streams/campaigns_v2026"
+  - $ref: "#/definitions/streams/automations"
+  - $ref: "#/definitions/streams/forms"
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/analytics_reports"
+  - $ref: "#/definitions/streams/analytics_statistics"
+  - $ref: "#/definitions/streams/form_reports"
+  - $ref: "#/definitions/streams/analytics_reports_daily"
+  - $ref: "#/definitions/streams/analytics_statistics_daily"
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10
+          interval: PT1M
+        - limit: 55
+          interval: P1D
+      matchers:
+        - method: POST
+          url_base: https://api.omnisend.com
+          url_path_pattern: ^/api/analytics/(reports|statistics)$
 
 spec:
   type: Spec
@@ -214,6 +1277,103 @@ spec:
         order: 0
         title: API Key
         airbyte_secret: true
+      enable_reporting:
+        type: boolean
+        title: Enable reporting API streams
+        description: Opt in to the new versioned metadata and reporting streams. Requires the read permissions for the selected streams. Disabled by
+          default; the five legacy streams are unaffected.
+        default: false
+        order: 1
+      reporting_api_key:
+        type: string
+        title: Reporting API key (optional)
+        description: Optional key for the new API streams. If omitted or empty, the existing API key is used. Never changes authentication of the five
+          legacy streams.
+        airbyte_secret: true
+        order: 2
+      reporting_periods:
+        type: array
+        title: Send-date reporting periods
+        description: Named intervals evaluated in the brand timezone. Each period costs one analytics request. Non-timestamp reports preserve interval
+          uniques and rates; daily reporting independently fetches lastMonth.
+        items:
+          type: string
+          enum:
+          - lastMonth
+          - last7Days
+          - last30Days
+          - thisYear
+          - lastYear
+        uniqueItems: true
+        default:
+        - lastMonth
+        order: 3
+      statistics_windows:
+        type: array
+        title: Statistics windows
+        description: Event-date monthly-bucket analytics. Inclusive from, exclusive to; same numerical timezone offset at both boundaries. Maximum 12 months
+          per window. Empty or omitted means no requests.
+        default: []
+        items:
+          type: object
+          required:
+          - from
+          - to
+          properties:
+            from:
+              type: string
+              format: date-time
+              pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$
+            to:
+              type: string
+              format: date-time
+              pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$
+          additionalProperties: false
+        order: 4
+      form_report_windows:
+        type: array
+        title: Form report windows
+        description: Form periodic reports. BOTH from and to are inclusive; buckets use brand timezone. Empty or omitted means no report requests. Granularity
+          is chosen by Omnisend from the range.
+        default: []
+        items:
+          type: object
+          required:
+          - from
+          - to
+          properties:
+            from:
+              type: string
+              format: date-time
+              pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$
+            to:
+              type: string
+              format: date-time
+              pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$
+          additionalProperties: false
+        order: 5
+      daily_statistics_windows:
+        type: array
+        title: Daily statistics windows
+        description: Hourly event-date audience counts. Supply contiguous UTC windows of at most7days each. Empty or omitted means no requests; no automatic
+          local-day aggregation.
+        default: []
+        items:
+          type: object
+          required:
+          - from
+          - to
+          properties:
+            from:
+              type: string
+              format: date-time
+              pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|\+00:00)$
+            to:
+              type: string
+              format: date-time
+              pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|\+00:00)$
+          additionalProperties: false
+        order: 6
     additionalProperties: true
 
 metadata:
