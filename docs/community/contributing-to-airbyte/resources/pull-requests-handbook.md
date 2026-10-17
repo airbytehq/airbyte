@@ -4,23 +4,44 @@ This topic explains how to title and describe your pull requests, and how to han
 
 ## Pull request title conventions
 
-When creating a pull request, follow the naming conventions depending on the change you're making. In general, the pull request title starts with an emoji, the the connector name, then the changes. For example: ✨ Source E-Commerce: add new stream `Users`.
+Pull request titles must follow [Conventional Commits](https://www.conventionalcommits.org/) format. CI enforces this automatically, and Airbyte uses these titles to generate release notes and changelogs.
 
-Airbyte uses this pattern to automatically assign team reviews and build the product release notes.
+The format is:
 
-| Pull Request Type                      | Emoji | Examples                                                |
-| -------------------------------------- | ----- | ------------------------------------------------------- |
-| New Connector (Source or Destination)  | 🎉   | 🎉 New Destination: Database                           |
-| Add a feature to an existing connector | ✨    | ✨ Source E-Commerce: add new stream `Users`            |
-| Fix a bug                              | 🐛   | 🐛 Source E-Commerce: fix start date parameter in spec |
-| Documentation (updates or new entries) | 📝   | 📝 Fix Database connector changelog                    |
-| It's a breaking change                 | 🚨   | 🚨🚨🐛 Source Kafka: fix a complex bug               |
+```text
+type(optional-scope): description
+```
 
-[More information about breaking changes](#breaking-changes-to-connectors). A maintainer can help and instruct you about possible breaking changes.
+For breaking changes, add `!` after the type or scope:
 
-Don't add an emoji to any refactors, cleanups, etc. that aren't visible improvements to connector users.
+```text
+type!: description
+type(scope)!: description
+```
 
-If your code change is doing more than one change type at once, break it into multiple pull requests. This helps maintainers to review and merge your contribution.
+The following table lists the valid types and examples of each:
+
+| Type       | Description                                      | Example                                                  |
+| ---------- | ------------------------------------------------ | -------------------------------------------------------- |
+| `feat`     | Add a new feature or connector                   | `feat(source-postgres): add new stream Users`            |
+| `fix`      | Fix a bug                                        | `fix(source-shopify): fix start date parameter in spec`  |
+| `docs`     | Documentation changes                            | `docs: update connector setup guide`                     |
+| `refactor` | Code restructuring without behavior changes      | `refactor(destination-bigquery): simplify error handler` |
+| `perf`     | Performance improvements                         | `perf(source-mysql): optimize large table reads`         |
+| `test`     | Add or update tests                              | `test(source-github): add unit tests for rate limiting`  |
+| `ci`       | CI/CD workflow changes                           | `ci: update workflow-actions pinned SHA`                 |
+| `build`    | Build system or external dependency changes      | `build: upgrade CDK to v6`                               |
+| `chore`    | Maintenance tasks                                | `chore(source-github): update dependencies`              |
+| `deps`     | Dependency updates                               | `deps: bump airbyte-cdk version`                         |
+| `style`    | Code style changes without logic changes         | `style: fix formatting in manifest`                      |
+| `revert`   | Revert a previous commit                         | `revert: undo stream removal`                            |
+| `release`  | Release-related changes                          | `release(source-stripe): promote 5.15.18`                |
+
+The scope is optional but recommended for connector changes. Use the connector's name as the scope, for example `source-postgres` or `destination-bigquery`.
+
+For [more information about breaking changes](#semantic-versioning-for-connectors), contact a maintainer who can help identify possible breaking changes.
+
+If your code change involves more than one change type, break it into multiple pull requests. This helps maintainers review and merge your contribution.
 
 ## Descriptions
 
