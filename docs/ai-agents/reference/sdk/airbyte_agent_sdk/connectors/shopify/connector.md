@@ -2080,12 +2080,12 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode.
 
-    `list(self, product_id: str, image_id: str, limit: int | None = None, since_id: int | None = None, namespace: str | None = None, key: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Metafield], MetafieldProductImagesListResultMeta]`
+    `list(self, metafield_owner_id: int, metafield_owner_resource: str, limit: int | None = None, since_id: int | None = None, namespace: str | None = None, key: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Metafield], MetafieldProductImagesListResultMeta]`
     :   Returns a list of metafields for a product image
         
         Args:
-            product_id: The product ID
-            image_id: The image ID
+            metafield_owner_id: The product image ID whose metafields to list
+            metafield_owner_resource: Owner resource type; always product_image
             limit: Maximum number of results to return (max 250)
             since_id: Restrict results to after the specified ID
             namespace: Filter by namespace
