@@ -103,7 +103,11 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   `MongoDbSnapshotPartitionsCreator` (one partition per collection, no concurrent `_id` splitting —
   see "Concurrency" below); the `Global` feed gets one `MongoDbCdcPartitionsCreator`.
 - **Snapshot** (`MongoDbSnapshotPartitionReader`): reads a collection ordered by `_id` and emits
-  every document. `MongoDbRecordConverter` reproduces the legacy record shape (ObjectId hex, `Date`
+  every document, one chunk per round as the legacy connector did —
+  `find().sort(_id).limit(chunk).allowDiskUse(true)`, the chunk being about 1 GiB worth of documents
+  by `$collStats` (`storageStats.size / count`) and 1,000,000 when the stats are unavailable
+  (`MongoDbSharedState.chunkSize`), so no cursor runs for long and every chunk ends with a
+  checkpoint; a short chunk is the end of the collection. `MongoDbRecordConverter` reproduces the legacy record shape (ObjectId hex, `Date`
   always with milliseconds and no sign on a year beyond 9999, `Binary` of **any** subtype as the
   Base64 of its raw bytes — UUIDs of subtype 3 and 4 and subtype-9 vectors included —
   `BsonRegularExpression` as `(options)pattern` or the bare pattern when there are no options,
@@ -136,11 +140,11 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   type (`MongoDbStreamStateValueTest` round-trips every type, NaN/-0.0/±Infinity included;
   `testTypedIdCollectionsResumeMidSnapshot` resumes a collection of each `_id` type — string,
   int32, int64, binary, UUID subtype 4 and 3, double, decimal, date, timestamp — against the server
-  after a forced mid-collection checkpoint). Any other `_id` kind (regex, code, symbol, bool, …)
-  checkpoints as its text with `idType: STRING`, which cannot be compared, so such a collection is
-  read by `MongoDbNonResumableSnapshotPartitionReader`: natural order, one `UnlimitedTimePartitionReader`
-  round, checkpoint only at the end (`MongoDbSharedState.isResumable`,
-  `testUnsupportedIdKindIsReadInOneRound`). A stream state that is present but cannot be parsed fails the sync with the
+  after a forced mid-collection checkpoint). Any other `_id` kind (code, symbol, bool, …)
+  checkpoints as `idType: BSON`, the extended JSON of `{"v": <id>}`, and resumes as the parsed
+  `BsonValue` — typed, because comparison operators only match values of the operand's type, so a
+  text fallback would make `_id > "…"` match nothing and silently end the collection
+  (`testOtherIdKindsResumeMidSnapshot`, JavaScript `_id`s). A stream state that is present but cannot be parsed fails the sync with the
   same "Failed to migrate to the new connector version state protocol" error as an unreadable
   CDC state (`MongoDbStateMigration`), rather than silently restarting the snapshot; absent,
   JSON-null and empty `{}` states mean "no checkpoint".
@@ -179,8 +183,9 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v2:dev check --c
   migration guide. `_ab_cdc_cursor` is a
   MongoDB oplog time as a long (`BsonTimestamp.value`), stamped per record by the readers: the
   event's own time on a change, the time of the change-stream position this READ saved
-  (`MongoDbSharedState.snapshotCursorTime`, decoded from the captured or checkpointed token) on a
-  snapshot row. Every event a later sync replays is strictly after that position, so a change
+  (`MongoDbCdcState.snapshotCursorTime`, decoded from the captured or checkpointed token and
+  persisted with it; the snapshot readers take it from the `Global` feed's checkpoint, to the
+  second) on a snapshot row. Every event a later sync replays is strictly after that position, so a change
   always sorts above the snapshot row it supersedes whichever node served the snapshot (the
   gossiped `$clusterTime` would not do: it can run ahead of a lagging secondary's applied ops), and
   a re-read event keeps its cursor. `_ab_cdc_updated_at` is the event's cluster time on a change and the sync's `emittedAt`

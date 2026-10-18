@@ -1,26 +1,38 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mongodb.read.cdc
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mongodb.read.MongoDbStateMigration
+import java.time.Instant
 import java.util.Base64
 import org.bson.BsonDocument
 import org.bson.BsonString
 import org.bson.RawBsonDocument
 
 /**
- * `Global` (change-stream) feed state: the resume token and the `schema_enforced` it was captured
- * under. Written as `{"resumeToken": {"_data": ..}, "schemaEnforced": ..}`; also read from the
- * Debezium offset shape `{"state": {<key>: "{\"sec\":..,\"ord\":..,\"resume_token\":..}"},
- * "schema_enforced": ..}`.
+ * `Global` (change-stream) feed state: the resume token, the `schema_enforced` it was captured
+ * under and the token's oplog time. Written as `{"resumeToken": {"_data": ..}, "schemaEnforced":
+ * .., "snapshotCursorTime": "2026-..Z"}`; also read from the Debezium offset shape `{"state":
+ * {<key>: "{\"sec\":..,\"ord\":..,\"resume_token\":..}"}, "schema_enforced": ..}`.
  */
 data class MongoDbCdcState(
     @JsonProperty("resumeToken") val resumeToken: JsonNode?,
     /** Null when the persisted state carries no flag: the configuration's value applies. */
     @JsonProperty("schemaEnforced") val schemaEnforced: Boolean?,
+    /**
+     * The oplog time (seconds) of [resumeToken]: the `_ab_cdc_cursor` of the snapshot rows read
+     * under it. Every event a later sync replays is strictly after the token, so those rows always
+     * lose to the changes that supersede them, whichever node served the snapshot. The snapshot
+     * readers take it from the `Global` feed's checkpoint, which precedes them; null for a migrated
+     * Debezium offset (its first checkpoint sets it).
+     */
+    @JsonProperty("snapshotCursorTime")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    val snapshotCursorTime: Instant? = null,
 ) {
     fun toOpaqueStateValue(): OpaqueStateValue = Jsons.valueToTree(this)
 
@@ -33,10 +45,15 @@ data class MongoDbCdcState(
         private const val DEBEZIUM_SCHEMA_ENFORCED = "schema_enforced"
         private const val DEBEZIUM_RESUME_TOKEN = "resume_token"
 
-        fun of(resumeToken: BsonDocument?, schemaEnforced: Boolean): MongoDbCdcState =
+        fun of(
+            resumeToken: BsonDocument?,
+            schemaEnforced: Boolean,
+            snapshotCursorTime: Instant?,
+        ): MongoDbCdcState =
             MongoDbCdcState(
                 resumeToken = resumeToken?.let { Jsons.readTree(it.toJson()) },
                 schemaEnforced = schemaEnforced,
+                snapshotCursorTime = snapshotCursorTime,
             )
 
         /**
@@ -98,7 +115,7 @@ data class MongoDbCdcState(
                     "from a per-replica-set configuration); they cannot resume a cluster-wide " +
                     "change stream"
             }
-            return of(migrateDebeziumResumeToken(tokens.single()), schemaEnforced)
+            return of(migrateDebeziumResumeToken(tokens.single()), schemaEnforced, null)
         }
 
         /** The offset's token: hex `_data` (Debezium 2.x) or base64 BSON document (3.x). */

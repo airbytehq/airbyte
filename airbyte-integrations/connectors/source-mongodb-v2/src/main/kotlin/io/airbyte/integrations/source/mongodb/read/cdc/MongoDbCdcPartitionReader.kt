@@ -62,18 +62,16 @@ class MongoDbCdcPartitionReader(
 
     @Volatile private var numRecords = 0L
     @Volatile private var resumeToken: BsonDocument? = null
+    /** Oplog time (seconds) of [resumeToken]; see [MongoDbCdcState.snapshotCursorTime]. */
+    @Volatile private var snapshotCursorTime: Instant? = null
 
     override suspend fun run() {
         val priorToken: BsonDocument? =
             MongoDbCdcState.fromOpaqueStateValue(feedBootstrap.currentState)?.resumeTokenBson()
-        if (priorToken == null) {
-            drain(resumeAfter = null)
-            return
-        }
         try {
             drain(resumeAfter = priorToken)
         } catch (e: Exception) {
-            if (!isInvalidResumeToken(e)) throw e
+            if (priorToken == null || !isInvalidResumeToken(e)) throw e
             when (configuration.invalidCdcCursorPositionBehavior) {
                 InvalidCdcCursorPositionBehavior.FAIL_SYNC ->
                     throw ConfigErrorException(
@@ -125,7 +123,10 @@ class MongoDbCdcPartitionReader(
                 }
             }
         }
-        sharedState.snapshotCursorTime = MongoDbResumeTokens.timestamp(checkNotNull(resumeToken))
+        snapshotCursorTime =
+            Instant.ofEpochSecond(
+                MongoDbResumeTokens.timestamp(checkNotNull(resumeToken)).time.toLong()
+            )
         log.info {
             if (resumeAfter == null) "CDC cold start; captured resume token."
             else "CDC read drained $numRecords change(s) up to the target."
@@ -253,7 +254,12 @@ class MongoDbCdcPartitionReader(
 
     override fun checkpoint(): PartitionReadCheckpoint =
         PartitionReadCheckpoint(
-            MongoDbCdcState.of(resumeToken, configuration.schemaEnforced).toOpaqueStateValue(),
+            MongoDbCdcState.of(
+                    resumeToken,
+                    configuration.schemaEnforced,
+                    snapshotCursorTime,
+                )
+                .toOpaqueStateValue(),
             numRecords,
             checkpointPartitionId,
         )

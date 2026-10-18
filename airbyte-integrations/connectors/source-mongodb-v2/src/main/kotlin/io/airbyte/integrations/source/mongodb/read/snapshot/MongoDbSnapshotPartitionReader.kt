@@ -7,13 +7,14 @@ import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Projections
 import com.mongodb.client.model.Sorts
 import io.airbyte.cdk.read.ConfiguredSyncMode
+import io.airbyte.cdk.read.Global
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
-import io.airbyte.cdk.read.UnlimitedTimePartitionReader
 import io.airbyte.integrations.source.mongodb.discover.MongoDbFieldType
 import io.airbyte.integrations.source.mongodb.discover.MongoDbSourceMetadataQuerier.Companion.ID_FIELD
 import io.airbyte.integrations.source.mongodb.discover.schemaFieldTypesOf
+import io.airbyte.integrations.source.mongodb.read.cdc.MongoDbCdcState
 import io.airbyte.integrations.source.mongodb.read.partition.MongoDbPartitionReaderBase
 import io.airbyte.integrations.source.mongodb.read.partition.RecordAcceptor
 import io.airbyte.integrations.source.mongodb.read.record.MongoDbRecordConverter
@@ -22,24 +23,21 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import org.bson.BsonTimestamp
 import org.bson.Document
 
 private val log = KotlinLogging.logger {}
 
 /**
- * Reads a collection ordered by `_id`, resuming after the checkpointed `_id`. Reaching the end
- * checkpoints the terminal status (`COMPLETE` / `FULL_REFRESH`) and marks the stream complete for
- * this READ; being cut short (timeout, WASS budget, `max-records-per-run`) checkpoints
- * `IN_PROGRESS` / `FULL_REFRESH` so the next round continues.
- *
- * [MongoDbNonResumableSnapshotPartitionReader] reads a collection that cannot be resumed (see
- * [MongoDbSharedState.isResumable]) in natural order, in a single round without time limit, and
- * checkpoints only at the end.
+ * Reads a collection ordered by `_id`, one chunk of [MongoDbSharedState.chunkSize] documents per
+ * round, resuming after the checkpointed `_id`. A short chunk is the end: it checkpoints the
+ * terminal status (`COMPLETE` / `FULL_REFRESH`) and marks the stream complete for this READ; a full
+ * chunk, or being cut short (timeout, WASS budget), checkpoints `IN_PROGRESS` / `FULL_REFRESH` so
+ * the next round continues.
  */
-open class MongoDbSnapshotPartitionReader(
+class MongoDbSnapshotPartitionReader(
     sharedState: MongoDbSharedState,
     private val feedBootstrap: StreamFeedBootstrap,
-    private val resumable: Boolean = true,
 ) : MongoDbPartitionReaderBase(sharedState, feedBootstrap) {
 
     private val stream: Stream = feedBootstrap.feed
@@ -51,6 +49,18 @@ open class MongoDbSnapshotPartitionReader(
     private val collection: MongoCollection<Document> by lazy {
         sharedState.client.getDatabase(stream.namespace!!).getCollection(stream.name)
     }
+    /**
+     * `_ab_cdc_cursor` for this snapshot: the time of the resume token the `Global` feed saved
+     * before the snapshots started ([MongoDbCdcState.snapshotCursorTime]); none without CDC.
+     */
+    private val snapshotCursor: BsonTimestamp? by lazy {
+        feedBootstrap.feeds
+            .filterIsInstance<Global>()
+            .firstOrNull()
+            ?.let { MongoDbCdcState.fromOpaqueStateValue(feedBootstrap.currentState(it)) }
+            ?.snapshotCursorTime
+            ?.let { BsonTimestamp(it.epochSecond.toInt(), 0) }
+    }
 
     // `checkpoint()` may run on another thread than `run()` after a timeout, hence volatile.
     @Volatile private var numRecords = 0L
@@ -60,49 +70,53 @@ open class MongoDbSnapshotPartitionReader(
     override suspend fun run() {
         val emit: RecordAcceptor =
             checkNotNull(recordAcceptorFor(stream.id)) { "No record acceptor for ${stream.id}" }
-        val startId: Any? = if (resumable) resumeFromId() else null
+        sharedState.checkUniformIdKind(stream.id)
+        val startId: Any? = resumeFromId()
         lastId = startId
+        val chunkSize: Int = sharedState.chunkSize(stream.id)
         log.info {
-            if (resumable) "Reading ${stream.namespace}.${stream.name} after _id=$startId."
-            else "Reading ${stream.namespace}.${stream.name} in one non-resumable round."
+            "Reading ${stream.namespace}.${stream.name} after _id=$startId, up to $chunkSize documents."
         }
 
-        query(startId).cursor().use { cursor ->
+        query(startId, chunkSize).cursor().use { cursor ->
             while (cursor.hasNext()) {
                 currentCoroutineContext().ensureActive()
-                if (resumable && reachedRecordLimit()) return
-                if (resumable && shouldYieldToCdc()) {
+                if (shouldYieldToCdc()) {
                     sharedState.snapshotYielded.add(stream.id)
                     return
                 }
                 val (payload, rawId) = converter.toPayloadWithId(cursor.next())
-                stampCursor(payload, sharedState.snapshotCursorTime)
+                stampCursor(payload, snapshotCursor)
                 emit(payload, null)
                 lastId = rawId
                 numRecords++
             }
         }
-        finished = true
-        sharedState.completedSnapshots.add(stream.id)
-        log.info { "Finished ${stream.namespace}.${stream.name}: $numRecords records." }
+        if (numRecords < chunkSize) {
+            finished = true
+            sharedState.completedSnapshots.add(stream.id)
+            log.info { "Finished ${stream.namespace}.${stream.name}: $numRecords records." }
+        } else {
+            log.info {
+                "Read a full chunk of ${stream.namespace}.${stream.name}; the next round " +
+                    "continues after _id=$lastId."
+            }
+        }
     }
 
     /**
-     * Ordered `_id` scan after [startId]. Under `schema_enforced` only the catalog's fields are
-     * projected (extra fields would be dropped anyway); schemaless needs the whole document.
+     * Ordered `_id` scan of one chunk after [startId], as the legacy connector queried (sort on
+     * `_id` may spill to disk). Under `schema_enforced` only the catalog's fields are projected
+     * (extra fields would be dropped anyway); schemaless needs the whole document.
      */
-    private fun query(startId: Any?): FindIterable<Document> {
+    private fun query(startId: Any?, chunkSize: Int): FindIterable<Document> {
         val find: FindIterable<Document> = collection.find()
         startId?.let { find.filter(Filters.gt(ID_FIELD, it)) }
         if (sharedState.configuration.schemaEnforced) {
             find.projection(Projections.include(schemaFieldTypes.keys.toList()))
         }
-        // A non-resumable read needs no order.
-        return if (resumable) find.sort(Sorts.ascending(ID_FIELD)) else find
+        return find.sort(Sorts.ascending(ID_FIELD)).limit(chunkSize).allowDiskUse(true)
     }
-
-    /** Test hook: stop after `max-records-per-run` records so resume can be exercised quickly. */
-    private fun reachedRecordLimit(): Boolean = sharedState.maxRecordsPerRun in 1..numRecords
 
     /**
      * WASS: an incremental snapshot yields past the deadline, but only after at least one record so
@@ -132,11 +146,3 @@ open class MongoDbSnapshotPartitionReader(
         )
     }
 }
-
-/** See [MongoDbSnapshotPartitionReader]: one natural-order round, no time limit, no resume. */
-class MongoDbNonResumableSnapshotPartitionReader(
-    sharedState: MongoDbSharedState,
-    feedBootstrap: StreamFeedBootstrap,
-) :
-    MongoDbSnapshotPartitionReader(sharedState, feedBootstrap, resumable = false),
-    UnlimitedTimePartitionReader

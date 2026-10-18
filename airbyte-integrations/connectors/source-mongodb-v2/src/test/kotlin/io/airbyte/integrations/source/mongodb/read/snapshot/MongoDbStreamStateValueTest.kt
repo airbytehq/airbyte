@@ -6,6 +6,7 @@ import io.airbyte.cdk.util.Jsons
 import java.nio.ByteBuffer
 import java.util.Date
 import java.util.UUID
+import org.bson.BsonBoolean
 import org.bson.BsonDocument
 import org.bson.BsonTimestamp
 import org.bson.Document
@@ -61,13 +62,14 @@ class MongoDbStreamStateValueTest {
         Assertions.assertNull(checkpoint.resumeIdValue())
     }
 
-    /** An `_id` type with no dedicated encoding resumes from its text; never a failure. */
+    /** An `_id` type with no dedicated encoding resumes from typed extended JSON. */
     @Test
-    fun testOtherIdTypeFallsBackToText() {
+    fun testOtherIdTypeFallsBackToTypedExtendedJson() {
         val checkpoint: MongoDbStreamStateValue =
             MongoDbStreamStateValue.fromLastId(true, MongoDbSnapshotStatus.IN_PROGRESS)
-        Assertions.assertEquals(MongoDbIdType.STRING, checkpoint.idType)
-        Assertions.assertEquals("true", checkpoint.id)
+        Assertions.assertEquals(MongoDbIdType.BSON, checkpoint.idType)
+        Assertions.assertEquals("""{"v": true}""", checkpoint.id)
+        Assertions.assertEquals(BsonBoolean.TRUE, checkpoint.resumeIdValue())
     }
 
     /**

@@ -19,7 +19,6 @@ import io.airbyte.integrations.source.mongodb.discover.schemaFieldTypesOf
 import io.airbyte.integrations.source.mongodb.read.cdc.MongoDbCdcPartitionReader
 import io.airbyte.integrations.source.mongodb.read.cdc.MongoDbCdcState
 import io.airbyte.integrations.source.mongodb.read.record.MongoDbSharedState
-import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbNonResumableSnapshotPartitionReader
 import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbSnapshotPartitionReader
 import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbSnapshotStatus
 import io.airbyte.integrations.source.mongodb.read.snapshot.MongoDbStreamStateValue
@@ -73,13 +72,9 @@ class MongoDbPartitionsCreatorFactory(
                             "yielded to CDC)."
                     }
                     CreateNoPartitions
-                } else if (sharedState.isResumable(feedBootstrap.feed.id)) {
-                    MongoDbPartitionsCreator(sharedState) {
-                        MongoDbSnapshotPartitionReader(sharedState, feedBootstrap)
-                    }
                 } else {
                     MongoDbPartitionsCreator(sharedState) {
-                        MongoDbNonResumableSnapshotPartitionReader(sharedState, feedBootstrap)
+                        MongoDbSnapshotPartitionReader(sharedState, feedBootstrap)
                     }
                 }
             }

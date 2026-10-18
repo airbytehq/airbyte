@@ -29,7 +29,10 @@ enum class MongoDbSnapshotStatus {
     FULL_REFRESH,
 }
 
-/** BSON type of a collection's `_id`; [OBJECT] is an `_id` that is itself a document. */
+/**
+ * BSON type of a collection's `_id`; [OBJECT] is an `_id` that is itself a document, [BSON] any
+ * other kind (code, symbol, boolean, null, ...), kept typed as the extended JSON of `{"v": <id>}`.
+ */
 enum class MongoDbIdType {
     OBJECT_ID,
     STRING,
@@ -41,6 +44,7 @@ enum class MongoDbIdType {
     DECIMAL,
     DATE,
     TIMESTAMP,
+    BSON,
 }
 
 /** BSON type names (`$type` aliases) for grouping `_id` values; all numbers are `number`. */
@@ -68,7 +72,9 @@ object MongoDbIdKind {
  * Per-collection snapshot checkpoint `{"id", "status", "idType", "binarySubType"}`; [id] is the
  * last emitted `_id` as text: hex for an ObjectId, UUID for a subtype-4 [Binary] and Base64 for
  * other binaries, extended JSON for a document, epoch milliseconds for a date, the 64-bit value for
- * a timestamp, and the number's own text otherwise.
+ * a timestamp, the number's own text, and the extended JSON of `{"v": <id>}` for any other kind —
+ * typed, so the resume filter `_id > <id>` matches the right BSON type (comparison operators only
+ * match values of the operand's type).
  */
 data class MongoDbStreamStateValue(
     @JsonProperty("id") val id: String?,
@@ -92,6 +98,7 @@ data class MongoDbStreamStateValue(
                 MongoDbIdType.DECIMAL -> Decimal128.parse(it)
                 MongoDbIdType.DATE -> Date(it.toLong())
                 MongoDbIdType.TIMESTAMP -> BsonTimestamp(it.toLong())
+                MongoDbIdType.BSON -> BsonDocument.parse(it)[BSON_WRAPPER_FIELD]
             }
         }
 
@@ -113,8 +120,10 @@ data class MongoDbStreamStateValue(
         /** Checkpoint for the last `_id` (null if none); a document `_id` is extended JSON. */
         fun fromLastId(lastId: Any?, status: MongoDbSnapshotStatus): MongoDbStreamStateValue =
             when (lastId) {
+                null -> MongoDbStreamStateValue(null, status, MongoDbIdType.STRING)
                 is ObjectId ->
                     MongoDbStreamStateValue(lastId.toHexString(), status, MongoDbIdType.OBJECT_ID)
+                is String -> MongoDbStreamStateValue(lastId, status, MongoDbIdType.STRING)
                 is Int -> MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.INT)
                 is Long -> MongoDbStreamStateValue(lastId.toString(), status, MongoDbIdType.LONG)
                 is Double ->
@@ -148,8 +157,15 @@ data class MongoDbStreamStateValue(
                         status,
                         MongoDbIdType.OBJECT
                     )
-                else -> MongoDbStreamStateValue(lastId?.toString(), status, MongoDbIdType.STRING)
+                else ->
+                    MongoDbStreamStateValue(
+                        Document(BSON_WRAPPER_FIELD, lastId).toBsonDocument().toJson(EXTENDED_JSON),
+                        status,
+                        MongoDbIdType.BSON,
+                    )
             }
+
+        private const val BSON_WRAPPER_FIELD = "v"
 
         /** Lossless `_id` document serialization (`{"$numberLong": ...}`, `{"$oid": ...}`, ...). */
         private val EXTENDED_JSON: JsonWriterSettings =

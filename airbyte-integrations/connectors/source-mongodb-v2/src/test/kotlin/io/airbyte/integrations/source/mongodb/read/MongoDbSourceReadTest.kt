@@ -33,6 +33,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.protocol.models.v0.SyncMode
 import java.math.BigDecimal
+import java.time.Instant
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -145,30 +146,27 @@ class MongoDbSourceReadTest {
 
     @Test
     fun testWassSnapshotYieldsToCdcAndResumes() {
-        // Negative budget => the incremental snapshot yields to CDC right after the first record.
-        // The sync then ends with a transient error, its progress checkpointed, so the platform
+        // A zero-hour budget (the spec's minimum of 4 is enforced by the platform, not the
+        // connector) => the incremental snapshot yields to CDC right after its first record. The
+        // sync then ends with a transient error, its progress checkpointed, so the platform
         // retries immediately and the retry drains the change stream before resuming.
-        System.setProperty(MAX_SNAPSHOT_DURATION_PROPERTY, "-1")
-        val sync1: BufferingOutputConsumer =
-            try {
-                val runnable: CliRunnable = CliRunner.source("read", config(), incrementalCatalog())
-                Assertions.assertThrows(ConnectorUncleanExitException::class.java) {
-                    runnable.run()
-                }
-                val errors: List<AirbyteTraceMessage> =
-                    runnable.results.traces().filter { it.type == AirbyteTraceMessage.Type.ERROR }
-                Assertions.assertTrue(
-                    errors.any {
-                        it.error.failureType ==
-                            AirbyteErrorTraceMessage.FailureType.TRANSIENT_ERROR &&
-                            it.error.message.contains("initial_load_timeout_hours")
-                    },
-                    "expected a transient initial-load error, got ${errors.map { it.error.message }}",
-                )
-                runnable.results
-            } finally {
-                System.clearProperty(MAX_SNAPSHOT_DURATION_PROPERTY)
-            }
+        val expiredBudget: MongoDbSourceConfigurationSpecification =
+            config().apply { initialLoadTimeoutHours = 0 }
+        val sync1: BufferingOutputConsumer = run {
+            val runnable: CliRunnable =
+                CliRunner.source("read", expiredBudget, incrementalCatalog())
+            Assertions.assertThrows(ConnectorUncleanExitException::class.java) { runnable.run() }
+            val errors: List<AirbyteTraceMessage> =
+                runnable.results.traces().filter { it.type == AirbyteTraceMessage.Type.ERROR }
+            Assertions.assertTrue(
+                errors.any {
+                    it.error.failureType == AirbyteErrorTraceMessage.FailureType.TRANSIENT_ERROR &&
+                        it.error.message.contains("initial_load_timeout_hours")
+                },
+                "expected a transient initial-load error, got ${errors.map { it.error.message }}",
+            )
+            runnable.results
+        }
         // It yielded before finishing: fewer than all 3 records and an IN_PROGRESS checkpoint.
         val readInSync1: Int = recordCountFor(sync1, PEOPLE)
         Assertions.assertTrue(readInSync1 in 1..2, "expected a partial snapshot, got $readInSync1")
@@ -250,15 +248,20 @@ class MongoDbSourceReadTest {
                 .filter { it.stream == CDC }
                 .map { it.data["_ab_cdc_cursor"].asLong() }
                 .toSet()
+        val cdcState: MongoDbCdcState =
+            MongoDbCdcState.fromOpaqueStateValue(
+                stateAfterSync1.mapNotNull { it.global?.sharedState }.last()
+            )!!
         val savedPosition: BsonTimestamp =
-            MongoDbResumeTokens.timestamp(
-                MongoDbCdcState.fromOpaqueStateValue(
-                        stateAfterSync1.mapNotNull { it.global?.sharedState }.last()
-                    )!!
-                    .resumeTokenBson()!!
-            )
+            MongoDbResumeTokens.timestamp(cdcState.resumeTokenBson()!!)
+        // The state records the saved position's time, and the snapshot rows carry it (to the
+        // second, which is enough: every later change is strictly past the position).
         Assertions.assertEquals(
-            setOf(savedPosition.value),
+            Instant.ofEpochSecond(savedPosition.time.toLong()),
+            cdcState.snapshotCursorTime,
+        )
+        Assertions.assertEquals(
+            setOf(BsonTimestamp(savedPosition.time, 0).value),
             snapshotCursors,
             "snapshot rows carry the saved position"
         )
@@ -389,13 +392,13 @@ class MongoDbSourceReadTest {
     }
 
     /**
-     * An `_id` kind the checkpoint cannot encode natively (here JavaScript code; MongoDB itself
-     * forbids array, regex and undefined `_id`s) is saved as text and cannot be compared, so the
-     * collection is read in a single round that ignores the record limit and ends `COMPLETE` — no
-     * mid-collection checkpoint, no silent truncation.
+     * An `_id` kind without a dedicated encoding (here JavaScript code; MongoDB itself forbids
+     * array, regex and undefined `_id`s) is checkpointed as typed extended JSON, so the resume
+     * filter `_id > <code>` matches the right BSON type and the collection resumes mid-way like any
+     * other.
      */
     @Test
-    fun testUnsupportedIdKindIsReadInOneRound() {
+    fun testOtherIdKindsResumeMidSnapshot() {
         MongoClients.create(replicaSet.connectionString).use { client ->
             val coll = client.getDatabase(TEST_DB).getCollection(CODE_ID)
             coll.drop()
@@ -410,11 +413,49 @@ class MongoDbSourceReadTest {
             val result: BufferingOutputConsumer = read(incrementalCatalog(setOf(CODE_ID)))
             Assertions.assertEquals(
                 listOf("a", "b", "c"),
-                recordDataFor(result, CODE_ID).map { it["v"] as String }.sorted(),
+                recordDataFor(result, CODE_ID).map { it["v"] as String },
             )
-            val state: MongoDbStreamStateValue = lastStreamStateFor(result, CODE_ID)
-            Assertions.assertEquals(MongoDbSnapshotStatus.COMPLETE, state.status)
-            Assertions.assertEquals(MongoDbIdType.STRING, state.idType)
+            val checkpoints: List<MongoDbStreamStateValue> = allStreamStatesFor(result, CODE_ID)
+            Assertions.assertEquals(MongoDbIdType.BSON, checkpoints.first().idType)
+            Assertions.assertEquals(
+                BsonJavaScript("function b() {}"),
+                checkpoints.first().resumeIdValue(),
+            )
+            Assertions.assertEquals(MongoDbSnapshotStatus.COMPLETE, checkpoints.last().status)
+        } finally {
+            System.clearProperty(MAX_RECORDS_PROPERTY)
+        }
+    }
+
+    /**
+     * A collection whose size is a multiple of the chunk ends on a full chunk: the next round reads
+     * nothing and is what completes the snapshot — no document repeated or lost.
+     */
+    @Test
+    fun testSnapshotEndingOnAChunkBoundaryCompletes() {
+        MongoClients.create(replicaSet.connectionString).use { client ->
+            val coll = client.getDatabase(TEST_DB).getCollection(CHUNK_BOUNDARY)
+            coll.drop()
+            coll.insertMany((1..4).map { Document("_id", it).append("v", it) })
+        }
+        System.setProperty(MAX_RECORDS_PROPERTY, "2")
+        try {
+            val result: BufferingOutputConsumer = read(incrementalCatalog(setOf(CHUNK_BOUNDARY)))
+            Assertions.assertEquals(
+                listOf(1, 2, 3, 4),
+                recordDataFor(result, CHUNK_BOUNDARY).map { it["v"] as Int },
+            )
+            val checkpoints: List<MongoDbStreamStateValue> =
+                allStreamStatesFor(result, CHUNK_BOUNDARY)
+            Assertions.assertEquals(
+                listOf(
+                    MongoDbSnapshotStatus.IN_PROGRESS,
+                    MongoDbSnapshotStatus.IN_PROGRESS,
+                    MongoDbSnapshotStatus.COMPLETE,
+                ),
+                checkpoints.map { it.status },
+            )
+            Assertions.assertEquals(listOf(2, 4, 4), checkpoints.map { it.resumeIdValue() })
         } finally {
             System.clearProperty(MAX_RECORDS_PROPERTY)
         }
@@ -1176,6 +1217,7 @@ class MongoDbSourceReadTest {
         const val CODE_ID = "code_id_coll"
         const val LEGACY_CDC = "legacy_cdc_coll"
         const val DOC_ID = "doc_id_coll"
+        const val CHUNK_BOUNDARY = "chunk_boundary_coll"
         const val OBJECT_MATRIX_ID = "object_matrix_id_coll"
         const val ALL_TYPES = "all_types_coll"
         const val STRING_ID = "string_id_coll"
@@ -1197,8 +1239,6 @@ class MongoDbSourceReadTest {
          */
         const val BOGUS_RESUME_TOKEN = "garbage"
         const val MAX_RECORDS_PROPERTY = "airbyte.connector.extract.mongodb.max-records-per-run"
-        const val MAX_SNAPSHOT_DURATION_PROPERTY =
-            "airbyte.connector.extract.mongodb.max-snapshot-duration-ms"
 
         lateinit var replicaSet: MongoDBContainer
 
