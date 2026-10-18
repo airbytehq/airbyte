@@ -109,7 +109,7 @@ def test_legacy_top_level_credentials_use_password_grant(credential_value: str, 
     assert token_bodies[0]["client_id"] == [wire_value]
     http_mocker.assert_number_of_calls(check_request, 1)
     # The legacy shape is migrated once: exactly one CONTROL copies the credentials under
-    # `credentials` while keeping the top-level fields (rollback-safe for <=1.3.x).
+    # `credentials` while keeping the top-level fields (rollback-safe for <=2.0.x).
     assert _control_messages(output) == []
     assert len(migration_controls) == 1
     migrated = migration_controls[0]["control"]["connectorConfig"]["config"]
@@ -321,7 +321,7 @@ def test_password_credentials_non_onuptick_base_url_checks_ok(tmp_path) -> None:
     token_url = "https://localhost:8000/api/oauth2/token/"
     model, fields = UptickRequestBuilder.FIELDS[_CHECK_STREAM]
     check_request = HttpRequest(
-        url="https://localhost:8000/api/v2.15/tasks/",
+        url="https://localhost:8000/api/v2.16/tasks/",
         query_params={
             "ordering": "-updated",
             "show_deleted": "true",

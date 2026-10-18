@@ -57,7 +57,7 @@ class DefaultJdbcSharedState(
     }
 
     override fun tryAcquireResourcesForReader(
-        resourcesTypes: List<ResourceType>
+        resourcesTypes: List<ResourceType>,
     ): Map<ResourceType, JdbcPartitionReader.AcquiredResource>? {
         val acquiredResources: Map<ResourceType, Resource.Acquired>? =
             resourceAcquirer.tryAcquire(resourcesTypes)
@@ -66,6 +66,7 @@ class DefaultJdbcSharedState(
                 it.key to
                     object : JdbcPartitionReader.AcquiredResource {
                         override val resource: Resource.Acquired? = it.value
+
                         override fun close() {
                             resource?.close()
                         }

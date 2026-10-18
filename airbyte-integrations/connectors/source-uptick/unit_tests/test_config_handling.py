@@ -166,7 +166,7 @@ def test_migrated_legacy_config_validates_against_spec(credential_value: str) ->
     assert credentials["auth_type"] == "password"
     for field in ("client_id", "client_secret", "username", "password"):
         assert isinstance(credentials[field], str)
-        # Copy-only migration: the top-level fields are kept so the config works on <=1.3.x.
+        # Copy-only migration: the top-level fields are kept so the config works on <=2.0.x.
         assert migrated[field] == credentials[field]
 
 

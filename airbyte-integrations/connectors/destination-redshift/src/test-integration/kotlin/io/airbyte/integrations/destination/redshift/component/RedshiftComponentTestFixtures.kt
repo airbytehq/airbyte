@@ -40,6 +40,6 @@ object RedshiftComponentTestFixtures {
                 "union" to ColumnType(RedshiftDataType.VARCHAR.typeName, true),
                 "legacy_union" to ColumnType(RedshiftDataType.VARCHAR.typeName, true),
                 "unknown" to ColumnType(RedshiftDataType.VARCHAR.typeName, true),
-            )
+            ),
         )
 }
