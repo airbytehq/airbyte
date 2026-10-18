@@ -85,7 +85,7 @@ class CheckOperation<T : ConfigurationSpecification>(
         } else {
             throw ConfigErrorException(
                 "Unable to query any of the $n discovered table(s). Check that the configured " +
-                    "user has SELECT permission on the tables to sync."
+                    "user has SELECT permission on the tables to sync.",
             )
         }
     }

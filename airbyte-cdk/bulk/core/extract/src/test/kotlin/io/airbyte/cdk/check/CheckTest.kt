@@ -45,7 +45,8 @@ class CheckTest {
     @Property(name = "metadata.resource", value = "discover/metadata-empty.json")
     fun testBadSchema() {
         assertFailed(
-            "Discovered zero tables\\. Check that the configured user has permission to list and select tables".toRegex(),
+            "Discovered zero tables\\. Check that the configured user has permission to list and select tables"
+                .toRegex(),
         )
     }
 
@@ -55,7 +56,8 @@ class CheckTest {
     @Property(name = "metadata.resource", value = "discover/metadata-column-query-fails.json")
     fun testBadTables() {
         assertFailed(
-            "Unable to query any of the [0-9]+ discovered table.*Check that the configured user has SELECT permission".toRegex(),
+            "Unable to query any of the [0-9]+ discovered table.*Check that the configured user has SELECT permission"
+                .toRegex(),
         )
     }
 
