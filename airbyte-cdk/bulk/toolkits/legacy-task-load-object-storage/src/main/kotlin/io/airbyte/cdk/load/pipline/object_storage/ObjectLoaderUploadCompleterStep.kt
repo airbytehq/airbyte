@@ -23,7 +23,11 @@ class ObjectLoaderUploadCompleterStep<K : WithStream, T : RemoteObject<*>>(
         null,
     private val completedUploadPartitioner:
         ObjectLoaderCompletedUploadPartitioner<
-            ObjectKey, ObjectLoaderPartLoader.PartResult<T>, K, T>? =
+            ObjectKey,
+            ObjectLoaderPartLoader.PartResult<T>,
+            K,
+            T,
+        >? =
         null,
     private val taskFactory: LoadPipelineStepTaskFactory,
     private val stepId: String,

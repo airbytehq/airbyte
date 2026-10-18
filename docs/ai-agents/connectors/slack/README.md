@@ -17,12 +17,12 @@ The Slack connector is optimized to handle prompts like these.
 
 - List all users in my Slack workspace
 - Show me all public channels
-- List members of a public channel
+- Show me details for a specific public channel
 - Show me recent messages in a public channel
 - Show me thread replies for a recent message
 - List all channels I have access to
 - Show me user details for a workspace member
-- List channel members for a public channel
+- How many members are in each public channel?
 - Send a message to a channel saying 'Hello team!'
 - Post a message in the general channel
 - Update the most recent message in a channel
@@ -60,6 +60,7 @@ The Slack connector isn't currently able to handle prompts like these.
 - Create a new user in the workspace
 - Update user profile information
 - Unarchive a channel
+- List members of a public channel
 
 ## Entities and actions
 
@@ -789,4 +790,4 @@ If your organization restricts access to specific IPs, add the [Airbyte Agents I
 
 ## Version information
 
-**Connector version:** 0.1.22
+**Connector version:** 0.1.23

@@ -429,7 +429,7 @@ data class ArrayGetter<T>(
             ?.use { rsInner: ResultSet ->
                 mutableListOf<T>().apply {
                     while (rsInner.next()) {
-                        addLast(elementGetter.get(rsInner, 2))
+                        @Suppress("UNCHECKED_CAST") add(elementGetter.get(rsInner, 2) as T)
                     }
                 }
             }
@@ -471,7 +471,7 @@ data class SapHanaArrayGetter<T>(
                         is Date -> dateValue.toLocalDate()
                         else ->
                             throw IllegalArgumentException(
-                                "Cannot convert ${dateValue?.javaClass} to LocalDate"
+                                "Cannot convert ${dateValue?.javaClass} to LocalDate",
                             )
                     }
                 } as List<T>
@@ -482,7 +482,7 @@ data class SapHanaArrayGetter<T>(
                         is Time -> dateValue.toLocalTime()
                         else ->
                             throw IllegalArgumentException(
-                                "Cannot convert ${dateValue?.javaClass} to LocalTime"
+                                "Cannot convert ${dateValue?.javaClass} to LocalTime",
                             )
                     }
                 } as List<T>
@@ -493,7 +493,7 @@ data class SapHanaArrayGetter<T>(
                         is Timestamp -> dateValue.toLocalDateTime()
                         else ->
                             throw IllegalArgumentException(
-                                "Cannot convert ${dateValue?.javaClass} to LocalDateTime"
+                                "Cannot convert ${dateValue?.javaClass} to LocalDateTime",
                             )
                     }
                 } as List<T>
@@ -502,7 +502,7 @@ data class SapHanaArrayGetter<T>(
                 array.map { value ->
                     targetClass.cast(value)
                         ?: throw IllegalArgumentException(
-                            "Cannot convert ${value?.javaClass} to ${targetClass.simpleName}"
+                            "Cannot convert ${value?.javaClass} to ${targetClass.simpleName}",
                         )
                 }
         }

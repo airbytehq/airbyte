@@ -25,16 +25,18 @@ class LocalAirbyteDestination(private val dest: Destination) : AirbyteDestinatio
     override fun start(
         destinationConfig: WorkerDestinationConfig,
         jobRoot: Path,
-        additionalEnvironmentVariables: Map<String, String>
+        additionalEnvironmentVariables: Map<String, String>,
     ) {
         consumer =
             dest.getConsumer(
                 destinationConfig.destinationConnectionConfiguration,
                 Jsons.`object`(
                     Jsons.jsonNode(destinationConfig.catalog),
-                    ConfiguredAirbyteCatalog::class.java
-                )!!
-            ) { Destination::defaultOutputRecordCollector }
+                    ConfiguredAirbyteCatalog::class.java,
+                )!!,
+            ) {
+                Destination::defaultOutputRecordCollector
+            }
         consumer!!.start()
     }
 

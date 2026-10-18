@@ -29,7 +29,7 @@ class DlqStateWithNewRecords : DlqTestState {
                     mapOf(
                         "error" to UUID.randomUUID(),
                         "message" to "very custom error message",
-                    )
+                    ),
                 )
             }
             .ifEmpty { null }
