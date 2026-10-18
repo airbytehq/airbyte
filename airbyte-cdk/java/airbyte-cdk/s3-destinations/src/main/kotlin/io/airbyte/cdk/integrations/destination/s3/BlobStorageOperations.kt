@@ -15,7 +15,7 @@ abstract class BlobStorageOperations protected constructor() {
         namespace: String?,
         streamName: String,
         writeDatetime: DateTime,
-        customFormat: String
+        customFormat: String,
     ): String?
 
     /** Ensure that the bucket specified in the config exists */
@@ -50,7 +50,7 @@ abstract class BlobStorageOperations protected constructor() {
         namespace: String?,
         streamName: String,
         objectPath: String,
-        pathFormat: String
+        pathFormat: String,
     )
 
     /** Clean up all the objects matching the provided [keysToDelete] */
@@ -60,6 +60,7 @@ abstract class BlobStorageOperations protected constructor() {
      * List all the existing bucket objects for a given [namespace], [streamName], [objectPath] and
      * an optional [currentGenerationId] which matches the [pathFormat] regex. The returned objects
      * will be filtered with generationId metadata strictly less than [currentGenerationId]
+     *
      * @return List of keys of the objects
      */
     abstract fun listExistingObjects(
@@ -67,7 +68,7 @@ abstract class BlobStorageOperations protected constructor() {
         streamName: String,
         objectPath: String,
         pathFormat: String,
-        currentGenerationId: Long? = null // Sentinel default
+        currentGenerationId: Long? = null, // Sentinel default
     ): List<String>
 
     abstract fun dropBucketObject(objectPath: String)
@@ -88,7 +89,7 @@ abstract class BlobStorageOperations protected constructor() {
         namespace: String?,
         streamName: String,
         objectPath: String,
-        pathFormat: String
+        pathFormat: String,
     ): Long? {
         return null
     }
