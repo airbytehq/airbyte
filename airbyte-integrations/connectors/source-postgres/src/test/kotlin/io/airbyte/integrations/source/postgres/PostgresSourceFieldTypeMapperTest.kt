@@ -396,6 +396,45 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                     "\"((0.0,0.0),(1.0,0.0),(1.0,1.0))\""
             )
         )
+
+        // User-defined non-array type whose name starts with an underscore must not be
+        // mistaken for an array type. The type lives in the public schema (on the search_path)
+        // so the driver reports its bare, unqualified name, e.g. "_status".
+        add(
+            testCase(
+                "public.\"$UNDERSCORE_ENUM\"",
+                LeafAirbyteSchemaType.STRING,
+                mapOf(
+                    "null" to "null",
+                    "'active'" to "\"active\"",
+                    "'inactive'" to "\"inactive\"",
+                ),
+                "UNDERSCORE PREFIXED ENUM"
+            )
+        )
+        add(
+            testCase(
+                "public.\"$UNDERSCORE_ENUM\"[]",
+                ArrayAirbyteSchemaType(LeafAirbyteSchemaType.STRING),
+                mapOf(
+                    "array['active', 'inactive']::public.\"$UNDERSCORE_ENUM\"[]" to
+                        "[\"active\",\"inactive\"]"
+                ),
+                "UNDERSCORE PREFIXED ENUM ARRAY"
+            )
+        )
+
+        // Array of a user-defined type outside the search_path. The driver reports its quoted,
+        // schema-qualified name, e.g. "<other schema>"."__enum", which falls back to an array of
+        // strings.
+        add(
+            testCase(
+                "$OFF_PATH_ENUM[]",
+                ArrayAirbyteSchemaType(LeafAirbyteSchemaType.STRING),
+                mapOf("array['sad', 'happy']::$OFF_PATH_ENUM[]" to "[\"sad\",\"happy\"]"),
+                "SCHEMA QUALIFIED ENUM ARRAY"
+            )
+        )
     }
 
     companion object {
@@ -441,10 +480,18 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 "'-Infinity'" to "null",
             )
         private val nulledNaN = mapOf("'NaN'" to "null")
+        private const val UNDERSCORE_ENUM = "_status"
+        private val OTHER_SCHEMA = TestAssetResourceNamer().getName()
+        private val OFF_PATH_ENUM = "\"$OTHER_SCHEMA\".\"_enum\""
     }
 
     override val setupDdl: List<String> =
-        listOf("CREATE SCHEMA \"$schema\"")
+        listOf(
+                "CREATE SCHEMA \"$schema\"",
+                "CREATE SCHEMA \"$OTHER_SCHEMA\"",
+                "CREATE TYPE public.\"$UNDERSCORE_ENUM\" AS ENUM ('active', 'inactive')",
+                "CREATE TYPE $OFF_PATH_ENUM AS ENUM ('sad', 'happy')",
+            )
             .plus(
                 testCases.map {
                     """
