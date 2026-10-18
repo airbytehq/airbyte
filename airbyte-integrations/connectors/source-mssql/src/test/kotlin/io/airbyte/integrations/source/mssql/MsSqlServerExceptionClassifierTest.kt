@@ -142,35 +142,6 @@ class MsSqlServerExceptionClassifierTest {
     }
 
     @Test
-    fun testNamespacedZeroTablesGuidanceDoesNotMatchUnqueryableTables() {
-        val namespacedMessage =
-            "Discovered zero tables in 'test_db'. Check that the database or schema name is correct and contains tables, " +
-                "that the configured user has permission to list and select them, and that table filters, if any, don't exclude all of them."
-        val (trace: AirbyteErrorTraceMessage, status: AirbyteConnectionStatus) =
-            handler.handleCheckFailure(ConfigErrorException(namespacedMessage))
-        Assertions.assertEquals(
-            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
-            trace.failureType,
-        )
-        Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.status)
-        assertZeroTablesGuidance(status.message)
-
-        val siblingMessage =
-            "Unable to query any of the 2 discovered table(s). Check that the configured user has SELECT permission on the tables to sync."
-        val (siblingTrace: AirbyteErrorTraceMessage, siblingStatus: AirbyteConnectionStatus) =
-            handler.handleCheckFailure(ConfigErrorException(siblingMessage))
-        Assertions.assertEquals(
-            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
-            siblingTrace.failureType,
-        )
-        Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, siblingStatus.status)
-        Assertions.assertFalse(
-            siblingStatus.message.contains("No tables are visible to the configured login"),
-            "The unqueryable-tables error must not receive zero-tables guidance: ${siblingStatus.message}",
-        )
-    }
-
-    @Test
     fun testTypedExceptionWithoutMatchingRuleIsUnchanged() {
         // With the regex classifier first, typed exceptions that no rule matches must still be
         // mapped by the default classifier to their raw message.

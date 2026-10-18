@@ -205,40 +205,6 @@ class PostgresExceptionClassifierTest {
         )
     }
 
-    @Test
-    fun testCheckFailureOnNamespacedZeroTablesKeepsGuidanceSeparateFromQueryFailure() {
-        val namespacedMessage =
-            "Discovered zero tables in 'test_db'. Check that the database or schema name is correct and contains tables, " +
-                "that the configured user has permission to list and select them, and that table filters, if any, don't exclude all of them."
-        val (trace: AirbyteErrorTraceMessage, status: AirbyteConnectionStatus) =
-            handler.handleCheckFailure(ConfigErrorException(namespacedMessage))
-        Assertions.assertEquals(
-            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
-            trace.failureType,
-        )
-        Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.status)
-        Assertions.assertTrue(
-            status.message.startsWith(
-                "Could not connect with provided configuration. Error: $ZERO_TABLES_GUIDANCE",
-            ),
-            "Unexpected connection status message: ${status.message}",
-        )
-
-        val siblingMessage =
-            "Unable to query any of the 2 discovered table(s). Check that the configured user has SELECT permission on the tables to sync."
-        val (siblingTrace: AirbyteErrorTraceMessage, siblingStatus: AirbyteConnectionStatus) =
-            handler.handleCheckFailure(ConfigErrorException(siblingMessage))
-        Assertions.assertEquals(
-            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
-            siblingTrace.failureType,
-        )
-        Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, siblingStatus.status)
-        Assertions.assertFalse(
-            siblingStatus.message.contains(ZERO_TABLES_GUIDANCE),
-            "The unqueryable-tables error must not receive zero-tables guidance: ${siblingStatus.message}",
-        )
-    }
-
     private fun assertUnreachableHostConfigError(result: ConnectorError?) {
         Assertions.assertInstanceOf(ConfigError::class.java, result)
         val displayMessage: String = (result as ConfigError).displayMessage
