@@ -98,8 +98,8 @@ class MongoDbSnapshotPartitionReader(
             log.info { "Finished ${stream.namespace}.${stream.name}: $numRecords records." }
         } else {
             log.info {
-                "Read a full chunk of ${stream.namespace}.${stream.name}; the next round " +
-                    "continues after _id=$lastId."
+                "Read a full chunk of ${stream.namespace}.${stream.name}; $numRecords records. " +
+                    "the next round continues after _id=$lastId."
             }
         }
     }
