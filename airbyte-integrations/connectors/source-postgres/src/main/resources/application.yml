@@ -208,11 +208,13 @@ airbyte:
               - https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist
               - https://docs.airbyte.com/integrations/sources/postgres
 
-          # The CDK's CheckOperation throws ConfigErrorException("Discovered zero tables.") when the
-          # connection test finds no table in any discovered schema. The rule only sees that
-          # exception because this classifier runs ahead of the default one (order above).
-          - pattern: (?i)^Discovered zero tables\.?$
-            input-example: "Discovered zero tables."
+          # CheckOperation can emit the bare "Discovered zero tables." or the newer diagnostic
+          # naming searched namespaces when no table is found in any discovered schema. This rule
+          # matches both because this classifier runs ahead of the default one (order above).
+          - pattern: (?i)^Discovered zero tables\b
+            input-example: >-
+              Discovered zero tables in 'test_db'. Check that the database or schema name is correct and contains tables,
+              that the configured user has permission to list and select them, and that table filters, if any, don't exclude all of them.
             error: config
             output: >-
               No tables are visible to the configured user in the selected database and schemas.
