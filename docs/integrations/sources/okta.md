@@ -91,6 +91,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.3.24 | 2026-10-14 | [88958](https://github.com/airbytehq/airbyte/pull/88958) | Update to CDK v7 and base image 4.1.1 |
 | 0.3.23 | 2026-08-27 | [85169](https://github.com/airbytehq/airbyte/pull/85169) | Remove legacy main.py from poetry package includes to fix Docker image build |
 | 0.3.22 | 2026-08-26 | [85086](https://github.com/airbytehq/airbyte/pull/85086) | Support multiline input for private key |
 | 0.3.21 | 2025-02-24 | [54167](https://github.com/airbytehq/airbyte/pull/54167) | Remove stream_state interpolation |
