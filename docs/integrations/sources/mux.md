@@ -45,6 +45,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.71 | 2026-10-13 | [88710](https://github.com/airbytehq/airbyte/pull/88710) | Update dependencies |
 | 0.0.70 | 2026-10-07 | [88192](https://github.com/airbytehq/airbyte/pull/88192) | Fix transcription vocabulary pagination, optional playback ID reads, and deprecated signing-keys endpoint |
 | 0.0.69 | 2026-10-06 | [87945](https://github.com/airbytehq/airbyte/pull/87945) | Update dependencies |
 | 0.0.68 | 2026-09-29 | [87240](https://github.com/airbytehq/airbyte/pull/87240) | Update dependencies |
