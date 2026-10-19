@@ -18,6 +18,10 @@ This page contains the setup guide and reference information for the [Shopify](h
 
 This connector supports **OAuth2.0** and **API Password** (for private applications) authentication methods.
 
+:::warning
+Shopify's API doesn't support retrieving only the most recently updated discount codes. Instead, the connector fetches all discount codes associated with each recently updated discount. This ensures you sync every updated discount code, at the cost of possibly re-syncing codes that haven't changed. As a result, credit consumption may be higher than expected for discounts with a large number of discount codes.
+:::
+
 ### Set up Shopify
 
 <!-- env:cloud -->
@@ -230,6 +234,10 @@ Shopify's Bulk Operations API silently truncates the nested `codes` connection a
 
 **Recommendation:** Enable the **Discount Codes Sync** stream if you have any discounts with more than ~100 redeem codes. You may run both streams simultaneously — they produce records with the same schema, so you can deduplicate downstream by `id`.
 
+Both discount code streams re-sync every code of a discount whenever that discount is updated. See the [warning in the setup guide](#setup-guide).
+
+**Discounts in Shopify Rollouts:** Connector versions before 4.2.3 use a Shopify API version that leaves out a discount while a serving [Rollout](https://shopify.dev/docs/apps/build/discounts/rollouts) activates or expires it for some or all buyers. Version 4.2.3 and later return these discounts, but incremental syncs don't backfill codes that were left out earlier, because their `updated_at` is older than the saved cursor. If your store has put discounts into Rollouts, [refresh and retain records](/platform/operator-guides/refreshes) for the discount code streams you sync incrementally after upgrading. While a Rollout is serving, a discount's `status` still reflects its own start and end dates, not what buyers get.
+
 ## Marketing Attribution data
 Data related to [marketing attribution](https://www.shopify.com/au/blog/marketing-attribution) can be found across a few different streams. Sync these streams to understand marketing performance:
 - `Customer Journey Summary` (firstVisit.source, firstVisit.sourcetype)
@@ -338,6 +346,9 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.5 | 2026-10-15 | [89009](https://github.com/airbytehq/airbyte/pull/89009) | Upgrade to Python 3.13 and pendulum 3 |
+| 4.2.4 | 2026-10-13 | [88385](https://github.com/airbytehq/airbyte/pull/88385) | Re-run the slice instead of rewinding to a stale cursor from an earlier slice when a checkpointed BULK job has no records within the current slice |
+| 4.2.3 | 2026-10-13 | [88469](https://github.com/airbytehq/airbyte/pull/88469) | Upgrade Shopify Admin API to 2026-10 so `discount_codes` and `discount_codes_sync` no longer leave out discounts affected by a serving Shopify Rollout; see [Syncing discount codes](#syncing-discount-codes) to backfill them. Retry GraphQL pages that Shopify fails with a throttling or `INTERNAL_SERVER_ERROR` code in `deleted_products`, `countries`, `market_countries` and `discount_codes_sync`, fail `deleted_products` on other GraphQL errors instead of completing silently, skip discounts deleted mid-sync in `discount_codes_sync`, and stop the `product_images` query from growing with every slice |
 | 4.2.2 | 2026-10-09 | [88405](https://github.com/airbytehq/airbyte/pull/88405) | Fix `countries` returning no records when a second `Countries` stream is read in the same process: keep the dedup list per stream instance instead of on the class |
 | 4.2.1 | 2026-09-28 | [87001](https://github.com/airbytehq/airbyte/pull/87001) | Re-run the slice with checkpointing disabled instead of silently skipping it when a checkpointed BULK job is canceled and returns no result URL |
 | 4.2.0 | 2026-09-25 | [87007](https://github.com/airbytehq/airbyte/pull/87007) | Add selectable top-level `customer_*` fields to `orders`, populated by the optional `populate_top_level_orders_customer_fields` setting (default: false); fields remain null when disabled |

@@ -28,7 +28,7 @@ class PostgresAggregateFactory(
                 tableName = tableName,
                 columns = postgresClient.describeTable(tableName),
                 postgresClient = postgresClient,
-                postgresConfiguration = postgresConfiguration
+                postgresConfiguration = postgresConfiguration,
             )
         return PostgresAggregate(buffer = buffer)
     }

@@ -81,15 +81,15 @@ private val log = KotlinLogging.logger {}
  * same JVM value the JDBC path produces for it, so that the JSON and protobuf output of both paths
  * is identical:
  * - scalars come out as the value type of the column's `FieldType` (`Long`, `Double`, `Boolean`,
- * `String`, `BigDecimal`, `ByteBuffer`, `LocalDate`, `LocalDateTime`, `LocalTime`,
- * `OffsetDateTime`, JSON text);
+ *   `String`, `BigDecimal`, `ByteBuffer`, `LocalDate`, `LocalDateTime`, `LocalTime`,
+ *   `OffsetDateTime`, JSON text);
  * - `NUMERIC`/`BIGNUMERIC` values are normalized like BigQuery's own text rendering (no trailing
- * zeros, no exponent for integers), which is what the JDBC driver returns;
+ *   zeros, no exponent for integers), which is what the JDBC driver returns;
  * - `STRUCT` and `ARRAY` columns become the [JsonNode] that `TO_JSON_STRING` + [BigQueryValues]
- * produce on the JDBC path, nested temporals rendered with the CDK codecs and nested `BYTES` as
- * binary nodes;
+ *   produce on the JDBC path, nested temporals rendered with the CDK codecs and nested `BYTES` as
+ *   binary nodes;
  * - `INTERVAL` (Arrow month-day-nano) and `RANGE` (Arrow struct of bounds) are rendered as
- * BigQuery's canonical text, the form the JDBC driver returns for those types.
+ *   BigQuery's canonical text, the form the JDBC driver returns for those types.
  *
  * The decoder is bound to one root; the reader loads every Arrow batch into the same root.
  */
@@ -97,14 +97,13 @@ class BigQueryArrowRecordDecoder(
     private val root: VectorSchemaRoot,
     private val fields: List<EmittedField>,
 ) {
-    private val columns: List<Column> =
-        fields.map { field ->
-            val vector: FieldVector? = root.getVector(field.id)
-            if (vector == null) {
-                log.warn { "Column '${field.id}' is absent from the Arrow schema; emitting NULL." }
-            }
-            Column(field, vector)
+    private val columns: List<Column> = fields.map { field ->
+        val vector: FieldVector? = root.getVector(field.id)
+        if (vector == null) {
+            log.warn { "Column '${field.id}' is absent from the Arrow schema; emitting NULL." }
         }
+        Column(field, vector)
+    }
 
     private class Column(val field: EmittedField, val vector: FieldVector?) {
         @Suppress("UNCHECKED_CAST")
@@ -136,7 +135,7 @@ class BigQueryArrowRecordDecoder(
                 payload[column.field.id] =
                     FieldValueEncoder(
                         BigQueryArrowValues.value(vector, row, column.field.type),
-                        column.encoder
+                        column.encoder,
                     )
             } catch (e: RuntimeException) {
                 if (!column.hasLoggedError) {
@@ -233,7 +232,7 @@ object BigQueryArrowValues {
     private fun structToJson(
         vector: StructVector,
         row: Int,
-        fields: List<EmittedField>?
+        fields: List<EmittedField>?,
     ): JsonNode {
         val node: ObjectNode = Jsons.objectNode()
         if (fields != null) {
@@ -241,7 +240,7 @@ object BigQueryArrowValues {
                 val child: FieldVector? = vector.getChild(field.id)
                 node.set<JsonNode>(
                     field.id,
-                    if (child == null) Jsons.nullNode() else toJson(child, row, field.type)
+                    if (child == null) Jsons.nullNode() else toJson(child, row, field.type),
                 )
             }
         } else {
@@ -311,7 +310,7 @@ object BigQueryArrowValues {
             is VarCharVector -> java.util.Base64.getDecoder().decode(vector.get(row))
             else ->
                 throw IllegalArgumentException(
-                    "Cannot read BYTES from ${vector.javaClass.simpleName}"
+                    "Cannot read BYTES from ${vector.javaClass.simpleName}",
                 )
         }
 
@@ -339,7 +338,7 @@ object BigQueryArrowValues {
                 LocalDateTime.ofEpochSecond(
                     epochSeconds(vector, row),
                     nanoAdjustment(vector, row),
-                    ZoneOffset.UTC
+                    ZoneOffset.UTC,
                 )
             else -> LocalDateTime.parse(vector.getObject(row).toString())
         }
@@ -350,7 +349,7 @@ object BigQueryArrowValues {
             is TimeStampVector ->
                 Instant.ofEpochSecond(
                         epochSeconds(vector, row),
-                        nanoAdjustment(vector, row).toLong()
+                        nanoAdjustment(vector, row).toLong(),
                     )
                     .atOffset(ZoneOffset.UTC)
             else -> OffsetDateTime.parse(vector.getObject(row).toString())
@@ -395,7 +394,7 @@ object BigQueryArrowValues {
         return intervalText(
             value.period.toTotalMonths(),
             value.period.days,
-            value.duration.toNanos()
+            value.duration.toNanos(),
         )
     }
 
@@ -421,7 +420,7 @@ object BigQueryArrowValues {
         return intervalIsoText(
             value.period.toTotalMonths(),
             value.period.days,
-            value.duration.toNanos()
+            value.duration.toNanos(),
         )
     }
 
