@@ -84,10 +84,6 @@ Identifiers remain strings. Documented flags are converted to booleans, and norm
 - API credential values must contain only ASCII characters.
 - Netvisor may reject an automatic retry with `REQUEST_NOT_UNIQUE` because the retry reuses the request's authentication headers. Restart the sync if this occurs.
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
-
 ## Changelog
 
 <details>
