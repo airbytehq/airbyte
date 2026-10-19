@@ -69,7 +69,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
-| 1.1.49 | 2026-10-19 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Save rotated OAuth tokens and refresh the access token on 401 |
+| 1.1.49 | 2026-10-19 | [89080](https://github.com/airbytehq/airbyte/pull/89080) | Save rotated OAuth tokens and refresh the access token on 401 |
 | 1.1.48 | 2026-10-13 | [88737](https://github.com/airbytehq/airbyte/pull/88737) | Update dependencies |
 | 1.1.47 | 2026-10-06 | [87971](https://github.com/airbytehq/airbyte/pull/87971) | Update dependencies |
 | 1.1.46 | 2026-09-29 | [87292](https://github.com/airbytehq/airbyte/pull/87292) | Update dependencies |
