@@ -306,5 +306,5 @@ def test_manifest_has_no_custom_components() -> None:
                 yield from walk(child)
 
     assert all(key != "class_name" for key, _ in walk(manifest))
-    assert all(not (isinstance(value, str) and value.startswith("Custom")) for _, value in walk(manifest) if isinstance(value, str))
+    assert all(not value.startswith("Custom") for key, value in walk(manifest) if key == "type" and isinstance(value, str))
     assert not (Path(_YAML_FILE_PATH).parent / "components.py").exists()

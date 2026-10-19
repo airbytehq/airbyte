@@ -21,7 +21,7 @@ definitions:
           value: >-
             {%- set ns = namespace(out=dict(record['attributes'] or {}, id=record['id'])) -%}
             {%- for name, rel in (record.get('relationships') or {}).items() if rel is mapping and rel.get('data') -%}
-            {%- set ns.out = dict(ns.out, **{name: (([rel['data']] if rel['data'] is mapping else rel['data']) | map(attribute='id', default=None) | map('default', none) | list)}) -%}
+            {%- set ns.out = dict(ns.out, **{name: (([rel['data']] if rel['data'] is mapping else rel['data']) | map(attribute='id') | map('default', none) | list)}) -%}
             {%- endfor -%}{{ ns.out }}
     - type: DpathFlattenFields
       field_path: ["_flat"]
