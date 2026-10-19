@@ -79,7 +79,7 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
         Stream(
             id =
                 StreamIdentifier.from(
-                    StreamDescriptor().withName("test_table").withNamespace("public")
+                    StreamDescriptor().withName("test_table").withNamespace("public"),
                 ),
             schema = SCHEMA,
             configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -229,8 +229,9 @@ class PostgresSourceDebeziumOperationsDeserializeRecordTest {
                         "lsn": $LSN
                       }
                     }
-                    """.trimIndent()
-                )
+                    """
+                        .trimIndent(),
+                ),
             )
         return ops.deserializeRecord(DebeziumRecordKey(Jsons.objectNode()), value, stream)
     }

@@ -78,7 +78,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
 
     override fun converterFor(
         field: RelationalColumn?,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>?
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>?,
     ) {
         if (field == null || registration == null) return
         val upperType = field.typeName().uppercase()
@@ -104,7 +104,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
 
     private fun registerArray(
         field: RelationalColumn,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>,
     ) {
         val fieldType = field.typeName().uppercase(Locale.getDefault())
         val arraySchema =
@@ -144,7 +144,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
 
     private fun registerNumber(
         field: RelationalColumn,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>,
     ) {
         registration.register(
             SchemaBuilder.string().optional(),
@@ -179,7 +179,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
 
     private fun registerBytea(
         field: RelationalColumn,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>,
     ) {
         registration.register(
             SchemaBuilder.string().optional(),
@@ -200,7 +200,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
 
     private fun registerText(
         field: RelationalColumn,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>,
     ) {
         registration.register(
             SchemaBuilder.string().optional(),
@@ -387,7 +387,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
     // https://debezium.io/documentation/reference/2.2/connectors/postgresql.html#postgresql-temporal-types
     private fun registerDate(
         field: RelationalColumn,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>,
     ) {
         registration.register(
             SchemaBuilder.string().optional(),
@@ -428,12 +428,12 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
                 if (x is Long) {
                     if (getTimePrecision(field) <= 3) {
                         return DateTimeConverter.convertToTimestamp(
-                            Conversions.toInstantFromMillis(x)
+                            Conversions.toInstantFromMillis(x),
                         )
                     }
                     if (getTimePrecision(field) <= 6) {
                         return DateTimeConverter.convertToTimestamp(
-                            Conversions.toInstantFromMicros(x)
+                            Conversions.toInstantFromMicros(x),
                         )
                     }
                 }
@@ -514,7 +514,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
 
     private fun registerMoney(
         field: RelationalColumn,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>,
     ) {
         registration.register(
             SchemaBuilder.string().optional(),

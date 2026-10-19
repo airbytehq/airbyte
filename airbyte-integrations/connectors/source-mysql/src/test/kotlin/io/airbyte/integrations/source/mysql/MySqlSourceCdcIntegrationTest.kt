@@ -40,7 +40,7 @@ class MySqlSourceCdcIntegrationTest {
         assertEquals(1, run1.messages().size)
         assertEquals(
             AirbyteConnectionStatus.Status.SUCCEEDED,
-            run1.messages().first().connectionStatus.status
+            run1.messages().first().connectionStatus.status,
         )
 
         MySqlContainerFactory.exclusive(
@@ -70,7 +70,7 @@ class MySqlSourceCdcIntegrationTest {
 
                     assertEquals(
                         AirbyteConnectionStatus.Status.FAILED,
-                        messageInRun2.connectionStatus.status
+                        messageInRun2.connectionStatus.status,
                     )
                 }
             }
@@ -93,8 +93,9 @@ class MySqlSourceCdcIntegrationTest {
 
     @Test
     fun testFullRefresh() {
-        val fullRefreshCatalog =
-            configuredCatalog.apply { streams.forEach { it.syncMode = SyncMode.FULL_REFRESH } }
+        val fullRefreshCatalog = configuredCatalog.apply {
+            streams.forEach { it.syncMode = SyncMode.FULL_REFRESH }
+        }
         CliRunner.source("read", config(), fullRefreshCatalog).run()
         connectionFactory.get().use { connection: Connection ->
             connection.isReadOnly = false
@@ -152,7 +153,7 @@ class MySqlSourceCdcIntegrationTest {
 
         fun provisionTestContainer(
             targetContainer: MySQLContainer<*>,
-            targetConnectionFactory: JdbcConnectionFactory
+            targetConnectionFactory: JdbcConnectionFactory,
         ) {
             val gtidOn =
                 "SET @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 'ON';" +

@@ -9,6 +9,7 @@ import java.util.*
 import kotlin.math.max
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * This estimator first uses the [InitialSizeEstimator] to calculate an initial fetch size by
  * sampling the first N rows consecutively, and then switches to [SamplingSizeEstimator] to
@@ -20,6 +21,7 @@ class TwoStageSizeEstimator private constructor() : FetchSizeEstimator {
     @get:VisibleForTesting
     var delegate: BaseSizeEstimator
         private set
+
     private var counter = 0
 
     init {
@@ -29,7 +31,7 @@ class TwoStageSizeEstimator private constructor() : FetchSizeEstimator {
                 initialSampleSize,
                 FetchSizeConstants.MIN_FETCH_SIZE,
                 FetchSizeConstants.DEFAULT_FETCH_SIZE,
-                FetchSizeConstants.MAX_FETCH_SIZE
+                FetchSizeConstants.MAX_FETCH_SIZE,
             )
     }
 
@@ -48,7 +50,7 @@ class TwoStageSizeEstimator private constructor() : FetchSizeEstimator {
                         delegate.maxRowByteSize,
                         FetchSizeConstants.MIN_FETCH_SIZE,
                         FetchSizeConstants.DEFAULT_FETCH_SIZE,
-                        FetchSizeConstants.MAX_FETCH_SIZE
+                        FetchSizeConstants.MAX_FETCH_SIZE,
                     )
             }
         }
@@ -74,7 +76,7 @@ class TwoStageSizeEstimator private constructor() : FetchSizeEstimator {
             val finalBufferByteSize =
                 max(
                         FetchSizeConstants.MIN_BUFFER_BYTE_SIZE.toDouble(),
-                        targetBufferByteSize.toDouble()
+                        targetBufferByteSize.toDouble(),
                     )
                     .toLong()
             LOGGER.info { "Max memory limit: $maxMemory, JDBC buffer size: $finalBufferByteSize" }

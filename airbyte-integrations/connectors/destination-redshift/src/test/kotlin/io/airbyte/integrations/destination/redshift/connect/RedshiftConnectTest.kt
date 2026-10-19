@@ -107,7 +107,7 @@ class RedshiftConnectTest {
         assertEquals("require", props["sslmode"])
         assertFalse(
             props.containsKey("sslfactory"),
-            "sslfactory must be absent when sslmode is set"
+            "sslfactory must be absent when sslmode is set",
         )
         assertEquals(2, props.size)
     }

@@ -20,10 +20,15 @@ data:
       - campaign
       - ad
       - campaign_report
+      - ad_account
+      - ad_group
+      - ad_account_report
+      - ad_group_report
+      - ad_report
   connectorSubtype: api
   connectorType: source
   definitionId: c876992b-877e-4bb3-946b-4678c82bb7ac
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-reddit-ads
   githubIssueLabel: source-reddit-ads
   icon: icon.svg

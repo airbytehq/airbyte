@@ -18,8 +18,8 @@ import jakarta.inject.Singleton
  * - `FULL_REFRESH` and `INCREMENTAL` (user-defined cursor attribute) are supported by every table;
  * - the primary key is source-defined (the table's partition key), the cursor is not;
  * - the JSON schema is `{"type":"object","properties":{...}}` with the legacy per-attribute
- * schemas, which are built here because their shapes (`type` arrays, nested `properties`, `anyOf`
- * items) have no [io.airbyte.cdk.data.AirbyteSchemaType] equivalent.
+ *   schemas, which are built here because their shapes (`type` arrays, nested `properties`, `anyOf`
+ *   items) have no [io.airbyte.cdk.data.AirbyteSchemaType] equivalent.
  */
 @Singleton
 @Primary
