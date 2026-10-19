@@ -39,9 +39,11 @@ class CdcPartitionReaderPostgresTest :
 
     companion object {
         const val DOCKER_IMAGE_NAME = "postgres:13-alpine"
+
         init {
             TestContainerFactory.register(DOCKER_IMAGE_NAME, ::PostgreSQLContainer)
         }
+
         const val PUBLICATION_NAME = "test_publication"
         const val SLOT_NAME = "test_slot"
     }
@@ -58,6 +60,16 @@ class CdcPartitionReaderPostgresTest :
     override fun PostgreSQLContainer<*>.insert12345() {
         for (i in 1..5) {
             withStatement { it.execute("INSERT INTO tbl (v) VALUES ($i)") }
+        }
+    }
+
+    override fun PostgreSQLContainer<*>.insertMultipleInOneTransaction(n: Int) {
+        withStatement {
+            it.execute("BEGIN")
+            for (i in 1..n) {
+                it.execute("INSERT INTO tbl (v) VALUES ($i)")
+            }
+            it.execute("COMMIT")
         }
     }
 

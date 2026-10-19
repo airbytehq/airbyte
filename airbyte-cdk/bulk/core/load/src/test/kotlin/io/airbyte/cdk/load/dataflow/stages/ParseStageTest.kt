@@ -60,8 +60,8 @@ class ParseStageTest {
                                 finalTableName =
                                     io.airbyte.cdk.load.schema.model.TableName(
                                         "test-namespace",
-                                        "test-stream"
-                                    )
+                                        "test-stream",
+                                    ),
                             ),
                         columnSchema =
                             io.airbyte.cdk.load.schema.model.ColumnSchema(
@@ -70,14 +70,14 @@ class ParseStageTest {
                                 finalSchema = mapOf(),
                             ),
                         importType = Append,
-                    )
+                    ),
             )
         rawRecord =
             DestinationRecordRaw(
                 stream = stream,
                 rawData =
                     DestinationRecordJsonSource(
-                        AirbyteMessage().withRecord(AirbyteRecordMessage().withEmittedAt(12345L))
+                        AirbyteMessage().withRecord(AirbyteRecordMessage().withEmittedAt(12345L)),
                     ),
                 serializedSizeBytes = 100,
                 airbyteRawId = UUID.randomUUID(),
