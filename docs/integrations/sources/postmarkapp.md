@@ -45,9 +45,7 @@ Account-API
 
 `Start Date` sets the UTC date and time (`YYYY-MM-DDTHH:MM:SSZ`) from which the `messages` and `bounces` streams are replicated, in both full refresh and incremental mode. It defaults to 365 days ago, Postmark's maximum message retention period.
 
-`Slice Window (Minutes)` controls the time-window size for the `messages` and `bounces` streams. It defaults to 1440 minutes (one day). Postmark returns at most 10,000 records per search, so if any window matches 10,000 or more records, the sync fails with a configuration error. Lower this setting until each window has fewer than 10,000 records. Progress from earlier windows is kept, so the next sync resumes where the failed one stopped. You can also lower it to save sync progress more often.
-
-Postmark filters by US Eastern time. On the night daylight saving time ends, 1:00 to 2:00 AM Eastern happens twice, so any request touching that hour covers all of it. If 10,000 or more records fall in that hour, the sync fails for that window regardless of this setting.
+`Slice Window (Minutes)` controls the time-window size for the `messages` and `bounces` streams. It defaults to 1440 minutes (one day). Postmark returns at most 10,000 records per search, so if any window matches 10,000 or more records, the sync fails with a configuration error. Lower this setting until each window has fewer than 10,000 records. In incremental mode, progress from earlier windows is kept, so the next sync resumes where the failed one stopped, and a lower setting also saves progress more often. A full refresh sync doesn't keep progress between syncs, so it starts again from the start date.
 
 ## Supported sync modes
 
@@ -60,6 +58,10 @@ The Postmarkapp source connector supports the following [sync modes](https://doc
 | Namespaces        | No         |
 
 Incremental sync is available for the `messages` and `bounces` streams only. Each sync saves the timestamp of the latest record it read and the next sync starts one hour before it, to pick up records Postmark makes searchable late; use a deduplicated destination sync mode to drop the re-read records. A stream with no new records checks every window since that timestamp, or since the start date if it has never returned a record, again on the next sync. Incremental sync does not pick up later changes to records it has already read, such as a message's status; run a full refresh for those.
+
+## Limitations
+
+Postmark filters the `messages` and `bounces` streams by US Eastern time. On the night daylight saving time ends, 1:00 to 2:00 AM Eastern happens twice, so any request that touches that hour covers both occurrences (05:00 to 07:00 UTC), however small `Slice Window (Minutes)` is. If 10,000 or more records fall in those two hours, the sync fails with the same configuration error, but lowering `Slice Window (Minutes)` can't fix it, and every later sync fails on that window too. In incremental mode the stream can't save progress past it. To move past it, set `Start Date` to after 07:00 UTC on that day and reset the stream's state, for example by refreshing the stream. The records from those two hours are not synced.
 
 ## IP allow list
 

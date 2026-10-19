@@ -98,7 +98,8 @@ definitions:
     # as a config error telling the user to lower slice_window_minutes. With exactly 10,000 the last page is full, so the paginator
     # would still request offset 10,000. TotalCount on the first page fails the window before any of its records is emitted; the
     # offset error is a fallback in case the count grows while paging. ErrorCode 700 (messages) and 1000 (bounces) cover every
-    # query validation error on their endpoint, so only the ones naming the offset are treated as the record limit.
+    # query validation error on their endpoint, so only the ones naming the offset or the 10,000 limit are treated as the record
+    # limit. Postmark doesn't document the bounces wording for it, so matching either keeps a rephrased message a config error.
     $ref: "#/definitions/error_handler"
     response_filters:
       - type: HttpResponseFilter
@@ -109,7 +110,7 @@ definitions:
       - type: HttpResponseFilter
         action: FAIL
         failure_type: config_error
-        predicate: "{{ response.ErrorCode in [700, 1000] and 'offset' in (response.Message or '') | lower }}"
+        predicate: "{{ response.ErrorCode in [700, 1000] and ('offset' in (response.Message or '') | lower or '10,000' in (response.Message or '') or '10000' in (response.Message or '')) }}"
         error_message: "Postmark's 10,000-record search limit was reached in one {{ config.get('slice_window_minutes') or 1440 }}-minute window. Lower the Slice Window (Minutes) setting so that each window has fewer than 10,000 records."
       - $ref: "#/definitions/rejected_request_filter"
   streams:

@@ -406,24 +406,27 @@ class TestPostmarkStreams(TestCase):
         for request in requests:
             http_mocker.assert_number_of_calls(request, 1)
 
-    @HttpMocker()
-    def test_offset_limit_error_fails_as_config_error(self, http_mocker):
+    def test_offset_limit_error_fails_as_config_error(self):
         config = ConfigBuilder().with_start_date("2025-01-02T11:00:00Z").with_slice_window_minutes(60).build()
+        # The messages wording was seen live; the bounces wording isn't documented, so cover a message naming only the 10,000 limit.
         cases = (
             (_MESSAGES, {"ErrorCode": 700, "Message": "The combination of count and offset is too large."}),
             (_BOUNCES, {"ErrorCode": 1000, "Message": "Count + Offset cannot exceed 10,000 bounces."}),
+            (_BOUNCES, {"ErrorCode": 1000, "Message": "A search can return at most 10,000 bounces."}),
+            (_BOUNCES, {"ErrorCode": 1000, "Message": "Search results are limited to 10000 bounces."}),
         )
         for stream_name, error in cases:
-            window = _stream_request(stream_name, "2025-01-02T06:00:00", "2025-01-02T06:55:01")
-            http_mocker.get(window, HttpResponse(body=json.dumps(error), status_code=422))
+            with self.subTest(stream=stream_name, message=error["Message"]), HttpMocker() as http_mocker:
+                window = _stream_request(stream_name, "2025-01-02T06:00:00", "2025-01-02T06:55:01")
+                http_mocker.get(window, HttpResponse(body=json.dumps(error), status_code=422))
 
-            output = _read_stream(stream_name, SyncMode.incremental, config)
+                output = _read_stream(stream_name, SyncMode.incremental, config)
 
-            assert output.records == []
-            _assert_config_error(
-                output, f"Postmark's 10,000-record search limit was reached in one 60-minute window. {_LOWER_WINDOW_GUIDANCE}"
-            )
-            http_mocker.assert_number_of_calls(window, 1)
+                assert output.records == []
+                _assert_config_error(
+                    output, f"Postmark's 10,000-record search limit was reached in one 60-minute window. {_LOWER_WINDOW_GUIDANCE}"
+                )
+                http_mocker.assert_number_of_calls(window, 1)
 
     @HttpMocker()
     def test_other_422_responses_fail_without_retry(self, http_mocker):
