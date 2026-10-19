@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions
 
 object CharacterizationTest {
     val testResourcesPath: Path = Path.of("src/test-integration/resources")
+
     fun doAssert(
         goldenFileName: String,
         actualContents: String,

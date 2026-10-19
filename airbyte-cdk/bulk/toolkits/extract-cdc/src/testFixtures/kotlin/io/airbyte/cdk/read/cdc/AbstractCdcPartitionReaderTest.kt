@@ -84,13 +84,19 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
         get() = Global(listOf(stream))
 
     abstract fun createContainer(): C
+
     abstract fun C.createStream()
+
     abstract fun C.insert12345()
+
     abstract fun C.update135()
+
     abstract fun C.delete24()
 
     abstract fun createCdcPartitionsCreatorDbzOps(): CdcPartitionsCreatorDebeziumOperations<T>
+
     abstract fun createCdcPartitionReaderDbzOps(): CdcPartitionReaderDebeziumOperations<T>
+
     val container: C by lazy { createContainer() }
     private val cdcPartitionsCreatorDbzOps by lazy { createCdcPartitionsCreatorDbzOps() }
     private val cdcPartitionReaderDbzOps by lazy { createCdcPartitionReaderDbzOps() }
@@ -114,15 +120,16 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
                 stream.id to
                     object : StreamRecordConsumer {
                         override val stream: Stream = this@AbstractCdcPartitionReaderTest.stream
+
                         override fun accept(
                             recordData: NativeRecordPayload,
-                            changes: Map<EmittedField, FieldValueChange>?
+                            changes: Map<EmittedField, FieldValueChange>?,
                         ) {
                             outputConsumer.accept(
                                 AirbyteRecordMessage()
                                     .withStream(stream.name)
                                     .withNamespace(stream.namespace)
-                                    .withData(recordData.toJson())
+                                    .withData(recordData.toJson()),
                             )
                             if (shouldSlow) {
                                 // Slow the write down so that the engine close triggered by the
@@ -133,7 +140,7 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
                         }
 
                         override fun close() {}
-                    }
+                    },
             )
     }
 
@@ -181,7 +188,7 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
             )
         val p1: T =
             cdcPartitionsCreatorDbzOps.position(
-                cdcPartitionsCreatorDbzOps.generateColdStartOffset()
+                cdcPartitionsCreatorDbzOps.generateColdStartOffset(),
             )
         container.delete24()
         val delete =
@@ -191,7 +198,7 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
             )
         val p2: T =
             cdcPartitionsCreatorDbzOps.position(
-                cdcPartitionsCreatorDbzOps.generateColdStartOffset()
+                cdcPartitionsCreatorDbzOps.generateColdStartOffset(),
             )
 
         Assertions.assertTrue(r0.state is ValidDebeziumWarmStartState)
@@ -214,7 +221,7 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
         Assertions.assertNotNull(r2.closeReason)
         Assertions.assertNotEquals(
             CdcPartitionReader.CloseReason.RECORD_REACHED_TARGET_POSITION,
-            r2.closeReason
+            r2.closeReason,
         )
     }
 
@@ -222,7 +229,8 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
      * Insert multiple rows in a single transaction. The first row reaches the target and triggers
      * the target-lsn close while the remaining rows are still being delivered, so they go through
      * the shutdown path of [CdcPartitionReader.emitRecord]. Record writes are slowed down so that
-     * the close happens while a write is in progress.
+     * the close happens while a write is in progress. Heartbeats are disabled for that read so that
+     * only a record can trigger the close.
      *
      * Checks that the STATE count matches the records written (asserted in [read]).
      */
@@ -247,15 +255,24 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
         // LSN position before we run the insert to mimic the saved LSN
         val p1: T =
             cdcPartitionsCreatorDbzOps.position(
-                cdcPartitionsCreatorDbzOps.generateColdStartOffset()
+                cdcPartitionsCreatorDbzOps.generateColdStartOffset(),
             )
         container.insertMultipleInOneTransaction(5)
         val insert = (1..5).map { Insert(it, it) }
 
         Assertions.assertTrue(r0.state is ValidDebeziumWarmStartState)
+        // Debezium dispatches a timer-based heartbeat after any log event once
+        // heartbeat.interval.ms has elapsed since the task started, and that heartbeat carries the
+        // restart offset, which is p1 until the first record is processed. When connecting to the
+        // log takes longer than the interval (seen on loaded CI runners) the heartbeat precedes the
+        // first record in the first batch and closes the engine with
+        // HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION. heartbeat.interval.ms=0 disables them.
         val i1 =
             ReadInput(
-                cdcPartitionsCreatorDbzOps.generateWarmStartProperties(listOf(stream)),
+                DebeziumPropertiesBuilder()
+                    .with(cdcPartitionsCreatorDbzOps.generateWarmStartProperties(listOf(stream)))
+                    .withHeartbeats(Duration.ZERO)
+                    .buildMap(),
                 (r0.state as ValidDebeziumWarmStartState).offset,
                 r0.state.schemaHistory,
                 isSynthetic = false,
@@ -263,7 +280,7 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
         val r1: ReadResult = read(i1, p1, true)
         Assertions.assertEquals(
             CdcPartitionReader.CloseReason.RECORD_REACHED_TARGET_POSITION,
-            r1.closeReason
+            r1.closeReason,
         )
         Assertions.assertTrue(r1.state is ValidDebeziumWarmStartState)
         Assertions.assertTrue(r1.records.size >= 2)
@@ -285,7 +302,7 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
                 input.offset,
                 input.schemaHistory,
                 input.isSynthetic,
-                feedBootstrap
+                feedBootstrap,
             )
         Assertions.assertEquals(
             PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN,
@@ -311,7 +328,7 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
             reader.numEmittedRecords.get() +
                 reader.numDiscardedRecords.get() +
                 reader.numHeartbeats.get() +
-                reader.numTombstones.get()
+                reader.numTombstones.get(),
         )
         Assertions.assertEquals(0, reader.numDiscardedRecords.get())
         Assertions.assertEquals(0, reader.numEventsWithoutSourceRecord.get())
@@ -346,14 +363,17 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
     sealed interface Record {
         val id: Int
     }
+
     data class Insert(override val id: Int, val v: Int) : Record
+
     data class Update(override val id: Int, val v: Int) : Record
+
     data class Delete(override val id: Int, val ignore: Boolean = false) : Record
 
     open fun C.insertMultipleInOneTransaction(n: Int) {
         Assumptions.assumeTrue(
             false,
-            "insertMultipleInOneTransaction is not implemented for this database"
+            "insertMultipleInOneTransaction is not implemented for this database",
         )
     }
 
@@ -365,7 +385,7 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
             val offset =
                 DebeziumOffset(
                     offsetNode
-                        .fields()
+                        .properties()
                         .asSequence()
                         .map { Jsons.readTree(it.key) to Jsons.readTree(it.value.asText()) }
                         .toMap(),
@@ -391,7 +411,7 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
         override fun deserializeRecord(
             key: DebeziumRecordKey,
             value: DebeziumRecordValue,
-            stream: Stream
+            stream: Stream,
         ): DeserializedRecord {
             val id: Int = key.element("id").asInt()
             val after: Int? = value.after["v"]?.asInt()
@@ -408,7 +428,7 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
                 data =
                     mutableMapOf<String, FieldValueEncoder<*>>(
                             "id" to FieldValueEncoder(record.id, IntCodec),
-                            "@c" to FieldValueEncoder(record::class.java.name, TextCodec)
+                            "@c" to FieldValueEncoder(record::class.java.name, TextCodec),
                         )
                         .also {
                             when (record) {
@@ -423,7 +443,7 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
 
         override fun findStreamNamespace(
             key: DebeziumRecordKey,
-            value: DebeziumRecordValue
+            value: DebeziumRecordValue,
         ): String? = stream.id.namespace
 
         override fun findStreamName(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
@@ -431,7 +451,7 @@ abstract class AbstractCdcPartitionReaderTest<T : PartiallyOrdered<T>, C : AutoC
 
         override fun serializeState(
             offset: DebeziumOffset,
-            schemaHistory: DebeziumSchemaHistory?
+            schemaHistory: DebeziumSchemaHistory?,
         ): OpaqueStateValue =
             Jsons.valueToTree(
                 mapOf(
