@@ -18,6 +18,10 @@ This page contains the setup guide and reference information for the [Shopify](h
 
 This connector supports **OAuth2.0** and **API Password** (for private applications) authentication methods.
 
+:::warning
+Shopify's API doesn't support retrieving only the most recently updated discount codes. Instead, the connector fetches all discount codes associated with each recently updated discount. This ensures you sync every updated discount code, at the cost of possibly re-syncing codes that haven't changed. As a result, credit consumption may be higher than expected for discounts with a large number of discount codes.
+:::
+
 ### Set up Shopify
 
 <!-- env:cloud -->
@@ -229,6 +233,8 @@ Shopify's Bulk Operations API silently truncates the nested `codes` connection a
 **Discount Codes Sync** avoids this limitation by querying parent discounts with cursor pagination, then explicitly paging through each parent's child codes (up to 250 per page). The trade-off is higher per-record API cost and lower throughput compared to the bulk stream.
 
 **Recommendation:** Enable the **Discount Codes Sync** stream if you have any discounts with more than ~100 redeem codes. You may run both streams simultaneously — they produce records with the same schema, so you can deduplicate downstream by `id`.
+
+Both discount code streams re-sync every code of a discount whenever that discount is updated. See the [warning in the setup guide](#setup-guide).
 
 **Discounts in Shopify Rollouts:** Connector versions before 4.2.3 use a Shopify API version that leaves out a discount while a serving [Rollout](https://shopify.dev/docs/apps/build/discounts/rollouts) activates or expires it for some or all buyers. Version 4.2.3 and later return these discounts, but incremental syncs don't backfill codes that were left out earlier, because their `updated_at` is older than the saved cursor. If your store has put discounts into Rollouts, [refresh and retain records](/platform/operator-guides/refreshes) for the discount code streams you sync incrementally after upgrading. While a Rollout is serving, a discount's `status` still reflects its own start and end dates, not what buyers get.
 
