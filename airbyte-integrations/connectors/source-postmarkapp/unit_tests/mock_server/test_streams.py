@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 import freezegun
 from unit_tests.conftest import get_source
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
@@ -22,7 +22,7 @@ _FROZEN_NOW = "2025-01-02T12:00:00Z"
 _MESSAGES = "messages"
 _BOUNCES = "bounces"
 _SERVERS = "servers"
-_SPLIT_FAILURE_MESSAGE = "Lower the Slice Window (Minutes) setting so that each request covers less time."
+_LOWER_WINDOW_GUIDANCE = "Lower the Slice Window (Minutes) setting so that each window has fewer than 10,000 records."
 
 
 def _read_stream(stream_name, sync_mode, config, state=None) -> EntrypointOutput:
@@ -50,6 +50,13 @@ def _stream_request(stream_name, fromdate, todate, offset=0):
 
 def _message_request(fromdate, todate, offset=0):
     return _stream_request(_MESSAGES, fromdate, todate, offset)
+
+
+def _assert_config_error(output, message):
+    # The CDK also emits a "did not sync successfully" trace for the stream, carrying the same failure type.
+    assert output.errors
+    assert all(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
+    assert message in [error.trace.error.message for error in output.errors]
 
 
 def _eastern_wall_time(value):
@@ -320,63 +327,106 @@ class TestPostmarkStreams(TestCase):
         http_mocker.assert_number_of_calls(first_request, 1)
 
     @HttpMocker()
-    def test_window_with_more_than_10000_records_is_split_before_emitting(self, http_mocker):
+    def test_window_with_10000_or_more_records_fails_as_config_error_before_emitting(self, http_mocker):
         config = ConfigBuilder().with_start_date("2025-01-02T11:00:00Z").build()
-        window = _message_request("2025-01-02T06:00:00", "2025-01-02T06:55:01")
-        # 11:00:00-11:55:00Z splits into 11:00:00-11:27:29Z and 11:27:30-11:55:00Z.
-        first_half = _message_request("2025-01-02T06:00:00", "2025-01-02T06:27:30")
-        second_half = _message_request("2025-01-02T06:27:30", "2025-01-02T06:55:01")
-        http_mocker.get(window, _page("Messages", _messages("oversized", 500, "2025-01-02T06:10:00.0000000-05:00"), total_count=12000))
-        http_mocker.get(first_half, _page("Messages", _messages("first-half", 1, "2025-01-02T06:10:00.0000000-05:00"), total_count=1))
-        http_mocker.get(second_half, _page("Messages", _messages("second-half", 1, "2025-01-02T06:40:00.0000000-05:00"), total_count=1))
+        # With exactly 10,000 records the last page is full, so the paginator would still request offset 10,000 and get a 422.
+        for stream_name, response_key, total_count in ((_MESSAGES, "Messages", 10000), (_BOUNCES, "Bounces", 12000)):
+            window = _stream_request(stream_name, "2025-01-02T06:00:00", "2025-01-02T06:55:01")
+            http_mocker.get(
+                window, _page(response_key, _messages("oversized", 500, "2025-01-02T06:10:00.0000000-05:00"), total_count=total_count)
+            )
+
+            output = _read_stream(stream_name, SyncMode.incremental, config)
+
+            assert output.records == []
+            _assert_config_error(
+                output,
+                f"Postmark found {total_count} records in one 1440-minute window, but returns at most 10,000 per search. {_LOWER_WINDOW_GUIDANCE}",
+            )
+            http_mocker.assert_number_of_calls(window, 1)
+
+    @HttpMocker()
+    def test_window_with_9999_records_is_read_in_full(self, http_mocker):
+        config = ConfigBuilder().with_start_date("2025-01-02T11:00:00Z").build()
+        requests = []
+        for page in range(20):
+            records = _messages(f"page{page}", 500 if page < 19 else 499, "2025-01-02T06:10:00.0000000-05:00")
+            request = _message_request("2025-01-02T06:00:00", "2025-01-02T06:55:01", offset=page * 500)
+            http_mocker.get(request, _page("Messages", records, total_count=9999))
+            requests.append(request)
 
         output = _read_stream(_MESSAGES, SyncMode.incremental, config)
 
         assert output.errors == []
-        assert [record.record.data["MessageID"] for record in output.records] == ["first-half-0", "second-half-0"]
-        assert output.most_recent_state.stream_state.__dict__["ReceivedAt"] == "2025-01-02T06:40:00-0500"
-        http_mocker.assert_number_of_calls(window, 1)
-        http_mocker.assert_number_of_calls(first_half, 1)
-        http_mocker.assert_number_of_calls(second_half, 1)
+        assert len(output.records) == 9999
+        for request in requests:
+            http_mocker.assert_number_of_calls(request, 1)
 
     @HttpMocker()
-    def test_offset_limit_error_splits_window(self, http_mocker):
-        config = ConfigBuilder().with_start_date("2025-01-02T11:00:00Z").build()
-        cases = (
-            (_MESSAGES, "Messages", {"ErrorCode": 700, "Message": "The combination of count and offset is too large."}),
-            (_BOUNCES, "Bounces", {"ErrorCode": 1000, "Message": "Count + Offset cannot exceed 10,000 bounces."}),
-        )
-        for stream_name, response_key, error in cases:
-            window = _stream_request(stream_name, "2025-01-02T06:00:00", "2025-01-02T06:55:01")
-            first_half = _stream_request(stream_name, "2025-01-02T06:00:00", "2025-01-02T06:27:30")
-            second_half = _stream_request(stream_name, "2025-01-02T06:27:30", "2025-01-02T06:55:01")
-            http_mocker.get(window, HttpResponse(body=json.dumps(error), status_code=422))
-            http_mocker.get(first_half, _page(response_key, [], total_count=0))
-            http_mocker.get(second_half, _page(response_key, [], total_count=0))
-
-            output = _read_stream(stream_name, SyncMode.incremental, config)
-
-            assert output.errors == []
-            http_mocker.assert_number_of_calls(window, 1)
-            http_mocker.assert_number_of_calls(first_half, 1)
-            http_mocker.assert_number_of_calls(second_half, 1)
-
-    @HttpMocker()
-    def test_window_that_cannot_be_split_further_fails_with_guidance(self, http_mocker):
-        config = ConfigBuilder().with_start_date("2025-01-02T11:54:59Z").build()
-        window = _message_request("2025-01-02T06:54:59", "2025-01-02T06:55:01")
-        one_second = _message_request("2025-01-02T06:54:59", "2025-01-02T06:55:00")
-        http_mocker.get(window, _page("Messages", [], total_count=10000))
-        http_mocker.get(one_second, _page("Messages", [], total_count=10000))
+    def test_oversized_window_keeps_progress_from_earlier_windows(self, http_mocker):
+        config = ConfigBuilder().with_start_date("2025-01-02T11:00:00Z").with_slice_window_minutes(30).build()
+        first_window = _message_request("2025-01-02T06:00:00", "2025-01-02T06:30:00")
+        oversized_window = _message_request("2025-01-02T06:30:00", "2025-01-02T06:55:01")
+        http_mocker.get(first_window, _page("Messages", _messages("first", 1, "2025-01-02T06:10:00.0000000-05:00"), total_count=1))
+        http_mocker.get(oversized_window, _page("Messages", [], total_count=15000))
 
         output = _read_stream(_MESSAGES, SyncMode.incremental, config)
 
-        assert output.records == []
-        assert any(error.trace.error.message.endswith(_SPLIT_FAILURE_MESSAGE) for error in output.errors)
-        http_mocker.assert_number_of_calls(one_second, 1)
+        assert [record.record.data["MessageID"] for record in output.records] == ["first-0"]
+        assert output.most_recent_state.stream_state.__dict__["ReceivedAt"] == "2025-01-02T06:10:00-0500"
+        _assert_config_error(
+            output, f"Postmark found 15000 records in one 30-minute window, but returns at most 10,000 per search. {_LOWER_WINDOW_GUIDANCE}"
+        )
+        http_mocker.assert_number_of_calls(first_window, 1)
+        http_mocker.assert_number_of_calls(oversized_window, 1)
 
     @HttpMocker()
-    def test_other_422_responses_fail_without_retry_or_split(self, http_mocker):
+    def test_lowered_slice_window_resumes_from_state(self, http_mocker):
+        # After an oversized-window failure the user lowers the setting; the next sync starts an hour before the saved state.
+        config = ConfigBuilder().with_start_date("2025-01-02T00:00:00Z").with_slice_window_minutes(15).build()
+        state = StateBuilder().with_stream_state(_MESSAGES, {"ReceivedAt": "2025-01-02T06:10:00-0500"}).build()
+        expected_windows = [
+            ("2025-01-02T05:10:00", "2025-01-02T05:25:00"),
+            ("2025-01-02T05:25:00", "2025-01-02T05:40:00"),
+            ("2025-01-02T05:40:00", "2025-01-02T05:55:00"),
+            ("2025-01-02T05:55:00", "2025-01-02T06:10:00"),
+            ("2025-01-02T06:10:00", "2025-01-02T06:25:00"),
+            ("2025-01-02T06:25:00", "2025-01-02T06:40:00"),
+            ("2025-01-02T06:40:00", "2025-01-02T06:55:01"),
+        ]
+        requests = []
+        for fromdate, todate in expected_windows:
+            request = _message_request(fromdate, todate)
+            http_mocker.get(request, _page("Messages", [], total_count=0))
+            requests.append(request)
+
+        output = _read_stream(_MESSAGES, SyncMode.incremental, config, state)
+
+        assert output.errors == []
+        for request in requests:
+            http_mocker.assert_number_of_calls(request, 1)
+
+    @HttpMocker()
+    def test_offset_limit_error_fails_as_config_error(self, http_mocker):
+        config = ConfigBuilder().with_start_date("2025-01-02T11:00:00Z").with_slice_window_minutes(60).build()
+        cases = (
+            (_MESSAGES, {"ErrorCode": 700, "Message": "The combination of count and offset is too large."}),
+            (_BOUNCES, {"ErrorCode": 1000, "Message": "Count + Offset cannot exceed 10,000 bounces."}),
+        )
+        for stream_name, error in cases:
+            window = _stream_request(stream_name, "2025-01-02T06:00:00", "2025-01-02T06:55:01")
+            http_mocker.get(window, HttpResponse(body=json.dumps(error), status_code=422))
+
+            output = _read_stream(stream_name, SyncMode.incremental, config)
+
+            assert output.records == []
+            _assert_config_error(
+                output, f"Postmark's 10,000-record search limit was reached in one 60-minute window. {_LOWER_WINDOW_GUIDANCE}"
+            )
+            http_mocker.assert_number_of_calls(window, 1)
+
+    @HttpMocker()
+    def test_other_422_responses_fail_without_retry(self, http_mocker):
         config = ConfigBuilder().with_start_date("2025-01-02T11:00:00Z").build()
         # ErrorCode 700 (messages) and 1000 (bounces) cover every query validation error; only the offset limit is fixed by a smaller window.
         cases = (

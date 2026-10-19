@@ -45,9 +45,9 @@ Account-API
 
 `Start Date` sets the UTC date and time (`YYYY-MM-DDTHH:MM:SSZ`) from which the `messages` and `bounces` streams are replicated, in both full refresh and incremental mode. It defaults to 365 days ago, Postmark's maximum message retention period.
 
-`Slice Window (Minutes)` controls the time-window size for the `messages` and `bounces` streams. It defaults to 1440 minutes (one day). Postmark returns at most 10,000 records per search, so the connector splits any window that matches more in half, up to 10 times, which shrinks it to about 1/1000 of this setting (about 1.5 minutes by default). Lower this setting if a sync fails because a window could not be split small enough, or to save sync progress more often.
+`Slice Window (Minutes)` controls the time-window size for the `messages` and `bounces` streams. It defaults to 1440 minutes (one day). Postmark returns at most 10,000 records per search, so if any window matches 10,000 or more records, the sync fails with a configuration error. Lower this setting until each window has fewer than 10,000 records. Progress from earlier windows is kept, so the next sync resumes where the failed one stopped. You can also lower it to save sync progress more often.
 
-Postmark filters by US Eastern time. On the night daylight saving time ends, 1:00 to 2:00 AM Eastern happens twice, so any request touching that hour covers all of it. If more than 10,000 records fall in that hour, the sync fails for that window regardless of this setting.
+Postmark filters by US Eastern time. On the night daylight saving time ends, 1:00 to 2:00 AM Eastern happens twice, so any request touching that hour covers all of it. If 10,000 or more records fall in that hour, the sync fails for that window regardless of this setting.
 
 ## Supported sync modes
 
@@ -72,7 +72,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.3.0 | 2026-10-14 | [87518](https://github.com/airbytehq/airbyte/pull/87518) | Fix pagination that re-read the same page of records indefinitely; add incremental sync, an optional start date, and a configurable time window for the messages and bounces streams, splitting windows over Postmark's 10,000-record search limit |
+| 0.3.0 | 2026-10-14 | [87518](https://github.com/airbytehq/airbyte/pull/87518) | Fix pagination that re-read the same page of records indefinitely; add incremental sync, an optional start date, and a configurable time window for the messages and bounces streams; a window over Postmark's 10,000-record search limit fails with a configuration error |
 | 0.2.10 | 2025-02-15 | [53947](https://github.com/airbytehq/airbyte/pull/53947) | Update dependencies |
 | 0.2.9 | 2025-02-08 | [53462](https://github.com/airbytehq/airbyte/pull/53462) | Update dependencies |
 | 0.2.8 | 2025-02-01 | [52967](https://github.com/airbytehq/airbyte/pull/52967) | Update dependencies |

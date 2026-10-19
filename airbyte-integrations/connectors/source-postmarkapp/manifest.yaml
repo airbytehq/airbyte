@@ -94,23 +94,24 @@ definitions:
     http_codes: [422]
     error_message: "Postmark rejected the request (ErrorCode {{ response.ErrorCode }}): {{ response.Message }}"
   windowed_error_handler:
-    # Postmark searches return at most 10,000 records (count + offset <= 10,000), so a window that matches more is split in half
-    # and each half read in turn; the CDK stops after 10 splits, so a window can shrink to about 1/1000 of slice_window_minutes.
-    # TotalCount on the first page triggers the split before any record of the window is emitted; the offset error is a fallback
-    # in case the count grows while paging. ErrorCode 700 (messages) and 1000 (bounces) cover every query validation error on
-    # their endpoint, so they only split when Postmark names the offset.
+    # Postmark searches return at most 10,000 records (count + offset <= 10,000), so a window that matches 10,000 or more fails
+    # as a config error telling the user to lower slice_window_minutes. With exactly 10,000 the last page is full, so the paginator
+    # would still request offset 10,000. TotalCount on the first page fails the window before any of its records is emitted; the
+    # offset error is a fallback in case the count grows while paging. ErrorCode 700 (messages) and 1000 (bounces) cover every
+    # query validation error on their endpoint, so only the ones naming the offset are treated as the record limit.
     $ref: "#/definitions/error_handler"
     response_filters:
       - type: HttpResponseFilter
-        action: SPLIT_REQUEST_WINDOW
+        action: FAIL
+        failure_type: config_error
         predicate: "{{ (response.TotalCount or 0) >= 10000 }}"
+        error_message: "Postmark found {{ response.TotalCount }} records in one {{ config.get('slice_window_minutes') or 1440 }}-minute window, but returns at most 10,000 per search. Lower the Slice Window (Minutes) setting so that each window has fewer than 10,000 records."
       - type: HttpResponseFilter
-        action: SPLIT_REQUEST_WINDOW
+        action: FAIL
+        failure_type: config_error
         predicate: "{{ response.ErrorCode in [700, 1000] and 'offset' in (response.Message or '') | lower }}"
+        error_message: "Postmark's 10,000-record search limit was reached in one {{ config.get('slice_window_minutes') or 1440 }}-minute window. Lower the Slice Window (Minutes) setting so that each window has fewer than 10,000 records."
       - $ref: "#/definitions/rejected_request_filter"
-  request_window_splitting:
-    type: RequestWindowSplitting
-    failure_message: Lower the Slice Window (Minutes) setting so that each request covers less time.
   streams:
     deliverystats:
       type: DeclarativeStream
@@ -211,8 +212,6 @@ definitions:
               window_cursor_field: ReceivedAt
         paginator:
           $ref: "#/definitions/offset_paginator"
-        request_window_splitting:
-          $ref: "#/definitions/request_window_splitting"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -247,8 +246,6 @@ definitions:
               window_cursor_field: BouncedAt
         paginator:
           $ref: "#/definitions/offset_paginator"
-        request_window_splitting:
-          $ref: "#/definitions/request_window_splitting"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -345,7 +342,7 @@ spec:
       slice_window_minutes:
         type: integer
         title: Slice Window (Minutes)
-        description: Length in minutes of each time window requested for the messages and bounces streams. Postmark returns at most 10,000 records per search, so a window that matches more is split in half, up to 10 times (to about 1/1000 of this value). Lower this value if a sync fails because a window could not be split small enough, or to save progress more often. Defaults to 1440 (one day).
+        description: Length in minutes of each time window requested for the messages and bounces streams. Postmark returns at most 10,000 records per search, so a sync fails if any window matches 10,000 or more; lower this value so that each window has fewer, or to save progress more often. Defaults to 1440 (one day).
         minimum: 1
         maximum: 10080
         examples: [1440, 60, 10080]
