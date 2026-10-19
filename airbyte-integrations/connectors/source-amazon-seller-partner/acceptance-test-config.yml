@@ -121,6 +121,8 @@ acceptance_tests:
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: FbaInboundShipmentItems
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+          - name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
   incremental:
     tests:
       - config_path: "secrets/config.json"
