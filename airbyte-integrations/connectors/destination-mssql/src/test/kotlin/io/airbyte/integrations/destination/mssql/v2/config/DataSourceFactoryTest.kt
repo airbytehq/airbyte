@@ -63,7 +63,7 @@ internal class DataSourceFactoryTest {
             EncryptedVerify(
                 trustStoreName = "name",
                 trustStorePassword = "password",
-                hostNameInCertificate = "cert-host"
+                hostNameInCertificate = "cert-host",
             )
         val config = Fixtures.defaultConfig.copy(sslMethod = sslMethod)
         val dataSource = config.toSQLServerDataSource()
