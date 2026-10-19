@@ -2,7 +2,7 @@ version: 5.14.0
 definitions:
   authenticator:
     type: OAuthAuthenticator
-    token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
+    token_refresh_endpoint: "{{ config.get('authorization_endpoint') or 'https://zoom.us/oauth/token' }}"
     client_id: "{{ config['client_id'] }}"
     client_secret: "{{ config['client_secret'] }}"
     grant_type: account_credentials
@@ -13664,26 +13664,31 @@ spec:
     - account_id
     - client_id
     - client_secret
-    - authorization_endpoint
     additionalProperties: true
     properties:
       account_id:
+        title: Account ID
         type: string
         order: 0
-        description: 'The account ID for your Zoom account. You can find this in the
-          Zoom Marketplace under the "Manage" tab for your app.'
+        description: >-
+          The Account ID shown on your Server-to-Server OAuth app's "App Credentials" page in the Zoom App Marketplace.
       client_id:
+        title: Client ID
         type: string
         order: 1
-        description: 'The client ID for your Zoom app. You can find this in the Zoom
-          Marketplace under the "Manage" tab for your app.'
+        description: The Client ID shown on the same "App Credentials" page.
       client_secret:
+        title: Client Secret
         type: string
         order: 2
-        description: 'The client secret for your Zoom app. You can find this in the
-          Zoom Marketplace under the "Manage" tab for your app.'
+        description: >-
+          The Client Secret shown on the same "App Credentials" page. The app needs the user:read:admin,
+          meeting:read:admin, webinar:read:admin and report:read:admin scopes (or their granular equivalents).
         airbyte_secret: true
       authorization_endpoint:
+        title: Authorization Endpoint
         type: string
         order: 3
         default: "https://zoom.us/oauth/token"
+        airbyte_hidden: true
+        description: Leave the default unless Zoom support has given you a different token URL.
