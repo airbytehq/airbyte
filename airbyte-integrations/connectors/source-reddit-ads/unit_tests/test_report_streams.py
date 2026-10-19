@@ -184,7 +184,6 @@ def test_report_paginates_and_decodes_percent_encoded_token(
     http_mocker.assert_number_of_calls(next_page_request, 1)
 
 
-
 @pytest.mark.parametrize("stream_name,breakdowns,_expected_ids", _REPORT_STREAMS)
 def test_report_legacy_timestamp_state_round_trips_to_plain_date(
     stream_name: str,
