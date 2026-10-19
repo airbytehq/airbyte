@@ -32,7 +32,7 @@ internal fun parseTimestampWithDateFallback(str: String): LocalDateTime {
                 "Cannot parse timestamp value '$str' as either datetime or date format",
                 str,
                 e.errorIndex,
-                e
+                e,
             )
         }
     }
