@@ -1,4 +1,5 @@
-version: 7.23.7
+# Dev pre-release of airbyte-python-cdk#1145 — replace with the released version before merge.
+version: 7.37.0.post5.dev39334996934
 
 type: DeclarativeSource
 

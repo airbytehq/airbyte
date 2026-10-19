@@ -164,6 +164,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
+| 0.4.1 | 2026-10-19 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Pin to CDK prerelease of airbyte-python-cdk#1145 (emit CONNECTOR_CONFIG once per single-use refresh token rotation) for prove-fix validation |
 | 0.4.0 | 2026-10-16 | [88964](https://github.com/airbytehq/airbyte/pull/88964) | Add ad_account, ad_group, ad_account_report, ad_group_report and ad_report streams; show Reddit's field-level reason in HTTP 400 error messages |
 | 0.3.0 | 2026-10-15 | [88963](https://github.com/airbytehq/airbyte/pull/88963) | Fix campaign_report windows that skipped one day in every three and overwrote earlier days with partial data; add a configurable report lookback window |
 | 0.2.0 | 2026-10-14 | [88145](https://github.com/airbytehq/airbyte/pull/88145) | Add OAuth (Authenticate with Reddit) for Airbyte Cloud with automatic config migration to a credentials object; make User Agent optional |
