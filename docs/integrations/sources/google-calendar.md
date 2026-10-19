@@ -10,7 +10,7 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 | `client_secret` | `string` | Client secret of the OAuth 2.0 application. | |
 | `client_refresh_token_2` | `string` | Refresh token for the OAuth application with the Calendar API scope. | |
 | `calendarid` | `string` | Calendar Id. For the primary calendar this is the account's email address; the alias `primary` also works but is stored verbatim in `events.calendar_id`. | |
-| `start_date` | `string` | Only sync `events` last modified on or after this date. Applies to every Full Refresh sync, to the first Incremental sync, and to any full re-read; when unset, all events are read. See [Events sync behavior](#events-sync-behavior). | |
+| `start_date` | `string` | Only sync `events` last modified on or after this date. Events without an `updated` timestamp are always included. See [Events sync behavior](#events-sync-behavior). | |
 | `num_workers` | `integer` | Number of concurrent workers. | 3 |
 
 ## Streams
@@ -25,14 +25,14 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 
 ## Events sync behavior
 
-The `events` stream is incremental on the event's last modification time (`updated`), using the Google Calendar `updatedMin` filter.
+The `events` stream uses Google Calendar sync tokens. The connector saves the `nextSyncToken` from the final page and sends it as `syncToken` on every page of the next sync. It does not send `updatedMin`; `pageToken` is used separately to traverse pages. A legacy timestamp state or a rejected token causes a full re-read, and a new token is committed only after that read completes.
 
-- **Cancelled events** are included (`showDeleted=true`) with `status: cancelled`, so deletions reach the destination. Google returns them as stubs without a modification time, so the connector sets their `updated` itself (the saved cursor, or one hour before the sync, whichever is later) so that the cancelled row replaces the live one under *Append + Deduped*. Filter `status != 'cancelled'` downstream if you only want live events.
+- **Cancelled events** are included (`showDeleted=true`) with `status: cancelled`, so deletions reach the destination. Google returns them as stubs without `updated`; the connector stamps them with the current UTC time so the cancelled row replaces the live one under *Append + Deduped*. Filter `status != 'cancelled'` downstream if you only want live events.
 - **`calendar_id`** holds the configured Calendar Id exactly as entered. With the alias `primary` it is a label, not the calendar's ID, and will not join to `calendarlist.id` / `calendars.id`; enter the real ID (the account's email address for the primary calendar) if you need that join.
 - **Recurring series** are returned as a single record (`singleEvents=false`); individual occurrences are not expanded. The record's `updated` is the last time the series was edited.
-- **`start_date`** limits every Full Refresh sync, the first Incremental sync, and any full re-read (after a reset, or when the saved cursor is older than 21 days) to events last modified on or after that date. Google applies the filter server-side only within the last 29 days; for an older date the connector downloads the calendar and drops older records itself. Because a recurring series counts as one event, a start date also drops series that have not been edited since that date, even if they still have upcoming occurrences. Leave it unset to read everything.
-- **29-day window.** Google rejects `updatedMin` older than 29 days (measured; the limit is undocumented and has been tighter in the past). The connector keeps the newest `updated` it has seen as its cursor; if that cursor is older than 21 days when a sync starts (for example, a calendar with no edits for three weeks, or a connection paused for three weeks) the connector clears the cursor and re-reads the whole calendar (or everything since `start_date`), then continues incrementally. A calendar whose only changes are deletions still advances its cursor (see cancelled events above); one with no changes at all re-reads on every sync until something changes.
-- **Recommended sync mode:** *Incremental | Append + Deduped* with `id` as the primary key. With plain *Append*, each re-read described above adds another copy of every event.
+- **`start_date`** drops events whose `updated` value is earlier than the configured date. Events without `updated`, including cancelled stubs, always pass. A recurring series counts as one event, so a start date also drops a series that has not been edited since then, even if it has upcoming occurrences. Leave it unset to read everything.
+- **Token recovery.** If Google responds with `410 fullSyncRequired`, the connector restarts the stream without the saved token and commits the replacement token only when the re-read completes. A `410 deleted` response is a configuration error because the selected calendar no longer exists.
+- **Recommended sync mode:** *Incremental | Append + Deduped* with `id` as the primary key. With plain *Append*, a full re-read adds another copy of every event.
 
 ## IP allow list
 
@@ -45,6 +45,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.2.0 | 2026-10-19 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Switch `events` to sync-token incremental sync |
 | 0.1.1 | 2026-10-13 | [88641](https://github.com/airbytehq/airbyte/pull/88641) | Update dependencies |
 | 0.1.0 | 2026-10-06 | [86468](https://github.com/airbytehq/airbyte/pull/86468) | Add error handling, API budget, concurrency, incremental `events` (now includes cancelled events via `showDeleted=true`) with a `calendar_id` column and an optional `start_date`, and enable acceptance tests |
 | 0.0.55 | 2026-10-06 | [87901](https://github.com/airbytehq/airbyte/pull/87901) | Update dependencies |
