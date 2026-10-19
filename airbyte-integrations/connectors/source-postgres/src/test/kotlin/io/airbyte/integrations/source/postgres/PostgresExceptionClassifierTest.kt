@@ -209,7 +209,7 @@ class PostgresExceptionClassifierTest {
     fun testDatabaseSystemShuttingDown() {
         val exception =
             RuntimeException(
-                "org.postgresql.util.PSQLException: FATAL: the database system is shutting down"
+                "org.postgresql.util.PSQLException: FATAL: the database system is shutting down",
             )
         val result = classifier.classify(exception)
         Assertions.assertInstanceOf(TransientError::class.java, result)
@@ -224,7 +224,7 @@ class PostgresExceptionClassifierTest {
     fun testDatabaseSystemShuttingDownCaseInsensitive() {
         val exception =
             RuntimeException(
-                "org.postgresql.util.PSQLException: FATAL: The Database System Is Shutting Down"
+                "org.postgresql.util.PSQLException: FATAL: The Database System Is Shutting Down",
             )
         Assertions.assertInstanceOf(TransientError::class.java, classifier.classify(exception))
     }
