@@ -146,6 +146,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: calendars/{{ config['calendarid'] }}/events
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/events_error_handler"
           request_parameters:
             showDeleted: "true"
             maxResults: "2500"
@@ -236,15 +238,22 @@ definitions:
               failure_type: config_error
               error_message: "The calendar configured in \"Calendar Id\" was not found by the Google Calendar API. Check the ID in the calendar's settings, or use 'primary'."
             - type: HttpResponseFilter
+              # 410 with reason `deleted` (calendar removed) or `fullSyncRequired` (only possible with
+              # syncToken, which this connector does not send): the user must act, not wait.
               # The `string` filter JSON-encodes the body, so match the JSON form of the reason.
-              predicate: "{{ response.get('error', {}).get('code') in (410, '410') and 'fullSyncRequired' in response.get('error', {}) | string }}"
-              action: RESET_OPAQUE_TOKEN
-              error_message: "Google Calendar rejected the saved events sync token and requires a full re-read."
-            - type: HttpResponseFilter
-              predicate: "{{ response.get('error', {}).get('code') in (410, '410') and '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string }}"
+              predicate: "{{ '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string or 'fullSyncRequired' in response.get('error', {}) | string }}"
               action: FAIL
               failure_type: config_error
-              error_message: "The calendar configured in \"Calendar Id\" no longer exists. Check the ID or use 'primary'."
+              error_message: "The calendar configured in \"Calendar Id\" no longer exists or requires a full re-sync. Check the ID, then reset the events stream."
+            - type: HttpResponseFilter
+              # 410 updatedMinTooLongAgo: Google's window moved under a cursor that was within our
+              # margin. Nothing in the configuration causes it; the next sync clears the stale cursor
+              # and re-reads, so classify as transient rather than blaming the user.
+              http_codes:
+                - 410
+              action: FAIL
+              failure_type: transient_error
+              error_message: "Google Calendar rejected the saved sync position of the events stream as too old. The next sync re-reads the calendar automatically; reset the events stream to do it now."
             - type: HttpResponseFilter
               http_codes:
                 - 429
@@ -256,6 +265,66 @@ definitions:
                 - 503
                 - 504
               action: RETRY
+
+  events_error_handler:
+    type: CompositeErrorHandler
+    error_handlers:
+      - type: DefaultErrorHandler
+        backoff_strategies:
+          - type: ExponentialBackoffStrategy
+            factor: 5
+        response_filters:
+          - type: HttpResponseFilter
+            http_codes:
+              - 401
+            action: FAIL
+            failure_type: config_error
+            error_message: "Google rejected the OAuth credentials for the Calendar API. Re-authorize the connector or generate a new refresh token for the configured client."
+          - type: HttpResponseFilter
+            predicate: "{{ 'rateLimitExceeded' in response.get('error', {}) | string or 'userRateLimitExceeded' in response.get('error', {}) | string }}"
+            action: RATE_LIMITED
+          - type: HttpResponseFilter
+            # 403 usageLimits errors that do not clear within the sync (project or user quota).
+            # Excludes the body's 429 status so a 429 with the same reason still goes to RATE_LIMITED; a string
+            # or missing code is tolerated. http_codes would OR with the predicate and catch every 403, and the
+            # CDK's `string` filter wraps non-strings in triple quotes, so the code is compared as int or str.
+            predicate: "{{ response.get('error', {}).get('code') not in (429, '429') and ('quotaExceeded' in response.get('error', {}) | string or 'dailyLimitExceeded' in response.get('error', {}) | string) }}"
+            action: FAIL
+            failure_type: transient_error
+            error_message: "The Google Calendar API quota for this project or user is exhausted. The sync will succeed once the quota resets; no configuration change is needed."
+          - type: HttpResponseFilter
+            http_codes:
+              - 403
+            action: FAIL
+            failure_type: config_error
+            error_message: "The authorized Google account lacks access to the configured calendar or the Calendar API is disabled."
+          - type: HttpResponseFilter
+            http_codes:
+              - 404
+            action: FAIL
+            failure_type: config_error
+            error_message: "The calendar configured in \"Calendar Id\" was not found by the Google Calendar API. Check the ID in the calendar's settings, or use 'primary'."
+          - type: HttpResponseFilter
+            # The `string` filter JSON-encodes the body, so match the JSON form of the reason.
+            predicate: "{{ response.get('error', {}).get('code') in (410, '410') and 'fullSyncRequired' in response.get('error', {}) | string }}"
+            action: RESET_OPAQUE_TOKEN
+            error_message: "Google Calendar rejected the saved events sync token and requires a full re-read."
+          - type: HttpResponseFilter
+            predicate: "{{ response.get('error', {}).get('code') in (410, '410') and '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string }}"
+            action: FAIL
+            failure_type: config_error
+            error_message: "The calendar configured in \"Calendar Id\" no longer exists. Check the ID or use 'primary'."
+          - type: HttpResponseFilter
+            http_codes:
+              - 429
+            action: RATE_LIMITED
+          - type: HttpResponseFilter
+            http_codes:
+              - 500
+              - 502
+              - 503
+              - 504
+            action: RETRY
 
 concurrency_level:
   type: ConcurrencyLevel
