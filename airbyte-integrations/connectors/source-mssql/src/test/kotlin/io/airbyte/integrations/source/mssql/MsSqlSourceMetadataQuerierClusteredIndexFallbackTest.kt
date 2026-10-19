@@ -32,13 +32,13 @@ class MsSqlSourceMetadataQuerierClusteredIndexFallbackTest {
 
     @Test
     @DisplayName(
-        "memoizedClusteredIndexKeys returns empty map (not throws) when the system-catalog scan fails"
+        "memoizedClusteredIndexKeys returns empty map (not throws) when the system-catalog scan fails",
     )
     fun testClusteredIndexQueryFailureFallsBackGracefully() {
         // The exact wire message reported against CData Connect Server's TDS endpoint.
         val cdataLikeException =
             SQLException(
-                "Insufficient filtering condition in WHERE clause for system table 'indexes'"
+                "Insufficient filtering condition in WHERE clause for system table 'indexes'",
             )
 
         val mockStatement =
