@@ -1,0 +1,43 @@
+[
+  {
+    "id": 201,
+    "nudge_id": 101,
+    "answered_questions": {
+      "1001": {
+        "question_id": 1001,
+        "answer": "It's a \"quoted\" café"
+      },
+      "1002": {
+        "question_id": 1002,
+        "answer": 7
+      },
+      "1003": {
+        "question_id": 1003,
+        "answer": 2.5
+      },
+      "1004": {
+        "question_id": 1004,
+        "answer": true
+      },
+      "1005": {
+        "question_id": 1005,
+        "answer": null
+      },
+      "1006": {
+        "question_id": 1006,
+        "answer": {
+          "nested": ["item", 8]
+        }
+      }
+    }
+  },
+  {
+    "id": 202,
+    "nudge_id": 101,
+    "answered_questions": {}
+  },
+  {
+    "id": 203,
+    "nudge_id": 101
+  }
+]
