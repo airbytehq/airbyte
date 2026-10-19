@@ -225,6 +225,10 @@ definitions:
       refresh_token_error_status_codes: [400, 401]
       refresh_token_error_key: "error"
       refresh_token_error_values: ["invalid_grant"]
+      refresh_token_policy:
+        writeback_required: always
+        description: "GitLab invalidates the existing access token and refresh token when a refresh token is exchanged, and returns a new pair."
+        url: https://docs.gitlab.com/api/oauth2/
   authenticator:
     type: SelectiveAuthenticator
     authenticator_selection_path: ["credentials", "auth_type"]
