@@ -7,6 +7,8 @@ package io.airbyte.integrations.source.mssql
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.SystemErrorException
+import io.airbyte.cdk.data.AirbyteSchemaType
 import io.airbyte.cdk.data.BigDecimalCodec
 import io.airbyte.cdk.data.BigDecimalIntegerCodec
 import io.airbyte.cdk.data.BinaryCodec
@@ -15,6 +17,7 @@ import io.airbyte.cdk.data.FloatCodec
 import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.data.JsonCodec
 import io.airbyte.cdk.data.JsonEncoder
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.data.TextCodec
@@ -75,6 +78,19 @@ internal data class CaptureInstance(
     val captureInstanceName: String,
 )
 
+internal fun cdcValueTypeMismatchMessage(
+    streamName: String,
+    columnName: String,
+    type: AirbyteSchemaType,
+): String {
+    val typeName = (type as? LeafAirbyteSchemaType)?.name?.lowercase()
+    return if (typeName != null) {
+        "CDC change event value for column \"$columnName\" in stream \"$streamName\" does not match the column's discovered type $typeName."
+    } else {
+        "CDC change event value for column \"$columnName\" in stream \"$streamName\" does not match the column's discovered type."
+    }
+}
+
 @Singleton
 class MsSqlServerDebeziumOperations(
     private val jdbcConnectionFactory: JdbcConnectionFactory,
@@ -121,45 +137,59 @@ class MsSqlServerDebeziumOperations(
                     // Handle numeric and binary values from Debezium (can come as JSON strings or
                     // numbers)
                     val decodedValue =
-                        when {
-                            // BigDecimal: handle both string and number
-                            fieldValue.isTextual && codec is BigDecimalCodec ->
-                                java.math.BigDecimal(fieldValue.asText())
-                            fieldValue.isNumber && codec is BigDecimalCodec ->
-                                fieldValue.decimalValue()
+                        try {
+                            when {
+                                // BigDecimal: handle both string and number
+                                fieldValue.isTextual && codec is BigDecimalCodec ->
+                                    java.math.BigDecimal(fieldValue.asText())
+                                fieldValue.isNumber && codec is BigDecimalCodec ->
+                                    fieldValue.decimalValue()
 
-                            // BigDecimal-integer (NUMERIC/DECIMAL with scale 0):
-                            // Debezium emits these as JSON strings or numbers
-                            fieldValue.isTextual && codec is BigDecimalIntegerCodec ->
-                                java.math.BigDecimal(fieldValue.asText())
-                            fieldValue.isNumber && codec is BigDecimalIntegerCodec ->
-                                fieldValue.decimalValue()
+                                // BigDecimal-integer (NUMERIC/DECIMAL with scale 0):
+                                // Debezium emits these as JSON strings or numbers
+                                fieldValue.isTextual && codec is BigDecimalIntegerCodec ->
+                                    java.math.BigDecimal(fieldValue.asText())
+                                fieldValue.isNumber && codec is BigDecimalIntegerCodec ->
+                                    fieldValue.decimalValue()
 
-                            // Int: handle both string and number
-                            fieldValue.isTextual && codec is IntCodec -> fieldValue.asText().toInt()
-                            fieldValue.isNumber && codec is IntCodec -> fieldValue.intValue()
+                                // Int: handle both string and number
+                                fieldValue.isTextual && codec is IntCodec ->
+                                    fieldValue.asText().toInt()
+                                fieldValue.isNumber && codec is IntCodec -> fieldValue.intValue()
 
-                            // Long: handle both string and number
-                            fieldValue.isTextual && codec is LongCodec ->
-                                fieldValue.asText().toLong()
-                            fieldValue.isNumber && codec is LongCodec -> fieldValue.longValue()
+                                // Long: handle both string and number
+                                fieldValue.isTextual && codec is LongCodec ->
+                                    fieldValue.asText().toLong()
+                                fieldValue.isNumber && codec is LongCodec -> fieldValue.longValue()
 
-                            // Float: handle both string and number
-                            fieldValue.isTextual && codec is FloatCodec ->
-                                fieldValue.asText().toFloat()
-                            fieldValue.isNumber && codec is FloatCodec -> fieldValue.floatValue()
+                                // Float: handle both string and number
+                                fieldValue.isTextual && codec is FloatCodec ->
+                                    fieldValue.asText().toFloat()
+                                fieldValue.isNumber && codec is FloatCodec ->
+                                    fieldValue.floatValue()
 
-                            // Double: handle both string and number
-                            fieldValue.isTextual && codec is DoubleCodec ->
-                                fieldValue.asText().toDouble()
-                            fieldValue.isNumber && codec is DoubleCodec -> fieldValue.doubleValue()
+                                // Double: handle both string and number
+                                fieldValue.isTextual && codec is DoubleCodec ->
+                                    fieldValue.asText().toDouble()
+                                fieldValue.isNumber && codec is DoubleCodec ->
+                                    fieldValue.doubleValue()
 
-                            // Binary: handle base64 string
-                            fieldValue.isTextual && codec is BinaryCodec ->
-                                java.nio.ByteBuffer.wrap(
-                                    java.util.Base64.getDecoder().decode(fieldValue.asText()),
-                                )
-                            else -> codec.decode(fieldValue)
+                                // Binary: handle base64 string
+                                fieldValue.isTextual && codec is BinaryCodec ->
+                                    java.nio.ByteBuffer.wrap(
+                                        java.util.Base64.getDecoder().decode(fieldValue.asText()),
+                                    )
+                                else -> codec.decode(fieldValue)
+                            }
+                        } catch (e: IllegalArgumentException) {
+                            throw SystemErrorException(
+                                cdcValueTypeMismatchMessage(
+                                    stream.name,
+                                    field.id,
+                                    field.type.airbyteSchemaType,
+                                ),
+                                e,
+                            )
                         }
 
                     resultRow[field.id] = FieldValueEncoder(decodedValue, codec as JsonCodec<Any>)
