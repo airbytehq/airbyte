@@ -1,33 +1,20 @@
 # Netvisor
-This directory contains the manifest-only connector for `source-netvisor`.
 
-Access your company&#39;s Netvisor data for reporting and analysis. Supports Netvisor test and production environments.
+This directory contains the manifest-only `source-netvisor` connector. It reads accounting and reference data from Netvisor test and production environments.
 
-## Usage
-There are multiple ways to use this connector:
-- You can use this connector as any other connector in Airbyte Marketplace.
-- You can load this connector in `pyairbyte` using `get_source`!
-- You can open this connector in Connector Builder, edit it, and publish to your workspaces.
+See the [Netvisor connector documentation](https://docs.airbyte.com/integrations/sources/netvisor) for credentials, API permissions, supported streams, sync behavior, and limitations.
 
-Please refer to the manifest-only connector documentation for more details.
+## Development
 
-## Local Development
-We recommend you use the Connector Builder to edit this connector.
+The connector is defined in `manifest.yaml`, with shared request signing, XML normalization, and schemas. It does not require custom Python components. You can import the manifest into Connector Builder to test changes with your own Netvisor credentials.
 
-But, if you want to develop this connector locally, you can use the following steps.
+Follow the [local connector development guide](https://docs.airbyte.com/platform/connector-development/local-connector-development) to install the repository tooling. From this directory, run:
 
-### Environment Setup
-You will need `airbyte-ci` installed. You can find the documentation [here](airbyte-ci).
-
-### Build
-This will create a dev image (`source-netvisor:dev`) that you can use to test the connector locally.
 ```bash
-airbyte-ci connectors --name=source-netvisor build
+poe install
+poe test-all
 ```
 
-### Test
-This will run the acceptance tests for the connector.
-```bash
-airbyte-ci connectors --name=source-netvisor test
-```
+The standard spec test runs without customer credentials. Live connection and read tests require a Netvisor test company and credentials configured through Airbyte's test tooling. Keep credentials out of the repository and test fixtures.
 
+The SVG icon uses the unchanged logo mark from Netvisor's [official brand assets](https://netvisor.fi/press/) on a square canvas.

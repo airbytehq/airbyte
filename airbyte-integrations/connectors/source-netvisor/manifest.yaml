@@ -3,8 +3,7 @@ version: 7.28.2
 type: DeclarativeSource
 
 description: >-
-  Access your company's Netvisor data for reporting and analysis. Supports
-  Netvisor test and production environments.
+  Access your company's Netvisor data for reporting and analysis. Supports Netvisor test and production environments.
 
 check:
   type: CheckStream
@@ -18,2648 +17,662 @@ check:
     - voucher_types
 
 definitions:
-  linked:
-    HttpRequester:
-      request_headers: >-
-        {%- set values = dict(config, **(stream_interval or {})) -%}
+  netvisor_requester:
+    type: HttpRequester
+    $parameters:
+      base_urls:
+        test: https://isvapi.netvisor.fi/
+        production: https://integration.netvisor.fi/
+    http_method: GET
+    authenticator:
+      type: NoAuth
+    url: |-
+      {%- set values = dict(config, **(stream_interval or {})) -%}
+      {%- if 'window_start' in values and 'window_end' in values -%}
+        {%- set values = dict(values,
+          window_start=(str_to_datetime(values['window_start']) - duration('P1D')).strftime('%Y-%m-%d'),
+          window_end=(str_to_datetime(values['window_end']) + duration('P1D')).strftime('%Y-%m-%d')
+        ) -%}
+      {%- endif -%}
+      {{ parameters['base_urls'][config['environment']] ~ (parameters['resource_url_template'] % values) }}
+    request_headers: |-
+      {%- set values = dict(config, **(stream_interval or {})) -%}
+      {%- if 'window_start' in values and 'window_end' in values -%}
+        {%- set values = dict(values,
+          window_start=(str_to_datetime(values['window_start']) - duration('P1D')).strftime('%Y-%m-%d'),
+          window_end=(str_to_datetime(values['window_end']) + duration('P1D')).strftime('%Y-%m-%d')
+        ) -%}
+      {%- endif -%}
+      {%- set url = parameters['base_urls'][config['environment']] ~ (parameters['resource_url_template'] % values) -%}
+      {%- set now = now_utc() -%}
+      {%- set timestamp = now.strftime('%Y-%m-%d %H:%M:%S') -%}
+      {%- set unix = '' ~ (now.timestamp() | int) -%}
+      {%- set transaction = generate_uuid() -%}
+      {%- set sender = 'Airbyte' -%}
+      {%- set language = config.get('language', 'EN') -%}
+      {%- set customer_id = config['customer_id'] | trim -%}
+      {%- set customer_key = config['customer_key'] | trim -%}
+      {%- set partner_id = config['partner_id'] | trim -%}
+      {%- set partner_key = config['partner_key'] | trim -%}
+      {%- set company = config['company_id'] | trim -%}
+      {%- set secret = customer_key ~ '&' ~ partner_key -%}
+      {%- set message = [url, sender, customer_id, timestamp, language,
+          company, transaction, unix, customer_key, partner_key] | join('&') -%}
+      {%- set mac = message | hmac(secret, 'sha256') -%}
+      {{ {
+        'X-Netvisor-Authentication-Sender': sender,
+        'X-Netvisor-Authentication-CustomerId': customer_id,
+        'X-Netvisor-Authentication-PartnerId': partner_id,
+        'X-Netvisor-Authentication-Timestamp': timestamp,
+        'X-Netvisor-Authentication-TimestampUnix': unix,
+        'X-Netvisor-Authentication-TransactionId': transaction,
+        'X-Netvisor-Interface-Language': language,
+        'X-Netvisor-Organisation-ID': company,
+        'X-Netvisor-Authentication-MAC': mac,
+        'X-Netvisor-Authentication-MACHashCalculationAlgorithm': 'HMACSHA256',
+        'X-Netvisor-Authentication-UseHTTPResponseStatusCodes': '1',
+        'Accept': 'application/xml'
+      } }}
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          error_message_contains: <Status>FAILED</Status>
+          error_message: Netvisor rejected the request. Check API permissions, credentials and resource parameters.
+      max_retries: 3
+  normalize_xml:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - __normalized
+        value: |-
+          {%- macro normalize(value) -%}
+            {%- if value is mapping -%}
+              { {%- for key, child in value.items() -%}
+                {{- (key[1:] if key.startswith('@') else ('value' if key == '#text' else key)) | tojson -}}:
+                {{- normalize(child) -}},
+              {%- endfor -%} }
+            {%- elif value is sequence and value is not string -%}
+              [{%- for child in value -%}{{ normalize(child) }},{%- endfor -%}]
+            {%- elif value is string -%}{{ value | tojson }}
+            {%- else -%}{{ value }}{%- endif -%}
+          {%- endmacro -%} {{ normalize(record) }}
+  replace_normalized_record:
+    type: DpathFlattenFields
+    field_path:
+      - __normalized
+    replace_record: true
+  record_metadata:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - company_id
+        value: "{{ config['company_id'] | trim }}"
+  streams:
+    account_balances:
+      type: DeclarativeStream
+      name: account_balances
+      $parameters:
+        resource_url_template: accountbalance.nv?%(balance_query)s
+      primary_key:
+        - - company_id
+        - - Netvisorkey
+        - - Date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/netvisor_requester"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: balance_query
+          values: |-
+            {%- set start = str_to_datetime(config['start_date']) -%}
+            {%- set end = str_to_datetime(now_utc().strftime('%Y-%m-%d')) -%}
+            {%- set days = config.get('window_days', 30) -%}
+            {%- set batches = (end - start).days // days + 1 -%}
+            [{%- for _ in [none] * batches -%}
+              {%- set batch_start = start + duration('P1D') * (loop.index0 * days) -%}
+              {%- set batch_end = min(batch_start + duration('P1D') * (days - 1), end) -%}
+              {%- set dates = batch_start.strftime('%Y-%m-%d') -%}
+              {%- set query = 'balancedates=' ~ dates ~ '&intervaltype=0' if batch_start == batch_end else 'balancedates=' ~ dates ~ ',' ~ batch_end.strftime('%Y-%m-%d') ~ '&intervaltype=1' -%}
+              {{- query | tojson -}},
+            {%- endfor -%}]
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - AccountBalances
+              - Account
+            record_expander:
+              type: RecordExpander
+              expand_records_from_field:
+                - AccountBalance
+              remain_original_record: true
+              on_no_records: emit_parent
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account_balances"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - original_record
+              - AccountBalance
+        - type: DpathFlattenFields
+          field_path:
+            - original_record
+          delete_origin_value: true
+        - type: DpathFlattenFields
+          field_path:
+            - AccountBalance
+          delete_origin_value: true
+        - $ref: "#/definitions/normalize_xml"
+        - $ref: "#/definitions/replace_normalized_record"
+        - $ref: "#/definitions/record_metadata"
+        - type: AddFields
+          condition: "{{ path[0] in record }}"
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ForeignName
+              value: |-
+                {%- set names = record.get('ForeignName') -%}
+                {{ [] if names is none else ([names] if names is mapping or names is string else names) }}
 
-        {%- if 'window_start' in values and 'window_end' in values -%}
-          {%- set values = dict(values,
-            window_start=(str_to_datetime(values['window_start']) - duration('P1D')).strftime('%Y-%m-%d'),
-            window_end=(str_to_datetime(values['window_end']) + duration('P1D')).strftime('%Y-%m-%d')
-          ) -%}
-        {%- endif -%}
+    accounting_ledger:
+      type: DeclarativeStream
+      name: accounting_ledger
+      $parameters:
+        resource_url_template: accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
+      incremental_sync:
+        type: DatetimeBasedCursor
+        datetime_format: "%Y-%m-%d"
+        start_datetime: "{{ config['start_date'] }}"
+        end_datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+        step: P{{ config.get('window_days', 30) }}D
+        cursor_granularity: P1D
+        lookback_window: P2D
+        partition_field_start: window_start
+        partition_field_end: window_end
+        cursor_field: _netvisor_sync_window_end
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        requester:
+          $ref: "#/definitions/netvisor_requester"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - Vouchers
+              - Voucher
+      primary_key:
+        - - company_id
+        - - NetvisorKey
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounting_ledger"
+      transformations:
+        - $ref: "#/definitions/normalize_xml"
+        - $ref: "#/definitions/replace_normalized_record"
+        - $ref: "#/definitions/record_metadata"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - VoucherLine
+              value: |-
+                {%- set lines = record.get('VoucherLine') or [] -%}
+                [{%- for line in ([lines] if lines is mapping else lines) -%}
+                  {%- set line = dict(line) -%}
+                  {%- set dimensions = line.get('Dimension') -%}
+                  {%- if 'Dimension' in line -%}
+                    {%- set line = dict(line, Dimension=[] if dimensions is none else ([dimensions] if dimensions is mapping or dimensions is string else dimensions)) -%}
+                  {%- endif -%}
+                  {%- set allocations = line.get('TransactionAllocations') -%}
+                  {%- set items = allocations.get('TransactionAllocation') if allocations is mapping else none -%}
+                  {%- if allocations is mapping and 'TransactionAllocation' in allocations -%}
+                    {%- set line = dict(line, TransactionAllocations=dict(allocations, TransactionAllocation=[] if items is none else ([items] if items is mapping or items is string else items))) -%}
+                  {%- endif -%}
+                  {%- set number = line.get('VatPercent') -%}
+                  {%- if number is not none -%}
+                    {%- set number = number | trim | replace(',', '.') -%}
+                    {%- set line = dict(line, VatPercent={'valid': number | float}.pop('valid' if number | regex_search('^([+-]?[0-9]+(?:[.][0-9]+)?)$') else 'Invalid VatPercent')) -%}
+                  {%- endif -%}
+                  {{- line -}},
+                {%- endfor -%}]
+            - type: AddedFieldDefinition
+              path:
+                - VoucherDate
+              value: |-
+                {%- set date = record.get('VoucherDate') -%}
+                {%- set value = date.get('value') if date is mapping else date -%}
+                {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d') if value else none }}
+            - type: AddedFieldDefinition
+              path:
+                - _netvisor_sync_window_end
+              value: "{{ stream_interval['window_end'] }}"
 
-        {%- set url = parameters['base_urls'][config['environment']] ~
-        (parameters['resource_url_template'] % values) -%}
-
-        {%- set now = now_utc() -%}
-
-        {%- set timestamp = now.strftime('%Y-%m-%d %H:%M:%S') -%}
-
-        {%- set unix = '' ~ (now.timestamp() | int) -%}
-
-        {%- set transaction = generate_uuid() -%}
-
-        {%- set sender = 'Airbyte' -%}
-
-        {%- set language = config.get('language', 'EN') -%}
-
-        {%- set customer_id = config['customer_id'] | trim -%}
-
-        {%- set customer_key = config['customer_key'] | trim -%}
-
-        {%- set partner_id = config['partner_id'] | trim -%}
-
-        {%- set partner_key = config['partner_key'] | trim -%}
-
-        {%- set company = config['company_id'] | trim -%}
-
-        {%- set secret = customer_key ~ '&' ~ partner_key -%}
-
-        {%- set message = [url, sender, customer_id, timestamp, language,
-            company, transaction, unix, customer_key, partner_key] | join('&') -%}
-        {%- set mac = message | hmac(secret, 'sha256') -%}
-
-        {{ {
-          'X-Netvisor-Authentication-Sender': sender,
-          'X-Netvisor-Authentication-CustomerId': customer_id,
-          'X-Netvisor-Authentication-PartnerId': partner_id,
-          'X-Netvisor-Authentication-Timestamp': timestamp,
-          'X-Netvisor-Authentication-TimestampUnix': unix,
-          'X-Netvisor-Authentication-TransactionId': transaction,
-          'X-Netvisor-Interface-Language': language,
-          'X-Netvisor-Organisation-ID': company,
-          'X-Netvisor-Authentication-MAC': mac,
-          'X-Netvisor-Authentication-MACHashCalculationAlgorithm': 'HMACSHA256',
-          'X-Netvisor-Authentication-UseHTTPResponseStatusCodes': '1',
-          'Accept': 'application/xml'
-        } }}
-      authenticator:
-        type: NoAuth
+    accounting_locks:
+      type: DeclarativeStream
+      name: accounting_locks
+      $parameters:
         resource_url_template: accountingperiodlist.nv
-        base_urls:
-          test: https://isvapi.netvisor.fi/
-          production: https://integration.netvisor.fi/
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-      error_handler:
-        type: DefaultErrorHandler
-        max_retries: 3
-        response_filters:
-          - type: HttpResponseFilter
-            action: FAIL
-            error_message: >-
-              Netvisor rejected the request. Check API permissions, credentials
-              and resource parameters.
-            error_message_contains: <Status>FAILED</Status>
-            resource_url_template: accountingperiodlist.nv
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-            $parameters:
-              resource_url_template: accountingperiodlist.nv
-              base_urls:
-                test: https://isvapi.netvisor.fi/
-                production: https://integration.netvisor.fi/
+      primary_key:
+        - company_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/netvisor_requester"
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - AccountingPeriodList
+              - PeriodLockInformation
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounting_locks"
+      transformations:
+        - $ref: "#/definitions/normalize_xml"
+        - $ref: "#/definitions/replace_normalized_record"
+        - $ref: "#/definitions/record_metadata"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - AccountingPeriodLockDate
+              value: |-
+                {%- set date = record.get('AccountingPeriodLockDate') -%}
+                {%- set value = date.get('value') if date is mapping else date -%}
+                {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d') if value else none }}
+            - type: AddedFieldDefinition
+              path:
+                - VatPeriodLockDate
+              value: |-
+                {%- set date = record.get('VatPeriodLockDate') -%}
+                {%- set value = date.get('value') if date is mapping else date -%}
+                {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d') if value else none }}
+            - type: AddedFieldDefinition
+              path:
+                - PurchaseLockDate
+              value: |-
+                {%- set date = record.get('PurchaseLockDate') -%}
+                {%- set value = date.get('value') if date is mapping else date -%}
+                {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d') if value else none }}
+
+    accounting_periods:
+      type: DeclarativeStream
+      name: accounting_periods
+      $parameters:
         resource_url_template: accountingperiodlist.nv
-        base_urls:
-          test: https://isvapi.netvisor.fi/
-          production: https://integration.netvisor.fi/
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-    SimpleRetriever:
-      paginator:
-        type: NoPagination
-        resource_url_template: accountingperiodlist.nv
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
+      primary_key:
+        - - company_id
+        - - NetvisorKey
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/netvisor_requester"
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - AccountingPeriodList
+              - Period
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounting_periods"
+      transformations:
+        - $ref: "#/definitions/normalize_xml"
+        - $ref: "#/definitions/replace_normalized_record"
+        - $ref: "#/definitions/record_metadata"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - BeginDate
+              value: |-
+                {%- set date = record.get('BeginDate') -%}
+                {%- set value = date.get('value') if date is mapping else date -%}
+                {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d') if value else none }}
+            - type: AddedFieldDefinition
+              path:
+                - EndDate
+              value: |-
+                {%- set date = record.get('EndDate') -%}
+                {%- set value = date.get('value') if date is mapping else date -%}
+                {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d') if value else none }}
+
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      $parameters:
+        resource_url_template: accountlist.nv
+      primary_key:
+        - - company_id
+        - - NetvisorKey
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/netvisor_requester"
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - AccountList
+              - Accounts
+              - Account
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+      transformations:
+        - $ref: "#/definitions/normalize_xml"
+        - $ref: "#/definitions/replace_normalized_record"
+        - $ref: "#/definitions/record_metadata"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - IsActive
+              value: "{{ {'0': false, '1': true}.pop(record.get('IsActive') | trim) }}"
+            - type: AddedFieldDefinition
+              path:
+                - IsCumulative
+              value: "{{ {'0': false, '1': true}.pop(record.get('IsCumulative') | trim) }}"
+            - type: AddedFieldDefinition
+              path:
+                - IsNaturalNegative
+              value: "{{ {'0': false, '1': true}.pop(record.get('IsNaturalNegative') | trim) }}"
+        - type: AddFields
+          condition: "{{ path[0] in record }}"
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - Sort
+              value: |-
+                {%- set number = record.get('Sort') -%}
+                {{ {'valid': number | int}.pop('valid' if number | trim | regex_search('^([+-]?[0-9]+)$') else 'Invalid Sort') if number is not none else none }}
+            - type: AddedFieldDefinition
+              path:
+                - EndSort
+              value: |-
+                {%- set number = record.get('EndSort') -%}
+                {{ {'valid': number | int}.pop('valid' if number | trim | regex_search('^([+-]?[0-9]+)$') else 'Invalid EndSort') if number is not none else none }}
+            - type: AddedFieldDefinition
+              path:
+                - ForeignName
+              value: |-
+                {%- set names = record.get('ForeignName') -%}
+                {{ [] if names is none else ([names] if names is mapping or names is string else names) }}
+
+    bank_accounts:
+      type: DeclarativeStream
+      name: bank_accounts
+      $parameters:
+        resource_url_template: getbankaccounts.nv
+      primary_key:
+        - - company_id
+        - - IBAN
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/netvisor_requester"
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - BankAccounts
+              - BankAccount
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bank_accounts"
+      transformations:
+        - $ref: "#/definitions/normalize_xml"
+        - $ref: "#/definitions/replace_normalized_record"
+        - $ref: "#/definitions/record_metadata"
+
+    default_accounts:
+      type: DeclarativeStream
+      name: default_accounts
+      $parameters:
+        resource_url_template: accountlist.nv
+      primary_key:
+        - company_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/netvisor_requester"
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - AccountList
+              - CompanyDefaultAccounts
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/default_accounts"
+      transformations:
+        - $ref: "#/definitions/normalize_xml"
+        - $ref: "#/definitions/replace_normalized_record"
+        - $ref: "#/definitions/record_metadata"
+
+    default_voucher_types:
+      type: DeclarativeStream
+      name: default_voucher_types
+      $parameters:
+        resource_url_template: vouchertypelist.nv
+      primary_key:
+        - company_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/netvisor_requester"
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - VoucherTypeList
+              - DefaultVoucherTypes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/default_voucher_types"
+      transformations:
+        - $ref: "#/definitions/normalize_xml"
+        - $ref: "#/definitions/replace_normalized_record"
+        - $ref: "#/definitions/record_metadata"
+
+    dimensions:
+      type: DeclarativeStream
+      name: dimensions
+      $parameters:
+        resource_url_template: dimensionlist.nv?showhidden=1
+      primary_key:
+        - - company_id
+        - - Netvisorkey
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/netvisor_requester"
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - DimensionNameList
+              - DimensionName
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dimensions"
+      transformations:
+        - $ref: "#/definitions/normalize_xml"
+        - $ref: "#/definitions/replace_normalized_record"
+        - $ref: "#/definitions/record_metadata"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - IsHidden
+              value: "{{ {'false': false, 'true': true}.pop(record.get('IsHidden') | trim | lower) }}"
+            - type: AddedFieldDefinition
+              path:
+                - LinkType
+              value: |-
+                {%- set number = record.get('LinkType') -%}
+                {{ {'valid': number | int}.pop('valid' if number | trim | regex_search('^([+-]?[0-9]+)$') else 'Invalid LinkType') }}
+            - type: AddedFieldDefinition
+              path:
+                - ActivityPeriodStart
+              value: |-
+                {%- set date = record.get('ActivityPeriodStart') -%}
+                {%- set value = date.get('value') if date is mapping else date -%}
+                {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d') if value else none }}
+            - type: AddedFieldDefinition
+              path:
+                - ActivityPeriodEnd
+              value: |-
+                {%- set date = record.get('ActivityPeriodEnd') -%}
+                {%- set value = date.get('value') if date is mapping else date -%}
+                {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value else '%Y-%m-%d') if value else none }}
+            - type: AddedFieldDefinition
+              path:
+                - DimensionDetails
+              value: |-
+                {%- set details = record.get('DimensionDetails') or {} -%}
+                {%- set items = details.get('DimensionDetail') or [] -%}
+                {%- set normalized = [] -%}
+                {%- for item in ([items] if items is mapping else items) -%}
+                  {%- set item = dict(item, IsHidden={'false': false, 'true': true}.pop(item.get('IsHidden') | trim | lower)) -%}
+                  {%- for field in ['Level', 'Sort', 'EndSort'] -%}
+                    {%- set number = item.get(field) -%}
+                    {%- set _ = item.update({field: {'valid': number | int}.pop('valid' if number | trim | regex_search('^([+-]?[0-9]+)$') else 'Invalid ' ~ field)}) -%}
+                  {%- endfor -%}
+                  {%- set _ = normalized.append(item) -%}
+                {%- endfor -%}
+                {{ dict(details, DimensionDetail=normalized) }}
+
+    voucher_types:
+      type: DeclarativeStream
+      name: voucher_types
+      $parameters:
+        resource_url_template: vouchertypelist.nv
+      primary_key:
+        - - company_id
+        - - NetvisorKey
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/netvisor_requester"
+        paginator:
+          type: NoPagination
+        decoder:
+          type: XmlDecoder
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Root
+              - VoucherTypeList
+              - VoucherTypes
+              - VoucherType
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/voucher_types"
+      transformations:
+        - $ref: "#/definitions/normalize_xml"
+        - $ref: "#/definitions/replace_normalized_record"
+        - $ref: "#/definitions/record_metadata"
+        - type: AddFields
+          condition: "{{ path[0] in record }}"
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ForeignName
+              value: |-
+                {%- set names = record.get('ForeignName') -%}
+                {{ [] if names is none else ([names] if names is mapping or names is string else names) }}
 
 streams:
-  - type: DeclarativeStream
-    name: account_balances
-    retriever:
-      type: SimpleRetriever
-      decoder:
-        type: XmlDecoder
-        resource_url_template: accountbalance.nv?%(balance_query)s
-        $parameters:
-          resource_url_template: accountbalance.nv?%(balance_query)s
-      paginator:
-        type: NoPagination
-        resource_url_template: accountbalance.nv?%(balance_query)s
-        $parameters:
-          resource_url_template: accountbalance.nv?%(balance_query)s
-      requester:
-        type: HttpRequester
-        url: >-
-          {%- set values = dict(config, **(stream_interval or {})) -%}
-
-          {%- if 'window_start' in values and 'window_end' in values -%}
-            {%- set values = dict(values,
-              window_start=(str_to_datetime(values['window_start']) - duration('P1D')).strftime('%Y-%m-%d'),
-              window_end=(str_to_datetime(values['window_end']) + duration('P1D')).strftime('%Y-%m-%d')
-            ) -%}
-          {%- endif -%}
-
-          {{ parameters['base_urls'][config['environment']] ~
-          (parameters['resource_url_template'] % values) }}
-        http_method: GET
-        authenticator:
-          type: NoAuth
-          resource_url_template: accountbalance.nv?%(balance_query)s
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-          $parameters:
-            resource_url_template: accountbalance.nv?%(balance_query)s
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-        error_handler:
-          type: DefaultErrorHandler
-          max_retries: 3
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              error_message: >-
-                Netvisor rejected the request. Check API permissions,
-                credentials and resource parameters.
-              error_message_contains: <Status>FAILED</Status>
-              resource_url_template: accountbalance.nv?%(balance_query)s
-              base_urls:
-                test: https://isvapi.netvisor.fi/
-                production: https://integration.netvisor.fi/
-              $parameters:
-                resource_url_template: accountbalance.nv?%(balance_query)s
-                base_urls:
-                  test: https://isvapi.netvisor.fi/
-                  production: https://integration.netvisor.fi/
-          resource_url_template: accountbalance.nv?%(balance_query)s
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-          $parameters:
-            resource_url_template: accountbalance.nv?%(balance_query)s
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-        request_headers:
-          $ref: "#/definitions/linked/HttpRequester/request_headers"
-        resource_url_template: accountbalance.nv?%(balance_query)s
-        base_urls:
-          test: https://isvapi.netvisor.fi/
-          production: https://integration.netvisor.fi/
-        $parameters:
-          resource_url_template: accountbalance.nv?%(balance_query)s
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - Root
-            - AccountBalances
-            - Account
-          record_expander:
-            type: RecordExpander
-            on_no_records: emit_parent
-            remain_original_record: true
-            expand_records_from_field:
-              - AccountBalance
-            resource_url_template: accountbalance.nv?%(balance_query)s
-            $parameters:
-              resource_url_template: accountbalance.nv?%(balance_query)s
-          resource_url_template: accountbalance.nv?%(balance_query)s
-          $parameters:
-            resource_url_template: accountbalance.nv?%(balance_query)s
-        resource_url_template: accountbalance.nv?%(balance_query)s
-        $parameters:
-          resource_url_template: accountbalance.nv?%(balance_query)s
-      partition_router:
-        type: ListPartitionRouter
-        values: |-
-          {%- set start = str_to_datetime(config['start_date']) -%}
-          {%- set end = str_to_datetime(now_utc().strftime('%Y-%m-%d')) -%}
-          {%- set days = config.get('window_days', 30) -%}
-          {%- set batches = (end - start).days // days + 1 -%}
-          [{%- for _ in [none] * batches -%}
-            {%- set batch_start = start + duration('P1D') * (loop.index0 * days) -%}
-            {%- set batch_end = min(batch_start + duration('P1D') * (days - 1), end) -%}
-            {%- set dates = batch_start.strftime('%Y-%m-%d') -%}
-            {%- set query = 'balancedates=' ~ dates ~ '&intervaltype=0' if batch_start == batch_end else 'balancedates=' ~ dates ~ ',' ~ batch_end.strftime('%Y-%m-%d') ~ '&intervaltype=1' -%}
-            {{- query | tojson -}},
-          {%- endfor -%}]
-        cursor_field: balance_query
-        resource_url_template: accountbalance.nv?%(balance_query)s
-        $parameters:
-          resource_url_template: accountbalance.nv?%(balance_query)s
-      resource_url_template: accountbalance.nv?%(balance_query)s
-      $parameters:
-        resource_url_template: accountbalance.nv?%(balance_query)s
-    primary_key:
-      - - company_id
-      - - Netvisorkey
-      - - Date
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        description: >-
-          Daily account debit, credit and balance totals from the sync history
-          start date through today (UTC), refreshed on every sync. Interpret
-          totals using IsCumulative in the accounts stream. Monetary values
-          retain Netvisor's exact decimal representation.
-        required:
-          - company_id
-          - Netvisorkey
-          - Date
-          - Debet
-          - Kredit
-          - Balance
-        properties:
-          Date:
-            type: string
-            format: date
-          Name:
-            type:
-              - string
-              - "null"
-          Debet:
-            type: string
-          Kredit:
-            type: string
-          Number:
-            type:
-              - string
-              - "null"
-          Balance:
-            type: string
-          company_id:
-            type: string
-          ForeignName:
-            type: array
-            items:
-              type:
-                - object
-                - string
-              properties:
-                value:
-                  type:
-                    - string
-                    - "null"
-              additionalProperties: true
-          Netvisorkey:
-            type: string
-            description: References NetvisorKey in the accounts stream.
-        additionalProperties: true
-      resource_url_template: accountbalance.nv?%(balance_query)s
-      $parameters:
-        resource_url_template: accountbalance.nv?%(balance_query)s
-    transformations:
-      - type: RemoveFields
-        field_pointers:
-          - - original_record
-            - AccountBalance
-        resource_url_template: accountbalance.nv?%(balance_query)s
-        $parameters:
-          resource_url_template: accountbalance.nv?%(balance_query)s
-      - type: DpathFlattenFields
-        field_path:
-          - original_record
-        delete_origin_value: true
-        resource_url_template: accountbalance.nv?%(balance_query)s
-        $parameters:
-          resource_url_template: accountbalance.nv?%(balance_query)s
-      - type: DpathFlattenFields
-        field_path:
-          - AccountBalance
-        delete_origin_value: true
-        resource_url_template: accountbalance.nv?%(balance_query)s
-        $parameters:
-          resource_url_template: accountbalance.nv?%(balance_query)s
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __normalized
-            value: |-
-              {%- macro normalize(value) -%}
-                {%- if value is mapping -%}
-                  { {%- for key, child in value.items() -%}
-                    {{- (key[1:] if key.startswith('@') else ('value' if key == '#text' else key)) | tojson -}}:
-                    {{- normalize(child) -}},
-                  {%- endfor -%} }
-                {%- elif value is sequence and value is not string -%}
-                  [{%- for child in value -%}{{ normalize(child) }},{%- endfor -%}]
-                {%- elif value is string -%}{{ value | tojson }}
-                {%- else -%}{{ value }}{%- endif -%}
-              {%- endmacro -%} {{ normalize(record) }}
-            resource_url_template: accountbalance.nv?%(balance_query)s
-            $parameters:
-              resource_url_template: accountbalance.nv?%(balance_query)s
-        resource_url_template: accountbalance.nv?%(balance_query)s
-        $parameters:
-          resource_url_template: accountbalance.nv?%(balance_query)s
-      - type: DpathFlattenFields
-        field_path:
-          - __normalized
-        replace_record: true
-        resource_url_template: accountbalance.nv?%(balance_query)s
-        $parameters:
-          resource_url_template: accountbalance.nv?%(balance_query)s
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - company_id
-            value: "{{ config['company_id'] | trim }}"
-            resource_url_template: accountbalance.nv?%(balance_query)s
-            $parameters:
-              resource_url_template: accountbalance.nv?%(balance_query)s
-        resource_url_template: accountbalance.nv?%(balance_query)s
-        $parameters:
-          resource_url_template: accountbalance.nv?%(balance_query)s
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - ForeignName
-            value: >-
-              {%- set names = record.get('ForeignName') -%}
-
-              {{ [] if names is none else ([names] if names is mapping or names
-              is string else names) }}
-            resource_url_template: accountbalance.nv?%(balance_query)s
-            $parameters:
-              resource_url_template: accountbalance.nv?%(balance_query)s
-        condition: "{{ path[0] in record }}"
-        resource_url_template: accountbalance.nv?%(balance_query)s
-        $parameters:
-          resource_url_template: accountbalance.nv?%(balance_query)s
-    resource_url_template: accountbalance.nv?%(balance_query)s
-    $parameters:
-      resource_url_template: accountbalance.nv?%(balance_query)s
-  - type: DeclarativeStream
-    name: accounting_ledger
-    retriever:
-      type: SimpleRetriever
-      decoder:
-        type: XmlDecoder
-        resource_url_template: >-
-          accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-        $parameters:
-          resource_url_template: >-
-            accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-      paginator:
-        type: NoPagination
-        resource_url_template: >-
-          accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-        $parameters:
-          resource_url_template: >-
-            accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-      requester:
-        type: HttpRequester
-        url: >-
-          {%- set values = dict(config, **(stream_interval or {})) -%}
-
-          {%- if 'window_start' in values and 'window_end' in values -%}
-            {%- set values = dict(values,
-              window_start=(str_to_datetime(values['window_start']) - duration('P1D')).strftime('%Y-%m-%d'),
-              window_end=(str_to_datetime(values['window_end']) + duration('P1D')).strftime('%Y-%m-%d')
-            ) -%}
-          {%- endif -%}
-
-          {{ parameters['base_urls'][config['environment']] ~
-          (parameters['resource_url_template'] % values) }}
-        http_method: GET
-        authenticator:
-          type: NoAuth
-          resource_url_template: >-
-            accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-          $parameters:
-            resource_url_template: >-
-              accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-        error_handler:
-          type: DefaultErrorHandler
-          max_retries: 3
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              error_message: >-
-                Netvisor rejected the request. Check API permissions,
-                credentials and resource parameters.
-              error_message_contains: <Status>FAILED</Status>
-              resource_url_template: >-
-                accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-              base_urls:
-                test: https://isvapi.netvisor.fi/
-                production: https://integration.netvisor.fi/
-              $parameters:
-                resource_url_template: >-
-                  accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-                base_urls:
-                  test: https://isvapi.netvisor.fi/
-                  production: https://integration.netvisor.fi/
-          resource_url_template: >-
-            accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-          $parameters:
-            resource_url_template: >-
-              accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-        request_headers:
-          $ref: "#/definitions/linked/HttpRequester/request_headers"
-        resource_url_template: >-
-          accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-        base_urls:
-          test: https://isvapi.netvisor.fi/
-          production: https://integration.netvisor.fi/
-        $parameters:
-          resource_url_template: >-
-            accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - Root
-            - Vouchers
-            - Voucher
-          resource_url_template: >-
-            accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-          $parameters:
-            resource_url_template: >-
-              accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-        resource_url_template: >-
-          accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-        $parameters:
-          resource_url_template: >-
-            accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-      resource_url_template: >-
-        accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-      $parameters:
-        resource_url_template: >-
-          accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-    primary_key:
-      - - company_id
-      - - NetvisorKey
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        required:
-          - company_id
-          - NetvisorKey
-          - VoucherLine
-        properties:
-          Status:
-            type:
-              - string
-              - "null"
-          company_id:
-            type: string
-          NetvisorKey:
-            type: string
-          VoucherDate:
-            type:
-              - string
-              - "null"
-            format: date
-          VoucherLine:
-            type: array
-            items:
-              type: object
-              properties:
-                Status:
-                  type:
-                    - string
-                    - "null"
-                LineSum:
-                  type:
-                    - string
-                    - "null"
-                  description: >-
-                    Exact posting amount as provided by Netvisor. Kept as text
-                    to preserve monetary precision.
-                VatCode:
-                  type:
-                    - string
-                    - "null"
-                Dimension:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      DimensionItem:
-                        type:
-                          - string
-                          - "null"
-                      DimensionName:
-                        type:
-                          - string
-                          - "null"
-                      DimensionItemCode:
-                        type:
-                          - string
-                          - "null"
-                      DimensionItemName:
-                        type:
-                          - string
-                          - "null"
-                    additionalProperties: true
-                VatPercent:
-                  type:
-                    - number
-                    - "null"
-                Description:
-                  type:
-                    - string
-                    - "null"
-                NetvisorKey:
-                  type:
-                    - string
-                    - "null"
-                AccountNumber:
-                  type:
-                    - string
-                    - "null"
-                AccountDimension:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    type:
-                      type:
-                        - string
-                        - "null"
-                    value:
-                      type:
-                        - string
-                        - "null"
-                  additionalProperties: true
-                CorporationEventTarget:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    EventStatus:
-                      type:
-                        - string
-                        - "null"
-                    TargetCompany:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        value:
-                          type:
-                            - string
-                            - "null"
-                        organisationidentifier:
-                          type:
-                            - string
-                            - "null"
-                      additionalProperties: true
-                  additionalProperties: true
-                TransactionAllocations:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    TransactionAllocation:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          type:
-                            type:
-                              - string
-                              - "null"
-                          VoucherNetvisorKey:
-                            type:
-                              - string
-                              - "null"
-                          VoucherLineNetvisorKey:
-                            type:
-                              - string
-                              - "null"
-                        additionalProperties: true
-                  additionalProperties: true
-                TransactionFollowUpStatus:
-                  type:
-                    - string
-                    - "null"
-              additionalProperties: true
-          NetvisorGuid:
-            type:
-              - string
-              - "null"
-          VoucherClass:
-            type:
-              - object
-              - "null"
-            properties:
-              value:
-                type:
-                  - string
-                  - "null"
-              netvisorkey:
-                type:
-                  - string
-                  - "null"
-            additionalProperties: true
-          VoucherNumber:
-            type:
-              - string
-              - "null"
-          VoucherGenerator:
-            type:
-              - string
-              - "null"
-            description: >-
-              Person or system that created the voucher, as reported by
-              Netvisor.
-          VoucherDescription:
-            type:
-              - string
-              - "null"
-          VoucherNetvisorURI:
-            type:
-              - string
-              - "null"
-          LinkedSourceNetvisorKey:
-            type:
-              - object
-              - "null"
-            properties:
-              type:
-                type:
-                  - string
-                  - "null"
-              value:
-                type:
-                  - string
-                  - "null"
-            additionalProperties: true
-          _netvisor_sync_window_end:
-            type: string
-            description: >-
-              End date of the date range processed during the sync. Used to
-              track sync progress.
-            format: date
-        additionalProperties: true
-      resource_url_template: >-
-        accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-      $parameters:
-        resource_url_template: >-
-          accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __normalized
-            value: |-
-              {%- macro normalize(value) -%}
-                {%- if value is mapping -%}
-                  { {%- for key, child in value.items() -%}
-                    {{- (key[1:] if key.startswith('@') else ('value' if key == '#text' else key)) | tojson -}}:
-                    {{- normalize(child) -}},
-                  {%- endfor -%} }
-                {%- elif value is sequence and value is not string -%}
-                  [{%- for child in value -%}{{ normalize(child) }},{%- endfor -%}]
-                {%- elif value is string -%}{{ value | tojson }}
-                {%- else -%}{{ value }}{%- endif -%}
-              {%- endmacro -%} {{ normalize(record) }}
-            resource_url_template: >-
-              accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-            $parameters:
-              resource_url_template: >-
-                accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-        resource_url_template: >-
-          accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-        $parameters:
-          resource_url_template: >-
-            accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-      - type: DpathFlattenFields
-        field_path:
-          - __normalized
-        replace_record: true
-        resource_url_template: >-
-          accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-        $parameters:
-          resource_url_template: >-
-            accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - company_id
-            value: "{{ config['company_id'] | trim }}"
-            resource_url_template: >-
-              accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-            $parameters:
-              resource_url_template: >-
-                accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-        resource_url_template: >-
-          accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-        $parameters:
-          resource_url_template: >-
-            accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - VoucherLine
-            value: |-
-              {%- set lines = record.get('VoucherLine') or [] -%}
-              [{%- for line in ([lines] if lines is mapping else lines) -%}
-                {%- set line = dict(line) -%}
-                {%- set dimensions = line.get('Dimension') -%}
-                {%- if 'Dimension' in line -%}
-                  {%- set line = dict(line, Dimension=[] if dimensions is none else ([dimensions] if dimensions is mapping or dimensions is string else dimensions)) -%}
-                {%- endif -%}
-                {%- set allocations = line.get('TransactionAllocations') -%}
-                {%- set items = allocations.get('TransactionAllocation') if allocations is mapping else none -%}
-                {%- if allocations is mapping and 'TransactionAllocation' in allocations -%}
-                  {%- set line = dict(line, TransactionAllocations=dict(allocations, TransactionAllocation=[] if items is none else ([items] if items is mapping or items is string else items))) -%}
-                {%- endif -%}
-                {%- set number = line.get('VatPercent') -%}
-                {%- if number is not none -%}
-                  {%- set number = number | trim | replace(',', '.') -%}
-                  {%- set line = dict(line, VatPercent={'valid': number | float}.pop('valid' if number | regex_search('^([+-]?[0-9]+(?:[.][0-9]+)?)$') else 'Invalid VatPercent')) -%}
-                {%- endif -%}
-                {{- line -}},
-              {%- endfor -%}]
-            resource_url_template: >-
-              accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-            $parameters:
-              resource_url_template: >-
-                accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-          - type: AddedFieldDefinition
-            path:
-              - VoucherDate
-            value: >-
-              {%- set date = record.get('VoucherDate') -%}
-
-              {%- set value = date.get('value') if date is mapping else date -%}
-
-              {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value
-              else '%Y-%m-%d') if value else none }}
-            resource_url_template: >-
-              accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-            $parameters:
-              resource_url_template: >-
-                accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-          - type: AddedFieldDefinition
-            path:
-              - _netvisor_sync_window_end
-            value: "{{ stream_interval['window_end'] }}"
-            resource_url_template: >-
-              accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-            $parameters:
-              resource_url_template: >-
-                accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-        resource_url_template: >-
-          accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-        $parameters:
-          resource_url_template: >-
-            accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-    incremental_sync:
-      type: DatetimeBasedCursor
-      step: P{{ config.get('window_days', 30) }}D
-      cursor_field: _netvisor_sync_window_end
-      end_datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-      start_datetime: "{{ config['start_date'] }}"
-      datetime_format: "%Y-%m-%d"
-      lookback_window: P2D
-      cursor_granularity: P1D
-      partition_field_end: window_end
-      partition_field_start: window_start
-      resource_url_template: >-
-        accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-      $parameters:
-        resource_url_template: >-
-          accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-    resource_url_template: >-
-      accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-    $parameters:
-      resource_url_template: >-
-        accountingledger.nv?lastmodifiedstart=%(window_start)s&lastmodifiedend=%(window_end)s&voucherstatus=1&showgenerator=1&includetransactionallocations=1
-  - type: DeclarativeStream
-    name: accounting_locks
-    retriever:
-      type: SimpleRetriever
-      decoder:
-        type: XmlDecoder
-        resource_url_template: accountingperiodlist.nv
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
-      paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
-      requester:
-        type: HttpRequester
-        url: >-
-          {%- set values = dict(config, **(stream_interval or {})) -%}
-
-          {%- if 'window_start' in values and 'window_end' in values -%}
-            {%- set values = dict(values,
-              window_start=(str_to_datetime(values['window_start']) - duration('P1D')).strftime('%Y-%m-%d'),
-              window_end=(str_to_datetime(values['window_end']) + duration('P1D')).strftime('%Y-%m-%d')
-            ) -%}
-          {%- endif -%}
-
-          {{ parameters['base_urls'][config['environment']] ~
-          (parameters['resource_url_template'] % values) }}
-        http_method: GET
-        authenticator:
-          $ref: "#/definitions/linked/HttpRequester/authenticator"
-        error_handler:
-          $ref: "#/definitions/linked/HttpRequester/error_handler"
-        request_headers:
-          $ref: "#/definitions/linked/HttpRequester/request_headers"
-        resource_url_template: accountingperiodlist.nv
-        base_urls:
-          test: https://isvapi.netvisor.fi/
-          production: https://integration.netvisor.fi/
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - Root
-            - AccountingPeriodList
-            - PeriodLockInformation
-          resource_url_template: accountingperiodlist.nv
-          $parameters:
-            resource_url_template: accountingperiodlist.nv
-        resource_url_template: accountingperiodlist.nv
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
-      resource_url_template: accountingperiodlist.nv
-      $parameters:
-        resource_url_template: accountingperiodlist.nv
-    primary_key:
-      - company_id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        description: Company accounting, VAT and purchase lock dates.
-        required:
-          - company_id
-        properties:
-          company_id:
-            type: string
-          PurchaseLockDate:
-            type:
-              - string
-              - "null"
-            format: date
-          VatPeriodLockDate:
-            type:
-              - string
-              - "null"
-            format: date
-          AccountingPeriodLockDate:
-            type:
-              - string
-              - "null"
-            format: date
-        additionalProperties: true
-      resource_url_template: accountingperiodlist.nv
-      $parameters:
-        resource_url_template: accountingperiodlist.nv
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __normalized
-            value: |-
-              {%- macro normalize(value) -%}
-                {%- if value is mapping -%}
-                  { {%- for key, child in value.items() -%}
-                    {{- (key[1:] if key.startswith('@') else ('value' if key == '#text' else key)) | tojson -}}:
-                    {{- normalize(child) -}},
-                  {%- endfor -%} }
-                {%- elif value is sequence and value is not string -%}
-                  [{%- for child in value -%}{{ normalize(child) }},{%- endfor -%}]
-                {%- elif value is string -%}{{ value | tojson }}
-                {%- else -%}{{ value }}{%- endif -%}
-              {%- endmacro -%} {{ normalize(record) }}
-            resource_url_template: accountingperiodlist.nv
-            $parameters:
-              resource_url_template: accountingperiodlist.nv
-        resource_url_template: accountingperiodlist.nv
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
-      - type: DpathFlattenFields
-        field_path:
-          - __normalized
-        replace_record: true
-        resource_url_template: accountingperiodlist.nv
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - company_id
-            value: "{{ config['company_id'] | trim }}"
-            resource_url_template: accountingperiodlist.nv
-            $parameters:
-              resource_url_template: accountingperiodlist.nv
-        resource_url_template: accountingperiodlist.nv
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - AccountingPeriodLockDate
-            value: >-
-              {%- set date = record.get('AccountingPeriodLockDate') -%}
-
-              {%- set value = date.get('value') if date is mapping else date -%}
-
-              {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value
-              else '%Y-%m-%d') if value else none }}
-            resource_url_template: accountingperiodlist.nv
-            $parameters:
-              resource_url_template: accountingperiodlist.nv
-          - type: AddedFieldDefinition
-            path:
-              - VatPeriodLockDate
-            value: >-
-              {%- set date = record.get('VatPeriodLockDate') -%}
-
-              {%- set value = date.get('value') if date is mapping else date -%}
-
-              {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value
-              else '%Y-%m-%d') if value else none }}
-            resource_url_template: accountingperiodlist.nv
-            $parameters:
-              resource_url_template: accountingperiodlist.nv
-          - type: AddedFieldDefinition
-            path:
-              - PurchaseLockDate
-            value: >-
-              {%- set date = record.get('PurchaseLockDate') -%}
-
-              {%- set value = date.get('value') if date is mapping else date -%}
-
-              {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value
-              else '%Y-%m-%d') if value else none }}
-            resource_url_template: accountingperiodlist.nv
-            $parameters:
-              resource_url_template: accountingperiodlist.nv
-        resource_url_template: accountingperiodlist.nv
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
-    resource_url_template: accountingperiodlist.nv
-    $parameters:
-      resource_url_template: accountingperiodlist.nv
-  - type: DeclarativeStream
-    name: accounting_periods
-    retriever:
-      type: SimpleRetriever
-      decoder:
-        type: XmlDecoder
-        resource_url_template: accountingperiodlist.nv
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
-      paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
-      requester:
-        type: HttpRequester
-        url: >-
-          {%- set values = dict(config, **(stream_interval or {})) -%}
-
-          {%- if 'window_start' in values and 'window_end' in values -%}
-            {%- set values = dict(values,
-              window_start=(str_to_datetime(values['window_start']) - duration('P1D')).strftime('%Y-%m-%d'),
-              window_end=(str_to_datetime(values['window_end']) + duration('P1D')).strftime('%Y-%m-%d')
-            ) -%}
-          {%- endif -%}
-
-          {{ parameters['base_urls'][config['environment']] ~
-          (parameters['resource_url_template'] % values) }}
-        http_method: GET
-        authenticator:
-          $ref: "#/definitions/linked/HttpRequester/authenticator"
-        error_handler:
-          $ref: "#/definitions/linked/HttpRequester/error_handler"
-        request_headers:
-          $ref: "#/definitions/linked/HttpRequester/request_headers"
-        resource_url_template: accountingperiodlist.nv
-        base_urls:
-          test: https://isvapi.netvisor.fi/
-          production: https://integration.netvisor.fi/
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - Root
-            - AccountingPeriodList
-            - Period
-          resource_url_template: accountingperiodlist.nv
-          $parameters:
-            resource_url_template: accountingperiodlist.nv
-        resource_url_template: accountingperiodlist.nv
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
-      resource_url_template: accountingperiodlist.nv
-      $parameters:
-        resource_url_template: accountingperiodlist.nv
-    primary_key:
-      - - company_id
-      - - NetvisorKey
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        description: Company accounting periods with their names and start and end dates.
-        required:
-          - company_id
-          - NetvisorKey
-          - BeginDate
-          - EndDate
-        properties:
-          Name:
-            type:
-              - string
-              - "null"
-          EndDate:
-            type: string
-            format: date
-          BeginDate:
-            type: string
-            format: date
-          company_id:
-            type: string
-          NetvisorKey:
-            type: string
-        additionalProperties: true
-      resource_url_template: accountingperiodlist.nv
-      $parameters:
-        resource_url_template: accountingperiodlist.nv
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __normalized
-            value: |-
-              {%- macro normalize(value) -%}
-                {%- if value is mapping -%}
-                  { {%- for key, child in value.items() -%}
-                    {{- (key[1:] if key.startswith('@') else ('value' if key == '#text' else key)) | tojson -}}:
-                    {{- normalize(child) -}},
-                  {%- endfor -%} }
-                {%- elif value is sequence and value is not string -%}
-                  [{%- for child in value -%}{{ normalize(child) }},{%- endfor -%}]
-                {%- elif value is string -%}{{ value | tojson }}
-                {%- else -%}{{ value }}{%- endif -%}
-              {%- endmacro -%} {{ normalize(record) }}
-            resource_url_template: accountingperiodlist.nv
-            $parameters:
-              resource_url_template: accountingperiodlist.nv
-        resource_url_template: accountingperiodlist.nv
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
-      - type: DpathFlattenFields
-        field_path:
-          - __normalized
-        replace_record: true
-        resource_url_template: accountingperiodlist.nv
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - company_id
-            value: "{{ config['company_id'] | trim }}"
-            resource_url_template: accountingperiodlist.nv
-            $parameters:
-              resource_url_template: accountingperiodlist.nv
-        resource_url_template: accountingperiodlist.nv
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - BeginDate
-            value: >-
-              {%- set date = record.get('BeginDate') -%}
-
-              {%- set value = date.get('value') if date is mapping else date -%}
-
-              {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value
-              else '%Y-%m-%d') if value else none }}
-            resource_url_template: accountingperiodlist.nv
-            $parameters:
-              resource_url_template: accountingperiodlist.nv
-          - type: AddedFieldDefinition
-            path:
-              - EndDate
-            value: >-
-              {%- set date = record.get('EndDate') -%}
-
-              {%- set value = date.get('value') if date is mapping else date -%}
-
-              {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value
-              else '%Y-%m-%d') if value else none }}
-            resource_url_template: accountingperiodlist.nv
-            $parameters:
-              resource_url_template: accountingperiodlist.nv
-        resource_url_template: accountingperiodlist.nv
-        $parameters:
-          resource_url_template: accountingperiodlist.nv
-    resource_url_template: accountingperiodlist.nv
-    $parameters:
-      resource_url_template: accountingperiodlist.nv
-  - type: DeclarativeStream
-    name: accounts
-    retriever:
-      type: SimpleRetriever
-      decoder:
-        type: XmlDecoder
-        resource_url_template: accountlist.nv
-        $parameters:
-          resource_url_template: accountlist.nv
-      paginator:
-        type: NoPagination
-        resource_url_template: accountlist.nv
-        $parameters:
-          resource_url_template: accountlist.nv
-      requester:
-        type: HttpRequester
-        url: >-
-          {%- set values = dict(config, **(stream_interval or {})) -%}
-
-          {%- if 'window_start' in values and 'window_end' in values -%}
-            {%- set values = dict(values,
-              window_start=(str_to_datetime(values['window_start']) - duration('P1D')).strftime('%Y-%m-%d'),
-              window_end=(str_to_datetime(values['window_end']) + duration('P1D')).strftime('%Y-%m-%d')
-            ) -%}
-          {%- endif -%}
-
-          {{ parameters['base_urls'][config['environment']] ~
-          (parameters['resource_url_template'] % values) }}
-        http_method: GET
-        authenticator:
-          type: NoAuth
-          resource_url_template: accountlist.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-          $parameters:
-            resource_url_template: accountlist.nv
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-        error_handler:
-          type: DefaultErrorHandler
-          max_retries: 3
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              error_message: >-
-                Netvisor rejected the request. Check API permissions,
-                credentials and resource parameters.
-              error_message_contains: <Status>FAILED</Status>
-              resource_url_template: accountlist.nv
-              base_urls:
-                test: https://isvapi.netvisor.fi/
-                production: https://integration.netvisor.fi/
-              $parameters:
-                resource_url_template: accountlist.nv
-                base_urls:
-                  test: https://isvapi.netvisor.fi/
-                  production: https://integration.netvisor.fi/
-          resource_url_template: accountlist.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-          $parameters:
-            resource_url_template: accountlist.nv
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-        request_headers:
-          $ref: "#/definitions/linked/HttpRequester/request_headers"
-        resource_url_template: accountlist.nv
-        base_urls:
-          test: https://isvapi.netvisor.fi/
-          production: https://integration.netvisor.fi/
-        $parameters:
-          resource_url_template: accountlist.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - Root
-            - AccountList
-            - Accounts
-            - Account
-          resource_url_template: accountlist.nv
-          $parameters:
-            resource_url_template: accountlist.nv
-        resource_url_template: accountlist.nv
-        $parameters:
-          resource_url_template: accountlist.nv
-      resource_url_template: accountlist.nv
-      $parameters:
-        resource_url_template: accountlist.nv
-    primary_key:
-      - - company_id
-      - - NetvisorKey
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        required:
-          - company_id
-          - NetvisorKey
-          - IsActive
-          - IsCumulative
-          - IsNaturalNegative
-        properties:
-          Name:
-            type:
-              - string
-              - "null"
-          Sort:
-            type:
-              - integer
-              - "null"
-          Number:
-            type:
-              - string
-              - "null"
-          EndSort:
-            type:
-              - integer
-              - "null"
-          IsActive:
-            type: boolean
-          company_id:
-            type: string
-          AccountType:
-            type:
-              - string
-              - "null"
-          ForeignName:
-            type: array
-            items:
-              type: object
-              properties:
-                value:
-                  type:
-                    - string
-                    - "null"
-                ISO-3166:
-                  type:
-                    - string
-                    - "null"
-              additionalProperties: true
-          NetvisorKey:
-            type: string
-          IsCumulative:
-            type: boolean
-          FatherNetvisorKey:
-            type:
-              - string
-              - "null"
-          IsNaturalNegative:
-            type: boolean
-        additionalProperties: true
-      resource_url_template: accountlist.nv
-      $parameters:
-        resource_url_template: accountlist.nv
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __normalized
-            value: |-
-              {%- macro normalize(value) -%}
-                {%- if value is mapping -%}
-                  { {%- for key, child in value.items() -%}
-                    {{- (key[1:] if key.startswith('@') else ('value' if key == '#text' else key)) | tojson -}}:
-                    {{- normalize(child) -}},
-                  {%- endfor -%} }
-                {%- elif value is sequence and value is not string -%}
-                  [{%- for child in value -%}{{ normalize(child) }},{%- endfor -%}]
-                {%- elif value is string -%}{{ value | tojson }}
-                {%- else -%}{{ value }}{%- endif -%}
-              {%- endmacro -%} {{ normalize(record) }}
-            resource_url_template: accountlist.nv
-            $parameters:
-              resource_url_template: accountlist.nv
-        resource_url_template: accountlist.nv
-        $parameters:
-          resource_url_template: accountlist.nv
-      - type: DpathFlattenFields
-        field_path:
-          - __normalized
-        replace_record: true
-        resource_url_template: accountlist.nv
-        $parameters:
-          resource_url_template: accountlist.nv
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - company_id
-            value: "{{ config['company_id'] | trim }}"
-            resource_url_template: accountlist.nv
-            $parameters:
-              resource_url_template: accountlist.nv
-        resource_url_template: accountlist.nv
-        $parameters:
-          resource_url_template: accountlist.nv
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - IsActive
-            value: "{{ {'0': false, '1': true}.pop(record.get('IsActive') | trim) }}"
-            resource_url_template: accountlist.nv
-            $parameters:
-              resource_url_template: accountlist.nv
-          - type: AddedFieldDefinition
-            path:
-              - IsCumulative
-            value: >-
-              {{ {'0': false, '1': true}.pop(record.get('IsCumulative') | trim)
-              }}
-            resource_url_template: accountlist.nv
-            $parameters:
-              resource_url_template: accountlist.nv
-          - type: AddedFieldDefinition
-            path:
-              - IsNaturalNegative
-            value: >-
-              {{ {'0': false, '1': true}.pop(record.get('IsNaturalNegative') |
-              trim) }}
-            resource_url_template: accountlist.nv
-            $parameters:
-              resource_url_template: accountlist.nv
-        resource_url_template: accountlist.nv
-        $parameters:
-          resource_url_template: accountlist.nv
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - Sort
-            value: >-
-              {%- set number = record.get('Sort') -%}
-
-              {{ {'valid': number | int}.pop('valid' if number | trim |
-              regex_search('^([+-]?[0-9]+)$') else 'Invalid Sort') if number is
-              not none else none }}
-            resource_url_template: accountlist.nv
-            $parameters:
-              resource_url_template: accountlist.nv
-          - type: AddedFieldDefinition
-            path:
-              - EndSort
-            value: >-
-              {%- set number = record.get('EndSort') -%}
-
-              {{ {'valid': number | int}.pop('valid' if number | trim |
-              regex_search('^([+-]?[0-9]+)$') else 'Invalid EndSort') if number
-              is not none else none }}
-            resource_url_template: accountlist.nv
-            $parameters:
-              resource_url_template: accountlist.nv
-          - type: AddedFieldDefinition
-            path:
-              - ForeignName
-            value: >-
-              {%- set names = record.get('ForeignName') -%}
-
-              {{ [] if names is none else ([names] if names is mapping or names
-              is string else names) }}
-            resource_url_template: accountlist.nv
-            $parameters:
-              resource_url_template: accountlist.nv
-        condition: "{{ path[0] in record }}"
-        resource_url_template: accountlist.nv
-        $parameters:
-          resource_url_template: accountlist.nv
-    resource_url_template: accountlist.nv
-    $parameters:
-      resource_url_template: accountlist.nv
-  - type: DeclarativeStream
-    name: bank_accounts
-    retriever:
-      type: SimpleRetriever
-      decoder:
-        type: XmlDecoder
-        resource_url_template: getbankaccounts.nv
-        $parameters:
-          resource_url_template: getbankaccounts.nv
-      paginator:
-        type: NoPagination
-        resource_url_template: getbankaccounts.nv
-        $parameters:
-          resource_url_template: getbankaccounts.nv
-      requester:
-        type: HttpRequester
-        url: >-
-          {%- set values = dict(config, **(stream_interval or {})) -%}
-
-          {%- if 'window_start' in values and 'window_end' in values -%}
-            {%- set values = dict(values,
-              window_start=(str_to_datetime(values['window_start']) - duration('P1D')).strftime('%Y-%m-%d'),
-              window_end=(str_to_datetime(values['window_end']) + duration('P1D')).strftime('%Y-%m-%d')
-            ) -%}
-          {%- endif -%}
-
-          {{ parameters['base_urls'][config['environment']] ~
-          (parameters['resource_url_template'] % values) }}
-        http_method: GET
-        authenticator:
-          type: NoAuth
-          resource_url_template: getbankaccounts.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-          $parameters:
-            resource_url_template: getbankaccounts.nv
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-        error_handler:
-          type: DefaultErrorHandler
-          max_retries: 3
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              error_message: >-
-                Netvisor rejected the request. Check API permissions,
-                credentials and resource parameters.
-              error_message_contains: <Status>FAILED</Status>
-              resource_url_template: getbankaccounts.nv
-              base_urls:
-                test: https://isvapi.netvisor.fi/
-                production: https://integration.netvisor.fi/
-              $parameters:
-                resource_url_template: getbankaccounts.nv
-                base_urls:
-                  test: https://isvapi.netvisor.fi/
-                  production: https://integration.netvisor.fi/
-          resource_url_template: getbankaccounts.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-          $parameters:
-            resource_url_template: getbankaccounts.nv
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-        request_headers:
-          $ref: "#/definitions/linked/HttpRequester/request_headers"
-        resource_url_template: getbankaccounts.nv
-        base_urls:
-          test: https://isvapi.netvisor.fi/
-          production: https://integration.netvisor.fi/
-        $parameters:
-          resource_url_template: getbankaccounts.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - Root
-            - BankAccounts
-            - BankAccount
-          resource_url_template: getbankaccounts.nv
-          $parameters:
-            resource_url_template: getbankaccounts.nv
-        resource_url_template: getbankaccounts.nv
-        $parameters:
-          resource_url_template: getbankaccounts.nv
-      resource_url_template: getbankaccounts.nv
-      $parameters:
-        resource_url_template: getbankaccounts.nv
-    primary_key:
-      - - company_id
-      - - IBAN
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        description: Company bank accounts and their linked bookkeeping accounts.
-        required:
-          - company_id
-          - IBAN
-        properties:
-          BIC:
-            type:
-              - string
-              - "null"
-          IBAN:
-            type: string
-          Name:
-            type:
-              - string
-              - "null"
-          company_id:
-            type: string
-          CurrencyCode:
-            type:
-              - object
-              - "null"
-            properties:
-              Type:
-                type:
-                  - string
-                  - "null"
-              value:
-                type:
-                  - string
-                  - "null"
-            additionalProperties: true
-          BookkeepingAccount:
-            type:
-              - object
-              - "null"
-            properties:
-              AccountName:
-                type:
-                  - string
-                  - "null"
-              NetvisorKey:
-                type:
-                  - string
-                  - "null"
-              AccountNumber:
-                type:
-                  - string
-                  - "null"
-            additionalProperties: true
-        additionalProperties: true
-      resource_url_template: getbankaccounts.nv
-      $parameters:
-        resource_url_template: getbankaccounts.nv
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __normalized
-            value: |-
-              {%- macro normalize(value) -%}
-                {%- if value is mapping -%}
-                  { {%- for key, child in value.items() -%}
-                    {{- (key[1:] if key.startswith('@') else ('value' if key == '#text' else key)) | tojson -}}:
-                    {{- normalize(child) -}},
-                  {%- endfor -%} }
-                {%- elif value is sequence and value is not string -%}
-                  [{%- for child in value -%}{{ normalize(child) }},{%- endfor -%}]
-                {%- elif value is string -%}{{ value | tojson }}
-                {%- else -%}{{ value }}{%- endif -%}
-              {%- endmacro -%} {{ normalize(record) }}
-            resource_url_template: getbankaccounts.nv
-            $parameters:
-              resource_url_template: getbankaccounts.nv
-        resource_url_template: getbankaccounts.nv
-        $parameters:
-          resource_url_template: getbankaccounts.nv
-      - type: DpathFlattenFields
-        field_path:
-          - __normalized
-        replace_record: true
-        resource_url_template: getbankaccounts.nv
-        $parameters:
-          resource_url_template: getbankaccounts.nv
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - company_id
-            value: "{{ config['company_id'] | trim }}"
-            resource_url_template: getbankaccounts.nv
-            $parameters:
-              resource_url_template: getbankaccounts.nv
-        resource_url_template: getbankaccounts.nv
-        $parameters:
-          resource_url_template: getbankaccounts.nv
-    resource_url_template: getbankaccounts.nv
-    $parameters:
-      resource_url_template: getbankaccounts.nv
-  - type: DeclarativeStream
-    name: default_accounts
-    retriever:
-      type: SimpleRetriever
-      decoder:
-        type: XmlDecoder
-        resource_url_template: accountlist.nv
-        $parameters:
-          resource_url_template: accountlist.nv
-      paginator:
-        type: NoPagination
-        resource_url_template: accountlist.nv
-        $parameters:
-          resource_url_template: accountlist.nv
-      requester:
-        type: HttpRequester
-        url: >-
-          {%- set values = dict(config, **(stream_interval or {})) -%}
-
-          {%- if 'window_start' in values and 'window_end' in values -%}
-            {%- set values = dict(values,
-              window_start=(str_to_datetime(values['window_start']) - duration('P1D')).strftime('%Y-%m-%d'),
-              window_end=(str_to_datetime(values['window_end']) + duration('P1D')).strftime('%Y-%m-%d')
-            ) -%}
-          {%- endif -%}
-
-          {{ parameters['base_urls'][config['environment']] ~
-          (parameters['resource_url_template'] % values) }}
-        http_method: GET
-        authenticator:
-          type: NoAuth
-          resource_url_template: accountlist.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-          $parameters:
-            resource_url_template: accountlist.nv
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-        error_handler:
-          type: DefaultErrorHandler
-          max_retries: 3
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              error_message: >-
-                Netvisor rejected the request. Check API permissions,
-                credentials and resource parameters.
-              error_message_contains: <Status>FAILED</Status>
-              resource_url_template: accountlist.nv
-              base_urls:
-                test: https://isvapi.netvisor.fi/
-                production: https://integration.netvisor.fi/
-              $parameters:
-                resource_url_template: accountlist.nv
-                base_urls:
-                  test: https://isvapi.netvisor.fi/
-                  production: https://integration.netvisor.fi/
-          resource_url_template: accountlist.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-          $parameters:
-            resource_url_template: accountlist.nv
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-        request_headers:
-          $ref: "#/definitions/linked/HttpRequester/request_headers"
-        resource_url_template: accountlist.nv
-        base_urls:
-          test: https://isvapi.netvisor.fi/
-          production: https://integration.netvisor.fi/
-        $parameters:
-          resource_url_template: accountlist.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - Root
-            - AccountList
-            - CompanyDefaultAccounts
-          resource_url_template: accountlist.nv
-          $parameters:
-            resource_url_template: accountlist.nv
-        resource_url_template: accountlist.nv
-        $parameters:
-          resource_url_template: accountlist.nv
-      resource_url_template: accountlist.nv
-      $parameters:
-        resource_url_template: accountlist.nv
-    primary_key:
-      - company_id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        description: >-
-          Company default posting accounts. Mapping values refer to Number in
-          the accounts stream.
-        required:
-          - company_id
-        properties:
-          Inventory:
-            type:
-              - string
-              - "null"
-          Collection:
-            type:
-              - string
-              - "null"
-          TaxAccount:
-            type:
-              - string
-              - "null"
-          VATpayable:
-            type:
-              - string
-              - "null"
-          company_id:
-            type: string
-          SalesVATDebt:
-            type:
-              - string
-              - "null"
-          SalesDiscount:
-            type:
-              - string
-              - "null"
-          TradePayables:
-            type:
-              - string
-              - "null"
-          SalesEUDefault:
-            type:
-              - string
-              - "null"
-          AdvancePayments:
-            type:
-              - string
-              - "null"
-          SalesReceivables:
-            type:
-              - string
-              - "null"
-          PurchaseEUDefault:
-            type:
-              - string
-              - "null"
-          PurchasesDiscounts:
-            type:
-              - string
-              - "null"
-          SalesInvoiceAccrual:
-            type:
-              - string
-              - "null"
-          SalesDomesticDefault:
-            type:
-              - string
-              - "null"
-          PurchaseVATReceivable:
-            type:
-              - string
-              - "null"
-          RoundingOffDifference:
-            type:
-              - string
-              - "null"
-          SalesOutsideEUDefault:
-            type:
-              - string
-              - "null"
-          PurchaseInvoiceAccrual:
-            type:
-              - string
-              - "null"
-          PurchaseDomesticDefault:
-            type:
-              - string
-              - "null"
-          PurchaseOutsideEUDefault:
-            type:
-              - string
-              - "null"
-          SalesExchangeRateDifferences:
-            type:
-              - string
-              - "null"
-          PurchasesExchangeRateDifferences:
-            type:
-              - string
-              - "null"
-        additionalProperties: true
-      resource_url_template: accountlist.nv
-      $parameters:
-        resource_url_template: accountlist.nv
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __normalized
-            value: |-
-              {%- macro normalize(value) -%}
-                {%- if value is mapping -%}
-                  { {%- for key, child in value.items() -%}
-                    {{- (key[1:] if key.startswith('@') else ('value' if key == '#text' else key)) | tojson -}}:
-                    {{- normalize(child) -}},
-                  {%- endfor -%} }
-                {%- elif value is sequence and value is not string -%}
-                  [{%- for child in value -%}{{ normalize(child) }},{%- endfor -%}]
-                {%- elif value is string -%}{{ value | tojson }}
-                {%- else -%}{{ value }}{%- endif -%}
-              {%- endmacro -%} {{ normalize(record) }}
-            resource_url_template: accountlist.nv
-            $parameters:
-              resource_url_template: accountlist.nv
-        resource_url_template: accountlist.nv
-        $parameters:
-          resource_url_template: accountlist.nv
-      - type: DpathFlattenFields
-        field_path:
-          - __normalized
-        replace_record: true
-        resource_url_template: accountlist.nv
-        $parameters:
-          resource_url_template: accountlist.nv
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - company_id
-            value: "{{ config['company_id'] | trim }}"
-            resource_url_template: accountlist.nv
-            $parameters:
-              resource_url_template: accountlist.nv
-        resource_url_template: accountlist.nv
-        $parameters:
-          resource_url_template: accountlist.nv
-    resource_url_template: accountlist.nv
-    $parameters:
-      resource_url_template: accountlist.nv
-  - type: DeclarativeStream
-    name: default_voucher_types
-    retriever:
-      type: SimpleRetriever
-      decoder:
-        type: XmlDecoder
-        resource_url_template: vouchertypelist.nv
-        $parameters:
-          resource_url_template: vouchertypelist.nv
-      paginator:
-        type: NoPagination
-        resource_url_template: vouchertypelist.nv
-        $parameters:
-          resource_url_template: vouchertypelist.nv
-      requester:
-        type: HttpRequester
-        url: >-
-          {%- set values = dict(config, **(stream_interval or {})) -%}
-
-          {%- if 'window_start' in values and 'window_end' in values -%}
-            {%- set values = dict(values,
-              window_start=(str_to_datetime(values['window_start']) - duration('P1D')).strftime('%Y-%m-%d'),
-              window_end=(str_to_datetime(values['window_end']) + duration('P1D')).strftime('%Y-%m-%d')
-            ) -%}
-          {%- endif -%}
-
-          {{ parameters['base_urls'][config['environment']] ~
-          (parameters['resource_url_template'] % values) }}
-        http_method: GET
-        authenticator:
-          type: NoAuth
-          resource_url_template: vouchertypelist.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-          $parameters:
-            resource_url_template: vouchertypelist.nv
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-        error_handler:
-          type: DefaultErrorHandler
-          max_retries: 3
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              error_message: >-
-                Netvisor rejected the request. Check API permissions,
-                credentials and resource parameters.
-              error_message_contains: <Status>FAILED</Status>
-              resource_url_template: vouchertypelist.nv
-              base_urls:
-                test: https://isvapi.netvisor.fi/
-                production: https://integration.netvisor.fi/
-              $parameters:
-                resource_url_template: vouchertypelist.nv
-                base_urls:
-                  test: https://isvapi.netvisor.fi/
-                  production: https://integration.netvisor.fi/
-          resource_url_template: vouchertypelist.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-          $parameters:
-            resource_url_template: vouchertypelist.nv
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-        request_headers:
-          $ref: "#/definitions/linked/HttpRequester/request_headers"
-        resource_url_template: vouchertypelist.nv
-        base_urls:
-          test: https://isvapi.netvisor.fi/
-          production: https://integration.netvisor.fi/
-        $parameters:
-          resource_url_template: vouchertypelist.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - Root
-            - VoucherTypeList
-            - DefaultVoucherTypes
-          resource_url_template: vouchertypelist.nv
-          $parameters:
-            resource_url_template: vouchertypelist.nv
-        resource_url_template: vouchertypelist.nv
-        $parameters:
-          resource_url_template: vouchertypelist.nv
-      resource_url_template: vouchertypelist.nv
-      $parameters:
-        resource_url_template: vouchertypelist.nv
-    primary_key:
-      - company_id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        description: >-
-          Default voucher types for each accounting role. Nested keys refer to
-          NetvisorKey in the voucher_types stream.
-        required:
-          - company_id
-        properties:
-          Accruals:
-            type:
-              - object
-              - "null"
-            properties:
-              NetvisorKey:
-                type:
-                  - string
-                  - "null"
-            additionalProperties: true
-          company_id:
-            type: string
-          SalesInvoices:
-            type:
-              - object
-              - "null"
-            properties:
-              NetvisorKey:
-                type:
-                  - string
-                  - "null"
-            additionalProperties: true
-          PurchaseInvoices:
-            type:
-              - object
-              - "null"
-            properties:
-              NetvisorKey:
-                type:
-                  - string
-                  - "null"
-            additionalProperties: true
-          SalesInvoicePayments:
-            type:
-              - object
-              - "null"
-            properties:
-              NetvisorKey:
-                type:
-                  - string
-                  - "null"
-            additionalProperties: true
-          PurchaseInvoicePayments:
-            type:
-              - object
-              - "null"
-            properties:
-              NetvisorKey:
-                type:
-                  - string
-                  - "null"
-            additionalProperties: true
-          BankStatementViewVouchers:
-            type:
-              - object
-              - "null"
-            properties:
-              NetvisorKey:
-                type:
-                  - string
-                  - "null"
-            additionalProperties: true
-          OtherSystemGeneratedVouchers:
-            type:
-              - object
-              - "null"
-            properties:
-              NetvisorKey:
-                type:
-                  - string
-                  - "null"
-            additionalProperties: true
-        additionalProperties: true
-      resource_url_template: vouchertypelist.nv
-      $parameters:
-        resource_url_template: vouchertypelist.nv
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __normalized
-            value: |-
-              {%- macro normalize(value) -%}
-                {%- if value is mapping -%}
-                  { {%- for key, child in value.items() -%}
-                    {{- (key[1:] if key.startswith('@') else ('value' if key == '#text' else key)) | tojson -}}:
-                    {{- normalize(child) -}},
-                  {%- endfor -%} }
-                {%- elif value is sequence and value is not string -%}
-                  [{%- for child in value -%}{{ normalize(child) }},{%- endfor -%}]
-                {%- elif value is string -%}{{ value | tojson }}
-                {%- else -%}{{ value }}{%- endif -%}
-              {%- endmacro -%} {{ normalize(record) }}
-            resource_url_template: vouchertypelist.nv
-            $parameters:
-              resource_url_template: vouchertypelist.nv
-        resource_url_template: vouchertypelist.nv
-        $parameters:
-          resource_url_template: vouchertypelist.nv
-      - type: DpathFlattenFields
-        field_path:
-          - __normalized
-        replace_record: true
-        resource_url_template: vouchertypelist.nv
-        $parameters:
-          resource_url_template: vouchertypelist.nv
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - company_id
-            value: "{{ config['company_id'] | trim }}"
-            resource_url_template: vouchertypelist.nv
-            $parameters:
-              resource_url_template: vouchertypelist.nv
-        resource_url_template: vouchertypelist.nv
-        $parameters:
-          resource_url_template: vouchertypelist.nv
-    resource_url_template: vouchertypelist.nv
-    $parameters:
-      resource_url_template: vouchertypelist.nv
-  - type: DeclarativeStream
-    name: dimensions
-    retriever:
-      type: SimpleRetriever
-      decoder:
-        type: XmlDecoder
-        resource_url_template: dimensionlist.nv?showhidden=1
-        $parameters:
-          resource_url_template: dimensionlist.nv?showhidden=1
-      paginator:
-        type: NoPagination
-        resource_url_template: dimensionlist.nv?showhidden=1
-        $parameters:
-          resource_url_template: dimensionlist.nv?showhidden=1
-      requester:
-        type: HttpRequester
-        url: >-
-          {%- set values = dict(config, **(stream_interval or {})) -%}
-
-          {%- if 'window_start' in values and 'window_end' in values -%}
-            {%- set values = dict(values,
-              window_start=(str_to_datetime(values['window_start']) - duration('P1D')).strftime('%Y-%m-%d'),
-              window_end=(str_to_datetime(values['window_end']) + duration('P1D')).strftime('%Y-%m-%d')
-            ) -%}
-          {%- endif -%}
-
-          {{ parameters['base_urls'][config['environment']] ~
-          (parameters['resource_url_template'] % values) }}
-        http_method: GET
-        authenticator:
-          type: NoAuth
-          resource_url_template: dimensionlist.nv?showhidden=1
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-          $parameters:
-            resource_url_template: dimensionlist.nv?showhidden=1
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-        error_handler:
-          type: DefaultErrorHandler
-          max_retries: 3
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              error_message: >-
-                Netvisor rejected the request. Check API permissions,
-                credentials and resource parameters.
-              error_message_contains: <Status>FAILED</Status>
-              resource_url_template: dimensionlist.nv?showhidden=1
-              base_urls:
-                test: https://isvapi.netvisor.fi/
-                production: https://integration.netvisor.fi/
-              $parameters:
-                resource_url_template: dimensionlist.nv?showhidden=1
-                base_urls:
-                  test: https://isvapi.netvisor.fi/
-                  production: https://integration.netvisor.fi/
-          resource_url_template: dimensionlist.nv?showhidden=1
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-          $parameters:
-            resource_url_template: dimensionlist.nv?showhidden=1
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-        request_headers:
-          $ref: "#/definitions/linked/HttpRequester/request_headers"
-        resource_url_template: dimensionlist.nv?showhidden=1
-        base_urls:
-          test: https://isvapi.netvisor.fi/
-          production: https://integration.netvisor.fi/
-        $parameters:
-          resource_url_template: dimensionlist.nv?showhidden=1
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - Root
-            - DimensionNameList
-            - DimensionName
-          resource_url_template: dimensionlist.nv?showhidden=1
-          $parameters:
-            resource_url_template: dimensionlist.nv?showhidden=1
-        resource_url_template: dimensionlist.nv?showhidden=1
-        $parameters:
-          resource_url_template: dimensionlist.nv?showhidden=1
-      resource_url_template: dimensionlist.nv?showhidden=1
-      $parameters:
-        resource_url_template: dimensionlist.nv?showhidden=1
-    primary_key:
-      - - company_id
-      - - Netvisorkey
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        description: >-
-          Company cost object headers and their nested items, including hidden
-          items and hierarchy.
-        required:
-          - company_id
-          - Netvisorkey
-          - Name
-          - IsHidden
-          - LinkType
-          - DimensionDetails
-        properties:
-          Name:
-            type: string
-          IsHidden:
-            type: boolean
-          LinkType:
-            type: integer
-          company_id:
-            type: string
-          Netvisorkey:
-            type: string
-          DimensionDetails:
-            type: object
-            required:
-              - DimensionDetail
-            properties:
-              DimensionDetail:
-                type: array
-                items:
-                  type: object
-                  required:
-                    - Netvisorkey
-                    - Name
-                    - IsHidden
-                    - Level
-                    - Sort
-                    - EndSort
-                    - FatherID
-                  properties:
-                    Code:
-                      type:
-                        - string
-                        - "null"
-                    Name:
-                      type: string
-                    Sort:
-                      type: integer
-                    Label:
-                      type:
-                        - string
-                        - "null"
-                    Level:
-                      type: integer
-                    EndSort:
-                      type: integer
-                    FatherID:
-                      type: string
-                    IsHidden:
-                      type: boolean
-                    Netvisorkey:
-                      type: string
-                  additionalProperties: true
-            additionalProperties: true
-          ActivityPeriodEnd:
-            type:
-              - string
-              - "null"
-            format: date
-          ActivityPeriodStart:
-            type:
-              - string
-              - "null"
-            format: date
-        additionalProperties: true
-      resource_url_template: dimensionlist.nv?showhidden=1
-      $parameters:
-        resource_url_template: dimensionlist.nv?showhidden=1
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __normalized
-            value: |-
-              {%- macro normalize(value) -%}
-                {%- if value is mapping -%}
-                  { {%- for key, child in value.items() -%}
-                    {{- (key[1:] if key.startswith('@') else ('value' if key == '#text' else key)) | tojson -}}:
-                    {{- normalize(child) -}},
-                  {%- endfor -%} }
-                {%- elif value is sequence and value is not string -%}
-                  [{%- for child in value -%}{{ normalize(child) }},{%- endfor -%}]
-                {%- elif value is string -%}{{ value | tojson }}
-                {%- else -%}{{ value }}{%- endif -%}
-              {%- endmacro -%} {{ normalize(record) }}
-            resource_url_template: dimensionlist.nv?showhidden=1
-            $parameters:
-              resource_url_template: dimensionlist.nv?showhidden=1
-        resource_url_template: dimensionlist.nv?showhidden=1
-        $parameters:
-          resource_url_template: dimensionlist.nv?showhidden=1
-      - type: DpathFlattenFields
-        field_path:
-          - __normalized
-        replace_record: true
-        resource_url_template: dimensionlist.nv?showhidden=1
-        $parameters:
-          resource_url_template: dimensionlist.nv?showhidden=1
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - company_id
-            value: "{{ config['company_id'] | trim }}"
-            resource_url_template: dimensionlist.nv?showhidden=1
-            $parameters:
-              resource_url_template: dimensionlist.nv?showhidden=1
-        resource_url_template: dimensionlist.nv?showhidden=1
-        $parameters:
-          resource_url_template: dimensionlist.nv?showhidden=1
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - IsHidden
-            value: >-
-              {{ {'false': false, 'true': true}.pop(record.get('IsHidden') |
-              trim | lower) }}
-            resource_url_template: dimensionlist.nv?showhidden=1
-            $parameters:
-              resource_url_template: dimensionlist.nv?showhidden=1
-          - type: AddedFieldDefinition
-            path:
-              - LinkType
-            value: >-
-              {%- set number = record.get('LinkType') -%}
-
-              {{ {'valid': number | int}.pop('valid' if number | trim |
-              regex_search('^([+-]?[0-9]+)$') else 'Invalid LinkType') }}
-            resource_url_template: dimensionlist.nv?showhidden=1
-            $parameters:
-              resource_url_template: dimensionlist.nv?showhidden=1
-          - type: AddedFieldDefinition
-            path:
-              - ActivityPeriodStart
-            value: >-
-              {%- set date = record.get('ActivityPeriodStart') -%}
-
-              {%- set value = date.get('value') if date is mapping else date -%}
-
-              {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value
-              else '%Y-%m-%d') if value else none }}
-            resource_url_template: dimensionlist.nv?showhidden=1
-            $parameters:
-              resource_url_template: dimensionlist.nv?showhidden=1
-          - type: AddedFieldDefinition
-            path:
-              - ActivityPeriodEnd
-            value: >-
-              {%- set date = record.get('ActivityPeriodEnd') -%}
-
-              {%- set value = date.get('value') if date is mapping else date -%}
-
-              {{ format_datetime(value, '%Y-%m-%d', '%d.%m.%Y' if '.' in value
-              else '%Y-%m-%d') if value else none }}
-            resource_url_template: dimensionlist.nv?showhidden=1
-            $parameters:
-              resource_url_template: dimensionlist.nv?showhidden=1
-          - type: AddedFieldDefinition
-            path:
-              - DimensionDetails
-            value: |-
-              {%- set details = record.get('DimensionDetails') or {} -%}
-              {%- set items = details.get('DimensionDetail') or [] -%}
-              {%- set normalized = [] -%}
-              {%- for item in ([items] if items is mapping else items) -%}
-                {%- set item = dict(item, IsHidden={'false': false, 'true': true}.pop(item.get('IsHidden') | trim | lower)) -%}
-                {%- for field in ['Level', 'Sort', 'EndSort'] -%}
-                  {%- set number = item.get(field) -%}
-                  {%- set _ = item.update({field: {'valid': number | int}.pop('valid' if number | trim | regex_search('^([+-]?[0-9]+)$') else 'Invalid ' ~ field)}) -%}
-                {%- endfor -%}
-                {%- set _ = normalized.append(item) -%}
-              {%- endfor -%}
-              {{ dict(details, DimensionDetail=normalized) }}
-            resource_url_template: dimensionlist.nv?showhidden=1
-            $parameters:
-              resource_url_template: dimensionlist.nv?showhidden=1
-        resource_url_template: dimensionlist.nv?showhidden=1
-        $parameters:
-          resource_url_template: dimensionlist.nv?showhidden=1
-    resource_url_template: dimensionlist.nv?showhidden=1
-    $parameters:
-      resource_url_template: dimensionlist.nv?showhidden=1
-  - type: DeclarativeStream
-    name: voucher_types
-    retriever:
-      type: SimpleRetriever
-      decoder:
-        type: XmlDecoder
-        resource_url_template: vouchertypelist.nv
-        $parameters:
-          resource_url_template: vouchertypelist.nv
-      paginator:
-        type: NoPagination
-        resource_url_template: vouchertypelist.nv
-        $parameters:
-          resource_url_template: vouchertypelist.nv
-      requester:
-        type: HttpRequester
-        url: >-
-          {%- set values = dict(config, **(stream_interval or {})) -%}
-
-          {%- if 'window_start' in values and 'window_end' in values -%}
-            {%- set values = dict(values,
-              window_start=(str_to_datetime(values['window_start']) - duration('P1D')).strftime('%Y-%m-%d'),
-              window_end=(str_to_datetime(values['window_end']) + duration('P1D')).strftime('%Y-%m-%d')
-            ) -%}
-          {%- endif -%}
-
-          {{ parameters['base_urls'][config['environment']] ~
-          (parameters['resource_url_template'] % values) }}
-        http_method: GET
-        authenticator:
-          type: NoAuth
-          resource_url_template: vouchertypelist.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-          $parameters:
-            resource_url_template: vouchertypelist.nv
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-        error_handler:
-          type: DefaultErrorHandler
-          max_retries: 3
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              error_message: >-
-                Netvisor rejected the request. Check API permissions,
-                credentials and resource parameters.
-              error_message_contains: <Status>FAILED</Status>
-              resource_url_template: vouchertypelist.nv
-              base_urls:
-                test: https://isvapi.netvisor.fi/
-                production: https://integration.netvisor.fi/
-              $parameters:
-                resource_url_template: vouchertypelist.nv
-                base_urls:
-                  test: https://isvapi.netvisor.fi/
-                  production: https://integration.netvisor.fi/
-          resource_url_template: vouchertypelist.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-          $parameters:
-            resource_url_template: vouchertypelist.nv
-            base_urls:
-              test: https://isvapi.netvisor.fi/
-              production: https://integration.netvisor.fi/
-        request_headers:
-          $ref: "#/definitions/linked/HttpRequester/request_headers"
-        resource_url_template: vouchertypelist.nv
-        base_urls:
-          test: https://isvapi.netvisor.fi/
-          production: https://integration.netvisor.fi/
-        $parameters:
-          resource_url_template: vouchertypelist.nv
-          base_urls:
-            test: https://isvapi.netvisor.fi/
-            production: https://integration.netvisor.fi/
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - Root
-            - VoucherTypeList
-            - VoucherTypes
-            - VoucherType
-          resource_url_template: vouchertypelist.nv
-          $parameters:
-            resource_url_template: vouchertypelist.nv
-        resource_url_template: vouchertypelist.nv
-        $parameters:
-          resource_url_template: vouchertypelist.nv
-      resource_url_template: vouchertypelist.nv
-      $parameters:
-        resource_url_template: vouchertypelist.nv
-    primary_key:
-      - - company_id
-      - - NetvisorKey
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        description: >-
-          Voucher types used to classify accounting entries. NetvisorKey
-          identifies VoucherClass in the accounting ledger.
-        required:
-          - company_id
-          - NetvisorKey
-        properties:
-          Name:
-            type:
-              - string
-              - "null"
-          company_id:
-            type: string
-          ForeignName:
-            type: array
-            items:
-              type: object
-              properties:
-                value:
-                  type:
-                    - string
-                    - "null"
-                ISO-639-1:
-                  type:
-                    - string
-                    - "null"
-              additionalProperties: true
-          NetvisorKey:
-            type: string
-          Abbreviation:
-            type:
-              - string
-              - "null"
-        additionalProperties: true
-      resource_url_template: vouchertypelist.nv
-      $parameters:
-        resource_url_template: vouchertypelist.nv
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __normalized
-            value: |-
-              {%- macro normalize(value) -%}
-                {%- if value is mapping -%}
-                  { {%- for key, child in value.items() -%}
-                    {{- (key[1:] if key.startswith('@') else ('value' if key == '#text' else key)) | tojson -}}:
-                    {{- normalize(child) -}},
-                  {%- endfor -%} }
-                {%- elif value is sequence and value is not string -%}
-                  [{%- for child in value -%}{{ normalize(child) }},{%- endfor -%}]
-                {%- elif value is string -%}{{ value | tojson }}
-                {%- else -%}{{ value }}{%- endif -%}
-              {%- endmacro -%} {{ normalize(record) }}
-            resource_url_template: vouchertypelist.nv
-            $parameters:
-              resource_url_template: vouchertypelist.nv
-        resource_url_template: vouchertypelist.nv
-        $parameters:
-          resource_url_template: vouchertypelist.nv
-      - type: DpathFlattenFields
-        field_path:
-          - __normalized
-        replace_record: true
-        resource_url_template: vouchertypelist.nv
-        $parameters:
-          resource_url_template: vouchertypelist.nv
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - company_id
-            value: "{{ config['company_id'] | trim }}"
-            resource_url_template: vouchertypelist.nv
-            $parameters:
-              resource_url_template: vouchertypelist.nv
-        resource_url_template: vouchertypelist.nv
-        $parameters:
-          resource_url_template: vouchertypelist.nv
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - ForeignName
-            value: >-
-              {%- set names = record.get('ForeignName') -%}
-
-              {{ [] if names is none else ([names] if names is mapping or names
-              is string else names) }}
-            resource_url_template: vouchertypelist.nv
-            $parameters:
-              resource_url_template: vouchertypelist.nv
-        condition: "{{ path[0] in record }}"
-        resource_url_template: vouchertypelist.nv
-        $parameters:
-          resource_url_template: vouchertypelist.nv
-    resource_url_template: vouchertypelist.nv
-    $parameters:
-      resource_url_template: vouchertypelist.nv
+  - $ref: "#/definitions/streams/account_balances"
+  - $ref: "#/definitions/streams/accounting_ledger"
+  - $ref: "#/definitions/streams/accounting_locks"
+  - $ref: "#/definitions/streams/accounting_periods"
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/bank_accounts"
+  - $ref: "#/definitions/streams/default_accounts"
+  - $ref: "#/definitions/streams/default_voucher_types"
+  - $ref: "#/definitions/streams/dimensions"
+  - $ref: "#/definitions/streams/voucher_types"
 
 spec:
   type: Spec
   connection_specification:
-    type: object
     title: Netvisor
+    type: object
     required:
       - environment
       - customer_id
@@ -2669,79 +682,81 @@ spec:
       - company_id
       - start_date
     properties:
-      language:
-        type: string
-        description: >-
-          Language for Netvisor's response messages, mainly errors. Choose FI
-          (Finnish), SE (Swedish), or EN (English).
-        enum:
-          - FI
-          - SE
-          - EN
-        order: 8
-        title: Response language
-        default: EN
-      company_id:
-        type: string
-        description: Business ID of the Netvisor company to read.
-        order: 5
-        title: Company business ID
-      partner_id:
-        type: string
-        description: >-
-          Partner ID for the same test or production environment as the customer
-          API identifiers.
-        order: 3
-        title: Partner ID
-      start_date:
-        type: string
-        description: >-
-          Start date for ledger changes and daily account balances. Ledger
-          history uses entry modification dates; balances use accounting dates
-          and are refreshed through today (UTC) on every sync. Choose a date
-          before the earliest history you need. Reference data is always
-          retrieved in full.
-        order: 6
-        title: Sync history start date
-        format: date
-      customer_id:
-        type: string
-        description: Customer API identifier with read access.
-        order: 1
-        title: Customer API ID
       environment:
         type: string
-        description: >-
-          Netvisor environment to connect to. Use customer and partner
-          credentials issued for the selected environment.
+        order: 0
+        title: Environment
         enum:
           - test
           - production
-        order: 0
-        title: Environment
-      partner_key:
+        description: Netvisor environment to connect to. Use customer and partner credentials issued for the selected environment.
+      customer_id:
         type: string
-        order: 4
-        title: Partner key
-        airbyte_secret: true
-      window_days:
-        type: integer
-        description: >-
-          Number of days of ledger changes or daily account balances to retrieve
-          per request. Smaller values reduce response sizes; larger values
-          reduce the number of requests.
-        order: 7
-        title: Days per request
-        default: 30
-        maximum: 31
-        minimum: 1
+        order: 1
+        title: Customer API ID
+        description: Customer API identifier with read access.
       customer_key:
         type: string
         order: 2
         title: Customer API key
+        description: Customer API key created in Netvisor together with the customer API ID.
         airbyte_secret: true
+      partner_id:
+        type: string
+        order: 3
+        title: Partner ID
+        description: Partner ID for the same test or production environment as the customer API identifiers.
+      partner_key:
+        type: string
+        order: 4
+        title: Partner key
+        description: Partner key issued by Netvisor together with the partner ID for the selected environment.
+        airbyte_secret: true
+      company_id:
+        type: string
+        order: 5
+        title: Company business ID
+        description: Business ID of the Netvisor company to read.
+      start_date:
+        type: string
+        order: 6
+        title: Sync history start date
+        format: date
+        description:
+          Start date for ledger changes and daily account balances. Ledger history uses entry modification dates;
+          balances use accounting dates and are refreshed through today (UTC) on every sync.
+          Choose a date before the earliest history you need. Reference data is always retrieved in full.
+      window_days:
+        type: integer
+        order: 7
+        title: Days per request
+        default: 30
+        minimum: 1
+        maximum: 31
+        description:
+          Number of days of ledger changes or daily account balances to retrieve per request. Smaller values reduce response sizes;
+          larger values reduce the number of requests.
+      language:
+        type: string
+        order: 8
+        title: Response language
+        enum:
+          - FI
+          - SE
+          - EN
+        default: EN
+        description:
+          Language for Netvisor's response messages, mainly errors. Choose FI (Finnish), SE (Swedish),
+          or EN (English).
   config_normalization_rules:
     type: ConfigNormalizationRules
+    transformations:
+      - type: ConfigAddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - _netvisor_valid_date_range
+            value: "{{ 'start_date' not in config or config['start_date'] <= now_utc().strftime('%Y-%m-%d') }}"
     validations:
       - type: DpathValidator
         field_path:
@@ -2750,8 +765,8 @@ spec:
           type: ValidateAdheresToSchema
           base_schema:
             type: boolean
-            description: The sync history start date must be today or earlier.
             const: true
+            description: The sync history start date must be today or earlier.
       - type: DpathValidator
         field_path:
           - window_days
@@ -2759,39 +774,708 @@ spec:
           type: ValidateAdheresToSchema
           base_schema:
             type: integer
-            maximum: 31
             minimum: 1
-    transformations:
-      - type: ConfigAddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - _netvisor_valid_date_range
-            value: "{{ config['start_date'] <= now_utc().strftime('%Y-%m-%d') }}"
-
-metadata:
-  testedStreams:
-    account_balances:
-      streamHash: fec982c04c42d56289b4d00bafa0b04a0dcda98b
-    accounting_ledger:
-      streamHash: e623b0cf4f4312f03926b6f4ab91fb0c88390ad8
-    accounting_locks:
-      streamHash: 2d855faf5ea03a16be58abfe3f55231875c675c3
-    accounting_periods:
-      streamHash: 9ee15b47db200ad395c24924eb8a7910ce81d11c
-    accounts:
-      streamHash: dc3ff1149e9a52505af68fba1c3930a55110e06d
-    bank_accounts:
-      streamHash: 7d2e3fd74c03215f5cbf7ec6dd66c1f143ccf5f5
-    default_accounts:
-      streamHash: ecc280923aa8d9d5e3d9e0610932b6a0bdfc4738
-    default_voucher_types:
-      streamHash: 758635cafeacccf772e36f6494a226c56a8d7be3
-    dimensions:
-      streamHash: 1fde3bed0e865c2c8f70d2f1785d078a2cfccd82
-    voucher_types:
-      streamHash: 2f206d41e29b6fab09db06c68dd96ed830d7b8bf
+            maximum: 31
 
 concurrency_level:
   type: ConcurrencyLevel
+  # Netvisor requires sequential calls; overlapping requests to the same company can cause errors.
   default_concurrency: 1
+
+schemas:
+  account_balances:
+    type: object
+    description:
+      Daily account debit, credit and balance totals from the sync history start date through today (UTC), refreshed on every sync.
+      Interpret totals using IsCumulative in the accounts stream. Monetary values retain Netvisor's exact decimal representation.
+    properties:
+      company_id:
+        type: string
+      Netvisorkey:
+        type: string
+        description: References NetvisorKey in the accounts stream.
+      Number:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      ForeignName:
+        type: array
+        items:
+          type:
+            - object
+            - string
+          properties:
+            value:
+              type:
+                - string
+                - "null"
+          additionalProperties: true
+      Date:
+        type: string
+        format: date
+      Debet:
+        type: string
+      Kredit:
+        type: string
+      Balance:
+        type: string
+    additionalProperties: true
+    required:
+      - company_id
+      - Netvisorkey
+      - Date
+      - Debet
+      - Kredit
+      - Balance
+
+  accounting_ledger:
+    type: object
+    properties:
+      company_id:
+        type: string
+      NetvisorKey:
+        type: string
+      Status:
+        type:
+          - string
+          - "null"
+      NetvisorGuid:
+        type:
+          - string
+          - "null"
+      VoucherGenerator:
+        type:
+          - string
+          - "null"
+        description: Person or system that created the voucher, as reported by Netvisor.
+      VoucherNumber:
+        type:
+          - string
+          - "null"
+      VoucherDescription:
+        type:
+          - string
+          - "null"
+      VoucherNetvisorURI:
+        type:
+          - string
+          - "null"
+      VoucherDate:
+        type:
+          - string
+          - "null"
+        format: date
+      VoucherClass:
+        type:
+          - object
+          - "null"
+        properties:
+          value:
+            type:
+              - string
+              - "null"
+          netvisorkey:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+      LinkedSourceNetvisorKey:
+        type:
+          - object
+          - "null"
+        properties:
+          value:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+      VoucherLine:
+        type: array
+        items:
+          type: object
+          properties:
+            NetvisorKey:
+              type:
+                - string
+                - "null"
+            Status:
+              type:
+                - string
+                - "null"
+            AccountNumber:
+              type:
+                - string
+                - "null"
+            LineSum:
+              type:
+                - string
+                - "null"
+              description: Exact posting amount as provided by Netvisor. Kept as text to preserve monetary precision.
+            Description:
+              type:
+                - string
+                - "null"
+            VatPercent:
+              type:
+                - number
+                - "null"
+            VatCode:
+              type:
+                - string
+                - "null"
+            TransactionFollowUpStatus:
+              type:
+                - string
+                - "null"
+            AccountDimension:
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  type:
+                    - string
+                    - "null"
+                type:
+                  type:
+                    - string
+                    - "null"
+              additionalProperties: true
+            CorporationEventTarget:
+              type:
+                - object
+                - "null"
+              properties:
+                TargetCompany:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - string
+                        - "null"
+                    organisationidentifier:
+                      type:
+                        - string
+                        - "null"
+                  additionalProperties: true
+                EventStatus:
+                  type:
+                    - string
+                    - "null"
+              additionalProperties: true
+            Dimension:
+              type: array
+              items:
+                type: object
+                properties:
+                  DimensionName:
+                    type:
+                      - string
+                      - "null"
+                  DimensionItem:
+                    type:
+                      - string
+                      - "null"
+                  DimensionItemName:
+                    type:
+                      - string
+                      - "null"
+                  DimensionItemCode:
+                    type:
+                      - string
+                      - "null"
+                additionalProperties: true
+            TransactionAllocations:
+              type:
+                - object
+                - "null"
+              properties:
+                TransactionAllocation:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      VoucherLineNetvisorKey:
+                        type:
+                          - string
+                          - "null"
+                      VoucherNetvisorKey:
+                        type:
+                          - string
+                          - "null"
+                    additionalProperties: true
+              additionalProperties: true
+          additionalProperties: true
+      _netvisor_sync_window_end:
+        type: string
+        format: date
+        description: End date of the date range processed during the sync. Used to track sync progress.
+    additionalProperties: true
+    required:
+      - company_id
+      - NetvisorKey
+      - VoucherLine
+
+  accounting_locks:
+    type: object
+    description: Company accounting, VAT and purchase lock dates.
+    properties:
+      company_id:
+        type: string
+      AccountingPeriodLockDate:
+        type:
+          - string
+          - "null"
+        format: date
+      VatPeriodLockDate:
+        type:
+          - string
+          - "null"
+        format: date
+      PurchaseLockDate:
+        type:
+          - string
+          - "null"
+        format: date
+    additionalProperties: true
+    required:
+      - company_id
+
+  accounting_periods:
+    type: object
+    description: Company accounting periods with their names and start and end dates.
+    properties:
+      company_id:
+        type: string
+      NetvisorKey:
+        type: string
+      Name:
+        type:
+          - string
+          - "null"
+      BeginDate:
+        type: string
+        format: date
+      EndDate:
+        type: string
+        format: date
+    additionalProperties: true
+    required:
+      - company_id
+      - NetvisorKey
+      - BeginDate
+      - EndDate
+
+  accounts:
+    type: object
+    properties:
+      company_id:
+        type: string
+      NetvisorKey:
+        type: string
+      Number:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      AccountType:
+        type:
+          - string
+          - "null"
+      FatherNetvisorKey:
+        type:
+          - string
+          - "null"
+      IsActive:
+        type: boolean
+      IsCumulative:
+        type: boolean
+      IsNaturalNegative:
+        type: boolean
+      Sort:
+        type:
+          - integer
+          - "null"
+      EndSort:
+        type:
+          - integer
+          - "null"
+      ForeignName:
+        type: array
+        items:
+          type: object
+          properties:
+            value:
+              type:
+                - string
+                - "null"
+            ISO-3166:
+              type:
+                - string
+                - "null"
+          additionalProperties: true
+    additionalProperties: true
+    required:
+      - company_id
+      - NetvisorKey
+      - IsActive
+      - IsCumulative
+      - IsNaturalNegative
+
+  bank_accounts:
+    type: object
+    description: Company bank accounts and their linked bookkeeping accounts.
+    properties:
+      company_id:
+        type: string
+      Name:
+        type:
+          - string
+          - "null"
+      IBAN:
+        type: string
+      BIC:
+        type:
+          - string
+          - "null"
+      CurrencyCode:
+        type:
+          - object
+          - "null"
+        properties:
+          value:
+            type:
+              - string
+              - "null"
+          Type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+      BookkeepingAccount:
+        type:
+          - object
+          - "null"
+        properties:
+          NetvisorKey:
+            type:
+              - string
+              - "null"
+          AccountNumber:
+            type:
+              - string
+              - "null"
+          AccountName:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    additionalProperties: true
+    required:
+      - company_id
+      - IBAN
+
+  default_accounts:
+    type: object
+    description: Company default posting accounts. Mapping values refer to Number in the accounts stream.
+    properties:
+      company_id:
+        type: string
+      TradePayables:
+        type:
+          - string
+          - "null"
+      PurchaseVATReceivable:
+        type:
+          - string
+          - "null"
+      RoundingOffDifference:
+        type:
+          - string
+          - "null"
+      VATpayable:
+        type:
+          - string
+          - "null"
+      TaxAccount:
+        type:
+          - string
+          - "null"
+      AdvancePayments:
+        type:
+          - string
+          - "null"
+      SalesReceivables:
+        type:
+          - string
+          - "null"
+      SalesVATDebt:
+        type:
+          - string
+          - "null"
+      Inventory:
+        type:
+          - string
+          - "null"
+      SalesDiscount:
+        type:
+          - string
+          - "null"
+      SalesExchangeRateDifferences:
+        type:
+          - string
+          - "null"
+      Collection:
+        type:
+          - string
+          - "null"
+      PurchasesDiscounts:
+        type:
+          - string
+          - "null"
+      PurchasesExchangeRateDifferences:
+        type:
+          - string
+          - "null"
+      PurchaseInvoiceAccrual:
+        type:
+          - string
+          - "null"
+      SalesInvoiceAccrual:
+        type:
+          - string
+          - "null"
+      PurchaseDomesticDefault:
+        type:
+          - string
+          - "null"
+      PurchaseEUDefault:
+        type:
+          - string
+          - "null"
+      PurchaseOutsideEUDefault:
+        type:
+          - string
+          - "null"
+      SalesDomesticDefault:
+        type:
+          - string
+          - "null"
+      SalesEUDefault:
+        type:
+          - string
+          - "null"
+      SalesOutsideEUDefault:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+    required:
+      - company_id
+
+  default_voucher_types:
+    type: object
+    description: Default voucher types for each accounting role. Nested keys refer to NetvisorKey in the voucher_types stream.
+    properties:
+      company_id:
+        type: string
+      SalesInvoices:
+        type:
+          - object
+          - "null"
+        properties:
+          NetvisorKey:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+      SalesInvoicePayments:
+        type:
+          - object
+          - "null"
+        properties:
+          NetvisorKey:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+      PurchaseInvoices:
+        type:
+          - object
+          - "null"
+        properties:
+          NetvisorKey:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+      PurchaseInvoicePayments:
+        type:
+          - object
+          - "null"
+        properties:
+          NetvisorKey:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+      OtherSystemGeneratedVouchers:
+        type:
+          - object
+          - "null"
+        properties:
+          NetvisorKey:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+      BankStatementViewVouchers:
+        type:
+          - object
+          - "null"
+        properties:
+          NetvisorKey:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+      Accruals:
+        type:
+          - object
+          - "null"
+        properties:
+          NetvisorKey:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    additionalProperties: true
+    required:
+      - company_id
+
+  dimensions:
+    type: object
+    description: Company cost object headers and their nested items, including hidden items and hierarchy.
+    properties:
+      company_id:
+        type: string
+      Netvisorkey:
+        type: string
+      Name:
+        type: string
+      IsHidden:
+        type: boolean
+      LinkType:
+        type: integer
+      ActivityPeriodStart:
+        type:
+          - string
+          - "null"
+        format: date
+      ActivityPeriodEnd:
+        type:
+          - string
+          - "null"
+        format: date
+      DimensionDetails:
+        type: object
+        properties:
+          DimensionDetail:
+            type: array
+            items:
+              type: object
+              properties:
+                Netvisorkey:
+                  type: string
+                Name:
+                  type: string
+                Code:
+                  type:
+                    - string
+                    - "null"
+                Label:
+                  type:
+                    - string
+                    - "null"
+                IsHidden:
+                  type: boolean
+                Level:
+                  type: integer
+                Sort:
+                  type: integer
+                EndSort:
+                  type: integer
+                FatherID:
+                  type: string
+              additionalProperties: true
+              required:
+                - Netvisorkey
+                - Name
+                - IsHidden
+                - Level
+                - Sort
+                - EndSort
+                - FatherID
+        additionalProperties: true
+        required:
+          - DimensionDetail
+    additionalProperties: true
+    required:
+      - company_id
+      - Netvisorkey
+      - Name
+      - IsHidden
+      - LinkType
+      - DimensionDetails
+
+  voucher_types:
+    type: object
+    description: Voucher types used to classify accounting entries. NetvisorKey identifies VoucherClass in the accounting ledger.
+    properties:
+      company_id:
+        type: string
+      NetvisorKey:
+        type: string
+      Abbreviation:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      ForeignName:
+        type: array
+        items:
+          type: object
+          properties:
+            value:
+              type:
+                - string
+                - "null"
+            ISO-639-1:
+              type:
+                - string
+                - "null"
+          additionalProperties: true
+    additionalProperties: true
+    required:
+      - company_id
+      - NetvisorKey
