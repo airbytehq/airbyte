@@ -77,7 +77,7 @@ class PostgresSourceDebeziumOperations(
         const val LSN_COMMIT = "lsn_commit"
 
         internal fun deserializeStateUnvalidated(
-            opaqueStateValue: OpaqueStateValue
+            opaqueStateValue: OpaqueStateValue,
         ): DebeziumOffset {
             // {
             //     "state": {
@@ -188,7 +188,7 @@ class PostgresSourceDebeziumOperations(
             } catch (e: Exception) {
                 log.error(e) { "Error deserializing incumbent state value." }
                 return AbortDebeziumWarmStartState(
-                    "Error deserializing incumbent state value: ${e.message}"
+                    "Error deserializing incumbent state value: ${e.message}",
                 )
             }
         return ValidDebeziumWarmStartState(debeziumOffset, null)
@@ -219,7 +219,7 @@ class PostgresSourceDebeziumOperations(
     override fun deserializeRecord(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
-        stream: Stream
+        stream: Stream,
     ): DeserializedRecord {
         val before: JsonNode = value.before
         val after: JsonNode = value.after
@@ -375,7 +375,7 @@ class PostgresSourceDebeziumOperations(
 
     override fun serializeState(
         offset: DebeziumOffset,
-        schemaHistory: DebeziumSchemaHistory?
+        schemaHistory: DebeziumSchemaHistory?,
     ): OpaqueStateValue {
         // We want:
         // {
@@ -399,7 +399,7 @@ class PostgresSourceDebeziumOperations(
         val sequence =
             Jsons.readValue(
                 source["sequence"].toString(),
-                object : TypeReference<List<String>>() {}
+                object : TypeReference<List<String>>() {},
             )
         val lsnCommit = sequence?.get(0)?.toLong()
         return PostgresSourceCdcPosition(

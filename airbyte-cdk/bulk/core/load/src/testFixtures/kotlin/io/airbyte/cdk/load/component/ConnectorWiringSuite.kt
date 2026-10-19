@@ -122,7 +122,7 @@ interface ConnectorWiringSuite {
             // Verify table exists
             assertTrue(
                 client.tableExists(tableName),
-                "Table ${tableName} should exist after StreamLoader.start()"
+                "Table ${tableName} should exist after StreamLoader.start()",
             )
         } finally {
             // Cleanup
@@ -184,12 +184,12 @@ interface ConnectorWiringSuite {
     fun createTestStream(
         namespace: String = "test",
         name: String = "test_stream_${UUID.randomUUID()}",
-        importType: io.airbyte.cdk.load.command.ImportType = Append
+        importType: io.airbyte.cdk.load.command.ImportType = Append,
     ): DestinationStream {
         val schema =
             linkedMapOf(
                 "id" to FieldType(IntegerType, nullable = false),
-                "name" to FieldType(StringType, nullable = true)
+                "name" to FieldType(StringType, nullable = true),
             )
         return DestinationStream(
             unmappedNamespace = namespace,
@@ -245,11 +245,11 @@ interface ConnectorWiringSuite {
                     "_airbyte_raw_id" to StringValue(UUID.randomUUID().toString()),
                     "_airbyte_extracted_at" to TimestampWithTimezoneValue("2024-01-01T00:00:00Z"),
                     "_airbyte_meta" to ObjectValue(linkedMapOf()),
-                    "_airbyte_generation_id" to IntegerValue(0)
+                    "_airbyte_generation_id" to IntegerValue(0),
                 ),
             partitionKey = PartitionKey(""), // Empty partition for non-partitioned streams
             sizeBytes = 100,
-            emittedAtMs = System.currentTimeMillis()
+            emittedAtMs = System.currentTimeMillis(),
         )
     }
 }

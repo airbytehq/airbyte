@@ -44,7 +44,7 @@ class MsSqlServerExceptionClassifierTest {
         val exception =
             SQLException(
                 tcpIpConnectionFailed("Connection refused"),
-                ConnectException("Connection refused")
+                ConnectException("Connection refused"),
             )
         assertUnreachableHost(classifier.classify(exception))
     }
@@ -82,7 +82,7 @@ class MsSqlServerExceptionClassifierTest {
         val driverException =
             SQLException(
                 tcpIpConnectionFailed("Connection refused"),
-                ConnectException("Connection refused")
+                ConnectException("Connection refused"),
             )
         val connectException =
             RuntimeException(
@@ -134,7 +134,7 @@ class MsSqlServerExceptionClassifierTest {
         Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.status)
         Assertions.assertTrue(
             status.message.startsWith(
-                ExceptionHandler.COMMON_EXCEPTION_MESSAGE_TEMPLATE.substringBefore("%s")
+                ExceptionHandler.COMMON_EXCEPTION_MESSAGE_TEMPLATE.substringBefore("%s"),
             ),
             "Unexpected connection status message: ${status.message}",
         )
@@ -169,7 +169,7 @@ class MsSqlServerExceptionClassifierTest {
         val exception =
             SQLException(
                 tcpIpConnectionFailed("Connection refused"),
-                ConnectException("Connection refused")
+                ConnectException("Connection refused"),
             )
         val trace: AirbyteErrorTraceMessage = handler.handle(exception)
         Assertions.assertEquals(
@@ -178,7 +178,7 @@ class MsSqlServerExceptionClassifierTest {
         )
         Assertions.assertTrue(
             trace.message.contains(
-                "Airbyte could not reach SQL Server at the configured host and port"
+                "Airbyte could not reach SQL Server at the configured host and port",
             ),
             "Unexpected message: ${trace.message}",
         )
@@ -212,7 +212,7 @@ class MsSqlServerExceptionClassifierTest {
         val displayMessage = (result as TransientError).displayMessage
         Assertions.assertTrue(
             displayMessage.contains(
-                "Airbyte could not reach SQL Server at the configured host and port"
+                "Airbyte could not reach SQL Server at the configured host and port",
             ),
             "Unexpected message: $displayMessage",
         )
@@ -222,13 +222,13 @@ class MsSqlServerExceptionClassifierTest {
         )
         Assertions.assertTrue(
             displayMessage.contains(
-                "your firewall or security group allows Airbyte's IP addresses"
+                "your firewall or security group allows Airbyte's IP addresses",
             ),
             "Expected firewall / Airbyte IP guidance, got: $displayMessage",
         )
         Assertions.assertTrue(
             displayMessage.contains(
-                "https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist"
+                "https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist",
             ),
             "Expected the Airbyte Cloud IP allowlist link, got: $displayMessage",
         )

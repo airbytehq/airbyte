@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## October 19, 2026
+
+Platform
+
+- If turning on **Agent access** for a source or destination fails, the status icon next to the toggle now shows a readable error message. Previously, it could show an internal message code instead.
+
 ## October 16, 2026
 
 Platform
