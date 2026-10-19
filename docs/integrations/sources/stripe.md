@@ -19,12 +19,12 @@ To authenticate the Stripe connector, you need to use a Stripe API key. Although
 
 ### Step 1: Set up Stripe
 
-1. Log in to your [Stripe account](https://dashboard.stripe.com/login).
-2. In the top navigation bar, click **Developers**.
-3. In the top-left corner, click **API keys**.
-4. Click **+ Create restricted key**.
-5. Choose a **Key name**, and select **Read** for all available permissions.
-6. Click **Create key**. You may be prompted to enter a confirmation code sent to your email address.
+1. Log in to your [Stripe account](https://dashboard.stripe.com/login) and open the [API keys](https://dashboard.stripe.com/apikeys) page.
+2. Click **+ Create restricted key**.
+3. Choose a **Key name**, and select **Read** for all available permissions.
+4. Click **Create key**. You may be prompted to enter a confirmation code sent to your email address.
+
+The connector doesn't fail when the key lacks permission for a stream. Stripe returns a `403` error, and the connector logs the error message, skips the request, and continues the sync. A stream whose resources the key can't read finishes with no records. If a stream you selected is unexpectedly empty, check the key's permissions for that resource.
 
 For more information on Stripe API Keys, see the [Stripe documentation](https://stripe.com/docs/keys).
 
@@ -49,7 +49,7 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 <!-- markdownlint-disable MD029 -->
 5. For **Account ID**, enter your Stripe Account ID. This ID begins with `acct_`, and can be found in the top-right corner of your Stripe [account settings page](https://dashboard.stripe.com/settings/account).
 6. For **Secret Key**, enter the restricted key you created for the connection.
-7. For **Replication Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
+7. (Optional) For **Replication Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. The default is `2017-01-25T00:00:00Z`.
 8. (Optional) For **Lookback Window**, you may specify a number of days from the present day to reread data. This allows the connector to retrieve data that might have been updated after its initial creation, and is useful for handling any post-transaction adjustments. This applies only to streams that do not support event-based incremental syncs, please see [the list below](#troubleshooting).
 
    - Leaving the **Lookback Window** at its default value of 0 means Airbyte will not re-export data after it has been synced.
@@ -69,7 +69,7 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
 11. (Optional) For **Number of Concurrent Threads**, enter the number of worker threads to use for the sync. The default is 10. You can set this to any value between 2 and 100. Higher values increase throughput but also increase API usage. The effective upper bound depends on your Stripe account's rate limits.
 
-12. (Optional) For **Max Number of API Calls per Second**, enter the maximum number of API requests per second the connector is allowed to make. If not specified, the connector defaults to 25 calls per second for test and sandbox API keys and 100 calls per second for live API keys. This value cannot exceed Stripe's actual [rate limits](https://stripe.com/docs/rate-limits).
+12. (Optional) For **Max Number of API Calls per Second**, enter the maximum number of API requests per second the connector is allowed to make. If not specified, the connector defaults to 25 calls per second when the key starts with `sk_test_`, and 100 calls per second for all other keys. Restricted sandbox keys start with `rk_test_`, so they get the 100 calls per second default even though Stripe limits sandbox accounts to 25 requests per second. If you use a restricted sandbox key, set this to 25 or lower. This value can't exceed Stripe's actual [rate limits](https://stripe.com/docs/rate-limits).
 
 13. Click **Set up source** and wait for the tests to complete.
 
@@ -168,7 +168,13 @@ Expand to see details about Stripe connector limitations and troubleshooting.
 
 #### Rate limiting
 
-The Stripe connector should not run into Stripe API limitations under normal usage. See Stripe [Rate limits](https://stripe.com/docs/rate-limits) documentation. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+Stripe limits each account to 100 requests per second in live mode and 25 requests per second in sandbox mode, and limits the Files API to 20 read requests per second. For details, see Stripe's [Rate limits](https://stripe.com/docs/rate-limits) documentation.
+
+The connector throttles its own requests to stay under these limits. Requests to the `Files` and `File Links` streams are limited to 20 calls per second. All other requests are limited by the **Max Number of API Calls per Second** setting. If Stripe still returns a `429 Too Many Requests` response, the connector retries the request with backoff.
+
+#### Network timeouts
+
+The connector fails a request if it can't open a connection to Stripe within 30 seconds or if Stripe sends no data for 80 seconds, then retries the request. It also uses TCP keepalive to detect connections that were dropped silently, for example by a NAT gateway. A sync that loses its connection fails and retries instead of hanging. If retries are exhausted, the sync fails with an error.
 
 :::warning
 **Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only. Use an Append sync mode to ensure historical data is retained.
@@ -319,7 +325,7 @@ The Stripe API also provides a way to implement incremental deletes for a limite
 
 Each record is marked with `is_deleted` flag when the appropriate event happens upstream.
 
-- Check out common troubleshooting issues for the Stripe source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+For common troubleshooting issues with the Stripe source connector, see [GitHub Discussions](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
@@ -334,7 +340,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 7.0.1 | 2026-10-13 | [88397](https://github.com/airbytehq/airbyte/pull/88397) | Opt in to TCP keepalive and request timeouts (30 s connect, 80 s read) so dropped connections fail and retry instead of hanging |
+| 7.0.1 | 2026-10-15 | [88397](https://github.com/airbytehq/airbyte/pull/88397) | Opt in to TCP keepalive and request timeouts (30 s connect, 80 s read) so dropped connections fail and retry instead of hanging |
 | 7.0.0 | 2026-10-13 | [87765](https://github.com/airbytehq/airbyte/pull/87765) | Use Stripe's current `il_` line item IDs for `invoice_line_items` on incremental syncs. See the [migration guide](https://docs.airbyte.com/integrations/sources/stripe-migrations#upgrading-to-700). |
 | 6.0.23 | 2026-10-13 | [88809](https://github.com/airbytehq/airbyte/pull/88809) | Update dependencies |
 | 6.0.22 | 2026-10-06 | [88070](https://github.com/airbytehq/airbyte/pull/88070) | Update dependencies |
