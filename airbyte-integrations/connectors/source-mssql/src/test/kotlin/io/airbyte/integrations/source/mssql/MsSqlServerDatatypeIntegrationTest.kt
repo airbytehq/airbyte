@@ -690,8 +690,7 @@ data class MsSqlServerDatatypeTestCase(
             setupDdl +
                 listOf(
                     "DROP TABLE IF EXISTS $id",
-                    "CREATE TABLE $id " +
-                        "(pk INT IDENTITY(1,1) PRIMARY KEY, $fieldName $sqlType)",
+                    "CREATE TABLE $id " + "(pk INT IDENTITY(1,1) PRIMARY KEY, $fieldName $sqlType)",
                 )
 
     val dml: List<String>

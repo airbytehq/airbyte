@@ -48,22 +48,26 @@ class MsSqlServerDebeziumConverterTest {
             verify(registration).register(schemaCaptor.capture(), converterCaptor.capture())
             assertEquals(Schema.Type.STRING, schemaCaptor.value.type())
 
-            val baseType = when (jdbcType) {
-                Types.TIMESTAMP -> "DATETIME"
-                Types.DATE -> "DATE"
-                Types.TIME -> "TIME"
-                else -> error("Unexpected JDBC type: $jdbcType")
-            }
+            val baseType =
+                when (jdbcType) {
+                    Types.TIMESTAMP -> "DATETIME"
+                    Types.DATE -> "DATE"
+                    Types.TIME -> "TIME"
+                    else -> error("Unexpected JDBC type: $jdbcType")
+                }
             val baseRegistration = registration()
             converter.converterFor(column(baseType, jdbcType), baseRegistration)
-            val baseConverterCaptor =
-                ArgumentCaptor.forClass(CustomConverter.Converter::class.java)
-            verify(baseRegistration).register(
-                org.mockito.ArgumentMatchers.any(SchemaBuilder::class.java),
-                baseConverterCaptor.capture(),
-            )
+            val baseConverterCaptor = ArgumentCaptor.forClass(CustomConverter.Converter::class.java)
+            verify(baseRegistration)
+                .register(
+                    org.mockito.ArgumentMatchers.any(SchemaBuilder::class.java),
+                    baseConverterCaptor.capture(),
+                )
 
-            assertEquals(baseConverterCaptor.value.convert(value), converterCaptor.value.convert(value))
+            assertEquals(
+                baseConverterCaptor.value.convert(value),
+                converterCaptor.value.convert(value),
+            )
         }
     }
 
@@ -83,10 +87,11 @@ class MsSqlServerDebeziumConverterTest {
         converter.converterFor(column("DATETIME", Types.TIMESTAMP), registration)
 
         val converterCaptor = ArgumentCaptor.forClass(CustomConverter.Converter::class.java)
-        verify(registration).register(
-            org.mockito.ArgumentMatchers.any(SchemaBuilder::class.java),
-            converterCaptor.capture(),
-        )
+        verify(registration)
+            .register(
+                org.mockito.ArgumentMatchers.any(SchemaBuilder::class.java),
+                converterCaptor.capture(),
+            )
         assertNotNull(converterCaptor.value)
         assertEquals(
             "2026-10-17T00:00:00.000000",
