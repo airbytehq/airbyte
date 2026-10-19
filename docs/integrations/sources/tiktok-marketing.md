@@ -161,7 +161,7 @@ The `ads_reports_daily`, `ad_groups_reports_daily`, and `campaigns_reports_daily
 
 ## Performance considerations
 
-The connector is restricted by the TikTok Marketing API [rate limits](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. TikTok enforces rate limits per access token and per advertiser. The connector backs off and retries when TikTok throttles a request (errors 40016, 40100 and 40133, "requests made too frequently"); if these keep failing a sync, check that only one Airbyte connection is running with the same TikTok credentials at a time. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The connector is restricted by the TikTok Marketing API [rate limits](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. TikTok enforces rate limits per developer application (errors 40016 and 40100) and per advertiser (error 40133). The connector backs off and retries when TikTok throttles a request. If throttling keeps failing a sync, check that only one Airbyte connection is running with the same TikTok credentials at a time. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 TikTok returns most errors with an HTTP 200 status and an error code in the response body. The connector automatically retries the following transient TikTok API errors, retrying a failed request up to 9 times with a 60-second wait before each retry:
 
