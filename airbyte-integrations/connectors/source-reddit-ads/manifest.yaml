@@ -244,21 +244,22 @@ definitions:
         - "null"
     date:
       type: string
+      format: date
     ecpm:
       type:
         - number
         - "null"
     reach:
       type:
-        - number
+        - integer
         - "null"
     spend:
       type:
-        - number
+        - integer
         - "null"
     clicks:
       type:
-        - number
+        - integer
         - "null"
     post_id:
       type:
@@ -270,15 +271,15 @@ definitions:
         - "null"
     impressions:
       type:
-        - number
+        - integer
         - "null"
     reddit_leads:
       type:
-        - number
+        - integer
         - "null"
     engaged_click:
       type:
-        - number
+        - integer
         - "null"
     conversion_roas:
       type:
@@ -298,19 +299,19 @@ definitions:
         - "null"
     key_conversion_views:
       type:
-        - number
+        - integer
         - "null"
     conversion_lead_views:
       type:
-        - number
+        - integer
         - "null"
     key_conversion_clicks:
       type:
-        - number
+        - integer
         - "null"
     conversion_lead_clicks:
       type:
-        - number
+        - integer
         - "null"
     conversion_search_ecpa:
       type:
@@ -318,7 +319,7 @@ definitions:
         - "null"
     conversion_search_views:
       type:
-        - number
+        - integer
         - "null"
     conversion_sign_up_ecpa:
       type:
@@ -330,11 +331,11 @@ definitions:
         - "null"
     conversion_search_clicks:
       type:
-        - number
+        - integer
         - "null"
     conversion_sign_up_views:
       type:
-        - number
+        - integer
         - "null"
     conversion_lead_avg_value:
       type:
@@ -342,11 +343,11 @@ definitions:
         - "null"
     conversion_purchase_views:
       type:
-        - number
+        - integer
         - "null"
     conversion_sign_up_clicks:
       type:
-        - number
+        - integer
         - "null"
     conversion_page_visit_ecpa:
       type:
@@ -354,23 +355,23 @@ definitions:
         - "null"
     conversion_purchase_clicks:
       type:
-        - number
+        - integer
         - "null"
     key_conversion_total_count:
       type:
-        - number
+        - integer
         - "null"
     video_viewable_impressions:
       type:
-        - number
+        - integer
         - "null"
     conversion_lead_total_value:
       type:
-        - number
+        - integer
         - "null"
     conversion_page_visit_views:
       type:
-        - number
+        - integer
         - "null"
     conversion_signup_avg_value:
       type:
@@ -378,7 +379,7 @@ definitions:
         - "null"
     conversion_page_visit_clicks:
       type:
-        - number
+        - integer
         - "null"
     conversion_view_content_ecpa:
       type:
@@ -390,23 +391,23 @@ definitions:
         - "null"
     conversion_signup_total_value:
       type:
-        - number
+        - integer
         - "null"
     conversion_view_content_views:
       type:
-        - number
+        - integer
         - "null"
     conversion_view_content_clicks:
       type:
-        - number
+        - integer
         - "null"
     conversion_purchase_total_items:
       type:
-        - number
+        - integer
         - "null"
     conversion_purchase_total_value:
       type:
-        - number
+        - integer
         - "null"
     conversion_purchase_total_value_all:
       type:
@@ -474,6 +475,7 @@ streams:
             type:
               - string
               - "null"
+            format: date-time
           profile_id:
             type:
               - string
@@ -488,6 +490,7 @@ streams:
               - "null"
           modified_at:
             type: string
+            format: date-time
           preview_url:
             type:
               - string
@@ -504,6 +507,7 @@ streams:
             type:
               - string
               - "null"
+            format: date-time
           effective_status:
             type:
               - string
@@ -591,18 +595,30 @@ streams:
               - "null"
           spend_cap:
             type:
-              - number
+              - integer
               - "null"
           created_at:
             type:
               - string
               - "null"
+            format: date-time
+          end_time:
+            type:
+              - string
+              - "null"
+            format: date-time
           goal_value:
             type:
               - integer
               - "null"
           modified_at:
             type: string
+            format: date-time
+          start_time:
+            type:
+              - string
+              - "null"
+            format: date-time
           ad_account_id:
             type:
               - string
@@ -704,7 +720,14 @@ streams:
           campaign_id:
             type: string
         additionalProperties: true
-    transformations: []
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{ record['date'][:10] }}"
+            value_type: string
     incremental_sync:
       $ref: "#/definitions/report_incremental_sync"
 
@@ -1069,9 +1092,6 @@ streams:
           - date
         properties:
           $ref: "#/definitions/report_schema_properties"
-          date:
-            type: string
-            format: date
           account_id:
             type:
               - string
@@ -1084,6 +1104,13 @@ streams:
             path:
               - account_id
             value: "{{ config['ad_account_id'] }}"
+            value_type: string
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{ record['date'][:10] }}"
             value_type: string
     incremental_sync:
       $ref: "#/definitions/report_incremental_sync"
@@ -1140,9 +1167,6 @@ streams:
           - date
         properties:
           $ref: "#/definitions/report_schema_properties"
-          date:
-            type: string
-            format: date
           campaign_id:
             type:
               - string
@@ -1152,6 +1176,14 @@ streams:
               - string
               - "null"
         additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{ record['date'][:10] }}"
+            value_type: string
     incremental_sync:
       $ref: "#/definitions/report_incremental_sync"
   - type: DeclarativeStream
@@ -1207,9 +1239,6 @@ streams:
           - date
         properties:
           $ref: "#/definitions/report_schema_properties"
-          date:
-            type: string
-            format: date
           campaign_id:
             type:
               - string
@@ -1223,6 +1252,14 @@ streams:
               - string
               - "null"
         additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - date
+            value: "{{ record['date'][:10] }}"
+            value_type: string
     incremental_sync:
       $ref: "#/definitions/report_incremental_sync"
 api_budget:
