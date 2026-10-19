@@ -16,7 +16,7 @@ internal class MySqlDestinationStrictEncryptTest {
         println(MySQLDestinationStrictEncrypt().spec().connectionSpecification)
         Assertions.assertEquals(
             deserialize(readResource("expected_spec.json"), ConnectorSpecification::class.java),
-            MySQLDestinationStrictEncrypt().spec()
+            MySQLDestinationStrictEncrypt().spec(),
         )
     }
 }

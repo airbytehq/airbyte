@@ -420,6 +420,9 @@ definitions:
                   extractor:
                     type: DpathExtractor
                     field_path: []
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ not config.get('companies_property_history_properties') or record.get('name') in config.get('companies_property_history_properties') }}"
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -511,6 +514,9 @@ definitions:
                   extractor:
                     type: DpathExtractor
                     field_path: []
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ not config.get('contacts_property_history_properties') or record.get('name') in config.get('contacts_property_history_properties') }}"
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -634,6 +640,9 @@ definitions:
                   extractor:
                     type: DpathExtractor
                     field_path: []
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ not config.get('deals_property_history_properties') or record.get('name') in config.get('deals_property_history_properties') }}"
             property_chunking:
               type: PropertyChunking
               property_limit_type: characters
@@ -1437,6 +1446,76 @@ definitions:
         cursor_field: updatedAt
         cursor_format: "%ms"
 
+  # ── Flows (Automation v4) ─────────────────────────────────────────
+  # Full workflow definitions from HubSpot's Flows v4 API, the successor to the legacy
+  # /automation/v3/workflows endpoint backing the `workflows` stream. `workflows` is left untouched:
+  # its records keep the legacy shape (integer `id`, epoch-ms cursor) and the two streams can be
+  # synced side by side.
+  #
+  # GET /automation/v4/flows returns summaries only (id, name, flowType, isEnabled, objectTypeId,
+  # revisionId, createdAt, updatedAt, uuid), so each record is enriched with a per-flow request to
+  # GET /automation/v4/flows/{flowId} to pick up the action graph and enrollment criteria.
+  # `transform_before_filtering: false` keeps the client-side incremental filter ahead of that
+  # enrichment, so unchanged flows cost no detail request.
+  #
+  # Gated behind `enable_experimental_streams`: HubSpot ships Automation v4 as a developer preview
+  # and documents it as "subject to change".
+  flows_stream:
+    type: DeclarativeStream
+    name: flows
+    primary_key:
+      - id
+    $parameters:
+      name: flows
+      required_scopes: automation
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /automation/v4/flows
+      record_selector:
+        type: RecordSelector
+        transform_before_filtering: false
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      decoder:
+        type: JsonDecoder
+    incremental_sync:
+      # The list endpoint accepts no date filter (only `after`/`limit`), so filtering is client-side.
+      type: DatetimeBasedCursor
+      cursor_field: updatedAt
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      is_client_side_incremental: true
+    transformations:
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.HubspotFlowDetailsTransformation
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/automation/v4/flows/{{ stream_slice['parent_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        $parameters:
+          # Requester and Selector require stream name as a param.
+          name: flows
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/flows"
+
   email_events_stream:
     $ref: "#/definitions/stream_base"
     name: email_events
@@ -1821,6 +1900,35 @@ definitions:
           $ref: "#/schemas/engagements_tasks"
       - $ref: "#/definitions/base_dynamic_schema_loader"
 
+  engagements_task_pipelines_stream:
+    $ref: "#/definitions/stream_base"
+    name: engagements_task_pipelines
+    primary_key:
+      - id
+    $parameters:
+      name: engagements_task_pipelines
+      required_scopes: crm.objects.contacts.read
+    retriever:
+      # `/crm/v3/pipelines/tasks` returns every pipeline in a single response, so the shared
+      # offset paginator would only add a meaningless `limit` parameter to the request.
+      $ref: "#/definitions/retriever_without_pagination"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /crm/v3/pipelines/tasks
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["updatedAt"]
+            value: "{{ record['createdAt'] }}"
+        condition: "{{ record.get('updatedAt') is none }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/engagements_task_pipelines"
+
   subscription_changes_stream:
     $ref: "#/definitions/stream_base"
     name: subscription_changes
@@ -2179,6 +2287,61 @@ definitions:
       from_object: ""
       to_object: ""
 
+  # Error handler shared by every request made on behalf of a custom object association stream: the association
+  # batch read as well as the parent `/crm/v3/objects/{from_object}/search` request. Both return 400 when the
+  # configured object identifier is not a fullyQualifiedName (`p_...`) or objectTypeId (`2-...`).
+  # Same as base_error_handler except for the custom-object-specific 400 and 403 messages.
+  custom_object_association_error_handler:
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes:
+          - 429
+        error_message: >-
+          HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 502
+          - 503
+        error_message: >-
+          HubSpot server error (5xx). Retrying with exponential backoff...
+      - type: HttpResponseFilter
+        action: REFRESH_TOKEN_THEN_RETRY
+        http_codes:
+          - 401
+        error_message: >-
+          Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 530
+        error_message: >-
+          The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 400
+        error_message: >-
+          Custom object identifier in 'from_object' or 'to_object' is not a valid HubSpot
+          fullyQualifiedName (for example 'p_my_custom_object') or objectTypeId (for example '2-12345').
+          You can find your custom object identifiers in HubSpot Settings or via the /crm/v3/schemas API.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 403
+        error_message: >-
+          Access denied (403). Credentials lack the read scope for the object in 'from_object' or 'to_object'
+          ('crm.objects.custom.read' for custom objects, or the standard object's read scope such as 'crm.objects.deals.read').
+
   # Custom object association stream - extends base_association_stream with error handling for invalid custom object names
   base_custom_object_association_stream:
     $ref: "#/definitions/base_association_stream"
@@ -2187,41 +2350,27 @@ definitions:
       requester:
         $ref: "#/definitions/base_association_stream/retriever/requester"
         error_handler:
-          type: DefaultErrorHandler
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: Retry-After
-            - type: ExponentialBackoffStrategy
-          response_filters:
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
-                - 429
-              error_message: >-
-                HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
-                - 502
-                - 503
-              error_message: >-
-                HubSpot server error (5xx). Retrying with exponential backoff...
-            - type: HttpResponseFilter
-              action: FAIL
-              http_codes:
-                - 400
-              error_message: >-
-                Bad request (400). The custom object name provided in the configuration is invalid.
-                Please verify that 'from_object' and 'to_object' values are correct custom object
-                identifiers (e.g., the fullyQualifiedName like 'p_my_custom_object' or the objectTypeId like '2-12345').
-                You can find your custom object identifiers in HubSpot Settings or via the /crm/v3/schemas API.
-            - type: HttpResponseFilter
-              action: FAIL
-              http_codes:
-                - 403
-              error_message: >-
-                Access denied (403). The authenticated user does not have permissions to access the custom object associations.
-                Ensure the 'crm.objects.custom.read' scope is granted for your OAuth or Private App credentials.
+          $ref: "#/definitions/custom_object_association_error_handler"
+      partition_router:
+        $ref: "#/definitions/base_association_stream/retriever/partition_router"
+        underlying_partition_router:
+          $ref: "#/definitions/base_association_stream/retriever/partition_router/underlying_partition_router"
+          parent_stream_configs:
+            - stream:
+                $ref: "#/definitions/base_crm_search_incremental_parent_stream"
+                $parameters:
+                  entity: from_object_name
+                  cursor_filter_property_field: hs_lastmodifieddate
+                name: stream_name
+                retriever:
+                  $ref: "#/definitions/base_crm_search_incremental_parent_stream/retriever"
+                  requester:
+                    $ref: "#/definitions/base_crm_search_incremental_parent_stream/retriever/requester"
+                    error_handler:
+                      $ref: "#/definitions/custom_object_association_error_handler"
+              parent_key: id
+              partition_field: id
+              incremental_dependency: true
 
   properties_stream:
     type: DeclarativeStream
@@ -2688,6 +2837,7 @@ streams:
   - "#/definitions/engagements_meetings_stream"
   - "#/definitions/engagements_notes_stream"
   - "#/definitions/engagements_tasks_stream"
+  - "#/definitions/engagements_task_pipelines_stream"
   - "#/definitions/form_submissions_stream"
   - "#/definitions/forms_stream"
   - "#/definitions/goals_stream"
@@ -2719,6 +2869,7 @@ streams:
       - "#/definitions/goals_web_analytics_stream"
       - "#/definitions/line_items_web_analytics_stream"
       - "#/definitions/products_web_analytics_stream"
+      - "#/definitions/flows_stream"
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -3023,6 +3174,42 @@ spec:
         minimum: 0
         title: Property History Lookback Window (minutes)
         type: integer
+      deals_property_history_properties:
+        type: array
+        items:
+          type: string
+        title: Deals Property History Properties
+        description: >-
+          Optional list of property internal names whose history to sync for the
+          `deals_property_history` stream. If empty or not set, history for all
+          properties is synced. See HubSpot's
+          <a href="https://knowledge.hubspot.com/properties/hubspots-default-deal-properties">default deals properties</a> for the internal names.
+        examples:
+          - ["dealstage"]
+      contacts_property_history_properties:
+        type: array
+        items:
+          type: string
+        title: Contacts Property History Properties
+        description: >-
+          Optional list of property internal names whose history to sync for the
+          `contacts_property_history` stream. If empty or not set, history for all
+          properties is synced. See HubSpot's
+          <a href="https://knowledge.hubspot.com/properties/hubspots-default-contact-properties">default contacts properties</a> for the internal names.
+        examples:
+          - ["lifecyclestage"]
+      companies_property_history_properties:
+        type: array
+        items:
+          type: string
+        title: Companies Property History Properties
+        description: >-
+          Optional list of property internal names whose history to sync for the
+          `companies_property_history` stream. If empty or not set, history for all
+          properties is synced. See HubSpot's
+          <a href="https://knowledge.hubspot.com/properties/hubspot-crm-default-company-properties">default companies properties</a> for the internal names.
+        examples:
+          - ["lifecyclestage"]
       credentials:
         title: Authentication
         description: Choose how to authenticate to HubSpot.
@@ -5474,6 +5661,124 @@ schemas:
             - "null"
             - string
 
+  engagements_task_pipelines:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      label:
+        description: The label or name of the task pipeline.
+        type:
+          - "null"
+          - string
+      displayOrder:
+        description: The order in which the task pipeline is displayed.
+        type:
+          - "null"
+          - integer
+      id:
+        description: The unique identifier of the task pipeline.
+        type:
+          - "null"
+          - string
+      archived:
+        description: Indicates if the task pipeline is archived or not.
+        type:
+          - "null"
+          - boolean
+      stages:
+        description:
+          List of stages within the task pipeline. Join `stages[].id` against
+          `engagements_tasks.properties.hs_pipeline_stage` to resolve a task's stage label and
+          its open/closed state.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            label:
+              description: The label or name of the stage.
+              type:
+                - "null"
+                - string
+            displayOrder:
+              description: The order in which the stage is displayed.
+              type:
+                - "null"
+                - integer
+            metadata:
+              description:
+                Additional metadata related to the stage. HubSpot returns these values as
+                strings rather than native booleans or enums.
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                isClosed:
+                  description:
+                    Whether a task in this stage counts as closed, returned as the string
+                    "true" or "false".
+                  type:
+                    - "null"
+                    - string
+                state:
+                  description:
+                    The open/closed state of the stage, returned as the string "OPEN" or
+                    "CLOSED". Task stages use `state`, unlike ticket stages, which use
+                    `ticketState`.
+                  type:
+                    - "null"
+                    - string
+            id:
+              description:
+                The unique identifier of the stage. Always typed as a string. HubSpot's default
+                task stages use UUIDs while stages created later in the UI get numeric IDs
+                (for example `5996839954`), and `engagements_tasks.properties.hs_pipeline_stage`
+                is itself a string, so the join key must not be narrowed to an integer.
+              type:
+                - "null"
+                - string
+            createdAt:
+              description: The date and time when the stage was created.
+              type:
+                - "null"
+                - string
+              format: date-time
+            updatedAt:
+              description: The date and time when the stage was last updated.
+              type:
+                - "null"
+                - string
+              format: date-time
+            archived:
+              description: Indicates if the stage is archived or not.
+              type:
+                - "null"
+                - boolean
+            writePermissions:
+              description: Permissions for writing/modifying the stage.
+              type:
+                - "null"
+                - string
+      createdAt:
+        description: The date and time when the task pipeline was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: The date and time when the task pipeline was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+
   form_submissions:
     $schema: http://json-schema.org/schema#
     type:
@@ -6181,6 +6486,11 @@ schemas:
             type:
               - "null"
               - string
+          isAbVariation:
+            description: Whether this email is the variation of an A/B test.
+            type:
+              - "null"
+              - boolean
       updatedById:
         type:
           - "null"
@@ -6772,6 +7082,11 @@ schemas:
               type:
                 - "null"
                 - string
+            primary:
+              description: Whether this team is the owner's primary team.
+              type:
+                - "null"
+                - boolean
 
   owners_archived:
     $schema: http://json-schema.org/schema#
@@ -6852,6 +7167,11 @@ schemas:
               type:
                 - "null"
                 - string
+            primary:
+              description: Whether this team is the owner's primary team.
+              type:
+                - "null"
+                - boolean
 
   users:
     $schema: http://json-schema.org/schema#
@@ -7207,6 +7527,189 @@ schemas:
         type:
           - "null"
           - integer
+
+  # Full workflow definitions from the Automation v4 Flows API.
+  # Top-level fields are the union of HubSpot's `ApiContactFlow` and `ApiPlatformFlow` schemas plus
+  # the `ApiFlowListing` fields returned by the list endpoint. The deeply polymorphic sub-trees
+  # (`actions`, `enrollmentCriteria`, `dataSources`, filter branches, schedules) are intentionally
+  # left as untyped objects with `additionalProperties: true`: HubSpot models them as `oneOf` over
+  # many action/criteria subtypes and the API is still a developer preview, so enumerating them here
+  # would break syncs whenever HubSpot adds a subtype.
+  flows:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: Unique identifier of the flow. Note this is a string, unlike the integer `id` of the legacy `workflows` stream.
+        type:
+          - "null"
+          - string
+      uuid:
+        description: Universally unique identifier of the flow.
+        type:
+          - "null"
+          - string
+      name:
+        description: Name assigned to the flow.
+        type:
+          - "null"
+          - string
+      description:
+        description: Description of the flow.
+        type:
+          - "null"
+          - string
+      flowType:
+        description: Type of the flow. One of ACTION_SET, WORKFLOW or UNKNOWN.
+        type:
+          - "null"
+          - string
+      type:
+        description: Discriminator of the flow definition. One of CONTACT_FLOW or PLATFORM_FLOW.
+        type:
+          - "null"
+          - string
+      isEnabled:
+        description: Whether the flow is currently active.
+        type:
+          - "null"
+          - boolean
+      objectTypeId:
+        description: ID of the CRM object type the flow operates on.
+        type:
+          - "null"
+          - string
+      revisionId:
+        description: Identifier of the current revision of the flow.
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: Timestamp when the flow was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        description: Timestamp when the flow was last updated. Used as the cursor for this stream.
+        type:
+          - "null"
+          - string
+        format: date-time
+      startActionId:
+        description: ID of the first action executed by the flow.
+        type:
+          - "null"
+          - string
+      nextAvailableActionId:
+        description: Next unused action ID, used by HubSpot when appending actions.
+        type:
+          - "null"
+          - string
+      actions:
+        description: Ordered list of actions that make up the flow's action graph.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+      enrollmentCriteria:
+        description: Criteria that determine which records are enrolled into the flow.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      enrollmentSchedule:
+        description: Schedule controlling when enrollment evaluation runs.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      dataSources:
+        description: Data sources referenced by the flow's filters and actions.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+      timeWindows:
+        description: Time windows during which the flow is allowed to execute actions.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+      blockedDates:
+        description: Dates on which the flow is prevented from executing actions.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+      customProperties:
+        description: Free-form key/value metadata attached to the flow.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      crmObjectCreationStatus:
+        description: Status of the CRM object backing the flow. One of COMPLETE or PENDING.
+        type:
+          - "null"
+          - string
+      suppressionListIds:
+        description: IDs of lists whose members are suppressed from the flow. Contact flows only.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      canEnrollFromSalesforce:
+        description: Whether Salesforce can enroll records into the flow. Contact flows only.
+        type:
+          - "null"
+          - boolean
+      eventAnchor:
+        description: Anchor date used by date-based enrollment. Contact flows only.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      goalFilterBranch:
+        description: Filter branch describing the flow's goal criteria. Contact flows only.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      unEnrollmentSetting:
+        description: Settings controlling un-enrollment behaviour. Contact flows only.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      suppressionFilterBranch:
+        description: Filter branch describing suppression criteria. Platform flows only.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
 
   email_events:
     $schema: http://json-schema.org/draft-07/schema#

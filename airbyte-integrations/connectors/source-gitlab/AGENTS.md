@@ -12,6 +12,8 @@ GitLab's OAuth implementation issues single-use refresh tokens. Every time an ac
 
 The GitLab API supports `updated_after` filtering on many endpoints. The connector uses Python custom components (`GroupStreamsPartitionRouter`, `ProjectStreamsPartitionRouter`) referenced from the manifest. Streams are defined in Python code and partitioned by group/project.
 
+`pipelines_extended`, `jobs`, and `pipeline_trigger_jobs` are incremental via `incremental_dependency: true` on the `pipelines` parent with `global_substream_cursor: true`. Their shared cursor, `pipeline_updated_at` (the parent pipeline's `updated_at` taken from `extra_fields`), only holds state: it is never sent to GitLab, and its far-future `end_datetime` stops it from skipping a pipeline the parent returned when the stored value is later than the worker clock. Keep the cursor key different from the parent's `updated_at`: when the child state has no `parent_state`, the CDK applies the child's global `state` to the parent. Job-level changes that don't bump the parent pipeline's `updated_at` (erased jobs, expired artifacts, `downstream_pipeline` status in `pipeline_trigger_jobs`) are not re-read in incremental mode. These streams also honor incoming state in Full Refresh mode (the platform clears it at the start of each Full Refresh sync), so callers outside the platform must not pass a previous sync's state for them.
+
 **Connector type:** Python custom components (hybrid manifest + Python)
 
 **Analysis status:** Streams are Python-defined via custom components with custom partition routers. Full stream-by-stream analysis requires Python code review.

@@ -19,7 +19,7 @@ class TableSchemaEvolutionClientTest {
 
             override fun computeSchema(
                 stream: DestinationStream,
-                columnNameMapping: ColumnNameMapping
+                columnNameMapping: ColumnNameMapping,
             ): TableSchema {
                 throw NotImplementedError()
             }

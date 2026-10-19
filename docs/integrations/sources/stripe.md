@@ -114,6 +114,9 @@ The Stripe source connector supports the following streams:
 - [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
 - [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines) \(Incremental\)
+  :::note
+  During incremental syncs, this stream reads line items from the invoice object embedded in `invoice.created`, `invoice.updated`, and `invoice.deleted` events. Stripe embeds at most 10 line items in that payload. When an invoice has more, the connector requests the rest from `/v1/invoices/{invoice_id}/lines`, so each invoice's line items are complete. Before version 6.0.19, incremental syncs kept only the first 10 line items of each invoice. If you synced invoices with more than 10 line items on an earlier version, run a full refresh of this stream to repair the existing data.
+  :::
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 - [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
@@ -150,7 +153,9 @@ The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https:
 
 ### Stripe API version
 
-This connector uses Stripe API version `2022-11-15`. Stripe returns data shaped according to this version regardless of the version configured in your Stripe dashboard. For details on Stripe API versioning, see [Stripe API upgrades](https://docs.stripe.com/upgrades).
+This connector sends Stripe API version `2022-11-15` with every request. Objects read directly from Stripe endpoints, which is what full refresh syncs and the first sync of each stream do, are shaped according to this version regardless of the version configured in your Stripe dashboard.
+
+Incremental syncs of streams that read from the Events API work differently. Stripe renders each event's `data.object` at your account's default API version as of the time the event was created, and the version the connector requests doesn't change it. Records synced incrementally from events can therefore differ from full refresh records. For example, fields added or removed in later API versions can be missing or `null`. For details, see [Stripe API upgrades](https://docs.stripe.com/upgrades) and [Versioning](https://docs.stripe.com/api/versioning).
 
 ## Limitations & Troubleshooting
 
@@ -283,6 +288,18 @@ For records the connector rebuilds from the Events API, `updated` comes from the
 - `Transactions`
 - `Transfers`
 
+#### Invoice line item IDs that don't start with `il_`
+
+Stripe accounts whose default API version is older than `2019-12-03` receive invoice line items in events with legacy IDs such as `ii_...`, `item_...`, `sub_...`, `su_...`, or `sli_...`. Before version 7.0.0, incremental syncs of `invoice_line_items` could write these legacy IDs, while full refresh syncs wrote the current `il_...` IDs for the same line items. A `sub_...` or `su_...` ID is the subscription's ID, so it repeats across renewal invoices, and a deduplicated destination kept only the most recent of those lines.
+
+From version 7.0.0, incremental syncs write `il_...` IDs. Rows written by earlier versions aren't removed automatically, so until you clean them up, affected line items can appear twice: once under the legacy ID and once under the `il_...` ID. To check whether you're affected, run a query like this against your destination:
+
+```sql
+SELECT COUNT(*) FROM <your_schema>.invoice_line_items WHERE SUBSTR(id, 1, 3) <> 'il_';
+```
+
+If the count is greater than zero, upgrade to 7.0.0 or later, then [refresh the `invoice_line_items` stream and remove records](/platform/operator-guides/refreshes). Refreshing and removing records deletes this stream's existing data in your destination, including rows that Stripe can't send again. The refreshed stream is rebuilt from the Invoices endpoints rather than from the 30-day Events API window, but only for invoices created on or after your configured start date. It doesn't recreate line items of invoices created before your start date, rows that recorded deleted draft invoices (`is_deleted` is `true`), or, in an Incremental | Append destination, earlier versions of each line item. Back up the `invoice_line_items` table before you refresh if you need any of these rows or the legacy IDs. Refreshing and retaining records doesn't remove the legacy rows, because they have a different primary key. For details, see the [7.0.0 migration guide](/integrations/sources/stripe-migrations#upgrading-to-700).
+
 ### Incremental deletes
 
 The Stripe API also provides a way to implement incremental deletes for a limited number of streams:
@@ -317,6 +334,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.0.1 | 2026-10-13 | [88397](https://github.com/airbytehq/airbyte/pull/88397) | Opt in to TCP keepalive and request timeouts (30 s connect, 80 s read) so dropped connections fail and retry instead of hanging |
+| 7.0.0 | 2026-10-13 | [87765](https://github.com/airbytehq/airbyte/pull/87765) | Use Stripe's current `il_` line item IDs for `invoice_line_items` on incremental syncs. See the [migration guide](https://docs.airbyte.com/integrations/sources/stripe-migrations#upgrading-to-700). |
+| 6.0.23 | 2026-10-13 | [88809](https://github.com/airbytehq/airbyte/pull/88809) | Update dependencies |
+| 6.0.22 | 2026-10-06 | [88070](https://github.com/airbytehq/airbyte/pull/88070) | Update dependencies |
+| 6.0.21 | 2026-09-29 | [87375](https://github.com/airbytehq/airbyte/pull/87375) | Update dependencies |
+| 6.0.20 | 2026-09-22 | [86838](https://github.com/airbytehq/airbyte/pull/86838) | Update dependencies |
+| 6.0.19 | 2026-09-21 | [85087](https://github.com/airbytehq/airbyte/pull/85087) | Fix truncated `invoice_line_items` on incremental syncs: fetch the complete line item list from `invoices/{id}/lines` when the event payload embeds only the first page. Existing destination data for invoices with more than 10 line items requires a Full Refresh to repair. |
+| 6.0.18 | 2026-09-15 | [86254](https://github.com/airbytehq/airbyte/pull/86254) | Update dependencies |
 | 6.0.17 | 2026-09-11 | [85799](https://github.com/airbytehq/airbyte/pull/85799) | Prevent the events-based `invoice_line_items` and `subscription_items` transformations from running when `original_record` is missing or empty. |
 | 6.0.16 | 2026-09-08 | [85672](https://github.com/airbytehq/airbyte/pull/85672) | Update dependencies |
 | 6.0.15 | 2026-08-18 | [84768](https://github.com/airbytehq/airbyte/pull/84768) | Update dependencies |

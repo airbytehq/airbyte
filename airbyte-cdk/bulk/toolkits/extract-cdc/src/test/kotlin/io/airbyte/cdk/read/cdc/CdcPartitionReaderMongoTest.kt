@@ -102,7 +102,7 @@ class CdcPartitionReaderMongoTest :
         override fun position(offset: DebeziumOffset): BsonTimestampPosition {
             val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
             return BsonTimestampPosition(
-                BsonTimestamp(offsetValue["sec"].asInt(), offsetValue["ord"].asInt())
+                BsonTimestamp(offsetValue["sec"].asInt(), offsetValue["ord"].asInt()),
             )
         }
 
@@ -137,8 +137,8 @@ class CdcPartitionReaderMongoTest :
                 .with(
                     "collection.include.list",
                     DebeziumPropertiesBuilder.joinIncludeList(
-                        listOf(Pattern.quote("${stream.namespace!!}.${stream.name}"))
-                    )
+                        listOf(Pattern.quote("${stream.namespace!!}.${stream.name}")),
+                    ),
                 )
                 .with("database.include.list", stream.namespace!!)
                 .withOffset()
@@ -163,7 +163,7 @@ class CdcPartitionReaderMongoTest :
             val resumeToken: String =
                 recordValue.source["resume_token"]?.takeIf { it.isTextual }?.asText() ?: return null
             return BsonTimestampPosition(
-                ResumeTokens.getTimestamp(ResumeTokens.fromData(resumeToken))
+                ResumeTokens.getTimestamp(ResumeTokens.fromData(resumeToken)),
             )
         }
 
@@ -171,14 +171,14 @@ class CdcPartitionReaderMongoTest :
             val offset: Map<String, *> = sourceRecord.sourceOffset()
             val resumeTokenBase64: String = offset["resume_token"] as? String ?: return null
             return BsonTimestampPosition(
-                ResumeTokens.getTimestamp(ResumeTokens.fromBase64(resumeTokenBase64))
+                ResumeTokens.getTimestamp(ResumeTokens.fromBase64(resumeTokenBase64)),
             )
         }
 
         override fun deserializeRecord(
             key: DebeziumRecordKey,
             value: DebeziumRecordValue,
-            stream: Stream
+            stream: Stream,
         ): DeserializedRecord {
             val id: Int = key.element("id").asInt()
             val record: Record =
