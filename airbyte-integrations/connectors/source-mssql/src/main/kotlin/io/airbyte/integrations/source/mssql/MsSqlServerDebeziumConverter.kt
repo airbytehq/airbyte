@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mssql
 import io.debezium.spi.converter.CustomConverter
 import io.debezium.spi.converter.RelationalColumn
 import java.math.BigDecimal
+import java.sql.Types
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -106,8 +107,43 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
                 registration.register(SchemaBuilder.string().optional(), this::convertSqlVariant)
             }
             else -> {
-                // For unhandled types, just return as string
-                logger.debug("Unhandled SQL Server type: {}", typeName)
+                val jdbcType = field.jdbcType()
+                val converterRegistered =
+                    when (jdbcType) {
+                        Types.TIMESTAMP -> {
+                            registration.register(
+                                SchemaBuilder.string().optional(),
+                                this::convertDateTime,
+                            )
+                            true
+                        }
+                        Types.DATE -> {
+                            registration.register(
+                                SchemaBuilder.string().optional(),
+                                this::convertDate,
+                            )
+                            true
+                        }
+                        Types.TIME -> {
+                            registration.register(
+                                SchemaBuilder.string().optional(),
+                                this::convertTime,
+                            )
+                            true
+                        }
+                        else -> false
+                    }
+
+                if (converterRegistered) {
+                    logger.info(
+                        "Resolved user-defined type {} for column {} via JDBC type {}",
+                        field.typeName(),
+                        field.name(),
+                        jdbcType,
+                    )
+                } else {
+                    logger.debug("Unhandled SQL Server type: {}", typeName)
+                }
             }
         }
     }

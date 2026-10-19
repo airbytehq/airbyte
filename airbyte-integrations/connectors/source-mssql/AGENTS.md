@@ -39,8 +39,10 @@ MSSQL backend lifecycle, fixtures, and config templates:
   Use this skill for any non-CDC bug or as a building block.
 - [`source-mssql-e2e-cdc-tests`](.agents/skills/source-mssql-e2e-cdc-tests/SKILL.md) —
   layers on top: enables CDC, ships CDC-aware config / catalog templates,
-  and contains per-bug fixtures and driver scripts. Three worked examples
+  and contains per-bug fixtures and driver scripts. Four worked examples
   ship today, each with inline pass / fail assertions:
+  - `13714.sh` — [`airbytehq/oncall#13714`](https://github.com/airbytehq/oncall/issues/13714)
+    (CDC read fails for user-defined aliases over temporal SQL Server types).
   - `repro-12162.sh` — [`airbytehq/oncall#12162`](https://github.com/airbytehq/oncall/issues/12162)
     (whitespace in stream name → Debezium rejects `message.key.columns`).
   - `repro-12094.sh` — [`airbytehq/oncall#12094`](https://github.com/airbytehq/oncall/issues/12094)
