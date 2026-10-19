@@ -20,7 +20,7 @@ import jakarta.inject.Singleton
  * enabled.
  *
  * TODO: We should add meta column munging and raw table support to the CDK, so this extra layer of
- * management shouldn't be necessary.
+ *   management shouldn't be necessary.
  */
 @Singleton
 class SnowflakeColumnManager(

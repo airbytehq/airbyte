@@ -39,7 +39,7 @@ import jakarta.inject.Singleton
 @JsonSchemaTitle("Postgres Source Spec")
 @JsonSchemaInject(
     json =
-        """{"groups":[{"id":"db"},{"id":"auth"},{"id":"security","title":"Security"},{"id":"advanced","title":"Advanced"},{"id":"performance","title":"Performance"}]}"""
+        """{"groups":[{"id":"db"},{"id":"auth"},{"id":"security","title":"Security"},{"id":"advanced","title":"Advanced"},{"id":"performance","title":"Performance"}]}""",
 )
 @JsonPropertyOrder(
     value =
@@ -95,14 +95,14 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaTitle("Password")
     @JsonPropertyDescription("The password associated with the username.")
     @JsonSchemaInject(
-        json = """{"order":5,"always_show":true,"airbyte_secret":true,"group":"auth"}"""
+        json = """{"order":5,"always_show":true,"airbyte_secret":true,"group":"auth"}""",
     )
     var password: String? = null
 
     @JsonProperty("entra_service_principal_auth")
     @JsonSchemaTitle("Azure Entra Service Principal Authentication")
     @JsonPropertyDescription(
-        "Interpret password as a client secret for a Microsoft Entra service principal"
+        "Interpret password as a client secret for a Microsoft Entra service principal",
     )
     @JsonSchemaInject(json = """{"order":6,"group":"auth"}""")
     @JsonSchemaDefault("false")
@@ -117,7 +117,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("entra_client_id")
     @JsonSchemaTitle("Azure Entra Client Id")
     @JsonPropertyDescription(
-        "If using Entra service principal, the application ID of the service principal"
+        "If using Entra service principal, the application ID of the service principal",
     )
     @JsonSchemaInject(json = """{"order":8,"group":"auth"}""")
     var entraClientId: String? = null
@@ -126,7 +126,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaTitle("Schemas")
     @JsonSchemaArrayWithUniqueItems("schemas")
     @JsonPropertyDescription(
-        "The list of schemas to sync from. Case sensitive. Empty means all schemas."
+        "The list of schemas to sync from. Case sensitive. Empty means all schemas.",
     )
     @JsonSchemaInject(json = """{"order":9,"uniqueItems":true,"group":"db"}""")
     var schemas: List<String>? = listOf()
@@ -138,10 +138,10 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
             "formatted as 'key=value' pairs separated by the symbol '&'. " +
             "(example: key1=value1&key2=value2&key3=value3). " +
             "For more information read about " +
-            "<a href=\"https://jdbc.postgresql.org/documentation/head/connect.html\">JDBC URL parameters</a>."
+            "<a href=\"https://jdbc.postgresql.org/documentation/head/connect.html\">JDBC URL parameters</a>.",
     )
     @JsonSchemaInject(
-        json = """{"order":10,"group":"advanced","pattern_descriptor":"key1=value1&key2=value2"}"""
+        json = """{"order":10,"group":"advanced","pattern_descriptor":"key1=value1&key2=value2"}""",
     )
     var jdbcUrlParams: String? = null
 
@@ -193,7 +193,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonSetter("replication_method")
     fun setIncrementalConfigurationSpecificationValue(
-        value: IncrementalConfigurationSpecification
+        value: IncrementalConfigurationSpecification,
     ) {
         replicationMethodJson = value
     }
@@ -216,7 +216,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaTitle("Max Concurrent Queries to Database")
     @JsonSchemaInject(json = """{"order":16,"always_show":true,"group":"performance"}""")
     @JsonPropertyDescription(
-        "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance."
+        "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance.",
     )
     var maxDbConnections: Int? = null
 
@@ -283,7 +283,7 @@ data object EncryptionRequire : EncryptionSpecification
 
 @JsonSchemaTitle("verify-ca")
 @JsonSchemaDescription(
-    "To always require encryption and verify that the source has a valid SSL certificate."
+    "To always require encryption and verify that the source has a valid SSL certificate.",
 )
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslVerifyCertificate : EncryptionSpecification {
@@ -322,7 +322,7 @@ class SslVerifyCertificate : EncryptionSpecification {
 
 @JsonSchemaTitle("verify-full")
 @JsonSchemaDescription(
-    "To always require encryption and verify that the source has a valid SSL certificate."
+    "To always require encryption and verify that the source has a valid SSL certificate.",
 )
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslVerifyFull : EncryptionSpecification {
@@ -382,11 +382,11 @@ class MicronautPropertiesFriendlyEncryptionSpecification {
     JsonSubTypes.Type(value = CdcReplicationMethodConfigurationSpecification::class, name = "CDC"),
     JsonSubTypes.Type(
         value = XminReplicationMethodConfigurationSpecification::class,
-        name = "Xmin"
+        name = "Xmin",
     ),
     JsonSubTypes.Type(
         value = StandardReplicationMethodConfigurationSpecification::class,
-        name = "Standard"
+        name = "Standard",
     ),
 )
 @JsonSchemaTitle("Update Method")
@@ -407,7 +407,7 @@ data object StandardReplicationMethodConfigurationSpecification :
 @JsonSchemaDescription(
     "<i>Recommended</i> - Incrementally reads new inserts and updates via Postgres " +
         "<a href=\"https://docs.airbyte.com/integrations/sources/postgres/#xmin\">" +
-        "Xmin system column</a>. Suitable for databases that have low transaction pressure."
+        "Xmin system column</a>. Suitable for databases that have low transaction pressure.",
 )
 data object XminReplicationMethodConfigurationSpecification : IncrementalConfigurationSpecification
 
@@ -442,7 +442,7 @@ class CdcReplicationMethodConfigurationSpecification : IncrementalConfigurationS
     @JsonProperty("replication_slot", required = true)
     @JsonSchemaTitle("Replication Slot")
     @JsonPropertyDescription(
-        "A plugin logical replication slot. Read about <a href=\\\"https://docs.airbyte.com/integrations/sources/postgres#step-3-create-replication-slot\\\">replication slots</a>."
+        "A plugin logical replication slot. Read about <a href=\\\"https://docs.airbyte.com/integrations/sources/postgres#step-3-create-replication-slot\\\">replication slots</a>.",
     )
     @JsonSchemaInject(json = """{"order":1,"always_show":true, "minLength":1}""")
     lateinit var replicationSlot: String
@@ -450,7 +450,7 @@ class CdcReplicationMethodConfigurationSpecification : IncrementalConfigurationS
     @JsonProperty("publication", required = true)
     @JsonSchemaTitle("Publication")
     @JsonPropertyDescription(
-        "A Postgres publication used for consuming changes. Read about <a href=\\\"https://docs.airbyte.com/integrations/sources/postgres#step-4-create-publications-and-replication-identities-for-tables\\\">publications and replication identities</a>."
+        "A Postgres publication used for consuming changes. Read about <a href=\\\"https://docs.airbyte.com/integrations/sources/postgres#step-4-create-publications-and-replication-identities-for-tables\\\">publications and replication identities</a>.",
     )
     @JsonSchemaInject(json = """{"order":2,"always_show":true, "minLength":1}""")
     lateinit var publication: String
@@ -458,7 +458,7 @@ class CdcReplicationMethodConfigurationSpecification : IncrementalConfigurationS
     @JsonProperty("initial_waiting_seconds")
     @JsonSchemaTitle("Initial Waiting Time in Seconds (Advanced)")
     @JsonPropertyDescription(
-        "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 1200 seconds. Valid range: 120 seconds to 2400 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#advanced-setting-up-initial-cdc-waiting-time\">initial waiting time</a>."
+        "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 1200 seconds. Valid range: 120 seconds to 2400 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#advanced-setting-up-initial-cdc-waiting-time\">initial waiting time</a>.",
     )
     @JsonSchemaDefault("1200")
     @JsonSchemaInject(json = """{"order":3,"min":120,"max":2400}""")
@@ -470,19 +470,19 @@ class CdcReplicationMethodConfigurationSpecification : IncrementalConfigurationS
     @JsonProperty("lsn_commit_behaviour")
     @JsonSchemaTitle("LSN commit behavior")
     @JsonPropertyDescription(
-        "Determines when Airbyte should flush the LSN of processed WAL logs in the source database. `After loading Data in the destination` is default. If `While reading Data` is selected, in case of a downstream failure (while loading data into the destination), next sync would result in a full sync."
+        "Determines when Airbyte should flush the LSN of processed WAL logs in the source database. `After loading Data in the destination` is default. If `While reading Data` is selected, in case of a downstream failure (while loading data into the destination), next sync would result in a full sync.",
     )
     @JsonSchemaDefault("After loading Data in the destination")
     @JsonSchemaInject(
         json =
-            """{"order":4,"enum":[ "While reading Data", "After loading Data in the destination"]}"""
+            """{"order":4,"enum":[ "While reading Data", "After loading Data in the destination"]}""",
     )
     var lsnCommitBehavior: String? = "After loading Data in the destination"
 
     @JsonProperty("heartbeat_action_query")
     @JsonSchemaTitle("Debezium heartbeat query (Advanced)")
     @JsonPropertyDescription(
-        "Specifies a query that the connector executes on the source database when the connector sends a heartbeat message. Please see the <a href=\"https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#advanced-wal-disk-consumption-and-heartbeat-action-query\">setup guide</a> for how and when to configure this setting."
+        "Specifies a query that the connector executes on the source database when the connector sends a heartbeat message. Please see the <a href=\"https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#advanced-wal-disk-consumption-and-heartbeat-action-query\">setup guide</a> for how and when to configure this setting.",
     )
     @JsonSchemaDefault("")
     @JsonSchemaInject(json = """{"order":5}""")
